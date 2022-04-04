@@ -18,27 +18,30 @@ $ddl-list-header-small-padding-left: 8px !default;
 $ddl-list-header-bigger-small-padding-left: 14px !default;
 $ddl-list-header-bigger-padding-left: 16px !default;
 $ddl-list-text-indent: 12px !default;
-$ddl-bigger-text-indent: $ddl-list-text-indent !default;
+$ddl-bigger-text-indent: 16px !default;
 $ddl-list-rtl-padding-right: 0 !default;
 $ddl-list-padding-right: 16px !default;
 $ddl-list-rtl-padding-left: 16px !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
-$ddl-bigger-list-header-font-size: $text-base !default;
+$ddl-bigger-list-header-font-size: $text-sm !default;
 $ddl-group-list-font-size: $text-sm !default;
 $ddl-list-header-font-size: $text-xs !default;
+$ddl-small-list-nodata-font-size: $text-xs !default;
+$ddl-bigger-list-nodata-font-size: $text-base !default;
+$ddl-bigger-small-list-nodata-font-size: $text-sm !default;
 
 // Small Size
 
 $ddl-small-icon-font-size: 14px !default;
 $ddl-small-line-height: 24px !default;
-$ddl-small-list-text-indent: 12px !default;
+$ddl-small-list-text-indent: 8px !default;
 $ddl-small-list-header-font-size: $text-xxs !default;
 
 // Touch Small
 
 $ddl-bigger-small-icon-font-size: 18px !default;
-$ddl-bigger-small-line-height: 40px !default;
-$ddl-bigger-small-list-text-indent: 16px !default;
+$ddl-bigger-small-line-height: 32px !default;
+$ddl-bigger-small-list-text-indent: 14px !default;
 $ddl-bigger-small-list-header-font-size: $text-xs !default;
 
 //
@@ -47,6 +50,7 @@ $ddl-list-border-color: $border-light !default;
 $ddl-list-gradient-color: $border-light !default;
 $ddl-list-bg-color: $flyout-bg-color !default;
 $ddl-list-header-bg-color: $content-bg-color-focus !default;
+$ddl-list-tap-color: transparent !default;
 $ddl-list-header-border-color: $border-light !default;
 $ddl-nodata-font-color: $content-text-color !default;
 $ddl-list-default-font-color: $content-text-color !default;
@@ -60,10 +64,12 @@ $ddl-list-header-font-color: $content-text-color-alt2 !default;
 $ddl-default-header-font-color: $content-text-color !default;
 $ddl-list-focus-color: $content-bg-color-focus !default;
 $ddl-multi-column-border-color: $border-light !default;
+$ddl-list-icon-color: $icon-color !default;
 // Small Size color
 $ddl-small-list-font-color: $content-text-color !default;
 // Touch Small color
 $ddl-bigger-small-list-font-color: $content-text-color !default;
+$ddl-group-list-item-text-intent: 0 !default;
 
 
 @include export-module('dropdownbase-tailwind') {
@@ -103,12 +109,15 @@ $ddl-bigger-small-list-font-color: $content-text-color !default;
     padding: 0 8px 0 0;
   }
 
-  .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
-  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
     padding: 0 12px 0 0;
   }
 
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 8px 0 0;
+  }
+
   .e-small .e-dropdownbase .e-list-item .e-list-icon {
-    padding: 0 6px 0 0;
+    padding: 0 4px 0 0;
   }
 }

@@ -4109,5 +4109,36 @@ describe('Datetimepicker', () => {
         
 
 });
+describe('EJ2-56658:change event is not triggered while remove the selected time in datetimepicker', () => {
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'dateTime' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('change event testing', () => {
+        datetimepicker = new DateTimePicker({
+            change: function (args: any) {
+            expect((args.value) == (datetimepicker.value)).toBe(true);
+            }
+        });
+        datetimepicker.appendTo('#dateTime');
+        if (!datetimepicker.isDatePopupOpen() && !datetimepicker.isTimePopupOpen()) {
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        }
+        let element: HTMLElement;
+        element = <HTMLElement>datetimepicker.dateTimeWrapper.querySelectorAll('.e-list-item')[0];
+        (element).click();
+        expect(element.classList.contains('e-active')).toBe(true);
+        (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.value).toEqual(null);
+    });
 
 });
+});
+

@@ -29,6 +29,7 @@ describe('Chart Control', () => {
             return;
         }
     });
+	
     describe('Annotation for Chart', () => {
         let chartObj: Chart;
         let element: Element;

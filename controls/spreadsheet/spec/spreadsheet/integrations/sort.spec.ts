@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, SortEventArgs, SortDescriptor, getCell } from '../../../src/index';
+import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel } from '../../../src/index';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -31,6 +31,7 @@ describe('Spreadsheet sorting module ->', () => {
             helper.invoke('destroy');
         });
         it('sort ascending testing', (done: Function) => {
+            helper.invoke('cellFormat', [{ border: '1px solid #000' }, 'D3']);
             helper.invoke('selectRange', ['D2:E5']);
             helper.setModel('activeCell', 'D2');
             helper.invoke('sort', null).then((args: SortEventArgs) => {
@@ -42,6 +43,18 @@ describe('Spreadsheet sorting module ->', () => {
                     expect(values.get('D4').value.toString()).toEqual('20');
                     expect(values.get('E4').value.toString()).toEqual('30');
                     expect(values.size).toEqual(8);
+                    // Checking for border should not be sorted
+                    expect(JSON.stringify(values.get('D3').style)).toBe('{"borderBottom":"1px solid #000","borderTop":"1px solid #000","borderRight":"1px solid #000","borderLeft":"1px solid #000"}');
+                    expect(JSON.stringify(values.get('D4').style)).toBe('{}');
+                    let td: HTMLElement = helper.invoke('getCell', [2, 3]);
+                    expect(td.style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                    expect(td.style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                    expect(helper.invoke('getCell', [2, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                    expect(helper.invoke('getCell', [1, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                    td = helper.invoke('getCell', [3, 3]);
+                    expect(td.style.borderRight).toBe('');
+                    expect(td.style.borderBottom).toBe('');
+                    expect(helper.invoke('getCell', [3, 2]).style.borderRight).toBe('');
                     done();
                 });
             });
@@ -301,6 +314,105 @@ describe('Spreadsheet sorting module ->', () => {
                         done();
                     }, 10);
                 }, 10);
+            });
+        });
+
+        describe('SF-360222 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    beforeDataBound: () => {
+                        helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
+                    }
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+
+            it('sorting whole column, header cell too get sorted and undo after sorting changes selection range', (done: Function) => {
+                helper.invoke('selectRange', ['A1:A200']);
+                helper.click('#spreadsheet_sorting');
+                helper.click('#spreadsheet_sorting-popup .e-item:nth-child(2)');
+                setTimeout(() => {
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                        expect(helper.invoke('getCell', [1, 0]).textContent).toBe('T-Shirts');
+                        helper.click('#spreadsheet_undo');
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A200');
+                        expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                        expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                        helper.click('#spreadsheet_sorting');
+                        helper.click('#spreadsheet_sorting-popup .e-item');
+                        setTimeout(() => {
+                            setTimeout(() => {
+                                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-56060 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Multirange custom sort alert dialog not showing issue resolved.', (done: Function) => {
+                helper.invoke('selectRange', ['A1:A100 B1:B100']);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                let dialogName: string;
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                    dialogName = args.dialogName;
+                };
+                helper.getElementFromSpreadsheet('#' + helper.id + '_sorting').click();
+                setTimeout(() => {
+                    helper.click('.e-sort-filter-ddb li:nth-child(3)');  
+                });
+                setTimeout(() => {
+                    expect(dialogName).toBe('MultiRangeSortDialog');
+                    done();
+                });
+            });
+            it('customsort alert not showing while apply customsort on empty sheet', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertSheet();
+                helper.invoke('selectRange', ['A1']);
+                let dialogName: string;
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                    dialogName = args.dialogName;
+                };
+                helper.getElementFromSpreadsheet('#' + helper.id + '_sorting').click();
+                setTimeout(() => {
+                    helper.click('.e-sort-filter-ddb li:nth-child(3)');  
+                });
+                setTimeout(() => {
+                    expect(dialogName).toBe('SortRangeDialog');
+                    done();
+                });
+            });
+            it('Custom sort while A1 only has value', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertSheet();
+                helper.invoke('selectRange', ['A1']);
+                let dialogName: string;
+                spreadsheet.updateCell({value: '10'},"A1");
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                    dialogName = args.dialogName;
+                };
+                helper.getElementFromSpreadsheet('#' + helper.id + '_sorting').click();
+                setTimeout(() => {
+                    helper.click('.e-sort-filter-ddb li:nth-child(3)');  
+                });
+                setTimeout(() => {
+                    expect(dialogName).toBe('CustomSortDialog');
+                    done();
+                });
             });
         });
     });

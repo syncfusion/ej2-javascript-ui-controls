@@ -148,6 +148,9 @@ export class Selection {
         this.addRemoveClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
+        if (this.selectedRowIndexes.length === 1) {
+            this.parent.setProperties({ selectedRowIndex: this.selectedRowIndexes[0] }, true);
+        }
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }

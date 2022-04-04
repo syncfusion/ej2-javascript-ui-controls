@@ -3112,3 +3112,35 @@ describe('Header Footer ', () => {
         expect(text).toBe('First');
     });
 });
+describe('Table row insertion', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('charater format validation after table row insertion',()=>{
+        editor.openBlank();
+        editor.editor.insertTable(2,2);
+        editor.editor.insertText('Sample');
+        editor.selection.selectParagraph();
+        editor.editor.onApplyCharacterFormat("fontFamily",'Algerian');
+        editor.editor.insertRow();
+        expect(editor.selection.start.paragraph.characterFormat.fontFamily).toBe('Algerian');
+    })
+});

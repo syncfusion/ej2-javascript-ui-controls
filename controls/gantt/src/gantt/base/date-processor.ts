@@ -276,10 +276,10 @@ export class DateProcessor {
     public calculateDuration(ganttData: IGanttData): void {
         const ganttProperties: ITaskData = ganttData.ganttProperties;
         let tDuration: number;
-        if (!isNullOrUndefined(ganttProperties.segments) && ganttProperties.segments.length > 0) {
+        if (!isNullOrUndefined(ganttProperties.segments) && ganttProperties.segments.length > 0 &&
+           !isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
             tDuration = this.parent.editModule.taskbarEditModule.sumOfDuration(ganttProperties.segments);
         } else {
-            // eslint-disable-next-line
             if (!isNullOrUndefined(ganttProperties.startDate) && !isNullOrUndefined(ganttProperties.endDate) && 
                 (ganttProperties.startDate).getTime() === (ganttProperties.endDate).getTime() && !isNullOrUndefined(ganttData.taskData[this.parent.taskFields.milestone])) {
                 tDuration = 1;  

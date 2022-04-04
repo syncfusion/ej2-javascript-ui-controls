@@ -494,11 +494,10 @@ export class QuickPopups {
         if (saveButton) {
             this.renderButton('e-flat e-primary', '', this.parent.activeViewOptions.readonly, saveButton, this.saveClick);
         }
-        this.quickPopup.content = quickCellPopup;
-        this.quickPopup.dataBind();
-        this.applyFormValidation();
         if (this.morePopup) { this.morePopup.hide(); }
+        this.quickPopup.content = quickCellPopup;
         this.quickPopup.relateTo = target as HTMLElement;
+        this.quickPopup.dataBind();
         this.beforeQuickPopupOpen(target);
     }
 
@@ -565,11 +564,11 @@ export class QuickPopups {
             if (deleteButton) {
                 this.renderButton('e-flat', '', deleteAction, deleteButton, this.deleteClick);
             }
-            this.quickPopup.content = quickEventPopup;
-            this.quickPopup.dataBind();
             if (this.morePopup && !closest(<Element>events.element, '.' + cls.MORE_EVENT_WRAPPER_CLASS)) { this.morePopup.hide(); }
+            this.quickPopup.content = quickEventPopup;
             this.quickPopup.relateTo = this.parent.isAdaptive ? document.body :
                 closest(<HTMLElement>events.element, '.' + cls.APPOINTMENT_CLASS) as HTMLElement;
+            this.quickPopup.dataBind();
             this.beforeQuickPopupOpen(events.element as Element);
         }
     }
@@ -857,6 +856,7 @@ export class QuickPopups {
     }
 
     private saveClick(event: Event): void {
+        this.applyFormValidation();
         this.dialogEvent = event;
         this.isCrudAction = true;
         this.quickPopupHide();

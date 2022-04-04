@@ -1,4 +1,4 @@
-import { ChildProperty, extend, deleteObject, Property, BaseEventArgs, addClass } from '@syncfusion/ej2-base';
+import { ChildProperty, extend, deleteObject, Property, BaseEventArgs, addClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class Item

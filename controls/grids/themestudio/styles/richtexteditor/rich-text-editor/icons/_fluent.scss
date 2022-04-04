@@ -1,303 +1,303 @@
 /*! component's theme wise override definitions and variables */
-@include export-module('richtexteditor-fluent-icons') {
+@include export-module('richtexteditor-material-icons') {
   /*! richtexteditor icons */
 
   .e-rte-toolbar,
   .e-rte-dropdown-popup {
 
     .e-alignments::before {
-      content: '\e703';
+      content: '\e7b8';
     }
 
     .e-justify-left::before {
-      content: '\e703';
+      content: '\e7b8';
     }
 
     .e-justify-center::before {
-      content: '\e704';
+      content: '\e813';
     }
 
     .e-justify-right::before {
-      content: '\e705';
+      content: '\e719';
     }
 
     .e-justify-full::before {
-      content: '\e706';
+      content: '\e721';
     }
 
     .e-font-name::before {
-      content: '\e826';
-    }
-
-    .e-font-color::before {
-      content: '\e750';
-    }
-
-    .e-background-color::before {
-      content: '\e781';
-    }
-
-    .e-bold::before {
-      content: '\e7a5';
-    }
-
-    .e-italic::before {
-      content: '\e7a6';
-    }
-
-    .e-underline::before {
-      content: '\e7a7';
-    }
-
-    .e-strike-through::before {
-      content: '\e74e';
-    }
-
-    .e-clear-format::before {
-      content: '\e825';
-    }
-
-    .e-clear-all::before {
-      content: '\e700';
-    }
-
-    .e-cut::before {
-      content: '\e7b2';
-    }
-
-    .e-copy::before {
-      content: '\e7b3';
-    }
-
-    .e-paste::before {
-      content: '\e7b4';
-    }
-
-    .e-unorder-list::before {
-      content: '\e754';
-    }
-
-    .e-order-list::before {
-      content: '\e755';
-    }
-
-    .e-indent::before {
-      content: '\e751';
-    }
-
-    .e-outdent::before {
-      content: '\e753';
-    }
-
-    .e-undo::before {
-      content: '\e7b5';
-    }
-
-    .e-redo::before {
-      content: '\e7b6';
-    }
-
-    .e-super-script::before {
-      content: '\e7a1';
-    }
-
-    .e-sub-script::before {
-      content: '\e7a2';
-    }
-
-    .e-create-link::before {
-      content: '\e7b8';
-    }
-
-    .e-open-link::before {
-      content: '\e7df';
-    }
-
-    .e-edit-link::before {
-      content: '\e7ed';
-    }
-
-    .e-remove-link::before {
-      content: '\e7ee';
-    }
-
-    .e-image::before {
-      content: '\e718';
-    }
-
-    .e-replace::before {
-      content: '\e78c';
-    }
-
-    .e-align::before {
-      content: '\e703';
-    }
-
-    .e-caption::before {
-      content: '\e770';
-    }
-
-    .e-remove::before {
-      content: '\e75b';
-    }
-
-    .e-insert-link::before {
-      content: '\e7b8';
-    }
-
-    .e-display::before {
-      content: '\e724';
-    }
-
-    .e-alt-text::before {
-      content: '\e824';
-    }
-
-    .e-img-dimension::before {
-      content: '\e714';
-    }
-
-    .e-maximize::before {
-      content: '\e814';
-    }
-
-    .e-minimize::before {
-      content: '\e70b';
-    }
-
-    .e-zoom-in::before {
-      content: '\e7ab';
-    }
-
-    .e-zoom-out::before {
-      content: '\e7ac';
-    }
-
-    .e-lower-case::before {
-      content: '\e76d';
-    }
-
-    .e-upper-case::before {
-      content: '\e76c';
-    }
-
-    .e-print::before {
-      content: '\e7bd';
-    }
-
-    .e-formats::before {
-      content: '\e75f';
-    }
-
-    .e-source-code::before {
       content: '\e76f';
     }
 
-    .e-preview::before {
-      content: '\e717';
+    .e-font-color::before {
+      content: '\e79f';
     }
 
-    .e-view-side::before {
+    .e-background-color::before {
+      content: '\e783';
+    }
+
+    .e-bold::before {
+      content: '\e737';
+    }
+
+    .e-italic::before {
+      content: '\e75a';
+    }
+
+    .e-underline::before {
+      content: '\e82f';
+    }
+
+    .e-strike-through::before {
+      content: '\e758';
+    }
+
+    .e-clear-format::before {
+      content: '\e803';
+    }
+
+    .e-clear-all::before {
+      content: '\e7cc';
+    }
+
+    .e-cut::before {
+      content: '\e7fb';
+    }
+
+    .e-copy::before {
+      content: '\e77c';
+    }
+
+    .e-paste::before {
+      content: '\e70b';
+    }
+
+    .e-unorder-list::before {
+      content: '\e77e';
+    }
+
+    .e-order-list::before {
+      content: '\e7cb';
+    }
+
+    .e-indent::before {
+      content: '\e810';
+    }
+
+    .e-outdent::before {
+      content: '\e72a';
+    }
+
+    .e-undo::before {
       content: '\e713';
     }
 
-    .e-insert-code::before {
-      content: '\e76e';
+    .e-redo::before {
+      content: '\e755';
     }
 
-    .e-table-header::before {
-      content: '\e823';
+    .e-super-script::before {
+      content: '\e7a7';
     }
 
-    .e-table-remove::before {
-      content: '\e75b';
+    .e-sub-script::before {
+      content: '\e80a';
     }
 
-    .e-table-rows::before {
-      content: '\e715';
-    }
-
-    .e-table-columns::before {
-      content: '\e716';
-    }
-
-    .e-table-cell-ver-align::before {
+    .e-create-link::before {
       content: '\e757';
     }
 
-    .e-table-edit-properties::before {
-      content: '\e822';
+    .e-open-link::before {
+      content: '\e77a';
     }
 
-    .e-create-table::before {
-      content: '\e71a';
+    .e-edit-link::before {
+      content: '\e722';
     }
 
-    .e-align-bottom::before {
-      content: '\e7b0';
+    .e-remove-link::before {
+      content: '\e80c';
     }
 
-    .e-align-middle::before {
+    .e-image::before {
+      content: '\e786';
+    }
+
+    .e-replace::before {
+      content: '\e710';
+    }
+
+    .e-align::before {
+      content: '\e7b8';
+    }
+
+    .e-caption::before {
+      content: '\e82e';
+    }
+
+    .e-remove::before {
+      content: '\e820';
+    }
+
+    .e-insert-link::before {
       content: '\e757';
     }
 
-    .e-align-top::before {
-      content: '\e7af';
+    .e-display::before {
+      content: '\e7b7';
     }
 
-    .e-insert-column-left::before {
-      content: '\e766';
-    }
-
-    .e-insert-column-right::before {
-      content: '\e767';
-    }
-
-    .e-delete-column::before {
+    .e-alt-text::before {
       content: '\e769';
     }
 
+    .e-img-dimension::before {
+      content: '\e879';
+    }
+
+    .e-maximize::before {
+      content: '\e81c';
+    }
+
+    .e-minimize::before {
+      content: '\e7b0';
+    }
+
+    .e-zoom-in::before {
+      content: '\e795';
+    }
+
+    .e-zoom-out::before {
+      content: '\e825';
+    }
+
+    .e-lower-case::before {
+      content: '\e746';
+    }
+
+    .e-upper-case::before {
+      content: '\e793';
+    }
+
+    .e-print::before {
+      content: '\e75d';
+    }
+
+    .e-formats::before {
+      content: '\e844';
+    }
+
+    .e-source-code::before {
+      content: '\e80e';
+    }
+
+    .e-preview::before {
+      content: '\e7de';
+    }
+
+    .e-view-side::before {
+      content: '\e82b';
+    }
+
+    .e-insert-code::before {
+      content: '\e831';
+    }
+
+    .e-table-header::before {
+      content: '\e7c3';
+    }
+
+    .e-table-remove::before {
+      content: '\e820';
+    }
+
+    .e-table-rows::before {
+      content: '\e77f';
+    }
+
+    .e-table-columns::before {
+      content: '\e841';
+    }
+
+    .e-table-cell-ver-align::before {
+      content: '\e74f';
+    }
+
+    .e-table-edit-properties::before {
+      content: '\e730';
+    }
+
+    .e-create-table::before {
+      content: '\e7e9';
+    }
+
+    .e-align-bottom::before {
+      content: '\e7a0';
+    }
+
+    .e-align-middle::before {
+      content: '\e74f';
+    }
+
+    .e-align-top::before {
+      content: '\e707';
+    }
+
+    .e-insert-column-left::before {
+      content: '\e78b';
+    }
+
+    .e-insert-column-right::before {
+      content: '\e70e';
+    }
+
+    .e-delete-column::before {
+      content: '\e714';
+    }
+
     .e-insert-row-before::before {
-      content: '\e762';
+      content: '\e836';
     }
 
     .e-insert-row-after::before {
-      content: '\e765';
+      content: '\e801';
     }
 
     .e-delete-row::before {
-      content: '\e768';
+      content: '\e7f2';
     }
 
     .e-style::before {
-      content: '\e7aa';
+      content: '\e76e';
     }
 
     .e-rte-file-manager::before {
-      content: '\e7b1';
+      content: '\e83c';
     }
   }
 
   .e-richtexteditor {
     .e-south-east::before,
     .e-south-west::before {
-      content: '\e7ea';
+      content: '\e761';
     }
   }
 
   .e-cell-merge::before {
-    content: '\e731';
+    content: '\e83a';
   }
 
   .e-cell-horizontal-split::before {
-    content: '\e837';
+    content: '\e7a4';
   }
 
   .e-cell-vertical-split::before {
-    content: '\e838';
+    content: '\e732';
   }
 
   .e-table-cell::before {
-    content: '\e839';
+    content: '\e7c2';
   }
 }

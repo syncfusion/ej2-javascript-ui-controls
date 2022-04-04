@@ -401,7 +401,9 @@ export class AnnotationToolbar {
                         // eslint-disable-next-line max-len
                     } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText') {
                         id = this.pdfViewer.element.id + '_annotation_handwrittenSign';
-                    } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
+                    } else if(this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage'){
+                        id = this.pdfViewer.element.id + '_annotation_handwrittenImage';
+                    }else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
                         id = this.pdfViewer.element.id + '_annotation_inkIcon';
                     } else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
                         id = this.pdfViewer.element.id + '_highlightIcon';
@@ -3219,7 +3221,9 @@ export class AnnotationToolbar {
                 (element.children[0] as HTMLElement).style.borderBottomColor = color;
             }
         } else {
+            if(element){
             (element.childNodes[0] as HTMLElement) ? (element.childNodes[0] as HTMLElement).style.borderBottomColor = color : (element.childNodes[0] as HTMLElement);
+            }
         }
     }
 
@@ -3685,8 +3689,11 @@ export class AnnotationToolbar {
                     this.primaryToolbar.updateInteractionTools(true);
                 }
             } else {
-                const toolBarInitialStatus: string = this.toolbarElement.style.display;
-                this.toolbarElement.style.display = 'block';
+                let toolBarInitialStatus: string;
+                if (this.toolbarElement) {
+                    toolBarInitialStatus = this.toolbarElement.style.display;
+                    this.toolbarElement.style.display = 'block';
+                }
                 if (!isInitialLoading) {
                     this.pdfViewer.isAnnotationToolbarVisible = true;
                 }
@@ -4917,9 +4924,13 @@ export class AnnotationToolbar {
         }
     }
     private AnnotationSliderOpened(): void {
-        let opacity: number = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.opacity * 100;
-        let thickness: number = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeWidth;
-        this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateAnnotationSlider', opacity, thickness);
+         if (this.pdfViewer.selectedItems.annotations && this.pdfViewer.selectedItems.annotations.length>0 && this.pdfViewer.selectedItems.annotations[0]) {
+            if (this.pdfViewer.selectedItems.annotations[0].wrapper && this.pdfViewer.selectedItems.annotations[0].wrapper.children[0]) {
+				let opacity: number = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.opacity * 100;
+                let thickness: number = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeWidth;
+                this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateAnnotationSlider', opacity, thickness);
+            }
+        }
     }
     private DropDownOpened(colorElement: any): void {
         if (colorElement && colorElement[0].element) {

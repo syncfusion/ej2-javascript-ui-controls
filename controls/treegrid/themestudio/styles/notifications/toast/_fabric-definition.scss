@@ -20,6 +20,7 @@ $toast-font-nrml-size: 14px !default;
 $toast-title-font-nrml-size: 14px !default;
 
 //Touch Mode
+$toast-border: none !default;
 $toast-icon-bgr-height: 24px !default;
 $toast-icon-bgr-width: 24px !default;
 $toast-icon-bgr-size: 16px !default;
@@ -98,5 +99,6 @@ $toast-close-icon: '\e7a7' !default;
 $toast-success-icon: '\ea84' !default;
 $toast-error-icon: '\e7e9' !default;
 $toast-info-icon: '\e607' !default;
+$toast-warning-icon: '\e92f' !default;
 
 $toast-title-font-weight: bold !default;

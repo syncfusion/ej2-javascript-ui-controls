@@ -35,6 +35,12 @@ export class NavigationPane {
     private isRenameParent: boolean = false;
     private isRightClick: boolean = false;
     private renameParent: string = null;
+    // Specifies the previously selected nodes in the treeview control.
+    private previousSelected: string[] = null;
+    // Specifies whether the nodeClicked event of the treeview control is triggered or not.
+    private isNodeClickCalled: boolean = false;
+    // Specifies whether to restrict node selection in the treeview control.
+    private restrictSelecting: boolean = false;
     /**
      * Constructor for the TreeView module
      *
@@ -80,6 +86,8 @@ export class NavigationPane {
                 hasChildren: 'hasChild', iconCss: '_fm_icon', htmlAttributes: '_fm_htmlAttr', tooltip: 'name'
             },
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+            sortOrder: this.parent.navigationPaneSettings.sortOrder,
+            nodeSelecting: this.onNodeSelecting.bind(this),
             nodeSelected: this.onNodeSelected.bind(this),
             nodeExpanding: this.onNodeExpand.bind(this),
             nodeClicked: this.onNodeClicked.bind(this),
@@ -186,6 +194,46 @@ export class NavigationPane {
         }
     }
 
+    // Node Selecting event handler
+    private onNodeSelecting(args: NodeSelectEventArgs): void {
+        if (!args.isInteracted && !this.isRightClick && !this.isPathDragged && !this.isRenameParent || this.restrictSelecting) {
+            this.restrictSelecting = false;
+            this.isNodeClickCalled = false;
+            return;
+        }
+        if (!this.renameParent) {
+            this.parent.activeModule = 'navigationpane';
+            // eslint-disable-next-line
+            const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
+            const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
+            this.parent.trigger('fileOpen', eventArgs);
+            args.cancel = eventArgs.cancel;
+            if (args.cancel) {
+                this.restrictSelecting = this.isNodeClickCalled ? this.previousSelected[0] !== args.node.getAttribute('data-uid') : false;
+                this.treeObj.selectedNodes = this.isNodeClickCalled ? this.previousSelected : this.treeObj.selectedNodes;
+                this.previousSelected = this.treeObj.selectedNodes;
+                if (!isNOU(this.parent) && !isNOU(this.parent.contextmenuModule)) {
+                    this.parent.contextmenuModule.contextMenu.enableItems(['Open'], true);
+                }
+            }
+        }
+    }
+
+    // Opens the folder while clicking open context menu item in the treeview.
+    public openFileOnContextMenuClick(node: HTMLLIElement): void {
+        const data: object[] = this.treeObj.getTreeData(node);
+        // eslint-disable-next-line
+        this.parent.selectedItems = [];
+        this.parent.itemData = data;
+        this.activeNode = node;
+        this.parent.activeModule = 'navigationpane';
+        updatePath(node, this.parent.itemData[0], this.parent);
+        read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
+        this.parent.visitedItem = node;
+        this.isPathDragged = this.isRenameParent = this.isRightClick = false;
+        this.treeObj.selectedNodes = [node.getAttribute('data-uid')];
+    }
+
     private onNodeSelected(args: NodeSelectEventArgs): void {
         if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj && !this.renameParent) {
             this.parent.breadcrumbbarModule.searchObj.element.value = '';
@@ -197,20 +245,18 @@ export class NavigationPane {
         this.parent.activeModule = 'navigationpane';
         // eslint-disable-next-line
         const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
-        if (!this.renameParent) {
-            const eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: nodeData[0], module: 'NavigationPane' };
-            delete eventArgs.cancel;
-            this.parent.trigger('fileOpen', eventArgs);
-        }
         this.parent.selectedItems = [];
         this.parent.itemData = nodeData;
+        const previousPath: string = this.parent.path;
         updatePath(args.node, this.parent.itemData[0], this.parent);
-        this.expandNodeTarget = null;
-        if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
-            this.expandNodeTarget = 'add';
+        if (previousPath !== this.parent.path) {
+            this.expandNodeTarget = null;
+            if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
+                this.expandNodeTarget = 'add';
+            }
+            read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
+            this.parent.visitedItem = args.node;
         }
-        read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
-        this.parent.visitedItem = args.node;
         this.isPathDragged = this.isRenameParent = this.isRightClick = false;
     }
     /* istanbul ignore next */
@@ -243,9 +289,11 @@ export class NavigationPane {
 
     private onNodeClicked(args: NodeClickEventArgs): void {
         this.parent.activeModule = 'navigationpane';
+        this.previousSelected = this.treeObj.selectedNodes;
         this.activeNode = args.node;
         if ((args.event.which === 3) && (args.node.getAttribute('data-uid') !== this.treeObj.selectedNodes[0])) {
             this.isRightClick = true;
+            this.isNodeClickCalled = true;
             this.treeObj.selectedNodes = [args.node.getAttribute('data-uid')];
         } else if (args.node.getAttribute('data-uid') === this.treeObj.selectedNodes[0] && this.parent.selectedItems.length !== 0) {
             this.parent.setProperties({ selectedItems: [] }, true);
@@ -441,6 +489,9 @@ export class NavigationPane {
                 break;
             case 'navigationPaneSettings':
                 read(this.parent, events.finalizeEnd, '/');
+                if (e.oldProp.navigationPaneSettings.sortOrder !== e.newProp.navigationPaneSettings.sortOrder) {
+                    this.treeObj.sortOrder = e.newProp.navigationPaneSettings.sortOrder;
+                }
                 break;
             }
         }
@@ -744,12 +795,14 @@ export class NavigationPane {
             removeActive(this.parent);
             break;
         case 'del':
-            this.updateItemData();
-            if (!hasEditAccess(this.parent.itemData[0])) {
-                createDeniedDialog(this.parent, this.parent.itemData[0], events.permissionEdit);
-            } else {
-                this.removeNodes = [];
-                createDialog(this.parent, 'Delete');
+            if (this.parent.pathId[0] !== this.activeNode.getAttribute('data-uid')) {
+                this.updateItemData();
+                if (!hasEditAccess(this.parent.itemData[0])) {
+                    createDeniedDialog(this.parent, this.parent.itemData[0], events.permissionEdit);
+                } else {
+                    this.removeNodes = [];
+                    createDialog(this.parent, 'Delete');
+                }
             }
             break;
         case 'ctrlC':

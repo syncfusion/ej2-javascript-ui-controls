@@ -142,7 +142,7 @@ export class Toolbar {
                     <input id="' + this.gridID + '_searchbar" class="e-input" name="input" type="search" \
                     placeholder= "' + this.l10n.getConstant('Search') + '"/>\
                     <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
-                    tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search"></span> \
+                    tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search" role= "search"></span> \
                     </div>';
             } else {
                 this.element.querySelector('.e-search-wrapper').innerHTML = '<span id="' + this.gridID

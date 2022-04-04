@@ -1,11 +1,11 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, beginAction, removeDesignChart } from '../common/index';
+import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, removeDesignChart, goToSheet, showSheet } from '../common/index';
 import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate, focus } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
 import { protectSheet, DialogBeforeOpenEventArgs, editOperation } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs, Workbook } from '../../workbook/index';
-import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex } from '../../workbook/index';
+import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex, beginAction } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
@@ -95,35 +95,7 @@ export class SheetTabs {
                 }
             },
             selected: (args: SelectEventArgs): void => {
-                if (args.selectedIndex === args.previousIndex) { return; }
-                if (cancelSelect) {
-                    this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
-                    focus(this.parent.element); return;
-                }
-                this.parent.notify(removeDesignChart, {});
-                if (this.parent.isEdit) {
-                    const selection: Selection = window.getSelection();
-                    const editArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
-                    this.parent.notify(editOperation, editArgs);
-                    let formula: boolean = editArgs.editedValue ? checkIsFormula(editArgs.editedValue, true) : false;
-                    if (!formula && selection && selection.focusNode && (selection.focusNode as Element).classList &&
-                        (selection.focusNode as Element).classList.contains('e-formula-bar-panel')) {
-                        formula = checkIsFormula((this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement).value, true);
-                    }
-                    if (!formula) { this.parent.endEdit(); }
-                }
-                this.parent.activeSheetIndex = args.selectedIndex;
-                this.parent.dataBind();
-                this.updateDropDownItems(args.selectedIndex, args.previousIndex);
-                focus(this.parent.element);
-                const eventArgs: { action: string, sheetID: string } = {
-                    action: 'registerGridInCalc',
-                    sheetID: (args.selectedIndex + 1).toString()
-                };
-                this.parent.notify(workbookFormulaOperation, eventArgs);
-                this.parent.notify(
-                    completeAction, { eventArgs: { previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex },
-                        action: 'gotoSheet' });
+                this.goToSheet(args, cancelSelect, true);
             },
             created: (): void => {
                 const tBarItems: HTMLElement = this.tabInstance.element.querySelector('.e-toolbar-items');
@@ -144,6 +116,40 @@ export class SheetTabs {
         }
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
         this.parent.notify(protectSheet, null);
+    }
+
+    private goToSheet(args: SelectEventArgs, cancelSelect?: boolean, triggerEvent?:boolean): void {
+        if (args.selectedIndex === args.previousIndex) { return; }
+        if (cancelSelect) {
+            this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
+            focus(this.parent.element); return;
+        }
+        this.parent.notify(removeDesignChart, {});
+        if (this.parent.isEdit) {
+            const selection: Selection = window.getSelection();
+            const editArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+            this.parent.notify(editOperation, editArgs);
+            let formula: boolean = editArgs.editedValue ? checkIsFormula(editArgs.editedValue, true) : false;
+            if (!formula && selection && selection.focusNode && (selection.focusNode as Element).classList &&
+                (selection.focusNode as Element).classList.contains('e-formula-bar-panel')) {
+                formula = checkIsFormula((this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement).value, true);
+            }
+            if (!formula) { this.parent.endEdit(); }
+        }
+        this.parent.activeSheetIndex = args.selectedIndex;
+        this.parent.dataBind();
+        this.updateDropDownItems(args.selectedIndex, args.previousIndex);
+        focus(this.parent.element);
+        const eventArgs: { action: string, sheetID: string } = {
+            action: 'registerGridInCalc',
+            sheetID: (args.selectedIndex + 1).toString()
+        };
+        this.parent.notify(workbookFormulaOperation, eventArgs);
+        if (triggerEvent) {
+            this.parent.notify(completeAction, {
+                eventArgs: { previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex }, action: 'gotoSheet'
+            });
+        }
     }
 
     private updateDropDownItems(curIdx: number, prevIdx?: number): void {
@@ -220,11 +226,11 @@ export class SheetTabs {
         if (args.preventUpdate) {
             if (args.startIdx !== this.tabInstance.selectedItem) { this.refreshSheetTab(); }
         } else {
-            this.updateSheetTab({ idx: args.startIdx });
+            this.updateSheetTab({ idx: args.startIdx, preventDataBind: true });
         }
     }
 
-    private updateSheetTab(args: { idx: number, name?: string }): void {
+    private updateSheetTab(args: { idx: number, name?: string, preventDataBind?: boolean }): void {
         if (args.name === 'activeSheetChanged') {
             args.idx = this.parent.skipHiddenSheets(args.idx);
         } else {
@@ -232,12 +238,22 @@ export class SheetTabs {
                 if (this.parent.isProtected) {
                     return;
                 }
-                this.parent.setSheetPropertyOnMute(this.parent.sheets[args.idx], 'state', 'Visible');
-                this.tabInstance.hideTab(args.idx, false);
+                this.showSheet({ sheetIndex: args.idx, triggerEvent: true });
             }
         }
-        this.tabInstance.selectedItem = args.idx; this.tabInstance.dataBind();
+        this.tabInstance.selectedItem = args.idx;
+        if (!args.preventDataBind) {
+            this.tabInstance.dataBind();
+        }
         this.parent.notify(protectSheet, null);
+    }
+
+    private showSheet(args: { sheetIndex: number, triggerEvent?: boolean }): void {
+        this.parent.setSheetPropertyOnMute(this.parent.sheets[args.sheetIndex], 'state', 'Visible');
+        this.tabInstance.hideTab(args.sheetIndex, false);
+        if (args.triggerEvent) {
+            this.parent.notify(completeAction, { action: 'showSheet', eventArgs: { sheetIndex: args.sheetIndex } });
+        }
     }
 
     private switchSheetTab(args: BeforeOpenCloseMenuEventArgs): void {
@@ -361,14 +377,14 @@ export class SheetTabs {
         this.parent.notify(completeAction, { eventArgs: { index: this.parent.getActiveSheet().id, value: value }, action: 'renameSheet' });
     }
 
-    private updateSheetName(args: { value: string, idx: number, items?: Element, }): void {
+    private updateSheetName(args: { value: string, idx: number, items?: Element }): void {
         const pName: string = (this.tabInstance.items[args.idx].header.text as string).replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         const name: string = args.value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         this.tabInstance.items[args.idx].header.text = name;
         this.dropDownInstance.items[args.idx].text = name;
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = '';
-        args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').appendChild(document.createTextNode(args.value));
+        args.items.children[args.idx + 1].querySelector('.e-tab-text').textContent = '';
+        args.items.children[args.idx + 1].querySelector('.e-tab-text').appendChild(document.createTextNode(args.value));
         if (args.value.indexOf('  ') > -1) {
             this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
         } else {
@@ -377,9 +393,20 @@ export class SheetTabs {
         this.parent.notify(workbookFormulaOperation, { action: 'renameUpdation', value: args.value, pName: pName });
     }
 
-    private hideSheet(): void {
-        this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'state', 'Hidden');
-        this.tabInstance.hideTab(this.parent.activeSheetIndex);
+    private hideSheet(args: { sheetIndex: number, triggerEvent?: boolean }): void {
+        const actionArgs = { action: 'hideSheet', eventArgs: { sheetIndex: args.sheetIndex, cancel: false } };
+        if (args.triggerEvent) {
+            this.parent.notify(beginAction, actionArgs);
+            if (actionArgs.eventArgs.cancel) {
+                return;
+            }
+        }
+        this.parent.setSheetPropertyOnMute(getSheet(this.parent, args.sheetIndex), 'state', 'Hidden');
+        this.tabInstance.hideTab(args.sheetIndex);
+        if (args.triggerEvent) {
+            delete actionArgs.eventArgs.cancel;
+            this.parent.notify(completeAction, actionArgs);
+        }
     }
 
     private removeRenameInput(target: HTMLInputElement): Element {
@@ -431,7 +458,7 @@ export class SheetTabs {
             const sheet: SheetModel = args.sheetName ?
                 getSheet(this.parent as Workbook, getSheetIndex(this.parent as Workbook, args.sheetName)) :
                 this.parent.getActiveSheet();
-            const sheetIndex: number = args.index || getSheetIndex(this.parent as Workbook, sheet.name);
+            const sheetIndex: number = isNullOrUndefined(args.index) ? getSheetIndex(this.parent as Workbook, sheet.name) : args.index;
             const eventArgs: { [key: string]: Object } = {
                 index: sheetIndex,
                 sheetCount: this.parent.sheets.length,
@@ -445,7 +472,7 @@ export class SheetTabs {
                     this.forceDelete(sheetIndex);
                 } else {
                     dialogInst.show({
-                        height: 200, width: 400, isModal: true, showCloseIcon: true,
+                        height: 200, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-delete-sheet-dlg',
                         content: l10n.getConstant('DeleteSheetAlert'),
                         beforeOpen: (args: BeforeOpenEventArgs): void => {
                             const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -510,7 +537,7 @@ export class SheetTabs {
     }
 
     private destroySheet(sheetIndex?: number): void {
-        const activeSheetIdx: number = sheetIndex || this.parent.activeSheetIndex;
+        const activeSheetIdx: number = isNullOrUndefined(sheetIndex) ? this.parent.activeSheetIndex : sheetIndex;
         this.parent.removeSheet(activeSheetIdx);
         this.parent.notify(sheetsDestroyed, { sheetIndex: activeSheetIdx });
         this.dropDownInstance.items.splice(activeSheetIdx, 1);
@@ -614,6 +641,8 @@ export class SheetTabs {
         this.parent.on(sheetNameUpdate, this.updateSheetName, this);
         this.parent.on(hideSheet, this.hideSheet, this);
         this.parent.on(showAggregate, this.showAggregate, this);
+        this.parent.on(goToSheet, this.goToSheet, this);
+        this.parent.on(showSheet, this.showSheet, this);
     }
 
     public destroy(): void {
@@ -648,6 +677,8 @@ export class SheetTabs {
             this.parent.off(sheetNameUpdate, this.updateSheetName);
             this.parent.off(hideSheet, this.hideSheet);
             this.parent.off(showAggregate, this.showAggregate);
+            this.parent.off(goToSheet, this.goToSheet);
+            this.parent.off(showSheet, this.showSheet);
         }
     }
 }

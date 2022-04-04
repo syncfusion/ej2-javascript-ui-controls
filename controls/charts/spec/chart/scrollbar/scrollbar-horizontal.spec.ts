@@ -550,7 +550,7 @@ describe('Scrollbar Chart ', () => {
                 let x: number = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + ele.offsetLeft;
                 trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
                 let crossHairEle: string = document.getElementById('container_axis_tooltip_0').getAttribute('d').split(' L')[0];
-                expect(crossHairEle === 'M 450 401.5 Q 450 399.5 452 399.5' || crossHairEle === 'M 449 405.5 Q 449 403.5 451 403.5').toBe(true);
+                expect(crossHairEle === 'M 450 400.5 Q 450 398.5 452 398.5' || crossHairEle === 'M 449 404.5 Q 449 402.5 451 402.5').toBe(true);
                 let text: string = document.getElementById('container_axis_tooltip_text_0').innerHTML;
                 expect(text === '20.070' || text === '20.213').toBe(true);
                 done();

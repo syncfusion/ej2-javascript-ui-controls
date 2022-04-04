@@ -140,7 +140,7 @@ export interface IExportOptions extends IPrintOptions {
      * * Download - Downloads the diagram as image
      * * Data - Sends the diagram as ImageUrl
      *
-     * @default('')
+     * @default('Download')
      */
     mode?: ExportModes;
 

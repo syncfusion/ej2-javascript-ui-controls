@@ -1069,8 +1069,12 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 this.chart[
                     'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(this);
-            } else if(this.type.indexOf('Histogram') > -1 && (this.xAxis.maximum || this.xAxis.minimum)) {
+            } else if (this.type.indexOf('Histogram') > -1 && (this.xAxis.maximum || this.xAxis.minimum)) {
                 this.chart['histogramSeriesModule'].calculateBinValues(this);
+            }
+            if (this.type.indexOf('Histogram') > -1 && this.points.length == 1) {
+                this.xMin = this.xMin - this.histogramValues.binWidth;
+                this.xMax = this.xMax + this.histogramValues.binWidth;
             }
         }
     }

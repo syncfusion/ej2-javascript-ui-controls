@@ -50,7 +50,10 @@
       }
 
       &:hover {
-        border: $panel-hover-border;
+        @if ($skin-name != 'tailwind') {
+          border: $panel-hover-border;
+        }
+
         @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
           box-shadow: $panel-hover-box-shadow;
         }
@@ -63,7 +66,9 @@
       }
 
       &:active {
-        border: $panel-active-border;
+        @if ($skin-name != 'tailwind') {
+          border: $panel-active-border;
+        }
       }
 
       & .e-panel-container {
@@ -119,6 +124,12 @@
         & .e-panel-content .e-blazor-template {
           height: $panel-content-template-height;
           width: $panel-content-template-width;
+        }
+      }
+
+      & .e-panel-content {
+        @if $skin-name == 'tailwind' {
+          padding: $panel-content-padding;
         }
       }
     }
@@ -239,6 +250,12 @@
       & .e-panel {
         & .e-panel-header {
           @include bigger-header-style;
+        }
+
+        & .e-panel-content {
+          @if $skin-name == 'tailwind' {
+            padding: $panel-bigger-content-padding;
+          }
         }
       }
     }

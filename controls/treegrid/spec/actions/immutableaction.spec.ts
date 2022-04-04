@@ -642,6 +642,87 @@ describe('EJ2-49853 - Update the reordered data in immutable mode re-renders mul
   });
 });
 
+describe('EJ2-EJ2-57331 - Row customization is not applied when performing an indent or outdent action with the immutable property enabled', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        height: 350,
+        allowRowDragAndDrop: true,
+        allowPaging: true,
+        allowSelection: true,
+        selectionSettings: { type: 'Multiple' },
+        pageSettings: { pageSize: 50 },
+        treeColumnIndex: 1,
+        enableImmutableMode: true,
+        editSettings: { allowAdding: true },
+        toolbar: ['Add', 'Indent', 'Outdent'],
+        rowDataBound: (args:any) => {
+        if ((args.data as any).hasChildRecords) {
+            args.row.classList.add('summary-class');
+        } else {
+            args.row.classList.remove('summary-class');
+        }
+      },
+        columns: [
+          { field: "taskID", headerText: "Task Id", isPrimaryKey: true, width: 90 },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      },done);
+  });
+
+  it('Row customization Testing when performing an indent or outdent action', () => {
+    TreeGridObj.selectRow(2);
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_indent' } });
+      expect(TreeGridObj.getRows()[1].classList.contains('summary-class')).toBe(true);
+  });
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
+describe('EJ2-57810 - Record level is not maintained properly after performing an indent or outdent action with the immutable property enabled', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        enableImmutableMode: true,
+        allowRowDragAndDrop: true,
+        toolbar: ['Indent', 'Outdent'],
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      },done); 
+    });
+
+  it('Checking the level and index after performing an outdent action', () => {
+    TreeGridObj.selectRow(1);
+    (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_outdent' } });
+    expect(TreeGridObj.rowDragAndDropModule['draggedRecord'].level === 0).toBe(true);
+    expect(TreeGridObj.rowDragAndDropModule['draggedRecord'].index === 4).toBe(true);
+  });
+  it('Checking the level after performing an indent and outdent action', () => {
+    TreeGridObj.selectRow(2);
+    (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_indent' } });
+    TreeGridObj.selectRow(2);
+    (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_outdent' } });
+    expect((TreeGridObj.flatData[2] as ITreeData).level === 1).toBe(true);
+  });
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

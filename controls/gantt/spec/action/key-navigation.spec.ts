@@ -1,5 +1,5 @@
 import { Gantt, Selection, Edit, Toolbar,Filter } from '../../src/index';
-import { projectData1 } from '../base/data-source.spec';
+import { projectData1, splitTasksData } from '../base/data-source.spec';
 import { IKeyPressedEventArgs } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { Browser, getValue } from '@syncfusion/ej2-base';
@@ -40,7 +40,7 @@ describe('Gantt Selection support', () => {
                     actionComplete: function (args:IKeyPressedEventArgs) {
                         if (args.requestType == "keyPressed" && args.action == "customKey") {
                             args.keyEvent.preventDefault();
-                            this.selectionModule.selectRow(6);
+                            this.selectionModule.selectRow(6);             
                         }
 			if (args.requestType == 'add') {
                            expect(args['data'].taskData.ganttProperties).toBe(undefined)
@@ -236,6 +236,87 @@ describe('Gantt Selection support', () => {
             let args: any = { action: 'addRow', preventDefault: preventDefault };
             ganttObj.keyboardModule.keyAction(args);
             expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(0);
+        });
+    });
+	  describe('Tab action', function () {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: splitTasksData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments',
+                },
+                allowRowDragAndDrop: true,
+                editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: false,
+                showDeleteConfirmDialog: true,
+                allowNextRowEdit: false,
+        },
+        columns: [
+            { field: 'TaskID', width: 60 },
+            {
+                field: 'TaskName',
+                headerText: 'Job Name',
+                width: '250',
+                clipMode: 'EllipsisWithTooltip',
+            },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor' },
+        ],
+        toolbar: [
+            'Add',
+            'Edit',
+            'Update',
+            'Delete',
+            'Cancel',
+            'ExpandAll',
+            'CollapseAll',
+        ],
+        enableContextMenu: true,
+        allowSelection: true,
+        height: '450px',
+        treeColumnIndex: 1,
+        highlightWeekends: true,
+        splitterSettings: {
+            columnIndex: 2,
+        },
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%',
+        },
+        projectStartDate: new Date('01/30/2019'),
+        projectEndDate: new Date('03/04/2019')
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Tab action after editing cell', () => {
+            let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+            triggerMouseEvent(endDate, 'dblclick');
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe("2/4/2019");
         });
     });
 });

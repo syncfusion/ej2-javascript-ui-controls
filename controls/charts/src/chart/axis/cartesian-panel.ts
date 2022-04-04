@@ -461,6 +461,7 @@ export class CartesianAxisLayoutPanel {
      * @returns {void}
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public renderAxes(): Element {
 
         const chart: Chart = this.chart;
@@ -470,10 +471,22 @@ export class CartesianAxisLayoutPanel {
         let outsideElement: Element; let isInside: boolean;
 
         for (let i: number = 0, len: number = chart.axisCollections.length; i < len; i++) {
+            let axisVisibility: boolean = true;
 
             axis = chart.axisCollections[i];
             this.element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Inside' });
             outsideElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Outside' });
+            for (const series of this.chart.series) {
+                if (axis.name === series.yAxisName || axis.name === series.xAxisName) {
+                    axisVisibility = series.visible;
+                    if (axisVisibility) {
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+            }
+            if (!axisVisibility) { break; }
             isInside = this.findAxisPosition(axis);
             if (axis.orientation === 'Horizontal') {
 
@@ -807,6 +820,13 @@ export class CartesianAxisLayoutPanel {
         } else {
             labelPadding = !isLabelOnAxisLineLeft ? -padding + scrollBarHeight : padding + scrollBarHeight;
         }
+        let sizeWidth: number[] = []; let breakLabelSizeWidth: number[] = []; 
+        axis.visibleLabels.map(item => {
+            sizeWidth.push(item.size['width']);
+            breakLabelSizeWidth.push(item.breakLabelSize['width']);
+        });
+        let LabelMaxWidth = Math.max(...sizeWidth);
+        let breakLabelMaxWidth = Math.max(...breakLabelSizeWidth);
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             label = axis.visibleLabels[i];
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i].originalText);
@@ -837,9 +857,9 @@ export class CartesianAxisLayoutPanel {
 
             // label X value adjustment (Start)
             if (isLabelInside) {
-                yAxisLabelX = labelPadding + (elementSize.width / 2);
+                yAxisLabelX = labelPadding + ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : LabelMaxWidth)) / 2);
             } else {
-                yAxisLabelX = labelPadding - (elementSize.width / 2);
+                yAxisLabelX = labelPadding - ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : LabelMaxWidth)) / 2);
             }
             pointX = isOpposed ? (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
             yAxisLabelX = labelPadding;
@@ -875,7 +895,7 @@ export class CartesianAxisLayoutPanel {
             // ------- Hide Calculation (End) -------------
             options.transform = 'rotate(' + angle + ',' + pointX + ',' + pointY + ')';
             textElement(
-                chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel,
+                chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel,
                 labelElement, false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
             );
         }
@@ -1571,7 +1591,7 @@ export class CartesianAxisLayoutPanel {
             this.chart.element.id + '_BorderLine_' + index, 'transparent', axis.border.width,
             axis.border.color || this.chart.themeStyle.axisLine, 1, '', labelBorder
         )) as HTMLElement;
-        borderElement.setAttribute('style', 'pointer-events: none');
+        (borderElement as HTMLElement).style.pointerEvents = 'none';
         appendChildElement(this.chart.enableCanvas, parent, borderElement, this.chart.redraw, true, 'x', 'y', null, direction, true);
     }
 

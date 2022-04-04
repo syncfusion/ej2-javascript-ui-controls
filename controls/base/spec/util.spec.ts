@@ -162,6 +162,7 @@ describe('Util', () => {
     it('throwError', () => {
         expect(() => { Util.throwError('custom Error'); }).toThrow();
     });
+
     it('print window print testing', (done: Function) => {
         let win: any = {
             document: { write: () => { }, close: () => { } },

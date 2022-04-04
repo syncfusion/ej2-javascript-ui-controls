@@ -25,6 +25,7 @@ export class CommentReviewPane {
     private confirmDialog: Dialog;
     public reviewTab: Tab;
     public parentPaneElement: HTMLElement;
+    public isUserClosed: boolean = false;
     public element: HTMLElement;
     public isCommentTabVisible: boolean;
     /**
@@ -67,7 +68,14 @@ export class CommentReviewPane {
         this.initReviewPane(localObj);
         this.parentPaneElement.style.display = 'none';
     }
-
+    public selectReviewTab(tab: ReviewTabType): void {
+        if (tab === 'Changes') {
+            this.reviewTab.select(1);
+        }
+        else {
+            this.reviewTab.select(0);
+        }
+    }
     public showHidePane(show: boolean, tab: ReviewTabType): void {
         if (this.parentPaneElement) {
             this.updateTabHeaderWidth();
@@ -79,7 +87,7 @@ export class CommentReviewPane {
                     this.reviewTab.select(1);
                 } else {
                     this.owner.trackChangesPane.isChangesTabVisible = false;
-                    this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible });
+                    this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible, isUserClosed: false });
                     this.reviewTab.select(0);
                 }
                 this.owner.trackChangesPane.updateTrackChanges(show);
@@ -90,6 +98,7 @@ export class CommentReviewPane {
             }
         }
         if (show) {
+            this.enableDisableItems();
             this.commentPane.updateHeight();
         }
         if (this.owner) {
@@ -98,6 +107,25 @@ export class CommentReviewPane {
     }
 
     public reviewPaneHelper(args: any): void {
+        if (!isNullOrUndefined(args.isUserClosed)) {
+            if (args.isUserClosed !== this.isUserClosed) {
+                this.isUserClosed = args.isUserClosed;
+                if (this.owner) {
+                    setTimeout(() => {
+                        if (this.owner) {
+                            this.owner.resize();
+                        }
+                    }, 10);
+                }
+            }
+            else {
+                return;
+            }
+        } else {
+            if(this.isUserClosed){
+                return;
+            }
+        }
         if (!isNullOrUndefined(args.comment) || !isNullOrUndefined(args.changes)) {
             if ((args.comment || args.changes)) {
                 if (this.parentPaneElement.style.display === 'none') {
@@ -235,7 +263,7 @@ export class CommentReviewPane {
             //this.owner.showRevisions = false;
             this.owner.documentHelper.currentSelectedComment = undefined;
             this.owner.documentHelper.currentSelectedRevision = undefined;
-            this.owner.notify('reviewPane', {changes: false, comment: false});
+            this.owner.notify('reviewPane', {changes: false, comment: false, isUserClosed: true});
         }
     }
 
@@ -293,6 +321,7 @@ export class CommentReviewPane {
 
     public addComment(comment: CommentElementBox, isNewComment: boolean, selectComment: boolean): void {
         this.isNewComment = isNewComment;
+        this.selectReviewTab('Comments');
         this.owner.documentHelper.currentSelectedComment = comment;
         this.commentPane.insertComment(comment);
         if (!isNewComment) {
@@ -367,9 +396,17 @@ export class CommentReviewPane {
                     commentView.replyViewTextBox.style.display = 'none';
                 }
                 commentView.menuBar.style.display = 'none';
+                if (commentView.resolveView) {
+                    commentView.resolveView.style.display = 'none';
+                }
             } else {
-                commentView.replyViewTextBox.style.display = 'block';
+                if(!isNullOrUndefined(commentView.replyViewTextBox)) {
+                    commentView.replyViewTextBox.style.display = 'block';
+                }
                 commentView.menuBar.style.display = 'block';
+                if (commentView.resolveView) {
+                    commentView.resolveView.style.display = '';
+                }
             }
         }
     }
@@ -735,6 +772,7 @@ export class CommentView {
     public replyFooter: HTMLElement;
     public reopenButton: Button;
     public deleteButton: Button;
+    public resolveView: HTMLElement;
 
     public constructor(owner: DocumentEditor, commentPane: CommentPane, comment: CommentElementBox) {
         this.owner = owner;
@@ -923,6 +961,7 @@ export class CommentView {
         cancelButton.addEventListener('click', this.deleteComment.bind(this));
         editRegionFooter.appendChild(postButton);
         editRegionFooter.appendChild(cancelButton);
+        this.resolveView = editRegionFooter;
         this.parentElement.appendChild(editRegionFooter);
     }
 
@@ -1010,7 +1049,7 @@ export class CommentView {
     }
 
     public showMenuItems(): void {
-        if (this.comment.isReply) {
+        if (this.comment.isReply && !this.owner.isReadOnly) {
             if (!this.commentPane.isEditMode && (!isNullOrUndefined(this.comment) && !this.comment.isResolved)) {
                 this.menuBar.style.display = 'block';
             }
@@ -1248,6 +1287,7 @@ export class CommentView {
         if (this.parentElement && this.parentElement.parentElement) {
             this.parentElement.parentElement.removeChild(this.parentElement);
         }
+        this.resolveView = undefined;
         this.commentPane = undefined;
         this.parentElement.innerHTML = '';
         this.cancelButton = undefined;

@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, data4, data5, data12, UploadData, data24, data25  } from '../data';
+import { data1, data4, data5, data12, UploadData, data24, data25, accessData1  } from '../data';
 import { FileSelectEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -220,6 +220,62 @@ describe('FileManager control Grid view', () => {
                     expect(document.getElementsByClassName('e-fe-error')[0].textContent).toEqual('Cannot rename "File1.txt" to "File.png": destination already exists.');
                     done();
                 }, 500);
+            }, 500);
+        });
+    });
+
+    describe('Access control to test ctrl + D testing', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        let keyboardEventArgs: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            
+        });
+
+        it('Ctrl + D testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            setTimeout(function () {
+                let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+                expect(li[0].getAttribute('aria-selected')).toBe(null);
+                keyboardEventArgs.action = 'home';
+                (feObj.detailsviewModule as any).keyupHandler(keyboardEventArgs);
+                keyboardEventArgs.action = 'ctrlD';
+                (feObj.detailsviewModule as any).keyupHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
+                done();
             }, 500);
         });
     });

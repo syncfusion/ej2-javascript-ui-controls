@@ -192,6 +192,10 @@ export class GaugeTooltip {
             border: tooltipBorder,
             theme: args.gauge.theme as TooltipTheme
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((gauge as any).isVue || (gauge as any).isVue3) {
+            svgTooltip.controlInstance = gauge;
+        }
         return svgTooltip;
     }
 

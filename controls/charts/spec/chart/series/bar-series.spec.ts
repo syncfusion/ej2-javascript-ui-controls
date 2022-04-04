@@ -262,9 +262,6 @@ describe('Chart Control', () => {
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
                 expect(parseFloat(tooltip.style.left) > (elem.offsetLeft + series.points[7].regions[0].x + (series.points[7].regions[0].width / 2) + parseFloat(chartArea.getAttribute('x')))).toBe(true);
-                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
-                // let translateX: string[] = transform[1].split(',');
-                // expect(parseFloat(translateX[0]) > (elem.offsetLeft + series.points[7].regions[0].x + (series.points[7].regions[0].width / 2) + parseFloat(chartArea.getAttribute('x')))).toBe(true);
                 done();
             }
             chartObj.loaded = loaded;

@@ -47,7 +47,9 @@ export class TextLayer {
             textLayer = createElement('div', { id: this.pdfViewer.element.id + '_textLayer_' + pageNumber, className: 'e-pv-text-layer' });
             textLayer.style.width = pageWidth + 'px';
             textLayer.style.height = pageHeight + 'px';
+            if(pageDiv){
             pageDiv.appendChild(textLayer);
+            }
         }
         this.pdfViewerBase.applyElementStyles(textLayer, pageNumber);
         return textLayer;
@@ -64,7 +66,7 @@ export class TextLayer {
     public renderTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any): void {
         const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
         const canvasElement: HTMLElement = createElement("canvas");
-        if (canvasElement && textLayer.childNodes.length === 0) {
+        if (canvasElement && textLayer && textLayer.childNodes.length === 0) {
             for (let i: number = 0; i < textContents.length; i++) {
                 // eslint-disable-next-line
                 let bounds: any = textBounds[i];

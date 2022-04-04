@@ -861,7 +861,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     const submenus: NodeListOf<Element> = liElem && liElem.querySelectorAll('.e-menu-item');
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
-                    } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
+                    } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi && this.keyType !== "left") {
                         let ele: HTMLElement = (e && (e.target as Element).classList.contains('e-vscroll'))
                             ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
                         if (ele) {
@@ -890,7 +890,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             const cul: Element = this.getUlByNavIdx(); const sli: Element = this.getLIByClass(cul, SELECTED);
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false'); sli.classList.remove(SELECTED);
-                                if (observedCloseArgs.isFocused  && liElem) {
+                                if (observedCloseArgs.isFocused  && liElem || this.keyType === "left") {
                                     sli.classList.add(FOCUSED); (sli as HTMLElement).focus();
                                 }
                             }
@@ -1177,13 +1177,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         } else {
                             this.setBlankIconStyle(this.popupWrapper);
                             this.wireKeyboardEvent(this.popupWrapper); rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
-                            if (this.popupWrapper.style.position === 'fixed' && this.top > 0) {
-                                this.popupWrapper.style.left = this.left + 'px';
-                                this.popupWrapper.style.top = this.top + scrollY + 'px';
-                            } else {
-                                this.popupWrapper.style.left = this.left + 'px';
-                                this.popupWrapper.style.top = this.top + 'px';
-                            }
+                            this.popupWrapper.style.left = this.left + 'px';
+                            this.popupWrapper.style.top = this.top + 'px';
                             const animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
                                 name: this.animationSettings.effect, duration: this.animationSettings.duration,
                                 timingFunction: this.animationSettings.easing

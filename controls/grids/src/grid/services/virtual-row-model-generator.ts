@@ -54,7 +54,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             this.checkAndResetCache(e.requestType);
         }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
-            return result = this.parent.vcRows;
+            const dataRows: Row<Column>[] = this.parent.vcRows.filter((row: Row<Column>) => row.isDataRow);
+            if ((this.parent.isManualRefresh && dataRows.length === data['records'].length) || !this.parent.isManualRefresh) {
+                return result = this.parent.vcRows;
+            }
         }
         if (this.parent.enableColumnVirtualization) {
             for (let i: number = 0; i < info.blockIndexes.length; i++) {

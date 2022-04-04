@@ -47,6 +47,7 @@ export class SfdtReader {
      */
     public revisionCollection: Dictionary<string, Revision> = undefined;
     private isPageBreakInsideTable: boolean = false;
+    private referedRevisions: any = [];
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
     private isParseHeader: boolean = false;
     public footnotes: Footnote = undefined;
@@ -75,6 +76,7 @@ export class SfdtReader {
         this.commentEnds = new Dictionary<string, CommentCharacterElementBox>();
         this.commentsCollection = new Dictionary<string, CommentElementBox>();
         this.revisionCollection = new Dictionary<string, Revision>();
+        this.referedRevisions = [];
         this.footnotes = new Footnote();
         this.endnotes = new Footnote();
         const sections: BodyWidget[] = [];
@@ -138,7 +140,21 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.endnotes)) {
             this.parseEndtnotes(jsonObject.endnotes, this.documentHelper.endnotes);
         }
+        this.generalizeRevisions();
         return sections;
+    }
+    private generalizeRevisions(): void {
+        let tempRevisionCollection: Dictionary<string, Revision> = new Dictionary<string, Revision>();
+        let tempRevisons: Revision[] = [];
+        this.referedRevisions.forEach((element: any) => {
+            let revision = this.documentHelper.revisionsInternal.get(element);
+            if (tempRevisons.indexOf(revision) === -1) {
+                tempRevisons.push(revision);
+                tempRevisionCollection.add(element, revision);
+            }
+        });
+        this.viewer.owner.revisionsInternal.changes = tempRevisons;
+        this.documentHelper.revisionsInternal = tempRevisionCollection;
     }
     private parseFootnotes(data: any, footnote: Footnote): void {
         if (!isNullOrUndefined(data.separator)) {
@@ -155,7 +171,7 @@ export class SfdtReader {
         if (!isNullOrUndefined(data.separator)) {
             this.parseBody(data.separator, endnote.separator);
         }
-        if (!isNullOrUndefined(data.continuationNotice)) {
+        if (!isNullOrUndefined(data.continuationNotice) && !(data.continuationNotice.length === 1 && data.continuationNotice[0].inlines.length === 0)) {
             this.parseBody(data.continuationNotice, endnote.continuationNotice);
         }
         if (!isNullOrUndefined(data.continuationSeparator)) {
@@ -241,6 +257,7 @@ export class SfdtReader {
             for (let i: number = 0; i < inline.revisionIds.length; i++) {
                 const id: string = inline.revisionIds[i];
                 if (this.revisionCollection.containsKey(id)) {
+                    this.referedRevisions.push(id);
                     const revision: Revision = this.revisionCollection.get(id);
                     if (!(item instanceof WParagraphFormat)) {
                         revision.range.push(item);
@@ -1705,6 +1722,12 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceFormat.beforeSpacing)) {
                 paragraphFormat.beforeSpacing = sourceFormat.beforeSpacing;
+            }
+            if (!isNullOrUndefined(sourceFormat.spaceBeforeAuto)) {
+                paragraphFormat.spaceBeforeAuto = sourceFormat.spaceBeforeAuto;
+            }
+            if (!isNullOrUndefined(sourceFormat.spaceAfterAuto)) {
+                paragraphFormat.spaceAfterAuto = sourceFormat.spaceAfterAuto;
             }
             if (!isNullOrUndefined(sourceFormat.lineSpacing)) {
                 paragraphFormat.lineSpacing = sourceFormat.lineSpacing;

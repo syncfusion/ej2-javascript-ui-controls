@@ -20,7 +20,7 @@
     // sass-lint:enable-all
     .e-format-table tr:nth-child(odd) {
       td {
-        padding-bottom: 10px;
+        padding-bottom: 4px;
       }
     }
 
@@ -65,11 +65,7 @@
 
     .e-format-font-color-picker {
       margin-left: 0;
-      margin-right: 18px;
-      @if ($skin-name == 'tailwind') {
-        margin-right: 7px;
-      }
-
+      margin-right: 16px;
     }
 
     .e-format-inner-div {
@@ -105,10 +101,14 @@
       padding-top: 12px;
 
       @if($skin-name == 'bootstrap5') {
-        color: $field-list-default-font-color;
+        // sass-lint:disable-all
+        color: $field-list-default-font-color !important;
+        // sass-lint:enable-all
       }
 
     }
+
+
 
     .e-format-delete-button:hover,
     .e-format-delete-button:focus,
@@ -155,9 +155,12 @@
       margin: 0 2px;
       width: 14px;
       @if ($skin-name == 'bootstrap5') {
+        // sass-lint:disable-all
+        color: $field-list-default-font-color !important;
         &:hover {
-          color: $field-list-active-color;
+          color: $field-list-active-color !important;
         }
+        // sass-lint:enable-all
       }
     }
 
@@ -234,12 +237,8 @@
 
     &.e-rtl {
       .e-format-font-color-picker {
-        margin-left: 18px;
+        margin-left: 16px;
         margin-right: 0;
-        @if ($skin-name == 'tailwind') {
-          margin-left: 6px;
-        }
-
       }
 
       .e-format-condition-button {
@@ -262,10 +261,7 @@
 
       &.e-device {
         .e-format-font-color-picker {
-          @if ($skin-name == 'tailwind') {
-            margin-left: 30px;
-          }
-
+          margin-right: 0;
         }
       }
     }
@@ -315,9 +311,6 @@
     .e-format-font-color-picker {
       margin-left: 0;
       margin-right: 20px;
-      @if ($skin-name == 'tailwind') {
-        margin-right: 7px;
-      }
 
     }
 
@@ -343,12 +336,6 @@
         padding-right: 16px;
         padding-top: 16px;
       }
-
-      .e-format-font-color-picker {
-        @if ($skin-name == 'tailwind') {
-          margin-right: 30px;
-        }
-      }
     }
 
     &.e-rtl {
@@ -357,14 +344,6 @@
         margin-right: 0;
         @if ($skin-name == 'tailwind') {
           margin-left: 6px;
-        }
-      }
-
-      &.e-device {
-        .e-format-font-color-picker {
-          @if ($skin-name == 'tailwind') {
-            margin-left: 30px;
-          }
         }
       }
     }
@@ -394,13 +373,15 @@
       color: $field-list-default-header-font-color;
       font-size: $field-list-header-font-size;
       margin-bottom: 4px;
-      margin-top: 15px;
+      margin-top: 12px;
       overflow: hidden;
       padding: $pivot-calculated-header-padding 0;
       padding-bottom: 0;
       text-overflow: ellipsis;
       white-space: nowrap;
-
+      @if($skin-name == 'bootstrap5') {
+        padding-bottom: 4px;
+      }
       @if ($skin-name == 'tailwind') {
         padding: 0;
       }
@@ -440,7 +421,11 @@
           @if ($skin-name != 'bootstrap5') {
             color: $field-list-tree-icon-color;
           }
-          margin: 0;
+          //sass-lint:disable-all
+          float: right !important;
+          margin: 0;          
+          margin-right: 12px !important;
+          //sass-lint:enable-all
         }
       }
 
@@ -452,12 +437,6 @@
         height: 36px;
         margin-left: -10px;
         padding: 0;
-
-        @if ($skin-name == 'tailwind') {
-          .e-list-text {
-            line-height: 31px;
-          }
-        }
       }
     }
 
@@ -470,17 +449,19 @@
       pointer-events: auto;
       width: 24px;
 
-      @if ($skin-name == 'tailwind') {
+      @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
         height: 20px;
         width: 20px;
       }
     }
 
     .e-treeview .e-list-item div.e-icons.e-format {
-      @if ($skin-name == 'tailwind') {
-        float: right;
-        margin-right: 12px;
-        padding-top: 10px;
+      float: right;
+      font-size: 20px;
+      margin-right: 12px;
+      padding-top: 10px;
+      @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
+        padding-top: 8px;
       }
     }
 
@@ -515,11 +496,16 @@
         font-size: $field-list-icon-size;
         height: 24px;
         margin-right: 4px;
-        @if ($skin-name != 'tailwind') {
-          padding: 5px;
-        }
         pointer-events: auto;
         width: 24px;
+        @if ($skin-name == 'bootstrap5') {
+          height: 20px;
+          padding: 5px 8px 12px 5px;
+          width: 20px;
+        }
+        @if ($skin-name != 'tailwind') {
+          padding: 8px 8px 8px 12px;
+        }
         @if ($skin-name == 'tailwind') {
           height: 20px;
           margin-top: 0;
@@ -527,7 +513,6 @@
           width: 20px;
         }
       }
-
       @if ($skin-name == 'tailwind') {
         &.e-active {
           span.e-icons {
@@ -601,7 +586,7 @@
       color: $error-font-color !important;
       font-weight: 600 !important;
     }
-
+    
     .e-pivot-calc-input.e-empty-field:-moz-placeholder {
         color: $error-font-color !important;
         font-weight: 600 !important;
@@ -728,6 +713,7 @@
                 .e-list-item div.e-icons {
                   padding: 0;
                   height: auto;
+                  float: none !important
                 }
 
                 li {
@@ -773,6 +759,9 @@
               color: $field-list-default-header-font-color;
               display: flex;
               font-size: $field-list-header-font-size;
+              @if ($skin-name == 'tailwind') {
+                height: 30px;
+              }
 
               .e-info {
                 padding: 7px !important;
@@ -788,6 +777,9 @@
               color: $field-list-default-header-font-color;
               display: flex;
               font-size: $field-list-header-font-size;
+              @if ($skin-name == 'tailwind') {
+                height: 30px;
+              }
 
               .e-info {
                 padding: 7px !important;
@@ -855,9 +847,15 @@
     // sass-lint:enable-all
   }
 
+  .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
+    @if ($skin-name == 'FluentUI') {
+      margin-right: 6px;
+    }
+  }
+
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
-    // sass-lint:disable-all
+    //sass-lint:disable-all
     max-height: 580px !important;
     // sass-lint:enable-all
     min-width: 310px;
@@ -872,12 +870,16 @@
       padding: $pivot-calculated-bigger-header-padding 0;
       padding-bottom: 0;
 
-      @if ($skin-name == 'tailwind') {
-        padding: 0;
-      }
+
+
 
       @if ($skin-name == 'FluentUI') {
         font-weight: 600;
+        margin-top: 16px;
+      }
+      @if ($skin-name == 'bootstrap5') or ($skin-name == 'tailwind') {
+        padding-bottom: 4px;
+        padding-top: 16px;
       }
     }
 
@@ -889,13 +891,18 @@
 
     .e-treeview .e-list-item div.e-icons {
       font-size: $field-list-bigger-icon-size;
+      @if($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
+        padding-top: 12px;
+      }
     }
 
     .e-treeview .e-list-item span.e-icons {
       font-size: $field-list-bigger-icon-size;
+
       @if ($skin-name == 'tailwind') {
         vertical-align: sub;
       }
+
     }
 
     .e-pivot-formula {
@@ -928,6 +935,9 @@
             .e-pivot-all-field-title-wrapper,
             .e-pivot-all-field-title-container {
               font-size: $field-list-bigger-header-font-size;
+              @if ($skin-name == 'tailwind') {
+                height: 34px;
+              }
             }
 
             .e-treeview ul {
@@ -1367,7 +1377,7 @@
       }
 
       .e-value-field-div-content {
-        padding: 0 $field-list-editor-search-padding-size 10px;          
+        padding: 0 24px 10px;          
 
         .e-field-option-wrapper {
           .e-field-name-text-wrapper {
@@ -1402,13 +1412,11 @@
               font-weight: 500;
               width: 100%;
 
-              @if ($skin-name == 'tailwind') {
+              @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
                 padding-bottom: 4px;
               }
-
-              @if ($skin-name == 'bootstrap5') {
-                padding-bottom: 4px;
-              }
+      
+              
       
             }
 
@@ -2345,7 +2353,7 @@
 
     .e-value-field-settings {
       .e-value-field-div-content {
-        padding: 0 $field-list-editor-search-padding-size 10px;
+        padding: 0 28px 10px;
       }
     }
 
@@ -2371,6 +2379,7 @@
         .e-type-option-text,
         .e-caption-input-text {
           font-size: 14px;
+          padding-bottom: 6px;
         }
       }
     }

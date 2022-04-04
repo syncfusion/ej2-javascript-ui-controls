@@ -630,7 +630,7 @@
         box-shadow: none;
       }
 
-      @if ($skin-name == 'bootstrap5') ($skin-name == 'tailwind') {
+      @if ($skin-name == 'bootstrap5') or ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') {
         border-top: 1px solid $pivotgrid-border;
         border-left: 1px solid $pivotgrid-border;
         border-right: 1px solid $pivotgrid-border;
@@ -662,7 +662,7 @@
         // sass-lint:disable-all
         ul .e-menu-item {
           @if ($skin-name != 'tailwind') {
-            height: $pivotgrid-menubar-height;
+            height: $pivotgrid-menubar-height !important;
           }
           overflow: hidden;
           padding-left: 10px;
@@ -730,13 +730,21 @@
       }
       }
 
+      .e-tab .e-tab-header .e-toolbar-item.e-active {
+        // sass-lint:disable-all
+        margin-left: 18px !important;
+        // sass-lint:enable-all
+      }
+
       .e-toolbar-item.e-template {
-          padding: 0 !important;
+        // sass-lint:disable-all
+        padding: 0 !important;
       }
 
       .e-reportlist-label {
         float: left;
         font-weight: 500;
+        // sass-lint:enable-all
       }
 
       .e-reportlist-drop {
@@ -748,7 +756,7 @@
         .e-reportlist-label {
           float: right;
         }
-  
+
         .e-reportlist-drop {
           float: left;
         }
@@ -777,6 +785,7 @@
   }
 
   .e-pivotview-report-dialog {
+    // sass-lint:disable-all
     max-width: 350px !important;
   }
 
@@ -806,6 +815,9 @@
     float: left;
     margin-top: $pivotgrid-report-label-margin-top;
     width: 40%;
+    @if($skin-name == 'bootstrap5') {
+      padding-left: 12px;
+    }
   }
 
   // sass-lint:disable-all
@@ -823,6 +835,7 @@
       float: right;
     }
   }
+
 
   .e-pivotview-pdf-export,
   .e-pivotview-excel-export,
@@ -1085,6 +1098,23 @@
     .e-pivotview-report-label {
       margin-top: $pivotgrid-bigger-report-label-margin-top;
     }
+  }
+
+  .e-bigger .e-dialog .e-footer-content {
+    height: 62px;
+  }
+
+  .e-bigger .e-dialog .e-dlg-header-content {
+    @if ($skin-name == 'tailwind') {
+      height: 52px;
+    }
+    padding-left: 10px;
+  }
+
+  .e-bigger .e-tab .e-tab-header .e-toolbar-item.e-active {
+    // sass-lint:disable-all
+    margin-left: 24px !important;
+    // sass-lint:enable-all
   }
 }
   

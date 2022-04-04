@@ -493,6 +493,8 @@ export class SelectionParagraphFormat {
     private rightIndentIn: number = 0;
     private beforeSpacingIn: number = 0;
     private afterSpacingIn: number = 0;
+    private spaceAfterAutoIn: boolean = undefined;
+    private spaceBeforeAutoIn :boolean = undefined;
     private textAlignmentIn: TextAlignment = undefined;
     private firstLineIndentIn: number = 0;
     private lineSpacingIn: number = 1;
@@ -641,6 +643,50 @@ export class SelectionParagraphFormat {
         }
         this.beforeSpacingIn = value;
         this.notifyPropertyChanged('beforeSpacing');
+    }
+    /**
+     * Gets or Sets the space after auto for selected paragraphs.
+     *
+     * @default false
+     * @aspType bool
+     */
+    public get spaceAfterAuto(): boolean {
+        return this.spaceAfterAutoIn
+    }
+    /**
+     *  Sets the space after auto for selected paragraphs.
+     *
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set spaceAfterAuto(value: boolean) {
+        if(value === this.spaceAfterAutoIn) {
+            return;
+        }
+        this.spaceAfterAutoIn = value;
+        this.notifyPropertyChanged('spaceAfterAuto');
+    }
+    /**
+     * Gets or Sets the space before auto for selected paragraphs.
+     *
+     * @default false
+     * @aspType bool
+     */
+    public get spaceBeforeAuto(): boolean {
+        return this.spaceBeforeAutoIn
+    }
+    /**
+     *  Sets the space before auto for selected paragraphs.
+     *
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set spaceBeforeAuto(value: boolean) {
+        if(value === this.spaceBeforeAutoIn) {
+            return;
+        }
+        this.spaceBeforeAutoIn = value;
+        this.notifyPropertyChanged('spaceBeforeAuto');
     }
     /**
      * Gets or Sets the line spacing for selected paragraphs.
@@ -862,6 +908,10 @@ export class SelectionParagraphFormat {
             return this.beforeSpacing;
         case 'afterSpacing':
             return this.afterSpacing;
+        case 'spaceAfterAuto':
+            return this.spaceAfterAuto;
+        case 'spaceBeforeAuto':
+            return this.spaceBeforeAuto;
         case 'textAlignment':
             return this.textAlignment;
         case 'lineSpacing':
@@ -939,6 +989,8 @@ export class SelectionParagraphFormat {
         this.firstLineIndent = format.firstLineIndent;
         this.afterSpacing = format.afterSpacing;
         this.beforeSpacing = format.beforeSpacing;
+        this.spaceAfterAuto = format.spaceAfterAuto;
+        this.spaceBeforeAuto = format.spaceBeforeAuto;
         this.lineSpacing = format.lineSpacing;
         this.lineSpacingType = format.lineSpacingType;
         this.textAlignment = format.textAlignment;
@@ -971,7 +1023,12 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.beforeSpacing)) {
             format.beforeSpacing = this.beforeSpacing;
         }
-
+        if (!isNullOrUndefined(this.spaceAfterAuto)){
+            format.spaceAfterAuto = this.spaceAfterAuto;
+        }
+        if (!isNullOrUndefined(this.spaceBeforeAuto)){
+            format.spaceBeforeAuto = this.spaceBeforeAuto;
+        }
         if (!isNullOrUndefined(this.leftIndent)) {
             format.leftIndent = this.leftIndent;
         }
@@ -1031,6 +1088,12 @@ export class SelectionParagraphFormat {
         if (this.afterSpacing !== -1 && this.afterSpacing !== format.afterSpacing) {
             this.afterSpacing = -1;
         }
+        if (!isNullOrUndefined(this.spaceAfterAuto) && this.spaceAfterAuto !== format.spaceAfterAuto) {
+            this.spaceAfterAuto = undefined;
+        }
+        if (!isNullOrUndefined(this.spaceBeforeAuto) && this.spaceBeforeAuto !== format.spaceBeforeAuto) {
+            this.spaceBeforeAuto = undefined;
+        }
         if (!isNullOrUndefined(this.lineSpacingType) && this.lineSpacingType !== format.lineSpacingType) {
             this.lineSpacingType = undefined;
         }
@@ -1073,6 +1136,8 @@ export class SelectionParagraphFormat {
         this.rightIndent = 0;
         this.beforeSpacing = 0;
         this.afterSpacing = 0;
+        this.spaceAfterAuto = undefined;
+        this.spaceBeforeAuto = undefined;
         this.firstLineIndent = 0;
         this.lineSpacing = 1;
         this.textAlignment = undefined;
@@ -1124,7 +1189,7 @@ export class SelectionParagraphFormat {
      * @param {WList} listAdv
      * @private
      */
-    public setList(listAdv: WList): void {
+    public setList(listAdv: WList, isListDialog?: boolean): void {
         if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
@@ -1147,7 +1212,9 @@ export class SelectionParagraphFormat {
             this.selection.owner.isLayoutEnabled = true;
             this.documentHelper.renderedLists.clear();
             this.documentHelper.renderedLevelOverrides = [];
-            // this.viewer.pages = [];
+            if(isListDialog) {
+                this.documentHelper.layout.clearInvalidList(listAdv);
+            }
             this.documentHelper.owner.editorModule.layoutWholeDocument();
             this.documentHelper.owner.editorModule.updateSelectionTextPosition(false);
             if (history && history.currentBaseHistoryInfo) {
@@ -1183,6 +1250,8 @@ export class SelectionParagraphFormat {
         this.rightIndentIn = undefined;
         this.beforeSpacingIn = undefined;
         this.afterSpacingIn = undefined;
+        this.spaceBeforeAutoIn = undefined;
+        this.spaceAfterAutoIn = undefined;
         this.firstLineIndentIn = undefined;
         this.lineSpacingIn = undefined;
         this.textAlignmentIn = undefined;

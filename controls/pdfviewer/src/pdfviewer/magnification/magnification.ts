@@ -514,7 +514,9 @@ export class Magnification {
      * @private
      */
     public pushImageObjects(image: HTMLImageElement): void {
-        this.imageObjects.push(image);
+        if(!isNullOrUndefined(this.imageObjects)) {
+            this.imageObjects && this.imageObjects.push(image);
+        }
     }
 
     private clearRendering(): void {
@@ -818,10 +820,16 @@ export class Magnification {
      * @private
      */
     public resizeCanvas(pageNumber: number): void {
-        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
+        let annotationModule : any = this.pdfViewer.annotationModule;
+        if (annotationModule && annotationModule.inkAnnotationModule) {
             // eslint-disable-next-line
-            let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
-            this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+            let currentPageNumber: number = parseInt(annotationModule.inkAnnotationModule.currentPageNumber);
+            annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+        }
+        if (annotationModule && annotationModule.freeTextAnnotationModule) {
+            // eslint-disable-next-line
+            let currentPosition: any = { x: annotationModule.freeTextAnnotationModule.currentPosition[0], y: annotationModule.freeTextAnnotationModule.currentPosition[1], width: annotationModule.freeTextAnnotationModule.currentPosition[2], height: annotationModule.freeTextAnnotationModule.currentPosition[3] };
+            annotationModule.freeTextAnnotationModule.addInputInZoom(currentPosition);
         }
         let lowerPageValue: number = pageNumber - 3;
         let higherPageValue: number = pageNumber + 3;

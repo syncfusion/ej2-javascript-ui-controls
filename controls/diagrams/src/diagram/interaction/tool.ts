@@ -2011,7 +2011,21 @@ export class LabelTool extends ToolBase {
      */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
-        const win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link, '_blank');
+        let tab : string='_blank';
+        let windowOption:string = '';
+        let windowHeight = window.innerHeight
+        let windowWidth = window.innerWidth
+        let screenTop = window.screenTop
+        let screenLeft = window.screenLeft
+        if((args.sourceWrapper as TextElement).hyperlink.hyperlinkOpenState=='CurrentTab')
+        {
+            tab='_self';
+        }
+        else if((args.sourceWrapper as TextElement).hyperlink.hyperlinkOpenState=='NewWindow')
+        { 
+            windowOption = 'height='+windowHeight+',width='+windowWidth+',top='+screenTop+',left='+screenLeft;  
+        }
+        const win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link,tab,windowOption);
         win.focus();
         super.mouseUp(args);
     }

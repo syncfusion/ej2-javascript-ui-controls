@@ -8,11 +8,12 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 
 /**
  * Grid Cell Edit spec 
  */
-TreeGrid.Inject(Edit, Toolbar, Sort, RowDD);
+TreeGrid.Inject(Edit, Toolbar, Sort, RowDD, VirtualScroll);
 describe('Cell Edit module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -1120,6 +1121,40 @@ describe('update rows method', () => {
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '51';
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       expect((gridObj.getMovableRows()[0].getElementsByClassName('e-rowcell')[2] as HTMLElement).innerText == "51").toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-57487 - edit the cell using editCell method and press tab key for moving to another cell', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Cell' },
+          enableVirtualization: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Edit mode continued to the next cell on tab click', (done: Function) => {
+      debugger;
+      gridObj.editCell(2,'taskName');
+      expect(gridObj.getRows()[2].classList.contains("e-editedrow")).toBe(true);
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+      expect(gridObj.getRows()[2].getAttribute('aria-rowindex') == '2').toBe(true);
+      done();
     });
     afterAll(() => {
       destroy(gridObj);

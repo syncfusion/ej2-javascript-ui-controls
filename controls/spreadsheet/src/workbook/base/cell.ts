@@ -1,7 +1,7 @@
 import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
 import { SheetModel } from './index';
 import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel } from '../common/index';
-import { ImageModel, Image } from '../common/index';
+import { ImageModel, Image, updateCell } from '../common/index';
 import { getRow } from './index';
 import { RowModel } from './row-model';
 import { CellModel } from './cell-model';
@@ -208,21 +208,24 @@ export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): C
  * @param {string} address - Specifies the address.
  * @param {boolean} wrap - Specifies the wrap.
  * @param {Workbook} context - Specifies the context.
+ * @param {Workbook} preventEvt - Preventing the before cell update event.
  * @returns {void} - Specifies the wrap.
  */
-export function wrap(address: string, wrap: boolean = true, context?: Workbook): void {
+export function wrap(address: string, wrap: boolean = true, context?: Workbook, preventEvt?: boolean): void {
     const addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
     const rng: number[] = addressInfo.indices;
     const sheet: SheetModel = getSheet(context, addressInfo.sheetIndex);
+    const uiRefresh: boolean = addressInfo.sheetIndex === context.activeSheetIndex;
+    let cancel: boolean = !preventEvt;
     for (let i: number = rng[0]; i <= rng[2]; i++) {
         for (let j: number = rng[1]; j <= rng[3]; j++) {
-            setCell(i, j, sheet, { wrap: wrap }, true);
+            cancel = updateCell(context, sheet, { cell: { wrap: wrap }, rowIdx: i, colIdx: j, preventEvt: preventEvt });
+            if (!cancel && uiRefresh) {
+                context.notify(wrapEvent, { range: [i, j, i , j], wrap: wrap, sheet: sheet });
+            }
         }
     }
     context.setProperties({ sheets: context.sheets }, true);
-    if (addressInfo.sheetIndex === context.activeSheetIndex) {
-        context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
-    }
 }
 
 /**
@@ -231,7 +234,7 @@ export function wrap(address: string, wrap: boolean = true, context?: Workbook):
  * @returns {string} - Specifies the supported color code.
  */
 export function getColorCode(format: string): string {
-    const customColors: string[] = ['Black', 'Blue', 'Cyan', 'Green', 'Magenta', 'Red', 'White', 'Yellow'];
+    const customColors: string[] = getCustomColors();
     let code: string;
     if (format.indexOf('[') > -1) {
         const colorValue: string = format.split('[')[1].split(']')[0];
@@ -240,4 +243,12 @@ export function getColorCode(format: string): string {
         }
     }
     return code;
+}
+
+/**
+ * @hidden
+ * @returns {string[]} - Returns the custom format colors
+ */
+export function getCustomColors(): string[] {
+    return ['Black', 'Blue', 'Cyan', 'Green', 'Magenta', 'Red', 'White', 'Yellow'];
 }

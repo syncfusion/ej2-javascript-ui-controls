@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, idData1, filterData, data4, data5, data6a } from '../data';
+import { data1, idData1, filterData, data4, data5, data6a, rename2 } from '../data';
 import { data1Delete, idData1Delete, folderRename, rename, idData1Rename1, idData1Rename, data17, idData4 } from '../data';
 import { ColumnModel } from '@syncfusion/ej2-grids';
 
@@ -346,6 +346,43 @@ describe('FileManager control LargeIcons view', () => {
                 }, 500);
             }, 400);
         });
+        it('for renameFile with image', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: true
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
+                expect(ntr[4].textContent).toBe("1.png");
+                feObj.renameFile("1.png", '1+2.png');
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(rename2)
+                });
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(rename2)
+                });
+                setTimeout(function () {
+                    let ntr: any = document.getElementById('file1_largeicons').querySelectorAll('li');
+                    expect(ntr[4].textContent).toBe("1+2.png");
+                    done();
+                }, 1000);
+            }, 1000);
+            
+        });
         it('for renameFile with id base', (done: Function) => {
             feObj = new FileManager({
                 view: 'LargeIcons',
@@ -602,7 +639,7 @@ describe('FileManager control LargeIcons view', () => {
                 setTimeout(function () {
                     expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
                     expect(document.getElementById('file_dialog_title').textContent).toBe('Error');
-                    expect(document.getElementById('file_dialog_dialog-content').textContent).toBe('A file or folder with the name "New Folder" already exists.');
+                    expect(document.getElementById('file_dialog_dialog-content').textContent).toBe(`A file or folder with the name 'New Folder' already exists.`);
                     done();
                 }, 400);
             }, 400);
@@ -616,15 +653,15 @@ describe('FileManager control LargeIcons view', () => {
                 done();
             }, 100);
         });
-        it('for Create Folder with string with error', (done: Function) => {
-            expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(5);
-            feObj.createFolder('New/');
-            setTimeout(function () {
-                expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
-                expect(document.getElementById('file_dialog_title').textContent).toBe('Error');
-                done();
-            }, 100);
-        });
+        // it('for Create Folder with string with error', (done: Function) => {
+        //     expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(5);
+        //     feObj.createFolder('New/');
+        //     setTimeout(function () {
+        //         expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
+        //         expect(document.getElementById('file_dialog_title').textContent).toBe('Error');
+        //         done();
+        //     }, 100);
+        // });
         it('for Upload', (done: Function) => {
             expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(5);
             feObj.uploadFiles();

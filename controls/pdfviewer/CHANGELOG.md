@@ -2,7 +2,44 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
+
+### PDF Viewer
+
+#### New Features
+
+- `#SF-368647`, `#SF-366041`- Exposed a method to focus form fields in a document.
+
+#### Bug Fixes
+
+- `#SF-366679`- Selection is working properly for the overlapped stamp annotations.
+- `#SF-364656`- Now, the signature fields are read-only when the annotation and form designer modules are disabled.
+
+## 19.4.55 (2022-03-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-365496`- In editable mode, the free text annotation remains in the same position during zooming.
+- `#SF-366345`- In mobile devices, context menus will not appear when moving annotations.
+
+## 19.4.54 (2022-03-01)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-362858`- The existing form fields are now cleared completely from the collections when loading another document.
+- `#F172325`- The Script error will no longer be thrown while scrolling the landscape PDF documents before loading.
+- `#SF-364909`- The Ink annotation curve is now smooth on mobile devices at higher zoom factors.
+- `#SF-364296`- The free text annotation is now not visible in the print preview when the `isPrint` property is set to false.
+- `#SF-364510`, `#SF-363938`- The signature is now drawn correctly in the signature field on switching the tabs.
+- `#SF-364296`- The PDF document is now downloaded properly when the form field background color is transparent.
+- `#SF-363381`- The `formFieldPropertiesChange` event triggers on removing the signature from the signature field.
+- `#SF-362811`, `#SF-364480`- The existing from field collections are now updated properly when loading the document.
+
+## 19.4.53 (2022-02-22)
 
 ### PDF Viewer
 

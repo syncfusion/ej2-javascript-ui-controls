@@ -75,7 +75,7 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
 
     /**
      * Specifies the device pixel ratio for the image generated for printing.
-     * Remarks: Increasing the device pixel ratio will increase the image file size, due to high resolution of image.
+     * > Increasing the device pixel ratio will increase the image file size, due to high resolution of image.
      */
     @Property(1)
     public printDevicePixelRatio: number;
@@ -88,6 +88,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(true)
     public enableOptimizedTextMeasuring: boolean;
+
+    /**
+     * Gets or sets the maximum number of rows allowed while inserting a table in Document editor component.
+     * > The maximum value is 32767, as per Microsoft Word application and you can set any value less than 32767 to this property. If you set any value greater than 32767, then Syncfusion Document editor will automatically reset as 32767.
+     * @default 32767
+     * @returns {number}
+     */
+    @Property(32767)
+    public maximumRows: number;
 }
 
 /**
@@ -316,7 +325,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
-     * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
+     * > If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
      *
      * @default '#FFFF00'
      */
@@ -1840,6 +1849,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'From edge': 'From edge',
         'Header': 'Header',
         'Footer': 'Footer',
+        'First Page Header': 'First Page Header',
+        'First Page Footer': 'First Page Footer',
+        'Even Page Header': 'Even Page Header',
+        'Even Page Footer': 'Even Page Footer',
+        'Odd Page Header': 'Odd Page Header',
+        'Odd Page Footer': 'Odd Page Footer',
         'Margin': 'Margins',
         'Paper': 'Paper',
         'Layout': 'Layout',
@@ -1884,6 +1899,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Number of columns': 'Number of columns',
         'Number of rows': 'Number of rows',
         'Text to display': 'Text to display',
+        'ScreenTip text' : 'ScreenTip text',
         'Address': 'Address',
         'Insert Hyperlink': 'Insert Hyperlink',
         'Edit Hyperlink': 'Edit Hyperlink',
@@ -2036,7 +2052,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Table direction': 'Table direction',
         'Indent from right': 'Indent from right',
         /* eslint-disable */
-        "Contextual Spacing": "Don't add space between the paragraphs of the same styles",
+        "Contextual Spacing": "Don't add space between paragraphs of the same style",
         "Password Mismatch": "The password don't match",
         'Restrict Editing': 'Restrict Editing',
         'Formatting restrictions': 'Formatting restrictions',
@@ -2055,9 +2071,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Enter new password': 'Enter new password',
         'Reenter new password to confirm': 'Reenter new password to confirm',
         'Your permissions': 'Your permissions',
-        'Protected Document': 'This document is protected from unintentional editing.You may edit in this region.',
-        'FormFieldsOnly': 'This document is protected from unintentional editing. You may only fill in forms in this region.',
-        'You may format text only with certain styles': 'You may format text only with certain styles.',
+        'Protected Document': 'This document is protected from unintentional editing.',
+        'FormFieldsOnly': 'You may only fill in forms in this region.',
+        'CommentsOnly' : 'You may only insert comments into this region.',
+        'ReadOnlyProtection': 'You may edit in this region.',
         'Stop Protection': 'Stop Protection',
         'Password': 'Password',
         'Spelling Editor': 'Spelling Editor',
@@ -2191,7 +2208,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'ThinThickLargeGap':'ThinThickLargeGap',
         'ThinThickMediumGap':'ThinThickMediumGap',
         'Number of rows must be between 1 and 32767.': 'Number of rows must be between 1 and 32767.',
-        'Number of columns must be between 1 and 63.':'Number of columns must be between 1 and 63.'
+        'Number of columns must be between 1 and 63.':'Number of columns must be between 1 and 63.',
+        'Unlimited' : 'Unlimited',
+        'Regular text': 'Regular text',
+        'Date': 'Date',
+        'Uppercase': 'Uppercase',
+        'Lowercase': 'Lowercase',
+        'FirstCapital': 'FirstCapital',
+        'TitleCase': 'Titlecase',
+        'Filling in forms': 'Filling in forms',
+        'px': 'px'
     };
     /* eslint-enable */
     // Public Implementation Starts
@@ -2744,10 +2770,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.findResultsList = [];
         this.findResultsList = undefined;
+        this.documentHelper = undefined;
     }
     private clearSpellCheck(): void {
-        if (!isNullOrUndefined(this.spellChecker) && !isNullOrUndefined(this.spellChecker.errorWordCollection)) {
-            this.spellChecker.errorWordCollection.clear();
+        if (!isNullOrUndefined(this.spellChecker)) {
+            if (!isNullOrUndefined(this.spellChecker.errorWordCollection)) {
+                this.spellChecker.errorWordCollection.clear();
+            }
+            if (!isNullOrUndefined(this.spellChecker.uniqueWordsCollection)) {
+                this.spellChecker.uniqueWordsCollection.clear();
+            }
         }
     }
     private destroyDependentModules(): void {
@@ -2992,7 +3024,6 @@ export class CollaborativeEditingSettings extends ChildProperty<CollaborativeEdi
     @Property(3000)
     public saveTimeout: number;
 }
-
 
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of Document Editor Container.

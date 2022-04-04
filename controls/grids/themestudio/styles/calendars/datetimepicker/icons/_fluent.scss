@@ -3,7 +3,7 @@
   .e-datetime-wrapper {
 
     #{if(&, '&', '*')} .e-time-icon.e-icons::before {
-      content: '\e7e0';
+      content: '\e705';
       font-family: 'e-icons';
     }
   }

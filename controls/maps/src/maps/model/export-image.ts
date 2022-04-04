@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
-import { triggerDownload } from '../utils/helper';
+import { triggerDownload, getElementByID } from '../utils/helper';
 import { ExportType } from '../utils/enum';
 
 /**
@@ -43,18 +43,20 @@ export class ImageExport {
             const toolbarEle: HTMLElement = document.getElementById(this.control.element.id + '_ToolBar');
             const svgParent: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
             let svgDataElement: string;
+            let tileSvg: Element;
+            let svgObject: Element = getElementByID(this.control.element.id + '_svg').cloneNode(true) as Element;
             if (!this.control.isTileMap) {
                 svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                     this.control.svgObject.outerHTML + '</svg>';
             } else {
-                const tileSvg: Element = document.getElementById(this.control.element.id + '_Tile_SVG');
+                tileSvg = getElementByID(this.control.element.id + '_Tile_SVG').cloneNode(true) as Element;
                 svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                    this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
+                svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
             }
             const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgDataElement] :
-                        [(new XMLSerializer()).serializeToString(this.control.svgObject)],
+                        [(new XMLSerializer()).serializeToString(svgObject)],
                     { type: 'image/svg+xml' }
                 )
             );
@@ -98,11 +100,14 @@ export class ImageExport {
                         ctxt.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
                         ctxt.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
                         ctxt.font = this.control.titleSettings.textStyle.size + ' Arial';
-                        ctxt.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
-                        ctxt.fillText(
-                            this.control.titleSettings.text,
-                            parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')),
-                            parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                        let titleElement: HTMLElement = document.getElementById(this.control.element.id + '_Map_title');
+                        if (!isNullOrUndefined(titleElement)) {
+                            ctxt.fillStyle = titleElement.getAttribute('fill');
+                            ctxt.fillText(
+                                this.control.titleSettings.text, parseFloat(titleElement.getAttribute('x')),
+                                parseFloat(titleElement.getAttribute('y'))
+                            );
+                        }
                         exportTileImg.onload = (() => {
                             if (i === 0 || i === imgTileLength + 1) {
                                 if (i === 0) {
@@ -115,8 +120,9 @@ export class ImageExport {
                                     ctxt.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
                                 }
                             } else {
+                                const tileParent: HTMLElement = document.getElementById(this.control.element.id + '_tile_parent');
                                 ctxt.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                    (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
+                                    (parseFloat(tileParent.style.top)));
                             }
                             ctxt.drawImage(exportTileImg, 0, 0);
                             if (i === imgTileLength + 1) {
@@ -140,8 +146,7 @@ export class ImageExport {
                             } else {
                                 setTimeout(() => {
                                     exportTileImg.src = window.URL.createObjectURL(new Blob(
-                                        [(new XMLSerializer()).serializeToString(document.getElementById(
-                                            this.control.element.id + '_Tile_SVG'))],
+                                        [(new XMLSerializer()).serializeToString(tileSvg)],
                                         { type: 'image/svg+xml' }));
                                 }, 300);
                             }

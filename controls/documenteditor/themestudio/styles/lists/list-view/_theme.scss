@@ -15,17 +15,17 @@
         color: $listview-icon-color;
 
         @if ($skin-name == 'tailwind') {
-          &.e-but-back:hover,
+          &.e-back-button:hover,
           &.e-icon-collapsible:hover {
             color: $icon-color-hover;
           }
         }
         @if ($skin-name == 'bootstrap5') {
-          & .e-but-back:hover {
+          &.e-back-button:hover {
             color: $icon-color-hover;
           }
 
-          & .e-but-back:active {
+          &.e-back-button:active {
             color: $icon-color-pressed;
           }
         }
@@ -96,7 +96,7 @@
 
           @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
             &.e-list-badge:not(.e-list-avatar) {
-              padding: 0 10px 0 16px;
+              padding: 0 8px 0 12px;
             }
           }
           @if ($skin-name == 'FluentUI') {

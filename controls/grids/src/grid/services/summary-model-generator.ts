@@ -113,6 +113,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         row.cells = tmp;
         row.uid = getUid('grid-row');
         row.parentUid = parentUid;
+        row.isAggregateRow = true;
         row.visible = tmp.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell && cell.visible);
         return row;
     }

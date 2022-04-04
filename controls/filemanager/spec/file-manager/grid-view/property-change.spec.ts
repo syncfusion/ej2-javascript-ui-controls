@@ -317,6 +317,100 @@ describe('FileManager control Grid view', () => {
                 }, 500);
             }, 500);
         });
+
+        it('for navigationPaneSettings sort order as Descending - initialization test', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                navigationPaneSettings: { sortOrder: "Descending" }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let firstItem = document.getElementById('file_tree').querySelectorAll(".e-list-item")[1] as any;
+                expect(firstItem.title === 'Nature').toBe(true);
+                feObj.destroy();
+                    done();
+            }, 500);
+        });
+
+        it('for navigationPaneSettings sort order as None - initialization test', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                navigationPaneSettings: { sortOrder: "Descending" }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let firstItem = document.getElementById('file_tree').querySelectorAll(".e-list-item")[1] as any;
+                expect(firstItem.title === 'Nature').toBe(true);
+                feObj.destroy();
+                    done();
+            }, 500);
+        });
+
+        it('for navigationPaneSettings sort order dynamic change', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                navigationPaneSettings: { sortOrder: "Ascending" }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                let firstItem = document.getElementById('file_tree').querySelectorAll(".e-list-item")[1] as any;
+                expect(firstItem.title === 'Documents').toBe(true);
+                feObj.navigationPaneSettings = { sortOrder: "Descending" };
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                setTimeout(function () {
+                    let firstItem = document.getElementById('file_tree').querySelectorAll(".e-list-item")[1] as any;
+                    expect(firstItem.title === 'Nature').toBe(true);
+                    feObj.navigationPaneSettings = { sortOrder: "None" };
+                    feObj.dataBind();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                setTimeout(function () {
+                    let firstItem = document.getElementById('file_tree').querySelectorAll(".e-list-item")[1] as any;
+                    expect(firstItem.title === 'Documents').toBe(true);
+                    feObj.destroy();
+                    done();
+                }, 500);
+            }, 500);
+            }, 500);
+        });
         it('for view', (done: Function) => {
             feObj = new FileManager({
                 view: 'Details',
@@ -1063,6 +1157,39 @@ describe('FileManager control Grid view', () => {
                         expect(document.getElementById('file_grid').querySelectorAll('.e-row')[1].children[2].textContent).toBe('Videos');
                         done();
                     }, 400);
+                }, 400);
+            },400);
+        });
+        it('for sortBy', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                sortBy: 'name'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(ascendingData)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(3);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[0].children[2].textContent).toBe('Apple');
+                expect(document.getElementById('file_grid').querySelectorAll('.e-row')[1].children[2].textContent).toBe('Music');
+                feObj.sortBy = 'size';
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(descendingData)
+                });
+                setTimeout(function () {
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row')[0].children[2].textContent).toBe('Videos');
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-row')[2].children[2].textContent).toBe('Music');
+                    done();
                 }, 400);
             },400);
         });

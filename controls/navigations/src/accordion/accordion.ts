@@ -446,9 +446,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (!this.isDestroy) {
             this.isDestroy = false;
         }
-        if (!isNOU(nested)) {
-            nested.classList.add(CLS_NEST);
-            this.isNested = true;
+        if (nested && nested.firstElementChild && nested.firstElementChild.firstElementChild) {
+            if (nested.firstElementChild.firstElementChild.classList.contains(CLS_ROOT)) {
+                nested.classList.add(CLS_NEST);
+                this.isNested = true;
+            }
         } else {
             this.element.classList.add(CLS_ACRDN_ROOT);
         }
@@ -536,6 +538,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             try {
                 if (document.querySelectorAll(template).length) {
                     return templateCompiler(document.querySelector(template).innerHTML.trim());
+                } else {
+                    return templateCompiler(template);
                 }
             } catch (error) {
                 return templateCompiler(template);
@@ -792,7 +796,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         const header: HTEle = this.createElement('div', { className: CLS_HEADER, id: getUniqueID('acrdn_header') });
         const items: Object[] = this.getItems();
         const ariaAttr: { [key: string]: Str } = {
-            'tabindex': '0', 'role': 'heading', 'aria-selected': 'false', 'aria-label': 'collapsed',
+            'tabindex': '0', 'role': 'heading', 'aria-label': 'collapsed',
             'aria-disabled': 'false', 'aria-level': items.length.toString()
         };
         attributes(header, ariaAttr);
@@ -891,6 +895,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 temString = eleVal.outerHTML.trim();
                 ele.appendChild(eleVal);
                 eleVal.style.display = '';
+            } else {
+                templateFn = templateCompiler(value);
             }
         } catch (e) {
             if (typeof (value) === 'string') {
@@ -1035,7 +1041,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.add(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'false');
             attributes(trgtItemEle, { 'aria-expanded': 'true' });
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'true', 'aria-label': 'expanded' });
+            attributes(trgt.previousElementSibling, { 'aria-label': 'expanded' });
             icon.classList.remove(CLS_TOGANIMATE);
             this.trigger('expanded', eventArgs);
         }
@@ -1148,7 +1154,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.remove(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'true');
             attributes(trgtItemEle, { 'aria-expanded': 'false' });
-            attributes(trgt.previousElementSibling, { 'aria-selected': 'false', 'aria-label': 'collapsed' });
+            attributes(trgt.previousElementSibling, { 'aria-label': 'collapsed' });
             this.trigger('expanded', eventArgs);
         }
     }

@@ -12,7 +12,7 @@
     outline: none;
 
     #{if(&, '&', '*')}::before {
-      content: '\e721';
+      content: '\e7da';
       font-family: 'e-icons';
   }
 
@@ -24,17 +24,17 @@
 
   .e-daterangepicker {
     #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-next::before {
-      content: '\e7c2';
+      content: '\e7d8';
     }#{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-prev::before {
-      content: '\e7c1';
+      content: '\e7df';
     }#{if(&, '&', '*')} .e-change-icon::before {
-      content: '\e773';
+      content: '\e7f9';
     }#{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-next::before {
-      content: '\e7c1';
+      content: '\e7d8';
     }#{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
-      content: '\e7c2';
+      content: '\e7df';
     }#{if(&, '&', '*')}.e-rtl .e-start-end .e-change-icon::before {
-      content: '\e7e4';
+      content: '\e773';
     }
   }
 

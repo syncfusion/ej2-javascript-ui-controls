@@ -54,7 +54,7 @@
       right: -9px;
       top: -9px;
       z-index: inherit;
-      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
         border-radius: 9px;
         border-width: 1px;
         box-shadow: $shadow-sm;
@@ -102,7 +102,7 @@
   /*! Bigger Style */
   .e-bigger .e-tooltip-wrap .e-tip-content,
   .e-tooltip-wrap.e-bigger .e-tip-content {
-    @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+    @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
       line-height: 22px;
     }
     @else {
@@ -129,7 +129,6 @@
     .e-tooltip-close::before {
       @if ($skin-name == 'tailwind') {
         font-size: 10px;
-        margin-left: 4px;
         vertical-align: middle;
       }
 

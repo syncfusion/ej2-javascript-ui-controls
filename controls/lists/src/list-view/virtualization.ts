@@ -1,7 +1,7 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
 import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass, compile, formatUnit } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
-import {ListBase} from '../common/list-base';
+import { ListBase } from '../common/list-base';
 import { DataManager } from '@syncfusion/ej2-data';
 
 /**
@@ -123,7 +123,7 @@ export class Virtualization {
 
         if (this.listViewInstance.isWindow) {
             // eslint-disable-next-line
-            listDiff = Math.round((e as any).target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2; 
+            listDiff = Math.round((e as any).target.documentElement.scrollTop / this.listViewInstance.liElementHeight) - 2;
         } else {
             // eslint-disable-next-line
             listDiff = Math.round((e as any).target.scrollTop / this.listViewInstance.liElementHeight) - 2;
@@ -163,7 +163,7 @@ export class Virtualization {
             }
             // eslint-disable-next-line
             if (!isNullOrUndefined((data[i] as any)[this.listViewInstance.fields.enabled]) &&
-            !data[i][this.listViewInstance.fields.enabled]) {
+                !data[i][this.listViewInstance.fields.enabled]) {
                 // eslint-disable-next-line
                 (this.uiIndices.disabledItemIndices.push(i)) as any;
             }
@@ -261,6 +261,7 @@ export class Virtualization {
     }
 
     private updateUiContent(element: HTMLElement, index: number): void {
+        // eslint-disable-next-line
         const curViewDs: { [key: string]: any; }[] = this.listViewInstance.curViewDS as DataSource[];
         if (typeof (this.listViewInstance.dataSource as string[])[0] === 'string' ||
             typeof (this.listViewInstance.dataSource as number[])[0] === 'number') {
@@ -269,9 +270,9 @@ export class Virtualization {
                 (this.listViewInstance.curViewDS as string[] | number[])[index].toString();
         } else {
             // eslint-disable-next-line
-            element.dataset.uid = (curViewDs[index][this.listViewInstance.fields.id])as any ?
+            element.dataset.uid = (curViewDs[index][this.listViewInstance.fields.id]) as any ?
                 // eslint-disable-next-line
-                (curViewDs[index][this.listViewInstance.fields.id]) as any : (ListBase.generateId()as any);
+                (curViewDs[index][this.listViewInstance.fields.id]) as any : (ListBase.generateId() as any);
             element.getElementsByClassName(classNames.listItemText)[0].innerHTML =
                 // eslint-disable-next-line
                 (curViewDs[index][this.listViewInstance.fields.text]) as any;
@@ -369,7 +370,7 @@ export class Virtualization {
             (ds as { [key: string]: object; }[]).some((data: { [key: string]: object; }, index: number) => {
                 if (((fields as { [key: string]: object; })[this.listViewInstance.fields.id] &&
                     // eslint-disable-next-line
-                    (fields as { [key: string]: any ; })[this.listViewInstance.fields.id]
+                    (fields as { [key: string]: any; })[this.listViewInstance.fields.id]
                     // eslint-disable-next-line
                     === (data[this.listViewInstance.fields.id] && data[this.listViewInstance.fields.id] as any) || fields === data)) {
                     resultJSON.index = index;
@@ -417,8 +418,10 @@ export class Virtualization {
                     const indexArray: number[] = this.uiIndices.activeIndices;
                     for (let i: number = 0; i < indexArray.length; i++) {
                         textCollection.push((curViewDS[indexArray[i]] as { [key: string]: string; })[text]);
+                        // eslint-disable-next-line
                         (dataCollection as { [key: string]: any; }[]).push(curViewDS[indexArray[i]] as DataSource);
                     }
+                    // eslint-disable-next-line
                     const dataSource: { [key: string]: any; }[] =
                         this.listViewInstance.dataSource instanceof DataManager
                             ? curViewDS : this.listViewInstance.dataSource;
@@ -430,6 +433,7 @@ export class Virtualization {
                             dataSource.indexOf(curViewDS[index] as DataSource))
                     };
                 } else {
+                    // eslint-disable-next-line
                     const dataSource: { [key: string]: any; }[] =
                         this.listViewInstance.dataSource instanceof DataManager
                             ? curViewDS : this.listViewInstance.dataSource;
@@ -447,6 +451,7 @@ export class Virtualization {
     }
 
     public selectItem(obj: Fields | HTMLElement | Element): void {
+        // eslint-disable-next-line
         const resutJSON: { [key: string]: any | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
         if (Object.keys(resutJSON).length) {
             const isSelected: boolean = this.activeIndex === resutJSON.index;
@@ -471,6 +476,7 @@ export class Virtualization {
                     this.listViewInstance.setSelectLI(this.listViewInstance.getLiFromObjOrElement(obj));
                 }
             } else {
+                // eslint-disable-next-line
                 let eventArgs: { [key: string]: any; };
                 if (typeof (this.listViewInstance.dataSource as string[])[0] === 'string' ||
                     typeof (this.listViewInstance.dataSource as number[])[0] === 'number') {
@@ -502,6 +508,7 @@ export class Virtualization {
     }
 
     public enableItem(obj: Fields | HTMLElement | Element): void {
+        // eslint-disable-next-line
         const resutJSON: { [key: string]: any | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
         if (Object.keys(resutJSON).length) {
             this.uiIndices.disabledItemIndices.splice(this.uiIndices.disabledItemIndices.indexOf(resutJSON.index as number), 1);
@@ -509,12 +516,14 @@ export class Virtualization {
     }
 
     public disableItem(obj: Fields | HTMLElement | Element): void {
+        // eslint-disable-next-line
         const resutJSON: { [key: string]: any | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
         if (Object.keys(resutJSON).length && this.uiIndices.disabledItemIndices.indexOf(resutJSON.index as number) === -1) {
             this.uiIndices.disabledItemIndices.push(resutJSON.index as number);
         }
     }
     public showItem(obj: Fields | HTMLElement | Element): void {
+        // eslint-disable-next-line
         const resutJSON: { [key: string]: any | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
         if (Object.keys(resutJSON).length) {
             this.uiIndices.hiddenItemIndices.splice(this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index as number), 1);
@@ -522,6 +531,7 @@ export class Virtualization {
     }
 
     public hideItem(obj: Fields | HTMLElement | Element): void {
+        // eslint-disable-next-line
         const resutJSON: { [key: string]: any | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
         if (Object.keys(resutJSON).length && this.uiIndices.hiddenItemIndices.indexOf(resutJSON.index as number) === -1) {
             this.uiIndices.hiddenItemIndices.push(resutJSON.index as number);
@@ -531,7 +541,9 @@ export class Virtualization {
     public removeItem(obj: HTMLElement | Element | Fields): void {
         let dataSource: DataSource;
         const curViewDS: DataSource[] = this.listViewInstance.curViewDS;
+        // eslint-disable-next-line
         const resutJSON: { [key: string]: any | number } = this.findDSAndIndexFromId(curViewDS, obj);
+        // eslint-disable-next-line
         if (Object.keys(resutJSON).length) {
             dataSource = resutJSON.data as DataSource;
             if (curViewDS[(resutJSON.index as number) - 1] &&
@@ -632,11 +644,11 @@ export class Virtualization {
             this.uiLastIndex++;
             if (target) {
                 this.updateUI(liItem, index, target);
-                if (this.listViewInstance.isWindow === true)
-                {
+                if (this.listViewInstance.isWindow === true) {
                     window.scrollTo(0, (pageYOffset + this.listItemHeight));
                 }
-                else{ this.listViewInstance.element.scrollTop += this.listItemHeight;
+                else {
+                    this.listViewInstance.element.scrollTop += this.listItemHeight;
                 }
             }
         }
@@ -752,6 +764,7 @@ export class Virtualization {
                         <HTMLElement[] & NodeListOf<HTMLLIElement>>this.listViewInstance.curUL.querySelectorAll('li');
                 }
             } else {
+                // eslint-disable-next-line
                 const index: number = (this.listViewInstance.curViewDS as { [key: string]: any; }[]).indexOf(currentItem);
                 // virtually new add list item based on the scollbar position
                 this.addUiItem(index);
@@ -784,7 +797,7 @@ export class Virtualization {
                 this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 2]);
         }
         if (this.listViewInstance.fields.groupBy && this.listViewInstance.curViewDS[index + 1] && this.listViewInstance.curViewDS[index + 1].isHeader) {
-            let targetEle : HTMLElement = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index - 1]);
+            let targetEle: HTMLElement = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index - 1]);
             if (targetEle) {
                 target = targetEle.nextElementSibling as HTMLElement;
             }
@@ -817,12 +830,10 @@ export class Virtualization {
                 div.innerHTML = this.listViewInstance.template || commonTemplate;
                 if (div.children && div.children[0]) {
                     div.children[0].classList.add('e-checkbox');
-                    if (this.listViewInstance.checkBoxPosition === 'Left')
-                    {
+                    if (this.listViewInstance.checkBoxPosition === 'Left') {
                         div.children[0].classList.add('e-checkbox-left');
                     }
-                    else
-                    {
+                    else {
                         div.children[0].classList.add('e-checkbox-right');
                     }
                     if (this.listViewInstance.checkBoxPosition === 'Left') {
@@ -851,7 +862,7 @@ export class Virtualization {
         }
         this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
             args.curData;
-        if (!this.listViewInstance.isReact || (typeof this.listViewInstance.template == "string" && !args.item.classList.contains("e-list-group-item")) || 
+        if (!this.listViewInstance.isReact || (typeof this.listViewInstance.template == "string" && !args.item.classList.contains("e-list-group-item")) ||
             (typeof this.listViewInstance.groupTemplate == "string" && args.item.classList.contains("e-list-group-item"))) {
             args.item.innerHTML = '';
         }
@@ -1011,10 +1022,10 @@ export class Virtualization {
                 const subNode: { [key: string]: string[] | Function | string } = {};
                 if (isHeader) {
                     subNode.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(this.headerData),
-                        attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this.headerData)];
+                    attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this.headerData)];
                 } else {
                     subNode.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(this.templateData),
-                        attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this.templateData)];
+                    attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this.templateData)];
                 }
                 subNode.attrName = (subNode.bindedvalue as string[])[0] === undefined ?
                     attributeName : (subNode.bindedvalue as string[])[0];
@@ -1025,7 +1036,7 @@ export class Virtualization {
                     subNode.attrName = (subNode.bindedvalue as string[])[0] === undefined ? subNode.attrName : attributeNameFunction(value);
                     element.setAttribute(subNode.attrName as string, bindedvalue);
                     subNode.bindedvalue = [(subNode.bindedvalue as string[])[0] === undefined ? undefined : attributeNameFunction(value),
-                        (subNode.bindedvalue as string[])[1] === undefined ? undefined : attributeValueFunction(value)];
+                    (subNode.bindedvalue as string[])[1] === undefined ? undefined : attributeValueFunction(value)];
                 };
                 const attributeValue: string = (subNode.bindedvalue as string[])[1] === undefined ? element.getAttribute(attributeName) :
                     (subNode.bindedvalue as string[])[1];

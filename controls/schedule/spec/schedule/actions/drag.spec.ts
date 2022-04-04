@@ -8,6 +8,7 @@ import {
 } from '../../../src/schedule/index';
 import { dragResizeData, resourceGroupData, timelineData, timelineResourceData } from '../base/datasource.spec';
 import { triggerMouseEvent } from '../util.spec';
+import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth, DragAndDrop);
@@ -1480,7 +1481,10 @@ describe('Timeline view events dragging', () => {
         });
 
         it('Month view changing', (done: DoneFn) => {
-            schObj.dataBound = () => done();
+            schObj.dataBound = () => {
+                schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).scrollLeft = 0;
+                done();
+            };
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
@@ -1570,7 +1574,10 @@ describe('Timeline view events dragging', () => {
         });
 
         it('Month view changing', (done: DoneFn) => {
-            schObj.dataBound = () => done();
+            schObj.dataBound = () => {
+                schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).scrollLeft = 0;
+                done();
+            };
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
@@ -1677,7 +1684,10 @@ describe('Timeline view events dragging', () => {
         });
 
         it('Month view changing', (done: DoneFn) => {
-            schObj.dataBound = () => done();
+            schObj.dataBound = () => {
+                schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).scrollLeft = 0;
+                done();
+            };
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });

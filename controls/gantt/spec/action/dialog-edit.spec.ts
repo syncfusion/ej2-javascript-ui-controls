@@ -1355,6 +1355,63 @@
                     expect(taskname.getAttribute('value')).toBe("Yeni görev 8");
                 });
         });
+        describe('Render only segments tab', function () {
+            let ganttObj: Gantt;
+            beforeAll(function (done) {
+                ganttObj = createGantt({
+                    dataSource: projectData1,
+                    height: '450px',
+                    allowSelection: true,
+                    highlightWeekends: true,
+                    enableContextMenu: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    editDialogFields: [
+                        { type: 'Segments' }
+                    ],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        duration: 'Duration',
+                        startDate: 'StartDate',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        segments: 'Segments'
+                    },
+                    projectStartDate: new Date('03/28/2019'),
+                    projectEndDate: new Date('07/06/2019'),
+                    treeColumnIndex: 1,
+                    }, done);
+                });
+                afterAll(function () {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    setTimeout(done, 1000);
+                });
+                it('Render segments tab', () => {
+                    ganttObj.actionComplete = (args: any): void => {
+                        if (args.requestType === 'save') {
+                            expect(args.data.ganttProperties.segments).toBe(null);
+                        }
+                    };
+                    ganttObj.selectRow(2);
+                    ganttObj.openEditDialog();
+                    let addIcon: HTMLElement = document.getElementById(ganttObj.element.id + 'SegmentsTabContainer' + '_add') as HTMLElement;
+                    triggerMouseEvent(addIcon, 'click');
+                    let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+                    triggerMouseEvent(saveRecord, 'click');
+                });
+            });
 	    describe('Add Dialog for Bottom position', () => {
                 let ganttObj: Gantt;
                 beforeAll((done: Function) => {
@@ -1424,7 +1481,7 @@
                 });
                 beforeEach((done: Function) => {
                     setTimeout(done, 1000);
-                   
+
                 });
                 it('Add new record as Bottom', () => {
                     ganttObj.actionComplete = (args: any): void => {
@@ -1438,63 +1495,84 @@
                     let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
                     triggerMouseEvent(saveRecord, 'click');
                 });
-            });
-	   describe('Render only segments tab', function () {
-            let ganttObj: Gantt;
-            beforeAll(function (done) {
-                ganttObj = createGantt({
-                    dataSource: projectData1,
-                    height: '450px',
-                    allowSelection: true,
-                    highlightWeekends: true,
-                    enableContextMenu: true,
-                    editSettings: {
-                        allowAdding: true,
-                        allowEditing: true,
-                        allowDeleting: true,
-                        allowTaskbarEditing: true,
-                        showDeleteConfirmDialog: true
-                    },
-                    editDialogFields: [
-                        { type: 'Segments' }
-                    ],
-                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
-                    taskFields: {
-                        id: 'TaskID',
-                        name: 'TaskName',
-                        duration: 'Duration',
-                        startDate: 'StartDate',
-                        progress: 'Progress',
-                        dependency: 'Predecessor',
-                        child: 'subtasks',
-                        segments: 'Segments'
-                    },
-                    projectStartDate: new Date('03/28/2019'),
-                    projectEndDate: new Date('07/06/2019'),
-                    treeColumnIndex: 1,
-                    }, done);
-                });
-                afterAll(function () {
-                    if (ganttObj) {
-                        destroyGantt(ganttObj);
-                    }
-                });
-                beforeEach((done: Function) => {
-                    setTimeout(done, 1000);
-                });
-                it('Render segments tab', () => {
-                    ganttObj.actionComplete = (args: any): void => {
-                        if (args.requestType === 'save') {
-                            expect(args.data.ganttProperties.segments).toBe(null);
-                        }
-                    };
-                    ganttObj.selectRow(2);
-                    ganttObj.openEditDialog();
-                    let addIcon: HTMLElement = document.getElementById(ganttObj.element.id + 'SegmentsTabContainer' + '_add') as HTMLElement;
-                    triggerMouseEvent(addIcon, 'click');
-                    let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
-                    triggerMouseEvent(saveRecord, 'click');
-                });
-            });
+        });
+     describe('Manual mode edit endDate', function () {
+         let ganttObj: Gantt;
+         beforeAll(function (done) {
+             ganttObj = createGantt({
+                 dataSource: dialogEditData,
+                 taskFields: {
+                     id: 'TaskID',
+                     name: 'TaskName',
+                     startDate: 'StartDate',
+                     endDate: 'EndDate',
+                     duration: 'Duration',
+                     progress: 'Progress',
+                     notes: 'Notes',
+                     baselineStartDate: 'BaselineStartDate',
+                     baselineEndDate: 'BaselineEndDate',
+                     resourceInfo: 'Resource',
+                     dependency: 'Predecessor',
+                     child: 'subtasks'
+                 },
+                 resourceIDMapping: 'resourceId',
+                 resourceNameMapping: 'resourceName',
+                 resources: resourcesData,
+                 projectStartDate: new Date('03/25/2019'),
+                 projectEndDate: new Date('05/30/2019'),
+                 renderBaseline: true,
+                 editSettings: {
+                     allowAdding: true,
+                     allowEditing: true,
+                     allowDeleting: true,
+                     mode: 'Dialog'
+                 },
+                 taskMode: 'Manual',
+                 editDialogFields: [
+                     { type: 'General' },
+                     { type: 'Dependency' },
+                     { type: 'Resources' },
+                     { type: 'Notes' },
+                     { type: 'Custom' }
+                 ],
+                 addDialogFields: [
+                     { type: 'General' },
+                     { type: 'Resources' },
+                     { type: 'Dependency' }
+                 ],
+                 columns: [
+                     { field: 'TaskID', width: 60 },
+                     { field: 'TaskName', width: 100 },
+                     { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                     { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                     { field: 'Duration', width: 100 },
+                     { field: 'Predecessor', width: 100 },
+                     { field: 'Progress', width: 100 },
+                     { field: 'BaselineStartDate', editType: 'datetimepickeredit', width: 100 },
+                     { field: 'BaselineEndDate', editType: 'datetimepickeredit', width: 100 },
+                     { field: 'Resource', width: 100 },
+                     { field: 'Notes', width: 100 },
+                     { field: 'Customcolumn', editType: 'defaultedit', headerText: 'Custom Column1', width: 100 }
+                 ],
+                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                 allowUnscheduledTasks: true,
+             }, done);
+         });
+         afterAll(function () {
+             if (ganttObj) {
+                 destroyGantt(ganttObj);
+             }
+         });
+         beforeEach((done: Function) => {
+             setTimeout(done, 1000);
+             ganttObj.openEditDialog(1);
+         });
+         it('Edit end date', () => {
+             let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+             ED.value = new Date('04/09/2019');
+             ED.dataBind();
+             expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/9/2019');
+         });
+     }); 
  });
  

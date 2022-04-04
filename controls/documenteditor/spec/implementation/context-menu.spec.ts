@@ -99,7 +99,7 @@ describe('Context Menu Testing - 2', () => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection);
-        editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false,enableComment: true });
         editor.enableEditorHistory = true;
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
@@ -141,6 +141,21 @@ console.log('Open Context Menu in read only mode');
             }
         }
         editor.isReadOnly = false;
+    });
+    it('open Contextmenu in CommentOnly mode',()=>{
+        console.log('open Contextmenu in CommentOnly mode');
+        editor.editor.addProtection('','CommentsOnly');
+        let event: MouseEvent = document.createEvent('MouseEvent');
+        event.initEvent('contextmenu', true, true);
+        editor.documentHelper.viewerContainer.dispatchEvent(event);
+        for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
+            if ((menu.contextMenuInstance.items as MenuItemModel[])[i].text === 'New Comment') {
+                let element = document.getElementById((menu.contextMenuInstance.items as MenuItemModel[])[i].id);
+                expect(element.style.display).toBe('block');
+                break;
+            }
+        }
+        editor.editor.unProtectDocument();
     });
     it('open content Menu inside table', () => {
 console.log('open content Menu inside table');

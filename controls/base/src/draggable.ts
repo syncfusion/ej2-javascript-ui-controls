@@ -651,6 +651,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (!isUndefined(evt.changedTouches) && (evt.changedTouches.length !== 1)) {
             return;
         }
+        if (this.clone && evt.changedTouches && Browser.isDevice && Browser.isTouch) {
+            evt.preventDefault();
+        }
         let left: number;
         let top: number;
         this.position = this.getMousePosition(evt, this.isDragScroll);

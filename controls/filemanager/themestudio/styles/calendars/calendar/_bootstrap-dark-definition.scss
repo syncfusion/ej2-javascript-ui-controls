@@ -35,6 +35,7 @@ $calendar-active-icon-color: $calendar-icon-font-color !default;
 $calendar-title-hover-color: $grey-light-font !default;
 $calendar-icon-hover-color: $grey-light-font !default;
 $calendar-icon-hover-bg-color: $grey-88 !default;
+$calendar-device-icon-hover-bg-color: none !default;
 $calendar-default-border-color: none !default;
 $calendar-icon-hover-border-color: $calendar-default-border-color !default;
 $calendar-active-state-icon-bg-color: $grey-8c !default;
@@ -117,6 +118,7 @@ $calendar-other-month-date-hover-bg: $grey-lighter !default;
 
 // table related styles
 $calendar-table-padding: 0 0 10px !default;
+$calendar-rtl-text-indent: 4px !default;
 
 //font icons
 $calendar-prev-icon: '\e910' !default;
@@ -137,14 +139,17 @@ $calendar-bigger-icon-font-size: 18px !default;
 $calendar-light-font: $grey-dark-font !default;
 $calendar-active-font-color: $brand-primary-font !default;
 $calendar-active-bg-color: $brand-primary !default;
-$calendar-active-bg-border-color: 1px solid $brand-primary !default;
+$calendar-active-bg-box-shadow: inset 1px 0 $brand-primary, inset 0 1px $brand-primary, inset -1px 0 $brand-primary, inset 0 -1px $brand-primary !default;
+$calendar-active-bg-border-color: none !default;
 $calendar-active-hover-bg-color: darken($brand-primary, 10%) !default;
 $calendar-hover-color:  $grey-88 !default;
 $calendar-text-color: $grey-dark-font !default;
 $calendar-hover-text: $calendar-text-color !default;
 $calendar-focus-bg-color: $grey-88 !default;
 $calendar-focused-today-bg-style: $grey !default;
-$calendar-focused-today-border-style:  1px solid $brand-primary !default;
+$calendar-focused-today-box-shadow: inset 1px 0 $brand-primary, inset 0 1px $brand-primary, inset -1px 0 $brand-primary, inset 0 -1px $brand-primary !default;
+$calendar-focused-today-border-style: none !default;
+$calendar-focus-box-shadow: none !default;
 $calendar-focus-border-color: none !default;
 $calendar-hover-border-color: none !default;
 $calendar-disable-font-color: $grey-8c !default;
@@ -159,14 +164,15 @@ $calendar-link-font-weight-style: normal !default;
 $calendar-focused-date-bg-style: $grey-88 !default;
 $calendar-disable-font-weight-style: normal !default;
 $calendar-border-radius: 4px !default;
+$calendar-week-number-font-weight: 500 !default;
 
 // end td styles 
 
 //today date
 $calendar-today-bg-style: none !default;
 $calendar-today-bg-hover-color: $grey-white !default;
-$calendar-today-border-color: 1px solid $brand-primary !default;
-$calendar-selected-box-shadow: none !default;
+$calendar-today-box-shadow: inset 1px 0 $brand-primary, inset 0 1px $brand-primary, inset -1px 0 $brand-primary, inset 0 -1px $brand-primary !default;
+$calendar-today-border-color: none !default;
 $calendar-selected-border-color: none !default;
 //pending
 $calendar-today-color: $grey-light-font !default;

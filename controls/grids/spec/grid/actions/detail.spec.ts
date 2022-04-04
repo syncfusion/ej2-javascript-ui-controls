@@ -87,13 +87,13 @@ describe('Detail template module', () => {
 
         it('Detail row expand testing', () => {
             (gridObj.getDataRows()[0].querySelector('.e-detailrowcollapse') as HTMLElement).click();
-            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(0);
+            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(1);
             expect(gridObj.getDataRows()[0].querySelectorAll('.e-detailrowexpand').length).toBe(1);
         });
 
         it('Detail collapse testing', () => {
             (gridObj.getDataRows()[0].querySelector('.e-detailrowexpand') as HTMLElement).click();
-            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(0);
+            expect(gridObj.getDataRows()[0].querySelectorAll('.e-detailrowexpand').length).toBe(0);
             expect(gridObj.getDataRows()[0].querySelectorAll('.e-detailrowcollapse').length).toBe(1);
         });
 

@@ -1,7 +1,7 @@
 import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet } from '../base/index';
 import { setCFRule, clearCFRule, getRangeAddress, CellStyleModel, applyCellFormat, getSwapRange } from '../common/index';
 import { getRangeIndexes, CellFormatArgs, ConditionalFormatModel } from '../common/index';
-import { cFInitialCheck, clearCF, addHighlight, cFUndo, goto } from '../common/index';
+import { cFInitialCheck, clearCF, addHighlight, cFUndo, goto, CFormattingEventArgs, beginAction, ActionEventArgs } from '../common/index';
 import { completeAction } from '../../spreadsheet/common/event';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -32,48 +32,67 @@ export class WorkbookConditionalFormat {
     }
 
     private addEventListener(): void {
-        this.parent.on(setCFRule, this.setCFrulHandler, this);
+        this.parent.on(setCFRule, this.setCFRule, this);
         this.parent.on(clearCFRule, this.clearRules, this);
         this.parent.on(cFUndo, this.cFUndoHandler, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(setCFRule, this.setCFrulHandler);
+            this.parent.off(setCFRule, this.setCFRule);
             this.parent.off(clearCFRule, this.clearRules);
             this.parent.off(cFUndo, this.cFUndoHandler);
         }
     }
 
-    private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel, isAction?: boolean,
-        sheetIdx?: number, isUndoRedo?: boolean }): void {
+    private setCFRule(args: { conditionalFormat: ConditionalFormatModel, isAction?: boolean, sheetIdx?: number, isRedo?: boolean, isFromUpdateAction?: boolean }): void {
         const conditionalFormat: ConditionalFormatModel = args.conditionalFormat;
         let range: string = conditionalFormat.range;
-        const sheetIndex: number = args.isUndoRedo ? args.sheetIdx : this.parent.getAddressInfo(range).sheetIndex;
+        const sheetIndex: number = args.isRedo ? args.sheetIdx : this.parent.getAddressInfo(range).sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         range = range || sheet.selectedRange;
         const indexes: number[] = getSwapRange(getRangeIndexes(range));
         conditionalFormat.range = getRangeAddress(indexes);
+        let actionArgs: ActionEventArgs;
+        if (args.isAction) {
+            const eventArgs: CFormattingEventArgs = { range: conditionalFormat.range, type: conditionalFormat.type, cancel: false,
+                cFColor: conditionalFormat.cFColor, value: conditionalFormat.value, sheetIdx: sheetIndex };
+            actionArgs = { eventArgs: eventArgs, action: 'conditionalFormat' };
+            this.parent.notify(beginAction, actionArgs);
+            if (eventArgs.cancel) {
+                return;
+            }
+            conditionalFormat.type = eventArgs.type;
+            conditionalFormat.cFColor = eventArgs.cFColor;
+            conditionalFormat.value = eventArgs.value;
+            conditionalFormat.range = eventArgs.range;
+            delete eventArgs.cancel;
+        }
         if (!sheet.conditionalFormats) {
             this.parent.setSheetPropertyOnMute(sheet, 'conditionalFormats', []);
         }
         const cfrCount: number = sheet.conditionalFormats.length;
         sheet.conditionalFormats[cfrCount] = conditionalFormat;
-        if (args.isUndoRedo && sheetIndex !== this.parent.activeSheetIndex) {
-            this.parent.notify(goto, { address: sheet.name + '!' + conditionalFormat.range });
-            return;
-        }
-        for (let rIdx: number = indexes[0]; rIdx <= indexes[2]; rIdx++) {
-            if (!sheet.rows[rIdx]) { setRow(sheet, rIdx, {}); }
-            for (let cIdx: number = indexes[1]; cIdx <= indexes[3]; cIdx++) {
-                if (!sheet.rows[rIdx].cells || !sheet.rows[rIdx].cells[cIdx]) { setCell(rIdx, cIdx, sheet, {}); }
-                if (sheetIndex === this.parent.activeSheetIndex) {
-                    const cell: CellModel = sheet.rows[rIdx].cells[cIdx];
-                    this.parent.notify(
-                        cFInitialCheck, { rowIdx: rIdx, colIdx: cIdx, cell: cell, conditionalFormat: conditionalFormat, isAction:
-                        args.isAction });
+        if (args.isRedo && sheetIndex !== this.parent.activeSheetIndex) {
+            if (!args.isFromUpdateAction) {
+                this.parent.notify(goto, { address: sheet.name + '!' + conditionalFormat.range });
+            }
+        } else {
+            for (let rIdx: number = indexes[0]; rIdx <= indexes[2]; rIdx++) {
+                if (!sheet.rows[rIdx]) { setRow(sheet, rIdx, {}); }
+                for (let cIdx: number = indexes[1]; cIdx <= indexes[3]; cIdx++) {
+                    if (!sheet.rows[rIdx].cells || !sheet.rows[rIdx].cells[cIdx]) { setCell(rIdx, cIdx, sheet, {}); }
+                    if (sheetIndex === this.parent.activeSheetIndex) {
+                        const cell: CellModel = sheet.rows[rIdx].cells[cIdx];
+                        this.parent.notify(
+                            cFInitialCheck, { rowIdx: rIdx, colIdx: cIdx, cell: cell, conditionalFormat: conditionalFormat, isAction:
+                            args.isAction });
+                    }
                 }
             }
+        }
+        if (args.isAction) {
+            this.parent.notify(completeAction, actionArgs);
         }
     }
 
@@ -87,7 +106,7 @@ export class WorkbookConditionalFormat {
 
     private clearRules(
         args: { range: string, isPublic?: boolean, isclearFormat?: true, sheetIdx?: number, isClearCF?: boolean,
-            isUndoRedo?: boolean }): void {
+            isUndoRedo?: boolean, isFromUpdateAction?: boolean }): void {
         const isPublic: boolean = isNullOrUndefined(args.isPublic) ? true : false;
         const cFormats: ConditionalFormatModel[] = [];
         const oldRange: string[] = [];
@@ -400,7 +419,7 @@ export class WorkbookConditionalFormat {
                 cFormats.push(cFRule);
             }
             if (args.isUndoRedo) {
-                if (this.parent.activeSheetIndex !== args.sheetIdx) {
+                if (this.parent.activeSheetIndex !== args.sheetIdx && !args.isFromUpdateAction) {
                     this.parent.notify(goto, { address: sheet.name + '!' + args.range });
                 }
                 break;

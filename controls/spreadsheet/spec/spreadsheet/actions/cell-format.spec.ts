@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
+import { SheetModel, getRangeAddress, Spreadsheet } from "../../../src/index";
 
 describe('Cell Format ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -62,6 +63,18 @@ describe('Cell Format ->', () => {
             expect(helper.invoke('getCell', [4, 0]).style.borderRight).toBe('2px solid rgb(235, 64, 52)');
             done();
         });
+
+        it('Border are not removed after undo when selection is in reverse', (done: Function) => {
+            helper.invoke('selectRange', ['D3:C2']);
+            helper.click('#spreadsheet_borders');
+            helper.click('.e-borders-menu ul li:nth-child(5)');
+            helper.click('#spreadsheet_undo');
+            expect(helper.invoke('getCell', [1, 3]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [2, 3]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [2, 3]).style.borderBottom).toBe('');
+            expect(helper.invoke('getCell', [2, 2]).style.borderBottom).toBe('');
+            done();
+        });
     });
 
     describe('CR-Issues ->', () => {
@@ -107,6 +120,66 @@ describe('Cell Format ->', () => {
             //     helper.getElement('#' + helper.id + '_wrap').click();
             //     done();
             // });
+        });
+        describe('SF-356947 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ index: 3, height: 30, customHeight: true, cells: [{ index: 3, value: 'test' }] }],
+                    selectedRange: 'D4' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Selection issue while apply font size as 72pt for whole column with custom height enabled', (done: Function) => {
+                const cell: HTMLElement = helper.invoke('getCell', [3, 3]);
+                expect(cell.style.lineHeight).toBe('');
+                helper.getElement('#' + helper.id + '_font_size').click();
+                helper.getElement('#' + helper.id + '_font_size-popup').firstElementChild.lastElementChild.click();
+                expect(cell.style.fontSize).toBe('72pt');
+                expect(cell.style.lineHeight).toBe('29px');
+                expect(helper.invoke('getRow', [3]).style.height).toBe('30px');
+                helper.getElement('#' + helper.id + '_font_size').click();
+                helper.getElement('#' + helper.id + '_font_size-popup').firstElementChild.children[5].click();
+                expect(cell.style.fontSize).toBe('14pt');
+                expect(cell.style.lineHeight).toBe('');
+                helper.getElement('#' + helper.id + '_font_size').click();
+                helper.getElement('#' + helper.id + '_font_size-popup').firstElementChild.children[13].click();
+                expect(cell.style.fontSize).toBe('36pt');
+                expect(cell.style.lineHeight).toBe('29px');
+                helper.getElement('#' + helper.id + '_wrap').click();
+                expect(cell.style.lineHeight).toBe('');
+                expect(cell.querySelector('.e-wrap-content')).not.toBeNull();
+                done();
+            });
+        });
+        describe('EJ2-57647 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Used range not updated while Clear entire data.', (done: Function) => {
+                let spreadsheet: Spreadsheet = helper.getInstance();
+                let sheet: SheetModel = spreadsheet.sheets[0];
+                spreadsheet.clear({type: 'Clear All', range: getRangeAddress([0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex])});
+                setTimeout(() => {
+                    expect(sheet.usedRange.rowIndex).toEqual(0);
+                    expect(sheet.usedRange.colIndex).toEqual(0);
+                    done();
+                });
+            });
+            it('Used range not updated while delete entire data.', (done: Function) => {
+                let spreadsheet: Spreadsheet = helper.getInstance();
+                let sheet: SheetModel = spreadsheet.sheets[0];
+                spreadsheet.selectRange(getRangeAddress([0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex]));
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(sheet.usedRange.rowIndex).toEqual(0);
+                    expect(sheet.usedRange.colIndex).toEqual(0);
+                    done();
+                });
+            });
         });
     });
 });

@@ -206,15 +206,15 @@ export class DialogEditRender {
             div.appendChild(form);
             return div;
         }
-        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px' } });
-        const tbody: Element = this.parent.createElement( literals.tbody);
+        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px', role: 'grid' } });
+        const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
         const cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
             if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate ||
                 cols[i].type === 'checkbox') {
                 continue;
             }
-            const tr: Element = this.parent.createElement('tr');
+            const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
             const dataCell: HTMLElement = this.parent.createElement('td', {
                 className: literals.rowCell, attrs: {
                     style: 'text-align:' + (this.parent.enableRtl ? 'right' : 'left') + ';width:190px'

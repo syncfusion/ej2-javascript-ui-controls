@@ -1,4 +1,4 @@
-import { NumericTextBox, ChangeEventArgs as NumericChangeArgs } from '@syncfusion/ej2-inputs';
+import { NumericTextBox, ChangeEventArgs as NumericChangeArgs, NumericFocusEventArgs, NumericBlurEventArgs } from '@syncfusion/ej2-inputs';
 import { LayoutViewer } from '../index';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { SelectionParagraphFormat } from '../index';
@@ -7,7 +7,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs as DropDownChangeArgs } from '@syncfusion/ej2-dropdowns';
 import { WParagraphFormat } from '../index';
 import { TextAlignment, LineSpacingType } from '../../base/types';
-import { RadioButton, ChangeArgs, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { RadioButton, ChangeArgs, CheckBox, ChangeEventArgs, ClickEventArgs } from '@syncfusion/ej2-buttons';
 import { DocumentHelper } from '../viewer';
 import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
 
@@ -42,6 +42,8 @@ export class ParagraphDialog {
     private rightIndent: number = undefined;
     private beforeSpacing: number = undefined;
     private afterSpacing: number = undefined;
+    private spaceBeforeAuto: boolean = false;
+    private spaceAfterAuto: boolean = false;
     private textAlignment: TextAlignment = undefined;
     private firstLineIndent: number = undefined;
     private lineSpacingIn: number = undefined;
@@ -84,15 +86,22 @@ export class ParagraphDialog {
         const ejtab: HTMLDivElement = <HTMLDivElement>createElement('div');
         let instance: ParagraphDialog = this;
         let ownerId: string = this.documentHelper.owner.containerId;
-        let id: string = ownerId + '_paragraph_dialog';
-        let indentContainer: HTMLElement = createElement('div', { id: id, className: 'e-de-para-dlg-container' });
+        //let id: string = ownerId + '_paragraph_dialog';
+        let indentContainer: HTMLElement = createElement('div', { className: 'e-de-dlg-tab-first-child e-de-para-dlg-container' });
         this.target = tabContainer;
         tabContainer.appendChild(ejtab);
-        let div: HTMLDivElement = createElement('div', { id: 'property_div', styles: 'width:400px;' }) as HTMLDivElement;
-        let generalDiv: HTMLDivElement = createElement('div', { id: 'genral_div', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
+        let div: HTMLDivElement = createElement('div', { styles: 'width:400px;' }) as HTMLDivElement;
+        let generalDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
 
-        let genLabel: HTMLElement = createElement('div', { id: ownerId + '_genLabel', className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('General') });
-        let alignLabel: HTMLElement = createElement('div', { id: ownerId + '_AlignLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Alignment') });
+        let genLabel: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('General') });
+        generalDiv.appendChild(genLabel);
+
+        let alignmentWholeDiv: HTMLDivElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
+        generalDiv.appendChild(alignmentWholeDiv)
+
+        let alignmentDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        alignmentWholeDiv.appendChild(alignmentDiv)
+
         let alignment: HTMLElement = createElement('select', {
             id: ownerId + '_Alignment',
             innerHTML: '<option value="Center">' + locale.getConstant('Center') +
@@ -100,15 +109,13 @@ export class ParagraphDialog {
                 '</option><option value="Right">' + locale.getConstant('Right') +
                 '</option><option value="Justify">' + locale.getConstant('Justify') + '</option>'
         }) as HTMLSelectElement;
-        generalDiv.appendChild(genLabel);
-        generalDiv.appendChild(alignLabel);
-        generalDiv.appendChild(alignment);
+
+        alignmentDiv.appendChild(alignment);
         let dirLabel: HTMLElement = createElement('div', {
-            id: ownerId + '_DirLabel',
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
         });
-        this.directionDiv = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
-        let rtlDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-rtl-btn-div' });
+        this.directionDiv = createElement('div', { className:'e-de-container-row' });
+        let rtlDiv: HTMLElement = createElement('div', { className: 'e-de-rtl-btn-div' });
         let rtlInputELe: HTMLElement = createElement('input', { id: ownerId + '_rtlEle' });
         rtlDiv.appendChild(rtlInputELe);
         this.directionDiv.appendChild(rtlDiv)
@@ -116,7 +123,7 @@ export class ParagraphDialog {
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
         }
-        let ltrDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-ltr-btn-div' });
+        let ltrDiv: HTMLElement = createElement('div', { className: 'e-de-ltr-btn-div' });
         let ltrInputELe: HTMLElement = createElement('input', { id: ownerId + '_ltrEle' });
         ltrDiv.appendChild(ltrInputELe);
         this.directionDiv.appendChild(ltrDiv)
@@ -133,30 +140,40 @@ export class ParagraphDialog {
         });
         this.ltrButton.appendTo(ltrInputELe);
 
-        let indentionDiv: HTMLDivElement = createElement('div', { id: 'indention_div', styles: 'width: 400px;', className: 'e-de-para-dlg-sub-container e-para-dlg-sub-height' }) as HTMLDivElement;
+        let indentionWholeDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         
-        let indentLabel: HTMLLabelElement = createElement('div', {
-            id: ownerId + '_indentLabel', className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Indentation'), styles: 'float:top;position:relative'
+        let indentLabel: HTMLLabelElement = createElement('div', { className: 'e-de-para-dlg-heading',
+            innerHTML: locale.getConstant('Indentation')
         }) as HTMLLabelElement;
-        indentionDiv.appendChild(indentLabel);
-        let leftIndentionDiv: HTMLDivElement = createElement('div', { id: 'left_indention', styles: 'float:left;position:relative;' }) as HTMLDivElement;
-        indentionDiv.appendChild(leftIndentionDiv);
+        indentionWholeDiv.appendChild(indentLabel);
+        let indentionSubDiv1: HTMLDivElement = createElement('div', { className:'e-de-container-row' }) as HTMLDivElement;
+        indentionWholeDiv.appendChild(indentionSubDiv1);
 
-        let rightIndentionDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-right-sub-container', styles: 'float:right;position:relative;' }) as HTMLDivElement;
-        indentionDiv.appendChild(rightIndentionDiv);
+        let indentionSubDiv2: HTMLDivElement = createElement('div', { className: 'e-de-container-row'}) as HTMLDivElement;
+        indentionWholeDiv.appendChild(indentionSubDiv2);
 
-        let spacingDiv: HTMLDivElement = createElement('div', { id: 'spacing_div' }) as HTMLDivElement;
-        let leftSpacingDiv: HTMLDivElement = createElement('div', { id: 'left_spacing', styles: 'position:relative;' }) as HTMLDivElement;
+        let beforeTextDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        indentionSubDiv1.appendChild(beforeTextDiv);
+
+        let afterTextDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
+        indentionSubDiv1.appendChild(afterTextDiv);
+
+        let specialDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        indentionSubDiv2.appendChild(specialDiv);
+        let byDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right'}) as HTMLDivElement;
+        indentionSubDiv2.appendChild(byDiv);
+
+        let spacingDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        let leftSpacingDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         spacingDiv.appendChild(leftSpacingDiv);
-        let contextSpacingStyles: string = 'float:left';
-        if (isRtl) {
-            contextSpacingStyles = 'float:right;';
-        }
-        let contextSpacingDiv: HTMLDivElement = createElement('div',
-            { id: 'context_spacing', styles: contextSpacingStyles + 'position:relative;' }) as HTMLDivElement;
+        // let contextSpacingStyles: string = 'float:left';
+        // if (isRtl) {
+        //     contextSpacingStyles = 'float:right;';
+        // }
+        let contextSpacingDiv: HTMLDivElement = createElement('div', { className:'e-de-container-row'}) as HTMLDivElement;
         spacingDiv.appendChild(contextSpacingDiv);
 
-        let rightSpacingDiv: HTMLDivElement = createElement('div', { styles: 'display:inline-flex;' }) as HTMLDivElement;
+        let rightSpacingDiv: HTMLDivElement = createElement('div', { className:'e-de-container-row'}) as HTMLDivElement;
         spacingDiv.appendChild(rightSpacingDiv);
 
         let contextInputEle: HTMLInputElement = createElement('input', {
@@ -166,116 +183,109 @@ export class ParagraphDialog {
         contextSpacingDiv.appendChild(contextInputEle);
 
 
-        let beforeTextLabel: HTMLLabelElement = createElement('div', {
-            id: ownerId + '_bfTextLabel',
-            className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Before text')
-        }) as HTMLLabelElement;
-
         let leftIndent: HTMLInputElement = createElement('input', { id: ownerId + '_leftIndent', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        let specialLabel: HTMLLabelElement = createElement('div', { id: ownerId + '_specialLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Special') }) as HTMLLabelElement;
+
+        let rightIndent: HTMLInputElement = createElement('input', { id: ownerId + '_rightIndent', attrs: { 'type': 'text' } }) as HTMLInputElement;
+
+        beforeTextDiv.appendChild(leftIndent);
+
+        afterTextDiv.appendChild(rightIndent);
+
         let special: HTMLElement = createElement('select', {
             id: ownerId + '_special',
             innerHTML: '<option value="None">' + locale.getConstant('None') +
                 '</option><option value="First Line">' + locale.getConstant('First line') +
                 '</option><option value="Hanging">' + locale.getConstant('Hanging') + '</option> '
         }) as HTMLSelectElement;
-        leftIndentionDiv.appendChild(beforeTextLabel);
-        leftIndentionDiv.appendChild(leftIndent);
-        leftIndentionDiv.appendChild(specialLabel);
-        leftIndentionDiv.appendChild(special);
 
-        let afterTextLabel: HTMLLabelElement = createElement('div', { id: ownerId + '_afTextLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('After text') }) as HTMLLabelElement;
-        let rightIndent: HTMLInputElement = createElement('input', { id: ownerId + '_rightIndent', attrs: { 'type': 'text' } }) as HTMLInputElement;
-
-        let byLabel: HTMLLabelElement = createElement('label', { id: ownerId + '_byLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('By') }) as HTMLLabelElement;
         let by: HTMLInputElement = createElement('input', { id: ownerId + '_By', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        rightIndentionDiv.appendChild(afterTextLabel);
-        rightIndentionDiv.appendChild(rightIndent);
-        rightIndentionDiv.appendChild(byLabel);
-        rightIndentionDiv.appendChild(by);
+
+        specialDiv.appendChild(special);
+
+        byDiv.appendChild(by);
 
 
-        let spaceLabel: HTMLLabelElement = createElement('div', { innerHTML: locale.getConstant('Spacing'), className: 'e-de-para-dlg-heading', id: ownerId + '_spaceLabel' }) as HTMLLabelElement;
-        let spacingWholeDiv: HTMLElement = createElement('div', { id: ownerId + '_spacingWholeDiv', styles: 'display:inline-flex;' }) as HTMLElement;
-        let beforeSpacingWholeDiv: HTMLElement = createElement('div', { id: ownerId + '_beforeSpacingWholeDiv' }) as HTMLElement;
-
-        let beforeLabel: HTMLLabelElement = createElement('div', { className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Before'), id: ownerId + '_beforeLabel' }) as HTMLLabelElement;
+        let spaceLabel: HTMLLabelElement = createElement('div', { className: 'e-de-para-dlg-heading',innerHTML: locale.getConstant('Spacing')}) as HTMLLabelElement;
+        let spacingWholeDiv: HTMLElement = createElement('div', { className: 'e-de-container-row'}) as HTMLElement;
+        let beforeSpacingWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left'}) as HTMLElement;
 
         let beforeSpacing: HTMLInputElement = createElement('input', { id: ownerId + '_beforeSpacing', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        let afterSpacingWholeDiv: HTMLElement = createElement('div', { id: ownerId + '_afterSpacingWholeDiv', className: 'e-de-para-dlg-spacing-div' }) as HTMLElement;
+        let afterSpacingWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLElement;
 
-        let afterLabel: HTMLLabelElement = createElement('div', { innerHTML: locale.getConstant('After'), className: 'e-de-dlg-sub-header', id: ownerId + '_afterLabel' }) as HTMLLabelElement;
         let afterSpacing: HTMLInputElement = createElement('input', { id: ownerId + '_afterSpacing', attrs: { 'type': 'text' } }) as HTMLInputElement;
         leftSpacingDiv.appendChild(spaceLabel);
         leftSpacingDiv.appendChild(spacingWholeDiv);
-        beforeSpacingWholeDiv.appendChild(beforeLabel);
+        
         beforeSpacingWholeDiv.appendChild(beforeSpacing);
         spacingWholeDiv.appendChild(beforeSpacingWholeDiv);
-        afterSpacingWholeDiv.appendChild(afterLabel);
+        
         afterSpacingWholeDiv.appendChild(afterSpacing);
         spacingWholeDiv.appendChild(afterSpacingWholeDiv);
-        let lineSpacingDiv: HTMLElement = createElement('div', { id: ownerId + '_lineSpacingWholeDiv' }) as HTMLElement;
-
-        let lineSpaceLabel: HTMLLabelElement = createElement('div', { id: ownerId + '_lineSpaceLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Line Spacing') }) as HTMLLabelElement;
+        let lineSpacingDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLElement;
 
         let lineSpacing: HTMLElement = createElement('select', {
-            id: ownerId + '_lineSpacing', styles: 'width:180px;',
+            id: ownerId + '_lineSpacing',
             innerHTML: '<option value="At least">' + locale.getConstant('At least') +
                 '</option><option value="Exactly">' + locale.getConstant('Exactly') +
                 '</option><option value="Multiple">' + locale.getConstant('Multiple') + '</option>'
         }) as HTMLSelectElement;
 
-        let lineTypeDiv: HTMLElement = createElement('div', { id: ownerId + '_lineTypeWholeDiv', className: 'e-de-para-dlg-spacing-div' }) as HTMLElement;
+        let lineTypeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLElement;
 
-        let atLabel: HTMLLabelElement = createElement('div', { innerHTML: locale.getConstant('At'), id: ownerId + '_atLabel', className: 'e-de-dlg-sub-header' }) as HTMLLabelElement;
         let lineSpacingAt: HTMLInputElement = createElement('input', { id: ownerId + '_lineSpacingAt', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        lineSpacingDiv.appendChild(lineSpaceLabel);
         lineSpacingDiv.appendChild(lineSpacing);
         rightSpacingDiv.appendChild(lineSpacingDiv);
-        lineTypeDiv.appendChild(atLabel);
+
         lineTypeDiv.appendChild(lineSpacingAt);
         rightSpacingDiv.appendChild(lineTypeDiv);
         div.appendChild(generalDiv);
-        div.appendChild(indentionDiv);
+        div.appendChild(indentionWholeDiv);
         div.appendChild(spacingDiv);
         indentContainer.appendChild(div);
         this.leftIndentIn = new NumericTextBox({
-            format: 'n1', value: 0, min: -1584, max: 1584, width: 180, enablePersistence: false, change: this.changeLeftIndent
+            format: 'n1', value: 0, min: -1584, max: 1584,enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('Before text'), change: this.changeLeftIndent
         });
         this.leftIndentIn.appendTo(leftIndent);
         this.rightIndentIn = new NumericTextBox({
-            format: 'n1', value: 0, min: -1584, max: 1584, width: 180, enablePersistence: false, change: this.changeRightIndent
+            format: 'n1', value: 0, min: -1584, max: 1584, enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('After text'), change: this.changeRightIndent
         });
         this.rightIndentIn.appendTo(rightIndent);
         this.byIn = new NumericTextBox({
-            format: 'n1', value: 0, min: 0, max: 1584, width: 180, enablePersistence: false, change: this.changeFirstLineIndent
+            format: 'n1', value: 0, min: 0, max: 1584, enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('By'), change: this.changeFirstLineIndent
         });
         this.byIn.appendTo(by);
         this.beforeSpacingIn = new NumericTextBox({
-            format: 'n1', value: 0, min: 0, max: 1584, width: 180, step: 6, enablePersistence: false,
-            change: this.changeBeforeSpacing
+            format: 'n1', value: 0, min: -1, max: 1584, step: 6, enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('Before'),
+            change: this.changeBeforeSpacing,
+            focus: this.focusBeforeSpacing,
+            blur: this.blurBeforeSpacing,
         });
         this.beforeSpacingIn.appendTo(beforeSpacing);
+        let beforeSpacingSpinDown = beforeSpacingWholeDiv.getElementsByClassName("e-input-group-icon e-spin-down")[0];
+        beforeSpacingSpinDown.addEventListener('click', this.clickBeforeSpacing);
         this.afterSpacingIn = new NumericTextBox({
-            format: 'n1', value: 0, min: 0, max: 1584, width: 180, step: 6, enablePersistence: false,
-            change: this.changeAfterSpacing
+            format: 'n1', value: 0, min: -1, max: 1584, step: 6, enablePersistence: false, floatLabelType:'Always', placeholder:locale.getConstant('After'),
+            change: this.changeAfterSpacing,
+            focus: this.focusAfterSpacing,
+            blur: this.blurAfterSpacing
         });
         this.afterSpacingIn.appendTo(afterSpacing);
+        let afterSpacingSpinDown = afterSpacingWholeDiv.getElementsByClassName("e-input-group-icon e-spin-down")[0];
+        afterSpacingSpinDown.addEventListener('click', this.clickAfterSpacing);
         this.atIn = new NumericTextBox({
-            format: 'n1', value: 0, min: 1, max: 1584, width: 180, step: 0.5, enablePersistence: false, change: this.changeLineSpacingValue
+            format: 'n1', value: 0, min: 1, max: 1584, step: 0.5, enablePersistence: false,floatLabelType: 'Always', placeholder: locale.getConstant('At'), change: this.changeLineSpacingValue
         });
-        this.special = new DropDownList({ change: this.changeByValue, width: 180, enableRtl: isRtl });
+        this.special = new DropDownList({ change: this.changeByValue, enableRtl: isRtl, floatLabelType:'Always', placeholder:locale.getConstant('Special')});
         this.special.appendTo(special);
-        this.lineSpacing = new DropDownList({ change: this.changeBySpacing, width: '180px', enableRtl: isRtl });
+        this.lineSpacing = new DropDownList({ change: this.changeBySpacing, enableRtl: isRtl, floatLabelType: 'Always', placeholder: locale.getConstant('Line Spacing')});
         this.lineSpacing.appendTo(lineSpacing);
-        this.alignment = new DropDownList({ width: 180, change: this.changeByTextAlignment, enableRtl: isRtl });
+        this.alignment = new DropDownList({ change: this.changeByTextAlignment, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('Alignment')});
         this.alignment.appendTo(alignment);
         this.atIn.appendTo(lineSpacingAt);
         this.contextSpacing = new CheckBox({
             change: this.changeContextualSpacing,
             label: locale.getConstant("Contextual Spacing"),
-            enableRtl: isRtl,
-            cssClass: 'e-de-para-dlg-cs-check-box'
+            enableRtl: isRtl
         });
         this.contextSpacing.appendTo(contextInputEle);
         indentContainer.addEventListener('keyup', instance.keyUpParagraphSettings);
@@ -283,7 +293,7 @@ export class ParagraphDialog {
             afterSpacingWholeDiv.classList.add('e-de-rtl');
             lineTypeDiv.classList.add('e-de-rtl');
         }
-        let lineBreakContainer: HTMLDivElement = createElement('div') as HTMLDivElement;
+        let lineBreakContainer: HTMLDivElement = createElement('div', {className: 'e-de-dlg-tab-first-child'}) as HTMLDivElement;
 
         let paginationDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
         this.paginationDiv = paginationDiv;
@@ -359,7 +369,57 @@ export class ParagraphDialog {
      * @returns {void}
      */
     private changeBeforeSpacing = (event: NumericChangeArgs): void => {
-        this.beforeSpacing = event.value;
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (event.value === -1) {
+            this.beforeSpacingIn.element.value = local.getConstant('Auto');
+            this.beforeSpacingIn.step = 1;
+            this.spaceBeforeAuto = true;
+            this.beforeSpacing = 5;
+        }
+        else {
+            this.beforeSpacing = event.value as number;
+            this.beforeSpacingIn.step = 6;
+            this.spaceBeforeAuto = false;
+        }
+    }
+    /**
+     * @private
+     * @param {NumericFocusEventArgs} event - Specifies the event args.
+     * @returns {void}
+     */
+    private focusBeforeSpacing = (event: NumericFocusEventArgs): void => {
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (event.value === -1) {
+            this.beforeSpacingIn.element.value = local.getConstant('Auto');
+        }
+    }
+    /**
+     * @private
+     * @param {NumericFocusEventArgs} event - Specifies the event args.
+     * @returns {void}
+     */
+    private blurBeforeSpacing = (event: NumericFocusEventArgs): void => {
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (event.value === -1) {
+            let proxy: NumericTextBox = this.beforeSpacingIn;
+            setTimeout((): void => {
+                proxy.element.value = local.getConstant('Auto');
+            }, 0);
+        }
+    }
+    /**
+    * @private
+    * @param {ClickEventArgs} event - Specifies the event args.
+    * @returns {void}
+    */
+    private clickBeforeSpacing = (): void => {
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (this.beforeSpacingIn.element.value === '-1.0')
+            this.beforeSpacingIn.element.value = local.getConstant('Auto');
     }
     /**
      * @private
@@ -367,7 +427,57 @@ export class ParagraphDialog {
      * @returns {void}
      */
     private changeAfterSpacing = (event: NumericChangeArgs): void => {
-        this.afterSpacing = event.value as number;
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (event.value === -1) {
+            this.afterSpacingIn.element.value = local.getConstant('Auto');
+            this.afterSpacingIn.step = 1;
+            this.spaceAfterAuto = true;
+            this.afterSpacing = 5;
+        }
+        else {
+            this.afterSpacing = event.value as number;
+            this.afterSpacingIn.step = 6;
+            this.spaceAfterAuto = false;
+        }
+    }
+    /**
+     * @private
+     * @param {NumericFocusEventArgs} event - Specifies the event args.
+     * @returns {void}
+     */
+    private focusAfterSpacing = (event: NumericFocusEventArgs): void => {
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (event.value === -1) {
+            this.afterSpacingIn.element.value = local.getConstant('Auto');
+        }
+    }
+    /**
+     * @private
+     * @param {NumericFocusEventArgs} event - Specifies the event args.
+     * @returns {void}
+     */
+    private blurAfterSpacing = (event: NumericFocusEventArgs): void => {
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (event.value === -1) {
+            let proxy: NumericTextBox = this.afterSpacingIn;
+            setTimeout((): void => {
+                proxy.element.value = local.getConstant('Auto');
+            }, 0);
+        }
+    }
+    /**
+    * @private
+    * @param {ClickEventArgs} event - Specifies the event args.
+    * @returns {void}
+    */
+    private clickAfterSpacing = (): void => {
+        const local: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        local.setLocale(this.documentHelper.owner.locale);
+        if (this.afterSpacingIn.element.value === '-1.0')
+            this.afterSpacingIn.element.value = local.getConstant('Auto');
     }
     /**
      * @private
@@ -560,8 +670,28 @@ export class ParagraphDialog {
         }
         const alignValue: number = this.getAlignmentValue(selectionFormat.textAlignment);
         this.alignment.index = alignValue;
-        this.beforeSpacingIn.value = selectionFormat.beforeSpacing;
-        this.afterSpacingIn.value = selectionFormat.afterSpacing;
+        if (selectionFormat.spaceBeforeAuto) {
+            this.beforeSpacingIn.value = -1;
+        }
+        else {
+            if (selectionFormat.beforeSpacing === -1) {
+                this.beforeSpacingIn.value = undefined;
+            }
+            else {
+                this.beforeSpacingIn.value = selectionFormat.beforeSpacing;
+            }
+        }
+        if (selectionFormat.spaceAfterAuto) {
+            this.afterSpacingIn.value = -1;
+        }
+        else {
+            if (selectionFormat.afterSpacing === -1) {
+                this.afterSpacingIn.value = undefined;
+            }
+            else {
+                this.afterSpacingIn.value = selectionFormat.afterSpacing;
+            }
+        }
         this.leftIndentIn.value = selectionFormat.leftIndent;
         this.rightIndentIn.value = selectionFormat.rightIndent;
         this.byIn.value = Math.abs(selectionFormat.firstLineIndent);
@@ -646,6 +776,12 @@ export class ParagraphDialog {
         }
         if (!isNullOrUndefined(this.afterSpacing)) {
             paraFormat.afterSpacing = this.afterSpacing;
+        }
+        if (!isNullOrUndefined(this.spaceBeforeAuto)) {
+            paraFormat.spaceBeforeAuto = this.spaceBeforeAuto;
+        }
+        if (!isNullOrUndefined(this.spaceAfterAuto)) {
+            paraFormat.spaceAfterAuto = this.spaceAfterAuto;
         }
         if (!isNullOrUndefined(this.lineSpacingType)) {
             paraFormat.lineSpacingType = this.lineSpacingType;

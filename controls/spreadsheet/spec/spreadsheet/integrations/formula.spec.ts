@@ -291,8 +291,8 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
         describe('I288646, I296410, I305593, I314883 ->', () => {
-            const model: SpreadsheetModel = { sheets: [{ rows: [{ cells: [{  value: '10' }, { value: '20' }] }, { cells: [{ formula: '=ROUNDUP(10.6)' },
-            { index: 4, formula: '=INT(10.2)' }, { formula: '=SUMPRODUCT(A1:B1)' }] }] }] };
+            const model: SpreadsheetModel = { sheets: [{ rows: [{ cells: [{  value: '10' }, { value: '20' }, { index: 8, formula: '=H1' }] }, { cells: [{ formula: '=ROUNDUP(10.6)' },
+            { index: 4, formula: '=INT(10.2)' }, { formula: '=SUMPRODUCT(A1:B1)' }, { index: 8, formula: '=H2' }] }] }] };
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(model, done);
             });
@@ -311,6 +311,18 @@ describe('Spreadsheet formula module ->', () => {
                 expect(spreadsheet.sheets[0].rows[1].cells[5].value.toString()).toBe('30');
                 expect(helper.invoke('getCell', [1, 5]).textContent).toBe('30');
                 done();
+            });
+
+            it('Circular reference dialog opens multiple times when deleting column', (done: Function) => {
+                helper.setAnimationToNone(`#${helper.id}_contextmenu`);
+                helper.openAndClickCMenuItem(0, 5, [7], null, true);
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-dialog').length).toBe(1);
+                    helper.setAnimationToNone('.e-dialog');
+                    helper.click('.e-dialog .e-primary');
+                    expect(document.querySelectorAll('.e-dialog').length).toBe(0);
+                    done();
+                });
             });
 
             // it('Formula dependent cell not updated after destroy', (done: Function) => {
@@ -546,6 +558,122 @@ describe('Spreadsheet formula module ->', () => {
                     expect(helper.invoke('getCell', [1, 0]).textContent).toEqual('100');
                     done();
                 });
+            });
+        });
+        describe('SF-362961 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ name: 'Report Output', rows: [{ index: 1, cells:
+                        [{ index: 3, formula: '=IFS(ClientData!E1=0,"",ClientData!E1="Others","",TRUE,ClientData!E1)' },
+                            { formula: '=IF($D2="","",IFERROR(IF(SUMIF(ClientData!D1:D3,$A4,ClientData!C1:C3)=0,"0",SUMIF(ClientData!D1:D3,$A4,ClientData!C1:C3)),"0"))' }] }] },
+                    { name: 'ClientData', rows: [{ cells: [{ index: 2, value: '100' }, { value: 'EY Adj 1' }, { formula: '=UNIQUE(ClientData!D1:D3)' }] },
+                        { cells: [{ index: 2, value: '150' }, { value: 'EY Adj 2' }] }, { cells: [{ index: 2, value: '200' }, { value: 'Others' }] }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Inserting row not properly updated the cell references in other sheets', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[3].value).toEqual('EY Adj 1');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].value).toEqual('0');
+                spreadsheet.activeSheetIndex = 1;
+                spreadsheet.dataBind();
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].rows[1].cells[3].value).toEqual('EY Adj 1');
+                    expect(spreadsheet.sheets[0].rows[1].cells[4].value).toEqual('0');
+                    helper.invoke('insertRow');
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].rows[1].cells[3].formula).toEqual('=IFS(ClientData!E2=0,"",ClientData!E2="Others","",TRUE,ClientData!E2)');
+                        expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBeNull();
+                        expect(spreadsheet.sheets[0].rows[1].cells[4].formula).toEqual('=IF($D2="","",IFERROR(IF(SUMIF(ClientData!D2:D4,$A4,ClientData!C2:C4)=0,"0",SUMIF(ClientData!D2:D4,$A4,ClientData!C2:C4)),"0"))');
+                        expect(spreadsheet.sheets[0].rows[1].cells[4].value).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-57075 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{       rows: [
+                        {
+                          cells: [
+                            { value: '10' },
+                            { value: '10' },
+                            { formula: '=SUMIF(A1:A2,"10",B1)' },
+                          ],
+                        },
+                        { cells: [{ value: '10' }, { value: '10' }] },
+                      ], }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('SUMIF calculation while criteriaRange is greater than Sum range', (done: Function) => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].value.toString()).toEqual('20');
+                done();
+            });
+        });
+        describe('EJ2-57684 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    {
+                        sheets: [{
+                            rows: [
+                                {
+                                    cells: [
+                                        { value: '10', format: '#,##0.00' },
+                                        { value: '10', format: '#,##0.00' },
+                                    ],
+                                },
+                            ],
+                        }],
+                    }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Aggregates not calculated properly for custom number formatted values', (done: Function) => {
+                helper.invoke('selectRange', ['A1:B1']);
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 20.00')
+                done();
+            });
+        });
+        describe('EJ2-58254 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    {
+                        sheets: [
+                            {
+                                ranges: [{ dataSource: defaultData }]
+                            }
+                        ]
+                    }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Aggregates not calculated properly for date formatted values', (done: Function) => {
+                helper.invoke('selectRange', ['B2:B3']);
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 7/27/2128');
+                helper.invoke('selectRange', ['C2:C3']);
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 5:31:12 PM');
+                helper.invoke('selectRange', ['A2:A3']);
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Count: 2');
+                helper.invoke('selectRange', ['D2:D3']);
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 30');
+                helper.invoke('selectRange', ['A2:B5']);
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 167296');
+                helper.invoke('selectRange', ['B2:B3']);
+                helper.getElement('#' + helper.id + '_aggregate').click();
+                let Element:NodeListOf<HTMLElement> = document.querySelectorAll("#spreadsheet_aggregate-popup li");
+                expect(Element[0].textContent).toBe('Count: 2');
+                expect(Element[2].textContent).toBe('Avg: 4/13/2014');
+                expect(Element[3].textContent).toBe('Min: 2/14/2014');
+                expect(Element[4].textContent).toBe('Max: 6/11/2014');
+                Element[0].click();
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Count: 2');
+                done();
             });
         });
     });

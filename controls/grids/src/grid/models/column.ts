@@ -7,6 +7,7 @@ import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { ValueAccessor, SortComparer, HeaderValueAccessor } from '../base/type';
 import { getUid, templateCompiler, getForeignData, getObject } from '../base/util';
+import { DropDownListModel } from '@syncfusion/ej2-dropdowns';
 
 /**
  * Represents Grid `Column` model class.
@@ -537,6 +538,9 @@ export class Column {
         if (this.isForeignColumn() &&
             (isNullOrUndefined(this.editType) || this.editType === 'dropdownedit' || this.editType === 'defaultedit')) {
             this.editType = 'dropdownedit';
+            if (this.edit.params && (this.edit.params as DropDownListModel).dataSource) {
+                (<{ ddEditedData?: boolean }>this.edit.params).ddEditedData = true;
+            }
             this.edit.params = extend({
                 dataSource: <DataManager>this.dataSource,
                 query: new Query(), fields: { value: this.foreignKeyField || this.field, text: this.foreignKeyValue }
@@ -545,7 +549,7 @@ export class Column {
 
         if (this.sortComparer) {
             let a: Function = this.sortComparer as Function;
-            this.sortComparer = function comparer(x: number | string, y: number | string, xObj?: Object, yObj?: Object): number {
+            this.sortComparer = (x: number | string, y: number | string, xObj?: Object, yObj?: Object) => {
                 if (typeof a === 'string') {
                     a = getObject(a, window);
                 }

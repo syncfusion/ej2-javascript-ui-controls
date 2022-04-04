@@ -266,12 +266,30 @@ export class RowDD {
                         let data: IGanttData[] = gObj.flatData;
                         let startIndex: number;
                         let endIndex: number;
+                        let ganttData: Object[] = this.parent.dataSource as Object[];
+                        let uniqueTaskID: string = this.parent.taskFields.id;
                         if (draggedRecord.index < droppedRecord.index) {
                             startIndex = draggedRecord.index;
-                            endIndex = droppedRecord.index;
+                            for (let i: number = 0; i < ganttData.length; i++) {
+                                let currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData) {
+                                    return e[uniqueTaskID] === ganttData[i][uniqueTaskID];
+                                })[0];
+                                if (currentData.index > droppedRecord.index) {
+                                    endIndex = currentData.index;
+                                    break;
+                                }
+                            }
                         } else {
                             startIndex = droppedRecord.index;
-                            endIndex = draggedRecord.index;
+                            for (let i: number = 0; i < ganttData.length; i++) {
+                                let currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData) {
+                                    return e[uniqueTaskID] === ganttData[i][uniqueTaskID];
+                                })[0];
+                                if (currentData.index > draggedRecord.index) {
+                                    endIndex = currentData.index;
+                                    break;
+                                }
+                            }
                         }
                         for (let i: number = startIndex; i <= endIndex; i++) {
                             if (!isNullOrUndefined(data[i])) {

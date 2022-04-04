@@ -138,6 +138,42 @@ console.log('Key down with out www text');
         dialog.onKeyUpOnUrlBox({ keyCode: 14 } as any);
         expect(displayTextBox.value).toBe('Bing');
     });
+    it('Open Hyperlink dialog with screenTip text', () =>{
+console.log('Open Hyperlink dialog with screenTip');
+        let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
+        urlTextBox.value = 'http://syncfusion.com';
+        let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
+        displayTextBox.value = 'Click';
+        let screenTipTextBox: HTMLInputElement = (dialog as any).screenTipTextBox;
+        screenTipTextBox.value = 'syncfusion';
+        dialog.onKeyUpOnDisplayBox();
+        dialog.onKeyUpOnUrlBox({ keyCode: 14 } as any);
+        expect(screenTipTextBox.value).toBe('syncfusion');
+    });
+    it('Open Hyperlink dialog with empty screenTip', () =>{
+console.log('Open Hyperlink dialog with empty screenTip');
+        let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
+        urlTextBox.value = 'http://syncfusion.com';
+        let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
+        displayTextBox.value = 'Click';
+        let screenTipTextBox: HTMLInputElement = (dialog as any).screenTipTextBox;
+        screenTipTextBox.value = '';
+        dialog.onKeyUpOnDisplayBox();
+        dialog.onKeyUpOnUrlBox({ keyCode: 14 } as any);
+        expect(screenTipTextBox.value).toBe('');
+    });
+    it('Check after insert the hyperlink values', () => {
+console.log('Check after insert the hyperlink values');
+        let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
+        urlTextBox.value = 'https://syncfusion.com';
+        let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
+        displayTextBox.value = 'Click';
+        let screenTipTextBox: HTMLInputElement = (dialog as any).screenTipTextBox;
+        screenTipTextBox.value = 'syncfusion';
+        dialog.onInsertButtonClick();
+        expect('').toBe('');
+        dialog.hide();
+    });
     it('Open Hyperlink dialog', () => {
 console.log('Open Hyperlink dialog');
         let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
@@ -327,6 +363,77 @@ console.log('Edit Hyperlink validation');
         expect(displayTextBox.value).not.toBe('Syncfusion');
         dialog.hide();
     });
+    it('Edit ScreenTip validation in Hyperlink', () => {
+console.log('Edit ScreenTip validation in Hyperlink');
+        let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
+        urlTextBox.value = 'https://syncfusion.com';
+        let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
+        displayTextBox.value = 'Click';
+        let screenTipTextBox: HTMLInputElement = (dialog as any).screenTipTextBox;
+        screenTipTextBox.value = 'syncfusion';
+        dialog.onInsertHyperlink();
+        let event: any = { keyCode: 37, ctrlKey: false, preventDefault: () => { }, shiftKey: false }
+        editor.documentHelper.onKeyDownInternal(event);
+        dialog.hide();
+        dialog.show();
+        urlTextBox.value = 'http://js.syncfusion.com';
+        screenTipTextBox.value = 'syncfusionjs'
+        dialog.onInsertHyperlink();
+        dialog.hide();
+        editor.editorModule.removeHyperlink();
+        expect(screenTipTextBox.value).not.toBe('syncfusionjs');
+        dialog.hide();
+    });
+    it('Check after edit screenTip in Hyperlink', () => {
+console.log('Check after edit screenTip in Hyperlink');
+        let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
+        urlTextBox.value = 'https://syncfusion.com';
+        let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
+        displayTextBox.value = 'Click';
+        let screenTipTextBox: HTMLInputElement = (dialog as any).screenTipTextBox;
+        screenTipTextBox.value = 'syncfusion';
+        dialog.onInsertHyperlink();
+        let event: any = { keyCode: 37, ctrlKey: false, preventDefault: () => { }, shiftKey: false }
+        editor.documentHelper.onKeyDownInternal(event);
+        dialog.hide();
+        dialog.show();
+        urlTextBox.value = 'http://js.syncfusion.com';
+        screenTipTextBox.value = 'syncfusionjs';
+        dialog.onInsertHyperlink();
+        editor.documentHelper.onKeyDownInternal(event);
+        dialog.show();
+        expect(screenTipTextBox.value).toBe('syncfusionjs');
+        dialog.hide();
+    }); 
+    it('Check after edit screenTip and display text in Hyperlink', () => {
+console.log('Check after edit screenTip and display text in Hyperlink');
+        let urlTextBox: HTMLInputElement = (dialog as any).urlTextBox;
+        urlTextBox.value = 'https://syncfusion.com';
+        let displayTextBox: HTMLInputElement = (dialog as any).displayTextBox;
+        displayTextBox.value = 'Click';
+        let screenTipTextBox: HTMLInputElement = (dialog as any).screenTipTextBox;
+        screenTipTextBox.value = 'syncfusion';
+        dialog.onInsertHyperlink();
+        let event: any = { keyCode: 37, ctrlKey: false, preventDefault: () => { }, shiftKey: false }
+        editor.documentHelper.onKeyDownInternal(event);
+        dialog.hide();
+        dialog.show();
+        urlTextBox.value = 'http://js.syncfusion.com';
+        screenTipTextBox.value = 'syncfusionjs';
+        dialog.onInsertHyperlink();
+        editor.documentHelper.onKeyDownInternal(event);
+        dialog.hide();
+        dialog.show();
+        displayTextBox.value = 'EditClick'
+        urlTextBox.value = 'http://js.syncfusion.com';
+        screenTipTextBox.value = 'syncfusiondocument';
+        dialog.onInsertHyperlink();
+        editor.documentHelper.onKeyDownInternal(event);
+        dialog.show();
+        expect(displayTextBox.value).toBe('EditClick');
+        expect(screenTipTextBox.value).toBe('syncfusiondocument');
+        dialog.hide();
+    });
     it('Auto format hyperlink ', () => {
 console.log('Auto format hyperlink ');
         editor.editorModule.insertText('www.google.com');
@@ -351,6 +458,7 @@ console.log('Insert Hyperlink on multiple paragraph');
         expect((dialog as any).displayTextBox.value).toBe('<<Selection in document>>');
         dialog.hide();
     });
+   
 });
 
 
@@ -1919,5 +2027,4 @@ console.log('Multiple undo and redo cases hyperlink validation');
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "https://syncfusion.com"')
     });
 });
-
 

@@ -264,8 +264,8 @@ export class ExportUtils {
                     'transform: translateX(' + width + 'px)'
 
             });
-            const backgroundColor: string = (svg.childNodes[0] as HTMLElement).getAttribute('fill');
-            if ((control.theme === 'Tailwind' || control.theme === 'TailwindDark')
+            const backgroundColor: string = (svg.childNodes[0] as HTMLElement) ? (svg.childNodes[0] as HTMLElement).getAttribute('fill') : 'transparent';
+            if ((control.theme === 'Tailwind' || control.theme === 'TailwindDark' || control.theme === "Fluent")
                 && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 (svg.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
             }

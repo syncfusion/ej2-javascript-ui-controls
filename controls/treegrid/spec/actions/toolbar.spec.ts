@@ -6,6 +6,7 @@ import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { select } from '@syncfusion/ej2-base';
+import { ITreeData } from '../../src';
 
 
 /**
@@ -229,6 +230,83 @@ describe('TreeGrid Toolbar module', () => {
     });
     afterAll(() => {
       destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-57737 - Indent/Outdent Toolbar icon based on rowselection and deselection', () => {
+    let TreeGridObj: TreeGrid;
+    let rowSelected: () => void;
+    let rowDeselected: () => void;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: "subtasks",
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          toolbar: ['Indent', 'Outdent'],
+          columns: [
+            { field: "TaskID", headerText: "Task Id", isPrimaryKey: true, width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },done); 
+      });
+
+    it('Checking Indent/Outdent Toolbar on Initial rendering', (done: Function) => {
+      expect(TreeGridObj.grid.toolbarModule['getItems']()[0].disabled).toBe(true);
+      expect(TreeGridObj.grid.toolbarModule['getItems']()[1].disabled).toBe(true);
+      done();
+    });
+    it('Checking Indent/Outdent Toolbar when selecting the row', (done: Function) => {
+      rowSelected = (): void => {
+        let tool: Element = TreeGridObj.toolbarModule.getToolbar();
+        expect(tool.firstElementChild.lastElementChild.classList.contains('e-overlay') === false).toBe(true);
+        done();
+      };
+      TreeGridObj.rowSelected = rowSelected;
+      TreeGridObj.grid.selectRow(1);
+    });
+    it('Checking Indent/Outdent Toolbar when deselecting the row', (done: Function) => {
+      rowDeselected = (): void => {
+        expect(TreeGridObj.grid.toolbarModule['getItems']()[0].disabled).toBe(true);
+        expect(TreeGridObj.grid.toolbarModule['getItems']()[1].disabled).toBe(true);
+        done();
+      };
+      TreeGridObj.rowSelected = rowDeselected;
+      TreeGridObj.selectRow(2);
+      TreeGridObj.clearSelection();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
+  describe('EJ2-58197 - Indent/Outdent functionality without allowRowDragandDrop property', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: "subtasks",
+          treeColumnIndex: 1,
+          toolbar: ['Indent', 'Outdent'],
+          columns: [
+            { field: "TaskID", headerText: "Task Id", isPrimaryKey: true, width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },done); 
+      });
+
+    it('Checking Indent/Outdent functionality', (done: Function) => {
+      TreeGridObj.selectRow(2);
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_indent' } });
+      expect((TreeGridObj.grid.dataSource[1] as ITreeData).childRecords.length).toBe(1);
+      done();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
     });
   });
 

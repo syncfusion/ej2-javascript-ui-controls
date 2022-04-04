@@ -9,7 +9,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { ShapeAnnotationModel, AnnotationModel } from '../../../src/diagram/objects/annotation-model';
 import { Container } from '../../../src/diagram/core/containers/container';
-import { Node } from '../../../src/diagram/objects/node'; 
+import { Node, SwimLane } from '../../../src/diagram/objects/node'; 
 import { Keys, KeyModifiers } from '../../../src/diagram/enum/enum';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
@@ -196,6 +196,86 @@ describe('Diagram Control', () => {
             done();
         });
    });
+
+    describe('Checking Swimlane', () => {
+        let diagram2: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLI' },
+                            height: 50, style: { fontSize: 11 },
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, height: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                width: 140,
+                                children: [
+                                    {
+                                        id: 'Order',
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 60 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 200,
+                                style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 350, offsetY: 290,
+                    height: 360, width: 650
+                },
+            ];
+
+            ele = createElement('div', { id: 'diagramport' });
+            document.body.appendChild(ele);
+            diagram2 = new Diagram({
+                width: '1000px', height: '600px', nodes: nodes
+            });
+            diagram2.appendTo('#diagramport');
+        });
+        afterAll((): void => {
+            diagram2.destroy();
+            ele.remove();
+        });
+
+        it('Child after loading', (done: Function) => {
+            diagram2.select([diagram2.nameTable['Order']]);
+            diagram2.remove(diagram2.selectedItems.nodes[0]);
+            diagram2.undo();
+            let data: string = diagram2.saveDiagram();
+            diagram2.loadDiagram(data);
+            console.log('swimlane lane childs = ' + (diagram2.nodes[0].shape as SwimLane).lanes[0].children.length)
+            expect((diagram2.nodes[0].shape as SwimLane).lanes[0].children.length === 1).toBe(true)
+            done();
+        });
+    });
 
     describe('addport and label', () => {
         let diagram2: Diagram;

@@ -165,6 +165,9 @@ export class DialogRenderer {
     private onCheckChange(args: ChangeEventArgs): void {
         if (args.checked) {
             this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
+            if (this.parent.dataType === 'olap') {
+                this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
+            }
             this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
         }
         this.parent.allowDeferLayoutUpdate = !this.parent.allowDeferLayoutUpdate;
@@ -192,6 +195,9 @@ export class DialogRenderer {
         let parent: PivotFieldList = this.parent;
         parent.axisFieldModule.render();
         parent.clonedDataSource = extend({}, parent.dataSourceSettings, null, true) as IDataOptions;
+        if (this.parent.dataType === 'olap') {
+            this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
+        }
         parent.clonedFieldList = extend({}, parent.pivotFieldList, null, true) as IFieldListOptions;
     }
     private cancelButtonClick(): void {
@@ -500,7 +506,8 @@ export class DialogRenderer {
         this.parent.treeViewModule.render(activeindex);
     }
 
-    private onShowFieldList(): void {
+    /**  @hidden */
+    public onShowFieldList(): void {
         this.parent.actionObj.actionName = events.showFieldList;
         if (this.parent.actionBeginMethod()) {
             return;
@@ -512,6 +519,9 @@ export class DialogRenderer {
                     this.parent.axisFieldModule.render();
                 }
                 this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
+                if (this.parent.dataType === 'olap') {
+                    this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
+                }
                 this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
             }
             addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
@@ -537,9 +547,13 @@ export class DialogRenderer {
                     }, true);
             }
             if (Object.keys(this.parent.clonedFieldList).length > 0) {
-                this.parent.dataType === 'olap' ? this.parent.olapEngineModule.fieldList =  /* eslint-disable-line */
-                    extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions :
+                if (this.parent.dataType === 'olap' && this.parent.clonedFieldListData && Object.keys(this.parent.clonedFieldListData).length > 0) {
+                    this.parent.olapEngineModule.fieldListData = this.parent.clonedFieldListData as IOlapField[];
+                    this.parent.olapEngineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
+                }
+                else {
                     this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
+                }
             }
             if (this.parent.isPopupView && this.parent.pivotGridModule) {
                 this.parent.pivotGridModule.notify(events.uiUpdate, this);

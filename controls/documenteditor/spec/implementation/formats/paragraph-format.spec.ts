@@ -886,3 +886,57 @@ function getStyleDocument() {
         ]
     }`;
 }
+
+describe('Checking AutoSpacing value is appending or not', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it('Return true if spaceBeforeAuto  is set to false', () => {
+        console.log('spaceBeforeAuto');
+        editor.editor.insertText('In 2000, Adventure Works Cycles bought a small manufacturing plant, Importadores Neptuno, located in Mexico. Importadores Neptuno manufactures several critical subcomponents for the Adventure Works Cycles product line. These subcomponents are shipped to the Bothell location for final product assembly.');
+        expect(editor.documentHelper.paragraphFormat.spaceBeforeAuto).toBe(false);
+    });
+    it('Return true if spaceAfterAuto  is set to false', () => {
+        console.log('spaceAfterAuto');
+        expect(editor.documentHelper.paragraphFormat.spaceAfterAuto).toBe(false);
+    });
+    it('Return true if spaceAfterAuto value is set to true', () => {
+        console.log('spaceAfterAuto');
+        editor.documentHelper.paragraphFormat.spaceAfterAuto = true;
+        expect(editor.documentHelper.paragraphFormat.spaceAfterAuto).toBe(true);
+    });
+    it('Return true if spaceBeforeAuto value is set to true', () => {
+        console.log('spaceBeforeAuto');
+        editor.documentHelper.paragraphFormat.spaceBeforeAuto = true;
+        expect(editor.documentHelper.paragraphFormat.spaceBeforeAuto).toBe(true);
+    });
+    it('Return true if the spaceAfterAuto value is set to false', () => {
+        console.log('spaceAfterAuto');
+        editor.documentHelper.paragraphFormat.spaceAfterAuto = false;
+        expect(editor.documentHelper.paragraphFormat.spaceAfterAuto).toBe(false);
+    });
+    it('Return true if the spaceBeforeAuto value is set to false', () => {
+        console.log('spaceBeforeAuto');
+        editor.documentHelper.paragraphFormat.spaceBeforeAuto = false;
+        expect(editor.documentHelper.paragraphFormat.spaceBeforeAuto).toBe(false);
+    });
+});

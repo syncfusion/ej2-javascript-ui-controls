@@ -245,6 +245,8 @@ export function templateCompiler(template: string): Function {
         try {
             if (document.querySelectorAll(template).length) {
                 return baseTemplateComplier(document.querySelector(template).innerHTML.trim());
+            } else {
+                return baseTemplateComplier(template);
             }
         } catch (e) {
             return baseTemplateComplier(template);
@@ -619,7 +621,7 @@ export function getRowHeight(element?: HTMLElement): number {
     if (rowHeight !== undefined) {
         return rowHeight;
     }
-    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden' });
+    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden', attrs: { role: 'grid' } });
     table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
     element.appendChild(table);
     const rect: ClientRect = table.querySelector('td').getBoundingClientRect();
@@ -639,7 +641,7 @@ export function getActualRowHeight(element?: HTMLElement): number {
     if (actualRowHeight !== undefined) {
         return rowHeight;
     }
-    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden' });
+    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden', attrs: { role: 'grid' } });
     table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
     element.appendChild(table);
     const rect: ClientRect = table.querySelector('tr').getBoundingClientRect();

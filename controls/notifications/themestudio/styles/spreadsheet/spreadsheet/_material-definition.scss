@@ -1,0 +1,129 @@
+//default
+$sheet-skin: 'material' !default;
+$spreadsheet-border-color: $grey-300 !default;
+$spreadsheet-border-width: 1px;
+$spreadsheet-border: $spreadsheet-border-width solid $spreadsheet-border-color !default;
+$header-cell-bg-color: $grey-100 !default;
+$header-cell-color: $grey-600 !default;
+$select-all-size: 26px !default;
+$select-all-bg-color: $spreadsheet-border-color !default;
+$select-all-hover-bg-color: $grey-400 !default;
+$select-all-active-bg-color: $accent !default;
+$cell-background: #fff !default;
+$cell-color: #000 !default;
+$cell-border-color: $spreadsheet-border-color !default;
+$hdr-cell-border-color: $cell-border-color !default;
+$dlg-error-color: #dd2c2c !default;
+$agg-clr: #808080;
+//enddefault
+//selection
+$selection-bg-color: rgba($accent, .12) !default;
+$selection-border-color: $accent !default;
+$hdr-selection-bg-color: #e6e6e6 !default;
+$hdr-selection-border: 1px solid !default;
+$hdr-selection-border-color: darken($grey-300, 8%) !default;
+$hdr-selection-color: $grey-800 !default;
+$hdr-hover-bg-color: $grey-200 !default;
+$copy-indicator-t-b: 'data:image/gif;base64,R0lGODlhBgAEAJECAP///+MWW////wAAACH/C05FVFNDQVBFMi4wAwEAAAAh/wtYTVAgRGF0YVhNUDw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQ1IDc5LjE2MzQ5OSwgMjAxOC8wOC8xMy0xNjo0MDoyMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjkxQUZDQkFFRDA5RDExRTk4MkNCQTM1MkJFMzIzQUNBIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjkxQUZDQkFGRDA5RDExRTk4MkNCQTM1MkJFMzIzQUNBIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OTFBRkNCQUNEMDlEMTFFOTgyQ0JBMzUyQkUzMjNBQ0EiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6OTFBRkNCQUREMDlEMTFFOTgyQ0JBMzUyQkUzMjNBQ0EiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4B//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5OPi4eDf3t3c29rZ2NfW1dTT0tHQz87NzMvKycjHxsXEw8LBwL++vby7urm4t7a1tLOysbCvrq2sq6qpqKempaSjoqGgn56dnJuamZiXlpWUk5KRkI+OjYyLiomIh4aFhIOCgYB/fn18e3p5eHd2dXRzcnFwb25tbGtqaWhnZmVkY2JhYF9eXVxbWllYV1ZVVFNSUVBPTk1MS0pJSEdGRURDQkFAPz49PDs6OTg3NjU0MzIxMC8uLSwrKikoJyYlJCMiISAfHh0cGxoZGBcWFRQTEhEQDw4NDAsKCQgHBgUEAwIBAAAh+QQFAwACACwAAAAABgAEAAACB4wDcJh6uQoAIfkEBQMAAgAsAAAAAAYABAAAAgiMAXYZqM1CAQAh+QQFAwACACwBAAAABAAEAAACBhQUhnksBQAh+QQFAwACACwBAAAABAAEAAACBoQihpcMBQAh+QQFAwACACwAAAAABgAEAAACBwSCYcl6aQoAIfkEBQMAAgAsAAAAAAYABAAAAghEHmComHtAAQA7' !default;
+$copy-indicator-l-r: 'data:image/gif;base64,R0lGODlhBAAGAJECAP///+MWW////wAAACH/C05FVFNDQVBFMi4wAwEAAAAh/wtYTVAgRGF0YVhNUDw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQ1IDc5LjE2MzQ5OSwgMjAxOC8wOC8xMy0xNjo0MDoyMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjY5NjE5RUMyQ0VERDExRTk4M0E3RjQ4OEYzQTRFOUVFIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjY5NjE5RUMzQ0VERDExRTk4M0E3RjQ4OEYzQTRFOUVFIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6Njk2MTlFQzBDRUREMTFFOTgzQTdGNDg4RjNBNEU5RUUiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6Njk2MTlFQzFDRUREMTFFOTgzQTdGNDg4RjNBNEU5RUUiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4B//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5OPi4eDf3t3c29rZ2NfW1dTT0tHQz87NzMvKycjHxsXEw8LBwL++vby7urm4t7a1tLOysbCvrq2sq6qpqKempaSjoqGgn56dnJuamZiXlpWUk5KRkI+OjYyLiomIh4aFhIOCgYB/fn18e3p5eHd2dXRzcnFwb25tbGtqaWhnZmVkY2JhYF9eXVxbWllYV1ZVVFNSUVBPTk1MS0pJSEdGRURDQkFAPz49PDs6OTg3NjU0MzIxMC8uLSwrKikoJyYlJCMiISAfHh0cGxoZGBcWFRQTEhEQDw4NDAsKCQgHBgUEAwIBAAAh+QQFAwACACwAAAAABAAGAAACBwQShsurCQoAIfkEBQMAAgAsAAAAAAQABgAAAgeMA2B5qN4KACH5BAUDAAIALAAAAQAEAAQAAAIFjAOpeVEAIfkEBQMAAgAsAAABAAQABAAAAgZMAIaoGQUAIfkEBQMAAgAsAAAAAAQABgAAAghMAIbGvJdCAQAh+QQFAwACACwAAAAABAAGAAACB4QRqctxUAAAOw==' !default;
+//end selection
+//Tab
+$sheets-btn-height: 34px !default;
+$msheets-btn-height: 46px !default;
+$sheet-tab-panel-bg-color: $grey-50 !default;
+$sheet-tab-bg-color: $sheet-tab-panel-bg-color !default;
+$sheet-tab-hover-bg-color: $hdr-selection-bg-color !default;
+$sheet-tab-active-bg-color: $grey-white !default;
+$select-icon-color: rgba(0, 0, 0, .87) !default;
+$sheet-tab-btn-icon-color: rgba($grey-light-font, .54) !default;
+//End Tab
+//Formula bar
+$formula-bar-bg-color: $grey-white !default;
+$formula-bar-font-size: 13px !default;
+$bigger-formula-bar-font-size: 14px !default;
+$name-box-width: 92px !default;
+$namebox-icon-size: 8px !default;
+$formula-textarea-width: calc(100% - 146px) !default;
+$formula-bar-color: #515151 !default;
+$mformula-bar-height: 42px !default;
+$expand-icon-margin: 4px !default;
+//End formula bar$header-cell-color
+//Insert dialog box
+$dlg-list-border: $spreadsheet-border !default;
+$dlg-description-font-weight: 500 !default;
+$dlg-content-padding: 18px !default;
+$dlg-category-margin-bottom: 0 !default;
+$dlg-min-height: 480px !default;
+//End Insert dialogbox
+//Ribbon
+$fontsize-btn-width: 55px !default;
+$bigger-fontsize-btn-width: 70px !default;
+$align-ddb-item-height: 28px !default;
+$align-ddb-ul-padding: 8px !default;
+$align-ddb-item-padding: 0 7px !default;
+$align-ddb-item-margin: 0 !default;
+$ctrl-btn-padding: 16px !default;
+$ribbon-btn-width: 22px !default;
+$ribbon-btn-height: 23px !default;
+$ribbon-btn-padding: 1.5px !default;
+$bigger-ribbon-btn-height: 34px !default;
+$bigger-ribbon-btn-padding: 6px !default;
+$cpicker-btn-width: 24px !default;
+$bigger-cpicker-btn-width: 31px !default;
+$menu-extension-padding: 10px !default;
+$ribbon-item-hover-border-color: transparent !default;
+$ribbon-item-active-border-color: transparent !default;
+$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
+$normal-btn-padding: 7px !default;
+//End Ribbon
+//Sorting
+$sort-error-bg-color: #fce7e9;
+$sort-error-font-color: #333;
+//End Sorting
+//Hyperlink
+$hyper-link-color: #00e !default;
+$hyper-doc-border-color: #c8c8c8 !default;
+$hyper-text-border: #979797  !default;
+//End Hyperlink
+//Filtering
+$filter-icon-margin-bottom: 0 !default;
+$filter-icon-bigger-margin-bottom: 12px !default;
+//End Filtering
+//Find And Replace
+$find-popup-border-top-color: #fafafa !default;
+$find-popup-border-color: #e0e0e0 !default;
+$find-tool-dlg-width: 328px !default;
+$find-tool-dlg-height: 45px !default;
+$find-dlg-width: 468px !default;
+$bigger-find-tool-dlg-width: 403px !default;
+$bigger-find-tool-dlg-height: 59px !default;
+$bigger-find-goto-dlg-height: 236px !default;
+//End Find And Replace
+//Protect Sheet
+$protect-dlg-height: 470px !default;
+$protect-dlg-width: 287px !default;
+//End Protect Sheet
+//Conditional Formatting
+$ele-color: #616161;
+$ele-hover-color: #eee;
+$dark-ele-color: #303030;
+$dark-ele-hover-color: rgba(255, 255, 255, .1) !default;
+//End Conditional Formatting
+//Formula selection
+$vborder-selection: #673ab8;
+$pborder-selection: #9c27b0;
+$cborder-selection: #029688;
+$gborder-selection: #4caf51;
+$oborder-selection: #fe9800;
+$bborder-selection: #3f52b5;
+//End Formula selection
+//Freeze pane
+$freezepane-color: $grey-500 !default;
+//End Freeze pane
+$mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
+//Custom Format
+$custom-listview-color: #ddd;
+//End Custom Format
+//File Name Dialog
+$open-dlg-width: 340px !default;
+//File Name Dialog

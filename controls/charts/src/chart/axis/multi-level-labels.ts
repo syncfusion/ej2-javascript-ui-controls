@@ -470,7 +470,7 @@ export class MultiLevelLabel {
             axis.multiLevelLabels[borderIndex].border.color || this.chart.themeStyle.axisLine,
             1, '', path
         )) as HTMLElement;
-        borderElement.setAttribute('style', 'pointer-events: none');
+        (borderElement as HTMLElement).style.pointerEvents = 'none';
         appendChildElement( this.chart.enableCanvas, this.labelElement, borderElement, this.chart.redraw, true, 'x', 'y', null, direction);
     }
     /**

@@ -85,7 +85,11 @@ export type AccumulationTheme =
     /**  Render a accumulation chart with Bootstrap5 theme. */
     'Bootstrap5' |
     /**  Render a accumulation chart with Bootstrap5Dark theme. */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark' |
+    /**  Render a accumulation chart with Fluent theme. */
+    'Fluent' |
+    /**  Render a accumulation chart with FluentDark theme. */
+    'FluentDark';
 
 /**
  * Defines the empty point mode of the chart.

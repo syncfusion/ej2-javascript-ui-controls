@@ -232,6 +232,11 @@ export class PasteCleanup {
         }
     }
 
+    private toolbarEnableDisable(state: boolean): void {
+        if (!this.parent.inlineMode.enable) {
+            this.parent.toolbarModule.baseToolbar.toolbarObj.disable(state);
+        }
+    }
 
     private uploadMethod(fileList: File, imgElem: Element): void {
         const uploadEle: HTMLInputElement | HTMLElement = document.createElement('div');
@@ -307,6 +312,7 @@ export class PasteCleanup {
                         if (beforeUploadArgs.cancel) {
                             return;
                         }
+                        this.toolbarEnableDisable(true);
                         /* eslint-disable */
                     (uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
                         beforeUploadArgs.currentRequest : (uploadObj as any).currentRequestHeader;
@@ -317,6 +323,7 @@ export class PasteCleanup {
                     });
                 } else {
                     this.parent.trigger(events.beforeImageUpload, args);
+                    this.toolbarEnableDisable(true);
                 }
             },
             // eslint-disable-next-line
@@ -389,6 +396,7 @@ export class PasteCleanup {
         popupObj.close();
         (imgElem as HTMLElement).style.opacity = '1';
         uploadObj.destroy();
+        this.toolbarEnableDisable(false);
     }
     private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
         const imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +

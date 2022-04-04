@@ -20,6 +20,8 @@ export class Row<T> {
 
     public isCaptionRow: boolean;
 
+    public isAggregateRow: boolean;
+
     public changes: Object;
 
     public isDirty: boolean;

@@ -1,0 +1,17 @@
+
+@include export-module('accordion-highcontrast-icons') {
+  /*! accordion icons */
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: '\e84f';
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+  }
+  }
+}

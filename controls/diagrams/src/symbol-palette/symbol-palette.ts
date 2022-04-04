@@ -1206,6 +1206,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
             symbolPreviewWidth = (symbolPreview.width || this.symbolPreview.width || symbolPreviewWidth) - symbol.style.strokeWidth;
             symbolPreviewHeight = (symbolPreview.height || this.symbolPreview.height || symbolPreviewHeight) - symbol.style.strokeWidth;
+            // EJ2-56887 - Connector do not get rendered properly in symbol palette.
+            // Added below code to check if connector width is less than strokewidth means then set symbol width for connector.
             if (symbol instanceof Connector) {
                 if (content.actualSize.width <= symbol.style.strokeWidth) {
                     content.actualSize.width = this.symbolWidth;

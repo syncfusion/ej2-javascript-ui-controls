@@ -972,7 +972,6 @@ console.log('Paste Text Formatting formatting option');
         expect((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children.length).toBe(1);
     });
 });
-
 /**
  * Toc content creation validation.
  */

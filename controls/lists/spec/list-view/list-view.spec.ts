@@ -57,6 +57,14 @@ let dataSourceWithStringID: { [key: string]: Object }[] = [
     { id: '5', text: 'text5' },
 ]
 
+let UrldataSource: { [key: string]: Object }[] = [
+    { id: '01', text: 'text1', url: 'www.syncfusion.com' },
+    { id: '02', text: 'text2' },
+    { id: '03', text: 'text3' },
+    { id: '04', text: 'text4' },
+    { id: '05', text: 'text5' },
+]
+
 let XSSData: any = [
     { id: 1, text: 'text1<style>body{background:rgb(0, 0, 255)}</style>' },
     { id: 2, text: 'text2' },
@@ -490,6 +498,34 @@ describe('ListView', () => {
         });
     });
 
+    describe('Local Data with URL field', () => {
+        let listObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView' });
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            listObj = new ListView({ dataSource: UrldataSource });
+            listObj.appendTo(ele);
+        });
+
+        it('default initialize', () => {
+            expect(ele.childNodes.length).not.toBe(0);
+        });
+
+        it('class name', () => {
+            expect(ele.classList.contains('e-listview')).toBe(true);
+        });
+
+        it('url field anchor element test', () => {
+            let LiElement = ele.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0] as HTMLElement;
+            expect(LiElement.tagName).not.toEqual("A");
+            expect(LiElement.tagName).toEqual("SPAN");
+        });
+
+        afterAll(() => {
+            ele.remove();
+        });
+    });
+
     describe('Local Data Binding (Array of Number)', () => {
         let treeObj: any;
         let ele: HTMLElement = createElement('div', { id: 'ListView' });
@@ -910,7 +946,7 @@ describe('ListView', () => {
 
         it('role of the group element', () => {
             let deepNode = ele.childNodes[0].childNodes[0].childNodes[0] as HTMLElement;
-            expect(deepNode.getAttribute('role')).toBe('group');
+            expect(deepNode.getAttribute('role')).toBe('option');
         });
     });
 
@@ -1624,7 +1660,7 @@ describe('ListView', () => {
             listObj.appendTo('#listView');
             listObj.selectItem(listObj.liCollection[0]);
             listObj.selectItem(listObj.liCollection[0]);
-            let back: HTMLElement = <HTMLElement>document.getElementsByClassName('e-but-back')[0]
+            let back: HTMLElement = <HTMLElement>document.getElementsByClassName('e-back-button')[0]
             back.click();
             expect(listObj.getSelectedItems().text[0]).toBe('text1');
         });
@@ -1663,6 +1699,23 @@ describe('ListView', () => {
             listObj.dataBind();
             item = listObj.liCollection[0];
             item.click();
+        });
+
+
+        it('click forth and use back key to drill up on nested dataSource', () => {
+            listObj = new ListView({ dataSource: NestedData, showCheckBox: true, showHeader: true });
+            listObj.appendTo('#listView');
+            let item = listObj.liCollection[0];
+            item.click();
+            item = listObj.liCollection[0];
+            item.click();
+            expect(listObj.getSelectedItems().text[0]).toBe('subText1');
+            let keyEventArgs: any = {
+                preventDefault: (): void => { },
+                keyCode: 8
+            };
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.getSelectedItems().text[0]).toBe(undefined);
         });
 
         it('Entering child using Enter Key', () => {
@@ -2235,7 +2288,9 @@ describe('ListView', () => {
             };
 
             let ele: Element;
+            let parentEle: Element;
             let listObj: any;
+            let currentScrollTop:any;
             it('Home button action with simple dataSource', () => {
                 ele = createElement('div', { id: 'ListView' });
                 document.body.appendChild(ele);
@@ -2275,6 +2330,32 @@ describe('ListView', () => {
                 listObj.curUL.focus();
                 listObj.keyActionHandler(keyEventArgs);
                 expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
+            });
+
+            it('Home and End button action page scroll test', () => {
+                ele = createElement('div', { id: 'ListView', styles:"margin-top:400px"  });
+                parentEle = createElement('div', { id: 'ListViewParent', styles:"height:200px;overflow:scroll;" });
+                parentEle.appendChild(ele);
+                document.body.appendChild(parentEle);
+                listObj = new ListView({ dataSource: dataSource });
+                listObj.appendTo(ele);
+                expect(parentEle.scrollTop == 0).toBe(true);
+                ele.scrollIntoView(false);
+                currentScrollTop = parentEle.scrollTop;
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
+                listObj.setSelectLI(li[2]);
+                listObj.keyActionHandler(keyEventArgs);
+                expect((li[0] as Element).classList.contains('e-active')).toBe(true);
+                setTimeout(() => {  
+                    expect(parentEle.scrollTop == currentScrollTop).toBe(false); 
+                }, 100);
+                listObj.setSelectLI(li[1]);
+                keyEventArgs.keyCode = 35;
+                currentScrollTop = parentEle.scrollTop;
+                listObj.keyActionHandler(keyEventArgs);
+                setTimeout(() => {  
+                    expect(parentEle.scrollTop == currentScrollTop).toBe(false); 
+                }, 200);
             });
 
             afterEach(() => {
@@ -2665,7 +2746,9 @@ describe('ListView', () => {
             };
 
             let ele: Element;
+            let parentEle: Element;
             let listObj: any;
+            let currentScrollTop: any;
             it('select action with checkbox', () => {
                 ele = createElement('div', { id: 'ListView' });
                 document.body.appendChild(ele);
@@ -2676,6 +2759,24 @@ describe('ListView', () => {
                 listObj.keyActionHandler(keyEventArgs);
                 expect((li[1] as Element).classList.contains('e-active')).toBe(true);
             });
+
+            it('select action with checkbox page scroll test', () => {
+                ele = createElement('div', { id: 'ListView', styles:"margin-top:400px"  });
+                parentEle = createElement('div', { id: 'ListViewParent', styles:"height:200px;overflow:scroll;" });
+                parentEle.appendChild(ele);
+                document.body.appendChild(parentEle);
+                listObj = new ListView({ dataSource: dataSource, showCheckBox: true });
+                listObj.appendTo(ele);
+                expect(parentEle.scrollTop == 0).toBe(true);
+                ele.scrollIntoView(false);
+                currentScrollTop = parentEle.scrollTop;
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
+                listObj.setSelectLI(li[1]);
+                listObj.keyActionHandler(keyEventArgs);
+                expect((li[1] as Element).classList.contains('e-active')).toBe(true);
+                setTimeout(() => {  
+                    expect(parentEle.scrollTop == currentScrollTop).toBe(false); 
+                }, 200);            });
 
             it('select action without checkbox', () => {
                 ele = createElement('div', { id: 'ListView' });

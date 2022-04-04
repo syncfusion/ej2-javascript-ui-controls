@@ -5,8 +5,9 @@ import { internetUsers, usa, Africa_Continent,  topPopulation, electionData } fr
 import { World_Map } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { getElement } from '../../../src/maps/utils/helper';
-import { Legend, Marker, IBubbleRenderingEventArgs, ILabelRenderingEventArgs, IAnnotationRenderingEventArgs, IMarkerRenderingEventArgs, ISelectionEventArgs, IShapeRenderingEventArgs } from '../../../src/maps/index';
-Maps.Inject(Legend, Marker);
+import { Legend, Marker, Zoom, IBubbleRenderingEventArgs, ILabelRenderingEventArgs, IAnnotationRenderingEventArgs, IMarkerRenderingEventArgs, ISelectionEventArgs, IShapeRenderingEventArgs } from '../../../src/maps/index';
+
+Maps.Inject(Legend, Marker, Zoom);
 
 export function getElementByID(id: string): Element {
     return document.getElementById(id);

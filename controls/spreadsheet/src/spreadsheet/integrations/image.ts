@@ -2,12 +2,12 @@
  * Open properties.
  */
 import { Spreadsheet } from '../base/index';
-import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition } from '../common/event';
+import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, completeAction } from '../common/event';
 import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
 import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData } from '../common/index';
-import { removeClass, L10n } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/index';
+import { removeClass, L10n, isUndefined } from '@syncfusion/ej2-base';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {
@@ -105,7 +105,7 @@ export class SpreadsheetImage {
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const id: string = args.options.imageId ? args.options.imageId : this.parent.element.id + '_overlay_picture_' + this.pictureCount;
         const indexes: number[] = getRangeIndexes(range);
-        const sheet: SheetModel = sheetIndex ? this.parent.sheets[sheetIndex] : this.parent.getActiveSheet();
+        const sheet: SheetModel = isUndefined(sheetIndex) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIndex];
         if (document.getElementById(id)) {
             return;
         }
@@ -224,10 +224,11 @@ export class SpreadsheetImage {
         }
     }
 
-    public deleteImage(args: { id: string, range?: string }): void {
+    public deleteImage(args: { id: string, range?: string, preventEventTrigger?:boolean }): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         const pictureElements: HTMLElement = document.getElementById(args.id);
         let rowIdx: number; let colIdx: number;
+        let address: string;
         if (pictureElements) {
             let imgTop: { clientY: number, isImage?: boolean, target?: Element };
             let imgleft: { clientX: number, isImage?: boolean, target?: Element };
@@ -245,9 +246,16 @@ export class SpreadsheetImage {
                 imgleft = { clientX: pictureElements.offsetLeft, isImage: true };
             }
             this.parent.notify(getRowIdxFromClientY, imgTop); this.parent.notify(getColIdxFromClientX, imgleft);
-            document.getElementById(args.id).remove();
             rowIdx = imgTop.clientY; colIdx = imgleft.clientX;
-            sheet = this.parent.sheets[this.parent.activeSheetIndex];
+            address = sheet.name + '!' + getCellAddress(rowIdx, colIdx);
+            if (!args.preventEventTrigger) {
+                const eventArgs: { address: string, cancel: boolean } = { address: address, cancel: false };
+                this.parent.notify(beginAction, { action: 'deleteImage', eventArgs: eventArgs });
+                if (eventArgs.cancel) {
+                    return;
+                }
+            }
+            document.getElementById(args.id).remove();
         } else {
             const rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
                 this.parent.getActiveSheet().selectedRange;
@@ -258,14 +266,18 @@ export class SpreadsheetImage {
             sheet = this.parent.sheets[sheetIndex];
         }
         const cellObj: CellModel = getCell(rowIdx, colIdx, sheet);
-        const prevCellImg: object[] = cellObj.image;
+        const prevCellImg: ImageModel[] = cellObj.image;
         const imgLength: number = prevCellImg.length;
+        let image: ImageModel = {};
         for (let i: number = 0; i < imgLength; i++) {
-            if ((prevCellImg[i] as ImageModel).id === args.id) {
-                prevCellImg.splice(i, 1);
+            if (prevCellImg[i].id === args.id) {
+                image = prevCellImg.splice(i, 1)[0];
             }
         }
         setCell(rowIdx, colIdx, sheet, { image: prevCellImg }, true);
+        if (!args.preventEventTrigger) {
+            this.parent.notify(completeAction, { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, cancel: false } });
+        }
     }
 
     /**

@@ -74,6 +74,10 @@ export interface ISharedTooltipRenderEventArgs extends IChartEventArgs {
     text?: string[];
     /** Defines tooltip text style */
     textStyle?: FontModel;
+    /** Defines current tooltip series */
+    series: Series[];
+    /** Defines current tooltip point */
+    point: Points[];
     /** Defines the header text for the tooltip */
     headerText ?: string;
     /** point informations */

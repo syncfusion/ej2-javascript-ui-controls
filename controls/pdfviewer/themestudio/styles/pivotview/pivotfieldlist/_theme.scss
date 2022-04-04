@@ -147,6 +147,9 @@
     .e-dlg-header-content,
     .e-footer-content {
       border: 0;
+      @if ($skin-name == 'tailwind') {
+        height: 46px;
+      }
     }
 
     .e-dlg-header-content {
@@ -251,12 +254,17 @@
             color: $field-list-default-header-icon-font-color;
             cursor: pointer;
             font-size: $field-list-header-icon-size;
-            height: 20px;
+            // sass-lint:disable-all
+            height: 20px !important;
+            // sass-lint:enable-all
             padding: $field-list-tree-header-padding 0 0 $field-list-icon-to-icon-padding;
             width: 20px;
 
             &.e-selected::before {
               color: $field-list-active-color;
+              @if ($skin-name == 'FluentUI') {
+                font-size: 16px;
+               }
             }
 
             &:hover {
@@ -272,7 +280,8 @@
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding: 0 0 $field-list-icon-to-icon-padding $field-list-tree-header-padding !important;
-              transform: rotate(90deg);
+              transform: rotate(180deg);
+              color: $icon-color;
             }
           }
           // sass-lint:enable-all
@@ -314,8 +323,10 @@
                 vertical-align: bottom;
                 width: 20px;
 
-                @if ($skin-name == 'bootstrap5') {
+                @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
                   margin-right: 4px;
+                  padding-left: 8px;
+                  padding-right: 12px;
                 }
 
                 @if ($skin-name == 'tailwind') {
@@ -425,7 +436,7 @@
           width: 100%;
 
           .e-axis-wrapper {
-            background-color: $field-list-header-background-color;
+            background-color: $field-list-axis-header-color;
             border-bottom: $field-list-border-size $field-list-border-type $field-list-default-border-color;
             color: $field-list-default-header-font-color;
             display: flex;
@@ -596,6 +607,9 @@
                   text-align: left;
                   text-overflow: ellipsis;
                   width: 70%;
+                  @if($skin-name == 'tailwind') {
+                    line-height: 1.2em;
+                  }
                 }
 
                 .e-draggable {
@@ -787,7 +801,7 @@
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding: $field-list-icon-to-icon-padding 0 0 $field-list-tree-header-padding !important;
-              transform: rotate(90deg);
+              transform: rotate(180deg);
             }
           }
           // sass-lint:enable-all
@@ -946,6 +960,10 @@
         height: 48px;
         padding-bottom: 9px;
         padding-top: 9px;
+        @if ($skin-name == 'tailwind') {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
       }
 
       .e-adaptive-field-list-dialog,
@@ -1039,6 +1057,9 @@
                   background-color: $field-list-button-color;
                   color: $field-list-default-font-color;
                 }
+                @if($skin-name == 'tailwind') {
+                  border-width: 0;
+                }
 
                 &.e-list-selected {
                   opacity: .5;
@@ -1073,6 +1094,7 @@
                   height: 24px;
                   padding-left: 10px;
                   width: 24px;
+                  font-size: 14px !important;
 
                   @if ($field-list-skin == 'bootstrap4') {
                     color: #fff;
@@ -1080,6 +1102,7 @@
 
                   @if ($skin-name == 'bootstrap5') {
                     color: $field-list-default-font-color;
+                    padding-left: 8px;
                   }
 
                   &:hover {
@@ -1130,6 +1153,10 @@
                       margin-right: 8px;
                       padding-right: 0;
                     }
+                    @if ($skin-name == 'bootstrap5') {
+                      color: $field-list-default-font-color;
+                      padding-left: 8px;
+                     }
                   }
                 }
               }
@@ -1529,6 +1556,9 @@
     .e-dlg-header-content,
     .e-footer-content {
       border: 0;
+      @if ($skin-name == 'tailwind') {
+        height: 46px;
+      }
     }
 
     .e-dlg-header-content {
@@ -1601,6 +1631,9 @@
           text-align: left;
           text-overflow: ellipsis;
           word-break: break-all;
+          @if ($field-list-skin == 'tailwind') {
+            text-transform: uppercase;
+          }
 
           @if ($field-list-skin == 'bootstrap4') {
             padding-left: 12px;
@@ -1627,7 +1660,9 @@
             color: $field-list-default-header-icon-font-color;
             cursor: pointer;
             font-size: $field-list-header-icon-size;
-            height: 20px;
+            // sass-lint:disable-all
+            height: 20px !important;
+            // sass-lint:enable-all
             padding: $field-list-tree-header-padding 0 0 $field-list-icon-to-icon-padding;
             width: 20px;
 
@@ -1648,7 +1683,7 @@
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding: 0 0 $field-list-icon-to-icon-padding $field-list-tree-header-padding !important;
-              transform: rotate(90deg);
+              transform: rotate(180deg);
             }
           }
           // sass-lint:enable-all
@@ -1690,8 +1725,9 @@
                 vertical-align: bottom;
                 width: 20px;
 
-                @if ($skin-name == 'bootstrap5') {
+                @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
                   margin-right: 4px;
+                  padding-left: 12px;
                 }
 
                 @if ($skin-name == 'tailwind') {
@@ -1959,6 +1995,9 @@
                   text-align: left;
                   text-overflow: ellipsis;
                   width: 70%;
+                  @if($skin-name == 'tailwind') {
+                    line-height: 1.2em;
+                  }
                 }
 
                 .e-draggable {
@@ -2150,7 +2189,7 @@
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding: $field-list-icon-to-icon-padding 0 0 $field-list-tree-header-padding !important;
-              transform: rotate(90deg);
+              transform: rotate(180deg);
             }
           }
           // sass-lint:enable-all
@@ -2277,6 +2316,10 @@
         height: 48px;
         padding-bottom: 9px;
         padding-top: 9px;
+        @if ($skin-name == 'tailwind') {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
       }
 
       .e-adaptive-field-list-dialog,
@@ -2404,6 +2447,7 @@
                   height: 24px;
                   padding-left: 10px;
                   width: 24px;
+                  font-size: 14px !important;
 
                   @if ($field-list-skin == 'bootstrap4') {
                     color: #fff;
@@ -2411,6 +2455,7 @@
 
                   @if ($skin-name == 'bootstrap5') {
                     color: $field-list-button-icon-color;
+                    padding-left: 8px;
                   }
 
                   &:hover {
@@ -2456,7 +2501,9 @@
                       margin-right: 8px;
                       padding-right: 0;
                     }
-
+                    @if ($skin-name == 'bootstrap5') {
+                      padding-right: 8px;
+                    }
                   }
                 }
               }
@@ -2781,7 +2828,7 @@
 
       .e-left-axis-fields,
       .e-right-axis-fields {
-        padding-left: $field-list-default-bigger-padding-size;
+        padding-left: $field-list-default-bigger-padding-size !important;
       }
 
       .e-field-header {
@@ -2807,7 +2854,7 @@
         .e-sort-ascend,
         .e-sort-descend {
           font-size: $field-list-bigger-header-icon-size;
-          height: 24px;
+          height: 24px !important;
           padding: $field-list-tree-header-padding 0 0 $field-list-bigger-icon-to-icon-padding;
           width: 24px;
         }
@@ -2835,7 +2882,11 @@
           margin-bottom: $field-list-treeview-drag-bigger-padding !important;
           margin-right: 4px !important;
           width: 24px !important;
-
+          @if($skin-name=='bootstrap5') or ($skin-name == 'FluentUI') {
+            padding-left: 12px;
+            padding-right: 16px;          
+          }
+        
           @if ($skin-name == 'tailwind') {
             margin-bottom: 0 !important;
           }
@@ -2942,6 +2993,9 @@
                 font-size: $field-list-bigger-icon-size;
                 height: 24px;
                 width: 24px;
+                @if ($skin-name == 'tailwind') {
+                  padding-left: 6px;
+                }
               }
 
               .e-sort {
@@ -3156,7 +3210,7 @@
         .e-sort-ascend,
         .e-sort-descend {
           font-size: $field-list-bigger-header-icon-size;
-          height: 24px;
+          height: 24px !important;
           padding: $field-list-tree-header-padding 0 0 $field-list-bigger-icon-to-icon-padding;
           width: 24px;
         }

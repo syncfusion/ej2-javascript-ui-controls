@@ -1,14 +1,14 @@
 /*! calendar bootstrap5 theme variables */
 //month view
 $calendar-normal-month-view-height: 32px !default;
-$calendar-normal-month-view-line-height: 26px !default;
+$calendar-normal-month-view-line-height: $calendar-normal-month-view-height !default;
 $calendar-normal-month-view-width: 32px !default;
 $calendar-normal-month-cell-padding: 0 !default;
 $calendar-bigger-table-month-padding: 0 12px 12px 12px !default;
 $calendar-bigger-month-font-size: $text-base !default;
 $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 38px !default;
-$calendar-bigger-month-view-line-height: 32px !default;
+$calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 38px !default;
 //header dimension
 $calendar-header-font-size: 14px !default;
@@ -22,7 +22,7 @@ $calendar-normal-header-height: 24px !default;
 $calendar-bigger-header-font-size: 18px !default;
 $calendar-normal-day-header-font-weight: 500 !default;
 $calendar-title-font-size: 16px !default;
-$calendar-title-margin-left-style: 8px !default;
+$calendar-title-margin-left-style: 2px !default;
 $calendar-title-font-weight-style: 600 !default;
 $calendar-title-decoration-style: none !default;
 // common size properties
@@ -51,6 +51,7 @@ $calendar-normal-today-button-height: 36px !default;
 //dimension
 $calendar-normal-year-decade-height: 56px !default;
 $calendar-normal-year-decade-width: 56px !default;
+$calendar-small-year-decade-width: 46px !default;
 $calendar-normal-year-decade-padding: 2px !default;
 $calendar-yeardeacde-span-padding: 0 !default;
 $calendar-yeardecade-padding: 0 8px 8px !default;
@@ -66,6 +67,12 @@ $calendar-bigger-yeardecade-header-padding: 10px !default;
 $calendar-decade-title-left-margin-style: 15px !default;
 // table related styles
 $calendar-table-padding: 0 8px 8px 8px !default;
+$calendar-rtl-text-indent: 12px !default;
+$calendar-day-bigger-small-cell-size: 34px !default;
+$calendar-rtl-bigger-small-text-indent: 12px !default;
+$calendar-rtl-bigger-text-indent: 15px !default;
+$calendar-title-margin-bigger-small-left-style: 5px !default;
+$calendar-title-margin-small-left-style: 0 !default;
 //font icons
 $calendar-prev-icon: '\e910' !default;
 $calendar-next-icon: '\e916' !default;
@@ -79,6 +86,7 @@ $calendar-icon-font-size-style: 14px !default;
 $calendar-bigger-icon-font-size: 16px !default;
 $calendar-footer-container-padding: 8px !default;
 $calendar-bigger-footer-container-padding: 16px !default;
+$calendar-week-number-font-weight: 500 !default;
 // small size
 $calendar-small-icon-size: 24px !default;
 $calendar-small-icon-font-size-style: 12px !default;
@@ -87,7 +95,7 @@ $calendar-small-icon-padding: 0 !default;
 $calendar-small-header-height: 22px !default;
 $calendar-small-day-header-height: 24px !default;
 $calendar-small-month-view-height: 26px !default;
-$calendar-small-month-view-line-height: 20px !default;
+$calendar-small-month-view-line-height: $calendar-small-month-view-height !default;
 $calendar-small-date-font-size: 12px !default;
 $calendar-small-month-view-width: 26px !default;
 $calendar-small-popup-padding: 0 !default;
@@ -165,14 +173,17 @@ $calendar-active-hover-font-color: $primary-text-pressed !default;
 $calendar-active-today-font-color: $primary-text-pressed !default;
 $calendar-active-today-hover-font-color: $primary-text-pressed !default;
 $calendar-active-bg-color: $primary-bg-color !default;
-$calendar-active-bg-border-color: 1px solid $primary-bg-color !default;
+$calendar-active-bg-box-shadow: inset 1px 0 $primary-bg-color, inset 0 1px $primary-bg-color, inset -1px 0 $primary-bg-color, inset 0 -1px $primary-bg-color !default;
+$calendar-active-bg-border-color: none !default;
 $calendar-active-hover-bg-color: darken($primary-bg-color, 10%) !default;
 $calendar-hover-color:  $content-bg-color-hover !default;
 $calendar-text-color: $content-text-color !default;
 $calendar-hover-text: $calendar-text-color !default;
 $calendar-focus-bg-color: $content-bg-color-hover !default;
 $calendar-focused-today-bg-style: $content-bg-color-hover !default;
-$calendar-focused-today-border-style:  1px solid $primary-bg-color !default;
+$calendar-focused-today-box-shadow: inset 1px 0 $primary-bg-color, inset 0 1px $primary-bg-color, inset -1px 0 $primary-bg-color, inset 0 -1px $primary-bg-color !default;
+$calendar-focused-today-border-style: none !default;
+$calendar-focus-box-shadow: none !default;
 $calendar-focus-border-color: none !default;
 $calendar-hover-border-color: none !default;
 $calendar-disable-font-color: $content-text-color-disabled !default;
@@ -182,8 +193,8 @@ $calendar-small-title-font-color: $content-text-color-alt1 !default;
 //today date
 $calendar-today-bg-style: none !default;
 $calendar-today-bg-hover-color: $content-bg-color-alt1 !default;
-$calendar-today-border-color: 2px solid $primary-bg-color !default;
-$calendar-selected-box-shadow: none !default;
+$calendar-today-box-shadow: inset 2px 0 $primary-bg-color, inset 0 2px $primary-bg-color, inset -2px 0 $primary-bg-color, inset 0 -2px $primary-bg-color !default;
+$calendar-today-border-color:  none !default;
 $calendar-selected-border-color: none !default;
 //pending
 $calendar-today-color: $primary !default;
@@ -202,13 +213,12 @@ $calendar-today-disabled-border-style: $primary-border-color-disabled !default;
 $calendar-today-disabled-box-shadow: none !default;
 $calendar-today-disabled-color: $primary-text-disabled !default;
 //today button flat button override style
-$today-buuton-bg: $primary-bg-color !default;
-$today-buuton-bg-border-color: $primary-border-color !default;
-$today-buuton-text-color: $primary-text-color !default;
-$today-buuton-hover-bg: $primary-bg-color-hover !default;
-$today-buuton-bg-border-hover-color: $primary-border-color-hover !default;
-$today-buuton-text-hover-color: $primary-text-hover !default;
-$today-buuton-active-bg: $primary-bg-color-pressed !default;
-$today-buuton-bg-border-active-color: $primary-border-color-pressed !default;
-$today-buuton-text-active-color: $primary-text-pressed !default;
-
+$today-button-bg: $primary-bg-color !default;
+$today-button-bg-border-color: $primary-border-color !default;
+$today-button-text-color: $primary-text-color !default;
+$today-button-hover-bg: $primary-bg-color-hover !default;
+$today-button-bg-border-hover-color: $primary-border-color-hover !default;
+$today-button-text-hover-color: $primary-text-hover !default;
+$today-button-active-bg: $primary-bg-color-pressed !default;
+$today-button-bg-border-active-color: $primary-border-color-pressed !default;
+$today-button-text-active-color: $primary-text-pressed !default;

@@ -54,3 +54,25 @@ export enum FormulasErrorsStrings {
     spill = 33,
     div = 34
 }
+/**
+ * @hidden
+ */
+ export enum ExcelFileFormats {
+    xlsx = "xlsx",
+    xlsm = "xlsm",
+    xlsb = "xlsb",
+    xltx = "xltx",
+    xltm = "xltm",
+    xls = "xls",
+    xml = "xml",
+    xlam = "xlam",
+    xla = "xla",
+    xlw = "xlw",
+    xlr = "xlr",
+    prn = "prn",
+    txt = "txt",
+    csv = "csv",
+    dif = "dif",
+    slk = "slk"
+ }
+ 

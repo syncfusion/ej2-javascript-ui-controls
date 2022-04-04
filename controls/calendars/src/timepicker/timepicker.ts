@@ -9,6 +9,8 @@ import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/cal
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
 import { TimePickerModel, TimeMaskPlaceholderModel } from './timepicker-model';
+import {MaskPlaceholderModel} from '../common/maskplaceholder-model';
+import { MaskPlaceholder } from '../common/maskplaceholder';
 
 const WRAPPERCLASS: string = 'e-time-wrapper';
 const POPUP: string = 'e-popup';
@@ -142,56 +144,56 @@ export namespace TimePickerBase {
 }
 
 export class TimeMaskPlaceholder  extends ChildProperty<TimeMaskPlaceholder> {
-    /**
-     * Specifies the mask placeholder value for day section.
+/**
+     * Specifies the mask placeholder value for day property.
      *
      * @default 'day'
      */
     @Property('day')
     public day: string;
     /**
-     * Specifies the mask placeholder value for month section.
+     * Specifies the mask placeholder value for month property.
      *
      * @default 'month'
      */
     @Property('month')
     public month: string;
     /**
-     * Specifies the mask placeholder value for year section.
+     * Specifies the mask placeholder value for year property.
      *
      * @default 'year'
      */
     @Property('year')
     public year: string;
     /**
-     * Specifies the mask placeholder value for day of the week section.
+     * Specifies the mask placeholder value for day of the week property.
      *
      * @default 'day of the week'
      */
      @Property('day of the week')
      public dayOfTheWeek: string;
     /**
-     * Specifies the mask placeholder value for hour section.
+     * Specifies the mask placeholder value for hour property.
      *
      * @default 'hour'
      */
     @Property('hour')
     public hour: string;
     /**
-     * Specifies the mask placeholder value for minute section.
+     * Specifies the mask placeholder value for minute property.
      *
      * @default 'minute'
      */
     @Property('minute')
     public minute: string;
     /**
-     * Specifies the mask placeholder value for second section.
+     * Specifies the mask placeholder value for second property.
      *
      * @default 'second'
      */
      @Property('second')
      public second: string;
-    
+
 }
 
 /**
@@ -496,6 +498,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Specifies the mask placeholder to be displayed on masked timepicker.
      * 
      * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
+     * @aspType TimePickerMaskPlaceholder
      */
       @Property({day:'day' , month:'month', year: 'year', hour:'hour', minute:'minute', second:'second', dayOfTheWeek: 'day of the week'})
       public maskPlaceholder: TimeMaskPlaceholderModel;

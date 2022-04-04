@@ -5,7 +5,7 @@
 /**
  * Chart legend
  */
-import { remove, Browser, extend } from '@syncfusion/ej2-base';
+import { remove, Browser, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Series } from '../series/chart-series';
 import { Indexes } from '../../common/model/base';
 import { ChartSeriesType, ChartDrawType } from '../utils/enum';
@@ -20,6 +20,7 @@ import { ILegendRenderEventArgs, ILegendClickEventArgs } from '../../chart/model
 import { legendRender, legendClick, regSub, regSup} from '../../common/model/constants';
 import { Axis } from '../axis/axis';
 import { LegendTitlePosition } from '../../common/utils/enum';
+import { textWrap } from '../../common/utils/helper';
 /**
  * `Legend` module is used to render legend for the chart.
  */
@@ -165,9 +166,14 @@ export class Legend extends BaseLegend {
     public getLegendBounds(availableSize: Size, legendBounds: Rect, legend: LegendSettingsModel): void {
         this.calculateLegendTitle(legend, legendBounds);
         this.isTitle = legend.title ? true : false;
+        this.chartRowCount = 1;
+        this.rowHeights = [];
+        this.columnHeights = [];
+        this.pageHeights = [];
         const padding: number = legend.padding;
         const titlePosition: LegendTitlePosition = legend.titlePosition;
         let extraHeight: number = 0;
+        let legendOption : LegendOptions;
         let extraWidth: number = 0;
         const arrowWidth: number = this.arrowWidth;
         const arrowHeight: number = this.arrowHeight;
@@ -187,12 +193,14 @@ export class Legend extends BaseLegend {
         let rowWidth: number = 0;
         let legendWidth: number = 0;
         let columnHeight: number = 0;
-        let rowCount: number = 0;
+        let columnCount : number = 0;
+         let rowCount: number = 0;
         let titlePlusArrowSpace: number = 0;
-        let legendEventArgs: ILegendRenderEventArgs;
-        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        let legendEventArgs: ILegendRenderEventArgs;       
         let render: boolean = false;
-        for (const legendOption of this.legendCollections) {
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        for (let i: number = 0; i < this.legendCollections.length; i++) {
+            legendOption = this.legendCollections[i];
             if (regSub.test(legendOption.text)) {
                 legendOption.text = getUnicodeText(legendOption.text, regSub);
             }
@@ -214,23 +222,33 @@ export class Legend extends BaseLegend {
             shapePadding = legendOption.text ? legend.shapePadding : 0;
             if (legendOption.render && legendOption.text) {
                 render = true;
-                legendWidth = shapeWidth + shapePadding + legendOption.textSize.width + padding;
+                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth : legendOption.textSize.width) + padding;
                 rowWidth = rowWidth + legendWidth;
                 if (!legend.enablePages && !this.isVertical) {
                     titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
                     titlePlusArrowSpace += arrowWidth;
                 }
+                this.getLegendHeight(legendOption, legend, legendBounds, rowWidth, this.maxItemHeight, padding);
                 if (legendBounds.width < (padding + rowWidth + titlePlusArrowSpace) || this.isVertical) {
                     maximumWidth = Math.max(maximumWidth, (rowWidth + padding + titlePlusArrowSpace - (this.isVertical ? 0 : legendWidth)));
-                    if (rowCount === 0 && (legendWidth !== rowWidth)) {
-                        rowCount = 1;
+                    if (rowCount === 0 && (legendWidth !== rowWidth)) {                     
+                        rowCount = 1;                       
                     }
                     rowWidth = this.isVertical ? 0 : legendWidth;
-                    rowCount++;
-                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + titleSpace + verticalArrowSpace;
+                    rowCount++;  
+                    columnCount = 0;
+                    columnHeight = verticalArrowSpace;           
+                    //columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + titleSpace + verticalArrowSpace;
                 }
-            }
+                const len = (rowCount > 0 ? (rowCount -1) : 0);
+                this.rowHeights[len]= Math.max((this.rowHeights[len] ? this.rowHeights[len] :0), legendOption.textSize.height);
+               // this.maxItemHeight = Math.max(this.maxItemHeight, legendOption.textSize.height);
+               this.columnHeights[columnCount] = (this.columnHeights[columnCount] ? this.columnHeights[columnCount] : 0) + legendOption.textSize.height + padding;     
+               columnCount++;
+            } 
+                           
         }
+        columnHeight = Math.max.apply(null, this.columnHeights) +  padding + titleSpace;
         columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleSpace);
         this.isPaging = legendBounds.height < columnHeight;
         if (this.isPaging && !legend.enablePages) {
@@ -252,24 +270,52 @@ export class Legend extends BaseLegend {
         }
     }
     /** @private */
+    public getLegendHeight(legendOption: LegendOptions, legend: LegendSettingsModel, legendBounds: Rect, rowWidth: number, legendHeight : number, padding : number)  {
+      
+        let legendWidth: number = legendOption.textSize.width; 
+        const textPadding: number = legend.shapePadding + (padding * 2) + legend.shapeWidth;      
+        switch(legend.textWrap) {
+            case 'Wrap':
+            case 'AnyWhere':
+                if (legendWidth > legend.maximumLabelWidth || legendWidth + rowWidth > legendBounds.width) {
+                    legendOption.textCollection = textWrap(
+                        legendOption.text,
+                        (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) : (legendBounds.width - textPadding)), legend.textStyle
+                );                
+               } else {
+                legendOption.textCollection.push(legendOption.text);
+               }
+               legendOption.textSize.height = (legendHeight * legendOption.textCollection.length);              
+              break;
+            }            
+    }
+    /** @private */
     public getRenderPoint(
         legendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
-        rect: Rect, count: number, firstLegend: number): void {
+        rect: Rect, count: number, firstLegend: number, rowCount ?: number): void {
         const padding: number = this.legend.padding;
-        const textWidth: number =  textPadding + prevLegend.textSize.width;
+        const textWidth: number =  textPadding + (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : prevLegend.textSize.width);
         const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
-        if (this.isWithinBounds(previousBound, legendOption.textSize.width + textPadding, rect) || this.isVertical) {
+        if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : legendOption.textSize.width) + textPadding, rect) || this.isVertical) {
             legendOption.location.x = start.x;
+            if (count !== firstLegend)
+              this.chartRowCount++;
             legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
-                prevLegend.location.y + this.maxItemHeight + padding;
+                prevLegend.location.y + (this.isVertical ? prevLegend.textSize.height : this.rowHeights[(this.chartRowCount - 2)]) + padding;
+              
         } else {
             legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             legendOption.location.y = prevLegend.location.y;
         }
-        const availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
-            textPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
-        legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
+        let availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
+            textPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x; 
+        availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) :availwidth;
+            if (this.legend.textOverflow == "Ellipsis" && this.legend.textWrap == "Normal") {           
+                legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
+           }
+      
     }
+
     private isWithinBounds(previousBound : number, textWidth : number, rect: Rect) : boolean
     {
         if(!this.isRtlEnable)
@@ -376,7 +422,11 @@ export class Legend extends BaseLegend {
         chart.refreshAxis();
         series.refreshAxisLabel();
         this.refreshSeries(chart.visibleSeries);
-        chart.markerRender.removeHighlightedMarker();
+        for (const series of chart.visibleSeries) {
+            if (!isNullOrUndefined(series)) {
+                chart.markerRender.removeHighlightedMarker(series, null, true);
+            }
+        }
         chart.refreshBound();
         chart.trigger('loaded', { chart: chart });
         if (selectedDataIndexes.length > 0) {
@@ -419,6 +469,7 @@ export class Legend extends BaseLegend {
                     'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(series);
             }
+
             series.position = undefined;
         }
     }

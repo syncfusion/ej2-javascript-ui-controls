@@ -372,10 +372,10 @@ describe('Diagram Control', () => {
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, true);
-            expect(diagram.scrollSettings.verticalOffset==248.82651748971188).toBe(true);
+            expect(diagram.scrollSettings.verticalOffset==221.86).toBe(true);
             console.log("diagram.scrollSettings.verticalOffset:"+diagram.scrollSettings.verticalOffset);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, true);
-            expect(diagram.scrollSettings.verticalOffset==248.82651748971188).toBe(true);
+            expect(diagram.scrollSettings.verticalOffset==231.86).toBe(true);
             console.log("diagram.scrollSettings.verticalOffset:"+diagram.scrollSettings.verticalOffset);
 
             // Scroll the diagram untill the bottom end
@@ -392,10 +392,10 @@ describe('Diagram Control', () => {
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, false);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, false);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, false);
-            expect(diagram.scrollSettings.verticalOffset==0).toBe(true);
+            expect(diagram.scrollSettings.verticalOffset==101.86).toBe(true);
             console.log("diagram.scrollSettings.verticalOffset:"+diagram.scrollSettings.verticalOffset);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, false);
-            expect(diagram.scrollSettings.verticalOffset==0).toBe(true);
+            expect(diagram.scrollSettings.verticalOffset==91.86).toBe(true);
             console.log("diagram.scrollSettings.verticalOffset:"+diagram.scrollSettings.verticalOffset);
 
             // Try to scroll the diagram to top after the vertical offset is 0
@@ -403,7 +403,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, false, true);
-            expect(diagram.scrollSettings.verticalOffset==0).toBe(true);
+            expect(diagram.scrollSettings.verticalOffset==131.86).toBe(true);
             console.log("diagram.scrollSettings.verticalOffset:"+diagram.scrollSettings.verticalOffset);
             
             
@@ -413,10 +413,10 @@ describe('Diagram Control', () => {
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, true);
-            expect(diagram.scrollSettings.horizontalOffset==353.4693644261544).toBe(true);
+            expect(diagram.scrollSettings.horizontalOffset==336.97).toBe(true);
             console.log("diagram.scrollSettings.horizontalOffset:"+diagram.scrollSettings.horizontalOffset);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, true);
-            expect(diagram.scrollSettings.horizontalOffset==353.4693644261544).toBe(true);
+            expect(diagram.scrollSettings.horizontalOffset==346.97).toBe(true);
             console.log("diagram.scrollSettings.horizontalOffset:"+diagram.scrollSettings.horizontalOffset);
 
             // Scroll the diagram untill the right side end
@@ -440,14 +440,14 @@ describe('Diagram Control', () => {
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, false);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, false);
             console.log("diagram.scrollSettings.horizontalOffset:"+diagram.scrollSettings.horizontalOffset);
-            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==0).toBe(true);
+            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==156.97).toBe(true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, false);
             console.log("diagram.scrollSettings.horizontalOffset:"+diagram.scrollSettings.horizontalOffset);
-            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==0).toBe(true);
+            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==146.97).toBe(true);
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, false);
 
             console.log("diagram.scrollSettings.horizontalOffset:"+diagram.scrollSettings.horizontalOffset);
-            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==0).toBe(true);
+            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==136.97).toBe(true);
 
             // Try to scroll the diagram to left after the horizontal offset is 0
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, true);
@@ -456,7 +456,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseWheelEvent(diagramCanvas, 300, 300, false, true, true);
             
             console.log("diagram.scrollSettings.horizontalOffset:"+diagram.scrollSettings.horizontalOffset);
-            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==0).toBe(true);
+            expect(Math.abs(diagram.scrollSettings.horizontalOffset)==176.97).toBe(true);
 
             done();
         });

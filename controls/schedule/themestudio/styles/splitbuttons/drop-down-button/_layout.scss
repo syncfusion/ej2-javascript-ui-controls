@@ -15,7 +15,7 @@
   }
 
     &:focus {
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
         box-shadow: $drop-down-btn-box-shadow;
       }
       @else {

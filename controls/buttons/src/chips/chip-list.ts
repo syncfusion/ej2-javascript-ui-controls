@@ -751,7 +751,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private keyHandler(e: KeyboardEventArgs): void {
         if ((e.target as HTMLElement).classList.contains(classNames.chip)) {
             if (e.type === 'keydown') {
-                if (e.keyCode === 13) {
+                if (e.keyCode === 13 || e.keyCode === 32) {
                     this.clickHandler(e);
                 } else if (e.keyCode === 46 && this.enableDelete) {
                     this.clickHandler(e, true);
@@ -817,6 +817,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                         (chipData as ClickEventArgs).selected = observedArgs.element.classList.contains(classNames.active);
                         let selectedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
                         this.trigger('click', selectedItemArgs);
+                        let chipElement: HTMLElement = this.element.querySelectorAll('.' + classNames.chip)[observedArgs.index] as HTMLElement;
+                        if (chipElement) {
+                            chipElement.focus();
+                            this.focusInHandler(chipElement);
+                        }
                     }
                 });
             } else if (this.selection !== 'None') {

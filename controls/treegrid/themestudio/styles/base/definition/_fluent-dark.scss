@@ -73,7 +73,7 @@ $primary:      $theme-primary !default;
 $primary-text-color: $white !default;
 $primary-light: $theme-dark !default;
 $primary-lighter: $theme-darker !default;
-$primary-dark: $theme-light !default;
+$primary-dark: $theme-dark !default;
 $primary-darker: $theme-lighter !default;
 $success:       $green20 !default;
 $info:          $cyan20 !default;
@@ -194,7 +194,7 @@ $shadow-lg:  0 6.4px 14.4px 0 rgba($black, .132), 0 1.2px 3.6px 0 rgba($black, .
 $shadow-xl: 0 25.6px 57.6px 0 rgba($black, .22), 0 4.8px 14.4px 0 rgba($black, .18) !default;
 $shadow-2xl: 0 25px 50px -12px rgba($black, .25) !default;
 $shadow-inner: inset 0 1px 2px rgba($black, .075) !default;
-$shadow-none: none !default;
+$shadow-none: 0 0 rgba($black, 0) !default;
 
 $shadow-focus-ring1: inset 1px 0 $primary, inset 0 1px $primary, inset -1px 0 $primary, inset 0 -1px $primary !default;
 $shadow-focus-ring2: 0 0 0 1px rgba($gray130, .95) !default;

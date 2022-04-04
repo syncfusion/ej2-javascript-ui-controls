@@ -36,6 +36,10 @@
 
           .e-file-container .e-file-size {
             font-size: $list-item-status-font-size;
+            @if $skin-name == 'tailwind' {
+              font-size: $list-item-file-size-font-size;
+              line-height: 22px;
+            }
             padding: $file-size-padding;
           }
 
@@ -434,6 +438,9 @@
         font-size: $list-items-font-size-smaller;
         height: 100%;
         line-height: $list-line-height;
+        @if $skin-name == 'tailwind' {
+          line-height: $list-line-height-smaller;
+        }
         min-height: $li-min-height;
         position: relative;
 
@@ -479,6 +486,10 @@
             display: block;
             font-size: $list-item-status-font-size-smaller;
             padding: $file-size-padding-smaller;
+            @if $skin-name == 'tailwind' {
+              font-size: $list-item-file-size-font-size-smaller;
+              line-height: 18px;
+            }
           }
 
           #{if(&, '&', '*')} .e-file-status,

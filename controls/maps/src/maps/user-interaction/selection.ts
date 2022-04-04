@@ -11,7 +11,10 @@ import { BorderModel } from '../model/base-model';
  */
 export class Selection {
     private maps: Maps;
-    private selectionsettings: SelectionSettingsModel;
+    /**
+     * @private
+     */
+    public selectionsettings: SelectionSettingsModel;
     /**
      * @private
      */
@@ -88,24 +91,33 @@ export class Selection {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
-                this.maps.mapSelect = targetElement ? true : false;
-                if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1) {
-                    this.maps.legendModule.shapeHighLightAndSelection(
-                        targetElement, data, this.selectionsettings, 'selection', layerIndex);
-                }
-                const shapeToggled: boolean = (targetElement.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible) ?
-                    this.maps.legendModule.shapeToggled : true;
-                if (shapeToggled) {
-                    this.selectMap(targetElement, shapeData, data);
-                }
+                this.selectElement(targetElement, layerIndex, data, shapeData);
             }
-        } else if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleLegendSettings.enable &&
+        } else if ((this.maps.legendSettings.visible && !this.maps.legendSettings.toggleLegendSettings.enable && this.maps.legendModule) &&
                    !isNullOrUndefined(targetElement.id) && targetElement.id.indexOf('_Text') === -1 &&
                    (targetElement.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
                 targetElement.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1)) {
             this.maps.legendModule.legendHighLightAndSelection(targetElement, 'selection');
         }
     }
+
+    /**
+     * @private
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public selectElement(targetElement: Element, layerIndex: number, data: any, shapeData: any): void {
+        this.maps.mapSelect = targetElement ? true : false;
+        if (this.maps.legendModule && this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1) {
+            this.maps.legendModule.shapeHighLightAndSelection(
+                targetElement, data, this.selectionsettings, 'selection', layerIndex);
+        }
+        const shapeToggled: boolean = (targetElement.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible && this.maps.legendModule) ?
+            this.maps.legendModule.shapeToggled : true;
+        if (shapeToggled) {
+            this.selectMap(targetElement, shapeData, data);
+        }
+    }
+
     // eslint-disable-next-line valid-jsdoc
     /**
      * Public method for selection

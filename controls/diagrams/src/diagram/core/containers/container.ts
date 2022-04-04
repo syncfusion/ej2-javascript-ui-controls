@@ -97,6 +97,15 @@ export class Container extends DiagramElement {
                 this.desiredBounds.x = newPoint.x - this.desiredBounds.width * this.pivot.x;
                 this.desiredBounds.y = newPoint.y - this.desiredBounds.height * this.pivot.y;
             }
+            /**
+             * Adding padding to the group bounds during initial rendering and for the group selection
+             */
+            if(this.desiredBounds!==undefined){
+            this.desiredBounds.width+=this.padding.left+this.padding.right; 
+            this.desiredBounds.height+=this.padding.top+this.padding.bottom; 
+            this.desiredBounds.x-=this.padding.left;
+            this.desiredBounds.y-=this.padding.top;
+            }
             if (this.desiredBounds) {
                 desired = new Size(this.desiredBounds.width, this.desiredBounds.height);
             }

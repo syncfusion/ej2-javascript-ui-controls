@@ -118,7 +118,7 @@ export class Timeline {
         const currentZoomingLevel: number = this.checkCurrentZoomingLevel();
         this.isZoomIn = isZoomIn;
         this.isZooming = true;
-        const currentLevel: number = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
+        let currentLevel: number = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
         if (this.parent.toolbarModule) {
             if (isZoomIn) {
                 if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
@@ -134,7 +134,9 @@ export class Timeline {
                 }
             }
         }
-
+        currentLevel = this.parent.zoomingLevels.findIndex((tempLevel: ZoomTimelineSettings) => {
+            return tempLevel.level === currentLevel;
+        });
         let newTimeline: ZoomTimelineSettings = this.parent.zoomingLevels[currentLevel];
         const args: ZoomEventArgs = {
             requestType: isZoomIn ? 'beforeZoomIn' : 'beforeZoomOut',
@@ -848,8 +850,39 @@ export class Timeline {
             tierCollection.push(timelineCell);
         } while ((startDate < endDate));
         return parentTh;
+    }   
+    public updateTimelineAfterZooming(endDate: Date, resized: boolean) {
+        let timeDiff: number;
+        let perDayWidth: number;
+        let totWidth: number;
+        let contentElement: HTMLElement = document.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
+        if (!isNullOrUndefined(contentElement)) {
+            let contentWidth: number = contentElement['offsetWidth'];
+            let contentHeight: number = contentElement['offsetHeight'];
+            let scrollHeight: number = document.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
+            timeDiff = Math.abs(this.timelineStartDate.getTime() - endDate.getTime());
+            timeDiff = timeDiff / (1000 * 3600 * 24);
+            if (this.bottomTier === 'None') {
+                perDayWidth = this.getPerDayWidth(this.customTimelineSettings.timelineUnitSize, this.customTimelineSettings.topTier.count, this.topTier);
+            } else {
+                perDayWidth = this.getPerDayWidth(this.customTimelineSettings.timelineUnitSize, this.customTimelineSettings.bottomTier.count, this.bottomTier);
+            }
+            if (contentHeight < scrollHeight) {
+                totWidth = (perDayWidth * timeDiff) + 17;
+            } else {
+                totWidth = (perDayWidth * timeDiff);
+            }
+            if (contentWidth >= totWidth) {
+                let widthDiff: number = contentWidth - totWidth;
+                widthDiff = Math.round(widthDiff / perDayWidth);
+                endDate.setDate(endDate.getDate() + widthDiff);
+                this.parent.timelineModule.timelineEndDate = endDate;
+                if (resized) {
+                    this.parent.updateProjectDates(this.timelineStartDate, this.timelineEndDate, this.parent.isTimelineRoundOff)
+                }
+            }
+        }
     }
-
     private getTimelineRoundOffEndDate(date: Date): Date {
         const tierMode: string = this.topTier === 'None' ? this.bottomTier : this.topTier;
         const endDate: Date = new Date(date.toString());
@@ -861,6 +894,9 @@ export class Timeline {
             } else {
                 endDate.setHours(24, 0, 0, 0);
             }
+        }
+        if (this.isZooming || this.parent.isLoad) {
+            this.updateTimelineAfterZooming(endDate, false);
         }
         return endDate;
     }
@@ -931,7 +967,8 @@ export class Timeline {
             }
         }
         return increment;
-    };
+    }
+
     /**
      * Method to find header cell was weekend or not
      *
@@ -945,7 +982,7 @@ export class Timeline {
             mode === 'Hour' || mode === 'Minutes') &&
             this.parent.nonWorkingDayIndex.indexOf(day.getDay()) !== -1;
     }
-	
+
     private calculateQuarterEndDate(date: Date) {
         const month: number = date.getMonth();
         if (month >= 0 && month <= 2) {

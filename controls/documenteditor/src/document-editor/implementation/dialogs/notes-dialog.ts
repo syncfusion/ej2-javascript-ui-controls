@@ -48,18 +48,12 @@ export class NotesDialog {
         this.target = createElement('div', { id: idName, className: 'e-de-insert-footnote' });
         const firstDiv: HTMLElement = createElement('div');
 
-        const container: HTMLElement = createElement('div', {
-            className: 'e-de-insert-footnote-dlg-sub-header', innerHTML: localValue.getConstant('Start at')
-        });
         const startatValue: HTMLElement = createElement('div');
         this.footCount = createElement('input', {
             attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + 'row'
         }) as HTMLInputElement;
         startatValue.appendChild(this.footCount);
-        const numberformat: HTMLElement = createElement('div', {
-            className: 'e-de-insert-footnote-dlg-sub-header', innerHTML: localValue.getConstant('Number format')
-        });
-        const numberFormatDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-insert-footnote-dlg-header' });
+        const numberFormatDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-container-row' });
         const formatType: HTMLElement = createElement('select', {
             id: this.target.id + '_papersize', styles: 'padding-bottom: 20px;',
             innerHTML: '<option value="1, 2, 3, ...">' + localValue.getConstant('1, 2, 3, ...') +
@@ -69,11 +63,12 @@ export class NotesDialog {
                 '</option><option value="i, ii, iii, ...">' + localValue.getConstant('i, ii, iii, ...') + '</option>'
         }) as HTMLSelectElement;
         numberFormatDiv.appendChild(formatType);
-        this.notesList = new DropDownList({ enableRtl: isRtl });
+        this.notesList = new DropDownList({
+            enableRtl: isRtl, placeholder: localValue.getConstant('Start at'),
+            floatLabelType: 'Always'
+        });
         this.notesList.appendTo(formatType);
-        firstDiv.appendChild(numberformat);
         firstDiv.appendChild(numberFormatDiv);
-        firstDiv.appendChild(container);
         firstDiv.appendChild(startatValue);
 
         this.target.appendChild(firstDiv);
@@ -82,7 +77,9 @@ export class NotesDialog {
             format: '#',
             min: 1,
             max: 99999,
-            enablePersistence: false
+            enablePersistence: false,
+            placeholder: localValue.getConstant('Number format'),
+            floatLabelType: 'Always'
         });
         this.startValueTextBox.appendTo(this.footCount);
     }

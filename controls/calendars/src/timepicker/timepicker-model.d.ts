@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';import {MaskPlaceholderModel} from '../common/maskplaceholder-model';import { MaskPlaceholder } from '../common/maskplaceholder';
 import {TimeFormatObject,ChangeEventArgs,PopupEventArgs,ItemEventArgs} from "./timepicker";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -8,49 +8,49 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface TimeMaskPlaceholderModel {
 
     /**
-     * Specifies the mask placeholder value for day section.
+     * Specifies the mask placeholder value for day property.
      *
      * @default 'day'
      */
     day?: string;
 
     /**
-     * Specifies the mask placeholder value for month section.
+     * Specifies the mask placeholder value for month property.
      *
      * @default 'month'
      */
     month?: string;
 
     /**
-     * Specifies the mask placeholder value for year section.
+     * Specifies the mask placeholder value for year property.
      *
      * @default 'year'
      */
     year?: string;
 
     /**
-     * Specifies the mask placeholder value for day of the week section.
+     * Specifies the mask placeholder value for day of the week property.
      *
      * @default 'day of the week'
      */
     dayOfTheWeek?: string;
 
     /**
-     * Specifies the mask placeholder value for hour section.
+     * Specifies the mask placeholder value for hour property.
      *
      * @default 'hour'
      */
     hour?: string;
 
     /**
-     * Specifies the mask placeholder value for minute section.
+     * Specifies the mask placeholder value for minute property.
      *
      * @default 'minute'
      */
     minute?: string;
 
     /**
-     * Specifies the mask placeholder value for second section.
+     * Specifies the mask placeholder value for second property.
      *
      * @default 'second'
      */
@@ -306,6 +306,7 @@ export interface TimePickerModel extends ComponentModel{
      * Specifies the mask placeholder to be displayed on masked timepicker.
      * 
      * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
+     * @aspType TimePickerMaskPlaceholder
      */
     maskPlaceholder?: TimeMaskPlaceholderModel;
 

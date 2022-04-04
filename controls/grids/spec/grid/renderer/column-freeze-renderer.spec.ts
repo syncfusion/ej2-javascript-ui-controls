@@ -262,6 +262,45 @@ describe('Column freeze render module', () => {
         });
     });
 
+    describe('EJ2-58375 - Unfreeze the column at right side', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 400,
+                    allowFiltering: true,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 130 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 100 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 150 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 160 },
+                    ]
+                }, done);
+        });
+        it('Freeze the column to right side', () => {
+            expect(gridObj.getFrozenMode()).toBeUndefined();
+            gridObj.getColumns()[2].freeze  = 'Right';
+            gridObj.refreshColumns();
+            expect(gridObj.getFrozenMode()).toBe('Right');
+        });
+        it('Check frozenName', () => {
+            (gridObj.getColumns()[4] as any).freeze = 'Center';
+            gridObj.refreshColumns();
+            expect(gridObj.getFrozenMode()).toBeUndefined();
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj as any);
+        });
+    });
+    
     describe('Freeze the column at left and right side', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

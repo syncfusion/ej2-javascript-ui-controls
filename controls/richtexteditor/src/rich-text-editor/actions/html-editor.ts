@@ -39,6 +39,7 @@ export class HtmlEditor {
     private oldRangeElement: Element;
     private deleteRangeElement: Element;
     private deleteOldRangeElement: Element;
+    private isImageDelete: Boolean = false;
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
 
@@ -125,14 +126,16 @@ export class HtmlEditor {
         const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         let pointer: number;
         if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey) {
-            if(range.startContainer.textContent.charCodeAt(0) === 8203) {
+            if (range.startContainer.textContent.charCodeAt(0) === 8203) {
                 pointer = range.startOffset - 1;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
             }
             if (!isNOU(range.startContainer.previousSibling) && !isNOU(range.startContainer.previousSibling.parentElement) &&
-            range.startContainer.parentElement === range.startContainer.previousSibling.parentElement && range.startContainer.previousSibling.textContent.charCodeAt(0) === 8203) {
+            range.startContainer.parentElement === range.startContainer.previousSibling.parentElement &&
+            range.startContainer.previousSibling.textContent.charCodeAt(0) === 8203 &&
+            range.startContainer.previousSibling.textContent.length <= 1) {
                 range.startContainer.previousSibling.textContent = range.startContainer.previousSibling.textContent.replace(regEx, '');
             }
             if (range.endContainer.textContent.charCodeAt(range.endOffset) === 8203) {
@@ -221,6 +224,9 @@ export class HtmlEditor {
             this.oldRangeElement = null;
             this.deleteRangeElement = null;
             this.deleteOldRangeElement = null;
+            if (!this.isImageDelete) {
+                args.preventDefault();
+            }
             args.preventDefault();
         }
     }
@@ -257,8 +263,9 @@ export class HtmlEditor {
             if (this.rangeElement.tagName === 'OL' || this.rangeElement.tagName === 'UL') {
                 const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
                 if (liElement.previousElementSibling && liElement.previousElementSibling.childElementCount > 0) {
-                    this.oldRangeElement = liElement.previousElementSibling.lastElementChild;
-                    if (!isNullOrUndefined(liElement.lastElementChild)) {
+                    this.oldRangeElement = liElement.previousElementSibling.lastElementChild.nodeName === 'BR' ?
+                    liElement.previousElementSibling : liElement.previousElementSibling.lastElementChild;
+                    if (!isNullOrUndefined(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR') {
                         this.rangeElement = liElement.lastElementChild;
                         isLiElement = true;
                     } else {
@@ -337,8 +344,16 @@ export class HtmlEditor {
                     return;
                 }
                 else {
-                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                        this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
+                    if (currentRange.startOffset === 0 && currentRange.endOffset === 1 &&
+                        this.deleteRangeElement.childNodes[0].nodeName === 'IMG') {
+                            this.parent.formatter.editorManager.nodeSelection.setSelectionText(
+                                this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement, 0, 1);
+                            this.isImageDelete = true;
+                    } else {
+                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                            this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
+                        this.isImageDelete = false;
+                    }
                     if (this.deleteRangeElement.querySelector('BR')) {
                         detach(this.deleteRangeElement.querySelector('BR'));
                     }

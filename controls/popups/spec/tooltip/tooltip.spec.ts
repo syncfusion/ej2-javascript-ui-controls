@@ -2491,6 +2491,8 @@ describe('Tooltip Control', () => {
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
             triggerMouseEvent(document.getElementById('1tooltip'), 'mouseover');
             expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+            let element: HTMLElement = document.querySelector("#container").querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(element.style.left).toEqual("234px");
             triggerMouseEvent(document.getElementById('1tooltip'), 'mouseleave');
             expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 0).toBe(true);
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
@@ -2520,12 +2522,24 @@ describe('Tooltip Control', () => {
                 container: document.getElementById('container'), opensOn: "Custom"
             });
             tooltip.appendTo('#1tooltip');
-            let target: HTMLElement = document.getElementById('1tooltip');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
             tooltip.open();
             expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
             tooltip.container = "#container1";
             tooltip.dataBind();
+            expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(false);
+            expect(document.querySelector("#container1").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
+        });
+
+        it('Check popup changes for dynamic container when Tooltip on close initially', () => {
+            tooltip = new Tooltip({
+                container: document.getElementById('container'), opensOn: "Custom"
+            });
+            tooltip.appendTo('#1tooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            tooltip.container = "#container1";
+            tooltip.dataBind();
+            tooltip.open();
             expect(document.querySelector("#container").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(false);
             expect(document.querySelector("#container1").querySelectorAll('.e-tooltip-wrap').length == 1).toBe(true);
         });

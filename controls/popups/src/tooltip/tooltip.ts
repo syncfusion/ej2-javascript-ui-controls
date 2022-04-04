@@ -648,7 +648,21 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.enableHtmlSanitizer) {
                     this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
                 }
-                tooltipContent[this.enableHtmlParse ? 'innerHTML' : 'textContent'] = this.content;
+                // eslint-disable-next-line
+                const tempFunction: Function = compile(this.content);
+                const tempArr: Element[] = tempFunction(
+                    {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                if (tempArr) {
+                    if (this.enableHtmlParse) {
+                        const nodeList: number = tempArr.length;
+                        for (var i = 0; i < nodeList; i++) {
+                            append(tempArr, tooltipContent)
+                        }
+                    } else {
+                        tooltipContent['textContent'] = this.content;
+                    }
+                    this.enableHtmlParse ? append(tempArr, tooltipContent) : tooltipContent['textContent'] = this.content;
+                }
             } else {
                 // eslint-disable-next-line
                 const templateFunction: Function = compile(this.content);
@@ -975,7 +989,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
         }
         const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
-        const left: number = fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: false }, eleOffset).left;
+        const left: number = this.isBodyContainer ?
+            fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: false }, eleOffset).left : eleOffset.left;
         this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
@@ -1414,7 +1429,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 break;
             case 'container':
-                removeClass([this.containerElement], POPUP_CONTAINER);
+                if (!isNullOrUndefined(this.containerElement)) {
+                    removeClass([this.containerElement], POPUP_CONTAINER);
+                }
                 this.container = newProp.container;
                 if (this.tooltipEle && targetElement) {
                     this.appendContainer(this);

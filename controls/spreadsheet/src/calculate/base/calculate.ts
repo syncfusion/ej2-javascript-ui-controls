@@ -75,8 +75,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public dependencyCollection: string[] = [];
     /** @hidden */
     public uniqueRange: string[] = [];
-    /** @hidden */
-    public skipSpill: boolean = false;
+
     /**
      * @hidden
      */
@@ -331,7 +330,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
             if (this.getDependentCells().has(cellRef)) {
                 const formulaCells: string[] = this.getDependentCells().get(cellRef);
-                if (formulaCells.indexOf(cell) < 0) {
+                if (formulaCells.indexOf(cell) < 0 && cell !== cellRef) {
                     formulaCells.push(cell);
                 }
             } else {
@@ -1035,8 +1034,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const checkCriteria: number = this.parseFloat(criteria);
         const criteriaRangeArray: string = argArr[0];
-        const sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
+        let sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
         const criteriaRange: string[] | string = this.getCellCollection(criteriaRangeArray);
+        if(criteriaRange.length > sumRange.length) {
+            const sumEndCol: number = this.colIndex(sumRange[sumRange.length-1]) +
+                this.colIndex(criteriaRange[criteriaRange.length-1]) - this.colIndex(criteriaRange[0]);
+            let sumrange: string[] = argArr[2].split(':')
+            sumrange[1] = (this.convertAlpha(sumEndCol) + this.rowIndex(criteriaRange[criteriaRange.length-1])).toString();
+            sumRange = this.getCellCollection(sumrange.join(':'));
+        }
         const result: number[] = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt, isAsterisk);
         return [result[0], result[1]];
     }
@@ -2377,14 +2383,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (saveCell === this.cell && !isUnique) {
             throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference];
         }
-        const cValue: string | number = this.getParentCellValue(row, col, this.grid, saveCell, grid, refresh);
+        const cValue: string | number = this.getParentCellValue(row, col, this.grid, saveCell, grid, refresh, isUnique);
         this.grid = grid;
         this.cell = saveCell;
         return cValue;
     }
 
     private getParentCellValue(
-        row: number, col: number, grd: Object, fromCell: string, fromCellGrd: Object, refresh: boolean): number | string {
+        row: number, col: number, grd: Object, fromCell: string, fromCellGrd: Object, refresh: boolean, isUnique?: boolean): number | string {
         // formulainfotable
         let cValue: number | string;
         const gridId: number = this.getSheetId(grd);
@@ -2393,7 +2399,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         } else {
             if (fromCell) { fromCell = fromCellGrd === grd ? '' : fromCell + ',' +
                 (fromCellGrd && typeof fromCellGrd === 'string' && Number(fromCellGrd) > -1 ? fromCellGrd : this.getSheetID(fromCellGrd)); }
-            cValue = (this.parentObject as any).getValueRowCol(gridId, row, col, fromCell, refresh);
+            cValue = (this.parentObject as any).getValueRowCol(gridId, row, col, fromCell, refresh, isUnique);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
         if (cValue === '' || cValue === undefined) {
@@ -2458,10 +2464,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     public valueChanged(
         grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[], refresh?: boolean,
-        sheetName?: string, skip?: boolean): void {
+        sheetName?: string): void {
         const pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
-        this.skipSpill = skip;
         let isComputedValueChanged: boolean = true;
         let isCompute: boolean = true;
         const calcFamily: CalcSheetFamilyItem = this.getSheetFamilyItem(pgrid);
@@ -2871,7 +2876,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    public refresh(cellRef: string): void {
+    public refresh(cellRef: string, uniqueCell?: string): void {
         if (this.dependencyLevel === 0) {
             this.refreshedCells.clear();
         }
@@ -2883,6 +2888,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 let i: number;
                 for (i = 0; i < dependentCells.length; i++) {
                     const dCell: string = dependentCells[i];
+                    if ((uniqueCell && dCell.indexOf(uniqueCell) > -1) || (dCell === cellRef)) {
+                        continue;
+                    }
                     const token: string = this.getSheetToken(dCell);
                     this.actCell = dCell.split(token)[1];
                     if (token.length) {
@@ -2895,13 +2903,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         let result: string | number;
                         if (formulaInfo) {
                             this.cell = dCell;
-                            if (!this.getComputedValue().has(dCell)) {
-                                this.parser.isFormulaParsed = true;
-                                result = this.calculateFormula(formulaInfo.getParsedFormula(), true);
-                                this.computedValues.set(dCell, result);
-                            } else {
-                                result = this.getComputedValue().get(dCell);
-                            }
+                            this.parser.isFormulaParsed = true;
+                            result = this.calculateFormula(formulaInfo.getParsedFormula(), true);
+                            const computedValues: Map<string, string | number> = this.getComputedValue();
+                            computedValues.set(dCell, result);
                             formulaInfo.setFormulaValue(result);
                         }
                         if ((<{ setValueRowCol: Function }>this.parentObject).setValueRowCol === undefined) {
@@ -2910,10 +2915,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             (<{ setValueRowCol: Function }>this.parentObject).setValueRowCol(
                                 this.getSheetId(this.grid), formulaInfo.getFormulaValue(), rowIdx, colIdx, formulaInfo.getFormulaText());
                         }
-                        if (!this.refreshedCells.has(dCell)) {
-                            this.refreshedCells.set(dCell, []);
-                            this.refresh(dCell);
-                        }
+                        this.refresh(dCell);
                     } catch (ex) {
                         continue;
                     }

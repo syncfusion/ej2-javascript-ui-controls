@@ -593,10 +593,10 @@ export class Zoom {
                     }
                     const lati: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
-                            parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? data['Latitude'] : 0;
+                            parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? data['Latitude'] : null;
                     const long: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
-                            parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? data['Longitude'] : 0;
+                            parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? data['Longitude'] : null;
                     const offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         const markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -619,10 +619,10 @@ export class Zoom {
                     nullCount += (!isNaN(lati) && !isNaN(long)) ? 0 : 1;
                     markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;
                     markerCounts += (eventArgs.cancel) ? 1 : 0;
-                    this.maps.markerNullCount = (!isNullOrUndefined(lati) || !isNullOrUndefined(long))
-                        ? this.maps.markerNullCount : this.maps.markerNullCount + 1;
+                    this.maps.markerNullCount = (isNullOrUndefined(lati) || isNullOrUndefined(long))
+                        ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
                     const markerDataLength: number = markerDatas.length - this.maps.markerNullCount;
-                    if (markerSVGObject.childElementCount === (markerDatas.length - markerTemplateCounts - nullCount) && (type !== 'Template')) {
+                    if (markerSVGObject.childElementCount === (markerDataLength - markerTemplateCounts - nullCount) && (type !== 'Template')) {
                         layerElement.appendChild(markerSVGObject);
                         if (currentLayers.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(markerSVGObject);
@@ -630,7 +630,7 @@ export class Zoom {
                             clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true, true);
                         }
                     }
-                    if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+                    if (markerTemplateElements.childElementCount === (markerDataLength - markerCounts - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
                         if (scale >= 1) {
                             if (currentLayers.markerClusterSettings.allowClustering) {
@@ -885,7 +885,10 @@ export class Zoom {
             }
         }
     }
-    public panning(direction: PanDirection, xDifference: number, yDifference: number, mouseLocation?: PointerEvent | TouchEvent): void {
+    /**
+     * @private
+     */
+    public panning(direction: PanDirection, xDifference: number, yDifference: number, mouseLocation?: PointerEvent | TouchEvent | KeyboardEvent): void {
         const map: Maps = this.maps; let panArgs: IMapPanEventArgs;
         const down: Point = this.mouseDownPoints;
         const move: Point = this.mouseMovePoints;
@@ -901,6 +904,8 @@ export class Zoom {
         yDifference = !isNullOrUndefined(yDifference) ? yDifference : (down.y - move.y);
         this.maps.mergeCluster();
         if (!map.isTileMap) {
+            const legendElement: HTMLElement = document.getElementById(map.element.id + '_Legend_Group');
+            const legendHeight: number = !isNullOrUndefined(legendElement) ? legendElement.getClientRects()[0].height : 0;
             x = translatePoint.x - xDifference / scale;
             y = translatePoint.y - yDifference / scale;
             const layerRect: ClientRect = getElementByID(map.element.id + '_Layer_Collections').getBoundingClientRect();
@@ -908,7 +913,7 @@ export class Zoom {
             const panningXDirection: boolean = ((xDifference < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
                 ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
             const panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
-                ((layerRect.top + layerRect.height + map.margin.top) >= (elementRect.top + elementRect.height))));
+                ((layerRect.top + layerRect.height + legendHeight + map.margin.top) >= (elementRect.top + elementRect.height))));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const location: any = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, mouseLocation['layerX'], mouseLocation['layerY']);
             panArgs = {
@@ -1056,7 +1061,7 @@ export class Zoom {
         const map: Maps = this.maps;
         this.toolBarGroup = map.renderer.createGroup({
             id: map.element.id + '_Zooming_KitCollection',
-            opacity: map.theme.toLowerCase() === 'fluentuidark' ? 0.6 : 0.3
+            opacity: map.theme.toLowerCase() === 'fluentdark' ? 0.6 : 0.3
         });
         const kitHeight: number = 16; const kitWidth: number = 16;
         let xSpacing: number = 15; let ySpacing: number = 15;
@@ -1215,16 +1220,14 @@ export class Zoom {
         case 'pan':
             if (!this.maps.zoomSettings.enablePanning) {
                 this.panColor = '#737373';
-            }
-            else {
+            } else {
                 this.panColor = this.selectionColor;
             }
             this.zoomColor = this.fillColor;
             if (!this.maps.zoomSettings.enablePanning) {
                 this.applySelection(this.zoomElements, this.selectionColor);
                 this.applySelection(this.panElements, this.panColor);
-            }
-            else {
+            } else {
                 this.applySelection(this.zoomElements, this.fillColor);
                 this.applySelection(this.panElements, this.panColor);
             }
@@ -1331,8 +1334,9 @@ export class Zoom {
             x = (size.width - toolBarSize.width) - padding;
             break;
         }
-        element.style.left = x + 'px';
-        element.style.top = y + 'px';
+        let extraPosition: Point = map.getExtraPosition();
+        element.style.left = x + extraPosition.x + 'px';
+        element.style.top = y + extraPosition.y + 'px';
         const color: string = this.maps.zoomSettings.highlightColor || this.maps.themeStyle.zoomSelectionColor;
         const css: string = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }' +
             '.e-maps-toolbar:hover { cursor: pointer; } .e-maps-cursor-disable:hover { cursor: not-allowed; } .e-maps-panning:hover { cursor: pointer; } ' +
@@ -1478,14 +1482,14 @@ export class Zoom {
                 if (document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
                     if (!this.maps.zoomSettings.enablePanning) {
                         if (target.id.indexOf('_Zooming_ToolBar') > -1 || target.id.indexOf('_Zooming_Rect') > -1) {
-                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', map.theme.toLowerCase() === 'fluentuidark' ? '0.6' : '0.3');
-                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', map.theme.toLowerCase() === 'fluentuidark' ? '0.6' : '0.3');
+                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');
+                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');
                         }
                     }
                 }
             }
             else {
-                getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', map.theme.toLowerCase() === 'fluentuidark' ? '0.6' : '0.3');
+                getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');
                 if (!this.maps.zoomSettings.enablePanning && document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
                     getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', '1');
                     getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', '1');

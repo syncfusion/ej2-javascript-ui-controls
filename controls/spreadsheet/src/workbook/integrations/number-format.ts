@@ -1,8 +1,9 @@
-import { getRangeIndexes, NumberFormatType, getCellAddress } from '../common/index';
-import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode } from '../base/index';
+import { getRangeIndexes, NumberFormatType, getCellAddress, updateCell } from '../common/index';
+import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs } from '../common/math';
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText, setCellFormat, rowFillHandler , getTextSpace, updateCustomFormatsFromImport } from '../common/event';
+import { checkIsNumberAndGetNumber } from '../common/internalization';
 /**
  * Specifies number format.
  */
@@ -34,13 +35,14 @@ export class WorkbookNumberFormat {
         let cell: CellModel;
         for (let i: number = selectedRange[0]; i <= selectedRange[2]; i++) {
             for (let j: number = selectedRange[1]; j <= selectedRange[3]; j++) {
-                setCell(i, j, sheet, { format: args.format }, true);
-                cell = getCell(i, j, sheet, true);
-                this.getFormattedCell({
-                    type: getTypeFromFormat(cell.format), value: cell.value,
-                    format: cell.format, rowIndex: i, colIndex: j,
-                    sheetIndex: activeSheetIndex, cell: cell
-                });
+                if (!updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: i, colIdx: j })) {
+                    cell = getCell(i, j, sheet);
+                    this.getFormattedCell({
+                        type: getTypeFromFormat(cell.format), value: cell.value,
+                        format: cell.format, rowIndex: i, colIndex: j,
+                        sheetIndex: activeSheetIndex, cell: cell
+                    });
+                }
             }
         }
     }
@@ -97,7 +99,7 @@ export class WorkbookNumberFormat {
                 if (cell.format.indexOf('<') > -1 || cell.format.indexOf('>') > -1) {
                     args.value = args.result = this.processCustomConditions(cell);
                 } else {
-                    args.value = args.result = this.processCustomAccounting(cell, range[0], range[1], <HTMLElement>args.td);
+                    args.value = args.result = this.processCustomAccounting(cell, range[0], range[1], <HTMLElement>args.td, currencySymbol);
                     isCustomText = (!isNumber(cell.value) ||  cell.format && cell.format.indexOf('@') > -1) ? true : false;
                 }
                 cell.format = orgFormat;
@@ -108,8 +110,11 @@ export class WorkbookNumberFormat {
             } else if (cell.format.indexOf('@') > -1) {
                 isCustomText = true;
                 args.value = args.result = this.processCustomText(cell);
-            } else if (isNumber(cell.value)) {
+            } else if (checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).isNumber) {
                 args.value = args.result = this.processCustomNumberFormat(cell, range[0], range[1], <HTMLElement>args.td);
+                isCustomText = !isNumber(cell.value);
+            } else {
+                isCustomText = true;
             }
             if (isCustomText) {
                 args.isRightAlign = false;
@@ -282,11 +287,15 @@ export class WorkbookNumberFormat {
         }
     }
 
-    private processCustomAccounting(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement): string {
+    private processCustomAccounting(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement, currencySymbol?: string): string {
+        let cellValue: number;
         const custFormat: string[] = cell.format.split(';');
-        const cellValue: number = !isNullOrUndefined(cell.value) ?
-            parseFloat(cell.value.toString().replace(/,/g, '')) : parseFloat(cell.value);
+        const numberStatusAndValue: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
         const orgValue: string = cell.value;
+        if (numberStatusAndValue.isNumber) {
+            cell.value = numberStatusAndValue.value;
+            cellValue = parseFloat(numberStatusAndValue.value);
+        }
         if (cellValue > 0) {
             cell.format = custFormat[0];
         } else if (cellValue === 0) {
@@ -313,7 +322,7 @@ export class WorkbookNumberFormat {
 
     private processCustomText(cell: CellModel): string {
         const result: string = this.processCustomNumberFormat(
-            { format: cell.format.split('@').join('0'), value: cell.value ? cell.value.split(cell.value).join('0') : '' });
+            { format: cell.format.split('@').join('#'), value: cell.value ? cell.value.split(cell.value).join('0') : '' });
         return result && result.split('0').join(cell.value);
     }
 
@@ -382,14 +391,11 @@ export class WorkbookNumberFormat {
             return '';
         }
         let cellValue: number | string = 0;
-        let formattedText: string;
+        let formattedText: string = cell.value;
         let isFormatted: boolean = false;
-        if (!isNullOrUndefined(cell.value) && !isNumber(cell.value)) {
-            cellValue = cell.value.replace(/,/g, '');
-        }else {
-            cellValue = cell.value;
-        }
-        if (cell && isNumber(cell.value)) {
+        cellValue = checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).value;
+        if (cell && isNumber(cellValue)) {
+            cell.value = cellValue;
             cellValue = parseFloat(cellValue.toString());
             let customFormat: string = this.processCustomColor(cell);
             // if (customFormat === cell.format && cell.style) {
@@ -451,7 +457,7 @@ export class WorkbookNumberFormat {
                 this.currentRange = undefined;
             }
             this.parent.notify(setCellFormat, { style: { 'color': colorCode }, range: this.currentRange });
-        } else if (cell.style) {
+        } else if (cell.style && getCustomColors().indexOf(cell.style.color) > -1) {
             this.parent.notify(setCellFormat, { style: { 'color': 'black' } });
         }
         return custFormat;
@@ -468,8 +474,8 @@ export class WorkbookNumberFormat {
             case 'General':
                 result = this.autoDetectGeneralFormat({
                     args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                    isRightAlign: isRightAlign, curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIdx),
-                    colIdx: Number(args.colIdx)
+                    isRightAlign: isRightAlign, curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIdx || args.rowIndex),
+                    colIdx: Number(args.colIdx || args.colIndex)
                 });
                 fResult = result.fResult as string;
                 isRightAlign = result.isRightAlign as boolean;
@@ -481,7 +487,9 @@ export class WorkbookNumberFormat {
                 }
                 break;
             case 'Currency':
-                if (isNumber(fResult)) {
+                const isNumberAndValue: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber({ value: fResult, format: args.format as string }, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
+                if (isNumberAndValue.isNumber) {
+                    args.value = isNumberAndValue.value;
                     fResult = this.currencyFormat(args, intl, currencyCode);
                     isRightAlign = true;
                 }
@@ -887,10 +895,7 @@ export class WorkbookNumberFormat {
     }
 
     private getFormattedNumber(format: string, value: number): string {
-        const intl: Internationalization = new Internationalization();
-        return intl.formatNumber(Number(value), {
-            format: format
-        });
+        return new Internationalization().formatNumber(Number(value), { format: format }) || '';
     }
 
     /**

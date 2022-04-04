@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
+import { BeforeOpenEventArgs } from "../../../src";
 
 describe('Open & Save ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -16,7 +17,7 @@ describe('Open & Save ->', () => {
             helper.invoke('destroy');
         });
         it('Open', (done: Function) => {
-            fetch('http://cdn.syncfusion.com/scripts/spreadsheet/Sample.xlsx').then((response) => {
+            fetch('https://cdn.syncfusion.com/scripts/spreadsheet/Sample.xlsx').then((response) => {
                 response.blob().then((data: Blob) => {
                     const file: File = new File([data], "Sample.xlsx");
                     helper.invoke('open', [{ file: file }]);
@@ -49,6 +50,31 @@ describe('Open & Save ->', () => {
                      done();
             //     });
             // });
+        });
+    });
+});
+describe('EJ2-56416 ->', () => {
+    const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    beforeAll((done: Function) => {
+        helper.initializeSpreadsheet({
+            openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
+            sheets: [{ ranges: [{ dataSource: defaultData }] }],
+            beforeOpen: (args: BeforeOpenEventArgs) => { args.cancel = true }
+        }, done);
+    });
+    afterAll(() => {
+        helper.invoke('destroy');
+    });
+    it('Spinner loads endlessly while importing an excel file', (done: Function) => {
+        fetch('https://cdn.syncfusion.com/scripts/spreadsheet/Sample.xlsx').then((response) => {
+            response.blob().then((data: Blob) => {
+                const file: File = new File([data], "Sample.xlsx");
+                helper.invoke('open', [{ file: file }]);
+                setTimeout(() => {
+                    expect(helper.getElements('.e-spin-show')[0]).toBeUndefined();
+                    done();
+                }, 1500);
+            });
         });
     });
 });

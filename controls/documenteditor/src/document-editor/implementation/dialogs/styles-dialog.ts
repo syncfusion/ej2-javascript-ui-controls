@@ -37,7 +37,7 @@ export class StylesDialog {
         const id: string = this.documentHelper.owner.containerId + '_insert_styles';
         this.target = createElement('div', { id: id, className: 'e-de-styles' });
         const headerValue: string = localValue.getConstant('Styles');
-        const dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-styles-dlgfields' });
+        const dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-de-para-dlg-heading' });
         this.target.appendChild(dlgFields);
 
         const commonDiv: HTMLElement = createElement('div', { className: 'e-styles-common' });

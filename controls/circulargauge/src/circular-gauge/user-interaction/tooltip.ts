@@ -305,9 +305,11 @@ export class GaugeTooltip {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
         } else {
-            this.removeTooltip();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.gauge as any).clearTemplate();
+            const isTooltipRemoved: boolean = this.removeTooltip();
+            if (isTooltipRemoved) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.gauge as any).clearTemplate();
+            }
         }
         const gaugeElement: HTMLElement = document.getElementById(this.gaugeId);
         const gaugeRect: ClientRect = gaugeElement.getBoundingClientRect();
@@ -351,6 +353,10 @@ export class GaugeTooltip {
             availableSize: gauge.availableSize,
             border: border
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (((gauge as any).isVue || (gauge as any).isVue3)) {
+            svgTooltip.controlInstance = gauge;
+        }
         return svgTooltip;
     }
 
@@ -464,14 +470,17 @@ export class GaugeTooltip {
         }
         return this.tooltipRect;
     }
-    public removeTooltip(): void {
+    public removeTooltip(): boolean {
+        let isTooltipRemoved: boolean = false;
         if (document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0) {
             const tooltip: Element = document.getElementsByClassName('EJ2-CircularGauge-Tooltip')[0];
             if (tooltip) {
                 remove(tooltip);
+                isTooltipRemoved = true;
             }
             this.pointerEle = null;
         }
+        return isTooltipRemoved;
     }
 
     public mouseUpHandler(e: PointerEvent): void {

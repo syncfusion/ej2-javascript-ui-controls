@@ -208,42 +208,42 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbHeight: thumbHeight
         };
         break;
-    // case 'Fluent':
-    //     style = {
-    //         gridLineColor: '#EDEBE9',
-    //         axisLineColor: '#D2D0CE',
-    //         labelFontColor: '#3B3A39',
-    //         unselectedRectColor: range.series.length ? 'transparent' : '#A19F9D',
-    //         thumpLineColor: '#6C757D',
-    //         thumbBackground: '#ADB5BD',
-    //         gripColor: '#605E5C',
-    //         background: 'transparent',
-    //         thumbHoverColor: '#374151',
-    //         selectedRegionColor: range.series.length ? 'rgba(161, 159, 157, 0.1)' : '#ADB5BD',
-    //         tooltipBackground: '#FFFFFF',
-    //         tooltipFontColor: '#323130',
-    //         thumbWidth: thumbWidth,
-    //         thumbHeight: thumbHeight
-    //     };
-    //     break;
-    // case 'FluentDark':
-    //     style = {
-    //         gridLineColor: '#292827',
-    //         axisLineColor: '#3B3A39',
-    //         labelFontColor: '#C8C6C4',
-    //         unselectedRectColor: range.series.length ? 'transparent' : '#A19F9D',
-    //         thumpLineColor: '#A19F9D',
-    //         thumbBackground: '#ADB5BD',
-    //         gripColor: '#605E5C',
-    //         background: 'transparent',
-    //         thumbHoverColor: '#374151',
-    //         selectedRegionColor: range.series.length ? 'rgba(121, 119, 117, 0.1)' : '#797775',
-    //         tooltipBackground: '#252423',
-    //         tooltipFontColor: '#F3F2F1',
-    //         thumbWidth: thumbWidth,
-    //         thumbHeight: thumbHeight
-    //     };
-    //     break;
+    case 'Fluent':
+        style = {
+            gridLineColor: '#EDEBE9',
+            axisLineColor: '#D2D0CE',
+            labelFontColor: '#3B3A39',
+            unselectedRectColor: range.series.length ? 'transparent' : '#A19F9D',
+            thumpLineColor: '#A19F9D',
+            thumbBackground: '#FFFFFF',
+            gripColor: '#605E5C',
+            background: 'transparent',
+            thumbHoverColor: '#FFFFFF',
+            selectedRegionColor: range.series.length ? 'rgba(161, 159, 157, 0.1)' : '#ADB5BD',
+            tooltipBackground: '#FFFFFF',
+            tooltipFontColor: '#323130',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight
+        };
+        break;
+    case 'FluentDark':
+        style = {
+            gridLineColor: '#414040',
+            axisLineColor: '#3B3A39',
+            labelFontColor: '#C8C6C4',
+            unselectedRectColor: range.series.length ? 'transparent' : '#A19F9D',
+            thumpLineColor: '#797775',
+            thumbBackground: 'black',
+            gripColor: '#797775',
+            background: 'transparent',
+            thumbHoverColor: 'black',
+            selectedRegionColor: range.series.length ? 'rgba(121, 119, 117, 0.1)' : '#797775',
+            tooltipBackground: '#252423',
+            tooltipFontColor: '#F3F2F1',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight
+        };
+        break;
     default:
         style.selectedRegionColor = range.series.length ? 'transparent' : '#FF4081';
         break;

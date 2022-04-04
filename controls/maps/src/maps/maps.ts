@@ -12,7 +12,7 @@ import { Event, remove, L10n, Collection, Internationalization, Complex } from '
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition, calculateSize } from './utils/helper';
-import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';
+import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle, querySelector } from './utils/helper';
 import { createStyle } from './utils/helper';
 import { ZoomSettings, LegendSettings, Tile } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
@@ -40,7 +40,7 @@ import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClust
 import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
-import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax, processResult } from '../maps/utils/helper';
+import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax, processResult, getElementsByClassName } from '../maps/utils/helper';
 import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint, calculateZoomLevel } from '../maps/utils/helper';
 import { Annotations } from '../maps/user-interaction/annotation';
 import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } from './index';
@@ -999,7 +999,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
+        const position: Point = this.getExtraPosition();
         for (let i: number = 0; i < this.layers.length; i++) {
+            if (position.x !== 0 || position.y !== 0) {
+                let markerTemplate: HTMLElement = document.getElementById(this.element.id + '_LayerIndex_' + i + '_Markers_Template_Group');
+                if (!isNullOrUndefined(markerTemplate)) {
+                    markerTemplate.style.top = this.mapAreaRect.y + position.y + 'px';
+                    markerTemplate.style.left = this.mapAreaRect.x + position.x + 'px';
+                }
+            }
             if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
                 this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
                 const checkSelection: boolean = this.layers[i].selectionSettings.enableMultiSelect;
@@ -1011,14 +1019,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
                 if (i === this.layers.length - 1) { this.checkInitialRender = false; }
             }
-            for (let k : number = 0; k < this.layers[i].markerSettings.length; k++) {
-                if (this.layers[i].markerSettings[k].selectionSettings && this.layers[i].markerSettings[k].selectionSettings.enable
-                    && this.layers[i].markerSettings[k].initialMarkerSelection.length > 0) {
-                    const markerSelectionValues : InitialMarkerSelectionSettingsModel[] =
-                        this.layers[i].markerSettings[k].initialMarkerSelection;
-                    for (let j : number = 0; j < markerSelectionValues.length; j++) {
-                        this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude,
-                                                    markerSelectionValues[j].longitude);
+            if (!this.isResize) {
+                for (let k : number = 0; k < this.layers[i].markerSettings.length; k++) {
+                    if (this.layers[i].markerSettings[k].selectionSettings && this.layers[i].markerSettings[k].selectionSettings.enable
+                        && this.layers[i].markerSettings[k].initialMarkerSelection.length > 0) {
+                        const markerSelectionValues : InitialMarkerSelectionSettingsModel[] =
+                            this.layers[i].markerSettings[k].initialMarkerSelection;
+                        for (let j : number = 0; j < markerSelectionValues.length; j++) {
+                            this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude,
+                                                        markerSelectionValues[j].longitude);
+                        }
                     }
                 }
             }
@@ -1102,7 +1112,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     ) : void {
         const border : BorderModel = {
             color: selectionSettings.border.color,
-            width: selectionSettings.border.width / map.scale
+            width: selectionSettings.border.width / map.scale,
+            opacity: selectionSettings.border.opacity
         };
         const markerSelectionProperties : any = {
             opacity: selectionSettings.opacity,
@@ -1122,8 +1133,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.selectedMarkerElementId.length === 0 || selectionSettings.enableMultiSelect) {
             if (targetElement.tagName === 'g') {
                 targetElement.children[0].setAttribute('class', 'MarkerselectionMapStyle');
+                this.selectedMarkerElementId.push(targetElement.children[0].id);
             } else {
                 targetElement.setAttribute('class', 'MarkerselectionMapStyle');
+                this.selectedMarkerElementId.push(targetElement.id);
             }
         }
     }
@@ -1423,7 +1436,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 groupEle
             );
             element.setAttribute('aria-label', this.description || title.text);
-            element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = Math.abs((titleBounds.y + this.margin.bottom) - this.availableSize.height);
                 this.mapAreaRect = new Rect(this.margin.left, titleBounds.y + 10, width, height - 10);
@@ -1481,6 +1493,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEndOnMap, this);
         EventHandler.add(this.element, 'pointerleave mouseleave', this.mouseLeaveOnMap, this);
+        EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         //  EventHandler.add(this.element, cancelEvent, this.mouseLeaveOnMap, this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1503,6 +1517,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMoveOnMap);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEndOnMap);
         EventHandler.remove(this.element, 'pointerleave mouseleave', this.mouseLeaveOnMap);
+        EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
+        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         //EventHandler.remove(this.element, cancelEvent, this.mouseLeaveOnMap);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1519,6 +1535,91 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (document.getElementsByClassName('highlightMapStyle').length > 0 && this.legendModule) {
             this.legendModule.removeShapeHighlightCollection();
             removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
+        }
+    }
+    private keyUpHandler(event: KeyboardEvent): void {
+        const id: string = event.target['id'];
+        if (event.code === 'Tab' && id.indexOf('_LayerIndex_') > -1 && id.indexOf('shapeIndex') > -1) {
+            this.keyboardHighlightSelection(id, event.type);
+        } else if (id.indexOf('_LayerIndex_') === -1 && id.indexOf('shapeIndex') === -1 &&
+            getElementsByClassName('highlightMapStyle').length > 0) {
+            removeClass(<Element>getElementsByClassName('highlightMapStyle')[0]);
+            if (this.legendSettings.visible && this.legendModule) {
+                this.legendModule.removeShapeHighlightCollection();
+            }
+        }
+    }
+
+    private keyboardHighlightSelection(id: string, key: string): void {
+        const layerIndex: number = parseInt(id.split('_LayerIndex_')[1].split('_')[0], 10);
+        const shapeIndex: number = parseInt(id.split('_shapeIndex_')[1].split('_')[0], 10);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shapeData: any = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+            this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+        const dataIndex: number = parseInt(id.split('_dataIndex_')[1].split('_')[0], 10);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data: any = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
+        if (this.layers[layerIndex].selectionSettings.enable && key === 'keydown' && this.selectionModule) {
+            this.selectionModule.selectionsettings = this.layers[layerIndex].selectionSettings;
+            this.selectionModule.selectionType = 'Shape';
+            this.selectionModule.selectElement(<Element>event.target, layerIndex, data, shapeData);
+        } else if (this.highlightModule && (this.layers[layerIndex].highlightSettings.enable && key === 'keyup' &&
+            !(event.target as HTMLElement).classList.contains('ShapeselectionMapStyle'))) {
+            this.highlightModule.highlightSettings = this.layers[layerIndex].highlightSettings;
+            this.highlightModule.handleHighlight(<Element>event.target, layerIndex, data, shapeData);
+        }
+    }
+
+    private keyDownHandler(event: KeyboardEvent): void {
+        const zoom: Zoom = this.zoomModule;
+        if ((event.key === '+' || event.code === 'Equal') && zoom) {
+            zoom.performZoomingByToolBar('zoomin');
+        } else if ((event.key === '-' || event.code === 'Minus') && zoom) {
+            zoom.performZoomingByToolBar('zoomout');
+        } else if (event['keyCode'] === 82 && zoom) {
+            zoom.performZoomingByToolBar('reset');
+        } else if ((event.code === 'ArrowUp' || event.code === 'ArrowDown') && zoom) {
+            event.preventDefault();
+            zoom.mouseDownLatLong['x'] = 0;
+            zoom.mouseMoveLatLong['y'] = this.mapAreaRect.height / 7;
+            zoom.panning('None', zoom.mouseDownLatLong['x'], event.code === 'ArrowUp' ? -(zoom.mouseMoveLatLong['y']) :
+                zoom.mouseMoveLatLong['y'], event);
+            zoom.mouseDownLatLong['y'] = zoom.mouseMoveLatLong['y'];
+        } else if ((event.code === 'ArrowLeft' || event.code === 'ArrowRight') && zoom) {
+            event.preventDefault();
+            zoom.mouseDownLatLong['y'] = 0;
+            zoom.mouseMoveLatLong['x'] = this.mapAreaRect.width / 7;
+            zoom.panning('None', event.code === 'ArrowLeft' ? -(zoom.mouseMoveLatLong['x']) : zoom.mouseMoveLatLong['x'],
+                zoom.mouseDownLatLong['y'], event);
+            zoom.mouseDownLatLong['x'] = zoom.mouseMoveLatLong['x'];
+        } else if (event.code === 'Enter') {
+            const id: string = event.target['id'];
+            event.preventDefault();
+            if (this.legendModule && (id.indexOf('_Left_Page_Rect') > -1 || id.indexOf('_Right_Page_Rect') > -1)) {
+                this.legendModule.currentPage = (id.indexOf('_Left_Page_') > -1) ? (this.legendModule.currentPage - 1) :
+                    (this.legendModule.currentPage + 1);
+                this.legendModule.legendGroup = this.renderer.createGroup({ id: this.element.id + '_Legend_Group' });
+                this.legendModule.drawLegendItem(this.legendModule.currentPage);
+                const textContent: string = (document.getElementById(this.element.id + '_Paging_Text')).textContent;
+                const text: number[] = textContent.split('/').map(Number);
+                if (id.indexOf('_Left_Page_Rect') > -1) {
+                    if (text[0] !== 1) {
+                        (event.target as HTMLElement).focus();
+                    }
+                    (event.target as HTMLElement).style.outlineColor = text[0] - 1 !== text[1] ? '' : 'transparent';
+                } else if (id.indexOf('_Right_Page_Rect') > -1) {
+                    if (text[0] !== text[1]) {
+                        (event.target as HTMLElement).focus();
+                    }
+                    (event.target as HTMLElement).style.outlineColor = text[0] !== text[1] + 1 ? '' : 'transparent';
+                }
+                if (querySelector(this.element.id + '_Legend_Border', this.element.id)) {
+                    (<HTMLElement>querySelector(this.element.id + '_Legend_Border', this.element.id)).style.pointerEvents = 'none';
+                }
+            }
+            if (id.indexOf('shapeIndex') > -1) {
+                this.keyboardHighlightSelection(id, event.type);
+            }
         }
     }
 
@@ -1567,33 +1668,32 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
                 if (this.markerModule) {
-                    this.markerModule.markerClick(e);
                     this.markerModule.markerClusterClick(e);
-                }
-                if (this.bubbleModule) {
-                    this.bubbleModule.bubbleClick(e);
                 }
                 if (!eventArgs.cancel) {
                     this.notify(click, targetEle);
                 }
                 if (!eventArgs.cancel && targetEle.id.indexOf('shapeIndex') !== -1) {
-                    const layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    const shapeSelectedEventArgs : IShapeSelectedEventArgs = triggerShapeEvent(
-                        targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected
-                    );
-                    if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
-                        customizeStyle(this.selectionModule.selectionType + 'selectionMap',
-                                       this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
-                    } else if (shapeSelectedEventArgs.cancel && this.selectionModule
-                        && isNullOrUndefined(shapeSelectedEventArgs['data'])) {
-                        removeClass(targetEle);
-                        this.selectionModule.removedSelectionList(targetEle);
-                    }
+                    this.triggerShapeSelection(targetEle);
                 }
             });
         }
     }
 
+    private triggerShapeSelection(targetEle: Element) {
+        const layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        const shapeSelectedEventArgs : IShapeSelectedEventArgs = triggerShapeEvent(
+            targetEle.id, this.layers[layerIndex].selectionSettings, this, shapeSelected
+        );
+        if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
+            customizeStyle(this.selectionModule.selectionType + 'selectionMap',
+                            this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+        } else if (shapeSelectedEventArgs.cancel && this.selectionModule
+            && isNullOrUndefined(shapeSelectedEventArgs['data'])) {
+            removeClass(targetEle);
+            this.selectionModule.removedSelectionList(targetEle);
+        }
+    }
     private getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement, x: number, y: number): GeoPosition {
         let layerIndex: number = 0;
         let latLongValue: any;
@@ -1712,6 +1812,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const markerModule: Marker = this.markerModule;
             if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
                 this.mergeCluster();
+                if (element.id.indexOf('shapeIndex') > -1) {
+                    this.triggerShapeSelection(element);
+                }
             }
             if (markerModule) {
                 markerModule.markerClick(e);
@@ -2499,6 +2602,27 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         });
         return isVisible;
+    }
+
+    /**
+     * To find space between the secondary element and svg element.
+     * @private
+     */
+     public getExtraPosition(): Point {
+        let top: number = 0;
+        let left: number = 0;
+        const svgElement: Element = getElement(this.element.id + '_svg');
+        if (!isNullOrUndefined(svgElement)) {
+            const svgClientRects: DOMRectList = svgElement.getClientRects() as DOMRectList;
+            const mapsClientRects: DOMRectList = (getElement(this.element.id + '_Secondary_Element')).getClientRects() as DOMRectList;
+            if (svgClientRects.length !== 0 && mapsClientRects.length !== 0) {
+                const svgClientRect: ClientRect = svgClientRects[0];
+                const mapsClientRect: ClientRect = mapsClientRects[0];
+                top = svgClientRect.top - mapsClientRect.top;
+                left = svgClientRect.left - mapsClientRect.left;
+            }
+        }
+        return new Point(left, top);
     }
 
     /**

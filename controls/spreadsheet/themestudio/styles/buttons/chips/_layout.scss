@@ -140,8 +140,8 @@
         height: $chip-leading-icon-size;
         justify-content: center;
         line-height: 1;
-        margin: $chip-leading-icon-margin;
-        margin-top: $chip-multiselection-icon-margin-top;
+        margin: $chip-multi-selection-icon-margin;
+        margin-top: $chip-multi-selection-icon-margin-top;
         overflow: hidden;
         transition: width 300ms cubic-bezier(.4, 0, .2, 1);
         width: $chip-leading-icon-size;
@@ -164,7 +164,7 @@
         &::before {
           height: $chip-avatar-size;
           margin: $chip-avatar-margin;
-          margin-top: $chip-multiselection-icon-margin-top;
+          margin-top: $chip-multi-selection-icon-margin-top;
           width: $chip-avatar-size;
         }
       }
@@ -218,13 +218,13 @@
       &.e-multi-selection .e-chip {
         &::before {
           margin: $chip-rtl-leading-icon-margin;
-          margin-top: $chip-multiselection-icon-margin-top;
+          margin-top: $chip-multi-selection-icon-margin-top;
         }
 
         &.e-chip-avatar-wrap {
           &::before {
             margin: $chip-rtl-avatar-margin;
-            margin-top: $chip-multiselection-icon-margin-top;
+            margin-top: $chip-multi-selection-icon-margin-top;
           }
         }
       }
@@ -295,8 +295,8 @@
     &.e-multi-selection .e-chip {
       &::before {
         height: $chip-touch-leading-icon-size;
-        margin: $chip-touch-leading-icon-margin;
-        margin-top: $chip-multiselection-icon-margin-top;
+        margin: $chip-touch-multi-selection-icon-margin;
+        margin-top: $chip-multi-selection-icon-margin-top;
         width: $chip-touch-leading-icon-size;
       }
 
@@ -304,7 +304,7 @@
         &::before {
           height: $chip-touch-avatar-size;
           margin: $chip-touch-avatar-margin;
-          margin-top: $chip-multiselection-icon-margin-top;
+          margin-top: $chip-multi-selection-icon-margin-top;
           width: $chip-touch-avatar-size;
         }
       }
@@ -342,13 +342,13 @@
       &.e-multi-selection .e-chip {
         &::before {
           margin: $chip-touch-rtl-leading-icon-margin;
-          margin-top: $chip-multiselection-icon-margin-top;
+          margin-top: $chip-multi-selection-icon-margin-top;
         }
 
         &.e-chip-avatar-wrap {
           &::before {
             margin: $chip-touch-rtl-avatar-margin;
-            margin-top: $chip-multiselection-icon-margin-top;
+            margin-top: $chip-multi-selection-icon-margin-top;
           }
         }
       }

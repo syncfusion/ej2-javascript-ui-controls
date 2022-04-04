@@ -123,6 +123,8 @@ export function findObjectUnderMouse(
                         } else if (boundsDiff === objectBounds) {
                             actualTarget = objects[i];
                             boundsDiff = objectBounds;
+                        } else if ((objects[i].shapeAnnotationType === "Image") || (objects[i].shapeAnnotationType === "Stamp")) {
+                            actualTarget = objects[i];
                         }
                     }
                 }

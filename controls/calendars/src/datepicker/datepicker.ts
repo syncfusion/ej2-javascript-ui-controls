@@ -7,7 +7,7 @@ import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@sy
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, DayHeaderFormats} from '../calendar/calendar';
-import { MaskPlaceholderModel } from '../calendar/calendar-model'
+import { MaskPlaceholderModel } from '../common/maskplaceholder-model'
 import { DatePickerModel } from './datepicker-model';
 
 
@@ -498,12 +498,12 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private initialize(): void {
+        this.checkInvalidValue(this.value);
         if (this.enableMask) {
             this.notify("createMask", {
               module: "MaskedDateTime",
             });
         }
-        this.checkInvalidValue(this.value);
         this.createInput();
         this.updateHtmlAttributeToWrapper();
         this.setAllowEdit();
@@ -1276,7 +1276,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.setProperties({ value: date }, true);
             }
         }
-        if (this.strictMode && !date && this.inputElement.value === '') {
+        if (this.strictMode && !date && this.inputElement.value === (this.enableMask ? this.maskedDateValue : '')) {
             this.setProperties({ value: null }, true);
         }
         if (isNaN(+this.value)) {

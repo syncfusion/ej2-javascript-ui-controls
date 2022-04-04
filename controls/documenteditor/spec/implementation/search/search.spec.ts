@@ -36,7 +36,7 @@ describe('Find and Replace all in Header footer validation', () => {
 console.log('Find All validation');
         editor.open(JSON.stringify(sfdtText));
         editor.search.findAll('Adventure Cycle');
-        expect(editor.search.textSearchResults.length).toBe(6);
+        expect(editor.search.textSearchResults.length).toBe(4);
     });
 //     it('Replace all validation', () => {
 // console.log('Replace all validation');

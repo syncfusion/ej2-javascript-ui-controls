@@ -415,6 +415,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private isBootstrap4: boolean;
     private isTailwind: boolean;
     private isBootstrap5: boolean;
+    private isFluent: boolean;
     private zIndex: number;
     private l10n: L10n;
     private internationalization: Internationalization;
@@ -865,6 +866,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isTailwind = this.getTheme(this.sliderContainer) === 'tailwind' || this.getTheme(this.sliderContainer) === 'tailwind-dark';
         this.isBootstrap5 = this.getTheme(this.sliderContainer) === 'bootstrap5';
+        this.isFluent = this.getTheme(this.sliderContainer) === 'FluentUI';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }
 
@@ -1016,7 +1018,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private transitionEnd(e: TransitionEvent): void {
         if (e.propertyName !== 'transform') {
             this.handleStart();
-            this.getHandle().style.transition = 'none';
+            if (!this.enableAnimation){
+                this.getHandle().style.transition = 'none';
+            }
             if (this.type !== 'Default') {
                 this.rangeBar.style.transition = 'none';
             }
@@ -1367,7 +1371,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private renderTooltip(): void {
         this.tooltipObj = new Tooltip({
-            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4 || this.isTailwind || this.isBootstrap5,
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4 || this.isTailwind || this.isBootstrap5 || this.isFluent,
             cssClass: classNames.sliderTooltip,
             height: this.isMaterial ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
@@ -1382,7 +1386,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private initializeTooltipProps(): void {
-        let tooltipShowOn: string = this.isMaterialTooltip ? 'Always' : (this.tooltip.showOn === 'Auto' ? 'Hover' : this.tooltip.showOn);
+        let tooltipShowOn: string = (this.tooltip.showOn === 'Auto' ? 'Hover' : this.tooltip.showOn);
         this.setProperties({ tooltip: { showOn: tooltipShowOn } }, true);
         this.tooltipObj.position = this.tooltipPlacement();
         this.tooltipCollision(this.tooltipObj.position);
@@ -2893,6 +2897,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.sliderContainer.classList.add(classNames.sliderHover);
             } else {
                 this.sliderContainer.classList.remove(classNames.sliderHover);
+                const curTarget = event.currentTarget as HTMLElement
+                if (this.tooltip.isVisible && this.tooltip.showOn !== 'Always' && this.tooltipObj && this.isMaterialTooltip &&
+                    !curTarget.classList.contains(classNames.sliderHandleFocused) &&
+                    !curTarget.classList.contains(classNames.sliderTabHandle)) {
+                    this.closeMaterialTooltip();
+                }
             }
         }
     }

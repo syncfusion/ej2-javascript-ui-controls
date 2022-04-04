@@ -2,12 +2,9 @@
 
   .e-toast {
     background-color: $toast-bg-color;
+    border: $toast-border;
     box-shadow: $toast-box-shadow;
     color: $toast-font-color;
-
-    @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap4' {
-      border: 1px solid  $toast-border-color;
-    }
 
     .e-toast-close-icon {
       color: $toast-close-icon-color;
@@ -32,11 +29,14 @@
 
       .e-toast-message .e-toast-title {
         color: $toast-success-title-color;
+        @if $skin-name == 'bootstrap5' {
+          border-color: $toast-success-title-border-color;
         }
+      }
 
       .e-toast-message .e-toast-content {
         color: $toast-success-content-color;
-        }
+      }
 
       .e-toast-icon {
         color: $toast-success-icon-color;
@@ -67,7 +67,10 @@
 
       .e-toast-message .e-toast-title {
         color: $toast-info-title-color;
+        @if $skin-name == 'bootstrap5' {
+          border-color: $toast-info-title-border-color;
         }
+      }
 
       .e-toast-message .e-toast-content {
         color: $toast-info-content-color;
@@ -102,7 +105,10 @@
 
       .e-toast-message .e-toast-title {
         color: $toast-warning-title-color;
+        @if $skin-name == 'bootstrap5' {
+          border-color: $toast-warning-title-border-color;
         }
+      }
 
       .e-toast-message .e-toast-content {
         color: $toast-warning-content-color;
@@ -137,11 +143,14 @@
 
       .e-toast-message .e-toast-title {
         color: $toast-danger-title-color;
+        @if $skin-name == 'bootstrap5' {
+          border-color: $toast-danger-title-border-color;
         }
+      }
 
       .e-toast-message .e-toast-content {
         color: $toast-danger-content-color;
-        }
+      }
 
       .e-toast-icon {
         color: $toast-danger-icon-color;

@@ -1,4 +1,4 @@
-import { NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';import { extend, compile as templateComplier, Component, resetBlazorTemplate, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';import { SvgRenderer } from '../svg-render/index';import { ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation } from '@syncfusion/ej2-base';import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate } from './interface';import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';import { removeElement, TextOption, TooltipLocation, PathOption } from './helper';import { TooltipShape, TooltipTheme, TooltipPlacement } from './enum';
+import { NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';import { extend, compile as templateComplier, Component, resetBlazorTemplate, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';import { SvgRenderer } from '../svg-render/index';import { ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation } from '@syncfusion/ej2-base';import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate } from './interface';import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';import { removeElement, TextOption, TooltipLocation, PathOption, withInAreaBounds } from './helper';import { TooltipShape, TooltipTheme, TooltipPlacement } from './enum';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -150,6 +150,14 @@ export interface TooltipModel extends ComponentModel{
      * @private
      */
     shared?: boolean;
+
+    /**
+     * To enable crosshair tooltip animation.
+     *
+     * @default false.
+     * @private
+     */
+    crosshair?: boolean;
 
     /**
      * To enable shadow for the tooltip.
@@ -391,6 +399,14 @@ export interface TooltipModel extends ComponentModel{
      * @private
      */
     controlInstance?: object;
+
+    /**
+     * Specifies the control name.
+     *
+     * @default ''
+     * @private
+     */
+    controlName?: string;
 
     /**
      * Triggers before each axis range is rendered.

@@ -3,9 +3,9 @@ import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF, focus, freeze } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
-import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook, clearCopy } from '../common/index';
-import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
-import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
+import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
+import { IRenderer, destroyComponent, performUndoRedo, completeAction, applySort, hideRibbonTabs } from '../common/index';
+import { enableToolbarItems, ribbonClick, paste, locale, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink, clearFilter } from '../common/index';
 import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hideToolbarItems, enableRibbonTabs } from '../common/index';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
@@ -20,14 +20,14 @@ import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
 import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, setMerge, updateCustomFormatsFromImport } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
-import { sheetsDestroyed, SortOrder, NumberFormatType, SetCellFormatArgs, getRangeAddress, clearCFRule } from '../../workbook/common/index';
+import { SortOrder, NumberFormatType, SetCellFormatArgs, getRangeAddress, clearCFRule } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { findDlg, insertDesignChart, removeDesignChart, getScrollBarWidth, blankWorkbook, UnProtectWorksheet } from '../common/index';
-import { refreshRibbonIcons, ChartTheme, workbookFormulaOperation } from '../../workbook/common/index';
+import { findDlg, insertDesignChart, removeDesignChart, UnProtectWorksheet } from '../common/index';
+import { refreshRibbonIcons, ChartTheme, beginAction, count } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -69,15 +69,21 @@ export class Ribbon {
     public getModuleName(): string {
         return 'ribbon';
     }
-    private initRibbon(args: { uiUpdate?: boolean }): void {
-        if (!this.parent.showRibbon && this.ribbon) {
-            this.destroy(); return;
+    private ribbonOperation(args?: { onPropertyChange: boolean, prop: string }): void {
+        if (args && args.onPropertyChange) {
+            this.onPropertyChanged(args.prop);
+        } else {
+            this.initialize();
         }
+    }
+    private initialize(onPropertyChange?: boolean): void {
         this.parent.notify(beforeRibbonCreate, {});
         if (this.parent.isMobileView()) {
             this.createMobileView();
         } else {
-            this.createRibbon(args);
+            const refEle: Element = onPropertyChange && (this.parent.element.querySelector('.e-formula-bar-panel') ||
+                document.getElementById(this.parent.element.id + '_sheet_panel'));
+            this.createRibbon(refEle);
         }
     }
     private getRibbonMenuItems(): MenuItemModel[] {
@@ -186,11 +192,11 @@ export class Ribbon {
                 },
                 { type: 'Separator', id: id + '_separator_13' },
                 { prefixIcon: 'e-freeze-pane', text: l10n.getConstant('FreezePanes'), id: id + '_freezepanes', tooltipText:
-                    l10n.getConstant('FreezePanes') },
+                    l10n.getConstant('FreezePanes'), disabled: !this.parent.allowFreezePane },
                 { prefixIcon: 'e-freeze-row', text: l10n.getConstant('FreezeRows'), id: id + '_freezerows', tooltipText:
-                    l10n.getConstant('FreezeRows') },
+                    l10n.getConstant('FreezeRows'), disabled: !this.parent.allowFreezePane },
                 { prefixIcon: 'e-freeze-column', text: l10n.getConstant('FreezeColumns'), id: id + '_freezecolumns', tooltipText:
-                    l10n.getConstant('FreezeColumns') }
+                    l10n.getConstant('FreezeColumns'), disabled: !this.parent.allowFreezePane }
             ]
         }];
 
@@ -282,14 +288,12 @@ export class Ribbon {
         }
     }
 
-    private getLocaleText(str: string, setClass?: boolean): string {
+    private getLocaleText(str: string): string {
         let text: string; const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (sheet['show' + str]) {
-            if (setClass) { document.getElementById(this.parent.element.id + '_sheet').classList.remove('e-hide-' + str.toLowerCase()); }
             text = l10n.getConstant('Hide' + str);
         } else {
-            if (setClass) { document.getElementById(this.parent.element.id + '_sheet').classList.add('e-hide-' + str.toLowerCase()); }
             text = l10n.getConstant('Show' + str);
         }
         return text;
@@ -339,7 +343,7 @@ export class Ribbon {
                         prefixIcon: 'e-switch-row-column-icon', text: l10n.getConstant('SwitchRowColumn'),
                         tooltipText: l10n.getConstant('SwitchRowColumn'),
                         id: id + 'switch_row_column_chart', click: (): void => {
-                            this.parent.notify(chartDesignTab, { switchRowColumn: true });
+                            this.parent.notify(chartDesignTab, { switchRowColumn: true, triggerEvent: true });
                         }
                     },
                     { type: 'Separator' },
@@ -376,7 +380,7 @@ export class Ribbon {
         }
     }
 
-    private createRibbon(args: { uiUpdate?: boolean }): void {
+    private createRibbon(refEle?: Element): void {
         const ribbonElement: HTMLElement = this.parent.createElement('div', { id: `${this.parent.element.id}_ribbon` });
         this.ribbon = new RibbonComponent({
             selectedTab: 0,
@@ -392,9 +396,7 @@ export class Ribbon {
             beforeFileMenuItemRender: this.beforeRenderHandler.bind(this)
         });
         this.ribbon.createElement = this.parent.createElement;
-        if (args && args.uiUpdate) {
-            const refEle: Element = this.parent.element.querySelector('.e-formula-bar-panel') ||
-                document.getElementById(this.parent.element.id + '_sheet_panel');
+        if (refEle) {
             this.parent.element.insertBefore(ribbonElement, refEle);
         } else {
             this.parent.element.appendChild(ribbonElement);
@@ -1236,7 +1238,7 @@ export class Ribbon {
 
     private addChartEleSelected(args: MenuEventArgs): void {
         const eleId: string = args.element.id;
-        this.parent.notify(chartDesignTab, { addChartEle: eleId });
+        this.parent.notify(chartDesignTab, { addChartEle: eleId, triggerEvent: true });
         if (args.item && (!args.item.items || !args.item.items.length)) { this.addChartDdb.toggle(); }
     }
 
@@ -1380,7 +1382,7 @@ export class Ribbon {
                     this.parent.notify(invalidData, { isRemoveHighlight: true });
                     break;
                 case l10n.getConstant('ClearValidation'):
-                    this.parent.notify(removeDataValidation, null);
+                    this.parent.notify(removeDataValidation, { isAction: true });
                     break;
                 default:
                     direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
@@ -1507,7 +1509,7 @@ export class Ribbon {
         if (!isDataPresent) { this.performMerge(itemId); return; }
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
-            target: this.parent.element, height: 200, width: 400, isModal: true, showCloseIcon: true,
+            target: this.parent.element, height: 200, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-merge-alert-dlg',
             content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('MergeCellsAlert'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -1565,15 +1567,19 @@ export class Ribbon {
             beforeItemRender: (args: MenuEventArgs): void => {
                 const eventArgs: { [key: string]: boolean } = { isFiltered: false, isClearAll: true };
                 this.parent.notify(getFilteredColumn, eventArgs);
+                if (!this.parent.allowSorting && (args.item.text === l10n.getConstant('SortAscending') || 
+                    args.item.text===l10n.getConstant('SortDescending') || args.item.text ===(l10n.getConstant('CustomSort') + '...'))) {
+                    args.element.classList.add('e-disabled');
+                }
+                if (!this.parent.allowFiltering && args.item.text === (l10n.getConstant('Filter'))) {
+                    args.element.classList.add('e-disabled');
+                }
                 if (args.item.id === id + '_clearfilter' || args.item.id === id + '_reapplyfilter') {
                     if (!eventArgs.isFiltered) {
                         args.element.classList.add('e-disabled');
                     } else {
                         args.element.classList.remove('e-disabled');
                     }
-                } else if (args.item.id === id + '_applyfilter') {
-                    const sheet: SheetModel = this.parent.getActiveSheet();
-                    if (sheet.frozenColumns || sheet.frozenRows) { args.element.classList.add('e-disabled'); }
                 }
             },
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
@@ -1615,8 +1621,20 @@ export class Ribbon {
         findToolbtn.onclick = this.findToolDlg.bind(this);
         return this.findDdb.element;
     }
-    private findToolDlg(): void {
-        if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
+    private findToolDlg(e?: MouseEvent): void {
+        const updateDisableState: (disable: boolean) => void = (disable: boolean): void => {
+            const findBtn: HTMLButtonElement = (e && e.target ? closest(e.target as Element,  `#${this.parent.element.id}_findbtn`) :
+                select(`#${this.parent.element.id}_findbtn`, this.ribbon.element)) as HTMLButtonElement;
+            if (findBtn) {
+                disable ? findBtn.classList.add('e-disabled') : findBtn.classList.remove('e-disabled');
+                findBtn.disabled = disable;
+            }
+        }
+        updateDisableState(true);
+        let dialogDiv: HTMLElement = this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
+        if (dialogDiv) {
+            this.findDialog.hide();
+        } else {
             // eslint-disable-next-line prefer-const
             let toolbarObj: Toolbar; const findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
             const findTextInput: HTMLInputElement = this.parent.createElement('input', {
@@ -1626,48 +1644,43 @@ export class Ribbon {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             findTextInput.setAttribute('placeholder', l10n.getConstant('FindValue'));
             const findSpan: HTMLElement = this.parent.createElement('span', { className: 'e-input-group-icon'});
-            let prevValue: string = findTextInput.value;
+            let timeoutHandler: number;
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const largeData: boolean = (sheet.usedRange.rowIndex * sheet.usedRange.colIndex) > 100;
             findTextInput.onkeyup = (e: KeyboardEvent): void => {
-                const sheet: SheetModel = this.parent.getActiveSheet();
                 const mainHandlerFn: Function = (): void => {
-                    if (!findTextInput) { return; }
+                    if (!findTextInput) {
+                        return;
+                    }
+                    const inputValue: string = findTextInput.value;
                     if (e.keyCode === 13) {
                         if (findTextInput.value && findSpan.textContent !== '0 of 0') {
                             this.parent.notify(findHandler, { findOption: e.shiftKey ? 'prev' : 'next' });
                             this.updateCount(findSpan, e.shiftKey);
                         }
                     } else {
-                        const inputValue: string = findTextInput.value;
-                        if (prevValue === inputValue) {
-                            return;
+                        let enable: boolean;
+                        if (inputValue === '') {
+                            findSpan.textContent = '0 of 0';
+                            enable = false;
                         } else {
-                            prevValue = inputValue;
+                            const countArgs: { [key: string]: string | number | boolean } = { value: inputValue, mode: 'Sheet',
+                                isCSen: false, sheetIndex: this.parent.activeSheetIndex, isEMatch: false, searchBy: 'By Row' };
+                            this.parent.notify(count, countArgs);
+                            findSpan.textContent = <string>countArgs.findCount;
+                            enable = countArgs.findCount !== '0 of 0';
                         }
-                        const handlerFn: Function = (): void => {
-                            if (!findTextInput) { return; }
-                            const value: string = findTextInput.value;
-                            if (value !== inputValue) { return; }
-                            const countArgs: { [key: string]: string } = { countOpt: 'count', findCount: '' };
-                            this.parent.notify(findHandler, { countArgs: countArgs });
-                            findSpan.textContent = countArgs.findCount;
-                            if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0 of 0')) {
-                                toolbarObj.enableItems(1, false); toolbarObj.enableItems(2, false);
-                                findSpan.textContent = '0 of 0';
-                            } else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0 of 0')) {
-                                toolbarObj.enableItems(1, true); toolbarObj.enableItems(2, true);
-                            }
-                        };
-                        if (sheet.usedRange.rowIndex * sheet.usedRange.rowIndex < 1000) {
-                            handlerFn();
-                        } else {
-                            setTimeout(handlerFn());
-                        }
+                        toolbarObj.enableItems(1, enable);
+                        toolbarObj.enableItems(2, enable);
                     }
                 };
-                if (sheet.usedRange.rowIndex * sheet.usedRange.rowIndex < 1000) {
-                    mainHandlerFn();
+                if (largeData) {
+                    if (timeoutHandler) {
+                        clearTimeout(timeoutHandler);
+                    }
+                    timeoutHandler = setTimeout(mainHandlerFn, 500);
                 } else {
-                    setTimeout(mainHandlerFn());
+                    mainHandlerFn();
                 }
             };
             findTextElement.appendChild(findTextInput);
@@ -1692,55 +1705,67 @@ export class Ribbon {
                         this.parent.notify(findHandler, { findOption: 'prev' });
                         this.updateCount(findSpan, true);
                     } else if (args.item.cssClass === 'e-findRib-more') {
-                        this.parent.notify(findDlg, null); this.findDialog.hide();
+                        this.parent.notify(findDlg, null);
+                        this.findDialog.hide();
                     }
                 }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
             });
-            const toolbarElement: HTMLElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
-            const dialogDiv: HTMLElement = this.parent.createElement('div', { className: 'e-dlg-div' });
+            const tbarEle: HTMLElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
+            toolbarObj.createElement = this.parent.createElement;
+            toolbarObj.appendTo(tbarEle);
+            dialogDiv = this.parent.createElement('div', { className: 'e-dlg-div' });
             this.findDialog = new FindDialog({
-                isModal: false, showCloseIcon: false, cssClass: 'e-findtool-dlg', content: toolbarElement, visible: false,
-                allowDragging: true, target: this.parent.element.querySelector('.e-sheet') as HTMLElement,
-                beforeOpen: (): void => {
-                    EventHandler.add(document, 'click', this.closeDialog, this);
-                },
+                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false,
+                target: <HTMLElement>this.parent.element.getElementsByClassName('e-sheet')[0],
                 open: (): void => {
+                    EventHandler.add(document, 'click', this.closeDialog, this);
                     if (this.findValue) {
-                        const countArgs: { [key: string]: string } = { countOpt: 'count', findCount: '' };
-                        this.parent.notify(findHandler, { countArgs: countArgs });
-                        findSpan.textContent = countArgs.findCount;
+                        const countArgs: { [key: string]: string | number | boolean } = { value: this.findValue, mode: 'Sheet',
+                            isCSen: false, sheetIndex: this.parent.activeSheetIndex, isEMatch: false, searchBy: 'By Row' };
+                        this.parent.notify(count, countArgs);
+                        findSpan.textContent = <string>countArgs.findCount;
                     } else {
                         findSpan.textContent = '0 of 0';
                     }
-                    this.textFocus(toolbarObj.element);
+                    updateDisableState(false);
+                    toolbarObj.element.addEventListener('focus', (): void => {
+                        const textInput: HTMLInputElement = document.querySelector('.e-text-findNext-short');
+                        textInput.focus();
+                        textInput.classList.add('e-input-focus');
+                        (textInput).setSelectionRange(0, textInput.value.length);
+                    });
                 },
                 beforeClose: (): void => {
                     this.findValue = findTextInput.value || null;
                     toolbarObj.destroy();
-                    const element: HTMLElement = document.querySelector('.e-find-toolbar');
-                    if (element) { EventHandler.remove(element, 'focus', this.textFocus); }
                     EventHandler.remove(document, 'click', this.closeDialog);
+                },
+                close: (): void => {
+                    this.findDialog.destroy();
+                    this.findDialog = null;
+                    detach(dialogDiv);
                     focus(this.parent.element);
+                    updateDisableState(false);
                 },
                 created: (): void => {
-                    toolbarObj.createElement = this.parent.createElement;
-                    toolbarObj.appendTo(toolbarElement);
-                    this.findDialog.width = getComputedStyle(document.querySelector('.e-findtool-dlg')).width;
-                    const offset: ClientRect = this.parent.element.querySelector('.e-main-panel').getBoundingClientRect();
-                    const width: string = this.findDialog.width.toString();
-                    this.findDialog.position = { X: offset.width - parseInt(width, 10) - (this.parent.allowScrolling ? getScrollBarWidth() :
-                        0), Y: this.parent.getActiveSheet().showHeaders ? 31 : 0 };
-                    this.findDialog.dataBind(); this.findDialog.show();
+                    const content: HTMLElement = this.parent.getMainContent();
+                    dialogDiv.style.width = content.offsetWidth + 'px';
+                    dialogDiv.style.visibility = 'hidden';
+                    dialogDiv.style.display = 'block';
+                    this.findDialog.width = (parseInt(getComputedStyle(dialogDiv).borderLeftWidth, 10) * 2) +
+                        dialogDiv.querySelector('.e-toolbar-items').getBoundingClientRect().width + 'px';
+                    dialogDiv.style.display = '';
+                    dialogDiv.style.width = '';
+                    dialogDiv.style.visibility = '';
+                    this.findDialog.position = { X: content.parentElement.getBoundingClientRect().width -
+                        parseInt(this.findDialog.width, 10) - this.parent.sheetModule.getScrollSize(),
+                        Y: this.parent.getActiveSheet().showHeaders ? 31 : 0 };
+                    this.findDialog.dataBind();
+                    this.findDialog.show();
                 }
             });
             this.findDialog.createElement = this.parent.createElement;
             this.findDialog.appendTo(dialogDiv);
-        } else {
-            if (!isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
-                this.findDialog.hide();
-                detach(this.parent.element.querySelector('.e-findtool-dlg'));
-                this.findDialog = null; focus(this.parent.element);
-            }
         }
     }
     private updateCount(countEle: HTMLElement, isPrev?: boolean): void {
@@ -1757,23 +1782,9 @@ export class Ribbon {
         countEle.textContent = values.join(' ');
     }
     private closeDialog(e: MouseEvent & TouchEvent): void {
-        if ((closest(e.target as Element, '.e-findRib-close')) || (!closest(e.target as Element, '.e-spreadsheet'))) {
-            if (!isNullOrUndefined(this.findDialog)) {
-                this.findDialog.hide();
-                const findToolDlg: Element = this.parent.element.querySelector('.e-findtool-dlg');
-                if (findToolDlg) { detach(findToolDlg); }
-                this.findDialog = null;
-            }
+        if ((closest(e.target as Element, '.e-findRib-close') || !closest(e.target as Element, '.e-spreadsheet')) && this.findDialog) {
+            this.findToolDlg();
         }
-    }
-    private textFocus(element: HTMLElement): void {
-        element = document.querySelector('.e-find-toolbar');
-        element.addEventListener('focus', (): void => {
-            const elements: HTMLInputElement = document.querySelector('.e-text-findNext-short');
-            elements.focus();
-            elements.classList.add('e-input-focus');
-            (elements).setSelectionRange(0, elements.value.length);
-        });
     }
     private getClearDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -1883,7 +1894,9 @@ export class Ribbon {
             { id: 'Bootstrap5Dark', text: l10n.getConstant('Bootstrap5Dark') },
             { id: 'Bootstrap5', text: l10n.getConstant('Bootstrap5') },
             { id: 'TailwindDark', text: l10n.getConstant('TailwindDark') },
-            { id: 'Tailwind', text: l10n.getConstant('Tailwind') }
+            { id: 'Tailwind', text: l10n.getConstant('Tailwind') },
+            { id: 'FluentDark', text: l10n.getConstant('FluentDark') },
+            { id: 'Fluent', text: l10n.getConstant('Fluent') }
         ];
     }
 
@@ -1913,19 +1926,19 @@ export class Ribbon {
 
     private numDDBSelect(args: MenuEventArgs): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const cellIndex: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
-        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet());
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const cellIndex: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
+        const type: string = args.item.id.split(this.parent.element.id + '_')[1];
         const eventArgs: { format: string, range: string, cancel: boolean, requestType: string } = {
-            format: getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType),
-            range: this.parent.getActiveSheet().selectedRange, cancel: false, requestType: 'NumberFormat'
+            format: getFormatFromType(<NumberFormatType>type),
+            range: sheet.selectedRange, cancel: false, requestType: 'NumberFormat'
         };
         if (args.item.text === l10n.getConstant('Custom') && cell) {
             eventArgs.format = cell.format;
         }
-        const actionArgs: BeforeCellFormatArgs = {
-            range: this.parent.getActiveSheet().name + '!' + eventArgs.range,
-            format: <string>eventArgs.format, requestType: 'NumberFormat'
-        };
+        const actionArgs: BeforeCellFormatArgs = { range: sheet.name + '!' + eventArgs.range, format: <string>eventArgs.format,
+            requestType: 'NumberFormat' };
         this.parent.trigger('beforeCellFormat', eventArgs);
         this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
         if (eventArgs.cancel) {
@@ -1937,6 +1950,7 @@ export class Ribbon {
             this.renderCustomFormatDialog();
         } else {
             this.refreshNumFormatSelection(args.item.text);
+            this.refreshTextAlign(sheet, getCell(cellIndex[0], cellIndex[1], sheet, false, true), type, cellIndex);
             this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
         }
     }
@@ -2045,7 +2059,7 @@ export class Ribbon {
     private chartThemeDDBSelect(args: MenuEventArgs): void {
         this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
         this.refreshChartThemeSelection(args.item.id);
-        this.parent.notify(chartDesignTab,  { chartTheme: args.item.id as ChartTheme });
+        this.parent.notify(chartDesignTab,  { chartTheme: args.item.id as ChartTheme, triggerEvent: true });
     }
 
     private tBarDdbBeforeOpen(element: HTMLElement, items: MenuItemModel[], separatorCount: number = 0): void {
@@ -2168,21 +2182,7 @@ export class Ribbon {
                 }
             }
         }
-        if (this.textAlignDdb) {
-            let style: string = this.getCellStyleValue('textAlign', indexes);
-            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
-
-                this.textAlignDdb.iconCss = 'e-icons e-left-icon';
-            } else {
-                if (cell.value !== undefined && style === 'left' && (type === 'Accounting' || isNumber(cell.value))) {
-                    style = 'right';
-                }
-                const value: string = `e-icons e-${style.toLowerCase()}-icon`;
-                if (value !== this.textAlignDdb.iconCss) {
-                    this.textAlignDdb.iconCss = value; this.textAlignDdb.dataBind();
-                }
-            }
-        }
+        this.refreshTextAlign(sheet, cell, type, indexes);
         if (this.verticalAlignDdb) {
             const value: string = `e-icons e-${this.getCellStyleValue('verticalAlign', indexes).toLowerCase()}-icon`;
             if (sheet.isProtected && !sheet.protectSettings.formatCells) {
@@ -2203,6 +2203,24 @@ export class Ribbon {
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: [`${this.parent.element.id}_merge_cells`],
                 enable: indexes[0] !== indexes[2] || indexes[1] !== indexes[3] ? true : false }]);
             this.toggleActiveState(false);
+        }
+    }
+
+    private refreshTextAlign(sheet: SheetModel, cell: CellModel, type: string, indexes: number[]): void {
+        if (this.textAlignDdb) {
+            let style: string = this.getCellStyleValue('textAlign', indexes);
+            if (sheet.isProtected && !sheet.protectSettings.formatCells) {
+
+                this.textAlignDdb.iconCss = 'e-icons e-left-icon';
+            } else {
+                if (cell.value !== undefined && style === 'left' && (type === 'Accounting' || (isNumber(cell.value) && type !== 'Text'))) {
+                    style = 'right';
+                }
+                const value: string = `e-icons e-${style.toLowerCase()}-icon`;
+                if (value !== this.textAlignDdb.iconCss) {
+                    this.textAlignDdb.iconCss = value; this.textAlignDdb.dataBind();
+                }
+            }
         }
     }
 
@@ -2337,6 +2355,12 @@ export class Ribbon {
         case 'Tailwind':
             selectedTheme = l10n.getConstant('Tailwind');
             break;
+        case 'Fluent':
+            selectedTheme = l10n.getConstant('Fluent');
+            break;
+        case 'FluentDark':
+            selectedTheme = l10n.getConstant('FluentDark');
+            break;
         }
         return selectedTheme;
     }
@@ -2378,25 +2402,13 @@ export class Ribbon {
                         },
                         click: (): void => {
                             dialogInst.hide();
-                            this.blankWorkbook();
+                            this.parent.refresh(true);
                         }
                     }]
                 });
                 break;
             }
         }
-    }
-
-    private blankWorkbook(): void {
-        this.parent.notify(clearCopy, null);
-        this.parent.sheets.length = 0; this.parent.sheetNameCount = 1;
-        this.parent.notify(sheetsDestroyed, {}); this.parent.createSheet();
-        this.parent.activeSheetIndex = this.parent.sheets.length - 1;
-        this.parent.notify(refreshSheetTabs, {});
-        this.parent.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
-        this.parent.renderModule.refreshSheet();
-        this.parent.openModule.isImportedFile = false;
-        this.parent.openModule.unProtectSheetIdx = [];
     }
 
     private toolbarClicked(args: ClickEventArgs): void {
@@ -2444,7 +2456,7 @@ export class Ribbon {
                 } else {
                     this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
                     isActive = sheet.isProtected ? false : true;
-                    this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
+                    this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect', sheetIndex: this.parent.activeSheetIndex, triggerEvent: true });
                 }
                 break;
             case parentId + '_undo':
@@ -2456,15 +2468,15 @@ export class Ribbon {
             case parentId + '_freezepanes':
                 indexes = getCellIndexes(sheet.topLeftCell);
                 selectCell = sheet.frozenRows || sheet.frozenColumns ? indexes : getCellIndexes(sheet.activeCell);
-                this.parent.notify(freeze, { row: selectCell[0] - indexes[0], column: selectCell[1] - indexes[1], isAction: true });
+                this.parent.notify(freeze, { row: selectCell[0] - indexes[0], column: selectCell[1] - indexes[1], triggerEvent: true });
                 break;
             case parentId + '_freezerows':
                 this.parent.notify(freeze, { row: sheet.frozenRows ? 0 : getCellIndexes(
-                    sheet.activeCell)[0] - getCellIndexes(sheet.topLeftCell)[0], column: sheet.frozenColumns, isAction: true });
+                    sheet.activeCell)[0] - getCellIndexes(sheet.topLeftCell)[0], column: sheet.frozenColumns, triggerEvent: true });
                 break;
             case parentId + '_freezecolumns':
                 this.parent.notify(freeze, {  row: sheet.frozenRows, column: sheet.frozenColumns ? 0 : getCellIndexes(
-                    sheet.activeCell)[1] - getCellIndexes(sheet.topLeftCell)[1], isAction: true });
+                    sheet.activeCell)[1] - getCellIndexes(sheet.topLeftCell)[1], triggerEvent: true });
                 break;
             case parentId + '_protectworkbook':
                 if (this.parent.password.length > 0) {
@@ -2503,7 +2515,10 @@ export class Ribbon {
                     if (this.ribbon.items[i].header.text === viewtabHeader) { args.activeTab = i; break; }
                 }
             }
-            const text: string = this.getLocaleText(args.props, args.props === 'GridLines');
+            const text: string = this.getLocaleText(args.props);
+            if(args.props === 'GridLines') {
+                (this.parent.serviceLocator.getService('sheet') as IRenderer).toggleGridlines();
+            }
             const id: string = `${this.parent.element.id}_${args.props.toLowerCase()}`;
             const len: number = this.ribbon.items[args.activeTab].content.length;
             for (let i: number; i < len; i++) {
@@ -2587,7 +2602,8 @@ export class Ribbon {
             if (ele) { ele.textContent = text; }
         });
         if (item === 'headers' && this.findDialog) {
-            this.findDialog.position.Y = this.parent.getActiveSheet().showHeaders ? 31 : 0; this.findDialog.dataBind();
+            this.findDialog.position.Y = this.parent.getActiveSheet().showHeaders ? 31 : 0;
+            this.findDialog.dataBind();
         }
     }
 
@@ -2857,14 +2873,16 @@ export class Ribbon {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if ((sheet.isProtected && sheet.protectSettings.formatCells) || !sheet.isProtected) {
-            if (this.parent.allowCellFormatting && this.parent.allowWrap) {
+            if (this.parent.allowCellFormatting) {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId, enable: true }]);
-            }
-            if (!this.parent.allowCellFormatting) {
+            } else {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(2, 14), enable: false }]);
             }
             if (!this.parent.allowWrap) {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(14, 15), enable: false }]);
+            }
+            if (!this.parent.allowNumberFormatting) {
+                this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(2, 3), enable: false }]);
             }
             this.parent.notify(setUndoRedo, null);
 
@@ -2880,7 +2898,7 @@ export class Ribbon {
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.enableInsertBtnId, enable: false }]);
         }
-        if ((sheet.isProtected && sheet.protectSettings.selectCells) || !sheet.isProtected) {
+        if ((sheet.isProtected && sheet.protectSettings.selectCells || sheet.protectSettings.selectUnLockedCells) || !sheet.isProtected) {
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: true }]);
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.findBtnId, enable: false }]);
@@ -2903,9 +2921,8 @@ export class Ribbon {
                     this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('ProtectWorkbook');
                 }
             }
-            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: this.parent.allowImage }]);
-            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId,
-                enable: this.parent.allowDataValidation }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: false }]);
         } else {
@@ -2920,16 +2937,18 @@ export class Ribbon {
                     this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('ProtectWorkbook');
                 }
             }
-            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: this.parent.allowImage }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId,
+                enable: this.parent.allowDataValidation }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
-            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: true }]);
-            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: this.parent.allowChart }]);
         }
     }
     private updateMergeItem(e: MouseEvent & TouchEvent): void {
         if (e.type === 'mousemove' || e.type === 'pointermove' || (e.shiftKey && e.type === 'mousedown')) {
             const indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            if ((indexes[1] !== indexes[3] || indexes[0] !== indexes[2]) && !this.parent.getActiveSheet().isProtected) {
+            if ((indexes[1] !== indexes[3] || indexes[0] !== indexes[2]) && !this.parent.getActiveSheet().isProtected &&
+                this.parent.allowMerge) {
                 this.enableToolbarItems([{ tab: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Home'),
                     items: [`${this.parent.element.id}_merge_cells`], enable: true }]);
                 this.toggleActiveState(false);
@@ -2942,8 +2961,25 @@ export class Ribbon {
             this.formatData.push(item);
         }
     }
+    private onPropertyChanged(prop: string): void {
+        const l10: L10n = this.parent.serviceLocator.getService(locale);
+        const id: string = this.parent.element.id;
+        switch (prop) {
+            case 'allowFreezePane':
+                this.ribbon.enableItems(
+                    l10.getConstant('View'), [`${id}_freezepanes`, `${id}_freezerows`, `${id}_freezecolumns`], this.parent.allowFreezePane);
+                break;
+            case 'showRibbon':
+                if (this.parent.showRibbon) {
+                    this.initialize(true);
+                } else if (this.ribbon) {
+                    this.destroy();
+                }
+                break;
+        }
+    }
     private addEventListener(): void {
-        this.parent.on(ribbon, this.initRibbon, this);
+        this.parent.on(ribbon, this.ribbonOperation, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
         this.parent.on(activeCellChanged, this.refreshRibbonContent, this);
         this.parent.on(updateToggleItem, this.toggleRibbonItems, this);
@@ -2961,7 +2997,6 @@ export class Ribbon {
         this.parent.on(insertDesignChart, this.insertDesignChart, this);
         this.parent.on(removeDesignChart, this.removeDesignChart, this);
         this.parent.on(ribbonFind, this.findToolDlg, this);
-        this.parent.on(blankWorkbook, this.blankWorkbook, this);
         this.parent.on(updateCustomFormatsFromImport, this.updateCustomFormats, this);
     }
     public destroy(): void {
@@ -2992,9 +3027,17 @@ export class Ribbon {
         this.detachPopupElement(id);
         this.parent.notify('destroyRibbonComponents', null);
         this.ribbon.destroy();
-        if (ribbonEle) { detach(ribbonEle); } this.ribbon = null;
-        if (cPickerEle) { detach(cPickerEle); } this.cPickerEle = null;
-        if (this.findDialog) {  this.findDialog.destroy(); }
+        if (ribbonEle) {
+            detach(ribbonEle);
+        }
+        this.ribbon = null;
+        if (cPickerEle) {
+            detach(cPickerEle);
+        }
+        this.cPickerEle = null;
+        if (this.findDialog) {
+            this.findDialog.hide();
+        }
         this.removeEventListener();
     }
     private destroyComponent(id: string | HTMLElement, moduleName: string): void {
@@ -3021,7 +3064,7 @@ export class Ribbon {
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(ribbon, this.initRibbon);
+            this.parent.off(ribbon, this.ribbonOperation);
             this.parent.off(enableToolbarItems, this.enableToolbarItems);
             this.parent.off(activeCellChanged, this.refreshRibbonContent);
             this.parent.off(updateToggleItem, this.toggleRibbonItems);
@@ -3039,7 +3082,6 @@ export class Ribbon {
             this.parent.off(insertDesignChart, this.insertDesignChart);
             this.parent.off(removeDesignChart, this.removeDesignChart);
             this.parent.on(ribbonFind, this.findToolDlg, this);
-            this.parent.off(blankWorkbook, this.blankWorkbook);
             this.parent.off(updateCustomFormatsFromImport, this.updateCustomFormats);
         }
     }

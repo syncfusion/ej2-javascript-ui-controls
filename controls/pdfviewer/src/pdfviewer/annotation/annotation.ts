@@ -457,6 +457,16 @@ export class Annotation {
                     this.updateAnnotationCollection(annotation);
                 let formFieldObj: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[annotation.id.split("_")[0]];
                 if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField')) {
+                    let index: number = this.pdfViewer.formFieldCollections.findIndex(el => el.id === annotation.id.split("_")[0]);
+                    if (index > -1) {
+                        let formFieldsIndex: any = this.pdfViewer.formFieldCollections[index];
+                        this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsIndex, formFieldsIndex.pageIndex, true, false, false,
+                            false, false, false, false, false, false, false, false,
+                            false, false, false, false, formFieldsIndex.value, "");
+                        formFieldsIndex.value = "";
+                        formFieldsIndex.signatureType = "";
+                        this.pdfViewer.formDesignerModule.updateFormFieldCollections(formFieldsIndex);
+                    }
                     formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(annotation.wrapper.children[0]), 1);
                 }
                 this.pdfViewer.remove(annotation);
@@ -3352,7 +3362,18 @@ export class Annotation {
                             this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
                             this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                            if(!this.pdfViewer.formDesignerModule && (pdfAnnotationBase as any).properties.id != '' && (pdfAnnotationBase as any).properties.id != null && (pdfAnnotationBase as any).properties.id.slice(0, 4) != 'sign'){
+                                let isFieldReadOnly: boolean = (document.getElementById((pdfAnnotationBase as any).properties.id) as any).disabled;
+                                if(!isFieldReadOnly){
+                                    this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                                }
+                                else if(this.pdfViewer.annotation && isFieldReadOnly){
+                                    this.pdfViewer.annotation.clearSelection();
+                                }
+                            }
+                            else{
+                                this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                            }                           
                             if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
                                 let formDesignerMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + "_formdesigner_toolbar");
                                 formDesignerMainDiv.style.display = "none";
@@ -6405,7 +6426,13 @@ export class Annotation {
     }
 
     private hex(x: number): string {
-        return ('0' + x.toString(16)).slice(-2);
+       if(!isNullOrUndefined(x))
+        {
+            return ('0' + x.toString(16)).slice(-2);
+        }
+        else{
+            return '0';
+        }
     }
 
     /**
@@ -6594,13 +6621,6 @@ export class Annotation {
                 this.pdfViewer.fireAnnotationAdd(annotation.pageIndex, annotation.annotName, type, bounds, setting);
             }
         }
-    }
-    /**
-     * @private
-     */
-    public importAnnotationAsObject(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
-        let annotationData: object = JSON.parse(importData);
-        this.pdfViewerBase.importAnnotations(annotationData, annotationDataFormat);
     }
     /**
      * @private

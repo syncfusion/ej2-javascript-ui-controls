@@ -1,4 +1,4 @@
-﻿import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
@@ -588,11 +588,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns {void}
      */
     public destroy(): void {
-        if ((this as any).isReact) {
+        if ((this as any).isReact || (this as any).isAngular) {
             this.clearTemplate();
         }
         if (!isNOU(this.tbObj)) {
             this.tbObj.destroy();
+            this.tbObj = null;
         }
         this.unWireEvents();
         ['role', 'aria-disabled', 'aria-activedescendant', 'tabindex', 'aria-orientation'].forEach((val: string): void => {
@@ -609,6 +610,29 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (!isNOU(cntEle)) {
                 cntEle.innerHTML = this.cnt;
             }
+        }
+
+        if (this.btnCls) {
+            this.btnCls = null;
+        }
+        this.hdrEle = null;
+        this.cntEle = null;
+        this.tbItems = null;
+        this.tbItem = null;
+        this.tbPop = null;
+        this.prevItem = null;
+        this.popEle = null;
+        this.bdrLine = null;
+        this.content = null;
+        this.dragItem = null;
+        this.cloneElement = null;
+        this.draggingItems = [];
+        if (this.draggableItems && this.draggableItems.length > 0) {
+            for (let i: number = 0; i < this.draggableItems.length; i++) {
+                this.draggableItems[i].destroy();
+                this.draggableItems[i] = null;
+            }
+            this.draggableItems = [];
         }
         super.destroy();
         this.trigger('destroyed');
@@ -644,6 +668,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.isSwipeed = false;
         this.itemIndexArray = [];
         this.templateEle = [];
+        if (this.allowDragAndDrop) {
+            this.dragArea = !isNOU(this.dragArea) ? this.dragArea : '#' + this.element.id + ' ' + ('.' + CLS_HEADER);
+        }
         if (!isNOU(nested)) {
             nested.parentElement.classList.add(CLS_NEST);
             this.isNested = true;
@@ -869,7 +896,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
     private parseObject(items: TabItemModel[], index: number): object[] {
-        const tbCount: number = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element).length;
+        const tbItems: HTMLElement[] = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element);
+        let maxId: number = this.lastIndex;
+        if (!this.isReplace && tbItems.length > 0) {
+            const idList: number[] = [];
+            tbItems.forEach((item: HTMLElement) => {
+                idList.push(parseInt(item.id.slice(item.id.indexOf('_') + 1), 10));
+            });
+            maxId = Math.max(...idList);
+        }
         const tItems: Object[] = [];
         let txtWrapEle: HTEle;
         const spliceArray: number[] = [];
@@ -894,8 +929,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             } else {
                 itemIndex = index + i;
             }
-            const addIndex: number = this.isAdd ? tbCount + i : this.lastIndex + 1;
-            this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (itemIndex) : (addIndex)));
+            this.lastIndex = ((tbItems.length === 0) ? i : ((this.isReplace) ? (itemIndex) : (maxId + 1 + i)));
             const disabled: Str = (item.disabled) ? ' ' + CLS_DISABLE + ' ' + CLS_OVERLAY : '';
             const hidden: Str = (item.visible === false) ? ' ' + CLS_HIDDEN : '';
             txtWrapEle = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
@@ -1184,7 +1218,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let templateFn: Function;
         if (typeof val === 'string') {
             val = val.trim();
-            ele.innerHTML = SanitizeHtmlHelper.sanitize(val);
+            if ((this as any).isVue) {
+                templateFn = compile(SanitizeHtmlHelper.sanitize(val));
+            } else {
+                ele.innerHTML = SanitizeHtmlHelper.sanitize(val);
+            }
         } else {
             templateFn = compile(val);
         }
@@ -1584,6 +1622,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
         if (!isNOU(this.cntEle) && !isNOU(this.touchModule)) {
             this.touchModule.destroy();
+            this.touchModule = null;
         }
         window.removeEventListener('resize', this.resizeContext);
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
@@ -1611,8 +1650,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (e.velocity < 3 && isNOU(e.originalEvent.changedTouches)) {
             return;
         }
-        if (e.originalEvent && this.isNested) {
-            e.originalEvent.stopPropagation();
+        if (this.isNested) {
+            this.element.setAttribute('data-swipe', 'true');
+        }
+        const nestedTab: HTMLElement = this.element.querySelector('[data-swipe="true"]');
+        if (nestedTab) {
+            nestedTab.removeAttribute('data-swipe');
+            return;
         }
         this.isSwipeed = true;
         if (e.swipeDirection === 'Right' && this.selectedItem !== 0) {
@@ -1823,7 +1867,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (isNOU(this.tbObj)) {
                 this.reRenderItems();
             } else {
-                if ((this as any).isRect) {
+                if ((this as any).isReact || (this as any).isAngular) {
                     this.clearTemplate();
                 }
                 this.setItems(<TabItemModel[]>newProp.items);
@@ -1836,12 +1880,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     detach(selectElement.firstElementChild);
                 }
                 this.select(this.selectedItem);
+                this.draggableItems = [];
+                this.bindDraggable();
             }
         }
     }
 
     private initializeDrag(target: HTEle): void {
-        this.dragArea = !isNOU(this.dragArea) ? this.dragArea : '#' + this.element.id + ' ' + ('.' + CLS_HEADER);
         let dragObj: Draggable = new Draggable(target, {
             dragArea: this.dragArea,
             dragTarget: '.' + CLS_TB_ITEM,
@@ -2015,6 +2060,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
 
     private itemDragStop(e: DropEventArgs): void {
         detach(this.cloneElement);
+        this.cloneElement = null;
         (<HTEle>this.dragItem.querySelector('.' + CLS_WRAP)).style.visibility = 'visible';
         document.body.style.cursor = '';
         let dragStopArgs: DragEventArgs = {
@@ -2041,6 +2087,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
             }
         });
+        this.dragItem = null;
     }
 
     /**
@@ -2180,11 +2227,23 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     detach(cntTrg);
                 }
                 this.trigger('removed', tabRemovingArgs);
+                if (this.draggableItems && this.draggableItems.length > 0) {
+                    this.draggableItems[index].destroy();
+                    this.draggableItems[index] = null;
+                    this.draggableItems.splice(index, 1);
+                }
                 if (trg.classList.contains(CLS_ACTIVE)) {
                     index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element).length - 1) ? index - 1 : index;
                     this.enableAnimation = false;
                     this.selectedItem = index;
                     this.select(index);
+                } else if (index !== this.selectedItem) {
+                    if (index < this.selectedItem) {
+                        index = this.itemIndexArray.indexOf(this.tbItem[this.selectedItem].id);
+                        this.setProperties({ selectedItem: index > -1 ? index : this.selectedItem }, true);
+                        this.prevIndex = this.selectedItem;
+                    }
+                    this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
                 }
                 if (selectAll('.' + CLS_TB_ITEM, this.element).length === 0) {
                     this.hdrEle.style.display = 'none';
@@ -2329,6 +2388,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
             if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
                 this.prevIndex = this.selectedItem;
+                this.prevItem = this.tbItem[this.prevIndex];
                 if (this.tbItem[args].classList.contains(CLS_TB_POPUP) && this.reorderActiveTab) {
                     this.setActive(this.popupHandler(this.tbItem[args]), null, isInteracted);
                     if ((!isNOU(this.items) && this.items.length > 0) && this.allowDragAndDrop) {

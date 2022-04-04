@@ -7,11 +7,11 @@
       background-color: $grid-rows-bg-color;
     }
 
-    .e-icons {
+    .e-icons:not(.e-btn-icon) {
       color: $grid-icon-color;
     }
 
-    .e-unboundcelldiv .e-icons {
+    .e-unboundcelldiv .e-icons:not(.e-btn-icon) {
       color: $grid-command-icon-color;
     }
 
@@ -235,11 +235,11 @@
       border-right-color: $frozen-border-color;
   }
 
-    &.e-gridhover tr[role='row']:not(.e-editedrow):hover .e-rowcell,
-    &.e-gridhover tr[role='row']:hover .e-detailrowcollapse,
+    &.e-gridhover tr[role='row']:not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+    &.e-gridhover tr[role='row']:not(.e-detailrow):hover .e-detailrowcollapse,
     &.e-gridhover tr[role='row']:hover .e-rowdragdrop,
     &.e-rtl .e-gridhover tr[role='row']:hover .e-rowdragdrop,
-    &.e-gridhover tr[role='row']:hover .e-detailrowexpand {
+    &.e-gridhover tr[role='row']:not(.e-detailrow):hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: $grid-hover-bg-color;
         color: $grid-hover-content-font-color;

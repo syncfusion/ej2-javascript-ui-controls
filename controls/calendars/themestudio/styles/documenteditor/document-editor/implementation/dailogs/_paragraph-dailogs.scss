@@ -19,8 +19,8 @@
       display: block;
       font-size: $de-para-dlg-heading-font-size;
       font-weight: $de-par-dlg-hdr-weight;
-      margin-bottom: $de-para-dlg-hdr-margin-bottom;
-      margin-top: $de-para-dlg-hdr-margin-top;
+      margin-bottom: $de-padding-half-bigger;
+      //margin-top: $de-para-dlg-hdr-margin-top;
       @if $skin-name == 'tailwind' {
         line-height: 22px;
       }
@@ -66,10 +66,14 @@
 
     .e-de-dlg-sub-header {
       display: block;
-      font-size: 12px;
+      @if $skin-name == 'FluentUI' {
+        font-size: 16px;
+      }
+      @else {
+        font-size: 12px;
+      }
       font-weight: $de-header-font-weight;
       margin-bottom: $de-para-dlg-sub-title-bottom-margin;
-      margin-top: $de-para-dlg-sub-title-top-margin;
     }
 
     .e-de-rtl-btn-div {
@@ -89,8 +93,8 @@
     display: block;
     font-size: $de-para-dlg-heading-font-size;
     font-weight: $de-par-dlg-hdr-weight;
-    margin-bottom: $de-para-dlg-hdr-margin-bottom;
-    margin-top: $de-para-dlg-hdr-margin-top;
+    margin-bottom: $de-para-dlg-sub-title-bottom-margin;
+    //margin-top: $de-para-dlg-hdr-margin-top;
     opacity: $de-dlg-heading-opacity;
     @if $skin-name == 'tailwind' {
       line-height: 22px;
@@ -138,10 +142,16 @@
 
   .e-de-dlg-sub-header {
     display: block;
-    font-size: 12px;
+    @if $skin-name == 'FluentUI' {
+      color: $de-dlg-heading-main-header;
+      font-size: 14px;
+    }
+    @else {
+      font-size: 12px;
+    }
     font-weight: $de-header-font-weight;
     margin-bottom: $de-para-dlg-sub-title-bottom-margin;
-    margin-top: $de-para-dlg-sub-title-top-margin;
+    //margin-top: $de-para-dlg-sub-title-top-margin;
   }
 
   .e-de-rtl-btn-div {

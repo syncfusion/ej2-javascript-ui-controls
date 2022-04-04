@@ -34,7 +34,7 @@ export class WListFormat {
             list = this.list;
         } else {
             let baseListStyle: any = this.baseStyle;
-            while (!isNullOrUndefined(baseListStyle)) {
+            while (!isNullOrUndefined(baseListStyle) && baseListStyle instanceof WParagraphStyle) {
                 if (baseListStyle.paragraphFormat.listFormat.list) {
                     list = baseListStyle.paragraphFormat.listFormat.list;
                     break;

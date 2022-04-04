@@ -1,4 +1,5 @@
 import { Calculate } from '../base';
+import { ExcelFileFormats } from './enum'
 
 /**
  * Represent the common codes for calculate
@@ -117,4 +118,18 @@ export function getSkeletonVal(value: string): string {
         break;
     }
     return value;
+}
+/**
+ * To check whether the formula contains external file link.
+ *
+ * @param {string} formula - To check the string contains external file link.
+ * @returns {boolean} - Returns boolean value.
+ * @private
+ */
+ export function isExternalFileLink(formula: string): boolean {
+    let isExternalFile: boolean = false;
+    for(let format in ExcelFileFormats) {
+        if (formula.indexOf('.' + format + ']') > -1) { isExternalFile = true; break; }
+    }
+    return isExternalFile;
 }

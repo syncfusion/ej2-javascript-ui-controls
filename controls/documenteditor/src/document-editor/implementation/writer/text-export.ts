@@ -75,10 +75,11 @@ export class TextExport {
         for (let i: number = 0; i <= sectionCount; i++) {
             section = this.document.sections[i] as any;
             isLastSection = (i === sectionCount) ? true : false;
-            this.writeBody(streamWriter, section.blocks);
+            this.writeBody(streamWriter, section.blocks, false);
             this.writeNewLine(streamWriter);
             this.writeSectionEnd(section, isLastSection);
         }
+
         for (let j: number = 0; j <= sectionCount; j++) {
             section = this.document.sections[j];
             this.writeHeadersFooters(streamWriter, section);
@@ -87,20 +88,20 @@ export class TextExport {
     /// <summary>
     /// Writes the specified document content to the text file.
     /// </summary>
-    private writeBody(streamWriter: StreamWriter, body: any[]): void {
+    private writeBody(streamWriter: StreamWriter, body: any[], isHeaderFooter: boolean): void {
         const bodyItemsCount: number = body.length - 1;
         let bodyItem: any = undefined;
         for (let i: number = 0; i <= bodyItemsCount; i++) {
             bodyItem = body[i] as any;
             if (bodyItem.hasOwnProperty('inlines') as any) {
                 const isLastPara: boolean = (bodyItem as any === this.lastPara) ? true : false;
-                this.writeParagraph(streamWriter, bodyItem as any, isLastPara);
+                this.writeParagraph(streamWriter, bodyItem as any, isLastPara, isHeaderFooter);
             } else {
                 this.writeTable(streamWriter, bodyItem as any);
             }
         }
     }
-    private writeParagraph(streamWriter: StreamWriter, paragraph: any, isLastPara: boolean): void {
+    private writeParagraph(streamWriter: StreamWriter, paragraph: any, isLastPara: boolean, isHeaderFooter: boolean): void {
         for (let i: number = 0; i < paragraph.inlines.length; i++) {
             const item: any = paragraph.inlines[i];
             if (item.hasOwnProperty('fieldType')) {
@@ -109,9 +110,10 @@ export class TextExport {
                 this.writeText(streamWriter, item.text);
             }
         }
-        if (!isLastPara) {
-            this.writeNewLine(streamWriter);
-        }
+        if (!isHeaderFooter || paragraph.inlines.length > 0)
+            if (!isLastPara) {
+                this.writeNewLine(streamWriter);
+            }
     }
     /// }
     /// <summary>
@@ -122,7 +124,7 @@ export class TextExport {
             const row: any = table.rows[i];
             for (let j: number = 0; j < row.cells.length; j++) {
                 const cell: any = row.cells[j];
-                this.writeBody(streamWriter, cell.blocks);
+                this.writeBody(streamWriter, cell.blocks, false);
             }
         }
     }
@@ -143,7 +145,7 @@ export class TextExport {
     }
     private writeHeaderFooter(streamWriter: StreamWriter, headerFooter: any): void {
         if (headerFooter && headerFooter.blocks) {
-            this.writeBody(streamWriter, headerFooter.blocks);
+            this.writeBody(streamWriter, headerFooter.blocks, true);
         }
     }
     /// <summary>

@@ -320,8 +320,8 @@ export class Scroll implements IAction {
      * @hidden
      */
     public addStickyListener(isAdd: boolean): void {
+        this.parentElement = this.getScrollbleParent(this.parent.element.parentElement);
         if (isAdd) {
-            this.parentElement = this.getScrollbleParent(this.parent.element.parentElement);
             if (this.parentElement) {
                 EventHandler.add(this.parentElement.tagName === 'HTML' || this.parentElement.tagName === 'BODY' ? document :
                     this.parentElement, 'scroll', this.makeStickyHeader, this);
@@ -468,7 +468,7 @@ export class Scroll implements IAction {
             if (top < height && contentRect.bottom > 0) {
                 headerEle.classList.add('e-sticky');
                 let elemTop: number = 0;
-                if (groupHeaderEle) {
+                if (groupHeaderEle && this.parent.groupSettings.showDropArea) {
                     this.setSticky(groupHeaderEle, elemTop, contentRect.width, left, true);
                     elemTop += groupHeaderEle.getClientRects()[0].height;
                 }
@@ -518,9 +518,15 @@ export class Scroll implements IAction {
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.removeEventListener();
 
+        //Remove Dom event
+        const cont: Element = this.parent.getContent().querySelector('.' + literals.content);
+        EventHandler.remove(<HTMLDivElement>cont, 'scroll', this.onContentScroll);
+        if (this.parent.enableStickyHeader) {
+            this.addStickyListener(false);
+        }
+
         //Remove padding
         this.removePadding();
-        const cont: Element = this.parent.getContent().querySelector('.' + literals.content);
         removeClass([<HTMLDivElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent)], literals.headerContent);
         removeClass([cont], literals.content);
 
@@ -529,12 +535,6 @@ export class Scroll implements IAction {
 
         //Remove width
         this.parent.element.style.width = '';
-
-        //Remove Dom event
-        EventHandler.remove(<HTMLDivElement>cont, 'scroll', this.onContentScroll);
-        if (this.parent.enableStickyHeader) {
-            this.addStickyListener(false);
-        }
     }
 
     /**

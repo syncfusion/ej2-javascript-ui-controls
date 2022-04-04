@@ -107,7 +107,11 @@
           color: $calendar-week-number-font-color;
           font-size: $calendar-week-number-font-size-style;
           font-style: $calendar-week-number-font-style;
-          font-weight: 500;
+          font-weight: $calendar-week-number-font-weight;
+          @if $skin-name == 'FluentUI' {
+            background-color: $calendar-week-number-bg-color;
+            border-right: $calendar-week-number-border;
+          }
 }#{if(&, '&', '*')}.e-overlay {
           background: $calendar-none-style;
           width: initial;
@@ -145,6 +149,9 @@
       #{if(&, '&', '*')} td.e-week-number:hover {
         background-color: $calendar-bg-color;
         cursor: $calendar-cursor-default-style;
+        @if $skin-name == 'FluentUI' {
+          background-color: $calendar-week-number-bg-color;
+        }
 }
 }#{if(&, '&', '*')} .e-header {
       #{if(&, '&', '*')} .e-prev,
@@ -186,6 +193,7 @@
   //normal style
   #{&}.e-calendar,
   .e-bigger.e-small #{&}.e-calendar {
+    border-spacing: 0;
     max-width: $calendar-normal-max-width;
     min-width:  $calendar-normal-min-width;
     padding: $calendar-popup-padding;
@@ -204,7 +212,7 @@
       line-height: $calendar-normal-header-height;
 }#{if(&, '&', '*')}.e-rtl .e-header .e-title {
       text-align: $calendar-float-right-style;
-      text-indent: 4px;
+      text-indent: $calendar-rtl-text-indent;
 }#{if(&, '&', '*')} .e-header {
       height: $calendar-normal-header-height;
 
@@ -255,12 +263,30 @@
       height: $calendar-normal-year-decade-height;
       line-height: $calendar-normal-year-decade-height;
       width: $calendar-normal-year-decade-width;
+}#{if(&, '&', '*')} .e-content.e-year td.e-focused-date > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td.e-focused-date > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-year td.e-selected > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td.e-selected > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-year td.e-selected:hover > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td.e-selected:hover > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-year td.e-focused-date:hover > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td.e-focused-date:hover > span.e-day {
+      @if ($skin-name == 'FluentUI') {
+        box-shadow: $calendar-none-style;
+      }
 }#{if(&, '&', '*')} .e-header .e-icon-container {
       #{if(&, '&', '*')} .e-prev,
       #{if(&, '&', '*')} .e-next {
         height: $calendar-normal-icon-size;
         width: $calendar-normal-icon-size;
-    }
+      }
+
+      #{if(&, '&', '*')} .e-prev {
+        @if $skin-name == 'tailwind' {
+          margin: $calendar-normal-down-icon-margin;
+        }
+      }
+
 }#{if(&, '&', '*')} .e-footer-container {
       background-color: $calendar-footer-background;
       border-top: $calendar-footer-border;
@@ -271,19 +297,94 @@
       padding: $calendar-footer-container-padding;
       text-align: center;
       width: $calendar-full-width;
-}
+}#{if(&, '&', '*')}.e-rtl .e-header .e-title {
+      @if $skin-name == 'bootstrap5' {
+        text-indent: $calendar-rtl-bigger-small-text-indent;
+    }
+  }
 }
 
   .e-small.e-bigger#{&}.e-calendar,
   .e-small.e-bigger #{&}.e-calendar {
+    @if $skin-name == 'tailwind' {
+      max-width: $calendar-bigger-small-max-width;
+      min-width: $calendar-bigger-small-min-width;
+    }
+
+    #{if(&, '&', '*')} .e-footer-container {
+      @if $skin-name == 'tailwind' {
+        padding: $calendar-bigger-small-footer-container-padding;
+      }
+    }
+
     #{if(&, '&', '*')} .e-content.e-year {
       #{if(&, '&', '*')} span.e-day {
         font-size: $calendar-bigger-small-yeardecade-font-size;
       }
     }
 
+    #{if(&, '&', '*')} .e-header {
+      #{if(&, '&', '*')}.e-month,
+      #{if(&, '&', '*')}.e-year,
+      #{if(&, '&', '*')}.e-decade {
+        @if $skin-name == 'tailwind' {
+          padding: $calendar-bigger-small-header-padding;
+        }
+	    }
+
+      #{if(&, '&', '*')} .e-icon-container .e-prev {
+        @if $skin-name == 'tailwind' {
+          margin: $calendar-bigger-small-down-icon-margin;
+        }
+      }
+    }
+
     #{if(&, '&', '*')} .e-content.e-month table {
       padding: $calendar-bigger-small-table-padding;
+    }
+
+    #{if(&, '&', '*')} .e-content.e-year table,
+    #{if(&, '&', '*')} .e-content.e-decade table {
+      @if $skin-name == 'tailwind' {
+        padding: $calendar-bigger-small-table-padding;
+      }
+    }
+
+    #{if(&, '&', '*')} th {
+      @if $skin-name == 'tailwind' {
+        height: $calendar-bigger-small-day-header-height;
+      }
+    }
+
+    #{if(&, '&', '*')} .e-content {
+      #{if(&, '&', '*')} span.e-day {
+        @if $skin-name == 'tailwind' {
+          height: $calendar-bigger-small-month-view-height;
+          line-height: $calendar-bigger-small-month-view-height;
+          width: $calendar-bigger-small-month-view-width;
+        }
+      }
+
+      #{if(&, '&', '*')}.e-month td.e-today span.e-day {
+        @if $skin-name == 'tailwind' {
+          line-height: $calendar-bigger-small-month-view-line-height;
+        }
+      }#{if(&, '&', '*')}.e-month td {
+        @if $skin-name == 'tailwind' {
+          height: $calendar-bigger-small-month-view-height;
+        }
+      }
+    }
+
+    #{if(&, '&', '*')} .e-content span.e-day {
+      @if $skin-name == 'bootstrap5' {
+        height: $calendar-day-bigger-small-cell-size;
+        width: $calendar-day-bigger-small-cell-size;
+      }
+    }#{if(&, '&', '*')} .e-header .e-title {
+      @if $skin-name == 'bootstrap5' {
+        margin-left: $calendar-title-margin-bigger-small-left-style;
+      }
     }
   }
 
@@ -375,10 +476,26 @@
         height: $calendar-bigger-icon-size;
         width: $calendar-bigger-icon-size;
     }
+
+      #{if(&, '&', '*')} .e-prev {
+        @if $skin-name == 'tailwind' {
+          margin: $calendar-bigger-down-icon-margin;
+        }
+      }
     }#{if(&, '&', '*')} .e-footer-container {
       border-top: $calendar-bigger-footer-border;
       padding: $calendar-bigger-footer-container-padding;
+    }#{if(&, '&', '*')} .e-header .e-title {
+      @if $skin-name == 'bootstrap5' {
+        margin-left: $calendar-title-margin-bigger-small-left-style;
+      }
     }
+
+    #{if(&, '&', '*')}.e-rtl .e-header .e-title {
+      @if $skin-name == 'bootstrap5' {
+        text-indent: $calendar-rtl-bigger-text-indent;
+        }
+      }
   }
 
   // Mouse small style
@@ -387,6 +504,12 @@
     max-width: $calendar-small-max-width;
     min-width:  $calendar-small-min-width;
     padding: $calendar-small-popup-padding;
+
+    #{if(&, '&', '*')} .e-footer-container {
+      @if $skin-name == 'tailwind' {
+        padding: $calendar-small-footer-container-padding;
+      }
+    }
 
     #{if(&, '&', '*')}.e-calendar-day-header-lg {
       max-width: $calendar-lg-day-header-format-max-width;
@@ -420,7 +543,29 @@
         font-size: $calendar-small-title-font-size;
         line-height: $calendar-small-header-height;
       }
-  }
+
+      #{if(&, '&', '*')}.e-month,
+      #{if(&, '&', '*')}.e-year,
+      #{if(&, '&', '*')}.e-decade {
+        @if $skin-name == 'tailwind' {
+          padding: $calendar-small-header-padding;
+        }
+	    }
+    }
+
+    #{if(&, '&', '*')} .e-content.e-month table,
+    #{if(&, '&', '*')} .e-content.e-year table,
+    #{if(&, '&', '*')} .e-content.e-decade table {
+      @if $skin-name == 'tailwind' {
+        padding: $calendar-small-table-padding;
+      }
+    }
+
+    #{if(&, '&', '*')}.e-rtl .e-header .e-title {
+      @if $skin-name == 'bootstrap5' {
+        text-indent: $calendar-rtl-text-indent;
+      }
+    }
 
     #{if(&, '&', '*')} .e-header .e-icon-container {
       #{if(&, '&', '*')} .e-prev,
@@ -428,11 +573,39 @@
         height: $calendar-small-icon-size;
         width: $calendar-small-icon-size;
       }
+
+      #{if(&, '&', '*')} .e-prev {
+        @if $skin-name == 'tailwind' {
+          margin: $calendar-small-down-icon-margin;
+        }
+      }
     }
 
     #{if(&, '&', '*')} th {
       font-size: $calendar-small-font-size;
       height: $calendar-small-day-header-height;
+    }
+
+    #{if(&, '&', '*')} .e-header .e-title {
+      @if $skin-name == 'bootstrap5' {
+        margin-left: $calendar-title-margin-small-left-style;
+      }
+    }
+
+    #{if(&, '&', '*')} .e-content.e-year td > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td > span.e-day {
+      @if $skin-name == 'bootstrap5' {
+        width: $calendar-small-year-decade-width;
+      }
+    }
+
+    #{if(&, '&', '*')} .e-content.e-year td > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td > span.e-day {
+      @if $skin-name == 'tailwind' {
+        height: $calendar-small-year-decade-height;
+        line-height: $calendar-small-year-decade-height;
+        width: $calendar-small-year-decade-width;
+      }
     }
   }
 

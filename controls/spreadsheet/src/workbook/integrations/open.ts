@@ -4,9 +4,8 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
-import { sheetCreated, protectSheetWorkBook, getRangeAddress } from '../common/index';
+import { sheetCreated, protectSheetWorkBook, getRangeAddress, beginAction } from '../common/index';
 import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel } from '../base/index';
-import { beginAction } from '../../spreadsheet/common/event';
 
 export class WorkbookOpen {
     private parent: Workbook;
@@ -67,6 +66,7 @@ export class WorkbookOpen {
             this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
         }
         if (eventArgs.cancel) {
+            this.parent.isOpen = false;
             return;
         }
         fetch(this.parent.openUrl, eventArgs.requestData)

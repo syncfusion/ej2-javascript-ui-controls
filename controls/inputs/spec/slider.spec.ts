@@ -520,6 +520,54 @@ describe('Slider Control', () => {
             slider.destroy();
         });
 
+        it('Slider tooltip  material tooltip with showOn Auto (default)', () => {
+            slider = new Slider({  tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+            slider.getTheme = () => 'material';
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            var e = new MouseEvent("mouseenter", { view: window, bubbles: true, cancelable: true });
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-handle'))[0];
+            ele1.dispatchEvent(e);
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+            var e = new MouseEvent("mouseout", { view: window, bubbles: true, cancelable: true });
+            let ele: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-slider-container'))[0];
+            ele.dispatchEvent(e);
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            slider.destroy();
+        });
+
+        it('Slider tooltip  material tooltip with showOn Hover (default)', () => {
+            slider = new Slider({  tooltip: { placement: 'After', isVisible: true, showOn: 'Hover' } });
+            slider.getTheme = () => 'material';
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            var e = new MouseEvent("mouseenter", { view: window, bubbles: true, cancelable: true });
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-handle'))[0];
+            ele1.dispatchEvent(e);
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+            var e = new MouseEvent("mouseout", { view: window, bubbles: true, cancelable: true });
+            let ele: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-slider-container'))[0];
+            ele.dispatchEvent(e);
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            slider.destroy();
+        });
+
+        it('Slider tooltip  material tooltip with showOn Always (default)', () => {
+            slider = new Slider({  tooltip: { placement: 'After', isVisible: true, showOn: 'Always' } });
+            slider.getTheme = () => 'material';
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            var e = new MouseEvent("mouseenter", { view: window, bubbles: true, cancelable: true });
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-handle'))[0];
+            ele1.dispatchEvent(e);
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+            var e = new MouseEvent("mouseout", { view: window, bubbles: true, cancelable: true });
+            let ele: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-slider-container'))[0];
+            ele.dispatchEvent(e);
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+            slider.destroy();
+        });
+
         it('Slider tooltip  material tooltip (minRange)', () => {
             slider = new Slider({ showButtons: true, type:'MinRange', tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
             slider.getTheme = () => 'material';

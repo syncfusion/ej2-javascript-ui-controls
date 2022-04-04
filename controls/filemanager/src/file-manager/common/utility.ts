@@ -270,7 +270,12 @@ export function searchWordHandler(parent: IFileManager, value: string, isLayoutC
         Search(parent, isLayoutChange ? events.layoutChange : events.search, parent.path, searchWord, hiddenItems, !caseSensitive);
     } else {
         if (!parent.isFiltered) {
-            read(parent, isLayoutChange ? events.layoutChange : events.search, parent.path);
+            if (parent.isSortByClicked) {
+                parent.notify(events.layoutChange, { files: parent.largeiconsviewModule.items });
+                parent.isSortByClicked = false;
+            } else {
+                read(parent, isLayoutChange ? events.layoutChange : events.search, parent.path);
+            }
         } else {
             filter(parent, events.layoutChange);
         }
@@ -310,7 +315,7 @@ export function updateLayout(parent: IFileManager, view: string): void {
 export function getTargetModule(parent: IFileManager, element: Element): void {
     let tartgetModule: string = '';
     if (element) {
-        if (closest(element, '.e-gridcontent')) {
+        if (closest(element, '.' + CLS.ROOT + '.' + CLS.CONTROL + ' .' + CLS.GRID_CONTENT)) {
             tartgetModule = 'detailsview';
         } else if (closest(element, '.' + CLS.LARGE_ICONS)) {
             tartgetModule = 'largeiconsview';
@@ -446,7 +451,7 @@ export function fileType(file: Object): string {
 export function getImageUrl(parent: IFileManager, item: Object): string {
     const baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl: string;
-    const fileName: string = getValue('name', item);
+    const fileName: string = encodeURIComponent(getValue('name', item));
     const fPath: string = getValue('filterPath', item);
     if (parent.hasId) {
         const imgId: string = getValue('id', item);
@@ -674,6 +679,7 @@ export function getCssClass(parent: IFileManager, css: string): string {
  */
 export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): void {
     let tick: boolean;
+    parent.isSortByClicked = true;
     if (args.item.id.indexOf('ascending') !== -1 || args.item.id.indexOf('descending') !== -1 || args.item.id.indexOf('none') !== -1) {
         tick = true;
     } else {

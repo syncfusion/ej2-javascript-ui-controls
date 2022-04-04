@@ -497,7 +497,12 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             if (typeof (this.content) === 'string') {
                 this.element.textContent = this.content;
             } else {
-                this.element.appendChild(this.content);
+                const relateToElem: HTMLElement = this.getRelateToElement();
+                // eslint-disable-next-line
+                const props: any = (this.content as any).props;
+                if (!relateToElem.classList.contains('e-dropdown-btn') || isNullOrUndefined(props)) {
+                    this.element.appendChild(this.content);
+                }
             }
         }
     }

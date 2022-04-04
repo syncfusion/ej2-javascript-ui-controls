@@ -1,24 +1,26 @@
 .e-tooltip-wrap {
   /*! Tooltip icons */
   .e-tooltip-close::before {
-    content: '\e91c';
-    font-size: 8px;
-    margin-left: 3px;
+    content: '\e7e7';
+    font-size: 10px;
+    left: calc(50% - 5px);
+    position: absolute;
+    top: calc(50% - 5px);
   }
 
   .e-arrow-tip-inner.e-tip-right::before {
-    content: '\e7d5';
+    content: '\e87e';
   }
 
   .e-arrow-tip-inner.e-tip-top::before {
-    content: '\e768';
+    content: '\e87a';
   }
 
   .e-arrow-tip-inner.e-tip-bottom::before {
-    content: '\e732';
+    content: '\e70d';
   }
 
   .e-arrow-tip-inner.e-tip-left::before {
-    content: '\e74b';
+    content: '\e87d';
   }
 }

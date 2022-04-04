@@ -30,7 +30,11 @@ export type SmithchartTheme =
     /**  Render a smithchart with Bootstrap5 theme. */
     'Bootstrap5' |
     /**  Render a smithchart with Bootstrap5Dark theme. */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark' |
+    /**  Render a smithchart with Fluent theme. */
+    'Fluent' |
+    /**  Render a smithchart with FluentDark theme. */
+    'FluentDark';
 
 /**
  * Defines render type of smithchart. They are

@@ -471,14 +471,20 @@ describe('Paging module', () => {
         it('dropDownChanged to All', () => {
             (<any>gridInstance.pagerModule).pagerObj.element.querySelector('.e-dropdownlist').ej2_instances[0].value = 'All';
         });
-        it('check current pageSize value', (done: Function) => {
-            let actionComplete = (args?: any): void => {
-                expect(gridInstance.currentViewData.length).toBe(15);
-                done();
-            };
-            gridInstance.actionComplete = actionComplete;
-           
+        it('check isAllPage value', () => {
+            expect(gridInstance.pagerModule.pagerObj.isAllPage).toBeTruthy();
         });
+        it('EJ2-57784 - check pagesize value when set to `All` ', () => {
+            expect(gridInstance.pageSettings.pageSize).toBe(gridInstance.pageSettings.totalRecordsCount);
+        });
+        // it('check current pageSize value', (done: Function) => {
+        //     let actionComplete = (args?: any): void => {
+        //         expect(gridInstance.getRows().length).toBe(15);
+        //         done();
+        //     };
+        //     gridInstance.actionComplete = actionComplete;
+           
+        // });
         it('memory leak', () => {     
             profile.sample();
             let average: any = inMB(profile.averageChange)
@@ -562,6 +568,10 @@ describe('Paging module', () => {
         it('check the active paging element', () => {
             expect(gridInstance.getPager().querySelectorAll('.e-active')[0].textContent).toBe('1');
         });
+        it('check the current page of pager', () => {
+            gridInstance.goToPage(2);
+            expect(gridInstance.pagerModule.pagerObj.currentPage).toBe(1);
+        });
 
         afterAll(() => {
             destroy(gridInstance);
@@ -595,6 +605,159 @@ describe('Paging module', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+    describe('Pager Focus Test Case', () => {
+        let gridObj: Grid;
+        let actionBegin: (e: PageEventArgs) => void;
+        let actionComplete: (e: PageEventArgs) => void;
+        let preventDefault: Function = new Function();
+
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }],
+                    allowPaging: true,
+                    pageSettings: {
+                        pageSize: 2,
+                        pageSizes: true
+                    },
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete,
+                }, done);
+        });
+        it('Check pager has focus', function () {
+            gridObj.pagerModule.pagerObj.setPagerFocus();
+            expect(gridObj.pagerModule.pagerObj.checkPagerHasFocus()).toBeTruthy();
+        });
+        it('Check first pager focus', function () {
+            expect(gridObj.pagerModule.pagerObj.checkFirstPagerFocus()).toBeFalsy();
+        });
+        it('Set pager focus', () => {
+            gridObj.pagerModule.pagerObj.setPagerFocus();
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeTruthy();
+            expect((gridObj.pagerModule.pagerObj as any).getFocusedElement()).toBeTruthy();
+        });
+        it('Set focus class', function () {
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            (gridObj.pagerModule.pagerObj as any).addFocus(focusablePagerElements[0], true);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeTruthy();
+        });
+        it('Remove focus class', function () {
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            (gridObj.pagerModule.pagerObj as any).removeFocus(focusablePagerElements[0], true);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('Get element class', function () {
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect((gridObj.pagerModule.pagerObj as any).getClass(gridObj.pagerModule.pagerObj.element.querySelector('.e-first'))).toBe('e-first');
+        });
+        it('Get element by class name', function () {
+            expect((gridObj.pagerModule.pagerObj as any).getElementByClass('e-first')).toBeTruthy();
+        });
+        it('Alt J testing', () => {
+            let args: any = { altKey: true, preventDefault: preventDefault, keyCode: 74 };
+            (gridObj.pagerModule.pagerObj as any).keyDownHandler(args);
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('Checking onKeyPress for setting focus for pager with no parent', () => {
+            (gridObj.pagerModule.pagerObj as any).hasParent = false;
+            let args: any = { action: 'tab', preventDefault: preventDefault };
+            (gridObj.pagerModule.pagerObj as any).onKeyPress(args);
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('Checking onKeyPress for changing focus with tab with no parent', () => {
+            (gridObj.pagerModule.pagerObj as any).hasParent = false;
+            gridObj.pagerModule.pagerObj.setPagerFocus();
+            let args: any = { action: 'tab', preventDefault: preventDefault, keyCode: 9 };
+            (gridObj.pagerModule.pagerObj as any).onKeyPress(args);
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[1].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('Checking onKeyPress for changing focus with shift tab with no parent', () => {
+            (gridObj.pagerModule.pagerObj as any).hasParent = false;
+            gridObj.pagerModule.pagerObj.setPagerFocus();
+            let tabArgs: any = { action: 'tab', preventDefault: preventDefault, keyCode: 9 };
+            (gridObj.pagerModule.pagerObj as any).onKeyPress(tabArgs);
+            let args: any = { shiftKey : true, preventDefault: preventDefault, keyCode: 9 };
+            (gridObj.pagerModule.pagerObj as any).onKeyPress(args);
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('Checking onKeyPress for changing focus by key', () => {
+            gridObj.pagerModule.pagerObj.setPagerFocus();
+            let args: any = { preventDefault: preventDefault, keyCode: 37 };
+            (gridObj.pagerModule.pagerObj as any).navigateToPageByKey(args);
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('Check first pager focus', () => {
+            (gridObj.pagerModule.pagerObj as any).firstPagerFocus = true;
+            (gridObj.pagerModule.pagerObj as any).checkFirstPagerFocus();
+            expect((gridObj.pagerModule.pagerObj as any).firstPagerFocus).toBeFalsy();
+        });
+        it('Check pager focus by Enter or Space key', () => {
+            gridObj.pagerModule.pagerObj.setPagerFocus();
+            let args: any = { preventDefault: preventDefault, keyCode:13 };
+            (gridObj.pagerModule.pagerObj as any).navigateToPageByEnterOrSpace(args);
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('check checkFocusInAdaptiveMode, changeFocusInAdaptiveMode Function', function () {
+            const adaptiveElement = (gridObj.pagerModule.pagerObj as any).element.querySelector('.e-mfirst');
+            expect((gridObj.pagerModule.pagerObj as any).checkFocusInAdaptiveMode(adaptiveElement)).toBeTruthy();
+            (gridObj.pagerModule.pagerObj as any).changeFocusInAdaptiveMode(adaptiveElement);
+            expect((gridObj.pagerModule.pagerObj as any).element.querySelector('.e-focused')).toBeFalsy();
+        });
+        it('check setPagerFocusForActiveElement Function', function () {
+            (gridObj.pagerModule.pagerObj as any).setPagerFocusForActiveElement();
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            expect(focusablePagerElements[0].classList.contains('e-focused')).toBeFalsy();
+        });
+        it('check changePagerFocus Function for Tab Action', function () {
+            gridObj.pagerModule.pagerObj.setPagerFocus();
+            let args: any = { preventDefault: preventDefault, keyCode:9 };
+            (gridObj.pagerModule.pagerObj as any).changePagerFocus(args);
+            expect((gridObj.pagerModule.pagerObj as any).element.querySelector('.e-focused')).toBeFalsy();
+        });
+        it('check onFocusOut Function', function () {
+            let args: any = { preventDefault: preventDefault };
+            (gridObj.pagerModule.pagerObj as any).onFocusOut(args);
+            expect((gridObj.pagerModule.pagerObj as any).element.querySelector('.e-focused')).toBeFalsy();
+        });
+        it('check changePagerFocus Function for Shift-Tab Action', function () {
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            (gridObj.pagerModule.pagerObj as any).addFocus(focusablePagerElements[0], true);
+            let args: any = { preventDefault: preventDefault, keyCode: 9, shiftKey: true };
+            (gridObj.pagerModule.pagerObj as any).changePagerFocus(args);
+            expect((gridObj.pagerModule.pagerObj as any).element.querySelector('.e-focused')).toBeTruthy();
+        });
+        it('check changePagerFocus Function For Enter Action', function () {
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            (gridObj.pagerModule.pagerObj as any).addFocus(focusablePagerElements[0], true);
+            let args: any = { preventDefault: preventDefault, keyCode: 13 };
+            (gridObj.pagerModule.pagerObj as any).changePagerFocus(args);
+            expect((gridObj.pagerModule.pagerObj as any).element.querySelector('.e-focused')).toBeTruthy();
+        });
+        it('check changePagerFocus Function For Key Action', function () {
+            const focusablePagerElements: Element[] = (gridObj.pagerModule.pagerObj as any).getFocusablePagerElements(gridObj.pagerModule.pagerObj.element, []);
+            (gridObj.pagerModule.pagerObj as any).addFocus(focusablePagerElements[0], true);
+            let args: any = { preventDefault: preventDefault, keyCode: 37 };
+            (gridObj.pagerModule.pagerObj as any).changePagerFocus(args);
+            expect((gridObj.pagerModule.pagerObj as any).element.querySelector('.e-focused')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 });

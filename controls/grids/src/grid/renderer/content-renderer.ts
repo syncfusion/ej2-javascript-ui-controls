@@ -228,7 +228,7 @@ export class ContentRender implements IRenderer {
             });
         this.setColGroup(<Element>this.parent.getHeaderTable().querySelector(literals.colGroup).cloneNode(true));
         table.appendChild(this.getColGroup());
-        table.appendChild(this.parent.createElement( literals.tbody));
+        table.appendChild(this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }));
         innerDiv.appendChild(table);
         return innerDiv;
     }
@@ -246,11 +246,11 @@ export class ContentRender implements IRenderer {
         const dataSource: Object = this.currentMovableRows || gObj.currentViewData;
         const contentModule: FreezeContentRender = (this.parent.contentModule as FreezeContentRender);
         const isReact: boolean = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
-        let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement( literals.tbody) : document.createDocumentFragment();
+        let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }) : document.createDocumentFragment();
         if (!this.initialPageRecords) {
             this.initialPageRecords = extend([], dataSource);
         }
-        const hdrfrag: DocumentFragment = isReact ? gObj.createElement( literals.tbody) : document.createDocumentFragment();
+        const hdrfrag: DocumentFragment = isReact ? gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }) : document.createDocumentFragment();
         const columns: Column[] = <Column[]>gObj.getColumns();
         let tr: Element; let hdrTbody: HTMLElement; const frzCols: number = gObj.getFrozenColumns();
         const isFrozenGrid: boolean = this.parent.isFrozenGrid();
@@ -413,7 +413,8 @@ export class ContentRender implements IRenderer {
                     gObj.getRowTemplate()(copied, gObj, 'rowTemplate', rowTemplateID, null, null, isHeader ? hdrfrag : frag);
                     gObj.renderTemplates();
                 } else {
-                    elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
+                    elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID,
+                        undefined, undefined, undefined, this.parent['root']);
                 }
                 if (!gObj.isReact && (elements[0] as Element).tagName ===  'TBODY') {
                     for (let j: number = 0; j < elements.length; j++) {
@@ -477,11 +478,11 @@ export class ContentRender implements IRenderer {
                 if (!this.parent.enableVirtualization && !isInfiniteScroll) {
                     if (this.parent.isFrozenGrid()) {
                         remove(contentModule.getTbody(tableName));
-                        tbdy = this.parent.createElement( literals.tbody);
+                        tbdy = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                     } else {
                         this.tbody.innerHTML = '';
                         remove(this.tbody);
-                        this.tbody = this.parent.createElement( literals.tbody);
+                        this.tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                     }
                 }
                 if (isFrozenGrid && !isVFTable && !this.parent.enableInfiniteScrolling) {
@@ -896,6 +897,9 @@ export class ContentRender implements IRenderer {
             }
             if (!needFullRefresh) {
                 this.setDisplayNone(tr, colIdx, displayVal, contentrows);
+                if (contentrows[0].cells[colIdx].isTemplate){
+                    needFullRefresh = true;
+                }
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {
                 this.parent.updateMediaColumns(column);
@@ -1073,7 +1077,7 @@ export class ContentRender implements IRenderer {
         } else {
             if (gObj.currentViewData.length === 0) { return; }
             const oldRowElements: Object = {};
-            const tbody: Element = gObj.createElement( literals.tbody);
+            const tbody: Element = gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
             const dataSource: Object[] = gObj.currentViewData;
             const trs: Element[] = [].slice.call(this.getTable().querySelector( literals.tbody).children);
             if (this.prevCurrentView.length) {

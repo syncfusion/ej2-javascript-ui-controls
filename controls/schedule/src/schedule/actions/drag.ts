@@ -472,14 +472,16 @@ export class DragAndDrop extends ActionBase {
             } else {
                 outWrapper = this.parent.element.querySelector('.' + cls.APPOINTMENT_CONTAINER_CLASS);
             }
-            let tarWrapper: Element = outWrapper.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
-            if (!tarWrapper) {
-                tarWrapper = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
-                outWrapper.appendChild(tarWrapper);
+            if (!isNullOrUndefined(outWrapper)) {
+                let tarWrapper: Element = outWrapper.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
+                if (!tarWrapper) {
+                    tarWrapper = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
+                    outWrapper.appendChild(tarWrapper);
+                }
+                this.actionObj.cloneElement.forEach((ele: HTMLElement) => {
+                    tarWrapper.appendChild(ele);
+                });
             }
-            this.actionObj.cloneElement.forEach((ele: HTMLElement) => {
-                tarWrapper.appendChild(ele);
-            });
         }
     }
 
@@ -1050,7 +1052,7 @@ export class DragAndDrop extends ActionBase {
             if (!isNullOrUndefined(targetDate)) {
                 if (!this.parent.activeViewOptions.timeScale.enable || (this.parent.currentView === 'TimelineMonth')) {
                     const eventSrt: Date = eventObj[this.parent.eventFields.startTime];
-                    eventStart = new Date(eventStart.setHours(eventSrt.getHours(), eventSrt.getMinutes(), eventSrt.getSeconds()));
+                    eventStart = new Date(targetDate.setHours(eventSrt.getHours(), eventSrt.getMinutes(), eventSrt.getSeconds()));
                 } else {
                     eventStart = targetDate;
                 }

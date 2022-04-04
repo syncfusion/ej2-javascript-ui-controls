@@ -5,7 +5,6 @@ import { ExportType } from '../utils/enum';
 import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-export';
 
 
-
 /**
  * This module enables the export to PDF functionality in Maps control.
  *
@@ -49,8 +48,8 @@ export class PdfExport {
             const exportElement: HTMLElement = this.control.svgObject.cloneNode(true) as HTMLElement;
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
             const backgroundColor: string = backgroundElement.getAttribute('fill');
-            if ((this.control.theme === 'Tailwind' || this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Bootstrap5Dark')
-                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+            if ((this.control.theme === 'Tailwind' || this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Bootstrap5Dark'
+                || this.control.theme === 'Fluent' || this.control.theme === 'FluentDark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
             }
             const url: string = window.URL.createObjectURL(
@@ -93,11 +92,13 @@ export class PdfExport {
                     ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
                     ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
                     ctx.font = this.control.titleSettings.textStyle.size + ' Arial';
-                    ctx.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
-                    ctx.fillText(
-                        this.control.titleSettings.text,
-                        parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')),
-                        parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                    let titleElement: HTMLElement = document.getElementById(this.control.element.id + '_Map_title');
+                    if (!isNullOrUndefined(titleElement)) {
+                        ctx.fillStyle = titleElement.getAttribute('fill');
+                        ctx.fillText(
+                            this.control.titleSettings.text, parseFloat(titleElement.getAttribute('x')),
+                            parseFloat(titleElement.getAttribute('y')));
+                    }
                     tileImg.onload = (() => {
                         if (i === 0 || i === tileLength + 1) {
                             if (i === 0) {
@@ -110,8 +111,9 @@ export class PdfExport {
                                 ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
                             }
                         } else {
+                            const tileParent: HTMLElement = document.getElementById(this.control.element.id + '_tile_parent');
                             ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
+                                (parseFloat(tileParent.style.top)));
                         }
                         ctx.drawImage(tileImg, 0, 0);
                         if (i === tileLength + 1) {
@@ -137,9 +139,9 @@ export class PdfExport {
                             tileImg.src = url;
                         } else {
                             setTimeout(() => {
+                                let tileSvg: Element = document.getElementById(this.control.element.id + '_Tile_SVG');
                                 tileImg.src = window.URL.createObjectURL(new Blob(
-                                    [(new XMLSerializer()).serializeToString(document.getElementById(
-                                        this.control.element.id + '_Tile_SVG'))],
+                                    [(new XMLSerializer()).serializeToString(tileSvg)],
                                     { type: 'image/svg+xml' }));
                             }, 300);
                         }

@@ -1,8 +1,8 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
-import { applySort, completeAction, beginAction, focus, FilterInfoArgs, getUpdateUsingRaf } from '../index';
+import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel } from '../../workbook/index';
-import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort } from '../../workbook/index';
+import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction } from '../../workbook/index';
 import { SortEventArgs, BeforeSortEventArgs, SortOptions } from '../../workbook/common/interface';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -117,18 +117,21 @@ export class Sort {
      */
     private sortRangeAlertHandler(args: { error: string }): void {
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
             content: args.error,
-            beforeOpen: (args: BeforeOpenEventArgs): void => {
+            beforeOpen: (openArgs: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
-                    dialogName: 'SortRangeDialog',
-                    element: args.element, target: args.target, cancel: args.cancel
+                    dialogName: args.error === l10n.getConstant("MultiRangeSortError") ? "MultiRangeSortDialog" : "SortRangeDialog",
+                    content: args.error,
+                    element: openArgs.element, target: openArgs.target, cancel: openArgs.cancel
                 };
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
-                    args.cancel = true;
+                    openArgs.cancel = true;
                 }
+                dialogInst.dialogInstance.content = dlgArgs.content;
             }
         });
         this.parent.hideSpinner();
@@ -141,8 +144,13 @@ export class Sort {
      */
     private initiateCustomSortHandler(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        if (!this.isValidSortRange()) {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        if (!this.isValidSortRange() || sheet.rows.length == 0) {
             this.sortRangeAlertHandler({ error: l10n.getConstant('SortOutOfRangeError') });
+            return;
+        }
+        if (isDiscontinuousRange(sheet.selectedRange)) {
+            this.sortRangeAlertHandler({ error: l10n.getConstant('MultiRangeSortError') });
             return;
         }
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
@@ -253,6 +261,7 @@ export class Sort {
         contentElem.appendChild(listview);
         listviewObj.createElement = this.parent.createElement;
         listviewObj.appendTo(listview);
+        listview.removeAttribute('tabindex');
         this.renderListItem(listId, listviewObj, true, fields);
 
         const errorElem: HTMLElement = this.parent.createElement('div', { className: 'e-sort-error' });
@@ -524,19 +533,17 @@ export class Sort {
     private applySortHandler(args: { sortOptions?: SortOptions, range?: string, previousSort?: SortCollectionModel }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let address: string = args && args.range || sheet.selectedRange;
-        const sortOptions: SortOptions = args && args.sortOptions || { sortDescriptors: {} };
         const range: number[] = getSwapRange(getIndexesFromAddress(address));
-        let isSingleCell: boolean;
-        if (range[0] === range[2]) { //check for filter range
-            const eventArgs: FilterInfoArgs = { filterRange: [], hasFilter: false, sheetIdx: this.parent.activeSheetIndex };
-            this.parent.notify(getFilterRange, eventArgs);
-            if (eventArgs.hasFilter && inRange(<number[]>eventArgs.filterRange, range[0], range[1])) {
-                range[0] = eventArgs.filterRange[0]; range[1] = 0;
-                range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
-                sortOptions.containsHeader = true;
-            } else {
-                isSingleCell = true;
-            }
+        const sortOptions: SortOptions = args && args.sortOptions || { sortDescriptors: {} };
+        let isSingle: boolean = range[0] === range[2];
+        const eventArgs: FilterInfoArgs = { filterRange: [], hasFilter: false, sheetIdx: this.parent.activeSheetIndex };
+        this.parent.notify(getFilterRange, eventArgs);
+        if (eventArgs.hasFilter && (isSingle ? inRange(<number[]>eventArgs.filterRange, range[0], range[1]) : (eventArgs.filterRange[0] ===
+            range[0] && (this.parent.element.querySelector('.e-selectall.e-highlight') || (range[1] >= eventArgs.filterRange[1] && range[1]
+                <= eventArgs.filterRange[3]) || (range[3] >= eventArgs.filterRange[1] && range[3] <= eventArgs.filterRange[3]))))) {
+            range[0] = eventArgs.filterRange[0]; range[1] = eventArgs.filterRange[1];
+            range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
+            sortOptions.containsHeader = true; isSingle = false;
         }
         address = getRangeAddress(range);
         const beforeArgs: BeforeSortEventArgs = { range: address, sortOptions: sortOptions, cancel: false };
@@ -548,7 +555,7 @@ export class Sort {
         const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
         const sortArgs: { promise: Promise<SortEventArgs>, args: { range: string, checkForHeader?: boolean, sortOptions: SortOptions },
             previousSort: SortCollectionModel } = { args: { range: beforeArgs.range, sortOptions: beforeArgs.sortOptions, checkForHeader:
-                isSingleCell && address !== beforeArgs.range }, promise: promise, previousSort: args && args.previousSort };
+                isSingle && address !== beforeArgs.range }, promise: promise, previousSort: args && args.previousSort };
         this.parent.notify(initiateSort, sortArgs);
         sortArgs.promise.then((sortArgs: SortEventArgs) => {
             this.sortCompleteHandler(sortArgs);

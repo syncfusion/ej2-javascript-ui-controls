@@ -717,7 +717,7 @@ export class PolarRadarPanel extends LineBase {
 
     private setPointerEventNone(element: Element): void {
         if (element) {
-            element.setAttribute('style', 'pointer-events:none');
+            (element as HTMLElement).style.pointerEvents = 'none';
         }
     }
 }

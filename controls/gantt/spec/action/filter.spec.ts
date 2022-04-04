@@ -2,7 +2,7 @@
  * Gantt filter spec
  */
 import { Gantt, Filter, Toolbar, ColumnMenu } from '../../src/index';
-import { projectData1, projectResources, filteredData } from '../base/data-source.spec';
+import { projectData1, projectResources, filteredData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 
 describe('Gantt filter support', () => {
@@ -266,7 +266,7 @@ describe('Gantt filter support', () => {
                 }
         });
     });
- describe('Gantt filter child mode', () => {
+describe('Gantt filter child mode', () => {
         Gantt.Inject(Filter, Toolbar, ColumnMenu);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {

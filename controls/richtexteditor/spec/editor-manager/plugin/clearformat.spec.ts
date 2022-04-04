@@ -238,3 +238,27 @@ describe('Clear Format commands', () => {
         expect(document.getElementById('divElement').children[0].nodeName === 'DIV').toBe(true);
     });
 });
+
+describe('Clear Format with image caption', () => {
+    let innervalue: string = '<p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="test.png" width="auto" height="auto" style="min-width: 0px; max-width: 871px; min-height: 0px;"><span class="e-img-inner" contenteditable="true"><strong><em><span id="test" style="text-decoration: underline;">Testing</span></em></strong></span></span></span> </p>'
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    
+    it('EJ2-56310 - Clear format testing for the image caption', () => {
+        new ClearFormat();
+        let node1: Node = document.querySelector('.e-img-inner #test').lastChild;
+        domSelection.setSelectionText(document, node1, node1, 0, 7);
+        ClearFormat.clear(document, node1, 'P');
+        expect(document.querySelector('.e-img-inner').childElementCount === 0).toBe(true);
+    });
+});

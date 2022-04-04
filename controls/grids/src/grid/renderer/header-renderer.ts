@@ -295,10 +295,10 @@ export class HeaderRender implements IRenderer {
         const tblName: freezeTable = tableName ? tableName : gObj.getFrozenLeftCount() ? 'frozen-left' : 'frozen-right';
         const findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tblName);
         const thead: Element = findHeaderRow.thead;
-        const tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ? '' : 'e-hide' });
+        const tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ? '' : 'e-hide', attrs: { role: 'rowgroup' } });
         this.caption = this.parent.createElement('caption', { innerHTML: this.parent.element.id + '_header_table', className: 'e-hide' });
         const colGroup: Element = this.parent.createElement(literals.colGroup);
-        const rowBody: Element = this.parent.createElement('tr');
+        const rowBody: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
         let bodyCell: Element;
         const rows: Row<Column>[] = this.rows = findHeaderRow.rows;
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
@@ -334,8 +334,8 @@ export class HeaderRender implements IRenderer {
         let index: number = 1;
         const frozenMode: freezeMode = gObj.getFrozenMode();
         const columns: Column[] = <Column[]>gObj.getColumns();
-        const thead: Element = this.parent.createElement('thead');
-        const colHeader: Element = this.parent.createElement('tr', { className: 'e-columnheader' });
+        const thead: Element = this.parent.createElement('thead', { attrs: { 'role': 'rowgroup' } });
+        const colHeader: Element = this.parent.createElement('tr', { className: 'e-columnheader', attrs: { role: 'row' } });
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, CellType.Header, gObj);
         rowRenderer.element = colHeader;
         let rows: Row<Column>[] = [];
@@ -453,21 +453,21 @@ export class HeaderRender implements IRenderer {
         if (this.parent.lockcolPositionCount) {
             for (let i: number = 0; i < cols.length; i++) {
                 this.lockColsRendered = false;
-                rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (cols.length - 1), thead, tableName);
+                rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (cols.length - 1), thead, tableName, false);
             }
         }
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             this.notfrzIdx = 0;
             this.lockColsRendered = true;
-            rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (len - 1), thead, tableName);
+            rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (len - 1), thead, tableName, false);
         }
         return rows;
     }
 
     private appendCells(
         cols: Column, rows: Row<Column>[], index: number, isFirstObj: boolean,
-        isFirstCol: boolean, isLastCol: boolean, isMovable: Element, tableName: freezeTable): Row<Column>[] {
-        const lastCol: string = isLastCol ? 'e-lastcell' : '';
+        isFirstCol: boolean, isLastCol: boolean, isMovable: Element, tableName: freezeTable, isStackLastCol: boolean): Row<Column>[] {
+        const lastCol: string = isLastCol ? isStackLastCol ? 'e-laststackcell' : 'e-lastcell' : '';
         const isFrozen: boolean = this.parent.isFrozenGrid();
         const isLockColumn: boolean = !this.parent.lockcolPositionCount
             || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered);
@@ -513,7 +513,8 @@ export class HeaderRender implements IRenderer {
                 if ((!isFrozen && isStackedLockColumn) || isFrozenStack) {
                     rows[index].cells.push(new Cell<Column>(<{ [x: string]: Object }>{
                         cellType: CellType.StackedHeader, column: cols,
-                        colSpan: this.getColSpan(colSpan, stackedLockColsCount, cols.columns as Column[], tableName, isFrozen)
+                        colSpan: this.getColSpan(colSpan, stackedLockColsCount, cols.columns as Column[], tableName, isFrozen),
+                        className: isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')
                     }));
                 }
             }
@@ -521,7 +522,7 @@ export class HeaderRender implements IRenderer {
                 for (let i: number = 0; i < cols.columns.length; i++) {
                     rows = this.appendCells(
                         (cols.columns as Column[])[i], rows, index + 1, isFirstObj,
-                        i === 0, i === (cols.columns.length - 1) && isLastCol, isMovable, tableName);
+                        i === 0, i === (cols.columns.length - 1) && isLastCol, isMovable, tableName, false);
                 }
             }
             if (this.lockColsRendered) {
@@ -531,7 +532,7 @@ export class HeaderRender implements IRenderer {
                     const isLaststackedCol: boolean = i === (len - 1) && isLastCol;
                     rows = this.appendCells(
                         (cols.columns as Column[])[i], rows, index + 1, isFirstObj, isFirstCol && !isLaststackedCol, isLaststackedCol,
-                        isMovable, tableName
+                        isMovable, tableName, true
                     );
                 }
             }

@@ -1730,3 +1730,52 @@ describe('EJ2-54036 - Grouping collapse is not working properly with Infinite sc
         gridObj = null;
     });
 });
+
+describe('EJ2-55291 - Need to maintain scroll position with the updateRow method => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ],
+                actionComplete: actionComplete
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 1000;
+        setTimeout(done, 200);
+    });
+
+    it('called updateRow method', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            gridObj.actionComplete = undefined;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.updateRow(20, { FIELD2: 10250, FIELD1: 'ALFKI' });
+    });
+
+    it('check scroll position while using updateRow method', () => {
+        expect(gridObj.getContent().firstElementChild.scrollTop).toBe(1000);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

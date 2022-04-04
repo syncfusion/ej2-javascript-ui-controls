@@ -65,7 +65,7 @@ export class TimelineYear extends Year {
                     }
                 } else {
                     if (this.parent.monthHeaderTemplate) {
-                        append(this.renderDayMonthHeaderTemplate(date, months[column], 'mothHeaderTemplate'), innerTd);
+                        append(this.renderDayMonthHeaderTemplate(date, months[column], 'monthHeaderTemplate'), innerTd);
                     } else {
                         innerTd.innerHTML = `<span>${this.getMonthName(date)}</span>`;
                     }
@@ -126,7 +126,7 @@ export class TimelineYear extends Year {
             !this.parent.uiStateValues.isGroupAdaptive) {
             tdCollection.push(firstTd);
             firstTd.appendChild(this.parent.resourceBase.createResourceColumn());
-            this.rowCount = this.parent.resourceBase.lastResourceLevel.length;
+            this.rowCount = this.parent.resourceBase.renderedResources.length;
         } else {
             tdCollection.push(firstTd);
             const monthWrapper: HTMLElement = createElement('div', { className: cls.MONTH_HEADER_WRAPPER });
@@ -142,6 +142,9 @@ export class TimelineYear extends Year {
         content.appendChild(contentTable);
         const eventWrapper: HTMLElement = createElement('div', { className: cls.EVENT_TABLE_CLASS });
         content.appendChild(eventWrapper);
+        if (this.parent.virtualScrollModule) {
+            this.parent.virtualScrollModule.renderVirtualTrack(content);
+        }
         const contentTBody: HTMLTableSectionElement = contentTable.querySelector('tbody');
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             if (this.parent.rowAutoHeight) {
@@ -255,15 +258,56 @@ export class TimelineYear extends Year {
         }
     }
 
-    private renderResourceContent(wrapper: HTMLElement, monthBody: HTMLTableSectionElement, contentBody: HTMLTableSectionElement): void {
+    public getContentRows(): Element[] {
+        const tRow: Element[] = [];
+        const monthCells: number[] = this.getMonths();
+        for (let row: number = 0; row < this.parent.resourceBase.renderedResources.length; row++) {
+            const tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
+            tRow.push(tr);
+            let resData: TdData;
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+                resData = this.parent.resourceBase.renderedResources[row];
+            }
+            let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), monthCells[row], 1);
+            let date: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+            for (let month: number = 0; month < this.columnCount; month++) {
+                let classList: string[] = [];
+                const groupIndex: number = resData.groupIndex;
+                classList = classList.concat(resData.className);
+                if (classList.indexOf(cls.RESOURCE_PARENT_CLASS) > -1) {
+                    classList.push(cls.RESOURCE_GROUP_CELLS_CLASS);
+                } else {
+                    classList.push(cls.WORKDAY_CLASS);
+                }
+                monthDate = new Date(this.parent.selectedDate.getFullYear(), monthCells[month], 1);
+                date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+                const tdELe: HTMLElement = createElement('td', {
+                    className: cls.WORK_CELLS_CLASS,
+                    attrs: {
+                        'role': 'gridcell', 'aria-selected': 'false',
+                        'data-date': date.getTime().toString()
+                    }
+                });
+                addClass([tdELe], classList);
+                tdELe.setAttribute('data-group-index', groupIndex.toString());
+                this.renderCellTemplate({ date: date, type: 'resourceGroupCells', groupIndex: groupIndex }, tdELe);
+                this.wireEvents(tdELe, 'cell');
+                this.parent.trigger(event.renderCell, { elementType: 'resourceGroupCells', element: tdELe, date: date });
+                tr.appendChild(tdELe);
+            }
+        }
+        return tRow;
+    }
+
+    public renderResourceContent(wrapper: HTMLElement, monthBody: HTMLTableSectionElement, contentBody: HTMLTableSectionElement): void {
         const months: number[] = this.getMonths();
         for (let row: number = 0; row < this.rowCount; row++) {
             wrapper.appendChild(createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS }));
             const tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
             contentBody.appendChild(tr);
             let resData: TdData;
-            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                resData = this.parent.resourceBase.lastResourceLevel[row];
+            if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+                resData = this.parent.resourceBase.renderedResources[row];
             }
             let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), months[row], 1);
             let date: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
@@ -283,8 +327,9 @@ export class TimelineYear extends Year {
             }
             for (let month: number = 0; month < this.columnCount; month++) {
                 let classList: string[] = [];
-                let groupIndex: number = row;
+                let groupIndex: number;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    groupIndex = resData.groupIndex;
                     classList = classList.concat(resData.className);
                     if (classList.indexOf(cls.RESOURCE_PARENT_CLASS) > -1) {
                         classList.push(cls.RESOURCE_GROUP_CELLS_CLASS);

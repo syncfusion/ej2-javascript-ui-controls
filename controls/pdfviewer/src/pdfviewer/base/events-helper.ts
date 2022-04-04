@@ -1349,6 +1349,11 @@ export interface FormFieldPropertiesChangeArgs extends BaseEventArgs {
      */
     // eslint-disable-next-line
     newValue?: any;
+    /**
+     * Specifies whether the field name is changed or not.
+     */
+    // eslint-disable-next-line
+    isNameChanged?:boolean;
 }
 
 /**

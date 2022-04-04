@@ -225,7 +225,7 @@ console.log('get cell margins undefined testing');
         editor.openBlank();
         editor.editor.insertTable(3, 3);
         let cellOptions: CellOptionsDialog = editor.cellOptionsDialogModule;
-        CellOptionsDialog.getCellMarginDialogElements(undefined, undefined, undefined);
+        CellOptionsDialog.getCellMarginDialogElements(undefined, undefined, undefined, true);
     });
     it('Remove events', () => {
 console.log('Remove events');

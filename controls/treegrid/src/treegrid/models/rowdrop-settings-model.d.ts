@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ITreeData } from '..';
 
 /**
  * Interface for a class RowDropSettings

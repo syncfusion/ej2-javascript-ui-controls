@@ -461,17 +461,16 @@ describe('Toolbar Control', () => {
                 }],
             });
             toolbar.appendTo('#ej2Toolbar');
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
-            let innerelement: HTMLElement = element.querySelector('.e-toolbar-items');
+            let innerelement: HTMLElement = toolbar.element.querySelector('.e-toolbar-items');
             setStyleAttribute(<HTMLElement>innerelement, { display: 'inline-block' });
-            setStyleAttribute(<HTMLElement>element.getElementsByClassName('e-toolbar-item')[0], { display: 'inline-block' });
+            setStyleAttribute(<HTMLElement>toolbar.element.getElementsByClassName('e-toolbar-item')[0], { display: 'inline-block' });
             toolbar.items = [{
                 type: 'Button', text: 'Bold',
             }];
             toolbar.dataBind();
-            expect(element.children.length).toEqual(1);
+            expect(toolbar.element.children.length).toEqual(1);
             expect(toolbar.items.length).toEqual(1);
-            let scrollELe: HTMLElement = <HTMLElement>element.children[0];
+            let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
         });
 
@@ -483,8 +482,7 @@ describe('Toolbar Control', () => {
                 }],
             });
             toolbar.appendTo('#ej2Toolbar');
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
-            let scrollELe: HTMLElement = <HTMLElement>element.children[0];
+            let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
             let innerNavEle: HTMLElement = <HTMLElement>scrollELe.querySelector('.e-scroll-right-nav');
             expect(innerNavEle.classList.contains('e-scroll-nav')).toEqual(true);
@@ -494,7 +492,7 @@ describe('Toolbar Control', () => {
             let scrollEvent = document.createEvent('MouseEvents');
             scrollEvent.initEvent('scroll', false, false);
             innerNavElement.remove();
-            element.dispatchEvent(scrollEvent);
+            toolbar.element.dispatchEvent(scrollEvent);
         });
     });
 
@@ -518,8 +516,7 @@ describe('Toolbar Control', () => {
             toolbar.appendTo('#ej2Toolbar');
             expect(toolbar.element.querySelectorAll('.e-toolbar-item')[0].getAttribute('aria-disabled')).toBe('false');
             expect(toolbar.element.querySelectorAll('.e-toolbar-item')[1].getAttribute('aria-disabled')).toBe('false');
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
-            let scrollELe: HTMLElement = <HTMLElement>element.children[0];
+            let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
             scrollELe.style.display = 'inline-block';
             toolbar.items = [{
@@ -532,19 +529,16 @@ describe('Toolbar Control', () => {
             let innerNavElement: HTMLElement = <HTMLElement>scrollELe.children[2];
             let innerArrowEle: HTMLElement = <HTMLElement>innerNavElement.querySelector('.e-icons');
             expect(innerArrowEle.classList.contains('e-nav-right-arrow')).toEqual(true);
-            let scrollEvent = document.createEvent('MouseEvents');
-            let scrollCon: HTMLElement = <HTMLElement>element.querySelector('.e-hscroll-bar');
             innerNavElement.click();
             innerArrowEle.click();
         });
 
         it('Overflow navigation event handler testing', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 width: 20,
             });
             toolbar.appendTo('#ej2Toolbar');
-            let scrollELe: HTMLElement = <HTMLElement>element.children[0];
+            let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
         });
     });
@@ -566,47 +560,52 @@ describe('Toolbar Control', () => {
             }
             document.body.innerHTML = '';
         });
-        it(' Main property OverflowMode given as string testing', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
+        it(' Main property OverflowMode given as string testing', (done: Function) => {
             toolbar = new Toolbar({
                 width: 30,
                 overflowMode: "Scrollable",
                 items: [{
                     type: 'Button', text: 'Underline',
                 }],
+                created: () => {
+                    let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
+                    expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
+                    done();
+                }
             });
             toolbar.appendTo('#ej2Toolbar');
-            let scrollELe: HTMLElement = <HTMLElement>element.children[0];
-            expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
         });
-        it(' Main property OverflowMode given as string testing', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
+        it(' Main property OverflowMode given as string testing', (done: Function) => {
             toolbar = new Toolbar({
                 width: 30,
                 overflowMode: "Popup",
                 items: [{
                     type: 'Button', text: 'Underline',
                 }],
+                created: () => {
+                    let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
+                    expect(scrollELe.classList.contains('e-hscroll')).toEqual(false);
+                    done();
+                }
             });
             toolbar.appendTo('#ej2Toolbar');
-            let scrollELe: HTMLElement = <HTMLElement>element.children[0];
-            expect(scrollELe.classList.contains('e-hscroll')).toEqual(false);
         });
-        it(' Main property OverflowMode given as string testing', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
+        it(' Main property OverflowMode given as string testing', (done: Function) => {
             toolbar = new Toolbar({
                 width: 30,
                 overflowMode: "MultiRow",
                 items: [{
                     type: 'Button', text: 'Underline',
                 }],
+                created: () => {
+                    let inlineELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
+                    expect(inlineELe.classList.contains('e-toolbar-multirow')).toEqual(true);
+                    done();
+                }
             });
             toolbar.appendTo('#ej2Toolbar');
-            let inlineELe: HTMLElement = <HTMLElement>element.children[0];
-            expect(inlineELe.classList.contains('e-toolbar-multirow')).toEqual(true);
         });
-        it(' Main property OverflowMode given as string testing', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
+        it(' Main property OverflowMode given as string testing', (done: Function) => {            
             toolbar = new Toolbar({
                 width: '200px',
                 overflowMode: "Extended",
@@ -616,12 +615,13 @@ describe('Toolbar Control', () => {
                 },
                 {
                     type: 'Button', text: 'Bold'
+                }],
+                created: () => {
+                    expect(toolbar.element.classList.contains('e-extended-toolbar')).toEqual(true);
+                    done();
                 }
-            ],
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ExtendELe: HTMLElement = <HTMLElement>element;
-            expect(ExtendELe.classList.contains('e-extended-toolbar')).toEqual(true);
         });
     });
 
@@ -643,7 +643,6 @@ describe('Toolbar Control', () => {
             document.body.innerHTML = '';
         });
         it(' Main property OverflowMode for scrollable with alignment', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 overflowMode: "Scrollable",
                 items: [{ text: 'Today', overflow: 'Hide', align: 'Left' },
@@ -656,11 +655,10 @@ describe('Toolbar Control', () => {
                 { text: 'Sync', overflow: 'Hide', align: 'Right' }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            let ELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
         });
         it(' Main property OverflowMode for popup with alignment', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 overflowMode: "Popup",
                 items: [{ text: 'Today', overflow: 'Hide', align: 'Left' },
@@ -673,11 +671,10 @@ describe('Toolbar Control', () => {
                 { text: 'Sync', overflow: 'Hide', align: 'Right' }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            let ELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
         });
         it(' Main property OverflowMode for MultiRow with alignment', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 overflowMode: "MultiRow",
                 items: [{ text: 'Today', overflow: 'Hide', align: 'Left' },
@@ -690,7 +687,7 @@ describe('Toolbar Control', () => {
                 { text: 'Sync', overflow: 'Hide', align: 'Right' }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            let ELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
         });
         it(' Main property OverflowMode for Extended with alignment', () => {
@@ -730,7 +727,6 @@ describe('Toolbar Control', () => {
             document.body.innerHTML = '';
         });
         it(' Main property OverflowMode for scrollable with width and alignment', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 width: 100,
                 overflowMode: "Scrollable",
@@ -744,11 +740,10 @@ describe('Toolbar Control', () => {
                 { text: 'Sync', overflow: 'Hide', align: 'Right' }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            let ELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(ELe.classList.contains("e-hscroll")).toEqual(true);
         });
         it(' Main property OverflowMode for popup with width and alignment', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 width: 100,
                 overflowMode: "Popup",
@@ -762,11 +757,10 @@ describe('Toolbar Control', () => {
                 { text: 'Sync', overflow: 'Hide', align: 'Right' }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            let ELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(ELe.classList.contains("e-tbar-pos")).toEqual(true);
         });
         it(' Main property OverflowMode for MultiRow with width and alignment', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 width: 50,
                 overflowMode: "MultiRow",
@@ -780,7 +774,7 @@ describe('Toolbar Control', () => {
                 { text: 'Sync', overflow: 'Hide', align: 'Right' }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            let ELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(ELe.classList.contains("e-multirow-pos")).toEqual(true);
         });
         it(' Main property OverflowMode for Extended with width and alignment', () => {
@@ -821,7 +815,6 @@ describe('Toolbar Control', () => {
             document.body.innerHTML = '';
         });
         it('OverflowMode MultiRow with alignment enabled and disabled', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             toolbar = new Toolbar({
                 width: 380,
                 overflowMode: "MultiRow",
@@ -835,7 +828,7 @@ describe('Toolbar Control', () => {
                 { text: 'Sync', overflow: 'Hide', align: 'Right' }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            let ELe: HTMLElement = <HTMLElement>element.children[0];
+            let ELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(ELe.classList.contains("e-multirow-pos")).toEqual(true);
             toolbar.removeItems(1);
             expect(ELe.classList.contains("e-multirow-pos")).toEqual(false);
@@ -1734,7 +1727,6 @@ describe('Toolbar Control', () => {
             document.body.innerHTML = '';
         });
         it('Touch event scroll testing', () => {
-            let element: HTMLElement = document.getElementById('ej2Toolbar');
             let scroll: any;
             toolbar = new Toolbar({
                 width: 50,
@@ -1745,11 +1737,11 @@ describe('Toolbar Control', () => {
                     type: 'Button', text: 'Unterline button',
                 }],
             }); toolbar.appendTo('#ej2Toolbar');
-            let scrollELe: HTMLElement = <HTMLElement>element.children[0];
+            let scrollELe: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
             expect(scrollELe.classList.contains('e-hscroll')).toEqual(true);
             let TchEvent: TouchEventArgs;
             let event: ScrollEventArgs = { scrollDirection: 'Right', name: 'scroll', distanceX: 30, distanceY: 0, originalEvent: TchEvent, startEvents: TchEvent, startX: 30, startY: 0, velocity: 4 };
-            scroll = new HScroll({}, element);
+            scroll = new HScroll({}, toolbar.element);
             scroll.touchHandler(event);
             event.scrollDirection = 'Left'; event.name = 'scroll'; event.distanceX = 30;
             scroll.touchHandler(event);
@@ -2176,9 +2168,9 @@ describe('Toolbar Control', () => {
             let ele: HTMLElement = createElement('div', { className: 'e-ignore' });
             let ele1: HTMLElement = createElement('div', { className: 'e-ignore' });
             let ele2: HTMLElement = createElement('div', { className: 'e-ignore' });
-            element.children[0].appendChild(ele);
-            element.children[0].insertBefore(ele1 , element.children[0].firstChild);
-            element.children[0].insertBefore(ele2 , element.children[0].children[1]);
+            toolbar.element.firstElementChild.appendChild(ele);
+            toolbar.element.firstElementChild.insertBefore(ele1 , toolbar.element.firstElementChild.firstChild);
+            toolbar.element.firstElementChild.insertBefore(ele2 , toolbar.element.firstElementChild.children[1]);
             let itemCollection: NodeList = element.querySelectorAll('.e-toolbar-items .e-toolbar-item');
             expect(itemCollection.length).toEqual(4);
             separator = itemCollection[3] as HTMLElement;
@@ -2268,9 +2260,9 @@ describe('Toolbar Control', () => {
             let ele: HTMLElement = createElement('div', { className: 'e-ignore' });
             let ele1: HTMLElement = createElement('div', { className: 'e-ignore' });
             let ele2: HTMLElement = createElement('div', { className: 'e-ignore' });
-            element.children[0].appendChild(ele);
-            element.children[0].insertBefore(ele1 , element.children[0].firstChild);
-            element.children[0].insertBefore(ele2 , element.children[0].children[1]);
+            toolbar.element.firstElementChild.appendChild(ele);
+            toolbar.element.firstElementChild.insertBefore(ele1 , toolbar.element.firstElementChild.firstChild);
+            toolbar.element.firstElementChild.insertBefore(ele2 , toolbar.element.firstElementChild.children[1]);
             expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(2);
             element.style.width = '200px';
             toolbar.resize();
@@ -2313,11 +2305,10 @@ describe('Toolbar Control', () => {
                 ],
             }, '#ej2Toolbar');
             let ele: HTMLElement = createElement('div', { className: 'e-ignore' });
-            let ele1: HTMLElement = createElement('div', { className: 'e-ignore' });
-            let ele2: HTMLElement = createElement('div', { className: 'e-ignore' });
-            element.children[0].appendChild(ele);
-            element.children[0].insertBefore(ele1 , element.children[0].firstChild);
-            element.children[0].insertBefore(ele1 , element.children[0].children[1]);
+            let ele1: HTMLElement = createElement('div', { className: 'e-ignore' });            
+            toolbar.element.firstElementChild.appendChild(ele);
+            toolbar.element.firstElementChild.insertBefore(ele1 , toolbar.element.firstElementChild.firstChild);
+            toolbar.element.firstElementChild.insertBefore(ele1 , toolbar.element.firstElementChild.children[1]);
             expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(1);
             element.style.width = '200px';
             toolbar.resize();
@@ -2369,9 +2360,8 @@ describe('Toolbar Control', () => {
             }, '#ej2Toolbar');
             let ele: HTMLElement = createElement('div', { className: 'e-ignore' });
             let ele1: HTMLElement = createElement('div', { className: 'e-ignore' });
-            let ele2: HTMLElement = createElement('div', { className: 'e-ignore' });
-            element.children[0].appendChild(ele);
-            element.children[0].insertBefore(ele1 , element.children[0].firstChild);
+            toolbar.element.firstElementChild.appendChild(ele);
+            toolbar.element.firstElementChild.insertBefore(ele1 , toolbar.element.firstElementChild.firstChild);
             let itemCollection: NodeList = element.querySelectorAll('.e-toolbar-items .e-toolbar-item');
             expect(itemCollection.length).toEqual(4);
             separator = itemCollection[3] as HTMLElement;
@@ -2422,9 +2412,8 @@ describe('Toolbar Control', () => {
             }, '#ej2Toolbar');
             let ele: HTMLElement = createElement('div', { className: 'e-ignore' });
             let ele1: HTMLElement = createElement('div', { className: 'e-ignore' });
-            let ele2: HTMLElement = createElement('div', { className: 'e-ignore' });
-            element.children[0].appendChild(ele);
-            element.children[0].insertBefore(ele1 , element.children[0].firstChild);
+            toolbar.element.firstElementChild.appendChild(ele);
+            toolbar.element.firstElementChild.insertBefore(ele1 , toolbar.element.firstElementChild.firstChild);
             let itemCollection: NodeList = element.querySelectorAll('.e-toolbar-items .e-toolbar-item');
             expect(itemCollection.length).toEqual(5);
             element.style.width = '100px';
@@ -5230,11 +5219,11 @@ describe('Toolbar Control', () => {
                 expect(toolbar.element.getAttribute('aria-haspopup')).toEqual(null);
                 expect(toolbar.element.getAttribute('aria-orientation')).toEqual(null);
                 expect(toolbar.element.getAttribute('role')).toEqual(null);
-                let fstChild: HTMLElement = <HTMLElement>toolbar.element.children[0];
+                let fstChild: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
                 expect(fstChild.classList.contains('e-toolbar-items')).toBe(false);
-                let fstItem: HTMLElement = <HTMLElement>toolbar.element.children[0].children[0];
+                let fstItem: HTMLElement = <HTMLElement>toolbar.element.firstElementChild.children[0];
                 expect(fstItem.classList.contains('e-toolbar-item')).toBe(false);
-                let sndItem: HTMLElement = <HTMLElement>toolbar.element.children[0].children[1];
+                let sndItem: HTMLElement = <HTMLElement>toolbar.element.firstElementChild.children[1];
                 expect(sndItem.classList.contains('e-toolbar-item')).toBe(true);
             }
             document.body.innerHTML = '';
@@ -5350,7 +5339,7 @@ describe('Toolbar Control', () => {
         });
         it('Popup  Close throught Click event  testing ',(done: Function) => {
             expect(isVisible(toolbar.popObj.element)).toEqual(true);
-            toolbar.popObj.element.children[0].click();
+            toolbar.popObj.element.firstElementChild.click();
             setTimeout(() => { done(); }, 450);
         });
     });
@@ -5393,7 +5382,7 @@ describe('Toolbar Control', () => {
         });
         it('Popup not close throught Click event  testing ',(done: Function) => {
             expect(isVisible(toolbar.popObj.element)).toEqual(true);
-            toolbar.popObj.element.children[0].click();
+            toolbar.popObj.element.firstElementChild.click();
             setTimeout(() => { done(); }, 450);
         });
     });
@@ -5892,8 +5881,8 @@ describe('Toolbar Control', () => {
                 }]
             toolbar.items = items;
             toolbar.dataBind();
-            expect(toolbar.element.children[0].childElementCount).toBe(2);
-            expect(toolbar.element.children[0].classList.contains('e-tbar-pos')).toBe(false);
+            expect(toolbar.element.firstElementChild.childElementCount).toBe(2);
+            expect(toolbar.element.firstElementChild.classList.contains('e-tbar-pos')).toBe(false);
             expect(toolbar.element.children[2].childElementCount).toBe(1);
         });
         it("Without align type toolbar testing", () => {
@@ -7380,7 +7369,7 @@ describe('Toolbar Control', () => {
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'moveRight',
-                target: element.children[0].children[0],
+                target: toolbar.element.firstElementChild.children[0],
             };
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.id === 'e-itemTemplate').toBe(true);
@@ -7410,7 +7399,7 @@ describe('Toolbar Control', () => {
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'moveRight',
-                target: element.children[0].children[0].children[0],
+                target: toolbar.element.firstElementChild.children[0].children[0],
             };
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.id === 'e-itemTemplate').toBe(true);

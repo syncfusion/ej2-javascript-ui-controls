@@ -750,6 +750,13 @@ export class DocumentHelper {
     public get isFormFillProtectedMode(): boolean {
         return this.isDocumentProtected && this.protectionType === 'FormFieldsOnly';
     }
+    /**
+     * @private
+     * @returns {Boolean}
+     */
+     public get isCommentOnlyMode(): boolean {
+        return this.isDocumentProtected && this.protectionType === 'CommentsOnly';
+    }
     //#endregion
 
     public constructor(owner: DocumentEditor) {
@@ -1004,7 +1011,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     public initializeComponents(): void {
-        const element: HTMLElement = this.owner.element;
+        let element: HTMLElement = this.owner.element;
         if (isNullOrUndefined(element)) {
             return;
         }
@@ -1012,6 +1019,7 @@ export class DocumentHelper {
         this.optionsPaneContainer = createElement('div', {
             className: 'e-documenteditor-optionspane'
         }) as HTMLDivElement;
+        this.optionsPaneContainer.contentEditable = 'false';
         element.appendChild(this.optionsPaneContainer);
         const isRtl: boolean = this.owner.enableRtl;
         let viewerContainerStyle: string;
@@ -1412,6 +1420,7 @@ export class DocumentHelper {
     private initDialog(isRtl?: boolean): void {
         if (!this.dialogInternal) {
             this.dialogTarget1 = createElement('div', { className: 'e-de-dlg-target' });
+            this.dialogTarget1.contentEditable = 'false';
             document.body.appendChild(this.dialogTarget1);
             if (isRtl) {
                 this.dialogTarget1.classList.add('e-de-rtl');
@@ -1431,6 +1440,7 @@ export class DocumentHelper {
     private initDialog3(isRtl?: boolean): void {
         if (!this.dialogInternal3) {
             this.dialogTarget3 = createElement('div', { className: 'e-de-dlg-target' });
+            this.dialogTarget3.contentEditable = 'false';
             document.body.appendChild(this.dialogTarget3);
             if (isRtl) {
                 this.dialogTarget3.classList.add('e-de-rtl');
@@ -1456,6 +1466,7 @@ export class DocumentHelper {
     private initDialog2(isRtl?: boolean): void {
         if (!this.dialogInternal2) {
             this.dialogTarget2 = createElement('div', { className: 'e-de-dlg-target' });
+            this.dialogTarget2.contentEditable = 'false';
             document.body.appendChild(this.dialogTarget2);
             if (isRtl) {
                 this.dialogTarget2.classList.add('e-de-rtl');
@@ -1738,7 +1749,7 @@ export class DocumentHelper {
                 this.selection.hideCaret();
             }
             const cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-            const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
+            const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true, true);
             this.mouseDownOffset.x = touchPoint.x;
             this.mouseDownOffset.y = touchPoint.y;
             this.isMouseDownInFooterRegion = this.selection.isCursorInsidePageRect(cursorPoint, this.currentPage) && this.selection.isCursorInFooterRegion(cursorPoint, this.currentPage);
@@ -1853,13 +1864,11 @@ export class DocumentHelper {
             if (event.offsetY + viewerTop > viewerTop) {
                 this.scrollMoveTimer = setInterval((): void => {
                     this.scrollForwardOnSelection(cursorPoint);
-                    clearInterval(this.scrollMoveTimer);
-                }, 500);
+                }, 100);
             } else {
                 this.scrollMoveTimer = setInterval((): void => {
                     this.scrollBackwardOnSelection(cursorPoint);
-                    clearInterval(this.scrollMoveTimer);
-                }, 500);
+                }, 100);
             }
             if (this.isMouseEntered) {
                 this.isMouseEntered = false;
@@ -1892,13 +1901,16 @@ export class DocumentHelper {
      * @private
      * @returns {void}
      */
-    public onMouseEnterInternal = (): void => {
+    public onMouseEnterInternal = (event?: MouseEvent): void => {
         if (!this.isMouseEntered) {
             this.owner.viewer.updateScrollBars();
         }
         this.isMouseEntered = true;
         if (this.scrollMoveTimer) {
             clearInterval(this.scrollMoveTimer);
+        }
+        if (!this.isLeftButtonPressed(event)) {
+            this.onMouseUpInternal(event);
         }
     };
 
@@ -1948,9 +1960,6 @@ export class DocumentHelper {
             } else if (this.isDocumentProtected && formField && formField.formFieldData instanceof TextFormField
                 && formField.formFieldData.type === 'Text') {
                 this.selection.selectField();
-            } else {
-                this.tapCount = 2;
-                return;
             }
             const startPosition: TextPosition = this.selection.start.clone();
             const endPosition: TextPosition = this.selection.end.clone();
@@ -1981,8 +1990,8 @@ export class DocumentHelper {
                                 }
                             }
                         }
-                        startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                        endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        startPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
                         this.selection.selectRange(startPosition, endPosition);
                     }
                 } else {
@@ -2237,7 +2246,7 @@ export class DocumentHelper {
                 if (this.isMouseDown) {
                     point = this.getTouchOffsetValue(event as TouchEvent);
                 }
-                point = this.owner.viewer.findFocusedPage(point, true);
+                point = this.owner.viewer.findFocusedPage(point, true, true);
                 if (this.owner.enableImageResizerMode) {
                     let resizeObj: ImagePointInfo = this.owner.imageResizerModule.getImagePointOnTouch(point);
                     this.owner.imageResizerModule.selectedResizeElement = resizeObj.selectedElement;
@@ -2515,7 +2524,27 @@ export class DocumentHelper {
         return width;
     }
 
-
+    /**
+     * @private
+     */
+    public linkPageToHeaderFooter(currentPage: Page): void {
+        if (currentPage.headerWidgetIn && currentPage.footerWidgetIn
+            && isNullOrUndefined(currentPage.headerWidgetIn.parentHeaderFooter)
+            && isNullOrUndefined(currentPage.footerWidgetIn.parentHeaderFooter)) {
+            for (let i: number = 0; i < this.pages.length; i++) {
+                let page: Page = this.pages[i];
+                if (page != currentPage) {
+                    if (page.headerWidgetIn.parentHeaderFooter === currentPage.headerWidgetIn) {
+                        page.headerWidgetIn = currentPage.headerWidget;
+                        page.headerWidgetIn.page = page;
+                        page.footerWidgetIn = currentPage.footerWidget;
+                        page.footerWidgetIn.page = page;
+                        break;
+                    }
+                }
+            }
+        }
+    }
     /**
      * Removes specified page.
      * @private
@@ -2526,6 +2555,13 @@ export class DocumentHelper {
         if (this.currentPage === page) {
             this.currentPage = undefined;
         }
+        if (page.headerWidgetIn) {
+            page.headerWidgetIn.page = undefined;
+        }
+        if (page.footerWidgetIn) {
+            page.footerWidgetIn.page = undefined;
+        }
+        this.linkPageToHeaderFooter(page);
         let index: number = this.pages.indexOf(page);
         // if (index > -1) {
         this.pages.splice(index, 1);
@@ -2788,7 +2824,7 @@ export class DocumentHelper {
             } else {
                 let shapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged, false);
                 let behindShapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged, true);
-                if (shapeInfo.isShapeSelected) {
+                if (shapeInfo.isShapeSelected && !this.isEmptyShape(shapeInfo)) {
                     if (shapeInfo.isInShapeBorder) {
                         return shapeInfo.element.line;
                     }
@@ -3063,8 +3099,8 @@ export class DocumentHelper {
         let scrollToLastPage: boolean = false;
         for (let j: number = 0; j < this.pages.length; j++) {
             let page: Page = this.pages[j];
-            if (page.bodyWidgets.length === 0 || page.bodyWidgets[0].childWidgets.length === 0) {
-
+            if (page.bodyWidgets.length === 0 || (page.bodyWidgets[0].childWidgets.length === 0
+                && isNullOrUndefined(page.endnoteWidget))) {
                 if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
@@ -3152,6 +3188,21 @@ export class DocumentHelper {
                 return value.toString();
         }
     }
+    private isEmptyShape(shape: ShapeInfo): boolean {
+        let isEmpty: boolean = true;
+        if (shape.element instanceof ImageElementBox) {
+            return isEmpty;
+        }
+        let textFrame: TextFrame = (shape.element as ShapeElementBox).textFrame;
+        if (textFrame.childWidgets.length === 0) {
+            return isEmpty;
+        } else if (textFrame.childWidgets.length === 1 && textFrame.childWidgets[0] instanceof ParagraphWidget && ((textFrame.childWidgets[0] as ParagraphWidget).childWidgets.length === 0 ||
+        ((textFrame.childWidgets[0] as ParagraphWidget).childWidgets.length === 1 && ((textFrame.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length === 0))) {
+            return isEmpty;
+        } else {
+            return false;
+        }
+    }
     /**
      * Destroys the internal objects maintained for control.
      * 
@@ -3170,6 +3221,65 @@ export class DocumentHelper {
         this.splittedCellWidgets = undefined;
         this.fields = [];
         this.fields = undefined;
+        this.abstractLists = [];
+        this.abstractLists = undefined;
+        if (!isNullOrUndefined(this.owner)) {
+        this.renderedLists.destroy();
+        }
+        if (!isNullOrUndefined(this.owner)) {
+        this.authors.destroy();
+        }
+        if (!isNullOrUndefined(this.owner)) {
+        this.revisionsInternal.destroy();
+        }
+        if (!isNullOrUndefined(this.owner)) {
+        this.preDefinedStyles.destroy();
+        }
+        if (!isNullOrUndefined(this.owner)) {
+        this.bookmarks.destroy();
+        }
+        if (!isNullOrUndefined(this.owner)) {
+        this.editRanges.destroy();
+        }
+        if (!isNullOrUndefined(this.owner)) {
+        this.customXmlData.destroy();
+        }
+        this.blockToShift = undefined;
+        this.cachedPages = [];
+        this.cachedPages = undefined;
+        this.characterFormat = undefined;
+        this.comments = [];
+        this.comments = undefined;
+        this.compositionEnd = undefined;
+        this.compositionStart = undefined;
+        this.compositionUpdated = undefined;
+        this.contentControlCollection = [];
+        this.contentControlCollection = undefined;
+        this.fieldCollection = [];
+        this.fieldCollection = undefined;
+        this.renderedLevelOverrides = [];
+        this.renderedLevelOverrides = undefined;
+        this.headersFooters = [];
+        this.headersFooters = undefined; 
+        this.lists = [];
+        this.lists = undefined;
+        this.comments = [];
+        this.comments = undefined;
+        this.listParagraphs = [];
+        this.listParagraphs = undefined;
+        this.formFields = [];
+        this.formFields = undefined;
+        this.fieldCollection = [];
+        this.fieldCollection = undefined;
+        this.userCollection = [];
+        this.userCollection = undefined;
+        this.cachedPages = [];
+        this.cachedPages = undefined;
+        this.footnoteCollection = [];
+        this.footnoteCollection = undefined;
+        this.endnoteCollection = [];
+        this.endnoteCollection = undefined;
+        
         if (this.layout) {
             this.layout.destroy();
         }
@@ -3233,6 +3343,10 @@ export class DocumentHelper {
         this.pageContainer = undefined;
         if (!isNullOrUndefined(this.viewerContainer)) {
             this.viewerContainer.innerHTML = '';
+        }
+        if(!isNullOrUndefined(this.iframe)){
+            this.iframe.innerHTML = '';
+            this.iframe = undefined;
         }
         this.viewerContainer = undefined;
         this.owner = undefined;
@@ -3593,6 +3707,16 @@ export abstract class LayoutViewer {
     /**
      * @private
      */
+    public updateClientAreaForEndNote(page: Page): void {
+        let body: BodyWidget = page.bodyWidgets[0];
+        if (body.childWidgets.length > 0) {
+            let lastBlock: BlockWidget = body.childWidgets[body.childWidgets.length - 1] as BlockWidget;
+            this.cutFromTop(lastBlock.y + lastBlock.height);
+        }
+    }
+    /**
+     * @private
+     */
     public updateClientAreaForTextWrap(area: Rect): void {
         this.clientActiveArea = new Rect(area.x, area.y, area.width, area.height);
     }
@@ -3727,7 +3851,7 @@ export abstract class LayoutViewer {
             this.clientActiveArea.width = 0;
         }
     }
-    public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean): Point {
+    public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean, updateHeaderFooterPage?: boolean): Point {
         let point: Point = new Point(currentPoint.x, currentPoint.y);
         point.x += this.documentHelper.viewerContainer.scrollLeft;
         point.y += this.documentHelper.viewerContainer.scrollTop;
@@ -3745,6 +3869,14 @@ export abstract class LayoutViewer {
             if (pageTop <= point.y && pageTop + pageHeight >= point.y) {
                 if (updateCurrentPage) {
                     this.documentHelper.currentPage = page;
+                    if(updateHeaderFooterPage) {
+                        if (!isNullOrUndefined(page.headerWidget)) {
+                            page.headerWidget.page = page;
+                        }
+                        if (!isNullOrUndefined(page.footerWidget)) {
+                            page.footerWidget.page = page;
+                        }
+                    }
                 }
                 point.y = (point.y - (pageTop)) / this.documentHelper.zoomFactor;
                 if (point.x > pageRight) {
@@ -4020,6 +4152,9 @@ export class PageLayoutViewer extends LayoutViewer {
         this.updateClientArea(section.sectionFormat, page);
         page.bodyWidgets.push(section);
         page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
+        if (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo && this.owner.editorHistory.currentHistoryInfo.action === 'Paste') {
+            this.documentHelper.layout.layoutHeaderFooter(page.previousPage.bodyWidgets[0], viewer, page.previousPage);
+        }
         this.documentHelper.layout.layoutHeaderFooter(section, viewer, page);
         this.updateClientArea(section.sectionFormat, page);
         this.documentHelper.layout.footnoteHeight = 0;
@@ -4215,10 +4350,10 @@ export class PageLayoutViewer extends LayoutViewer {
         }
         this.visiblePages.push(page);
         if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.triggerElementsOnLoading || this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
-            page.allowNextPageRendering = false;
             this.documentHelper.cachedPages.push(page.index);
             let content: string = this.owner.spellChecker.getPageContent(page);
             if (content.trim().length > 0) {
+                page.allowNextPageRendering = false;
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, content, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -4378,10 +4513,10 @@ export class WebLayoutViewer extends LayoutViewer {
         }
         this.visiblePages.push(page);
         if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
-            page.allowNextPageRendering = false;
             this.owner.documentHelper.cachedPages.push(page.index);
             let contentlen: string = this.documentHelper.owner.spellChecker.getPageContent(page);
             if (contentlen.trim().length > 0) {
+                page.allowNextPageRendering = false;
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -4409,5 +4544,5 @@ export class WebLayoutViewer extends LayoutViewer {
     public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
     }
-
+    
 }

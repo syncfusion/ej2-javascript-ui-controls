@@ -26,4 +26,15 @@ export interface NavigationPaneSettingsModel {
      */
     visible?: boolean;
 
+    /**
+     * Specifies a value that indicates how to sort the folders in the navigation pane of the file manager component.
+     *
+     * If the sortOrder is Ascending, the folders are sorted in ascending order.
+     * If the sortOrder is Descending, the folders are sorted in descending order.
+     * If the sortOrder is None, the folders are not sorted.
+     *
+     * @default 'None'
+     */
+    sortOrder?: 'None' | 'Ascending' | 'Descending';
+
 }

@@ -25,6 +25,9 @@ describe('Gantt-Timeline', () => {
                     progress: 'Progress',
                     child: 'Children',
                 },
+                splitterSettings: {
+                    position: '100%'
+                },
                 toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
                 projectStartDate: new Date('01/28/2018'),
                 projectEndDate: new Date('03/24/2018'),
@@ -973,7 +976,8 @@ describe('Gantt-Timeline', () => {
             ganttObj.dataBound = () => {
                 ganttObj.zoomingLevels[1].bottomTier.count=14;
                 ganttObj.zoomIn();
-                expect(ganttObj.currentZoomingLevel.level).toBe(7);
+                expect(ganttObj.currentZoomingLevel.level).toBe(6);
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("11/30/2018");
                 ganttObj.fitToProject();
                 done();
             }

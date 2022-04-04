@@ -1,5 +1,5 @@
-import { CellModel, ColumnModel, getCell, SheetModel } from './../base/index';
-import { getCellAddress, getRangeIndexes } from './address';
+import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel } from './../index';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, InsertDeleteModelArgs } from './index';
 
 /**
  * Check whether the text is formula or not.
@@ -189,6 +189,49 @@ export function isValidCellReference(value: string): boolean {
 }
 
 /**
+ * @hidden
+ * @param {SheetModel} sheet - Specify the sheet
+ * @param {number} index - specify the index
+ * @param {boolean} increase - specify the boolean value.
+ * @param {string} layout - specify the string
+ * @returns {number} - To skip the hidden index
+ *
+ */
+ export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
+    if (increase) {
+        for (let i: number = index; i < Infinity; i++) {
+            if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+                index++;
+            } else {
+                break;
+            }
+        }
+    } else {
+        for (let i: number = index; i > -1; i--) {
+            if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+                index--;
+            } else {
+                break;
+            }
+        }
+    }
+    return index;
+}
+
+/**
+ * @param {CellStyleModel} style - Cell style.
+ * @param {boolean} onActionUpdate - Specifies the action.
+ * @returns {boolean} - retruns `true` is height needs to be checked.
+ * @hidden
+ */
+ export function isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: boolean): boolean {
+    const keys: string[] = Object.keys(style);
+    return (onActionUpdate ? keys.indexOf('fontSize') > -1 : keys.indexOf('fontSize') > -1
+        && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1 || keys.indexOf('borderTop') > -1
+        || keys.indexOf('borderBottom') > -1;
+}
+
+/**
  * @param {number[]} currIndexes - current indexes in which formula get updated
  * @param {number[]} prevIndexes - copied indexes
  * @param {SheetModel} sheet - sheet model
@@ -248,6 +291,54 @@ export function getUpdatedFormula(currIndexes: number[], prevIndexes: number[], 
     }
 }
 
+/**@hidden */
+export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdateArgs): boolean {
+    const args: BeforeCellUpdateArgs = { cell: prop.cell, rowIndex: prop.rowIdx, colIndex: prop.colIdx, cancel: false, sheet: sheet.name };
+    if (!prop.preventEvt) { // Prevent event triggering for public method cell update.
+        context.trigger(beforeCellUpdate, args);
+    }
+    if (!prop.eventOnly && !args.cancel) { // `eventOnly` - To trigger event event and return without cell model update.
+        if (prop.valChange) {
+            const prevCell: CellModel = getCell(args.rowIndex, args.colIndex, sheet);
+            const prevCellVal: string = !prop.preventEvt && context.getDisplayText(prevCell);
+            const isFormulaCell: boolean = !!(prevCell && prevCell.formula);
+            setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
+            const cell: CellModel = getCell(args.rowIndex, args.colIndex, sheet, false, true);
+            context.notify(
+                workbookEditOperation, { action: 'updateCellValue', address: [args.rowIndex, args.colIndex], sheetIndex:
+                getSheetIndex(context, sheet.name), value: isFormulaCell && !cell.formula ? '' : (cell.formula || cell.value ||
+                    (<unknown>cell.value === 0 ? '0' : '')) });
+            if (prop.requestType && args.cell === null) {
+                setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
+            }
+            if (prop.cellDelete) {
+                delete cell.value;
+                delete cell.formula;
+                delete cell.hyperlink;
+            }
+            if (prop.uiRefresh) {
+                context.serviceLocator.getService<{ refresh: Function }>('cell').refresh(
+                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCf, prop.checkWrap);
+            }
+            if (!prop.preventEvt) {
+                const cellDisplayText: string = context.getDisplayText(cell);
+                if (cellDisplayText !== prevCellVal) {
+                    let cellValue: string = getCell(args.rowIndex, args.colIndex, sheet, false, true).value;
+                    cellValue = cellValue || (<unknown>cellValue === 0 ? '0' : '');
+                    const evtArgs: { [key: string]: Object } = { value: cellValue, oldValue: prevCellVal, formula: cell.formula || '',
+                        address: `${sheet.name}!${getCellAddress(args.rowIndex, args.colIndex)}`, displayText: cellDisplayText };
+                    if (prop.requestType) {
+                        evtArgs.requestType = prop.requestType;
+                    }
+                    context.trigger('cellSave', evtArgs);
+                }
+            }
+        } else {
+            setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
+        }
+    }
+    return args.cancel;
+}
 
 /**
  * @param {number} rowIdx - row index
@@ -307,4 +398,102 @@ export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel):
         loopLength++;
     }
     return [startCell.rowIndex, startCell.colIndex, endCell.rowIndex, endCell.colIndex];
+}
+/**
+ * @param {InsertDeleteModelArgs} args - row index
+ * @param {number[]} formatRange - format range index
+ * @returns {number[]} - retruns updated range
+ * @hidden
+ */
+export function insertFormatRange(args: InsertDeleteModelArgs, formatRange: number[], isAction: boolean): number[] {
+    let sltRangeIndex: number[] = getRangeIndexes(args.model.selectedRange); let insertStartIndex: number = 0; let insertEndIndex: number = 0;
+    if (args.modelType === 'Column') {
+        if (isAction) {
+            sltRangeIndex = [0,args.start as number,0,args.end];
+        }
+        if (args.insertType === "before") {
+            if ((formatRange[1] <= sltRangeIndex[1] && formatRange[3] >= sltRangeIndex[1])) {
+                insertStartIndex = 0;
+                insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
+            } else if (sltRangeIndex[1] < formatRange[1]) {
+                insertStartIndex = insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
+            }
+        } else {
+            if ((formatRange[1] <= sltRangeIndex[3] && formatRange[3] >= sltRangeIndex[3])) {
+                insertStartIndex = 0;
+                insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
+            } else if (sltRangeIndex[3] < formatRange[3]) {
+                insertStartIndex = insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
+            }
+        }
+        return [formatRange[0], formatRange[1] + insertStartIndex, formatRange[2], formatRange[3] + insertEndIndex];
+    } else {
+        if (isAction) {
+            sltRangeIndex = [args.start as number,0,args.end,0];
+        }
+        if (args.insertType === "above") {
+            if ((formatRange[0] <= sltRangeIndex[0] && formatRange[2] >= sltRangeIndex[0])) {
+                insertStartIndex = 0;
+                insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
+            } else if (sltRangeIndex[0] < formatRange[0]) {
+                insertStartIndex = insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
+            }
+        } else {
+            if ((formatRange[0] <= sltRangeIndex[2] && formatRange[2] >= sltRangeIndex[2])) {
+                insertStartIndex = 0;
+                insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
+            } else if (sltRangeIndex[2] < formatRange[2]) {
+                insertStartIndex = insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
+            }
+        }
+        return [formatRange[0] + insertStartIndex, formatRange[1], formatRange[2] + insertEndIndex, formatRange[3]];
+    }
+}
+/**
+ * @param {InsertDeleteModelArgs} args - row index
+ * @param {number[]} formatRange - cell range index
+ * @returns {number[]} - retruns data range
+ * @hidden
+ */
+export function deleteFormatRange(args: InsertDeleteModelArgs, formatRange: number[]): number[] {
+    let cellRange: number[]; let deleteStartIndex: number = 0; let deleteEndIndex: number = 0;
+    if (args.modelType === 'Column') {
+        cellRange = [0, args.start as number, args.model.usedRange.rowIndex, args.end];
+        if (cellRange[3] < formatRange[1]) {
+            deleteStartIndex = deleteEndIndex = cellRange[3] - cellRange[1] + 1;
+        }
+        else if (cellRange[1] >= formatRange[1] && cellRange[3] <= formatRange[3]) {
+            deleteEndIndex = cellRange[3] - cellRange[1] + 1;
+        } else if (cellRange[1] >= formatRange[1] && cellRange[1] <= formatRange[3]) {
+            deleteEndIndex = formatRange[3] - cellRange[1] + 1;
+        }
+        else if (cellRange[1] < formatRange[1] && cellRange[3] >= formatRange[1]) {
+            deleteStartIndex = formatRange[1] - cellRange[1];
+            deleteEndIndex = cellRange[3] - cellRange[1] + 1;
+        }
+        else if (cellRange[1] < formatRange[1] && cellRange[3] < formatRange[3]) {
+            deleteStartIndex = (cellRange[3] - formatRange[1]) + (cellRange[3] - cellRange[1]) + 1;
+            deleteEndIndex = cellRange[3] - cellRange[1] + 1;
+        }
+        return [formatRange[0], formatRange[1] - deleteStartIndex, formatRange[2], formatRange[3] - deleteEndIndex];
+    } else {
+        cellRange = [args.start as number, 0, args.end, args.model.usedRange.colIndex];
+        if (cellRange[2] < formatRange[0]) {
+            deleteStartIndex = deleteEndIndex = cellRange[2] - cellRange[0] + 1;
+        }
+        else if (cellRange[0] >= formatRange[0] && cellRange[2] <= formatRange[2]) {
+            deleteEndIndex = cellRange[2] - cellRange[0] + 1;
+        } else if (cellRange[0] >= formatRange[0] && cellRange[0] <= formatRange[2]) {
+            deleteEndIndex = formatRange[2] - cellRange[0] + 1;
+        }
+        else if (cellRange[0] < formatRange[0] && cellRange[2] >= formatRange[0]) {
+            deleteStartIndex = formatRange[0] - cellRange[0];
+            deleteEndIndex = cellRange[2] - cellRange[0] + 1;
+        }
+        else if (cellRange[0] < formatRange[0] && cellRange[2] < formatRange[2]) {
+            deleteStartIndex = (cellRange[2] - formatRange[0]) + (cellRange[2] - cellRange[0]) + 1;
+            deleteEndIndex = cellRange[2] - cellRange[0] + 1;
+        }
+        return [formatRange[0] - deleteStartIndex, formatRange[1], formatRange[2] - deleteEndIndex, formatRange[3]];
+    }
 }

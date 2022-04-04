@@ -205,7 +205,7 @@ describe('Insert HTML', () => {
 });
 
 describe('EJ2-49169-InsertHtml for the pasted elements not inserted properly', function () {
-    let innervalue: string = '<p><span>Please click this link to download a calendar reminder for this date and time</span></p><p><a classname="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank">https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics </a></p><p><br></p><p>This will affect both the US and DK production site.</p><p></p>';
+    let innervalue: string = '<p><span>Please click this link to download a calendar reminder for this date and time</span></p><p><a classname="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank">https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics </a></p><p><br></p><p>This will affect both the US and DK production site.</p><p><br></p>';
     let nonDOMvalue: string = '<br>';
     let rangeNodes: Node[] = [];
     let range: Range;
@@ -235,9 +235,9 @@ describe('EJ2-49169-InsertHtml for the pasted elements not inserted properly', f
         rangeNodes.push(divElement.childNodes[1].childNodes[0].firstChild);
         rangeNodes.push(divElement.childNodes[2].firstChild);
         rangeNodes.push(divElement.childNodes[3].firstChild);
-        rangeNodes.push(pElement.firstChild);
+        rangeNodes.push(divElement.childNodes[4].firstChild);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
-        expect((divElement as any).childNodes[4].childNodes.length).toBe(5);
+        expect((divElement as any).childNodes[4].childNodes[0].childNodes.length).toBe(5);
     });
 });
 

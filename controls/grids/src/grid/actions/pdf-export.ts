@@ -6,7 +6,7 @@ import {
 import { Column } from './../models/column';
 import { Row } from './../models/row';
 import * as events from '../base/constant';
-import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfPen, PdfFont, PdfPaddings } from '@syncfusion/ej2-pdf-export';
+import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfPen, PdfFont, PdfPaddings , PdfGridCellStyle, PdfBrush } from '@syncfusion/ej2-pdf-export';
 import { PdfGridRow, PdfStandardFont, PdfFontFamily, PdfFontStyle, PdfBitmap } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfTextAlignment, PdfColor, PdfSolidBrush, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfGridCell, RectangleF, PdfPageTemplateElement } from '@syncfusion/ej2-pdf-export';
@@ -476,6 +476,10 @@ export class PdfExport {
         const depth: number = measureColumnDepth(eCols);
         const cols: Column[] | string[] | ColumnModel[] = eCols;
         let index: number = 0;
+        let rowNumber: number[] = [];
+        for (let i: number = 0; i < rows.length; i++) {
+            rowNumber[i] = 0;
+        }
         if (this.parent.groupSettings.columns.length) {
             index = this.parent.groupSettings.columns.length - 1;
             columnCount = columnCount - 1;
@@ -485,7 +489,8 @@ export class PdfExport {
         const applyTextAndSpan: Function = (rowIdx: number, colIdx: number, col: Column, rowSpan: number, colSpan: number) => {
             const gridHeader: PdfGridRow = pdfGrid.headers.getHeader(rowIdx);
             const pdfCell: PdfGridCell = gridHeader.cells.getCell(colIdx);
-            const cell: Cell<Column> = rows[rowIdx].cells[colIdx];
+            const cell: Cell<Column> = rows[rowIdx].cells[this.parent.groupSettings.columns.length ? colIdx : rowNumber[rowIdx]];
+            rowNumber[rowIdx] = rowNumber[rowIdx] + 1;
             if (!isNullOrUndefined((col as Column).headerTextAlign)) {
                 pdfCell.style.stringFormat = this.getHorizontalAlignment(col.headerTextAlign);
             }
@@ -504,13 +509,19 @@ export class PdfExport {
                 pdfCell.value = '';
                 pdfCell.width = 20;
             }
-            const args: Object = {
+            const args: {cell: PdfGridCell, gridCell: Cell<Column>, style: PdfGridCellStyle} = {
                 cell: pdfCell,
                 gridCell: cell,
                 style: pdfCell.style
             };
             this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
             const evtArgs: PdfHeaderQueryCellInfoEventArgs = args;
+            const setCellBorder: PdfBorders = args.style.borders;
+            const setCellFont: PdfFont = args.style.font;
+            const setHeaderBrush: PdfBrush = args.style.textBrush;
+            gridHeader.style.setBorder(setCellBorder);
+            gridHeader.style.setFont(setCellFont);
+            gridHeader.style.setTextBrush(setHeaderBrush);
             if (!isNullOrUndefined(evtArgs.image)) {
                 pdfCell.value = new PdfBitmap(evtArgs.image.base64);
             }

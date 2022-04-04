@@ -54,6 +54,7 @@ export class NumericContainer implements IRender {
         if (this.links.length) {
             this.updateLinksHtml();
         }
+        this.refreshAriaAttrLabel();
         this.updateStyles();
     }
 
@@ -72,11 +73,12 @@ export class NumericContainer implements IRender {
         for (let i: number = 1; i <= pagerObj.pageCount; i++) {
             link = createElement('a', {
                 className: 'e-link e-numericitem e-spacing e-pager-default',
-                attrs: { role: 'link', tabindex: '-1', 'aria-label': 'Goto Page ' + i,
+                attrs: { role: 'link', tabindex: '-1', 'aria-label': 'Page ' + i + ' of ' + pagerObj.totalPages + ' Pages',
                     href: 'javascript:void(0);' , name: 'Goto page' + i }
             });
             if (pagerObj.currentPage === i) {
                 classList(link, ['e-currentitem', 'e-active'], ['e-pager-default']);
+                link.setAttribute('aria-selected', 'true');
             }
             frag.appendChild(link);
         }
@@ -113,6 +115,17 @@ export class NumericContainer implements IRender {
      */
     public destroy(): void {
         this.unwireEvents();
+    }
+
+    private refreshAriaAttrLabel(): void {
+        const pagerObj: Pager = this.pagerModule;
+        const numericContainer: Element = pagerObj.element.querySelector('.e-numericcontainer');
+        const links: NodeList = numericContainer.querySelectorAll('a');
+        for (let i: number = 0; i < links.length; i++) {
+            if ((<Element>links[i]).hasAttribute('aria-label') && (<Element>links[i]).hasAttribute('index')) {
+                (<Element>links[i]).setAttribute('aria-label', 'Page ' + (<Element>links[i]).getAttribute('index') + ' of ' + pagerObj.totalPages + ' Pages');
+            }
+        }
     }
 
     private renderNumericContainer(): void {
@@ -244,6 +257,7 @@ export class NumericContainer implements IRender {
                 this.links[i].style.display = 'none';
             }
             classList(this.links[i], [], ['e-currentitem', 'e-active']);
+            this.links[i].removeAttribute('aria-selected');
         }
         this.first.setAttribute('index', '1');
         this.last.setAttribute('index', pagerObj.totalPages.toString());
@@ -264,6 +278,7 @@ export class NumericContainer implements IRender {
         this.updateNextNLastStyles();
         if (this.links.length) {
             classList(this.links[(this.pagerModule.currentPage - 1) % this.pagerModule.pageCount], ['e-currentitem', 'e-active'], []);
+            this.links[(this.pagerModule.currentPage - 1) % this.pagerModule.pageCount].setAttribute('aria-selected', 'true');
         }
     }
 

@@ -1,11 +1,11 @@
-@include export-module('numerictextbox-fluent-icons') {
+@include export-module('numerictextbox-tailwind-icons') {
   .e-input-group-icon.e-spin-up::before {
-    content: '\e7c4';
+    content: '\e776';
     font-family: 'e-icons';
   }
 
   .e-input-group-icon.e-spin-down::before {
-    content: '\e7c3';
+    content: '\e729';
     font-family: 'e-icons';
   }
 }

@@ -32,7 +32,8 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
         this.removeEventHandler = this.removeEventListener;
     }
 
-    public write(args: { rowData: Object, element: Element, column: Column, row: HTMLElement, requestType: string }): void {
+    public write(args: { rowData: Object, element: Element, column: Column,
+        row: HTMLElement, requestType: string, foreignKeyData?: Object[] }): void {
         const isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
         this.column = args.column;
         const pred: Predicate = new Predicate(args.column.field, 'notequal', null, true, false);
@@ -57,7 +58,7 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
             },
             params));
         if (this.parent.enableVirtualization) {
-            this.obj.dataSource = [args.rowData] as string[];
+            this.obj.dataSource = args.column.isForeignColumn() ? [args.foreignKeyData[0]] as string[] : [args.rowData] as string[];
         }
         this.addEventListener();
         this.obj.query.params = this.parent.query.params;
@@ -93,14 +94,17 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
 
     private dropdownBeforeOpen(): void {
         if (this.parent.enableVirtualization) {
-            (this.obj as DropDownList).dataSource = this.parent.dataSource instanceof DataManager ?
-                this.parent.dataSource : new DataManager(this.parent.dataSource);
+            (this.obj as DropDownList).dataSource = !this.column.isForeignColumn() ? (this.parent.dataSource instanceof DataManager ?
+                this.parent.dataSource : new DataManager(this.parent.dataSource))
+                : (this.column.dataSource as Object | DataManager) instanceof DataManager ?
+                    this.column.dataSource as DataManager : new DataManager(this.column.dataSource as Object);
         }
     }
 
     private ddActionComplete(e: { result: Object[] }): void {
         e.result = DataUtil.distinct(e.result, (this.obj as DropDownList).fields.value, true);
-        if (this.flag && (<DataManager>this.column.dataSource)) {
+        if (this.flag && (<DataManager>this.column.dataSource) && !(this.column.edit.params &&
+            (<{ ddEditedData?: boolean }>this.column.edit.params).ddEditedData)) {
             if ('result' in this.column.dataSource) {
                 this.column.dataSource.result = e.result;
             } else if (this.column.dataSource instanceof DataManager) {

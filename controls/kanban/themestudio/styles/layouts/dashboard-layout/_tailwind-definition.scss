@@ -31,6 +31,7 @@ $panel-bigger-header-line-height: 24px !default;
 $panel-bigger-header-color: $content-text-color !default;
 $panel-bigger-header-font-size: $text-base !default;
 $panel-bigger-header-font-weight: $font-weight-medium !default;
+$panel-bigger-content-padding: 16px !default;
 
 // Panel styles
 $panel-border: 1px solid $border-light !default;
@@ -39,6 +40,7 @@ $panel-full-height: 100% !default;
 $panel-full-width: 100% !default;
 $panel-hover-border: 1px solid $border-dark !default;
 $panel-active-border: 1px solid $primary-border-color !default;
+$panel-content-padding: 12px !default;
 
 // icons styles
 $panel-resize-one-dimensional-icon-height: 8px !default;
@@ -96,7 +98,7 @@ $element-width-complete: 100% !important !default;
 $panel-active-background: $content-bg-color-alt2 !default;
 $panel-hover-box-shadow: $shadow-lg !default;
 $panel-active-drag-box-shadow: $shadow !default;
-$panel-background: $flyout-bg-color !default;
+$panel-background: $content-bg-color !default;
 $panel-box-shadow: $shadow;
 
 // droppable area border

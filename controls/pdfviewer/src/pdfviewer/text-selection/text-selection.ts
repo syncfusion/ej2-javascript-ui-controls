@@ -1862,7 +1862,7 @@ export class TextSelection {
         setTimeout(
             () => {
             let leftValue: number = 35;
-            let selectedContent: any = document.getElementsByClassName("e-pv-maintaincontent")[0].getBoundingClientRect();
+            let selectedContent: any = document.getElementsByClassName("e-pv-maintaincontent")[0] ? document.getElementsByClassName("e-pv-maintaincontent")[0].getBoundingClientRect() : null;
             if (selectedContent) {
             if ((selectedContent.bottom + proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight) > window.innerHeight) {
                 top = selectedContent.top - (proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight - topMargin); 

@@ -2391,7 +2391,13 @@ export class Edit {
         }
         /* data Source update */
         if (!isNullOrUndefined(parentItem)) {
-            childIndex = parentItem.childRecords.indexOf(this.addRowSelectedItem);
+            if (rowPosition == 'Above') {
+                childIndex = parentItem.childRecords.indexOf(this.addRowSelectedItem);
+            } else if(rowPosition == 'Below') {
+                childIndex = parentItem.childRecords.indexOf(this.addRowSelectedItem) + 1;
+            } else {
+                childIndex = parentItem.childRecords.length;
+            }
             /*Child collection update*/
             parentItem.childRecords.splice(childIndex, 0, record);
             if ((this.parent.dataSource instanceof DataManager &&
@@ -2399,11 +2405,8 @@ export class Edit {
                  !isNullOrUndefined(this.parent.dataSource)) {
                 const child: string = this.parent.taskFields.child;
                 if (parentItem.taskData[child] && parentItem.taskData[child].length > 0) {
-                    if (rowPosition === 'Above') {
+                    if (rowPosition === 'Above' || rowPosition === 'Below') {
                         parentItem.taskData[child].splice(childIndex, 0, record.taskData);
-                    }
-                    else if (rowPosition === 'Below') {
-                        parentItem.taskData[child].splice(childIndex + 1, 0, record.taskData);
                     }
                     else {
                         parentItem.taskData[child].push(record.taskData);
@@ -2476,9 +2479,21 @@ export class Edit {
     private refreshRecordInImmutableMode(): void {
         for (let i: number = 0; i < this.parent.modifiedRecords.length; i++) {
             const originalData: IGanttData = this.parent.modifiedRecords[i];
-            const dataId: number | string = this.parent.viewType === 'ProjectView' ?
-                originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
-            this.parent.treeGrid.grid.setRowData(dataId, originalData);
+            let treeIndex: number = this.parent.allowRowDragAndDrop ? 1 : 0;
+            let uniqueTaskID: string = this.parent.taskFields.id;
+            var originalIndex: number = this.parent.currentViewData.findIndex((data: IGanttData) => {
+                return (data[uniqueTaskID] == originalData[uniqueTaskID]);
+            });
+            if (this.parent.treeGrid.getRows()[originalIndex]) {
+                this.parent.treeGrid.renderModule.cellRender({
+                    data: originalData, cell: this.parent.treeGrid.getRows()[originalIndex].cells[this.parent.treeColumnIndex + treeIndex],
+                    column: this.parent.treeGrid.grid.getColumns()[this.parent.treeColumnIndex],
+                    requestType: 'rowDragAndDrop'
+                });
+                this.parent.treeGrid.renderModule.RowModifier({
+                    data: originalData, row: this.parent.treeGrid.getRows()[originalIndex], rowHeight: this.parent.rowHeight
+                });
+            }
         }
     }
     /**
@@ -2703,7 +2718,7 @@ export class Edit {
      * @returns {void} .
      * @private
      */
-    public createNewRecord(): IGanttData {
+      public createNewRecord(): IGanttData {
         const tempRecord: IGanttData = {};
         const ganttColumns: GanttColumnModel[] = this.parent.ganttColumns;
         const taskSettingsFields: TaskFieldsModel = this.parent.taskFields;
@@ -2852,6 +2867,9 @@ export class Edit {
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
+        if (this.dialogModule.isAddNewResource && !this.parent.isEdit && this.parent.taskFields.work){
+            this.parent.dataOperation.updateWorkWithDuration(cAddedRecord[0]);
+        }
         this.parent.trigger('actionComplete', args);
         if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
             this.dialogModule.dialogObj.hide();
@@ -3214,13 +3232,16 @@ export class Edit {
                 if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
                     draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
                     draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
+                    draggedRec.ganttProperties['parentId'] = droppedRec[this.parent.taskFields.parentID];
                 } else {
                     draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
                     draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
+                    draggedRec.ganttProperties['parentId'] = droppedRec[this.parent.taskFields.id];
                 }
             } else {
                 draggedRec[this.parent.taskFields.parentID] = null;
                 draggedRec.taskData[this.parent.taskFields.parentID] = null;
+                draggedRec.ganttProperties['parentId'] = null;
             }
         }
     }

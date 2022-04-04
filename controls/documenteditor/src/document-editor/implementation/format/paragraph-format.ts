@@ -73,7 +73,7 @@ export class WParagraphFormat {
                 tabStops.add(tabStop.position, tabStop);
             }
         }
-        if (!isNullOrUndefined(this.baseStyle)) {
+        if (!isNullOrUndefined(this.baseStyle) && this.baseStyle instanceof WParagraphStyle) {
             let baseStyle: any = this.baseStyle;
             while (!isNullOrUndefined(baseStyle)) {
                 for (const tab of baseStyle.paragraphFormat.tabs) {
@@ -142,6 +142,18 @@ export class WParagraphFormat {
     public set afterSpacing(value: number) {
         this.setPropertyValue('afterSpacing', value);
     }
+    public get spaceBeforeAuto(): boolean {
+        return this.getPropertyValue('spaceBeforeAuto') as boolean;
+    }
+    public set spaceBeforeAuto(value: boolean) {
+        this.setPropertyValue('spaceBeforeAuto', value);
+    }
+    public get spaceAfterAuto(): boolean {
+        return this.getPropertyValue('spaceAfterAuto') as boolean;
+    }
+    public set spaceAfterAuto(value: boolean) {
+        this.setPropertyValue('spaceAfterAuto', value);
+    }  
     public get lineSpacing(): number {
         return this.getPropertyValue('lineSpacing') as number;
     }
@@ -336,6 +348,8 @@ export class WParagraphFormat {
         this.addUniqueParaFormat('textAlignment', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('beforeSpacing', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('afterSpacing', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('spaceBeforeAuto', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('spaceAfterAuto', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('lineSpacing', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('lineSpacingType', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('outlineLevel', property, propValue, uniqueParaFormatTemp);
@@ -374,6 +388,12 @@ export class WParagraphFormat {
                 break;
             case 'afterSpacing':
                 value = 0;
+                break;
+            case 'spaceBeforeAuto':
+                value = false;
+                break;
+            case 'spaceAfterAuto':
+                value = false;
                 break;
             case 'lineSpacing':
                 value = 1;
@@ -506,6 +526,12 @@ export class WParagraphFormat {
         }
         if (isNullOrUndefined(this.getValue('afterSpacing'))) {
             this.afterSpacing = format.getValue('afterSpacing') as number;
+        }
+        if (isNullOrUndefined(this.getValue('spaceBeforeAuto'))) {
+            this.spaceBeforeAuto = format.getValue('spaceBeforeAuto') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('spaceAfterAuto'))) {
+            this.spaceAfterAuto = format.getValue('spaceAfterAuto') as boolean;
         }
         if (isNullOrUndefined(this.getValue('lineSpacing'))) {
             this.lineSpacing = format.getValue('lineSpacing') as number;

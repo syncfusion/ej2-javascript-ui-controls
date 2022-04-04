@@ -892,6 +892,7 @@ export class BasicFormulas {
         const byCol: string = argArr[1] ? argArr[1].toUpperCase() : 'FALSE';
         const exactlyOne: string = argArr[2] ? argArr[2].toUpperCase() : 'FALSE';
         const uniqueCollection: string[] = [];
+        let actCell: string = this.parent.actCell;
         if (argArr[0].indexOf(':') > -1) {
             if (isNullOrUndefined(argArr[0].match(/[0-9]/))) {
                 const splitArray: string[] = argArr[0].split(':');
@@ -991,11 +992,11 @@ export class BasicFormulas {
                     }
                     tmp = exactOne;
                 }
-                let actCell: string = this.parent.actCell;
                 actCell = actCell.indexOf('!') > - 1 ? actCell.split('!')[1] : actCell;
                 let actRowIdx: number = this.parent.rowIndex(actCell);
                 let actColIdx: number = this.parent.colIndex(actCell);
                 if (this.parent.dependencyLevel === 0) {
+                    let isSpill: boolean = false;
                     if (byCol === 'FALSE') {
                         for (let i: number = actRowIdx, diff: number = tmp.length + actRowIdx; i < diff; i++) {
                             const splitValue: string[] = tmp[0].split('+');
@@ -1005,7 +1006,7 @@ export class BasicFormulas {
                                     this.parent.uniqueRange.push(this.parent.actCell + ':' + getAlphalabel(j) + i);
                                 }
                                 if (this.checkSpill(j, i)) {
-                                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
+                                    isSpill = true;
                                 }
                             }
                         }
@@ -1018,10 +1019,13 @@ export class BasicFormulas {
                                     this.parent.uniqueRange.push(this.parent.actCell + ':' + getAlphalabel(i) + j);
                                 }
                                 if (this.checkSpill(i, j)) {
-                                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
+                                    isSpill = true;
                                 }
                             }
                         }
+                    }
+                    if (isSpill) {
+                        return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
                     }
                 } else if (this.parent.dependencyLevel > 0 &&
                     this.parent.getValueFromArg(getAlphalabel(actColIdx) + actRowIdx, true).indexOf('#SPILL!') > - 1) {
@@ -1032,9 +1036,7 @@ export class BasicFormulas {
                         const splitValue: string[] = tmp[i].split('+');
                         if (i > 0) { actRowIdx++; actColIdx = this.parent.colIndex(actCell); }
                         for (let i: number = 0; i < splitValue.length; i++) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
-                                                                             splitValue[i], actRowIdx, actColIdx);
+                            this.setValueRefresh(splitValue[i], actRowIdx, actColIdx, actCell);
                             if (splitValue[i + 1]) {
                                 actColIdx++;
                             }
@@ -1045,9 +1047,7 @@ export class BasicFormulas {
                     for (let i: number = 0; i < tmp.length; i++) {
                         const splitValue: string[] = tmp[i].split('+');
                         for (let i: number = 0; i < splitValue.length; i++) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
-                                                                             splitValue[i], actRowIdx, actColIdx);
+                            this.setValueRefresh(splitValue[i], actRowIdx, actColIdx, actCell);
                             if (splitValue[i + 1]) {
                                 actRowIdx++;
                             } else {
@@ -1068,6 +1068,12 @@ export class BasicFormulas {
         return result;
     }
 
+    private setValueRefresh(splitValue: string, rowIdx: number, colIdx: number, actCell: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
+        splitValue, rowIdx, colIdx);
+    }
+
     private checkSpill(i: number, j: number): boolean {
         let spill: boolean = false;
         const value: string = this.parent.getValueFromArg(getAlphalabel(i) + j, true);
@@ -1078,7 +1084,7 @@ export class BasicFormulas {
         }
         if (value && (value.indexOf('UNIQUE') < 0 ||
             (formulaString && !formulaString.toUpperCase().includes('UNIQUE'))) &&
-            value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments] && !this.parent.skipSpill) {
+            value !== this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments]) {
             spill = true;
         }
         return spill;
@@ -1105,7 +1111,9 @@ export class BasicFormulas {
                         return;
                     }
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1, null, i, j);
+                    (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1, '', i, j);
+                    this.parent.refresh('!' + this.parent.getSheetID(this.parent.grid) + '!' + getAlphalabel(j) + i, actCell);
+                    this.parent.actCell = actCell;
                 }
             }
         }

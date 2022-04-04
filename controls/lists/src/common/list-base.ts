@@ -146,7 +146,7 @@ export namespace ListBase {
             return createListFromArray(createElement, <string[] | number[]>dataSource, isSingleLevel, options, componentInstance);
         } else {
             return createListFromJson(createElement, <{ [key: string]: Object }[]>dataSource, options,
-                                      ariaAttributes.level, isSingleLevel, componentInstance);
+                ariaAttributes.level, isSingleLevel, componentInstance);
         }
     }
 
@@ -261,7 +261,9 @@ export namespace ListBase {
         options?: ListBaseOptions, level?: number, isSingleLevel?: boolean, componentInstance?: any): HTMLElement[] {
         const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
-        const fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
+        const fields: FieldsMapping = (componentInstance &&
+            (componentInstance.getModuleName() === 'listview' || componentInstance.getModuleName() === 'multiselect'))
+            ? curOpt.fields : extend({}, defaultMappedFields, curOpt.fields);
         const ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let id: string;
         let checkboxElement: HTMLElement[] = [];
@@ -492,7 +494,7 @@ export namespace ListBase {
 
         for (let j: number = 0; j < ds.length; j++) {
             const itemObj: { [key: string]: Object }[]
-            = (ds[j] as { items: { [key: string]: Object }[] } & { [key: string]: Object }).items;
+                = (ds[j] as { items: { [key: string]: Object }[] } & { [key: string]: Object }).items;
             const grpItem: { [key: string]: Object } = {};
             const hdr: string = 'isHeader';
             grpItem[curFields.text] = (ds[j] as { key: string } & { [key: string]: Object }).key;
@@ -701,30 +703,38 @@ export namespace ListBase {
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    // eslint-disable-next-line
-                    const compiledElement: any = compiledString(
-                        curItem,
-                        componentInstance,
-                        'headerTemplate',
-                        currentID,
-                        !!curOpt.isStringTemplate,
-                        null,
-                        li);
-                    if (compiledElement) {
-                        append(compiledElement, li);
+                    if (componentInstance && componentInstance.getModuleName() != 'listview') {
+                        // eslint-disable-next-line
+                        const compiledElement: any = compiledString(
+                            curItem,
+                            componentInstance,
+                            'headerTemplate',
+                            currentID,
+                            !!curOpt.isStringTemplate,
+                            null,
+                            li);
+                        if (compiledElement) {
+                            append(compiledElement, li);
+                        }
+                    } else {
+                        append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
                     }
                 } else {
-                    // eslint-disable-next-line
-                    const compiledElement: any = compiledString(
-                        curItem,
-                        componentInstance,
-                        'template',
-                        currentID,
-                        !!curOpt.isStringTemplate,
-                        null,
-                        li);
-                    if (compiledElement) {
-                        append(compiledElement, li);
+                    if (componentInstance && componentInstance.getModuleName() !== 'listview') {
+                        // eslint-disable-next-line
+                        const compiledElement: any = compiledString(
+                            curItem,
+                            componentInstance,
+                            'template',
+                            currentID,
+                            !!curOpt.isStringTemplate,
+                            null,
+                            li);
+                        if (compiledElement) {
+                            append(compiledElement, li);
+                        }
+                    } else {
+                        append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
                     }
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
@@ -774,15 +784,19 @@ export namespace ListBase {
             const headerData: { [key: string]: string; } = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            // eslint-disable-next-line
-            const compiledElement: any = compiledString(
-                headerData,
-                componentInstance,
-                'groupTemplate',
-                curOpt.groupTemplateID,
-                !!curOpt.isStringTemplate, null, header);
-            if (compiledElement) {
-                append(compiledElement, header);
+            if (componentInstance && componentInstance.getModuleName() !== "listview") {
+                // eslint-disable-next-line
+                const compiledElement: any = compiledString(
+                    headerData,
+                    componentInstance,
+                    'groupTemplate',
+                    curOpt.groupTemplateID,
+                    !!curOpt.isStringTemplate, null, header);
+                if (compiledElement) {
+                    append(compiledElement, header);
+                }
+            } else {
+                append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
             }
         }
         return headerItems;
@@ -960,43 +974,49 @@ export namespace ListBase {
                 { role: (grpLI === true ? ariaAttributes.groupItemRole : ariaAttributes.itemRole) } : {})
         });
 
-        if ( !isNullOrUndefined(uID) === true)
-        {
+        if (!isNullOrUndefined(uID) === true) {
             li.setAttribute('data-uid', uID);
         }
-        else
-        {
+        else {
             li.setAttribute('data-uid', generateId());
         }
         if (grpLI && options && options.groupTemplate) {
             // eslint-disable-next-line @typescript-eslint/ban-types
             const compiledString: Function = compileTemplate(options.groupTemplate);
-            // eslint-disable-next-line
-            const compiledElement: any = compiledString(
-                item,
-                componentInstance,
-                'groupTemplate',
-                curOpt.groupTemplateID,
-                !!curOpt.isStringTemplate,
-                null,
-                li);
-            if (compiledElement) {
-                append(compiledElement, li);
+            if (componentInstance && componentInstance.getModuleName() !== "listview") {
+                // eslint-disable-next-line
+                const compiledElement: any = compiledString(
+                    item,
+                    componentInstance,
+                    'groupTemplate',
+                    curOpt.groupTemplateID,
+                    !!curOpt.isStringTemplate,
+                    null,
+                    li);
+                if (compiledElement) {
+                    append(compiledElement, li);
+                }
+            } else {
+                append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
             }
         } else if (!grpLI && options && options.template) {
             // eslint-disable-next-line @typescript-eslint/ban-types
             const compiledString: Function = compileTemplate(options.template);
-            // eslint-disable-next-line
-            const compiledElement: any = compiledString(
-                item,
-                componentInstance,
-                'template',
-                curOpt.templateID,
-                !!curOpt.isStringTemplate,
-                null,
-                li);
-            if (compiledElement) {
-                append(compiledElement, li);
+            if (componentInstance && componentInstance.getModuleName() !== 'listview') {
+                // eslint-disable-next-line
+                const compiledElement: any = compiledString(
+                    item,
+                    componentInstance,
+                    'template',
+                    curOpt.templateID,
+                    !!curOpt.isStringTemplate,
+                    null,
+                    li);
+                if (compiledElement) {
+                    append(compiledElement, li);
+                }
+            } else {
+                append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
             }
         } else {
             const innerDiv: HTMLElement = createElement('div', {
@@ -1252,6 +1272,8 @@ function compileTemplate(template: string): Function {
         try {
             if (document.querySelector(template)) {
                 return compile(document.querySelector(template).innerHTML.trim());
+            } else {
+                return compile(template);
             }
         } catch (e) {
             return compile(template);

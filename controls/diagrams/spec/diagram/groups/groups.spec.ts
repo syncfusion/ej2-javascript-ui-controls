@@ -1642,3 +1642,139 @@ describe('Group issue in Canvas mode', () => {
        done();
     });
 });
+
+describe('Group Node padding', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let diagramCanvas: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'GroupPadding' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,
+            }, {
+                id: 'node2', width: 50, height: 50, offsetX: 200,
+                offsetY: 200
+            },
+            {
+                id: 'node3', width: 100, height: 100, offsetX: 400,
+                offsetY: 300
+            },
+            { id: 'group', children: ['node1', 'node2'] }
+        ];
+
+        diagram = new Diagram({
+            width: '1000px', height: '600px', nodes: nodes,
+        });
+        diagram.appendTo('#GroupPadding');
+
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Group node initial rendering without padding',(done:Function)=>{
+        expect(diagram.nodes[3].height==150 && diagram.nodes[3].width==150 && diagram.nodes[3].padding.left==0).toBe(true);
+        console.log('group node initial rendering');
+        done();
+    });
+    it('Group node initial rendering with padding',(done:Function)=>{
+        diagram.nodes[3].padding.left = 10;
+        diagram.nodes[3].padding.right = 10;
+        diagram.nodes[3].padding.top = 20;
+        diagram.nodes[3].padding.bottom = 20;
+        diagram.dataBind();
+        let padding = diagram.nodes[3].padding;
+        expect(diagram.nodes[3].height==190 && diagram.nodes[3].width==170 && padding.left==10 && padding.top==20).toBe(true);
+        console.log('group node with padding added at runtime');
+        done();
+    });
+    it('Rotating group node with padding',(done:Function)=>{
+        diagram.rotate(diagram.nodes[3],45);
+        let padding = diagram.nodes[3].padding;
+        expect(diagram.nodes[3].height==190 && diagram.nodes[3].width==170 && padding.left==10 &&diagram.nodes[3].rotateAngle==45).toBe(true);
+        console.log('Rotate angle is '+diagram.nodes[3].rotateAngle);
+        done();
+    });
+    it('Dragging group node with padding',(done:Function)=>{
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        let prevOffsetX = diagram.nodes[3].offsetX;
+        mouseEvents.dragAndDropEvent(diagramCanvas,150,150,170,170);
+        let curOffsetX = diagram.nodes[3].offsetX;
+        let padding = diagram.nodes[3].padding;
+        expect(diagram.nodes[3].height==190 && diagram.nodes[3].width==170 && prevOffsetX!==curOffsetX && padding.right==10 && padding.top==20).toBe(true);
+        console.log(prevOffsetX+' Dragging group node with padding '+curOffsetX);
+        done();
+    });
+    it('Save and load group node',(done:Function)=>{
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        let saveData = diagram.saveDiagram();
+        localStorage.setItem('group', saveData);
+        diagram.loadDiagram(localStorage.getItem('group'));
+        diagram.dataBind();
+        let padding = diagram.nodes[3].padding;
+        expect(diagram.nodes[3].height==190 && diagram.nodes[3].width==170 && padding.left==10 && padding.top==20).toBe(true);
+        console.log('After save and load');
+        done();
+    });
+    it('Resize group node with padding', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.nodes[3]]);
+        let resizeOptions: HTMLElement = document.getElementById('resizeEast');
+        let bounds: any = resizeOptions.getBoundingClientRect();
+        let x: number = bounds.x;
+        let y: number = bounds.y;
+        let preWidth = diagram.nodes[3].width;
+        mouseEvents.mouseDownEvent(diagramCanvas, x, y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x - 2, y);
+        let curWidth = diagram.nodes[3].width;
+        let padding = diagram.nodes[3].padding;
+        expect(preWidth!==curWidth && padding.bottom==20 && padding.right==10).toBe(true);
+        console.log('Before resizing :'+preWidth+', After resizing'+curWidth+', Padding')
+        done();
+    });
+    it('Grouping in runtime and drag and rotate with and without padding',(done:Function)=>{
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.dragAndDropEvent(diagramCanvas,10,10,550,400);
+        diagram.group();
+        diagram.dataBind();
+        let preWidth = diagram.nodes[4].width;
+        diagram.unGroup();
+        diagram.dataBind();
+        diagram.getNodeDefaults =(obj: Node, diagram: Diagram)=> {
+            if(obj.children && obj.children.length > 0) {
+                obj.padding.left = 20;
+                obj.padding.right = 10;
+                obj.padding.top = 20;
+                obj.padding.bottom = 10;
+            }else{
+            obj.shape = { type: 'Basic', shape: 'Rectangle' };
+            obj.style = { fill: 'transparent', strokeWidth: 1 };
+            }
+            return obj;
+        }
+        mouseEvents.dragAndDropEvent(diagramCanvas, 10, 10, 550, 400);
+        diagram.group();
+        let curWidth = diagram.nodes[4].width;
+        diagram.rotate(diagram.nodes[4],40);
+        let preOffsetX = diagram.nodes[4].offsetX;
+        mouseEvents.dragAndDropEvent(diagramCanvas, 300, 300, 400, 400);
+        let curOffsetX = diagram.nodes[4].offsetX;
+        diagram.dataBind();
+        expect(preWidth !== curWidth && preOffsetX!==curOffsetX && diagram.nodes[4].rotateAngle==40 && diagram.nodes[4].padding.bottom==10).toBe(true);
+        console.log('without padding ' + preWidth +','+preOffsetX+', ' +'with padding' + curWidth +','+curOffsetX+','+diagram.nodes[4].rotateAngle);
+        done();
+    });
+});

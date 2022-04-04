@@ -29,6 +29,18 @@
           border: 0;
         }
       }
+
+      @if $skin-name == 'FluentUI' {
+        & .e-toolbar,
+        & .e-toolbar-items {
+          background-color: $ribbon-header-bg-color;
+        }
+
+        & .e-hscroll .e-scroll-nav.e-scroll-left-nav,
+        & .e-hscroll .e-scroll-nav.e-scroll-right-nav {
+          background-color: $ribbon-header-bg-color;
+        }
+      }
     }
 
     & .e-drop-icon {
@@ -38,6 +50,9 @@
     & .e-tab .e-content .e-toolbar {
       border-bottom-color: transparent;
       border-top-color: transparent;
+      @if $skin-name == 'FluentUI' {
+        box-shadow: none;
+      }
     }
 
     @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {

@@ -142,12 +142,12 @@ describe('TreeGrid Infinite Scroll', () => {
         debugger;
         let rows: Element[] = treegrid.grid.getRows();
         (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+        expect(treegrid.getCurrentViewRecords().indexOf(treegrid.flatData[1])).toBe(-1);
     });
     it('expand test', () => {
         let rows: Element[] = treegrid.grid.getRows();
         (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-        expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+        expect(treegrid.getCurrentViewRecords().indexOf(treegrid.flatData[1])).toBe(1);
     });
     it('scroll bottom', (done: Function) => {
         treegrid.getContent().firstElementChild.scrollTop = 5550;
@@ -379,6 +379,44 @@ describe('TreeGrid Infinite Scroll', () => {
         }
         treegrid.actionComplete = actionComplete;
         treegrid.addRecord({TaskID:Math.random(),FIELD1: 'test'}, 3, 'Child');
+    });
+    afterAll(() => {
+        treegrid['infiniteScrollModule']['destroy']();
+        destroy(treegrid);
+    });
+  });
+
+  describe('EJ2-56410 - Infiniscrolling does not work properly when all records are collapsed', () => {
+    let treegrid: TreeGrid;
+    let actionComplete: (e?: any) => void;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+        {
+            dataSource: virtualData,
+            enableInfiniteScrolling: true,
+            childMapping: 'Crew',
+            treeColumnIndex: 1,
+            pageSettings: { pageSize: 5 },
+            enableCollapseAll: true,
+            height: 400,
+            columns: [
+              { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+              { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+              { field: 'FIELD2', headerText: 'Year', width: 80, textAlign: 'Right' },
+              { field: 'FIELD3', headerText: 'Stint', width: 80, textAlign: 'Right' },
+              { field: 'FIELD4', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD5', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD6', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD7', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD8', headerText: 'TMID', width: 80, textAlign: 'Right' }
+            ]
+        },
+        done
+      );
+    });
+    it('Collapsed records count test of the visible records', (done: Function) => {
+        expect(treegrid.getCurrentViewRecords().length).toBe(15);
+        done();
     });
     afterAll(() => {
         treegrid['infiniteScrollModule']['destroy']();

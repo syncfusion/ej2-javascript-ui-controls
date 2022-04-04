@@ -1,4 +1,4 @@
-@include export-module('gantt-fluent-icons') {
+@include export-module('gantt-tailwind-icons') {
   #{&}.e-gantt {
     .e-add::before {
       content: '\e805';

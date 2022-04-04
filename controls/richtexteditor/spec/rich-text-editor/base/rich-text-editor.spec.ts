@@ -194,6 +194,28 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
     });
 });
 
+describe('EJ2-57147: Change width property', () => {
+    let rteObj: RichTextEditor;
+    it('Changing the width property when RTE is in inline mode', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Testing 1<br></p><p>Testing 2</p>`,
+            readonly: true,
+            inlineMode: {
+                enable: true,
+                onSelection: true,
+            }
+        });
+        rteObj.readonly = false;
+        rteObj.dataBind();
+        rteObj.width = "500";
+        expect(rteObj.width).toBe('500');
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -238,6 +260,26 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
     });
 });
 
+describe('EJ2-56125: backSpaceKey action at start of list with previous list empty issue', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the LI element with text nodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<ul><li>List Content 1</li><li><br></li><li class="focusNode">List Content 3</li></ul>`,
+        });
+        let node: any = (rteObj as any).inputElement.querySelector('.focusNode').childNodes[0];
+        setCursorPoint(document, node, 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.inputElement.textContent).toBe('List Content 1List Content 3');
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
@@ -253,6 +295,69 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
         (rteObj as any).keyDown(keyBoardEvent);
         expect((rteObj as any).inputElement.childNodes[0].innerHTML).toBe('Testing 1Testing 2');
         expect((rteObj as any).inputElement.childNodes[0].parentElement.hasAttribute('style')).toBe(false);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-57616: clearing all list maintains the list element', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('clearing all list maintains the list element', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p class="focusNodefirst">Rich Text Editor is a WYSIWYG editing control that will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.</p>
+            <p><b>Paste Cleanup properties:</b></p>
+            <ul>
+                <li>
+                    <p>prompt - specifies whether to enable the prompt when pasting in Rich Text Editor.</p>
+                </li>
+                <li>
+                    <p>plainText - specifies whether to paste as plain text or not in Rich Text Editor.</p>
+                </li>
+                <li>
+                    <p>keepFormat- specifies whether to keep or remove the format when pasting in Rich Text Editor.</p>
+                </li>
+                <li>
+                    <p>deniedTags - specifies the tags to restrict when pasting in Rich Text Editor.</p>
+                </li>
+                <li>
+                    <p>deniedAttributes - specifies the attributes to restrict when pasting in Rich Text Editor.</p>
+                </li>
+                <li>
+                    <p class="focusNodelast">allowedStyleProperties - specifies the allowed style properties when pasting in Rich Text Editor.</p>
+                </li>
+            </ul>`,
+        });
+        let node: any = (rteObj as any).inputElement.querySelector('.focusNodefirst').childNodes[0];
+        let node2: any = (rteObj as any).inputElement.querySelector('.focusNodelast').childNodes[0];
+        let sel = new NodeSelection().setSelectionText(document, node, node2, 0, node2.textContent.length);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        expect(rteObj.inputElement.textContent.length).toBe(1049);
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.inputElement.textContent.length).toBe(1011);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-56125: backSpaceKey action at start of list with previous list empty issue', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the LI element with text nodes and last element have BR element', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<ul><li>List Content 3</li><li><br></li><li class="focusNode">List Content 4<br></li></ul>`,
+        });
+        let node: any = (rteObj as any).inputElement.querySelector('.focusNode').childNodes[0];
+        setCursorPoint(document, node, 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.inputElement.textContent).toBe('List Content 3List Content 4');
         done();
     });
     afterAll(() => {
@@ -316,6 +421,27 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
         keyBoardEvent.code = 'Delete';
         (rteObj as any).keyDown(keyBoardEvent);
         expect(rteObj.inputElement.childNodes[1].childNodes[1].textContent === "Options\nto get the HTML elements with styles.Support\nto insert image from a defined path.").toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-57112: Delete Key not working when image is focused and deleted', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    it('Delete Key not working when image is focused and deleted', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<ol><li><p>image</p></li></ol><p class="focusNode"><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style="width: 300px;"></p><p>Content</p>`,
+        });
+        let node: any = rteObj.inputElement.querySelector('.focusNode');
+        let sel = new NodeSelection().setSelectionText(document, node, node, 0, 1);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).htmlEditorModule.isImageDelete).toBe(true);
         done();
     });
     afterAll(() => {

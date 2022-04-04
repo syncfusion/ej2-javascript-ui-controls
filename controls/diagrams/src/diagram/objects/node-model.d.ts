@@ -1888,6 +1888,14 @@ export interface NodeModel extends NodeBaseModel{
     children?: string[];
 
     /**
+     * Defines the space between the group node edges and its children
+     *
+     * @aspDefaultValueIgnore
+     * @default 0
+     */
+    padding?: MarginModel;
+
+    /**
      * Defines the type of the container
      *
      * @aspDefaultValueIgnore
@@ -2043,21 +2051,21 @@ export interface LaneModel {
     children?: NodeModel[];
 
     /**
-     * Defines the height of the phase
+     * Defines the height of the lane
      *
      * @default 100
      */
     height?: number;
 
     /**
-     * Defines the height of the phase
+     * Defines the height of the lane
      *
      * @default 100
      */
     width?: number;
 
     /**
-     * Defines the collection of header in the phase.
+     * Defines the collection of header in the lane.
      *
      * @default new Header()
      */
@@ -2069,6 +2077,14 @@ export interface LaneModel {
      * @default true
      */
     canMove?: boolean;
+
+    /**
+     * Allows the user to save custom information about lanes. Example: addInfo: {'lane': 'lane 1 info' }
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    addInfo?: Object 
 
 }
 
@@ -2085,7 +2101,7 @@ export interface PhaseModel {
     id?: string;
 
     /**
-     * Sets the style of the lane
+     * Sets the style of the phase
      *
      * @default ''
      */
@@ -2099,11 +2115,19 @@ export interface PhaseModel {
     header?: HeaderModel;
 
     /**
-     * Sets the offset of the lane
+     * Sets the offset of the phase
      *
      * @default 100
      */
     offset?: number;
+
+    /**
+     * Allows the user to save custom information about phases. Example: addInfo: {'phase': 'phase 1 info' }
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    addInfo?: Object;
 
 }
 

@@ -400,20 +400,6 @@ describe('Menu', () => {
             menu.close();
             expect(menu.element.classList.contains('e-hide-menu')).toBeTruthy();
         });
-		it('setitem', () => {
-            document.body.appendChild(ul);
-            menu = new Menu({ items: items }, '#menu');
-			expect(menu.element.children[0].textContent).toEqual('Home');
-            menu.setItem({text: 'Home1'}, 'home', true);
-            menu.refresh();
-			expect(menu.element.children[0].textContent).toEqual('Home1');
-			menu.setItem({text: 'Home'}, 'Home1');
-            menu.refresh();
-			expect(menu.element.children[0].textContent).toEqual('Home');
-			menu.setItem({text: 'Home1', id: 'home' }, null, true);
-            menu.refresh();
-			expect(menu.element.children[0].textContent).toEqual('Home1'); 
-        });
     });
 
     describe('Events', () => {

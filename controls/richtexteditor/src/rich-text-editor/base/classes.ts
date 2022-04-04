@@ -328,6 +328,11 @@ export const CLS_FONT_SIZE_TB_BTN: string = 'e-font-size-tbar-btn';
  * @hidden
  * @deprecated
  */
+export const CLS_ALIGN_TB_BTN: string = 'e-alignment-tbar-btn';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_FONT_COLOR_TARGET: string = 'e-rte-fontcolor-element';
 /**
  * @hidden

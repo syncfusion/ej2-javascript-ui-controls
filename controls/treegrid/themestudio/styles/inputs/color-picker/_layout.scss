@@ -339,6 +339,9 @@
             @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
               border-radius: 6px;
             }
+            @else if $skin-name == 'bootstrap5' {
+              border-radius: 4px;
+            }
             @else {
               border-radius: 0;
             }
@@ -383,7 +386,7 @@
             width: 100%;
             z-index: 1;
 
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
               border-radius: 6px;
             }
           }
@@ -404,13 +407,18 @@
         border: $cpicker-preview-container-border;
         cursor: pointer;
         display: inline-block;
-        height: 32px;
+        @if $skin-name == 'FluentUI' {
+          height: 50px;
+        }
+        @else {
+          height: 32px;
+        }
         margin-left: $cpicker-preview-margin-left;
         position: relative;
         top: $cpicker-preview-container-top;
         width: $cpicker-preview-size;
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          height: 38px;
+          height: 36px;
         }
 
         & .e-preview {
@@ -426,7 +434,12 @@
 
           &.e-previous {
             height: $cpicker-previous-height;
-            top: $cpicker-preview-height;
+            @if $skin-name == 'FluentUI' {
+              top: 25px;
+            }
+            @else {
+              top: $cpicker-preview-height;
+            }
           }
         }
       }
@@ -476,6 +489,9 @@
         display: inline-block;
         margin-right: $cpicker-label-margin;
         vertical-align: baseline;
+        @if $skin-name == 'bootstrap5' {
+          margin-top: 8px;
+        }
 
         &:first-child {
           width: $cpicker-hex-label-width;
@@ -496,7 +512,7 @@
 
         & .e-float-text {
           text-align: center;
-          @if $skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
             text-align: left;
           }
         }
@@ -793,6 +809,12 @@
           }
         }
 
+        & .e-switch-ctrl-btn {
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            padding: $cpicker-bigger-ctrl-btn-padding;
+          }
+        }
+
         & .e-switch-ctrl-btn .e-mode-switch-btn {
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
             height: 38px;
@@ -837,6 +859,9 @@
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
             top: 5px;
           }
+          @else if $skin-name == 'FluentUI' {
+            top: $cpicker-preview-container-top;
+          }
           @else {
             top: 0;
           }
@@ -854,6 +879,9 @@
             & .e-slider-track {
               @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
                 height: $cpicker-bigger-slider-height;
+              }
+              @else if $skin-name == 'bootstrap5' {
+                border-radius: 6px;
               }
             }
 

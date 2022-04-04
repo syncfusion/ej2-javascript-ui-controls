@@ -1404,7 +1404,12 @@
               .e-tab-text,
               .e-tab-icon {
                 color: $tab-alt-text-color;
-                @if $tab-skin == 'FluentUI' {
+              }
+
+              @if $tab-skin == 'FluentUI' {
+                .e-tab-text,
+                .e-tab-icon,
+                .e-close-icon {
                   color: $tab-bg-nav-focus-icon-color;
                 }
               }
@@ -1601,15 +1606,12 @@
           }
 
           &:focus {
-            @if $tab-skin == 'FluentUI' {
-              background: $tab-item-wrap-hover-bg-color;
-            }
 
             .e-popup-up-icon,
             .e-popup-down-icon {
               color: $tab-bg-hover-nav-icon-color;
               @if $tab-skin == 'FluentUI' {
-                color: $tab-bg-nav-focus-icon-color;
+                background: $tab-item-wrap-hover-bg-color;
               }
 
               @if $tab-skin == 'fabric' {
@@ -1651,7 +1653,11 @@
 
             .e-popup-up-icon {
               color: $tab-bg-hover-nav-icon-color;
-              @if $tab-skin == 'FluentUI' {
+            }
+
+            @if $tab-skin == 'FluentUI' {
+              .e-popup-up-icon,
+              .e-popup-down-icon {
                 color: $tab-alt-active-text-color;
               }
             }

@@ -629,7 +629,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private elementChange(): void {
-        if (this.treeMapLegendModule && this.legendSettings.visible && this.treeMapLegendModule.legendGroup && this.layout.layoutGroup) {
+        if (this.treeMapLegendModule && this.legendSettings.visible && this.treeMapLegendModule.legendGroup && this.layout.layoutGroup
+            && !isNullOrUndefined(this.svgObject)) {
             this.svgObject.insertBefore(this.layout.layoutGroup, this.treeMapLegendModule.legendGroup);
         }
     }

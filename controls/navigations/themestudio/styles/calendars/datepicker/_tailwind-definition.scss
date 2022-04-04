@@ -13,7 +13,7 @@ $datepicker-popup-border-radius: 6px !default;
 $datepicker-box-sizing: border-box !default;
 $datepicker-modal-header-display: block !default;
 $datepicker-calendar-tbody-landscape-height: 130px !default;
-$datepicker-popup-bigger-margin-top: 8px !default;
+$datepicker-popup-bigger-margin-top: 6px !default;
 // mouse small icon
 $datepicker-small-icon-font-size: 16px !default;
 // Touch small icon
@@ -31,4 +31,10 @@ $datepicker-popup-bg-color: $flyout-bg-color !default;
 $datepicker-othermonth-row: none !default;
 $datepicker-modal-header-bg: $icon-color !default;
 $datepicker-modal-header-color: $content-bg-color-alt2 !default;
+$model-year-font-size: 14px !default;
+$model-year-font-weight: 500 !default;
+$model-year-line-height: 32px !default;
+$model-month-font-size: 20px !default;
+$model-month-font-weight: 500 !default;
+$model-month-line-height: 32px !default;
 //enddefault

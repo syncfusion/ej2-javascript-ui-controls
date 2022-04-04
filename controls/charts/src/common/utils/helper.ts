@@ -21,7 +21,7 @@ import { IShapes } from '../model/interface';
 import { IAxisLabelRenderEventArgs } from '../../chart/model/chart-interface';
 import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
-import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { measureText, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { RangeColorSettingModel } from '../../chart/chart-model';
 import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
@@ -494,6 +494,7 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
     const anchor: string = isVertical ? 'start' : 'auto';
     let size: Size;
     const chartRect: number = chart.availableSize.width;
+    let pathElement: Element;
     let x: number;
     let y: number;
     const rx: number = 3;
@@ -509,7 +510,7 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
             x = (rect.x + (opposedPosition ? (rect.width + margin + scrollBarHeight) : -(size.width + margin + margin + scrollBarHeight)));
             y = (rect.y + (i ? 0 : rect.height - size.height - margin));
             x += (x < 0 || ((chartRect) < (x + size.width + margin))) ? (opposedPosition ? -(size.width / 2) : size.width / 2) : 0;
-            direction = findDirection(
+            direction = findCrosshairDirection(
                 rx, rx, new Rect(x, y, size.width + margin, size.height + margin),
                 arrowLocation, margin, false, false, !opposedPosition, arrowLocation.x, arrowLocation.y + (i ? -rx : rx));
         } else {
@@ -517,18 +518,36 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
                 new ChartLocation(rect.x + rx, (rect.y + rect.height + scrollBarHeight));
             x = (rect.x + (i ? (rect.width - size.width - margin) : 0));
             y = (opposedPosition ? (rect.y - size.height - 10 - scrollBarHeight) : (rect.y + rect.height + margin + scrollBarHeight));
-            direction = findDirection(
+            direction = findCrosshairDirection(
                 rx, rx, new Rect(x, y, size.width + margin, size.height + margin),
                 arrowLocation, margin, opposedPosition, !opposedPosition, false, arrowLocation.x + (i ? rx : -rx), arrowLocation.y);
         }
         x = x + (margin / 2);
         y = y + (3 * (size.height / 4)) + (margin / 2);
-        parent.appendChild(chart.renderer.drawPath(
-            new PathOption(
-                chart.element.id + '_Zoom_' + index + '_AxisLabel_Shape_' + i,
-                chart.themeStyle.crosshairFill, 2, chart.themeStyle.crosshairFill, 1, null, direction
-            )
-        ) as HTMLElement);
+        pathElement = chart.renderer.drawPath(
+            {
+                'id': chart.element.id + '_Zoom_' + index + '_AxisLabel_Shape_' + i,
+                'fill': chart.themeStyle.crosshairFill, 'width': 2, 'color': chart.themeStyle.crosshairFill,
+                'opacity': 1, 'stroke-dasharray': null, 'd': direction },
+            null);
+        parent.appendChild(pathElement);
+        if (chart.theme === 'Fluent' || chart.theme === "FluentDark") {
+                        
+            const shadowId: string = chart.element.id + '_shadow';
+            pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+
+            let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
+            shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
+            shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+
+            const defElement: Element = chart.renderer.createDefs();
+            defElement.setAttribute('id', chart.element.id + 'SVG_tooltip_definition');
+            parent.appendChild(defElement);
+
+            defElement.innerHTML = shadow;
+            pathElement.setAttribute('stroke', '#cccccc');
+            pathElement.setAttribute('stroke-width', '0.5');
+        }
         textElement(
             chart.renderer,
             new TextOption(
@@ -539,6 +558,79 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
     }
 
     return parent;
+}
+/** @private */
+export function findCrosshairDirection(
+    rX: number, rY: number, rect: Rect, arrowLocation: ChartLocation, arrowPadding: number,
+    top: boolean, bottom: boolean, left: boolean, tipX: number, tipY: number
+): string {
+    let direction: string = '';
+    const startX: number = rect.x;
+    const startY: number = rect.y;
+    const width: number = rect.x + rect.width;
+    const height: number = rect.y + rect.height;
+
+    if (top) {
+        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
+            + startY + ' ' + (startX + rX) + ' ' + startY);
+        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + width + ' '
+            + startY + ' ' + (width) + ' ' + (startY + rY));
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' '
+            + (height) + ' ' + (width - rX) + ' ' + (height));
+        if (arrowPadding !== 0) {
+            direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (height));
+			direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (height + arrowPadding) 
+                + ' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + height);
+        }
+        if ((arrowLocation.x - arrowPadding / 2) > startX) {
+            direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
+                + height + ' ' + (startX) + ' ' + (height - rY) + ' z');
+        } else {
+            if (arrowPadding === 0) {
+                direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
+                    + height + ' ' + (startX) + ' ' + (height - rY) + ' z');
+            } else {
+                direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height + rY) + ' z');
+            }
+        }
+
+    } else if (bottom) {
+        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
+            + (startY) + ' ' + (startX + rX) + ' ' + (startY) + ' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + (startY));
+        direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (arrowLocation.y));
+        direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (startY));
+        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY)
+            + ' Q ' + (width) + ' ' + (startY) + ' ' + (width) + ' ' + (startY + rY));
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + (width) + ' '
+            + (height) + ' ' + (width - rX) + ' ' + (height));
+        direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + (startX) + ' '
+            + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
+    } else if (left) {
+        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
+            + (startY) + ' ' + (startX + rX) + ' ' + (startY));        
+        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' '
+            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding / 2));        
+        direction = direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY));        
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding / 2));        
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));        
+        direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + startX + ' '
+            + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
+    } else {
+        direction = direction.concat('M' + ' ' + (startX + rX) + ' ' + (startY) + ' Q ' + (startX) + ' '
+            + (startY) + ' ' + (startX) + ' ' + (startY + rY) + ' L' + ' ' + (startX) + ' ' + (arrowLocation.y - arrowPadding / 2));
+        direction = direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY));
+        direction = direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding / 2));
+        direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
+            + (height) + ' ' + (startX + rX) + ' ' + (height));
+        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (height) + ' Q ' + width + ' '
+            + (height) + ' ' + (width) + ' ' + (height - rY));
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (startY + rY) + ' Q ' + width + ' '
+            + (startY) + ' ' + (width - rX) + ' ' + (startY) + ' z');
+    }
+
+    return direction;
+
+
 }
 //Within bounds
 /** @private */
@@ -1054,6 +1146,8 @@ export function getTemplateFunction(template: string): Function {
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+        } else {
+            templateFn = templateComplier(template);
         }
     } catch (e) {
         templateFn = templateComplier(template);
@@ -1758,6 +1852,19 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         stringToNumber(chart.width, containerWidth) || containerWidth || 600,
         stringToNumber(chart.height, containerHeight || height) || containerHeight || height
     );
+    if (chart.getModuleName() === 'chart') {
+        let scaleX: number = 1; let scaleY: number = 1;
+        if (chart.width === "" || chart.width === null || chart.width === "100%") {
+            scaleX = chart.element.getBoundingClientRect().width > 0 ?
+                chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
+            scaleY = chart.element.getBoundingClientRect().height > 0 ?
+                chart.element.getBoundingClientRect().height / chart.availableSize.height : 1;
+            chart.availableSize.width = chart.availableSize.width * scaleX;
+            chart.availableSize.height = chart.availableSize.height * scaleY;
+            (chart as Chart).scaleX = scaleX;
+            (chart as Chart).scaleY = scaleY;
+        }
+    }
 }
 /**
  * To create svg element.
@@ -1840,7 +1947,7 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
     let text: string;
     for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
         text = textCollection[i];
-        if (measureText(label.concat(text), font).width < maximumWidth) {
+        if (measureText(label.concat(label === '' ? '' : ' ' + text), font).width < maximumWidth) {
             label = label.concat((label === '' ? '' : ' ') + text);
         } else {
             if (label !== '') {

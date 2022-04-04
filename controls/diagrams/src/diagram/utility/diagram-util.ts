@@ -1689,6 +1689,9 @@ export function updateHyperlink(changedObject: HyperlinkModel, target: DiagramEl
             case 'textDecoration':
                 textElement.style.textDecoration = hyperlink.textDecoration = changedObject.textDecoration;
                 break;
+            case 'hyperlinkOpenState':
+                hyperlink.hyperlinkOpenState = changedObject.hyperlinkOpenState;
+                break;    
         }
     }
 }
@@ -2532,16 +2535,32 @@ export function getCollectionChangeEventArguements(
  * @param { IBlazorDropEventArgs } arg - provide the obj  value.
  * @private
  */
-export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEventArgs): IBlazorDropEventArgs {
+ export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEventArgs): IBlazorDropEventArgs {
     if (isBlazor()) {
-        const connector: boolean = (getObjectType(args.source) === Connector);
+        const isConnector: boolean = (getObjectType(args.source) === Connector);
         const object: Object = cloneBlazorObject(args.source);
         const target: Object = cloneBlazorObject(args.target);
+        // BLAZ-20491 - Added the below code to check whether selector has nodes or connectors in it.
+        // If it does not have means then we can directly access node.
+        let connector: ConnectorModel;
+        let node: NodeModel;
+        if ((object as Selector).connectors && (object as Selector).connectors.length > 0) {
+            connector = (object as Selector).connectors[0] as ConnectorModel;
+        } else {
+            connector = object;
+        }
+        if ((object as Selector).nodes && (object as Selector).nodes.length > 0) {
+            node = (object as Selector).nodes[0] as NodeModel;
+        } else {
+            node = object;
+        }
         arg = {
-            element: connector ? { connector: (object as Selector).connectors[0] as ConnectorModel,
-                connectorId: (object as Selector).connectors[0].id }
-                : { node: (object as Selector).nodes[0] as NodeModel, nodeId: (object as Selector).nodes[0].id },
-            target: connector ? { connector: target } : { node: target },
+            element: isConnector ? {
+                connector: connector,
+                connectorId: connector.id
+            }
+                : { node: node, nodeId: node.id },
+            target: isConnector ? { connector: target } : { node: target },
             position: arg.position, cancel: arg.cancel
         } as IBlazorDropEventArgs;
     }

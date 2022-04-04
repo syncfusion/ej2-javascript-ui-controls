@@ -2559,6 +2559,11 @@ export interface FormFieldModel {
      */
     isMultiline?: boolean;
 
+    /**
+     * Get the pageIndex of the form field. Default value is -1.
+     */
+    pageIndex?: number;
+
 }
 
 /**

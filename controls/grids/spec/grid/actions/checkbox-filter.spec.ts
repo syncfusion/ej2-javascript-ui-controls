@@ -2618,3 +2618,64 @@ describe('EJ2-53849 - Script error while searching in the infinite scrolling ena
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-56656 - Wrong operator while filtering with Excel filter search box', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;     
+    let checkBoxFilter: Element; 
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                columns: [
+                { field: 'OrderID',headerText:'OrderID',visible: true },
+                { field: 'CustomerID',headerText:'CustomerName'},
+                { field: 'Freight', format: 'C2',headerText:'Freight' },
+                ],
+                actionBegin: actionBegin,
+                actionComplete: actionComplete
+            }, done);
+    });
+    
+    it('CustomerID filter dialog open testing', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterafteropen'){          
+                checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');      
+                done();
+            }   
+        };
+        gridObj.actionComplete = actionComplete;        
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+    });
+    it('search box keyup testing CustomerID', (done: Function) => {   
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        searchElement.value = 'NA';
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));            
+    });
+
+    it('Filter CustomerID testing with enter key', (done: Function) => {   
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.filterSettings.columns.length).toBe(2);
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = checkBoxFilter = actionBegin = actionComplete = null;
+    });
+});

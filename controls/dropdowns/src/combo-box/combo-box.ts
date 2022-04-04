@@ -437,7 +437,9 @@ export class ComboBox extends DropDownList {
             this.removeSelection();
         }
         if (!this.preventAutoFill && this.getModuleName() === 'combobox' && this.isTyped) {
-            this.inlineSearch();
+            setTimeout(() => {
+            this.inlineSearch();   
+            });
         }
     }
 

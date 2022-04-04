@@ -912,32 +912,23 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public gaugeResize(e: Event): boolean {
         let args: IResizeEventArgs = {
             gauge: this,
-            previousSize: new Size(
-                this.availableSize.width,
-                this.availableSize.height
-            ),
+            previousSize: this.availableSize,
             name: resized,
-            currentSize: new Size(0, 0)
+            cancel: false,
+            currentSize: this.calculateSvgSize()
         };
-        if (!isNullOrUndefined(this.element)) {
-            if (this.element.classList.contains('e-circulargauge')) {
-                this.createSvg();
-                this.calculateBounds();
-                this.renderElements();
-            }
-            args.currentSize = this.availableSize;
-            this.animatePointer = false;
+        this.trigger(resized, args);
+        if (!args.cancel) {
             if (this.resizeTo) {
                 clearTimeout(this.resizeTo);
-            } else
-            if (this.element.classList.contains('e-circulargauge')) {
+            }
+            if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-circulargauge')) {            
+                this.animatePointer = false;
                 this.resizeTo = window.setTimeout(
                     (): void => {
                         this.createSvg();
                         this.calculateBounds();
-                        this.renderElements();
-                        args.currentSize = this.availableSize;
-                        this.trigger(resized, args);
+                        this.renderElements();            
                     },
                     500);
             }
@@ -976,7 +967,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     private createSvg(): void {
         this.removeSvg();
-        this.calculateSvgSize();
+        this.availableSize = this.calculateSvgSize();
         this.svgObject = this.renderer.createSvg({
             id: this.element.id + '_svg',
             width: this.availableSize.width,
@@ -1025,7 +1016,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      *
      * @returns {void}
      */
-    private calculateSvgSize(): void {
+    private calculateSvgSize(): Size {
         const containerWidth: number = this.element.offsetWidth;
         const containerHeight: number = this.element.offsetHeight;
         const borderWidth: number = parseInt(this.element.style.borderWidth.split('px').join(''), 10) * 2;
@@ -1033,7 +1024,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let height: number = stringToNumber(this.height, containerHeight) || containerHeight || 450;
         width = !isNaN(borderWidth) ? (width - borderWidth) : width;
         height = !isNaN(borderWidth) ? (height - borderWidth) : height;
-        this.availableSize = new Size(width, height);
+        return new Size(width, height);
     }
 
     /**

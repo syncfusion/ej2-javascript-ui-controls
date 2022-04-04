@@ -361,33 +361,33 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
-        it('Checking pointer with range tooltip', () => {
-            gauge.loaded = (args: ILoadedEventArgs) => {
-                for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
-                    ele = document.getElementById('container_Axis_0_Range_' + i);
-                    eventObj = {
-                        target: ele,
-                        type: 'mousemove',
-                        pageX: ele.getBoundingClientRect().left,
-                        pageY: ele.getBoundingClientRect().top
-                    }
-                    gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
-                }
-                ele = document.getElementById('container_Axis_0_Pointer_0');
-                eventObj = {
-                    target: ele,
-                    type: 'mousemove',
-                    pageX: ele.getBoundingClientRect().left,
-                    pageY: ele.getBoundingClientRect().top
-                }
-                gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
-            };
-            gauge.axes[0].pointers = [{value: 20}];
-            gauge.tooltip.enable = true;
-            gauge.tooltip.type = ['Range'];
-            gauge.tooltip.rangeSettings.showAtMousePosition = true;
-            gauge.refresh();
-        });
+        // it('Checking pointer with range tooltip', () => {
+        //     gauge.loaded = (args: ILoadedEventArgs) => {
+        //         for (let i: number = 0; i < (gauge.axes[0].ranges.length); i++) {
+        //             ele = document.getElementById('container_Axis_0_Range_' + i);
+        //             eventObj = {
+        //                 target: ele,
+        //                 type: 'mousemove',
+        //                 pageX: ele.getBoundingClientRect().left,
+        //                 pageY: ele.getBoundingClientRect().top
+        //             }
+        //             gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+        //         }
+        //         ele = document.getElementById('container_Axis_0_Pointer_0');
+        //         eventObj = {
+        //             target: ele,
+        //             type: 'mousemove',
+        //             pageX: ele.getBoundingClientRect().left,
+        //             pageY: ele.getBoundingClientRect().top
+        //         }
+        //         gauge.tooltipModule.renderTooltip(<PointerEvent>eventObj);
+        //     };
+        //     gauge.axes[0].pointers = [{value: 20}];
+        //     gauge.tooltip.enable = true;
+        //     gauge.tooltip.type = ['Range'];
+        //     gauge.tooltip.rangeSettings.showAtMousePosition = true;
+        //     gauge.refresh();
+        // });
 
         it('Checking range with pointer tooltip', () => {
             gauge.loaded = (args: ILoadedEventArgs) => {

@@ -10,6 +10,7 @@ $calendar-active-today-font-color: $selection-font !default;
 $calendar-active-today-hover-font-color: $selection-font !default;
 $calendar-active-bg-color: $selection-bg !default;
 $calendar-active-bg-border-color: 1px solid $selection-bg !default;
+$calendar-active-bg-box-shadow: none !default;
 $calendar-hover-color: $hover-bg !default;
 $calendar-header-font-color: $header-font !default;
 $calendar-header-icon-color: $content-font !default;
@@ -28,6 +29,7 @@ $calendar-hover-text: $hover-font !default;
 $calendar-today-bg-style: $bg-base-0 !default;
 $calendar-focus-bg-color: $bg-base-20 !default;
 $calendar-focused-today-bg-style: $bg-base-0 !default;
+$calendar-focused-today-box-shadow: none !default;
 $calendar-focused-today-border-style: 1px dashed $hover-border !default;
 $calendar-border-style: 1px solid $border-default !default;
 $calendar-box-shadow: none !default;
@@ -122,8 +124,10 @@ $calendar-today-color: $selection-bg !default;
 $calendar-today-focused-font-color: $selection-bg !default;
 $calendar-bigger-icon-font-size: 18px !default;
 $calendar-bigger-month-view-padding: 0 !default;
+$calendar-today-box-shadow: none !default;
 $calendar-today-border-color: 1px solid $border-fg-alt !default;
 $calendar-focus-border-color: 1px dashed $border-fg !default;
+$calendar-focus-box-shadow: none !default;
 $calendar-hover-border-color: 1px solid $hover-border !default;
 $calendar-default-border-color: 1px solid $bg-base-0 !default;
 $calendar-normal-month-view-width: $calendar-normal-month-view-height !default;
@@ -148,8 +152,8 @@ $calendar-icon-padding: 6px 7px !default;
 $calendar-icon-button-margin: 0 !default;
 $calendar-bigger-icon-padding: 13px !default;
 $calendar-bigger-icon-margin: 0 !default;
-$calendar-selected-box-shadow: none !default;
 $calendar-selected-border-color: 1px solid $selection-bg !default;
+$calendar-week-number-font-weight: 500 !default;
 
 //today
 $calendar-footer-container-padding: 0 10px 10px 10px !default;
@@ -161,6 +165,9 @@ $calendar-today-disabled-background-style: $bg-base-0 !default;
 $calendar-today-disabled-border-style: $bg-base-0 !default;
 $calendar-today-disabled-box-shadow: none !default;
 $calendar-today-disabled-color: $disable !default;
+
+//table related styles
+$calendar-rtl-text-indent: 4px !default;
 
 // small size
 $calendar-small-icon-size: 28px !default;

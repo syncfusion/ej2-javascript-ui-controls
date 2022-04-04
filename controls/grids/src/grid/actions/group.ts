@@ -447,7 +447,7 @@ export class Group implements IAction {
                         rowObjs[i].visible = false;
                         (rowNodes[i] as HTMLElement).style.display = 'none';
                     } else {
-                        if (!(rowObjs[i].isDataRow || rowObjs[i].isCaptionRow || rowObjs[i].isDetailRow)) {
+                        if (!(rowObjs[i].isDataRow || rowObjs[i].isCaptionRow || rowObjs[i].isDetailRow || rowObjs[i].isAggregateRow)) {
                             const visible: boolean = rowObjs[i].cells.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell
                                 && cell.visible);
                             if (visible === rowObjs[i].visible) { continue; }
@@ -482,6 +482,9 @@ export class Group implements IAction {
     }
 
     private expandCollapse(isExpand: boolean): void {
+        if (!this.parent.groupSettings.columns.length) {
+            return;
+        }
         if (!isExpand) {
             this.parent.notify(events.initialCollapse, isExpand);
         }
@@ -769,13 +772,13 @@ export class Group implements IAction {
             'span', {
                 className: 'e-groupsort e-icons ' +
                 ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
-                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column', role: 'button' }
             }));
         childDiv.appendChild(this.parent.createElement(
             'span', {
                 className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
                 attrs: { title: this.l10n.getConstant('UnGroup'),
-                    tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+                    tabindex: '-1', 'aria-label': 'ungroup the grouped column', role: 'button' },
                 styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
             }));
 

@@ -108,16 +108,22 @@
 
       &:active {
         background-color: $breadcrumb-collapsed-icon-active-bgcolor;
-        color: $breadcrumb-collapsed-icon-hover-color;
+        @if $skin-name == 'FluentUI' {
+          color: $breadcrumb-collapsed-icon-active-color;
+        }
+        @else {
+          color: $breadcrumb-collapsed-icon-hover-color;
+        }
       }
 
       &:focus {
-        background-color: $breadcrumb-collapsed-icon-focus-bgcolor;
-        color: $breadcrumb-collapsed-icon-hover-color;
-
-        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
+        @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $skin-name == 'FluentUI' {
           border: $breadcrumb-collapsed-icon-focus-border;
           color: $breadcrumb-collapsed-icon-focus-color;
+        }
+        @else {
+          background-color: $breadcrumb-collapsed-icon-focus-bgcolor;
+          color: $breadcrumb-collapsed-icon-hover-color;
         }
       }
     }

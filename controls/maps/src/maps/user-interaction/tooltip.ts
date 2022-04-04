@@ -232,6 +232,10 @@ export class MapsTooltip {
                             fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor
                         });
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if ((this.maps as any).isVue || (this.maps as any).isVue3) {
+                        this.svgTooltip.controlInstance = this.maps;
+                    }
                     this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -244,9 +248,7 @@ export class MapsTooltip {
                         tooltipTemplateElement.setAttribute('style', templateStyle);
                     }
                 } else {
-                    this.removeTooltip();
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.maps as any).clearTemplate();
+                    this.clearTooltip();
                 }
             });
 
@@ -261,9 +263,7 @@ export class MapsTooltip {
                     cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
                 } as ITooltipRenderCompleteEventArgs);
             } else {
-                this.removeTooltip();
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.maps as any).clearTemplate();
+                this.clearTooltip();
             }
         } else {
             tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
@@ -271,9 +271,7 @@ export class MapsTooltip {
                 && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
                 this.maps.notify(click, this);
             } else {
-                this.removeTooltip();
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.maps as any).clearTemplate();
+                this.clearTooltip();
             }
         }
     }
@@ -318,9 +316,20 @@ export class MapsTooltip {
         }
     }
 
-    public removeTooltip(): void {
+    public removeTooltip(): boolean {
+        let isTooltipRemoved: boolean = false;
         if (document.getElementsByClassName('EJ2-maps-Tooltip').length > 0) {
             remove(document.getElementsByClassName('EJ2-maps-Tooltip')[0]);
+            isTooltipRemoved = true;
+        }
+        return isTooltipRemoved;
+    }
+
+    private clearTooltip(): void {
+        const isTooltipRemoved: boolean = this.removeTooltip();
+        if (isTooltipRemoved) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this.maps as any).clearTemplate();
         }
     }
     // eslint-disable-next-line valid-jsdoc

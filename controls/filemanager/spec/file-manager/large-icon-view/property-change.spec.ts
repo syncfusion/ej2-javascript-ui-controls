@@ -1108,6 +1108,40 @@ describe('FileManager control LargeIcons view', () => {
                 }, 500);
             });
         });
+
+        it('for sortBy', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                sortBy: 'name'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(ascendingData)
+            });
+            setTimeout(function () {
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text').length).toEqual(3);
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Apple');
+                expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[1].textContent).toBe('Music');
+                feObj.sortBy = 'size';
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(descendingData)
+                });
+                setTimeout(function () {
+                    expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[0].textContent).toBe('Videos');
+                    expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text')[2].textContent).toBe('Music');
+                    done();
+                }, 500);
+            });
+        });
     });
     describe('popupTarget property change testing', () => {
         let mouseEventArgs: any, tapEvent: any;

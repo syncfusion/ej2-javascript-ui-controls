@@ -607,8 +607,8 @@ export class Zoom {
             transform: 'translate(' + transX + ',' + transY + ')'
         });
         this.toolkitElements.appendChild(defElement);
-        const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : /* this.chart.theme === 'Fluent' ? '#F3F2F1' :
-            this.chart.theme === 'FluentDark' ? '#252423' : */ '#fafafa';
+        const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : this.chart.theme === 'Fluent' ? '#F3F2F1' :
+            (this.chart.theme === "FluentDark" ? "#252423" : '#fafafa');
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
             1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
@@ -645,14 +645,14 @@ export class Zoom {
         if (chart.enableCanvas) {
             const zoomDiv: HTMLElement = document.createElement('div');
             zoomDiv.id = chart.element.id + '_zoom';
-            zoomDiv.setAttribute('style', 'position:absolute; z-index:1');
+            zoomDiv.style.cssText = 'position:absolute; z-index:1';
             const zoomheight: number = chart.availableSize.height / 2;
             const svg: Element = chart.svgRenderer.createSvg({
                 id: chart.element.id + '_zoomkit_svg',
                 width: chart.availableSize.width,
                 height: zoomheight
             });
-            svg.setAttribute('style', 'position:absolute');
+            (svg as SVGElement).style.position = 'absolute';
             svg.appendChild(this.toolkitElements);
             zoomDiv.appendChild(svg);
             document.getElementById(this.elementId + '_Secondary_Element').appendChild(zoomDiv);

@@ -139,6 +139,7 @@ export class SelectionCommands {
         value: string,
         endNode: Node): Node {
         const cursorNodes: Node[] = domSelection.getNodeCollection(range);
+        const domNode: DOMNode = new DOMNode((endNode as HTMLElement), docElement);
         const cursorFormat: Node = (cursorNodes.length > 0) ?
             (cursorNodes.length > 1 && range.startContainer === range.endContainer) ?
                 this.getCursorFormat(isFormatted, cursorNodes, format, endNode) :
@@ -146,12 +147,17 @@ export class SelectionCommands {
         let cursorNode: Node = null;
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
-            if (cursorFormat.firstChild.textContent.charCodeAt(0) === 8203) {
+            if (cursorFormat.firstChild.textContent.charCodeAt(0) === 8203 && cursorFormat.firstChild.nodeType === 3) {
                 let isCursorEqual: boolean = false;
                 const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
                 let emptySpaceNode: Node;
                 if (cursorFormat.firstChild === cursorNode) {
-                    cursorNode.textContent = cursorNode.textContent.replace(regEx, '');
+                    cursorNode.textContent = (cursorFormat.parentElement && (domNode.isBlockNode(cursorFormat.parentElement) &&
+                    cursorFormat.parentElement.textContent.length <= 1 ? cursorFormat.parentElement.childElementCount > 1 :
+                        (cursorFormat as HTMLElement).childElementCount === 0) &&
+                        (cursorFormat.parentElement.textContent.length > 1 ||
+                        cursorFormat.parentElement.firstChild && cursorFormat.parentElement.firstChild.nodeType === 1) ?
+                        cursorNode.textContent : cursorNode.textContent.replace(regEx, ''));
                     emptySpaceNode = cursorNode;
                     isCursorEqual = true;
                 } else {

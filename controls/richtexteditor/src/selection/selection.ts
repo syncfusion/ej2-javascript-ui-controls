@@ -321,11 +321,14 @@ export class NodeSelection {
     private setRangePoint(range: Range, isvalid: boolean, num: number[], size: number): Range {
         let node: Node = this.rootNode;
         let index: number = num.length;
-        const constant: number = size;
+        let constant: number = size;
         for (; index--; null) {
             node = node && node.childNodes[num[index]];
         }
         if (node && constant >= 0 && node.nodeName !== 'html') {
+            if (node.nodeType === 3 && node.nodeValue.replace(/\u00a0/g, '&nbsp;') === '&nbsp;') {
+		constant = node.textContent.length;
+	    }
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
         }
         return range;

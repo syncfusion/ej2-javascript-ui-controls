@@ -80,7 +80,6 @@ export class TextPosition {
     public get hierarchicalPosition(): string {
         return this.getHierarchicalIndexInternal();
     }
-
     constructor(owner: DocumentEditor) {
         this.owner = owner;
         this.documentHelper = this.owner.documentHelper;
@@ -305,7 +304,7 @@ export class TextPosition {
      * Return true if text position is in same paragraph index
      * @private
      */
-     public isInSameParagraphIndex(textPosition: TextPosition): boolean {
+    public isInSameParagraphIndex(textPosition: TextPosition): boolean {
         if (isNullOrUndefined(textPosition)) {
             throw new Error('textPosition is undefined.');
         }
@@ -434,20 +433,21 @@ export class TextPosition {
                 const nextBlock: BlockWidget = this.selection.getNextRenderedBlock(lineWidget.paragraph);
                 if (nextBlock && nextBlock.index === lineWidget.paragraph.index) {
                     nextLineWidget = nextBlock.firstChild as LineWidget;
-                }
+                } 
             } else {
                 nextLineWidget = lineWidget.paragraph.childWidgets[lineIndex + 1] as LineWidget;
             }
             this.setPositionForLineWidget(nextLineWidget, offset - lineLength);
             return;
+
         } else if (offset < 0) {
             const prevLine: LineWidget = lineWidget.paragraph.childWidgets[lineIndex - 1] as LineWidget;
             const currentOffSet: number = this.selection.getLineLength(prevLine) + offset;
             this.setPositionForLineWidget(prevLine, currentOffSet);
             return;
         } else {
-            this.currentWidget = lineWidget;
-            this.offset = offset;
+                this.currentWidget = lineWidget;
+                this.offset = offset;
         }
         this.updatePhysicalPosition(true);
     }
@@ -2163,6 +2163,16 @@ export class Hyperlink {
     private typeInternal: HyperlinkType;
     private opensNewWindow: boolean = false;
     private isCrossRefField: boolean = false;
+    private screenTipText: string = '';
+     /**
+     * Gets screentip text.
+     *
+     * @returns string
+     * @private
+     */
+      public get screenTip(): string {
+        return this.screenTipText;
+    }
     /**
      * Gets navigation link.
      *
@@ -2207,7 +2217,14 @@ export class Hyperlink {
         }
     }
     private parseFieldValues(value: string, isHyperlink: boolean): void {
-        const codes: string[] = value.split(' ');
+       let codes: string[] = value.split('\\o ');
+        if(codes.length === 2){
+            this.screenTipText = this.parseFieldValue(codes[1], codes[1] === '\"' ? '\"' : undefined, isHyperlink);
+            this.screenTipText = this.screenTipText.substring(0, this.screenTipText.length-1);
+            value = codes[0];
+            codes = undefined;
+        }
+        codes = value.split(' ');
         let isLocalRef: boolean = false;
         if (isHyperlink) {
             for (let i: number = 0; i < codes.length; i++) {
@@ -2224,7 +2241,7 @@ export class Hyperlink {
                     if (isLocalRef) {
                         this.localRef = code;
                         isLocalRef = false;
-                    } else {
+                    }else {
                         this.linkInternal = code;
                     }
                 }
@@ -2272,6 +2289,7 @@ export class Hyperlink {
         this.localRef = undefined;
         this.typeInternal = undefined;
         this.opensNewWindow = undefined;
+        this.screenTipText = undefined;
     }
 }
 /**

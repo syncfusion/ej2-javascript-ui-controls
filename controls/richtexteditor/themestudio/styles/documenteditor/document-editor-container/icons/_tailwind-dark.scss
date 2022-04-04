@@ -1,403 +1,340 @@
 @include export-module('document-editor-container-tailwind-dark-icons') {
   .e-de-ctnr-close::before {
     color: $icon-color;
-    content: '\e771';
+    content: '\e7e7';
     font-size: 16px;
   }
 
   .e-de-ctnr-linespacing::before {
-    color: $icon-color;
-    content: '\e7de';
+    content: '\e78d';
   }
 
   .e-de-ctnr-undo::before {
-    color: $icon-color;
-    content: '\e7bd';
+    content: '\e713';
   }
 
   .e-de-ctnr-find::before {
-    color: $icon-color;
-    content: '\e737';
+    content: '\e754';
   }
 
   .e-de-ctnr-lock::before {
-    color: $icon-color;
-    content: '\e753';
+    content: '\e7ff';
   }
 
   .e-de-ctnr-italic::before {
-    color: $icon-color;
-    content: '\e722';
+    content: '\e75a';
   }
 
   .e-de-selected-spellcheck-item::before {
     color: $icon-color;
-    content: '\e75d';
+    content: '\e774';
     font-family: 'e-icons';
     font-size: 10px;
   }
 
   .e-de-selected-underline-item::before {
     color: $icon-color;
-    content: '\e75d';
+    content: '\e774';
     font-family: 'e-icons';
     font-size: 10px;
   }
 
   .e-de-ctnr-link::before {
-    color: $icon-color;
-    content: '\e74a';
+    content: '\e757';
   }
 
   .e-de-ctnr-table::before {
-    color: $icon-color;
-    content: '\e79f';
+    content: '\e7d1';
   }
 
   .e-de-ctnr-download::before {
     color: $icon-color;
-    content: '\e794';
+    content: '\e7a1';
   }
 
   .e-de-ctnr-justify::before {
-    color: $icon-color;
-    content: '\e723';
+    content: '\e721';
   }
 
   .e-de-ctnr-tableofcontent::before {
-    color: $icon-color;
-    content: '\e733';
+    content: '\e73d';
   }
 
   .e-de-ctnr-pagenumber::before {
-    color: $icon-color;
-    content: '\e7cf';
+    content: '\e77d';
   }
 
   .e-de-ctnr-highlight::before {
-    color: $icon-color;
-    content: '\e7c1';
+    content: '\e739';
   }
 
   .e-de-ctnr-new::before {
-    color: $icon-color;
-    content: '\e78a';
+    content: '\e805';
   }
 
   .e-de-ctnr-paste::before {
-    color: $icon-color;
-    content: '\e75e';
+    content: '\e70b';
   }
 
   .e-de-ctnr-bold::before {
-    color: $icon-color;
-    content: '\e79d';
+    content: '\e737';
   }
 
   .e-de-ctnr-subscript::before {
-    color: $icon-color;
-    content: '\e7b4';
+    content: '\e80a';
   }
 
   .e-de-ctnr-aligncenter::before {
-    color: $icon-color;
-    content: '\e74f';
+    content: '\e813';
   }
 
   .e-de-ctnr-fontcolor::before {
-    color: $icon-color;
-    content: '\e775';
+    content: '\e79f';
   }
 
   .e-de-ctnr-change-case::before {
-    color: $icon-color;
-    content: '\e86a';
+    content: '\e7f5';
   }
 
   .e-de-ctnr-pagesetup::before {
-    color: $icon-color;
-    content: '\e79a';
+    content: '\e794';
   }
 
   .e-de-ctnr-strokestyle::before {
-    color: $icon-color;
     content: '\eb62';
   }
 
   .e-de-ctnr-strikethrough::before {
-    color: $icon-color;
-    content: '\e760';
+    content: '\e758';
   }
 
   .e-de-ctnr-image::before {
-    color: $icon-color;
-    content: '\e7da';
+    content: '\e786';
   }
 
   .e-de-ctnr-redo::before {
-    color: $icon-color;
-    content: '\e7b9';
+    content: '\e755';
   }
 
   .e-de-ctnr-bookmark::before {
-    color: $icon-color;
-    content: '\e793';
+    content: '\e750';
   }
 
   .e-de-ctnr-increaseindent::before {
-    color: $icon-color;
-    content: '\e7ac';
+    content: '\e810';
   }
 
   .e-de-ctnr-header::before {
-    color: $icon-color;
-    content: '\e739';
+    content: '\e704';
   }
 
   .e-de-ctnr-backgroundcolor::before {
-    color: $icon-color;
     content: '\eb6b';
   }
 
   .e-de-ctnr-open::before {
-    color: $icon-color;
-    content: '\e749';
+    content: '\e760';
   }
 
   .e-de-ctnr-underline::before {
-    color: $icon-color;
-    content: '\e7d4';
+    content: '\e82f';
   }
 
   .e-de-ctnr-superscript::before {
-    color: $icon-color;
-    content: '\e7cb';
+    content: '\e7a7';
   }
 
   .e-de-ctnr-alignleft::before {
-    color: $icon-color;
-    content: '\e7ae';
+    content: '\e7b8';
   }
 
   .e-de-ctnr-numbering::before {
-    color: $icon-color;
-    content: '\e71f';
+    content: '\e7cb';
   }
 
   .e-de-ctnr-bullets::before {
-    color: $icon-color;
-    content: '\e743';
+    content: '\e77e';
   }
 
   .e-de-ctnr-decreaseindent::before {
-    color: $icon-color;
-    content: '\e735';
+    content: '\e72a';
   }
 
   .e-de-ctnr-showhide::before {
-    content: '\e75f';
+    content: '\e71a';
     font-size: 16px;
   }
 
   .e-de-ctnr-print::before {
-    color: $icon-color;
-    content: '\e76c';
+    content: '\e75d';
   }
 
   .e-de-ctnr-alignright::before {
-    color: $icon-color;
-    content: '\e772';
+    content: '\e719';
   }
 
   .e-de-ctnr-footer::before {
-    color: $icon-color;
-    content: '\e78c';
+    content: '\e7bb';
   }
 
   .e-de-ctnr-clearall::before {
-    color: $icon-color;
-    content: '\e792';
-  }
-
-  .e-de-ctnr-outsideborder::before {
-    color: $icon-color;
-    content: '\e7c4';
-  }
-
-  .e-de-ctnr-allborders::before {
-    color: $icon-color;
-    content: '\e79f';
-  }
-
-  .e-de-ctnr-insideborders::before {
-    color: $icon-color;
-    content: '\e79c';
-  }
-
-  .e-de-ctnr-leftborders::before {
-    color: $icon-color;
-    content: '\e784';
-  }
-
-  .e-de-ctnr-insideverticalborder::before {
-    color: $icon-color;
-    content: '\e702';
-  }
-
-  .e-de-ctnr-rightborder::before {
-    color: $icon-color;
-    content: '\e72e';
-  }
-
-  .e-de-ctnr-topborder::before {
-    color: $icon-color;
-    content: '\e7a7';
-  }
-
-  .e-de-ctnr-insidehorizondalborder::before {
-    color: $icon-color;
-    content: '\e73b';
-  }
-
-  .e-de-ctnr-bottomborder::before {
-    color: $icon-color;
-    content: '\e791';
-  }
-
-  .e-de-ctnr-strokesize::before {
-    color: $icon-color;
-    content: '\e754';
-  }
-
-  .e-de-ctnr-highlightcolor::before {
-    color: $icon-color;
-    content: '\e7c1';
-  }
-
-  .e-de-ctnr-mergecell::before {
-    color: $icon-color;
-    content: '\e73f';
-  }
-
-  .e-de-ctnr-insertleft::before {
-    color: $icon-color;
-    content: '\e7db';
-  }
-
-  .e-de-ctnr-insertright::before {
-    color: $icon-color;
-    content: '\e710';
-  }
-
-  .e-de-ctnr-insertabove::before {
-    color: $icon-color;
-    content: '\e7dd';
-  }
-
-  .e-de-ctnr-insertbelow::before {
-    color: $icon-color;
-    content: '\e757';
-  }
-
-  .e-de-ctnr-deleterows::before {
-    color: $icon-color;
-    content: '\e75a';
-  }
-
-  .e-de-ctnr-deletecolumns::before {
-    color: $icon-color;
-    content: '\e721';
-  }
-
-  .e-de-ctnr-aligntop::before {
-    color: $icon-color;
-    content: '\e709';
-  }
-
-  .e-de-ctnr-alignbottom::before {
-    color: $icon-color;
-    content: '\e73e';
-  }
-
-  .e-de-ctnr-aligncenter-table::before {
-    color: $icon-color;
     content: '\e7cc';
   }
 
+  .e-de-ctnr-outsideborder::before {
+    content: '\e7ad';
+  }
+
+  .e-de-ctnr-allborders::before {
+    content: '\e7d1';
+  }
+
+  .e-de-ctnr-insideborders::before {
+    content: '\e78f';
+  }
+
+  .e-de-ctnr-leftborders::before {
+    content: '\e806';
+  }
+
+  .e-de-ctnr-insideverticalborder::before {
+    content: '\e792';
+  }
+
+  .e-de-ctnr-rightborder::before {
+    content: '\e7ab';
+  }
+
+  .e-de-ctnr-topborder::before {
+    content: '\e7e0';
+  }
+
+  .e-de-ctnr-insidehorizondalborder::before {
+    content: '\e83b';
+  }
+
+  .e-de-ctnr-bottomborder::before {
+    content: '\e766';
+  }
+
+  .e-de-ctnr-strokesize::before {
+    content: '\e7bf';
+  }
+
+  .e-de-ctnr-highlightcolor::before {
+    content: '\e739';
+  }
+
+  .e-de-ctnr-mergecell::before {
+    content: '\e71e';
+  }
+
+  .e-de-ctnr-insertleft::before {
+    content: '\e78b';
+  }
+
+  .e-de-ctnr-insertright::before {
+    content: '\e70e';
+  }
+
+  .e-de-ctnr-insertabove::before {
+    content: '\e836';
+  }
+
+  .e-de-ctnr-insertbelow::before {
+    content: '\e801';
+  }
+
+  .e-de-ctnr-deleterows::before {
+    content: '\e7f2';
+  }
+
+  .e-de-ctnr-deletecolumns::before {
+    content: '\e714';
+  }
+
+  .e-de-ctnr-aligntop::before {
+    content: '\e707';
+  }
+
+  .e-de-ctnr-alignbottom::before {
+    content: '\e7a0';
+  }
+
+  .e-de-ctnr-aligncenter-table::before {
+    content: '\e74f';
+  }
+
   .e-de-ctnr-cellbg-clr-picker::before {
-    color: $icon-color;
-    content: '\e782';
+    content: '\e783';
   }
 
   .e-de-ctnr-bullet-none::before {
     color: $icon-color;
-    content: '\e7e1';
+    content: '\e7f3';
     font-size: 20px;
     line-height: 28px;
   }
 
   .e-de-ctnr-bullet-dot::before {
     color: $icon-color;
-    content: '\e7e8';
+    content: '\e747';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-ctnr-bullet-circle::before {
     color: $icon-color;
-    content: '\e803';
+    content: '\e7d0';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-ctnr-bullet-square::before {
     color: $icon-color;
-    content: '\e804';
+    content: '\e7be';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-ctnr-bullet-flower::before {
     color: $icon-color;
-    content: '\e7e4';
+    content: '\e79b';
     line-height: 28px;
   }
 
   .e-de-ctnr-bullet-arrow::before {
     color: $icon-color;
-    content: '\e7e9';
+    content: '\e763';
     line-height: 28px;
   }
 
   .e-de-ctnr-bullet-tick::before {
     color: $icon-color;
-    content: '\e7ec';
+    content: '\e7fc';
     line-height: 28px;
   }
 
   .e-de-selected-item::before {
     color: $icon-color;
-    content: '\e75d';
+    content: '\e774';
   }
 
   .e-de-ctnr-break::before {
-    color: $icon-color;
-    content: '\e777';
+    content: '\e7bc';
   }
 
   .e-de-ctnr-page-break::before {
-    color: $icon-color;
-    content: '\e708';
+    content: '\e742';
   }
 
   .e-de-ctnr-section-break::before {
-    color: $icon-color;
-    content: '\e74c';
+    content: '\e762';
   }
 
   .e-de-ctnr-upload::before {
     color: $icon-color;
-    content: '\e7b5';
+    content: '\e712';
   }
 
   .e-de-flip {
@@ -405,86 +342,78 @@
   }
 
   .e-de-cnt-cmt-add::before {
-    color: $icon-color;
-    content: '\e82a';
+    content: '\e82c';
   }
 
   .e-de-cnt-track::before {
-    color: $icon-color;
-    content: '\e81f';
+    content: '\e80b';
   }
 
   .e-de-printlayout::before {
-    color: $icon-color;
-    content: '\e822';
+    content: '\e73a';
   }
 
   .e-de-weblayout::before {
-    color: $icon-color;
-    content: '\e82e';
+    content: '\e7d3';
   }
 
   .e-de-textform::before {
     color: $icon-color;
-    content: '\e860';
+    content: '\e830';
     font-family: 'e-icons';
   }
 
   .e-de-formproperties::before {
     color: $icon-color;
-    content: '\e8f1';
+    content: '\e83e';
     font-family: 'e-icons';
   }
 
   .e-de-clearform::before {
     color: $icon-color;
-    content: '\e8f2';
+    content: '\e7f8';
     font-family: 'e-icons';
   }
 
   .e-de-dropdownform::before {
     color: $icon-color;
-    content: '\e865';
+    content: '\e7a6';
     font-family: 'e-icons';
   }
 
   .e-de-formfield::before {
-    color: $icon-color;
-    content: '\e867';
+    content: '\e7cd';
     font-family: 'e-icons';
   }
 
   .e-de-checkbox-form::before {
     color: $icon-color;
-    content: '\e85f';
+    content: '\e7e4';
     font-family: 'e-icons';
   }
 
   .e-de-arrow-up::before {
-    content: '\e768';
+    content: '\e776';
     font-family: 'e-icons';
   }
 
   .e-de-arrow-down::before {
-    content: '\e732';
+    content: '\e729';
     font-family: 'e-icons';
   }
 
   .e-de-update-field::before {
-    color: $icon-color;
-    content: '\e838';
+    content: '\e828';
     font-family: 'e-icons';
   }
 
   .e-de-footnote::before {
-    color: $icon-color;
-    content: '\e868';
+    content: '\e7af';
     font-family: 'e-icons';
   }
 
   .e-de-endnote::before {
-    color: $icon-color;
-    content: '\e868';
+    content: '\e7af';
     font-family: 'e-icons';
   }
 }

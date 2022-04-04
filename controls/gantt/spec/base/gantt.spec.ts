@@ -421,7 +421,7 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
-    describe('Rendering milestone based on milestone mapping', () => {
+     describe('Rendering milestone based on milestone mapping', () => {
         let ganttObj: Gantt;
         let projectNewData = [
             {

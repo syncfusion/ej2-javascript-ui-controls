@@ -991,7 +991,7 @@ describe('Grid base module', () => {
             gridObj.groupModule.expandCollapseRows(expandElem[1]);
             gridObj.groupModule.expandCollapseRows(expandElem[0]);
             gridObj.groupCollapseAll();
-            expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(0);
+            expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(12);
         });
         
         it('expandAll method testing', () => {
@@ -1087,7 +1087,7 @@ describe('Grid base module', () => {
 
             it('Expand method testing', () => {
                 gridObj.detailRowModule.expand(gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse'));
-                expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(0);
+                expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(1);
             });
     
             afterAll(() => {

@@ -22,6 +22,13 @@ $spin-fabric-stroke-color: $primary-light;
 $spin-boot5-stroke-color: $primary;
 $spin-fabric-arc-color: $primary;
 $spin-bootstrap-stroke-color: $primary;
+$spin-tailwind-stroke-width: 4.5;
+$spin-tailwind-arc-color: $primary;
+$spin-tailwind-stroke-color: $primary-light;
+
+@mixin tw-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.21, .21, .21, .21);
+}
 
 @mixin mat-spinner-rotate {
   animation: material-spinner-rotate 1568.63ms linear infinite;

@@ -5,6 +5,7 @@ import { Editor } from "../../../src/document-editor/implementation/editor/edito
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
 import { EditorHistory } from "../../../src/document-editor/implementation/editor-history/editor-history";
 import { SfdtExport } from "../../../src/document-editor/implementation/writer/sfdt-export";
+import { ParagraphWidget } from "../../../src";
 describe('cut copy paste with Track changes', () => {
     let container: DocumentEditor;
     beforeAll(() => {
@@ -814,4 +815,52 @@ describe('Track changes validation', () => {
         editor.editor.handleBackKey();
         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
      });
+});
+describe('Track changes empty para delete validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes empty para backspace validation', () => {
+        editor.openBlank();
+        editor.enableTrackChanges = true;
+        editor.editor.handleEnterKey();
+        editor.editor.handleEnterKey();
+        let para: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        expect(para.characterFormat.revisions.length).toBe(1);
+        editor.editor.handleBackKey();
+        editor.editor.handleBackKey();
+        para = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        expect(para.characterFormat.revisions.length).toBe(0);
+    });
+    it('Track changes empty para delete validation', () => {
+        editor.openBlank();
+        editor.enableTrackChanges = true;
+        editor.editor.handleEnterKey();
+        editor.editor.handleEnterKey();
+        let para: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        expect(para.characterFormat.revisions.length).toBe(1);
+        editor.selection.moveToDocumentStart();
+        editor.editor.handleDelete();
+        editor.editor.handleDelete();
+        para = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        expect(para.characterFormat.revisions.length).toBe(0);
+    });
 });

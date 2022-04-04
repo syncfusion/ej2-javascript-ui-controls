@@ -919,6 +919,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isManualRefresh: boolean = false;
     /** @hidden */
+    public isAutoFitColumns: boolean = false;
+    /** @hidden */
     public enableDeepCompare: boolean = false;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
@@ -1826,6 +1828,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /* eslint-disable */
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
+     * 
      * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event actionBegin
@@ -2796,7 +2799,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     protected render(): void {
         this.log(['module_missing', 'promise_enabled', 'locale_missing', 'check_datasource_columns']);
-        this.ariaService.setOptions(this.element, { role: 'grid' });
+        this.ariaService.setOptions(this.element, { datarole: 'grid' });
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this, this.serviceLocator);
         this.searchModule = new Search(this);
@@ -2822,6 +2825,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.updateStackedFilter();
         this.showSpinner();
         this.notify(events.initialEnd, {});
+        if (this.refreshing) {
+            this.trigger('created');
+        }
     }
 
     /**
@@ -4000,15 +4006,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             (this as any).clearTemplate(['columnTemplate'], undefined, () => {
                 const cells: string = 'cells';
                 const rowIdx: string = 'index';
-                const rowsObj: Row<Column>[] = this.getRowsObject();
+                const rows: Element[] = this.getDataRows();
                 const indent: number = this.getIndentCount();
                 const cellIndex: number = this.getNormalizedColumnIndex(columnUid);
-                for (let j: number = 0; j < rowsObj.length; j++) {
-                    if (rowsObj[j].isDataRow && !isNullOrUndefined(rowsObj[j].index)) {
-                        const cell: Cell<Column> = rowsObj[j][cells][cellIndex];
+                for (let j: number = 0; j < rows.length; j++) {
+                    const rowsObj: Row<Column> = this.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
+                    if (rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index)) {
+                        const cell: Cell<Column> = rowsObj[cells][cellIndex];
                         const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                        const td: Element = this.getCellFromIndex(rowsObj[j].index, cellIndex - indent);
-                        cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                        const td: Element = this.getCellFromIndex(j, cellIndex - indent);
+                        cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
                     }
                 }
             });
@@ -4628,6 +4635,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.frozenName = 'Right';
         } else if (this.frozenLeftCount && this.frozenRightCount) {
             this.frozenName = 'Left-Right';
+        } else {
+            this.frozenName = undefined;
         }
     }
 
@@ -4858,7 +4867,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public filterByColumn(
-        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[],
+        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[]| null,
         predicate?: string, matchCase?: boolean,
         ignoreAccent?: boolean, actualFilterValue?: string, actualOperator?: string): void {
         if (this.filterModule) {
@@ -5099,11 +5108,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * To update the specified row by given values without changing into edited state.
      *
-     * @param {number} index Defines the row index.
-     * @param {Object} data Defines the data object to be updated.
-     * 
      * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %}
      * 
+     * @param {number} index Defines the row index.
+     * @param {Object} data Defines the data object to be updated.
      * @returns {void}
      */
     public updateRow(index: number, data: Object): void {
@@ -5706,11 +5714,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         myTableDiv.style.cssText = 'display: inline-block;visibility:hidden;position:absolute';
         const mySubDiv: HTMLDivElement = this.createElement('div') as HTMLDivElement;
         mySubDiv.className = tag;
-        const myTable: HTMLTableElement = this.createElement('table') as HTMLTableElement;
+        const myTable: HTMLTableElement = this.createElement('table', { attrs: { role: 'grid' } }) as HTMLTableElement;
         myTable.className = table.className;
         myTable.style.cssText = 'table-layout: auto;width: auto';
         const ele: string = (type === 'header') ? 'th' : 'td';
-        const myTr: HTMLTableRowElement = this.createElement('tr') as HTMLTableRowElement;
+        const myTr: HTMLTableRowElement = this.createElement('tr', { attrs: { role: 'row' } }) as HTMLTableRowElement;
         const mytd: HTMLElement = this.createElement(ele) as HTMLElement;
         myTr.appendChild(mytd);
         myTable.appendChild(myTr);
@@ -6228,11 +6236,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * Ungroups a column by column name.
-     *
-     * @param  {string} columnName - Defines the column name to ungroup.
      * 
      * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}
      * 
+     * @param  {string} columnName - Defines the column name to ungroup.
      * @returns {void}
      */
     public ungroupColumn(columnName: string): void {
@@ -6862,7 +6869,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const gClient: ClientRect = this.element.getBoundingClientRect();
                 const fClient: ClientRect = target.getBoundingClientRect();
                 if (filterDlg) {
-                    filterDlg.style.left = (fClient.right - gClient.left).toString() + 'px';
+                    if ((filterDlg.offsetWidth + fClient.right) > gClient.right) {
+                        filterDlg.style.left = ((fClient.right - filterDlg.offsetWidth) - gClient.left).toString() + 'px';
+                    } else {
+                        filterDlg.style.left = (fClient.right - gClient.left).toString() + 'px';
+                    }
                 }
             }
         }
@@ -7041,7 +7052,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public updateVisibleExpandCollapseRows(): void {
         const rows: Row<Column>[] = this.getRowsObject();
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
-            if (rows[i].isDataRow && (this.getRowElementByUID(rows[i].uid) as HTMLTableRowElement).style.display === 'none') {
+            if ((rows[i].isDataRow || rows[i].isAggregateRow) && (this.getRowElementByUID(rows[i].uid) as HTMLTableRowElement).style.display === 'none') {
                 (<{ visible?: boolean }>rows[i]).visible = false;
             } else {
                 (<{ visible?: boolean }>rows[i]).visible = true;

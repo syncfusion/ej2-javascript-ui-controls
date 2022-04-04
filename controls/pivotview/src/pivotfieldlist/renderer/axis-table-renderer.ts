@@ -116,7 +116,7 @@ export class AxisTableRenderer {
             if (element.length > 0) {
                 addClass([element[element.length - 1].querySelector('.' + cls.DROP_INDICATOR_CLASS + '-last')], cls.INDICATOR_HOVER_CLASS);
             }
-        } else if (e.type === 'mouseleave') {
+        } else if (!this.parent.isDragging || (!(e.target as HTMLElement).classList.contains(cls.DROPPABLE_CLASS) && e.type === 'mouseleave')) {
             removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
             removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS + '-last')), cls.INDICATOR_HOVER_CLASS);
         }

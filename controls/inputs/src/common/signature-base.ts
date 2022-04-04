@@ -25,12 +25,12 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private timeout: number | null = null;
     private storedArgs: MouseEvent & TouchEvent;
     private isSignatureEmpty: boolean = true;
-    private signatureValue: string;
     private backgroundLoaded: boolean | null = null;
     private fileType: SignatureFileType;
     private fileName: string;
     private clearArray: number[] = [];
     private isBlazor: boolean = false;
+    private isResponsive: boolean = false;
     private dotnetRef: BlazorDotnetObject;
 
     /**
@@ -88,48 +88,37 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     public velocity: number;
 
     /**
+     * Gets or sets the last signature url to maintain the persist state.
+     * 
+     */
+    public signatureValue: string;
+
+    /**
      * To Initialize the component rendering
      *
      * @private
      * @param {HTMLCanvasElement} element - Specifies the canvas element.
-     * @param {parameter} parameter - Specifies only for the blazor parameter.
      * @param {BlazorDotnetObject} dotnetRef - Specifies for blazor client to server communication.
      * @returns {void}
      */
-    public initialize(element: HTMLCanvasElement, parameter?: Parameter, dotnetRef?: BlazorDotnetObject): void {
+    public initialize(element: HTMLCanvasElement, dotnetRef?: BlazorDotnetObject): void {
         this.element = element;
         this.canvasContext = this.element.getContext('2d');
         this.canvasContext.canvas.tabIndex = 0;
-        if (parameter) {
-            this.setBlazorParameter(parameter);
+        if (dotnetRef) {
             this.dotnetRef = dotnetRef;
+            this.isBlazor = true;
+            if (this.signatureValue) {
+                this.loadPersistedSignature();
+            }
         }
         this.setHTMLProperties();
         if (isNullOrUndefined(this.signatureValue)) {
             this.updateSnapCollection(true);
         }
         this.wireEvents();
-        this.isSignatureEmpty = true;
         if (!this.isBlazor) {
             this.trigger('created', null);
-        }
-    }
-
-    private setBlazorParameter(parameter: Parameter): void {
-        this.isBlazor = true;
-        this.backgroundColor = parameter.backgroundColor;
-        this.backgroundImage = parameter.backgroundImage;
-        this.disabled = parameter.disabled;
-        this.isReadOnly = parameter.isReadOnly;
-        this.maxStrokeWidth = parameter.maxStrokeWidth || 2;
-        this.minStrokeWidth = parameter.minStrokeWidth || 0.5;
-        this.velocity = parameter.velocity || 0.7;
-        this.strokeColor = parameter.strokeColor || '#000000';
-        this.saveWithBackground = parameter.saveWithBackground;
-        this.interval = 30; this.previous = 0; this.minDistance = 5;
-        this.signatureValue = parameter.signatureValue;
-        if (this.signatureValue) {
-            this.loadPersistedSignature();
         }
     }
 
@@ -152,25 +141,22 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
         } else {
             EventHandler.remove(this.canvasContext.canvas, 'mousedown touchstart', this.mouseDownHandler);
-            EventHandler.remove(this.canvasContext.canvas, 'mousemove touchmove', this.mouseMoveHandler);
-            EventHandler.remove(this.canvasContext.canvas, 'mouseup touchend', this.mouseUpHandler);
-            EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
             EventHandler.remove(this.canvasContext.canvas, 'keydown', this.keyboardHandler);
             window.removeEventListener('resize', this.resizeHandler);
         }
     }
 
     private setHTMLProperties(): void {
-        if (this.element.height === 150) {
+        if (this.element.height === 150 && this.element.width === 300) {
             this.element.height = this.element.offsetHeight;
-        }
-        if (this.element.width === 300) {
             this.element.width = this.element.offsetWidth;
+            this.isResponsive = true;
         }
         this.canvasContext.scale(1, 1);
         this.canvasContext.fillStyle = this.strokeColor;
         if (this.backgroundImage) {
             this.canvasContext.canvas.style.backgroundImage = 'url(' +  this.backgroundImage + ')';
+            this.canvasContext.canvas.style.backgroundRepeat = "no-repeat";
         } else if (this.backgroundColor) {
             this.canvasContext.canvas.style.backgroundColor = this.backgroundColor;
         }
@@ -249,9 +235,11 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private resizeHandler(): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: SignatureBase = this;
-        this.canvasContext.canvas.width = this.element.offsetWidth;
-        this.canvasContext.canvas.height = this.element.offsetHeight;
-        this.canvasContext.scale(1, 1);
+        if (this.isResponsive) {
+            this.canvasContext.canvas.width = this.element.offsetWidth;
+            this.canvasContext.canvas.height = this.element.offsetHeight;
+            this.canvasContext.scale(1, 1);
+        }
         const restoreImg: HTMLImageElement = new Image();
         restoreImg.src = this.snapColl[this.incStep];
         restoreImg.onload = () => {
@@ -738,6 +726,9 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         const proxy: SignatureBase = this;
         const bitmapImage: HTMLImageElement = new Image();
         bitmapImage.src = signature;
+        if (signature.slice(0,4) !== 'data') {
+            bitmapImage.crossOrigin = 'anonymous';
+        }
         bitmapImage.onload = () => {
             Promise.all([
                 createImageBitmap(bitmapImage, 0, 0, width, height)
@@ -746,6 +737,9 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
                 tempCanvas.width = width;
                 tempCanvas.height = height;
                 tempCanvas.getContext('2d').drawImage(results[0], 0, 0);
+                if (signature.slice(0,4) !== 'data') {
+                    proxy.canvasContext.globalCompositeOperation = 'source-over';
+                }
                 proxy.canvasContext.drawImage(tempCanvas, 0, 0, width, height, 0, 0, proxy.element.width, proxy.element.height);
                 proxy.updateSnapCollection();
             });
@@ -1049,60 +1043,4 @@ export interface SignatureChangeEventArgs {
      * Gets or sets the action name of the signature.
      */
     actionName: string;
-}
-
-/**
- * Blazor parameter for signature component.
- */
-export interface Parameter {
-
-    /**
-     * Gets or sets the background color of the component.
-     */
-    backgroundColor: string;
-
-    /**
-     * Gets or sets the background image for the component.
-     */
-    backgroundImage: string;
-
-    /**
-     * Gets or sets the stroke color of the signature.
-     */
-    strokeColor: string;
-
-    /**
-     * Gets or sets whether to prevent the interaction in signature component.
-     */
-    isReadOnly: boolean;
-
-    /**
-     * Gets or sets whether to disable the signature component where the opacity is set to show disabled state.
-     */
-    disabled: boolean;
-
-    /**
-     * Gets or sets whether to save the signature along with Background Color and background Image while saving.
-     */
-    saveWithBackground: boolean;
-
-    /**
-     * Gets or sets the minimum stroke width for signature.
-     */
-    minStrokeWidth: number;
-
-    /**
-     * Gets or sets the maximum stroke width for signature.
-     */
-    maxStrokeWidth: number;
-
-    /**
-     * Gets or sets the velocity to calculate the stroke thickness based on the pressure of the contact on the digitizer surface.
-     */
-    velocity: number;
-
-    /**
-     * Gets or sets the last signature url to maintain the persist state.
-     */
-    signatureValue: string;
 }

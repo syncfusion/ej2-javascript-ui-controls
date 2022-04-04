@@ -42,10 +42,11 @@ export class DataSourceUpdate {
      * @returns {void}
      * @hidden
      */
-    public updateDataSource(fieldName: string, droppedClass: string, droppedPosition: number): void {
+    public updateDataSource(fieldName: string, droppedClass: string, droppedPosition: number): boolean {
         let dataSourceItem: IFieldOptions;
         let draggedClass: string;
         let draggedPosition: number = -1;
+        let nodeDropped: boolean = true;
         let row: IFieldOptions[] = this.parent.dataSourceSettings.rows;
         let column: IFieldOptions[] = this.parent.dataSourceSettings.columns;
         let value: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -155,7 +156,7 @@ export class DataSourceUpdate {
                                     break;
                                 case 'values':
                                     droppedPosition !== -1 ? this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem);
-                                    if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail) {
+                                    if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail && !(this.parent.dataSourceSettings.values.length > 1)) {
                                         let measureField: IFieldOptions = {
                                             name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
                                         };
@@ -168,8 +169,11 @@ export class DataSourceUpdate {
                         }
                     });
                 }
+            } else {
+                nodeDropped = false;
             }
         });
+        return nodeDropped;
     }
     /**
      * Updates the dataSource by removing the given field from the dataSource.
@@ -241,7 +245,8 @@ export class DataSourceUpdate {
                 showRemoveIcon: fieldItem ? fieldItem.showRemoveIcon : field.showRemoveIcon,
                 showValueTypeIcon: fieldItem ? fieldItem.showValueTypeIcon : field.showValueTypeIcon,
                 allowDragAndDrop: fieldItem ? fieldItem.allowDragAndDrop : field.allowDragAndDrop,
-                showSubTotals: fieldItem ? fieldItem.showSubTotals : field.showSubTotals
+                showSubTotals: fieldItem ? fieldItem.showSubTotals : field.showSubTotals,
+                expandAll: fieldItem ? fieldItem.expandAll : field.expandAll
             };
         } else {
             let field: IField = this.parent.engineModule.fieldList[fieldName];
@@ -262,7 +267,8 @@ export class DataSourceUpdate {
                 showSortIcon: fieldItem ? fieldItem.showSortIcon : field.showSortIcon,
                 showEditIcon: fieldItem ? fieldItem.showEditIcon : field.showEditIcon,
                 showRemoveIcon: fieldItem ? fieldItem.showRemoveIcon : field.showRemoveIcon,
-                showValueTypeIcon: fieldItem ? fieldItem.showValueTypeIcon : field.showValueTypeIcon
+                showValueTypeIcon: fieldItem ? fieldItem.showValueTypeIcon : field.showValueTypeIcon,
+                expandAll: fieldItem ? fieldItem.expandAll : field.expandAll
             };
         }
         return newField;

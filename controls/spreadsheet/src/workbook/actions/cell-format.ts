@@ -2,7 +2,7 @@ import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, active
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, checkConditionalFormat } from '../index';
-import { getRow, ExtendedRowModel } from '../index';
+import { getRow, ExtendedRowModel, updateCell, CellUpdateArgs, isHeightCheckNeeded, workbookFormulaOperation } from '../index';
 
 /**
  * Workbook Cell format.
@@ -21,7 +21,7 @@ export class WorkbookCellFormat {
             sheet = this.parent.getActiveSheet();
         }
         if (rng === undefined) { rng = sheet.selectedRange; }
-        const triggerEvent: boolean = typeof (rng) !== 'object' && args.onActionUpdate;
+        const triggerEvt: boolean = typeof (rng) !== 'object' && args.onActionUpdate;
         const eventArgs: BeforeCellFormatArgs = {
             range: <string>rng, style: Object.assign({}, args.style), requestType: 'CellFormat' };
         if (args.borderType) {
@@ -29,7 +29,7 @@ export class WorkbookCellFormat {
         }
         const style: CellStyleModel = {};
         Object.assign(style, eventArgs.style, null, true);
-        if (triggerEvent) {
+        if (triggerEvt) {
             this.parent.trigger('beforeCellFormat', eventArgs);
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
             if (eventArgs.cancel) { args.cancel = true; return; }
@@ -37,63 +37,96 @@ export class WorkbookCellFormat {
         const indexes: number[] = typeof (eventArgs.range) === 'object' ? <number[]>eventArgs.range :
             getSwapRange(getRangeIndexes(<string>eventArgs.range));
         if (args.borderType) {
-            this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate); delete args.style.border;
+            this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate);
+            delete args.style.border;
+            delete eventArgs.style.border;
         }
+        let i: number; let j: number;
+        const props: CellUpdateArgs = { cell: null, rowIdx: 0, colIdx: 0, eventOnly: true, preventEvt: !triggerEvt };
+        const triggerBeforeEvent: (cellStyle: CellStyleModel) => boolean = (cellStyle: CellStyleModel): boolean => {
+            props.cell = { style: cellStyle };
+            props.rowIdx = i;
+            props.colIdx = j;
+            return updateCell(this.parent, sheet, props);
+        };
         if (eventArgs.style.borderTop !== undefined) {
-            for (let i: number = indexes[1]; i <= indexes[3]; i++) {
-                this.checkAdjustantBorder(sheet, 'borderBottom', indexes[0] - 1, i);
-                this.checkFullBorder(sheet, 'borderBottom', indexes[0] - 1, i); this.checkFullBorder(sheet, 'borderTop', indexes[0], i);
-                this.setCellBorder(sheet, { borderTop: eventArgs.style.borderTop }, indexes[0], i, args.onActionUpdate, i === indexes[3]);
+            for (j = indexes[1]; j <= indexes[3]; j++) {
+                i = indexes[0];
+                if (!triggerBeforeEvent({ borderTop: eventArgs.style.borderTop })) {
+                    this.checkAdjacentBorder(sheet, 'borderBottom', i - 1, j);
+                    this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
+                    this.checkFullBorder(sheet, 'borderTop', i, j);
+                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, j === indexes[3]);
+                }
             }
             delete eventArgs.style.borderTop;
         }
         if (eventArgs.style.borderBottom !== undefined) {
-            for (let i: number = indexes[1]; i <= indexes[3]; i++) {
-                const rowIdx: number = indexes[0]; const colIdx: number = i;
-                const firstCell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
-                const lastCell: CellModel = getCell(indexes[2], indexes[3], sheet, false, true);
-                this.checkAdjustantBorder(sheet, 'borderTop', indexes[2] + 1, i);
-                this.checkFullBorder(sheet, 'borderTop', indexes[2] + 1, i); this.checkFullBorder(sheet, 'borderBottom', indexes[2], i);
-                if (firstCell.rowSpan > 1 && lastCell.rowSpan < 0) {
-                    this.setCellBorder(
-                        sheet, { borderBottom: eventArgs.style.borderBottom }, indexes[0], i, args.onActionUpdate, i === indexes[3]);
+            let firstCell: CellModel; let lastCell: CellModel;
+            for (j = indexes[1]; j <= indexes[3]; j++) {
+                i = indexes[0];
+                firstCell = getCell(i, j, sheet, false, true);
+                if (firstCell.rowSpan > 0) {
+                    lastCell = getCell(indexes[2], indexes[1], sheet, false, true);
+                } else {
+                    lastCell = getCell(indexes[2], indexes[3], sheet, false, true);
                 }
-                else {
-                    this.setCellBorder(
-                        sheet, { borderBottom: eventArgs.style.borderBottom }, indexes[2], i, args.onActionUpdate, i === indexes[3]);
+                if (!(firstCell.rowSpan > 1 && lastCell.rowSpan < 0)) {
+                    i = indexes[2];
                 }
-                this.setBottomBorderPriority(sheet, indexes[2], i);
+                if (!triggerBeforeEvent({ borderBottom: eventArgs.style.borderBottom })) {
+                    this.checkAdjacentBorder(sheet, 'borderTop', indexes[2] + 1, j);
+                    this.checkFullBorder(sheet, 'borderTop', indexes[2] + 1, j);
+                    this.checkFullBorder(sheet, 'borderBottom', indexes[2], j);
+                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, j === indexes[3]);
+                    this.setBottomBorderPriority(sheet, indexes[2], j);
+                }
             }
             delete eventArgs.style.borderBottom;
         }
         if (eventArgs.style.borderLeft !== undefined) {
             for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                this.checkAdjustantBorder(sheet, 'borderRight', i, indexes[1] - 1);
-                this.checkFullBorder(sheet, 'borderRight', i, indexes[1] - 1); this.checkFullBorder(sheet, 'borderLeft', i, indexes[1]);
-                this.setCellBorder(sheet, { borderLeft: eventArgs.style.borderLeft }, i, indexes[1], args.onActionUpdate);
+                j = indexes[1];
+                if (!triggerBeforeEvent({ borderLeft: eventArgs.style.borderLeft })) {
+                    this.checkAdjacentBorder(sheet, 'borderRight', i, j - 1);
+                    this.checkFullBorder(sheet, 'borderRight', i, j - 1);
+                    this.checkFullBorder(sheet, 'borderLeft', i, j);
+                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate);
+                }
             }
             delete eventArgs.style.borderLeft;
         }
         if (eventArgs.style.borderRight !== undefined) {
             for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                this.checkAdjustantBorder(sheet, 'borderLeft', i, indexes[3] - 1);
-                this.checkFullBorder(sheet, 'borderLeft', i, indexes[3] - 1); this.checkFullBorder(sheet, 'borderRight', i, indexes[3]);
-                this.setCellBorder(sheet, { borderRight: eventArgs.style.borderRight }, i, indexes[3], args.onActionUpdate);
+                j = indexes[3];
+                if (!triggerBeforeEvent({ borderRight: eventArgs.style.borderRight })) {
+                    this.checkAdjacentBorder(sheet, 'borderLeft', i, j + 1);
+                    this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+                    this.checkFullBorder(sheet, 'borderRight', i, j);
+                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate);
+                }
             }
             delete eventArgs.style.borderRight;
         }
         let border: string; let isFullBorder: boolean; let cell: CellModel;
-        if (Object.keys(args.style).length) {
+        if (Object.keys(eventArgs.style).length) {
             const parent: ExtendedWorkbook = this.parent as ExtendedWorkbook;
             const activeSheet: boolean = parent.viewport && this.parent.getActiveSheet().id === sheet.id;
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const viewport: number[] = [frozenRow + parent.viewport.topIndex, frozenCol + parent.viewport.leftIndex,
                 parent.viewport.bottomIndex, parent.viewport.rightIndex];
-            let uiRefresh: boolean;
-            for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                if (((getRow(sheet, i) || {}) as ExtendedRowModel).isFiltered) { continue; }
-                uiRefresh = activeSheet && ((i >= viewport[0] && i <= viewport[2]) || i < frozenRow);
-                for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+            let uiRefresh: boolean; let row: ExtendedRowModel; let checkHeight: boolean;
+            for (i = indexes[0]; i <= indexes[2]; i++) {
+                row = getRow(sheet, i) || {};
+                if (row.isFiltered) {
+                    continue;
+                }
+                uiRefresh = (i >= viewport[0] && i <= viewport[2]) || i < frozenRow;
+                checkHeight = false;
+                for (j = indexes[1]; j <= indexes[3]; j++) {
+                    if (triggerBeforeEvent(eventArgs.style)) {
+                        continue;
+                    }
                     if (isFullBorder === undefined) {
                         if (eventArgs.style.border !== undefined) {
                             border = eventArgs.style.border; delete eventArgs.style.border; isFullBorder = true;
@@ -117,19 +150,35 @@ export class WorkbookCellFormat {
                         this.setFullBorder(sheet, border, indexes, i, j, args.onActionUpdate);
                     }
                     this.setCellStyle(sheet, i, j, eventArgs.style);
+                    if (!activeSheet) {
+                        continue;
+                    }
                     if (uiRefresh && ((j >= viewport[1] && j <= viewport[3]) || j < frozenCol)) {
                         this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: eventArgs.style, rowIdx: i, colIdx: j,
                             lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate
                         });
+                    } else if (!row.customHeight) {
+                        checkHeight = checkHeight || isHeightCheckNeeded(eventArgs.style, args.onActionUpdate);
+                        if (checkHeight) {
+                            this.parent.notify(
+                                applyCellFormat, <CellFormatArgs>{ rowIdx: i, colIdx: j, lastCell: j === indexes[3], checkHeight: true,
+                                    outsideViewport: !uiRefresh, onActionUpdate: args.onActionUpdate });
+                        }
                     }
                 }
             }
         }
-        if (isFullBorder) { eventArgs.style.border = border; } this.parent.setUsedRange(indexes[2], indexes[3]);
-        if (args.refreshRibbon) { this.parent.notify(activeCellChanged, null); }
-        if (triggerEvent) {
+        if (isFullBorder) {
+            eventArgs.style.border = border;
+        }
+        this.parent.setUsedRange(indexes[2], indexes[3]);
+        if (args.refreshRibbon) {
+            this.parent.notify(activeCellChanged, null);
+        }
+        if (triggerEvt) {
             eventArgs.style = style;
-            eventArgs.range = `${sheet.name}!${rng}`; this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
+            eventArgs.range = `${sheet.name}!${rng}`;
+            this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
         }
     }
     private setBottomBorderPriority(sheet: SheetModel, rowIdx: number, colIdx: number): void {
@@ -143,27 +192,27 @@ export class WorkbookCellFormat {
         sheet: SheetModel, border: string, indexes: number[], i: number, j: number, actionUpdate: boolean, modelUpdate?: boolean): void {
         const style: CellStyleModel = {};
         if (i === indexes[0]) {
-            this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
+            this.checkAdjacentBorder(sheet, 'borderBottom', i - 1, j);
             this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
         }
         if (j === indexes[1]) {
-            this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1); this.checkFullBorder(sheet, 'borderRight', i, j - 1);
+            this.checkAdjacentBorder(sheet, 'borderRight', i, j - 1); this.checkFullBorder(sheet, 'borderRight', i, j - 1);
         }
         if (j === indexes[3]) {
-            this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1); this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+            this.checkAdjacentBorder(sheet, 'borderLeft', i, j + 1); this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
         } else {
-            this.checkAdjustantBorder(sheet, 'border', i, j + 1);
+            this.checkAdjacentBorder(sheet, 'border', i, j + 1);
         }
         style.borderRight = border; style.borderTop = border; style.borderLeft = border;
         style.borderBottom = border; this.setCellBorder(sheet, style, i, j, actionUpdate, j === indexes[3], null, modelUpdate);
         if (i === indexes[2]) {
-            this.checkAdjustantBorder(sheet, 'borderTop', i + 1, j); this.checkFullBorder(sheet, 'borderTop', i + 1, j);
+            this.checkAdjacentBorder(sheet, 'borderTop', i + 1, j); this.checkFullBorder(sheet, 'borderTop', i + 1, j);
             this.setBottomBorderPriority(sheet, i, j);
         } else {
-            this.checkAdjustantBorder(sheet, 'border', i + 1, j);
+            this.checkAdjacentBorder(sheet, 'border', i + 1, j);
         }
     }
-    private checkAdjustantBorder(sheet: SheetModel, prop: string, rowIdx: number, colIdx: number): void {
+    private checkAdjacentBorder(sheet: SheetModel, prop: string, rowIdx: number, colIdx: number): void {
         const style: CellStyleModel = {};
         if (this.parent.getCellStyleValue([prop], [rowIdx, colIdx])[prop] !== '') {
             style[prop] = undefined; this.setCellStyle(sheet, rowIdx, colIdx, style);
@@ -235,25 +284,26 @@ export class WorkbookCellFormat {
             }
         }
         eventArgs.range = sheet.name + '!' + <string>eventArgs.range;
+        eventArgs.style.textDecoration = changedValue;
         this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
     }
     private setTypedBorder(sheet: SheetModel, border: string, range: number[], type: BorderType, actionUpdate: boolean): void {
         let prevBorder: string;
         if (type === 'Outer') {
             for (let colIdx: number = range[1]; colIdx <= range[3]; colIdx++) {
-                this.checkAdjustantBorder(sheet, 'borderBottom', range[0] - 1, colIdx);
+                this.checkAdjacentBorder(sheet, 'borderBottom', range[0] - 1, colIdx);
                 this.checkFullBorder(sheet, 'borderBottom', range[0] - 1, colIdx);
                 this.setCellBorder(sheet, { borderTop: border }, range[0], colIdx, actionUpdate, colIdx === range[3]);
-                this.checkAdjustantBorder(sheet, 'borderTop', range[2] + 1, colIdx);
+                this.checkAdjacentBorder(sheet, 'borderTop', range[2] + 1, colIdx);
                 this.checkFullBorder(sheet, 'borderTop', range[2] + 1, colIdx);
                 this.setCellBorder(sheet, { borderBottom: border }, range[2], colIdx, actionUpdate, colIdx === range[3], type);
                 this.setBottomBorderPriority(sheet, range[2], colIdx);
             }
             for (let rowIdx: number = range[0]; rowIdx <= range[2]; rowIdx++) {
-                this.checkAdjustantBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
+                this.checkAdjacentBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
                 this.checkFullBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
                 this.setCellBorder(sheet, { borderLeft: border }, rowIdx, range[1], actionUpdate);
-                this.checkAdjustantBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
+                this.checkAdjacentBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
                 this.checkFullBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
                 this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[3], actionUpdate, null, type);
             }
@@ -283,11 +333,11 @@ export class WorkbookCellFormat {
                 for (let j: number = range[1]; j <= range[3]; j++) {
                     const style: CellStyleModel = { borderRight: border, borderLeft: border };
                     if (j === range[1]) {
-                        this.checkAdjustantBorder(sheet, 'borderRight', i, j - 1);
+                        this.checkAdjacentBorder(sheet, 'borderRight', i, j - 1);
                         this.checkFullBorder(sheet, 'borderRight', i, j - 1);
                     }
                     if (j === range[3]) {
-                        this.checkAdjustantBorder(sheet, 'borderLeft', i, j + 1);
+                        this.checkAdjacentBorder(sheet, 'borderLeft', i, j + 1);
                         this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
                     }
                     this.setCellBorder(sheet, style, i, j, actionUpdate);
@@ -298,12 +348,12 @@ export class WorkbookCellFormat {
                 for (let j: number = range[1]; j <= range[3]; j++) {
                     const style: CellStyleModel = { borderTop: border, borderBottom: border };
                     if (i === range[0]) {
-                        this.checkAdjustantBorder(sheet, 'borderBottom', i - 1, j);
+                        this.checkAdjacentBorder(sheet, 'borderBottom', i - 1, j);
                         this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
                     }
                     this.setCellBorder(sheet, style, i, j, actionUpdate, j === range[3]);
                     if (i === range[2]) {
-                        this.checkAdjustantBorder(sheet, 'borderTop', i + 1, j); this.checkFullBorder(sheet, 'borderTop', i + 1, j);
+                        this.checkAdjacentBorder(sheet, 'borderTop', i + 1, j); this.checkFullBorder(sheet, 'borderTop', i + 1, j);
                         this.setBottomBorderPriority(sheet, i, j);
                     }
                 }
@@ -366,7 +416,7 @@ export class WorkbookCellFormat {
         let sRowIdx: number = range[0];
         const eRowIdx: number = range[2];
         let sColIdx: number;
-        let eColIdx: number;
+        let eColIdx: number; let isValExist: boolean;
         for (sRowIdx; sRowIdx <= eRowIdx; sRowIdx++) {
             sColIdx = range[1];
             eColIdx = range[3];
@@ -382,14 +432,26 @@ export class WorkbookCellFormat {
                         if (cell.hyperlink) {
                             this.parent.notify(deleteHyperlink, { sheet: sheet, rowIdx: sRowIdx, colIdx: sColIdx, preventRefresh: true });
                         }
+                        isValExist = !!(cell.value || cell.formula);
                         delete cell.value; delete cell.formula;
                         this.parent.notify(checkConditionalFormat, { rowIdx: sRowIdx, colIdx: sColIdx, cell: cell, isAction: true });
+                        if (isValExist) {
+                            this.parent.notify(
+                                workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx,
+                                sheetIndex: sheetIdx });
+                        }
                         break;
                     case 'Clear Hyperlinks':
                         delete cell.hyperlink;
                         break;
                     case 'Clear All':
+                        isValExist = !!(cell.value || cell.formula);
                         setCell(sRowIdx, sColIdx, sheet, {}, false);
+                        if (isValExist) {
+                            this.parent.notify(
+                                workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx,
+                                sheetIndex: sheetIdx });
+                        }
                         break;
                     }
                 }

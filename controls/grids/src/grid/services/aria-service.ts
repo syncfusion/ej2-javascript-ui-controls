@@ -57,6 +57,7 @@ function setStateAndProperties(target: HTMLElement, attribute?: string, value?: 
  */
 export interface IAriaOptions<T> {
     role?: string;
+    datarole?: string;
     expand?: T;
     collapse?: T;
     selected?: T;
@@ -75,6 +76,7 @@ export interface IAriaOptions<T> {
 const config: IAriaOptions<string> = {
     expand: 'aria-expanded',
     role: 'role',
+    datarole: 'data-role',
     selected: 'aria-selected',
     multiselectable: 'aria-multiselectable',
     sort: 'aria-sort',

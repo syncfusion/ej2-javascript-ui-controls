@@ -2,38 +2,6 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
-
-### Radio Button
-
-#### Bug Fixes
-
-- Issue with accessing the element in the destroy method of radio button has been resolved.
-
-## 19.4.50 (2022-02-08)
-
-### Checkbox
-
-#### Bug Fixes
-
-- Issue with Checkbox value not being posted in form has been resolved.
-
-## 19.4.42 (2022-01-11)
-
-### Checkbox
-
-#### Bug Fixes
-
-- Issue with checkbox in talkback has been resolved.
-
-## 19.4.38 (2021-12-17)
-
-### Chips
-
-#### New Features
-
-- `#I308047` - Provided the `deleted` event support for the Chips component.
-
 ## 19.2.47 (2021-07-13)
 
 ### Checkbox

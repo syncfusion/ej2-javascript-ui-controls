@@ -71,6 +71,8 @@ export function getTemplateFunction(templateString: string): Function {
     try {
         if (document.querySelectorAll(templateString).length) {
             templateFn = templateComplier(document.querySelector(templateString).innerHTML.trim());
+        } else {
+            templateFn = templateComplier(templateString);
         }
     } catch (e) {
         templateFn = templateComplier(templateString);

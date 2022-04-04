@@ -5,6 +5,12 @@
     display: block;
     user-select: none;
 
+    & .e-delete-sheet-dlg {
+      @if $skin-name == 'FluentUI' {
+        height: 211px !important; // sass-lint:disable-line no-important
+      }
+    }
+
     & .e-protect-dlg {
       height: $protect-dlg-height;
       width: $protect-dlg-width;
@@ -26,9 +32,18 @@
         }
      }
 
+    @if $sheet-skin == 'FluentUI' {
+      display: inline;
+    }
+
     @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
       & .e-dlg-header-content {
         padding: 18px;
+        }
+      }
+    @if $skin-name == 'bootstrap5' {
+      & .e-dlg-header-content {
+        padding: 12px;
         }
       }
 
@@ -161,11 +176,22 @@
       @if $sheet-skin == 'bootstrap5' {
         margin-right: 4.8%;
       }
+      @else if $sheet-skin == 'FluentUI' {
+        margin-right: 6.8%;
+      }
       @else {
         margin-right: 2.8%;
       }
-      margin-right: 2.8%;
       width: 80%;
+    }
+
+    & .e-custom-format-dlg .e-footer-content {
+      padding: 0;
+    }
+
+    & .e-custom-format-dlg .e-dlg-content {
+      display: inline-table;
+      padding-top: 3px;
     }
 
     & .e-dlg-content .e-custom-dialog .e-custom-sample {
@@ -452,6 +478,7 @@
               padding-left: 2px;
               padding-right: 2px;
               position: absolute;
+              text-decoration: inherit;
               width: 100%;
             }
 
@@ -505,7 +532,7 @@
       padding: 1px;
 
       & .e-selectall {
-        border-style:  solid;
+        border-style: solid;
         border-width: $select-all-size / 2;
         cursor: cell;
         float: right;
@@ -595,6 +622,9 @@
 
     & .e-sheet .e-datavisualization-chart.e-ss-overlay {
       border: 1px solid $find-popup-border-color;
+      @if $skin-name == 'FluentUI' or $skin-name == 'tailwind' {
+        background-color: $white;
+      }
     }
 
     & .e-sheet .e-ss-overlay.e-ss-overlay-active {
@@ -997,8 +1027,13 @@
         width: 65px;
       }
 
-      @if $skin-name == 'bootstrap5' {
+      @else if $skin-name == 'bootstrap5' {
         width: 56px;
+      }
+
+      @else if $skin-name == 'FluentUI' {
+        height: 32px;
+        width: 62px;
       }
     }
 
@@ -1468,6 +1503,12 @@
         }
       }
 
+      @if $skin-name == 'bootstrap5' {
+        & .e-dlg-header-content {
+          padding: 12px;
+        }
+      }
+
       & .e-dlg-content {
         padding-bottom: 0;
         padding-left: 0;
@@ -1500,6 +1541,9 @@
       & .e-input,
       & .e-input-group {
         height: 34px;
+        @if $skin-name == 'FlunetUI' {
+          height: 40px;
+        }
       }
 
       & .e-cfmain {
@@ -1535,7 +1579,6 @@
         & .e-input {
           font-size: 14px;
           line-height: 30px;
-          padding-top: 10px;
         }
       }
     }
@@ -1545,6 +1588,11 @@
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         & .e-dlg-header-content {
           padding: 18px;
+        }
+      }
+      @if $skin-name == 'bootstrap5' {
+        & .e-dlg-header-content {
+          padding: 12px;
         }
       }
 
@@ -1680,7 +1728,12 @@
       max-height: 640px !important; // sass-lint:disable-line no-important
 
       & .e-dlg-header-content {
-        padding: 24px 24px 16px;
+        @if $skin-name == 'FluentUI' {
+          padding: 14px 24px;
+        }
+        @else {
+          padding: 24px 24px 16px;
+        }
 
         & .e-dlg-header {
           font-size: 18px;
@@ -1695,7 +1748,12 @@
 
         & .e-link-dialog {
           & .e-tab-header {
-            padding: 0 24px 0 25px;
+            @if $skin-name == 'bootstrap5' {
+              padding: 0 12px;
+            }
+            @else {
+              padding: 0 24px 0 25px;
+            }
 
             & .e-toolbar-items {
               height: 100%;
@@ -1713,10 +1771,23 @@
     }
 
           & .e-content {
-            padding-top: 24px;
+            @if $skin-name == 'bootstrap5' {
+              padding-top: 12px;
+            }
+            @else {
+              padding-top: 24px;
+            }
 
             & .e-cont {
-              margin:  0 0 15.5px 24px;
+              @if $skin-name == 'bootstrap5' {
+                margin:  12px 12px 15.5px;
+              }
+              @else if $skin-name == 'FluentUI' {
+                margin:  0 0 12px 24px;
+              }
+              @else {
+                margin:  0 0 15.5px 24px;
+              }
 
               & .e-header {
                 font-size: 14px;
@@ -1731,6 +1802,9 @@
                 height: 32px;
                 line-height: 16px;
                 width: 275px;
+                @if $skin-name == 'FluentUI'  {
+                  padding-bottom: 4px;
+                }
                 }
 
               & .e-text.e-disabled {
@@ -1893,6 +1967,9 @@
 
     & .e-filter-icon {
       margin-bottom: $filter-icon-margin-bottom;
+      @if $skin-name == 'FluentUI' {
+        margin-top: -9px;
+      }
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         font-size: 14px;
       }
@@ -2422,7 +2499,12 @@
     user-select: none;
 
     & .e-dlg-header-content {
-      padding: 18px;
+      @if $skin-name == 'bootstrap5' {
+        padding: 12px;
+      }
+      @else {
+        padding: 18px;
+      }
 
       & .e-dlg-header {
         font-size: 16px;
@@ -2555,6 +2637,33 @@
 
   .e-bigger .e-spreadsheet,
   .e-bigger.e-spreadsheet {
+
+    @if $skin-name == 'FluentUI' {
+      & .e-protect-dlg {
+        height: 790px !important; // sass-lint:disable-line no-important
+      }
+
+      & .e-delete-sheet-dlg {
+        height: 240px !important; // sass-lint:disable-line no-important
+      }
+
+      & .e-merge-alert-dlg {
+        height: 215px;
+      }
+
+      .e-filloption {
+        height: 40px;
+        width: 76px;
+      }
+
+      & .e-validation-list {
+        & .e-ddl-icon {
+          min-height: 0 !important; // sass-lint:disable-line no-important
+          min-width: 0 !important; // sass-lint:disable-line no-important
+        }
+      }
+    }
+
     & .e-ribbon {
       & .e-toolbar .e-btn:not(.e-tbar-btn) {
         &:not(.e-split-colorpicker) {
@@ -2694,10 +2803,16 @@
       float: left;
       margin-right: 2.8%;
       width: 77%;
+      @if $skin-name == 'FluentUI' {
+        height: 40px;
+      }
     }
 
     & .e-customsort-dlg {
       width: 590px !important; // sass-lint:disable-line no-important
+      @if $skin-name == 'FluentUI' {
+        width: 630px !important; // sass-lint:disable-line no-important
+      }
     }
 
     .e-sort-dialog .e-sort-template .e-list-item {
@@ -2762,12 +2877,26 @@
     }
   }
 
+  .e-bigger .e-spreadsheet .e-hyperlink-dlg .e-dlg-content .e-link-dialog .e-content .e-cont {
+    @if $skin-name == 'FluentUI' {
+      margin:  0 0 16px 24px;
+    }
+  }
+
+  .e-bigger .e-spreadsheet .e-hyperlink-dlg .e-dlg-header-content {
+    @if $skin-name == 'FluentUI' {
+      padding:  24px 24px 16px;
+    }
+  }
+
   .e-sort-dialog {
     height: 100%;
     position: relative;
 
     & .e-sort-listsection {
-      height: calc(100% - 28px);
+      @if $skin-name != 'FluentUI' {
+        height: calc(100% - 28px);
+      }
       margin: 0 auto;
       overflow: auto;
       width: 100%;

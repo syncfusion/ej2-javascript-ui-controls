@@ -963,12 +963,12 @@ export function getContent(
             let svgContent: string;
             const div: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             document.body.appendChild(div);
-        
+
             div.innerHTML = ((node.shape as any).content) as string;
             /* tslint:disable */
             svgContent = (div.getElementsByTagName('svg').length > 0)
-                ? div.getElementsByTagName('svg')[0].outerHTML : 
-                div.getElementsByTagName('g').length > 0 ? div.getElementsByTagName('g')[0].outerHTML : "" ;
+                ? div.getElementsByTagName('svg')[0].outerHTML :
+                div.getElementsByTagName('g').length > 0 ? div.getElementsByTagName('g')[0].outerHTML : "";
             /* tslint:disable */
             (node.shape as any).content = svgContent;
             /* tslint:disable */
@@ -1003,7 +1003,7 @@ export function getContent(
             /* eslint-disable */
             let compiledString: Function;
             compiledString = compile(element.content);
-            
+
             for (item of compiledString(sentNode, diagram, propertyName, content)) {
                 div.appendChild(item);
             }
@@ -1019,6 +1019,27 @@ export function getContent(
                 /* eslint-enable */
                 // eslint-disable-next-line quotes
                 cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
+        } else if ((diagram as any).isVue || (diagram as any).isVue3) {
+            // EJ2-57563 - Added the below code to provide slot template support for Vue and Vue 3
+            let templateFn: Function = (element as DiagramHtmlElement).getNodeTemplate();
+            if (templateFn) {
+                // If other than slot template, this if block gets execute and template get returned.
+                compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
+                    /* eslint-enable */
+                    // eslint-disable-next-line quotes
+                    cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
+            } else {
+                // If we provide slot template means then it enters in this block and returns a template
+                if (propertyName === "nodeTemplate") {
+                    compiledString = compile((diagram as any).nodeTemplate)
+                } else {
+                    compiledString = compile((diagram as any).annotationTemplate)
+                }
+                compiledString = compiledString(
+                    /* eslint-enable */
+                    // eslint-disable-next-line quotes
+                    cloneObject(nodeObject), diagram, propertyName + "_" + ((propertyName === "nodeTemplate") ? nodeObject.id : element.nodeId + nodeObject.id), undefined, undefined, false, div);
+            }
         } else {
             compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
                 /* eslint-enable */
@@ -1199,7 +1220,7 @@ export function createUserHandleTemplates(userHandleTemplate: string, template: 
         userHandleFn = templateCompiler(userHandleTemplate);
         for (handle of selectedItems.userHandles) {
             if (userHandleFn) {
-                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate'+'_'+ handle.name, undefined, undefined, false);
+                compiledString = userHandleFn(cloneObject(handle), diagram, 'userHandleTemplate' + '_' + handle.name, undefined, undefined, false);
                 for (i = 0; i < compiledString.length; i++) {
                     let attr: Object = {
                         'style': 'height: 100%; width: 100%; pointer-events: all',

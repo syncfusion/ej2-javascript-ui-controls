@@ -174,9 +174,9 @@ export class ExcelExport {
         if (excelRow.type === 'excel') {
             const excelrowobj: ITreeData = excelRow.rowObj.data;
             const filtercolumnlength: number = this.parent.grid.filterSettings.columns.length;
+            const rowlength: number = excelRow.excelRows.length;
+            const rowlevel: number = excelrowobj.level;
             if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
-                const rowlength: number = excelRow.excelRows.length;
-                const rowlevel: number = excelrowobj.level;
                 let expandedStatus: boolean = false; let sublevelState: boolean = false;
                 const state: boolean = getExpandStatus(this.parent, excelrowobj, this.parent.parentData);
                 if (this.isCollapsedStatePersist && (!state || !this.parent.isLocalData)) {
@@ -185,6 +185,9 @@ export class ExcelExport {
                 }
                 excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: sublevelState,
                     isHidden: expandedStatus };
+            }
+            else if (excelrowobj.hasChildRecords && isNullOrUndefined(excelrowobj.parentItem)) {
+                excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel};
             }
         }
     }

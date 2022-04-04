@@ -659,6 +659,8 @@ export function getTemplateFunction(template: string, gauge: CircularGauge): any
             if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
                 templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
             }
+        } else if ((gauge as any).isVue || (gauge as any).isVue3) {
+            templateFn = templateComplier(template);
         }
     } catch (e) {
         templateFn = templateComplier(template);

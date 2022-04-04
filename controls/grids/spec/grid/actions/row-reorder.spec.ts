@@ -1149,4 +1149,48 @@ describe('Row Drag and Drop module', () => {
         });
     })
 
+    describe('EJ2-55353 - ActionComplete event is not triggered after row reorder is performed ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    frozenColumns: 1,
+                    selectionSettings: { type: 'Multiple' },
+                    rowDropSettings: { targetID: undefined },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 130, textAlign: 'Left' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('set drop target ID', () => {
+            gridObj.rowDropSettings.targetID = gridObj.element.id;
+            gridObj.dataBind();
+        });
+
+   
+        it('reorderRows and check the actionComplete event', (done: Function) => {
+            gridObj.selectRow(1);
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'rowdraganddrop') {
+                    done();
+                } 
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.reorderRows(gridObj.getSelectedRowIndexes(), gridObj.getSelectedRowIndexes()[0] - 1);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    })
+
 });

@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition } from '../utils/enum';import { StockChart } from '../../stock-chart';
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow} from '../utils/enum';import { StockChart } from '../../stock-chart';
 
 /**
  * Interface for a class Location
@@ -224,12 +224,43 @@ export interface LegendSettingsModel {
     titlePosition?: LegendTitlePosition;
 
     /**
+     * Defines the text wrap behavior to employ when the individual legend text overflows
+     * * `Normal` -  Specifies to break words only at allowed break points.
+     * * `Wrap` - Specifies to break a word once it is too long to fit on a line by itself.
+     * * `AnyWhere` - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
+
+     *
+     * @default 'Normal'
+     */
+
+    textWrap?: TextWrap;
+
+    /**
+     * Defines the text overflow behavior to employ when the individual legend text overflows
+       * * `Clip` -  Specifies the text is clipped and not accessible.
+       * * `Ellipsis` -  Specifies an ellipsis (“...”) to the clipped text.
+
+     *
+     * @default 'Ellipsis'
+     */
+
+    textOverflow?: LabelOverflow;
+
+    /**
      * maximum width for the legend title.
      *
      * @default 100
      */
 
     maximumTitleWidth?: number;
+
+    /**
+     * Maximum label width for the legend text.
+     *
+     * @default null
+     */
+
+    maximumLabelWidth?: number;
 
     /**
      * If set to true, legend will be visible using pages.

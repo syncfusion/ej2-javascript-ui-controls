@@ -1634,7 +1634,7 @@ export class Render {
         if (isNaN(parHeight)) {
             parHeight = parHeight > this.parent.minHeight ? parHeight : this.parent.minHeight;
         }
-        if (this.parent.currentView !== 'Chart') {
+        if ((this.parent.showToolbar && this.parent.currentView !== 'Chart') || (!this.parent.showToolbar && this.parent.displayOption.view !== 'Chart')) {
             if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {
                 let rowColHeight: number = (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
                 let gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) ?

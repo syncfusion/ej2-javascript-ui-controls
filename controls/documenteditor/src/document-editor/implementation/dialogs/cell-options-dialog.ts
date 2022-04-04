@@ -82,11 +82,11 @@ export class CellOptionsDialog {
     public initCellMarginsDialog(localValue: L10n, isRtl?: boolean): void {
         this.owner = this.documentHelper.owner.viewer;
         this.target = createElement('div', {
-            id: this.documentHelper.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
+            className: 'e-de-table-cell-margin-dlg'
         });
-        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 504px;position: relative;height: auto;' });
+        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
         const innerDivLabel: HTMLElement = createElement('Label', {
-            className: 'e-de-cell-dia-options-label', id: this.target.id + '_innerDivLabel'
+            className: 'e-de-para-dlg-heading'
         });
         innerDivLabel.innerHTML = localValue.getConstant('Cell margins');
         innerDiv.appendChild(innerDivLabel);
@@ -101,7 +101,7 @@ export class CellOptionsDialog {
         td.appendChild(sameAsTableCheckBox);
         tr.appendChild(td); table.appendChild(tr);
         innerDiv.appendChild(table);
-        CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue);
+        CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue, true);
         const divBtn: HTMLDivElement = document.createElement('div');
         this.target.appendChild(divBtn);
         this.sameAsTableCheckBox = new CheckBox({
@@ -124,7 +124,7 @@ export class CellOptionsDialog {
         }
         this.loadCellMarginsDialog();
         this.documentHelper.dialog.header = localizeValue.getConstant('Cell Options');
-        this.documentHelper.dialog.position = { X: 'center', Y: 'top' };
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
         this.documentHelper.dialog.height = 'auto';
         this.documentHelper.dialog.width = 'auto';
         this.documentHelper.dialog.content = this.target;
@@ -308,72 +308,62 @@ export class CellOptionsDialog {
      * @param {L10n} locale - Specifies the locale
      * @returns {void}
      */
-    public static getCellMarginDialogElements(dialog: CellOptionsDialog | TableOptionsDialog, div: HTMLDivElement, locale: L10n): void {
+    public static getCellMarginDialogElements(dialog: CellOptionsDialog | TableOptionsDialog, div: HTMLDivElement, locale: L10n, cellOptions: boolean): void {
         if (!isNullOrUndefined(dialog)) {
-            const table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', { className: 'e-de-cell-margin-top' });
-            const tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
-            const td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-            const topLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-                innerHTML: locale.getConstant('Top'), className: 'e-de-cell-dia-label-common',
-                id: dialog.target.id + '_TopLabel'
-            });
+            const table: HTMLTableElement = <HTMLTableElement>createElement('div');
+            const tr1: HTMLTableRowElement = <HTMLTableRowElement>createElement('div', { className: 'e-de-container-row' });
+            const td1: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-left' });
+
             const topTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' }, styles: 'width:100%', id: dialog.target.id + '_Top'
+                attrs: { 'type': 'text' }, styles: 'width:100%'
             });
-            td1.appendChild(topLabel); td1.appendChild(topTextBox);
-            const td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-separator' });
-            const leftLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-                innerHTML: locale.getConstant('Left'), className: 'e-de-cell-dia-label-common',
-                id: dialog.target.id + '_leftLabel'
-            });
+            td1.appendChild(topTextBox);
+            const td2: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-right' });
+
             const leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' },
-                styles: 'width:100%', id: dialog.target.id + '_left'
+                attrs: { 'type': 'text' }, styles: 'width:100%'
             });
-            td2.appendChild(leftLabel); td2.appendChild(leftTextBox);
+            td2.appendChild(leftTextBox);
             tr1.appendChild(td1); tr1.appendChild(td2);
-            const tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr', { styles: 'height: 50px;' });
-            const td3: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:40%;' });
-            const bottomLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-                innerHTML: locale.getConstant('Bottom'),
-                className: 'e-de-cell-dia-label-common', id: dialog.target.id + '_bottomLabel'
-            });
+            const tr2: HTMLTableRowElement = <HTMLTableRowElement>createElement('div', { className: cellOptions ? 'e-de-dlg-row' : 'e-de-container-row' });
+            const td3: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-left' });
+
             const bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' },
-                styles: 'width:100%', id: dialog.target.id + '_bottom'
+                attrs: { 'type': 'text' }, styles: 'width:100%'
             });
-            td3.appendChild(bottomLabel); td3.appendChild(bottomTextBox);
-            const td4: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: 'width:40%;' });
-            const rightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-                innerHTML: locale.getConstant('Right'), id: dialog.target.id + '_rightLabel',
-                className: 'e-de-cell-dia-label-common'
-            });
+
+            td3.appendChild(bottomTextBox);
+            const td4: HTMLTableCellElement = <HTMLTableCellElement>createElement('div', { className: 'e-de-subcontainer-right' });
+
             const rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-                attrs: { 'type': 'text' },
-                styles: 'width:100%', id: dialog.target.id + '_right'
+                attrs: { 'type': 'text' }, styles: 'width:100%'
             });
-            td4.appendChild(rightLabel); td4.appendChild(rightTextBox);
+
+            td4.appendChild(rightTextBox);
             tr2.appendChild(td3); tr2.appendChild(td4); table.appendChild(tr1);
-            table.appendChild(tr2); div.appendChild(table);
+            table.appendChild(tr2);
+            div.appendChild(table);
             dialog.target.appendChild(div);
             dialog.topMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 175, decimals: 2,
-                enablePersistence: false
+                value: 0, min: 0, max: 1584, decimals: 2,
+                enablePersistence: false, placeholder: locale.getConstant('Top'),
+                floatLabelType: 'Always'
             });
             dialog.topMarginBox.appendTo(topTextBox);
             dialog.leftMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 175,
-                decimals: 2, enablePersistence: false
+                value: 0, min: 0, max: 1584, decimals: 2, enablePersistence: false, placeholder: locale.getConstant('Left'),
+                floatLabelType: 'Always'
             });
             dialog.leftMarginBox.appendTo(leftTextBox);
             dialog.bottomMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 175, decimals: 2,
-                enablePersistence: false
+                value: 0, min: 0, max: 1584, decimals: 2,
+                enablePersistence: false, placeholder: locale.getConstant('Bottom'),
+                floatLabelType: 'Always'
             });
             dialog.bottomMarginBox.appendTo(bottomTextBox);
             dialog.rightMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 175,
-                decimals: 2, enablePersistence: false
+                value: 0, min: 0, max: 1584, decimals: 2, enablePersistence: false, placeholder: locale.getConstant('Right'),
+                floatLabelType: 'Always'
             });
             dialog.rightMarginBox.appendTo(rightTextBox);
         }

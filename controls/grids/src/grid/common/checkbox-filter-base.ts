@@ -339,7 +339,9 @@ export class CheckBoxFilterBase {
                 this.dialogObj.position = { X: 'center', Y: 'center' };
             }
         }
-        this.parent.notify(events.filterDialogCreated, e);
+        if (this.options.column.showColumnMenu) {
+            this.parent.notify(events.filterDialogCreated, e);
+        }
     }
 
     public openDialog(options: IFilterArgs): void {
@@ -386,62 +388,24 @@ export class CheckBoxFilterBase {
 
     private btnClick(e: MouseEvent): void {
         if (this.filterState) {
-            if ((<Element>e.target).tagName.toLowerCase() === 'input' && (<Element>e.target).classList.contains('e-searchinput')) {
-                let value: string | number | Date | boolean = (<HTMLInputElement>e.target).value;
-                if (this.options.column.type === 'boolean') {
-                    if (value !== '' &&
-                        this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
-                        value = true;
-                    } else if (value !== '' &&
-                        this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
-                        value = false;
-                    }
-                }
-                if (this.options.type === 'date' || this.options.type === 'datetime') {
-                    value = this.valueFormatter.fromView(value as string, this.options.parserFn, this.options.type);
-                }
-                const args: Object = {
-                    action: 'filtering', filterCollection: {
-                        field: this.options.field,
-                        operator: this.options.isRemote ?
-                            (this.options.column.type === 'string' ? 'contains' : 'equal') :
-                            (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
-                                this.options.column.type === 'boolean' ? 'equal' : 'contains'),
-                        value: value, matchCase: false, type: this.options.column.type, ignoreAccent: this.options.ignoreAccent
-                    },
-                    field: this.options.field
-                };
-                if (value !== undefined && value !== null && value !== '') {
-                    if (this.isBlanks && value && typeof value === 'string' &&
-                        this.getLocalizedLabel('Blanks').toLowerCase().indexOf((value as string).toLowerCase()) >= 0) {
-                        this.fltrBtnHandler();
-                    } else {
-                        if (this.isForeignColumn(this.options.column as Column)) {
-                            this.foreignFilter(args, value as string);
-                        } else {
-                            this.options.handler(args);
-                        }
-                    }
-                } else {
-                    this.closeDialog();
-                }
+            if (((<Element>e.target).tagName.toLowerCase() === 'input' && (<Element>e.target).classList.contains('e-searchinput')) ||
+                (<{ keyCode?: number }>e).keyCode === 13) {
+                this.fltrBtnHandler();
             } else {
-                if ((<{ keyCode?: number }>e).keyCode === 13) {
+                const text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
+                if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
                     this.fltrBtnHandler();
-                } else {
-
-                    const text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
-                    if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
-                        this.fltrBtnHandler();
-                    } else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
-                        this.clearFilter();
-                    }
+                } else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
+                    this.clearFilter();
                 }
             }
             this.closeDialog();
         } else if (!((<Element>e.target).tagName.toLowerCase() === 'input')) {
             this.clearFilter();
             this.closeDialog();
+        }
+        if (this.options.column.showColumnMenu) {
+            this.parent.notify(events.afterFilterColumnMenuClose, {});
         }
     }
 
@@ -520,7 +484,7 @@ export class CheckBoxFilterBase {
             }
             this.initiateFilter(coll);
         } else {
-            const isClearFilter: boolean = this.parent.filterSettings.columns.some((value: PredicateModel) => {
+            const isClearFilter: boolean = this.options.filteredColumns.some((value: PredicateModel) => {
                 return this.options.field === value.field;
             });
             if (isClearFilter) {

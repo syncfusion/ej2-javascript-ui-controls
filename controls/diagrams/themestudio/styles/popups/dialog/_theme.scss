@@ -91,6 +91,9 @@
 
   .e-dlg-header-content .e-dlg-closeicon-btn:active {
     background-color: $dialog-closeicon-btn-active-color;
+    @if $skin-name == 'FluentUI' {
+      outline: none;
+    }
   }
 
   .e-south-east {

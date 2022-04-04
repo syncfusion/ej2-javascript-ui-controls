@@ -54,8 +54,8 @@ export class BulletsAndNumberingDialog {
         this.target = createElement('div', { id: id + '_insertNumberBulletDialog', className: 'e-de-number-bullet-dlg' });
         const tabTarget: HTMLElement = createElement('div', { id: id + '_tabNumberBulletDialog', className: 'e-de-tab-number-bullet-dlg' });
         this.target.appendChild(tabTarget);
-        this.createNumberList(id);
-        this.createBulletList(id);
+        this.createNumberList(id, locale);
+        this.createBulletList(id, locale);
         //Initialize Tab component
         this.tabObj = new Tab({
             items: [
@@ -83,7 +83,7 @@ export class BulletsAndNumberingDialog {
             this.bulletListDiv.style.display = 'block';
         }
     }
-    private createNumberList(id: string): void {
+    private createNumberList(id: string, locale: L10n): void {
         this.numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
         const numberListDiv: HTMLElement = this.numberListDiv;
         const ulTag: HTMLElement = createElement('ul', {
@@ -92,7 +92,7 @@ export class BulletsAndNumberingDialog {
             className: 'e-de-ui-wfloating-menu e-de-ui-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
         numberListDiv.appendChild(ulTag);
-        const numberedNone: HTMLElement = this.createNumberNoneListTag(ulTag);
+        const numberedNone: HTMLElement = this.createNumberNoneListTag(ulTag, locale);
         const numberedNumberDot: HTMLElement = this.createNumberListTag(ulTag, '1.', '2.', '3.', 'e-de-list-numbered-number-dot');
         const numberedNumberBrace: HTMLElement = this.createNumberListTag(ulTag, '1)', '2)', '3)', 'e-de-list-numbered-number-brace');
         const numberedUpRoman: HTMLElement = this.createNumberListTag(ulTag, 'I.', 'II.', 'III.', 'e-de-list-numbered-up-roman');
@@ -127,13 +127,13 @@ export class BulletsAndNumberingDialog {
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
-    private createNumberNoneListTag(ulTag: HTMLElement): HTMLElement {
+    private createNumberNoneListTag(ulTag: HTMLElement, locale: L10n): HTMLElement {
         const liTag: HTMLElement = createElement('li', {
             styles: 'display:block',
             className: 'e-de-ui-wfloating-menuitem e-de-ui-wfloating-menuitem-md e-de-list-items  e-de-list-item-size e-de-list-numbered-none'
         });
         ulTag.appendChild(liTag);
-        const innerHTML: string = '<div class="e-de-ui-bullets e-de-bullet-icons">None</div>';
+        const innerHTML: string = '<div class="e-de-ui-bullets e-de-bullet-icons">' + locale.getConstant('None') + '</div>';
         const liInnerDiv: HTMLElement = createElement('div', {
             className: 'e-de-ui-list-header-presetmenu',
             id: 'e-de-ui-zlist0', innerHTML: innerHTML
@@ -142,19 +142,23 @@ export class BulletsAndNumberingDialog {
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
-    private createBulletListTag(ulTag: HTMLElement, iconCss: string, className: string): HTMLElement {
+    private createBulletListTag(ulTag: HTMLElement, iconCss: string, className: string, locale?: L10n): HTMLElement {
         const liTag: HTMLElement = createElement('li', {
             styles: 'display:block;',
             className: 'e-de-ui-wfloating-menuitem e-de-ui-wfloating-bullet-menuitem-md e-de-list-items  e-de-list-item-size ' + className
         });
         ulTag.appendChild(liTag);
-        const liInnerDiv: HTMLElement = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu e-de-bullet-icon-size', id: 'e-de-ui-zlist0' });
-        const liNextDiv: HTMLElement = createElement('div', { className: iconCss });
+        let isNone: boolean = className === 'e-bullet-none';
+        const liInnerDiv: HTMLElement = createElement('div', {
+            className: 'e-de-ui-bullet-list-header-presetmenu e-de-bullet-icon-size',
+            styles: isNone ? 'font-size:9px;text-align: center;top: 13px;left:-2px;line-height:normal;position: relative' : ''
+        });
+        const liNextDiv: HTMLElement = createElement('div', { className: !isNone ? iconCss : '', innerHTML: isNone ? locale.getConstant('None') : '' });
         liInnerDiv.appendChild(liNextDiv);
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
-    private createBulletList(id: string): void {
+    private createBulletList(id: string, locale: L10n): void {
         this.bulletListDiv = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu', id: id + '_Bullet' });
         const bulletListDiv: HTMLElement = this.bulletListDiv;
         bulletListDiv.style.display = 'none';
@@ -163,7 +167,7 @@ export class BulletsAndNumberingDialog {
             className: 'e-de-ui-wfloating-menu e-de-ui-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
         bulletListDiv.appendChild(ulTag);
-        const bulletNone: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-none e-de-bullet-icons', 'e-bullet-none');
+        const bulletNone: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-none e-de-bullet-icons', 'e-bullet-none', locale);
         const bulletDot: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-dot e-de-bullet-icons', 'e-bullet-dot');
         const bulletCircle: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-circle e-de-bullet-icons', 'e-bullet-circle');
         const bulletSquare: HTMLElement = this.createBulletListTag(ulTag, 'e-de-icon-bullet-list-square e-de-bullet-icons', 'e-bullet-square');

@@ -207,10 +207,10 @@ export class Search {
             const result: TextSearchResult = results.innerList[i];
             this.navigate(results.innerList[i]);
             this.owner.editorModule.insertTextInternal(replaceText, true);
-            if (result.isHeader || result.isFooter) {
+            //if (result.isHeader || result.isFooter) {
                 /* eslint-disable-next-line max-len */
-                this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
-            }
+                //this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
+            //}
             results.innerList[i].destroy();
         }
         if (this.owner.editorHistory && !isNullOrUndefined(this.owner.editorHistory.currentHistoryInfo)) {

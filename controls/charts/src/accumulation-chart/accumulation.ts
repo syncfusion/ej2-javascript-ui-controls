@@ -1486,6 +1486,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         const getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
         const titleSize: Size = measureText(this.title, this.titleStyle);
+        let padding: number = 20;
+        let titleHeight: number = this.margin.top + (titleSize.height * 3 / 4);
+        let legendHeight: number = this.accumulationLegendModule == undefined ? 0 : this.legendSettings.position == 'Top' ?
+                                   this.accumulationLegendModule.legendBounds.height : 0;
+        let explode: number = this.explodeDistance == 0 ? 0 : this.explodeDistance;
+        let expodeValue: number = legendHeight != 0 ? 0 : explode / 2;
         const rect: Rect = new Rect(
             margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
         );
@@ -1494,9 +1500,19 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             titlePositionX(
                 rect, this.titleStyle
             ),
-            this.margin.top + (titleSize.height * 3 / 4),
+            titleHeight,
             getAnchor, this.titleCollection, '', 'auto'
         );
+        options.x = parseInt(this.series[0].radius) >= 80 ? options.x : this.accBaseModule.center.x;
+        options.y = parseInt(this.series[0].radius) >= 80 ? options.y : (this.accBaseModule.center.y - this.accBaseModule.radius - padding 
+                                                                         - titleHeight - legendHeight - expodeValue);
+        if (this.series[0].type === 'Pie' && parseInt(this.series[0].radius) < 80) {
+            options.x = (this.accBaseModule.center.x - (titleSize.width / 2)) < this.initialClipRect.x ?
+                        (titleSize.width / 2) + this.initialClipRect.x :
+                        (this.accBaseModule.center.x + (titleSize.width / 2)) > (this.initialClipRect.x + this.initialClipRect.width) ?
+                        (this.initialClipRect.x + this.initialClipRect.width) - (titleSize.width / 2) - this.initialClipRect.x : options.x;
+            options.y = options.y < (this.initialClipRect.y - legendHeight) ? (this.initialClipRect.y - legendHeight) : options.y;
+        }
         const element: Element = textElement(
             this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw
         );

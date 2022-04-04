@@ -241,6 +241,17 @@ export class HtmlExport {
                 }
             } else {
                 const text: string = isNullOrUndefined(inline.text) ? '' : inline.text;
+                if (inline.hasOwnProperty('bookmarkType')) {
+                    switch (inline.bookmarkType) {
+                        case 0:
+                            blockStyle += '<a name=' + inline.name + '>';
+                            break;
+                        case 1:
+                            blockStyle += '</a>';
+                            break;
+                    }
+
+                }
                 if (this.fieldCheck === 0) {
                     blockStyle += this.serializeSpan(text, inline.characterFormat);
                 }
@@ -293,9 +304,9 @@ export class HtmlExport {
         //         && (inline as WSpan).text[(inline as WSpan).text.length - 1] === ' ';
         // }
         let text: string = this.decodeHtmlNames(spanText.toString());
-        if (text.length === 0) {
-            text = '&nbsp';
-        }
+        // if (text.length === 0) {
+        //     text = '&nbsp';
+        // }
         spanClass += text;
         spanClass += this.endTag('span');
         return spanClass.toString();

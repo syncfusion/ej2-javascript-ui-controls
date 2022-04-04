@@ -7,26 +7,36 @@
   }
 
   .e-bigger .e-ddl#{&}.e-popup {
-    #{if(&, '&', '*')} .e-list-item,
-    #{if(&, '&', '*')} .e-list-group-item {
+    #{if(&, '&', '*')} .e-list-item {
       font-size: $ddl-bigger-list-font-size;
     }
 
+    #{if(&, '&', '*')} .e-list-group-item {
+      @if $skin-name != 'tailwind' {
+        font-size: $ddl-bigger-list-font-size;
+      }
+    }
+
     #{if(&, '&', '*')} .e-input-group {
-      @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
+      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
         padding: 4px 0;
       }
     }
   }
 
   .e-bigger.e-ddl#{&}.e-popup {
-    #{if(&, '&', '*')} .e-list-item,
-    #{if(&, '&', '*')} .e-list-group-item {
+    #{if(&, '&', '*')} .e-list-item {
       font-size: $ddl-bigger-list-font-size;
     }
 
+    #{if(&, '&', '*')} .e-list-group-item {
+      @if $skin-name != 'tailwind' {
+        font-size: $ddl-bigger-list-font-size;
+      }
+    }
+
     #{if(&, '&', '*')} .e-input-group {
-      @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
+      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
         padding: 4px 0;
       }
     }
@@ -40,6 +50,10 @@
     padding: 0;
     right: 0;
     top: 0;
+
+    #{&}.e-ddl.e-popup.e-ddl-device-filter {
+      margin: $ddl-filter-margin;
+    }
   }
 
   .e-ddl.e-control-wrapper .e-ddl-disable-icon {
@@ -70,6 +84,9 @@
     box-shadow: $ddl-filter-box-shadow;
     display: block;
     padding: $ddl-filter-padding;
+    @if ($skin-name == 'FluentUI') {
+      border-bottom: $ddl-filter-parent-border;
+    }
   }
 
   .e-ddl.e-input-group:not(.e-disabled) {
@@ -107,7 +124,7 @@
       #{if(&, '&', '*')} .e-filter-parent .e-input-filter:focus,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-control-wrapper.e-input-focus .e-input-filter {
-        @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'bootstrap5') {
+        @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap5'  and $skin-name != 'tailwind') {
           padding: $ddl-list-filter-text-indent;
         }
       }
@@ -209,34 +226,54 @@
 
   .e-small .e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item,
-    #{if(&, '&', '*')} .e-list-group-item {
+    #{if(&, '&', '*')} .e-list-item {
       font-size: $ddl-small-list-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-list-group-item {
+      @if $skin-name != 'tailwind' {
+        font-size: $ddl-small-list-font-size;
+      }
     }
   }
 
   .e-small.e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item,
-    #{if(&, '&', '*')} .e-list-group-item {
+    #{if(&, '&', '*')} .e-list-item {
       font-size: $ddl-small-list-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-list-group-item {
+      @if $skin-name != 'tailwind' {
+        font-size: $ddl-small-list-font-size;
+      }
     }
   }
 
   //touch small
   .e-bigger.e-small .e-ddl#{&}.e-popup,
   .e-bigger .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item,
-    #{if(&, '&', '*')} .e-list-group-item {
+    #{if(&, '&', '*')} .e-list-item {
       font-size: $ddl-bigger-small-list-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-list-group-item {
+      @if $skin-name != 'tailwind' {
+        font-size: $ddl-bigger-small-list-font-size;
+      }
     }
   }
 
   .e-bigger.e-small.e-ddl#{&}.e-popup,
   .e-bigger .e-input-group.e-ddl.e-small {
-    #{if(&, '&', '*')} .e-list-item,
-    #{if(&, '&', '*')} .e-list-group-item {
+    #{if(&, '&', '*')} .e-list-item {
       font-size: $ddl-bigger-small-list-font-size;
+    }
+
+    #{if(&, '&', '*')} .e-list-group-item {
+      @if $skin-name != 'tailwind' {
+        font-size: $ddl-bigger-small-list-font-size;
+      }
     }
   }
 

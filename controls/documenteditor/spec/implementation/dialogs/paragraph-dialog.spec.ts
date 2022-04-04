@@ -597,6 +597,53 @@ console.log('Apply Paragraph Format Index 1 testing');
     });
 });
 
+describe('Displayed Auto of Before & After spacing in Paragraph Dialog', function () {
+    let editor: DocumentEditor;
+    let dialog: ParagraphDialog;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableParagraphDialog = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.paragraphDialogModule
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('Displayed Auto of Before spacing in Paragraph Dialog', function () {
+        console.log('Auto in Before spacing applying validation');
+        editor.editor.insertText('Sample');
+        dialog.show();
+        let event = { value: -1, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
+        (dialog as any).changeBeforeSpacing(event);
+        dialog.closeParagraphDialog();
+        dialog.show();
+        expect((dialog as any).beforeSpacingIn.element.value).toBe('Auto');
+    });
+    it('Displayed Auto of Before spacing in Paragraph Dialog', function () {
+        console.log('Auto in After spacing applying validation');
+        editor.editor.insertText('Sample');
+        dialog.show();
+        let event = { value: -1, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
+        (dialog as any).changeAfterSpacing(event);
+        dialog.closeParagraphDialog();
+        dialog.show();
+        expect((dialog as any).afterSpacingIn.element.value).toBe('Auto');
+    });
+});
 
 describe('Paragraph format-before spacing Applying validation via dialog in empty selection', function () {
     let editor: DocumentEditor;

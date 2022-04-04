@@ -261,7 +261,7 @@ export class Selection extends BaseSelection {
         if (event.type === 'click') {
             this.currentMode = this.chart.selectionMode;
             this.styleId = this.chart.element.id + '_ej2_chart_selection';
-        } else if (event.type === 'mousemove') {
+        } else if (event.type === 'mousemove' || event.type === 'pointermove') {
             this.currentMode = this.chart.highlightMode;
             this.highlightDataIndexes = [];
             this.styleId = this.chart.element.id + '_ej2_chart_highlight';
@@ -316,7 +316,7 @@ export class Selection extends BaseSelection {
             targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
             return;
         }
-        if (event.type === 'mousemove') {
+        if (event.type === 'mousemove' || event.type === 'pointermove') {
             if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
                 targetElement.getAttribute('class').indexOf('selection') > -1)) {
                 return;
@@ -581,7 +581,7 @@ export class Selection extends BaseSelection {
     public checkSelectionElements(element: Element, className: string, visibility: boolean, legendClick: boolean, series: number): void {
         let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes);
         if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
-            children = (element.children);
+            children = (element.childNodes as any);
         }
         let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
         for (let i: number = 0; i < children.length; i++) {
@@ -1037,7 +1037,7 @@ export class Selection extends BaseSelection {
             if (!(chart.selectionMode === 'Lasso')) {
                 element = chart.svgRenderer.drawRectangle(new RectOption(
                     this.draggedRect + this.count, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
-                element.setAttribute('style', 'cursor:move;');
+                (element as HTMLElement).style.cursor = "move";
             } else {
                 element = chart.svgRenderer.drawPath(
                     new PathOption(
@@ -1282,7 +1282,7 @@ export class Selection extends BaseSelection {
     private changeCursorStyle(isResize: boolean, rectelement: Element, cursorStyle: string): void {
         cursorStyle = isResize ? cursorStyle : (this.control.svgObject === rectelement) ? 'auto' : 'move';
         if (rectelement) {
-            rectelement.setAttribute('style', 'cursor:' + cursorStyle + ';');
+            (rectelement as HTMLElement).style.cursor = cursorStyle;
         }
     }
     private removeSelectedElements(chart: Chart, index: Index[], seriesCollection: SeriesModel[]): void {
@@ -1429,6 +1429,9 @@ export class Selection extends BaseSelection {
                     return;
                 }
                 this.calculateSelectedElements(event);
+                if (target.id.indexOf("_chart_legend_") == -1 && target.id.indexOf("_Series_") == -1) {
+                    this.removeLegendHighlightStyles();
+                } 
                 return;
             }
         }
@@ -1458,6 +1461,31 @@ export class Selection extends BaseSelection {
             }
         } else {
             this.completeSelection(event);
+        }
+    }
+
+    /** 
+     * remove highlighted legend when not focused.
+     *
+     * @private
+     */
+    public removeLegendHighlightStyles() {
+        let elementCollection: HTMLCollection;
+        for (let i = 0; i < this.chart.series.length; i++) {
+            elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
+            for (let j = 0; j < elementCollection.length; j++) {
+                let element: HTMLElement = elementCollection[j] as HTMLElement;
+                if (element) {
+                    this.removeSvgClass(element, element.getAttribute("class"));
+                }
+            }
+        }
+        elementCollection = document.getElementsByClassName(this.unselected);
+        for (let i: number = 0; i < elementCollection.length; i++) {
+            let element: HTMLElement = elementCollection[i] as HTMLElement;
+            if (element) {
+                this.removeSvgClass(element, element.getAttribute("class"));
+            }
         }
     }
 

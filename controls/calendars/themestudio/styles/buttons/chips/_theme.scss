@@ -65,6 +65,9 @@
           @include chip-color($chip-focus-bg-color, $chip-focus-border-color, $chip-focus-font-color, $chip-icon-focus-font-color, $chip-avatar-hover-bg-color, $chip-avatar-hover-font-color);
           box-shadow: $chip-focus-box-shadow;
         }
+        @if ($skin-name == 'highcontrast') {
+          @include chip-dlt-btn-color($chip-close-icon-font-color, $chip-close-icon-pressed-font-color);
+        }
       }
 
       &.e-active {
@@ -168,6 +171,9 @@
         }
 
         &.e-focused {
+          @if ($skin-name == 'highcontrast') {
+            @include chip-dlt-btn-color($chip-close-icon-font-color, $chip-close-icon-pressed-font-color);
+          }
           @include chip-color($chip-choice-focus-active-bg-color, $chip-choice-focus-active-border-color, $chip-choice-focus-active-font-color, $chip-choice-icon-focus-active-font-color, $chip-avatar-choice-focus-active-bg-color, $chip-avatar-choice-focus-active-font-color);
         }
 

@@ -226,12 +226,12 @@ export class Reorder implements IAction {
 
     private getHeaderCells(): Element[] {
         const frozenColumns: number = this.parent.getFrozenColumns();
-        if (frozenColumns || this.parent.lockcolPositionCount) {
+        if (frozenColumns || this.parent.isFrozenGrid() || this.parent.lockcolPositionCount) {
             let fTh: HTMLElement[];
             let mTh: HTMLElement[];
             let fHeaders: Element[] = [];
             const fRows: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-columnheader'));
-            if (frozenColumns) {
+            if (frozenColumns || this.parent.isFrozenGrid()) {
                 const mRows: Element[] = [].slice.call(this.parent.getHeaderContent()
                     .querySelector('.' + literals.movableHeader).getElementsByClassName('e-columnheader'));
                 for (let i: number = 0; i < fRows.length; i++) {
@@ -251,6 +251,15 @@ export class Reorder implements IAction {
                     }
                     for (let j: number = 0; j < mTh.length; j++) {
                         fHeaders.push(mTh[j]);
+                    }
+                }
+                if (this.parent.getFrozenRightColumnsCount()) {
+                    let frTh: HTMLElement[];
+                    const frRows: Element[] = [].slice.call(this.parent.getHeaderContent().querySelector('.e-frozen-right-header')
+                        .getElementsByClassName('e-columnheader'));
+                    frTh = [].slice.call(frRows[0].getElementsByClassName('e-headercell'));
+                    for (let i: number = 0; i < frTh.length; i++) {
+                        fHeaders.push(frTh[i]);
                     }
                 }
             } else {

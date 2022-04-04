@@ -36,16 +36,14 @@ describe('Spreadsheet formula bar module ->', () => {
             helper.invoke('selectRange', ['A2:A6']);
             helper.triggerKeyNativeEvent(88, true);
             setTimeout(() => {
-                eventArg = { clipboardData: new DataTransfer() };
-                //Checking external cut opertion
+				//Checking external cut opertion
                 helper.triggerKeyEvent(
-                    'cut', 88, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null,
-                    eventArg
-                );
+                    'cut', 88, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
                 setTimeout(() => {
                     expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
                     helper.invoke('selectRange', ['J2']);
-                    helper.triggerKeyNativeEvent(86, true);
+                    helper.triggerKeyEvent(
+                        'paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
                     helper.invoke('getData', ['Sheet1!J2:J6']).then((values: Map<string, CellModel>) => {
                         expect(values.get('J2').value).toEqual('Casual Shoes');
                         expect(values.get('J3').value).toEqual('Sports Shoes');

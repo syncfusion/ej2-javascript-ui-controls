@@ -58,6 +58,7 @@
         border: 0;
         color: $de-font-color;
         float: right;
+        font-weight: 400;
         height: 33px;
         @if $skin-name =='bootstrap5' {
             box-shadow: none;
@@ -104,9 +105,7 @@
         border: 0;
         box-shadow: none;
         float: right;
-        height: 33px;
         margin-left: $de-zoom-tlbr-margin-left;
-        width: 33px;
     }
     @if $skin-name=='tailwind' $skin-name=='material' or $skin-name=='bootstrap-dark' or $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='bootstrap5' or $skin-name=='fabric-dark' or $skin-name=='fabric' or $skin-name=='highcontrast' or $skin-name=='material-dark' {
         .e-bigger .e-btn-pageweb-spellcheck {
@@ -121,7 +120,7 @@
             font-size: $e-de-btn-font-size !important;
             button {
                 font-size: $e-de-btn-font-size !important;
-                height: 36px ​!important;
+                height: 36px !important;
                 @if  $skin-name !='tailwind' {
                     margin: 0 !important;
                 }
@@ -167,9 +166,8 @@
     }
     .e-de-statusbar-spellcheck {
         border-radius: 2px;
-        height: $de-spellcheck-tlbr-height;
+        font-weight: 400;
         margin-left: $de-spellcheck-tlbr-margin-left;
-        width: $de-spellcheck-tlbr-width;
     }
     .e-de-ctn {
         background-color: $de-ctnr-bg-clr;
@@ -180,9 +178,7 @@
     }
     .e-bigger .e-de-statusbar-spellcheck {
         border-radius: 2px;
-        height: $de-spellcheck-tlbr-height;
         margin-left: $de-spellcheck-tlbr-margin-left;
-        width: $de-spellcheck-tlbr-width-big;
     }
     .e-de-ctnr-toolbar {
         display: flex;
@@ -224,8 +220,8 @@
                 margin-bottom: 16px;
             }
             .e-de-property-div-padding {
-                padding-bottom: 16px;
-                padding-top: 16px;
+                //padding-bottom: 16px;
+                padding: 16px;
             }
             .e-de-insert-del-cell>div:last-child {
                 margin-left: $de-pane-margin-right-big !important;
@@ -239,7 +235,12 @@
             .e-de-pane-rtl {
                 .e-de-ctnr-group-btn .e-btn .e-btn-icon {
                     margin-left: 0px;
-                    margin-right: $de-btn-icon-margin;
+                    @if $skin-name=='tailwind' {
+                        margin-right: -5px;
+                    }
+                    @else {
+                        margin-right: $de-btn-icon-margin;
+                    }
                 }
             }
         }
@@ -686,7 +687,7 @@
     .e-bigger {
         .e-de-cntr-pane-padding {
             @if $skin-name=='FluentUI' { 
-                padding: 20px;
+                padding: 24px;
             }
             @else {
                 padding: 16px;
@@ -745,8 +746,8 @@
     }
     .e-de-property-div-padding {
         border-bottom: 0.5px solid $de-pane-separator;
-        padding-bottom: $de-prop-div-padding-bottom;
-        padding-top: $de-prop-div-padding-top;
+        //padding-bottom: $de-prop-div-padding-bottom;
+        padding: $de-prop-div-padding-top;
     }
     .e-de-ctnr-dropdown-ftr {
         border-top: 1px solid $de-pane-separator;
@@ -757,7 +758,8 @@
         line-height: 40px;
         text-indent: 1.2em;
     }
-    .e-de-char-fmt-btn-left>button {
+    .e-de-char-fmt-btn-left>button,
+    .e-de-insert-del-cell button {
         width: $de-left-btn-width;
     }
     .e-de-char-fmt-btn-right>button {
@@ -770,21 +772,22 @@
         .e-de-panel-left-width {
             width: $de-left-panel-width-big;
         }
-        .e-de-char-fmt-btn-left>button {
+        .e-de-char-fmt-btn-left>button,
+        .e-de-insert-del-cell button {
             width: $de-left-btn-width-big;
         }
     }
     .e-de-panel-right-width {
         width: $de-right-panel-width;
     }
-    @if $skin-name=='bootstrap5' { 
+    @if $skin-name=='bootstrap5' or $skin-name=='FluentUI' or $skin-name=='tailwind' { 
         .e-bigger {
             .e-de-panel-right-width {
-                width: 86px;
+                width: $de-right-font-size-width-big;
             }
             .e-de-char-fmt-btn-left > button,
             .e-de-char-fmt-btn-right>button {
-                width: 43px;
+                width: $de-right-btn-width-big;
             }
         }
     }
@@ -1178,30 +1181,30 @@
         padding-left: 0;
         padding-right: $de-prop-style-padding;
     }
-    .e-de-border-style-div {
-        margin-left: 12px;
-    }
-    .e-de-border-style-div.e-de-rtl {
-        margin-left: 0;
-        margin-right: 12px;
-    }
-    .e-de-insert-del-cell {
-        margin-left: 12px;
-    }
-    .e-de-insert-del-cell.e-de-rtl {
-        margin-left: 0;
-        margin-right: 12px;
-    }
-    .e-de-cell-margin {
-        margin-left: 12px;
-    }
-    .e-de-align-text {
-        margin-left: 12px;
-    }
-    .e-de-align-text.e-de-rtl {
-        margin-left: 0;
-        margin-right: 12px;
-    }
+    // .e-de-border-style-div {
+    //     margin-left: 12px;
+    // }
+    // .e-de-border-style-div.e-de-rtl {
+    //     margin-left: 0;
+    //     margin-right: 12px;
+    // }
+    // .e-de-insert-del-cell {
+    //     margin-left: 12px;
+    // }
+    // .e-de-insert-del-cell.e-de-rtl {
+    //     margin-left: 0;
+    //     margin-right: 12px;
+    // }
+    // .e-de-cell-margin {
+    //     margin-left: 12px;
+    // }
+    // .e-de-align-text {
+    //     margin-left: 12px;
+    // }
+    // .e-de-align-text.e-de-rtl {
+    //     margin-left: 0;
+    //     margin-right: 12px;
+    // }
     .e-de-border-size-button {
         height: $de-border-size-button-height;
         margin-top: $de-table-prop-border-margin;
@@ -1211,23 +1214,29 @@
         height: $de-border-size-button-height;
         width: $de-border-size-button-width;
     }
-    .e-de-cell-div {
-        margin-left: $de-prop-style-padding;
-    }
-    .e-de-cell-div.e-de-rtl {
-        margin-left: 0;
-        margin-right: $de-prop-style-padding;
-    }
+    // .e-de-cell-div {
+    //     margin-left: $de-prop-style-padding;
+    // }
+    // .e-de-cell-div.e-de-rtl {
+    //     margin-left: 0;
+    //     margin-right: $de-prop-style-padding;
+    // }
     .e-de-cell-text-box {
         margin-right: $de-prop-style-padding;
     }
+    .e-de-pane-rtl {
+        .e-de-cell-text-box {
+            margin-left: $de-prop-style-padding;
+            margin-right: 0;
+        }
+    }
     .e-de-prop-fill-label {
-        margin-left: 10.3px;
+        //margin-left: 10.3px;
         margin-right: 8px;
     }
     .e-de-prop-fill-label.e-de-rtl {
         margin-left: 8px;
-        margin-right: 10.3px;
+        margin-right: 0;
     }
 
     .e-de-grp-btn-ctnr .e-de-ctnr-group-btn {
@@ -1239,11 +1248,16 @@
 
     .e-de-grp-btn-ctnr .e-de-ctnr-group-btn>button {
         height: 38px;
-        width: 38px;
+        @if $skin-name =='bootstrap5' { 
+          width: 39px;
+        }
+        @else {
+          width: 38px;
+        }   
     }
     .e-bigger .e-de-grp-btn-ctnr .e-de-ctnr-group-btn>button {
         height: 42px;
-        width: 42px;
+        width: $de-border-btn-width-big;
     }
     .e-de-border-clr-picker .e-split-btn-wrapper>button:first-child {
         width: 70px;
@@ -1275,35 +1289,31 @@
             width: 66px;
         }
         .e-de-prop-fill-label {
-            margin-left: 14.5px;
+            margin-left: 0;
             margin-right: 9.8px;
         }
         .e-de-prop-fill-label.e-de-rtl {
             margin-left: 9.8px;
-            margin-right: 14.5px;
+            margin-right: 0px;
         }
-        .e-de-cell-text-box {
-            margin-right: 16px;
+        // .e-de-cell-text-box {
+        //     margin-right: 16px;
+        // }
+        .e-rtl {
+            .e-de-cell-text-box {
+                margin-left: 16px;
+                margin-right: 0;
+            }
         }
         .e-de-cell-div {
-            margin-left: 16px;
+            //margin-left: 16px;
             @if $skin-name =='bootstrap5' {
                 button {
                    width: 45px !important;
                 }
             }
         }
-        .e-de-cell-div.e-de-rtl {
-            margin-left: 0;
-            margin-right: 16px;
-        }
-        .e-de-border-style-div {
-            margin-left: 16px;
-        }
-        .e-de-border-style-div.e-de-rtl {
-            margin-left: 0;
-            margin-right: 16px;
-        }
+
         .e-de-color-picker {
             height: $de-border-size-button-height-bg;
             width: $de-border-size-button-width-bg;
@@ -1313,27 +1323,7 @@
             margin-top: $de-table-prop-border-margin;
             width: $de-border-size-button-width-bg;
         }
-        .e-de-align-text {
-            margin-left: 16px;
-        }
-        .e-de-align-text.e-de-rtl {
-            margin-left: 0;
-            margin-right: 16px;
-        }
-        .e-de-insert-del-cell {
-            margin-left: 16px;
-        }
-        .e-de-insert-del-cell.e-de-rtl {
-            margin-left: 0;
-            margin-right: 16px;
-        }
-        .e-de-cell-margin {
-            margin-left: 14px;
-        }
-        .e-de-cell-margin.e-de-rtl {
-            margin-left: 0;
-            margin-right: 14px;
-        }
+
         .e-de-stylediv {
             padding-left: 16px;
         }
@@ -1382,7 +1372,7 @@
         .e-de-ctnr-segment {
             margin-bottom: $de-ctnr-margin-bottom-big;
         }
-        @if $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='tailwind' {
+        @if $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='tailwind' or $skin-name=='bootstrap5' {
             .e-de-font-clr-picker .e-colorpicker-wrapper:first-child,
             .e-de-font-clr-picker>.e-split-btn-wrapper {
                 margin-right: $de-pane-margin-right-big;
@@ -1622,8 +1612,12 @@
         @if $skin-name !='tailwind' {
             .e-de-property-div-padding {
                 border-bottom: 0.5px solid $de-pane-separator;
-                padding-bottom: 14.5px;
-                padding-top: 15.5px;
+                @if $skin-name =='FluentUI' {
+                    padding: 24px;
+                }
+                @else {
+                    padding: 16px;
+                }
             }
             .e-de-font-clr-picker>div button,
             .e-de-font-clr-picker>button {
@@ -1947,11 +1941,17 @@
 .e-de-ctn {
     .e-de-ctnr-toolbar {
         .e-de-bzr-button {
+            @if $skin-name == 'FluentUI' {
+                font-size: 14px;
+            }
             .e-btn-icon {
                font-size: $e-de-bzr-btn-font-size; 
                @if $skin-name=='tailwind' or  $skin-name=='tailwind-dark' {  
                    padding-bottom: 4px !important;
                }
+               @if $skin-name == 'FluentUI' {
+                    padding-bottom: 2px;
+                }
             }
         }
 
@@ -1972,6 +1972,9 @@
                     margin-top: -11px;
                 }
             }
+            @if $skin-name == 'FluentUI' {
+                padding-top: 0 !important;
+            }
         }
     }
 }
@@ -1980,17 +1983,23 @@
     .e-de-ctn {
         .e-de-ctnr-toolbar {
             .e-de-bzr-button {
+                @if $skin-name == 'FluentUI' {
+                    font-size: 16px;
+                }
                 .e-btn-icon {
                    font-size:  $e-de-bzr-btn-font-size-big;
-                   @if $skin-name =='bootstrap5' {
+                   @if $skin-name =='bootstrap5' or $skin-name == 'FluentUI'{
                      padding-bottom: 4px;
-                   } 
+                   }
                 }
             }
 
             .e-de-bzr-break.e-de-bzr-button {
                 @if  $skin-name == 'material' or  $skin-name == 'material-dark' {
                     padding-top: 11px !important;
+                }
+                @if $skin-name == 'FluentUI' {
+                    padding-top: 4px !important;
                 }
             }
         }

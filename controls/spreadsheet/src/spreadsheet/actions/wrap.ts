@@ -1,11 +1,11 @@
 import { closest, Browser } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
-import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
+import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
-import { positionAutoFillElement, colWidthChanged } from '../common/index';
+import { positionAutoFillElement, colWidthChanged, getLineHeight } from '../common/index';
 import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook } from '../../workbook/index';
-import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
+import { getRowHeight, getAddressFromSelectedRange, beginAction } from '../../workbook/index';
 
 
 /**
@@ -49,27 +49,27 @@ export class WrapText {
             hRow: HTMLElement, isCustomHgt?: boolean
         }): void {
         if (args.initial || inView(this.parent, args.range, true)) {
-            let ele: Element;
-            let cell: CellModel;
-            let colwidth: number;
-            let isCustomHgt: boolean;
-            let maxHgt: number;
-            let hgt: number;
+            let ele: HTMLElement; let cell: CellModel; let colwidth: number; let maxHgt: number; let hgt: number;
+            let isCustomHgt: boolean; let rowCustomHeight: boolean; let lineHgt: number;
             for (let i: number = args.range[0]; i <= args.range[2]; i++) {
                 maxHgt = 0;
-                isCustomHgt = getRow(args.sheet, i).customHeight || args.isCustomHgt;
+                rowCustomHeight = getRow(args.sheet, i).customHeight;
+                isCustomHgt = rowCustomHeight || args.isCustomHgt;
                 for (let j: number = args.range[1]; j <= args.range[3]; j++) {
                     cell = getCell(i, j, args.sheet, null, true);
                     if (cell.rowSpan < 0 || cell.colSpan < 0) { continue; }
                     const isMerge: boolean = (cell.rowSpan > 1 || cell.colSpan > 1);
-                    ele = args.initial ? args.td : this.parent.getCell(i, j);
+                    ele = (args.initial ? args.td : this.parent.getCell(i, j)) as HTMLElement;
                     if (ele) {
                         if (args.wrap) {
+                            lineHgt = getLineHeight(cell.style && cell.style.fontFamily ? cell.style : this.parent.cellStyle);
                             ele.classList.add(WRAPTEXT);
                         } else {
-                            ele.classList.remove(WRAPTEXT);
+                            ele.classList.remove(WRAPTEXT); lineHgt = null;
                         }
                         if (isCustomHgt || isMerge) { this.updateWrapCell(i, j, args.sheet, ele); }
+                    } else {
+                        lineHgt = null;
                     }
                     if (Browser.isIE) {
                         ele.classList.add('e-ie-wrap');
@@ -105,7 +105,7 @@ export class WrapText {
                                     lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
                                 }
                                 hgt = getTextHeightWithBorder(
-                                    this.parent as Workbook, i, j, args.sheet, cell.style || this.parent.cellStyle, lines);
+                                    this.parent as Workbook, i, j, args.sheet, cell.style || this.parent.cellStyle, lines, lineHgt);
                                 maxHgt = Math.max(maxHgt, hgt);
                                 if (cell.rowSpan > 1) {
                                     const prevHeight: number = getRowsHeight(args.sheet, i, i + (cell.rowSpan - 1));
@@ -118,7 +118,7 @@ export class WrapText {
                                     ele.classList.add('e-alt-unwrap');
                                 }
                                 hgt = getTextHeightWithBorder(
-                                    this.parent as Workbook, i, j, args.sheet, cell.style || this.parent.cellStyle, 1);
+                                    this.parent as Workbook, i, j, args.sheet, cell.style || this.parent.cellStyle, 1, lineHgt);
                                 setMaxHgt(args.sheet, i, j, hgt);
                                 maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
                             }
@@ -144,6 +144,16 @@ export class WrapText {
                             }
                         }
                     }
+                    if (args.wrap && ele) {
+                        if (!rowCustomHeight) {
+                            ele.style.lineHeight = (parseFloat((cell.style && cell.style.fontSize) || this.parent.cellStyle.fontSize) *
+                                lineHgt) + 'pt';
+                        } else if (ele.style.lineHeight) {
+                            ele.style.lineHeight = '';
+                        }
+                    } else if (ele) {
+                        ele.style.lineHeight = '';
+                    }
                 }
             }
             if (!args.initial) {
@@ -167,10 +177,12 @@ export class WrapText {
 
     private rowHeightChangedHandler(args: { rowIdx: number, isCustomHgt: boolean }): void {
         if (args.isCustomHgt) {
-            const sheet: SheetModel = this.parent.getActiveSheet();
+            const sheet: SheetModel = this.parent.getActiveSheet(); let ele: HTMLElement;
             for (let i: number = this.parent.viewport.leftIndex, len: number = this.parent.viewport.rightIndex; i <= len; i++) {
                 if (getCell(args.rowIdx, i, sheet, false, true).wrap) {
-                    this.updateWrapCell(args.rowIdx, i, sheet, this.parent.getCell(args.rowIdx, i));
+                    ele = this.parent.getCell(args.rowIdx, i);
+                    this.updateWrapCell(args.rowIdx, i, sheet, ele);
+                    if (ele.style.lineHeight) { ele.style.lineHeight = ''; }
                 }
             }
         }
@@ -188,8 +200,16 @@ export class WrapText {
     private updateWrapCell(rowIdx: number, colIdx: number, sheet: SheetModel, ele: Element): void {
         if (ele && !ele.querySelector('.e-wrap-content')) {
             const wrapSpan: HTMLElement = this.wrapCell.cloneNode() as HTMLElement;
+            const filterBtn: Element = ele.querySelector('.e-filter-btn');
             while (ele.childElementCount) {
                 wrapSpan.appendChild(ele.firstElementChild);
+            }
+            if (filterBtn) {
+                if (ele.firstChild) {
+                    ele.insertBefore(filterBtn, ele.firstChild);
+                } else {
+                    ele.appendChild(filterBtn);
+                }
             }
             if (!getCell(rowIdx, colIdx, sheet, false, true).hyperlink) {
                 const node: Node = ele.lastChild;

@@ -1,8 +1,8 @@
 import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex } from '../base/index';
-import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange } from '../../workbook/common/index';
+import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange, ConditionalFormatModel } from '../../workbook/common/index';
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
-import { ModelType, CellStyleModel } from '../../workbook/common/index';
-
+import { beforeInsert, ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
+import { insertFormatRange } from '../../workbook/index';
 
 /**
  * The `WorkbookInsert` module is used to insert cells, rows, columns and sheets in to workbook.
@@ -40,27 +40,63 @@ export class WorkbookInsert {
                 }
             }
         }
-        if (!args.model) { return; }
+        if (!args.model) {
+            return;
+        }
         let index: number; let model: RowModel[] = []; let mergeCollection: MergeArgs[]; let isModel: boolean;
+        let maxHgtObj: object[];
         if (typeof (args.start) === 'number') {
             index = args.start; args.end = args.end || index;
-            if (index > args.end) { index = args.end; args.end = args.start; }
-            for (let i: number = index; i <= args.end; i++) { model.push({}); }
+            if (index > args.end) {
+                index = args.end; args.end = args.start;
+            }
+            if (args.modelType === 'Row' && index < args.model.maxHgts.length) {
+                maxHgtObj = [];
+            }
+            for (let i: number = index; i <= args.end; i++) {
+                model.push({});
+                if (maxHgtObj) {
+                    maxHgtObj.push(null);
+                }
+            }
         } else {
             if (args.start) {
-                index = args.start[0].index || 0; model = args.start; isModel = true;
+                index = args.start[0].index || 0;
+                model = args.start;
+                isModel = true;
             } else {
-                index = 0; model.push({});
+                index = 0;
+                model.push({});
+            }
+            if (args.modelType === 'Row' && index < args.model.maxHgts.length) {
+                maxHgtObj = [];
+                model.forEach((): void => {
+                    maxHgtObj.push(null);
+                });
             }
         }
-        let freezePane: boolean;
+        const eventArgs: InsertDeleteEventArgs = { model: model, index: index, modelType: args.modelType, insertType: args.insertType,
+            cancel: false, isUndoRedo: args.isUndoRedo };
+        const actionArgs: ActionEventArgs = { eventArgs: eventArgs, action: 'insert' };
+        if (args.isAction) {
+            this.parent.notify(beginAction, actionArgs);
+            if (eventArgs.cancel) {
+                return;
+            }
+            delete eventArgs.cancel;
+            eventArgs.isAction = args.isAction;
+        }
         const insertArgs: InsertDeleteEventArgs = { startIndex: index, endIndex: index + model.length - 1, modelType: args.modelType, sheet:
             args.model, isInsert: true };
         if (args.modelType === 'Row') {
-            if (args.checkCount !== undefined && args.model.rows && args.checkCount === args.model.rows.length) { return; }
+            if (args.checkCount !== undefined && args.model.rows && args.checkCount === args.model.rows.length) {
+                return;
+            }
             this.parent.notify(refreshInsertDelete, insertArgs);
             args.model = <SheetModel>args.model;
-            if (!args.model.rows) { args.model.rows = []; }
+            if (!args.model.rows) {
+                args.model.rows = [];
+            }
             if (isModel && args.model.usedRange.rowIndex > -1 && index > args.model.usedRange.rowIndex) {
                 for (let i: number = args.model.usedRange.rowIndex; i < index - 1; i++) {
                     model.splice(0, 0, {});
@@ -68,14 +104,19 @@ export class WorkbookInsert {
             }
             const frozenRow: number = this.parent.frozenRowCount(args.model);
             if (index < frozenRow) {
-                this.parent.setSheetPropertyOnMute(args.model, 'frozenRows', args.model.frozenRows + model.length); freezePane = true;
+                this.parent.setSheetPropertyOnMute(args.model, 'frozenRows', args.model.frozenRows + model.length);
+                eventArgs.freezePane = true;
             }
             args.model.rows.splice(index, 0, ...model);
+            if (maxHgtObj) {
+                args.model.maxHgts.splice(index, 0, ...maxHgtObj);
+            }
             //this.setInsertInfo(args.model, index, model.length, 'count');
+            this.setRowColCount(insertArgs.startIndex, insertArgs.endIndex, args.model, 'row');
             if (index > args.model.usedRange.rowIndex) {
-                this.parent.setUsedRange(index + (model.length - 1), args.model.usedRange.colIndex, args.model);
+                this.parent.setUsedRange(index + (model.length - 1), args.model.usedRange.colIndex, args.model, true);
             } else {
-                this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex, args.model);
+                this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex, args.model, true);
             }
             const curIdx: number = index + model.length; let style: CellStyleModel; let cell: CellModel;
             for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
@@ -99,6 +140,7 @@ export class WorkbookInsert {
                     }
                 }
             }
+            eventArgs.sheetCount = args.model.rows.length;
         } else if (args.modelType === 'Column') {
             if (args.checkCount !== undefined && args.model.columns && args.checkCount === args.model.columns.length) { return; }
             this.parent.notify(refreshInsertDelete, insertArgs);
@@ -110,13 +152,15 @@ export class WorkbookInsert {
             args.model.columns.splice(index, 0, ...model);
             const frozenCol: number = this.parent.frozenColCount(args.model);
             if (index < frozenCol) {
-                this.parent.setSheetPropertyOnMute(args.model, 'frozenColumns', args.model.frozenColumns + model.length); freezePane = true;
+                this.parent.setSheetPropertyOnMute(args.model, 'frozenColumns', args.model.frozenColumns + model.length);
+                eventArgs.freezePane = true;
             }
             //this.setInsertInfo(args.model, index, model.length, 'fldLen', 'Column');
+            this.setRowColCount(insertArgs.startIndex, insertArgs.endIndex, args.model, 'col');
             if (index > args.model.usedRange.colIndex) {
-                this.parent.setUsedRange(args.model.usedRange.rowIndex, index + (model.length - 1), args.model);
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, index + (model.length - 1), args.model, true);
             } else {
-                this.parent.setUsedRange(args.model.usedRange.rowIndex, args.model.usedRange.colIndex + model.length, args.model);
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, args.model.usedRange.colIndex + model.length, args.model, true);
             }
             if (!args.model.rows) { args.model.rows = []; }
             const cellModel: CellModel[] = [];
@@ -155,7 +199,10 @@ export class WorkbookInsert {
                     }
                 }
             }
-            mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(insertMerge, mergeArgs); });
+            mergeCollection.forEach((mergeArgs: MergeArgs): void => {
+                this.parent.notify(insertMerge, mergeArgs);
+            });
+            eventArgs.sheetCount = args.model.columns.length;
         } else {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
             const sheetModel: SheetModel[] = model as SheetModel[];
@@ -171,7 +218,10 @@ export class WorkbookInsert {
             if (!sheetModel.length) { return; }
             delete model[0].index; this.parent.createSheet(index, model); let id: number;
             if (args.activeSheetIndex) {
-                this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true);
+                eventArgs.activeSheetIndex = args.activeSheetIndex;
+                if (!(args as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction) {
+                    this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true);
+                }
             } else if (!args.isAction && args.start < this.parent.activeSheetIndex) {
                 this.parent.setProperties({ activeSheetIndex: this.parent.skipHiddenSheets(this.parent.activeSheetIndex) }, true);
             }
@@ -181,19 +231,23 @@ export class WorkbookInsert {
                 this.parent.notify(workbookFormulaOperation, {
                     action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id, sheetId: id });
             });
+            eventArgs.activeSheetIndex = args.activeSheetIndex;
+            eventArgs.sheetCount = this.parent.sheets.length;
         }
         if (args.modelType !== 'Sheet') {
+            this.insertConditionalFormats(args);
             this.parent.notify(
                 refreshClipboard,
                 { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });
-            if (args.model.name !== this.parent.getActiveSheet().name) { return; }
-            this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
-                getSheetIndex(this.parent, args.model.name), sheetCount: args.modelType === 'Row' ? args.model.rows.length :
-                args.model.columns.length, insertType: args.insertType, freezePane: freezePane, isUndoRedo: args.isUndoRedo });
-        } else {
-            this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
-                args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType, freezePane: freezePane,
-            isUndoRedo: args.isUndoRedo });
+            eventArgs.activeSheetIndex = getSheetIndex(this.parent, args.model.name);
+        }
+        this.parent.notify(insert, actionArgs);
+    }
+    private setRowColCount(startIdx: number, endIdx: number, sheet: SheetModel, layout: string): void {
+        const prop: string = layout + 'Count';
+        this.parent.setSheetPropertyOnMute(sheet, prop, sheet[prop] + ((endIdx - startIdx) + 1));
+        if (sheet.id === this.parent.getActiveSheet().id) {
+            this.parent.notify(updateRowColCount, { index: sheet[prop] - 1, update: layout, isInsert: true, start: startIdx, end: endIdx });
         }
     }
     private updateRangeModel(ranges: RangeModel[]): void {
@@ -226,6 +280,16 @@ export class WorkbookInsert {
                 range.info[totalKey] += ((endIndex - startIndex) + 1);
             }
         });
+    }
+    private insertConditionalFormats(args: InsertDeleteModelArgs): void {
+        let cfCollection: ConditionalFormatModel[] = args.model.conditionalFormats;
+        if (args.prevAction === "delete") {
+            this.parent.setSheetPropertyOnMute(args.model, 'conditionalFormats', args.conditionalFormats);
+        } else if (cfCollection) {
+            for (let i: number = 0, cfLength: number = cfCollection.length; i < cfLength; i++) {
+                cfCollection[i].range = getRangeAddress(insertFormatRange(args, getRangeIndexes(cfCollection[i].range), !args.isAction && !args.isUndoRedo));
+            }
+        }
     }
     private addEventListener(): void {
         this.parent.on(insertModel, this.insertModel, this);

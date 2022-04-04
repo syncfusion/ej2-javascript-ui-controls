@@ -2,7 +2,87 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
+
+### Chart
+
+#### New Features
+
+- `#I320275` - Wrap support provided for the legend text that overflows the container.
+
+#### Bug Fixes
+
+- `#I365536` - Crosshair tooltip is now proper when transform is applied.
+
+## 19.4.54 (2022-03-01)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I362757` - Histogram points position is not equivalent to axis range issue has been resolved.
+
+## 19.4.53 (2022-02-22)
+
+### Chart
+
+#### Bug Fixes
+
+- `I365536` - Crosshair is now proper when scaling is applied.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#I365442` - Issue in Changed event has been fixed.
+
+## 19.4.50 (2022-02-08)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F171373` - Sum indexes is now working for the Waterfall chart.
+- `#I363094` - Labelformat is now applied properly for the datalabel.
+- `#I362757` - Histogram points position is not equivalent to axis range issue has been resolved.
+
+## 19.4.47 (2022-01-25)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I362517` - Secondary axis is now rendering properly based on series visibility.
+- `#I171844` - Console error issue fixed while using sharedTooltipRender event.
+- `#I362117` - Hours format in range navigator is changed to 24 hours.
+
+## 19.4.43 (2022-01-18)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I361065` - Rotated y axis labels are positioned properly now.
+- `#I361317` - Shared tooltip template far away from cursor has fixed.
+
+## 19.4.42 (2022-01-11)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I360775` - In the chart PDF export, a console error was fixed.
+
+## 19.4.41 (2022-01-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I359390` - Axis label color is properly applied through `axisLabelRender` event.
+- `#F165023` - Highlight is working fine in IE browser.
+
+## 19.4.40 (2021-12-28)
 
 ### Chart
 
@@ -22,6 +102,11 @@
 - `#I280225`, `#I340912` - Provided support to rotate y-axis labels to a given angle.
 - `#I345716` - Provided support to reverse the rendering order of the legend items in a chart.
 - Right to Left(RTL) feature added for all chart elements like legend, tooltip, data label, title, etc.
+
+#### Bug Fixes
+
+- `#I346999` - Data labels are now working properly while legend click.
+- `#I349146` - Range area and scatter series working fine on canvas mode.
 
 ## 19.3.55 (2021-11-23)
 

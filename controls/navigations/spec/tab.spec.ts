@@ -3,7 +3,7 @@
  */
 import { Browser, createElement, closest, DomElements, L10n, isVisible, isNullOrUndefined as isNOU, detach } from '@syncfusion/ej2-base';
 import { Tab, SelectingEventArgs, RemoveEventArgs, AddEventArgs, SelectEventArgs } from '../src/tab/tab';
-import { TabActionSettingsModel, TabAnimationSettingsModel } from '../src/tab/tab-model';
+import { TabActionSettingsModel, TabAnimationSettingsModel, TabItemModel } from '../src/tab/tab-model';
 import { Toolbar } from '../src/toolbar/toolbar';
 import { profile, inMB, getMemoryProfile } from './common.spec';
 import '../node_modules/es6-promise/dist/es6-promise';
@@ -10750,6 +10750,47 @@ describe('Tab Control', () => {
             tab.dataBind();
             expect(tab.reorderActiveTab).toEqual(true);
             expect(element.querySelector('.e-tab-header').classList.contains('e-reorder-active-item')).toEqual(false);
+        });
+    });
+
+    describe('EJ2-58100-Tab content element is wrong while using addTab method and removing items using close button', () => {
+        let tab: Tab;
+        let tabItems: TabItemModel[] = [
+            {header: { text: 'item_2' }, content: '<div><b>Tab content 2</b><div id="item_2"></div></div>' },
+            {header: { text: 'item_3' }, content: '<div><b>Tab content 3</b><div id="item_3"></div></div>' }
+        ];
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Add and remove items and ensure the respective content rendered for last added tab item', () => {
+            tab = new Tab({
+                showCloseButton: true,
+                items: [{
+                    header: { text: 'item_1' },
+                    content: '<div><b>TabContent_1</b></div>',
+                }]
+            }, '#ej2Tab');
+            expect(tab.element.querySelectorAll('.e-toolbar-item').length).toEqual(1);
+            tab.addTab(tabItems, 1);
+            expect(tab.element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+            const tabHeader = tab.element.querySelector('#e-item-ej2Tab_1.e-toolbar-item');
+            (tabHeader.querySelector('.e-close-icon') as HTMLButtonElement).click();
+            expect(tab.element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+            tab.addTab([{header: { text: 'item_4' }, content: '<div><b>Tab content 4</b><div id="item_4"></div></div>' }], 2);
+            tab.select(2);
+            expect(tab.element.querySelector('#e-item-ej2Tab_3.e-toolbar-item')).toBeTruthy();
+            const content: HTMLElement = tab.element.querySelector('#e-content-ej2Tab_3.e-item');
+            expect(content).toBeTruthy();
+            expect(content.textContent).toEqual('Tab content 4');
+            expect(tab.element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
         });
     });
 

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.1.47 (2022-04-04)
+
+### Toast
+
+#### Bug Fixes
+
+- `I367641` - Now, the icon in the toast with type `warning` that is displayed using the toast utility method works properly.
+
+## 19.3.43 (2021-09-30)
+
+### Toast
+
+#### New Features
+
+- `#I329725`, `#F164851` - Provided the support to show the toast in any place using the toast utility function.
+
 ## 19.1.54 (2021-03-30)
 
 ### Toast

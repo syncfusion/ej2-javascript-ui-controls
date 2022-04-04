@@ -1,4 +1,4 @@
-import { EventHandler, setStyleAttribute, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { EventHandler, setStyleAttribute, KeyboardEvents, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -14,6 +14,7 @@ export class VirtualScroll {
     private pageXY: { x: number; y: number };
     private eventType: string = '';
     private engineModule: PivotEngine | OlapEngine;
+    private isFireFox: boolean = Browser.userAgent.toLowerCase().indexOf('firefox') > -1;
     /** @hidden */
     public direction: string;
     private keyboardEvents: KeyboardEvents;
@@ -50,11 +51,18 @@ export class VirtualScroll {
             let mScrollBar: HTMLElement = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
             EventHandler.clearEvents(mCont);
             EventHandler.clearEvents(fCont);
+            if (this.isFireFox) {
+                EventHandler.clearEvents(mHdr);
+            }
             if (this.engineModule) {
                 let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
                 EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
                 EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
-                EventHandler.add(mCont.parentElement.parentElement, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                if (this.isFireFox) {
+                    EventHandler.add(mCont, 'mouseup touchend scroll', this.common(mHdr, mCont, fCont), this);
+                } else {
+                    EventHandler.add(mCont.parentElement.parentElement, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                }
                 EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(mCont, mHdr), this);
                 EventHandler.add(mCont, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mHdr), this);
                 EventHandler.add(mHdr, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mCont), this);
@@ -110,7 +118,7 @@ export class VirtualScroll {
             }
             let target: HTMLElement = <HTMLElement>e.target;
             let left: number = target.scrollLeft;
-            if (this.previousValues.left === left) {
+            if (this.previousValues.left === left || (this.isFireFox && target.classList.contains(cls.MOVABLEHEADER_DIV))) {
                 return;
             }
             content.scrollLeft = left;

@@ -369,7 +369,9 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                             // eslint-disable-next-line
                             (node as any).parentObj = lanes[i];
                         }
-                        lanes[i].children.push(node);
+                        if (!diagram.nameTable.hasOwnProperty(node.id)) {
+                            lanes[i].children.push(node);
+                        }
                     }
                 }
             }

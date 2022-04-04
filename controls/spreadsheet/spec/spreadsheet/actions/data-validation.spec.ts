@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, dialog } from "../../../src/index";
+import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, dialog, getCell, SheetModel } from "../../../src/index";
 import { Dialog } from "../../../src/spreadsheet/services/index";
 
 
@@ -79,7 +79,7 @@ describe('Data validation ->', () => {
             helper.invoke('destroy');
         });
         it('Add Data validation', (done: Function) => {
-            helper.invoke('selectRange', ['E2']);
+            helper.invoke('selectRange', ['E3:E2']);
             (helper.getElementFromSpreadsheet('.e-tab-header').children[0].children[5] as HTMLElement).click();
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             setTimeout(() => {
@@ -366,6 +366,311 @@ describe('Data validation ->', () => {
                                 });
                             });
                         });
+                    });
+                });
+            });
+        });
+
+        describe('EJ2-56780 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        ranges: [{ dataSource: defaultData }],
+                        rows: [{ cells: [{ index: 8, validation: { type: 'List', value1: '=A2:A5' } }] },
+                        { index: 5, cells: [{ index: 3, validation: { type: 'List', value1: '1,2' } }] }]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Insert row above and between the cells referred in list validation', (done: Function) => {
+                helper.setAnimationToNone('#spreadsheet_contextmenu');
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                // Insert above the cell reference
+                helper.openAndClickCMenuItem(0, 0, [6, 1], true);
+                expect(getCell(0, 8, sheet).validation.value1).toBe('=A3:A6');
+                setTimeout(() => {
+                    // Insert inbetween the cell reference
+                    helper.invoke('selectRange', ['A3']);
+                    helper.openAndClickCMenuItem(2, 0, [6, 2], true);
+                    expect(getCell(0, 8, sheet).validation.value1).toBe('=A3:A7');
+                    helper.invoke('selectRange', ['I1']);
+                    const ddl: any = helper.invoke('getCell', [0, 8]).querySelector('.e-dropdownlist');
+                    ddl.ej2_instances[0].showPopup();
+                    setTimeout(() => {
+                        const popup: HTMLElement = helper.getElement('.e-ddl.e-popup ul');
+                        expect(popup.childElementCount).toBe(5);
+                        expect(popup.children[1].textContent).toBe('');
+                        ddl.ej2_instances[0].hidePopup();
+                        done();
+                    });
+                });
+            });
+
+            it('Insert before with single column', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['I1']);
+                helper.openAndClickCMenuItem(0, 8, [6, 1], null, true);
+                expect(JSON.stringify(getCell(0, 8, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 9, sheet).validation)).toBe(validation);
+                expect(getCell(0, 10, sheet)).toBeNull();
+                done();
+            });
+
+            it('Insert before with single column - Undo & Redo', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(0, 8, sheet).validation)).toBe(validation);
+                expect(getCell(0, 9, sheet)).toBeNull();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(0, 8, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 9, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert after with single column', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['J1']);
+                helper.openAndClickCMenuItem(0, 9, [6, 2], null, true);
+                expect(JSON.stringify(getCell(0, 9, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 10, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert after with single column - Undo & Redo', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(0, 9, sheet).validation)).toBe(validation);
+                expect(getCell(0, 10, sheet)).toBeNull();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(0, 9, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 10, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert before with mutliple column', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['K1:M1']);
+                helper.openAndClickCMenuItem(0, 10, [6, 1], null, true);
+                expect(JSON.stringify(getCell(0, 10, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 11, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 12, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 13, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert before with mutliple column - Undo & Redo', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(0, 10, sheet).validation)).toBe(validation);
+                expect(getCell(0, 11, sheet)).toBeNull();
+                expect(getCell(0, 12, sheet)).toBeNull();
+                expect(getCell(0, 13, sheet)).toBeNull();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(0, 10, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 11, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 12, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 13, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert after with mutliple column', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['L1:N1']);
+                helper.openAndClickCMenuItem(0, 11, [6, 2], null, true);
+                expect(JSON.stringify(getCell(0, 13, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 14, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 15, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 16, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert after with mutliple column - Undo & Redo', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A3:A7","ignoreBlank":true,"inCellDropDown":true}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(0, 13, sheet).validation)).toBe(validation);
+                expect(getCell(0, 14, sheet)).toBeNull();
+                expect(getCell(0, 15, sheet)).toBeNull();
+                expect(getCell(0, 16, sheet)).toBeNull();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(0, 13, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 14, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 15, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(0, 16, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert before with mutliple column - not to update case', (done: Function) => {
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['G1:I1']);
+                helper.openAndClickCMenuItem(0, 6, [6, 1], null, true);
+                expect(getCell(0, 6, sheet)).toBeNull();
+                expect(getCell(0, 7, sheet)).toBeNull();
+                expect(getCell(0, 8, sheet)).toBeNull();
+                done();
+            });
+
+            it('Insert after with mutliple column - not to update case', (done: Function) => {
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['T1:U1']);
+                helper.openAndClickCMenuItem(0, 19, [6, 2], null, true);
+                expect(getCell(0, 21, sheet)).toBeNull();
+                expect(getCell(0, 22, sheet)).toBeNull();
+                done();
+            });
+
+            it('Insert above with single row', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A4:A8"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['A2']);
+                helper.openAndClickCMenuItem(1, 0, [6, 1], true);
+                expect(JSON.stringify(getCell(1, 11, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(2, 11, sheet).validation)).toBe(validation);
+                expect(getCell(3, 11, sheet)).toBeNull();
+                done();
+            });
+
+            it('Insert above with single row - Undo & Redo', (done: Function) => {
+                const validationAfterUndo: string = '{"type":"List","value1":"=A3:A7"}';
+                const validation: string = '{"type":"List","value1":"=A4:A8"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(1, 11, sheet).validation)).toBe(validationAfterUndo);
+                expect(getCell(2, 11, sheet)).toBeNull();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(1, 11, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(2, 11, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert below with single row', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"=A5:A9"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['A3']);
+                helper.openAndClickCMenuItem(2, 0, [6, 2], true);
+                expect(JSON.stringify(getCell(2, 11, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(3, 11, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert below with single row - Undo & Redo', (done: Function) => {
+                const validationAfterUndo: string = '{"type":"List","value1":"=A4:A8"}';
+                const validation: string = '{"type":"List","value1":"=A5:A9"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(2, 11, sheet).validation)).toBe(validationAfterUndo);
+                expect(getCell(3, 11, sheet)).toBeNull();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(2, 11, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(3, 11, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert above with mutliple row', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"1,2"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['A10:A12']);
+                helper.openAndClickCMenuItem(9, 0, [6, 1], true);
+                expect(JSON.stringify(getCell(9, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(10, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(11, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(12, 3, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert above with mutliple row - Undo & Redo', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"1,2"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(9, 3, sheet).validation)).toBe(validation);
+                expect(getCell(10, 3, sheet).validation).toBeUndefined();
+                expect(getCell(11, 3, sheet).validation).toBeUndefined();
+                expect(getCell(12, 3, sheet).validation).toBeUndefined();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(9, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(10, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(11, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(12, 3, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert below with mutliple row', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"1,2"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['A9:A11']);
+                helper.openAndClickCMenuItem(8, 0, [6, 2], true);
+                expect(JSON.stringify(getCell(12, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(13, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(14, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(15, 3, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert below with mutliple row - Undo & Redo', (done: Function) => {
+                const validation: string = '{"type":"List","value1":"1,2"}';
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.click('#spreadsheet_undo');
+                expect(JSON.stringify(getCell(12, 3, sheet).validation)).toBe(validation);
+                expect(getCell(13, 3, sheet).validation).toBeUndefined();
+                expect(getCell(14, 3, sheet).validation).toBeUndefined();
+                expect(getCell(15, 3, sheet).validation).toBeUndefined();
+                helper.click('#spreadsheet_redo');
+                expect(JSON.stringify(getCell(12, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(13, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(14, 3, sheet).validation)).toBe(validation);
+                expect(JSON.stringify(getCell(15, 3, sheet).validation)).toBe(validation);
+                done();
+            });
+
+            it('Insert above with mutliple row - not to update case', (done: Function) => {
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['A9:A10']);
+                helper.openAndClickCMenuItem(8, 0, [6, 1], true);
+                expect(getCell(8, 3, sheet)).toBeNull();
+                expect(getCell(9, 3, sheet)).toBeNull();
+                done();
+            });
+
+            it('Insert below with mutliple row - not to update case', (done: Function) => {
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('selectRange', ['A18:A19']);
+                helper.openAndClickCMenuItem(17, 0, [6, 2], true);
+                expect(getCell(19, 3, sheet)).toBeNull();
+                expect(getCell(20, 3, sheet)).toBeNull();
+                done();
+            });
+        });
+
+        describe('SF-362574->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('IsHighlighted property is enabled if data is filtered', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'LessThanOrEqualTo', value1: '99999' }, 'E1:E11');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].validation.isHighlighted).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[8].cells[4].validation.isHighlighted).toBeUndefined();
+                spreadsheet.applyFilter(
+                    [{ value: 310, field: 'F', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false }],
+                    'A1:H11').then((): void => {
+                    expect(spreadsheet.sheets[0].rows[0].cells[4].validation.isHighlighted).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[8].cells[4].validation.isHighlighted).toBeUndefined();
+                    setTimeout((): void => {
+                        done();
                     });
                 });
             });

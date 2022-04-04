@@ -34,7 +34,7 @@ export const blazorCultureFormats: Object = {
 export namespace IntlBase {
     // tslint:disable-next-line:max-line-length
     export const negativeDataRegex: RegExp = /^(('[^']+'|''|[^*#@0,.E])*)(\*.)?((([#,]*[0,]*0+)(\.0*[0-9]*#*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
-    export const customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
+    export const customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*[0#\ ]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     export const latnParseRegex: RegExp = /0|1|2|3|4|5|6|7|8|9/g;
     const fractionRegex: RegExp = /[0-9]/g;
     export const defaultCurrency: string = '$';
@@ -922,7 +922,9 @@ export namespace IntlBase {
         cOptions.nlead = pattern[1];
         cOptions.nend = pattern[10];
         let integerPart: string = pattern[6];
-        cOptions.useGrouping = integerPart.indexOf(',') !== -1;
+        const spaceCapture: boolean = integerPart.match(/\ $/g)? true : false;
+        const spaceGrouping: boolean = integerPart.replace(/\ $/g, '').indexOf(' ') !== -1;
+        cOptions.useGrouping = integerPart.indexOf(',') !== -1 || spaceGrouping;
         integerPart = integerPart.replace(/,/g, '');
         const fractionPart: string = pattern[7];
         if (integerPart.indexOf('0') !== -1) {
@@ -952,11 +954,11 @@ export namespace IntlBase {
                 cOptions.type, dOptions.numberMapper.numberSystem, numObject, false);
             if (cOptions.useGrouping) {
                 // eslint-disable-next-line
-                cOptions.groupSeparator = (<any>dOptions).numberMapper.numberSymbols[mapper[2]];
+                cOptions.groupSeparator = spaceGrouping? ' ' : (<any>dOptions).numberMapper.numberSymbols[mapper[2]];
                 cOptions.groupData = NumberFormat.getGroupingDetails(symbolPattern.split(';')[0]);
             }
             cOptions.nlead = cOptions.nlead.replace(/'/g, '');
-            cOptions.nend = cOptions.nend.replace(/'/g, '');
+            cOptions.nend = spaceCapture? ' ' + cOptions.nend.replace(/'/g, '') : cOptions.nend.replace(/'/g, '');
         }
         return cOptions;
     }

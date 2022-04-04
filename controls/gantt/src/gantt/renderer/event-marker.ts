@@ -21,6 +21,7 @@ export class EventMarker {
                 this.eventMarkersContainer = createElement('div', {
                     className: cls.eventMarkersContainer
                 });
+                this.eventMarkersContainer.setAttribute("role", "EventMarker");
                 this.parent.ganttChartModule.chartBodyContent.appendChild(this.eventMarkersContainer);
             }
             this.eventMarkersContainer.innerHTML = '';

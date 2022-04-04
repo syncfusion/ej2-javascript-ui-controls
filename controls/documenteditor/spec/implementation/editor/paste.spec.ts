@@ -725,3 +725,71 @@ describe('Paste large content', () => {
         expect(editor.documentHelper.viewer.visiblePages[0].bodyWidgets[0].childWidgets.length).toBe(7);
     });
 });
+let emptyPara = '{"sections":[{"blocks":[{"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"lineSpacing":1,"lineSpacingType":"Multiple","textAlignment":"Left"},"inlines":[{"text":"Test","characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}}]},{"paragraphFormat":{"leftIndent":0,"rightIndent":0,"beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","textAlignment":"Left"},"inlines":[{"text":" ","characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}}]}],"headersFooters":{},"sectionFormat":{"pageWidth":595.2999877929688,"pageHeight":841.9000244140625,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart"}}],"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontSizeBidi":12}},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":36,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"inlines":[{"text":"\\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"inlines":[{"text":"\\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2013"}';
+describe('Paste with KeepSourceFormatting validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Paste with KeepSourceFormatting script error validation', () => {
+        editor.editor.pasteContents(JSON.parse(emptyPara));
+        expect(() => { editor.editor.applyPasteOptions('KeepSourceFormatting'); }).not.toThrowError();
+    });
+});
+
+describe('To check line broken into two lines while pasting text only content', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableLocalPaste: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it('Validating textonly content pasting', () => {
+        console.log('Validating textonly content pasting');
+        editor.editor.pasteContents('On behalf of __________ (the "Employer"), I am delighted to offer you employment on a part-time full-time basis in the role of __________. It is intended for you to commence your employment on __________.');
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+        let body: BodyWidget = editor.documentHelper.pages[0].bodyWidgets[0] as BodyWidget;
+        let paragraph: ParagraphWidget = body.childWidgets[0] as ParagraphWidget;
+        let line: LineWidget = paragraph.childWidgets[0] as LineWidget;
+        let text: string = '';
+        for (let i = 0; i < line.children.length; i++) {
+            let textElement: TextElementBox = line.children[i] as TextElementBox;
+            text = text + textElement.text;
+        }
+        expect(text).toBe('On behalf of __________ (the "Employer"), I am delighted to offer you employment on a part-time full-');
+    });
+});

@@ -2100,7 +2100,7 @@ export class Drawing {
                 selectorModel.wrapper.children.push(obj.wrapper);
                 this.renderSelector(obj.pageIndex, currentSelector, obj, true);
             } else if (obj && !obj.formFieldAnnotationType) {
-                if (!(obj instanceof Selector) && obj.wrapper.visible) {
+                if (!(obj instanceof Selector) && obj.wrapper.visible && this.pdfViewer.annotationModule){
                     // eslint-disable-next-line
                     let annotationSettings : any;
                     if (obj.annotationSettings) {

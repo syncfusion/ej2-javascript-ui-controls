@@ -468,7 +468,7 @@ describe('Scrollbar Chart', () => {
                 let x: number = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + ele.offsetLeft;
                 trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
                 let crossHairEle: string = document.getElementById('container_axis_tooltip_1').getAttribute('d').split(' L')[0];
-                expect(crossHairEle === 'M 0 206.5 Q 0 204.5 2 204.5' || crossHairEle === 'M 0 207 Q 0 205 2 205').toBe(true);
+                expect(crossHairEle === 'M 0.5 206.5 Q 0.5 204.5 2.5 204.5' || crossHairEle === 'M 0 207 Q 0 205 2 205').toBe(true);
                 let text: string = document.getElementById('container_axis_tooltip_text_1').innerHTML;
                 expect(text === '17.909' || text === '17.994').toBe(true);
                 done();

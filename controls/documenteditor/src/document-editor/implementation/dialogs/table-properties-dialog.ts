@@ -439,7 +439,7 @@ export class TablePropertiesDialog {
                 '</option><option value="Percent">' + localValue.getConstant('Percent') + '</option>', id: element.id + '_width_dropdown'
         }) as HTMLSelectElement;
         const labeltext: HTMLInputElement = <HTMLInputElement>createElement('span', {
-            innerHTML: localValue.getConstant('Measure in'), styles: 'width: 60px;',
+            innerHTML: localValue.getConstant('Measure in'),
             className: 'e-de-table-measure-lbl'
         });
         const alignmentHeader: HTMLDivElement = createElement('div', {

@@ -11,7 +11,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfBorderStyle } from '../../common/base/enum';
 import { OlapEngine } from '../../base/olap/engine';
 import { PivotExportUtil } from '../../base/export-util';
-import { PdfExportProperties } from '@syncfusion/ej2-grids';
+import { PdfExportProperties, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 
 /**
  * @hidden
@@ -48,16 +48,23 @@ export class PDFExport {
         let footer: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer) && !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value)) ?
             pdfExportProperties.footer.contents[0].value : eventParams.args.footer;
         let font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);
-        let brush: PdfSolidBrush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+        let headerCondition: any = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)
+            && !isNullOrUndefined(pdfExportProperties.header.contents) && !isNullOrUndefined(pdfExportProperties.header.contents[0].style));
+        let footerCondition: any = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)
+            && !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].style));
+        let headerColor: { r: number; g: number; b: number } = (headerCondition) ? this.hexDecToRgb(pdfExportProperties.header.contents[0].style.textBrushColor) as PdfColor : (new PdfColor(0, 0, 0));
+        let brushHeader: PdfSolidBrush = (headerCondition) ? new PdfSolidBrush(new PdfColor(headerColor.r, headerColor.g, headerColor.b)) : new PdfSolidBrush(new PdfColor(0, 0, 0));
+        let footerColor: { r: number; g: number; b: number } = (footerCondition) ? this.hexDecToRgb(pdfExportProperties.footer.contents[0].style.textBrushColor) as PdfColor : (new PdfColor(0, 0, 0));
+        let brushFooter: PdfSolidBrush = (footerCondition) ? new PdfSolidBrush(new PdfColor(footerColor.r, footerColor.g, footerColor.b)) : new PdfSolidBrush(new PdfColor(0, 0, 0));
         let pen: PdfPen = new PdfPen(new PdfColor(0, 0, 0), .5);
         /** Header and Footer to be set */
         let headerTemplate: PdfPageTemplateElement =
             new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
-        headerTemplate.graphics.drawString(header, font, pen, brush, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
+        headerTemplate.graphics.drawString(header, font, pen, brushHeader, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
         eventParams.document.template.top = headerTemplate;
         let footerTemplate: PdfPageTemplateElement =
             new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
-        footerTemplate.graphics.drawString(footer, font, pen, brush, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
+        footerTemplate.graphics.drawString(footer, font, pen, brushFooter, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
         eventParams.document.template.bottom = footerTemplate;
         return page;
     }
@@ -239,12 +246,12 @@ export class PDFExport {
                             let isValueCell: boolean = false;
                             if (pivotValues[rCnt][cCnt]) {
                                 let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
+                                let cellValue: string | number = pivotCell.formattedText;
+                                cellValue = (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
+                                cellValue = pivotCell.type === 'grand sum' ? (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'grandTotal') :
+                                    this.parent.localeObj.getConstant('grandTotal') : (pivotCell.type === 'sum' ?
+                                        cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
                                 if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
-                                    let cellValue: string | number = pivotCell.formattedText;
-                                    cellValue = (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
-                                    cellValue = pivotCell.type === 'grand sum' ? (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'grandTotal') :
-                                        this.parent.localeObj.getConstant('grandTotal') : (pivotCell.type === 'sum' ?
-                                            cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
                                             (pageSize - localCnt < pivotCell.colSpan ? pageSize - localCnt : pivotCell.colSpan) : 1;
@@ -266,22 +273,51 @@ export class PDFExport {
                                 if (pivotCell.style) {
                                     pdfGridRow = this.applyStyle(pdfGridRow, pivotCell, localCnt);
                                 }
-                                let args: PdfCellRenderArgs = {
-                                    style: (pivotCell && pivotCell.isSum) ? { bold: true } : undefined,
+                                let args: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs = {
+                                    style: undefined,
                                     pivotCell: pivotCell,
                                     cell: pdfGridRow.cells.getCell(localCnt)
                                 };
                                 this.parent.trigger(events.onPdfCellRender, args);
+                                if (pivotCell.axis == "column") {
+                                    args = {
+                                        style: args.style,
+                                        cell: args.cell,
+                                        gridCell: args.pivotCell
+                                    }
+                                    this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
+                                    pdfGridRow.cells.getCell(localCnt).value = (args.gridCell as any).formattedText ? (args.gridCell as any).formattedText : cellValue;
+                                }
+                                else {
+                                    args = {
+                                        style: args.style,
+                                        cell: args.cell,
+                                        column: undefined,
+                                        data: args.pivotCell,
+                                        value: cellValue,
+                                    };
+                                    this.parent.trigger(events.pdfQueryCellInfo, args);
+                                    pdfGridRow.cells.getCell(localCnt).value = args.value ? args.value : cellValue;
+                                }
                                 if (args.style) {
                                     this.processCellStyle(pdfGridRow.cells.getCell(localCnt), args);
                                 }
                             } else {
-                                let args: PdfCellRenderArgs = {
+                                let args: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs = {
                                     style: undefined,
                                     pivotCell: undefined,
                                     cell: pdfGridRow.cells.getCell(localCnt)
                                 };
                                 this.parent.trigger(events.onPdfCellRender, args);
+                                let pivotCell: IAxisSet = { formattedText: "" };
+                                if (pivotCell.axis == "column") {
+                                    args = {
+                                        style: args.style,
+                                        cell: args.cell,
+                                        gridCell: args.pivotCell
+                                    }
+                                    this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
+                                }
                                 if (args.style) {
                                     this.processCellStyle(pdfGridRow.cells.getCell(localCnt), args);
                                 }
@@ -399,7 +435,7 @@ export class PDFExport {
         return new PdfStandardFont(fontFamily, fontSize, fontStyle);
     }
 
-    private processCellStyle(gridCell: PdfGridCell, arg: PdfCellRenderArgs): void {
+    private processCellStyle(gridCell: PdfGridCell, arg?: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs): void {
         if (!isNullOrUndefined(arg.style.backgroundColor)) {
             let backColor: { r: number, g: number, b: number } = this.hexDecToRgb(arg.style.backgroundColor);
             gridCell.style.backgroundBrush = new PdfSolidBrush(new PdfColor(backColor.r, backColor.g, backColor.b));

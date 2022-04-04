@@ -350,6 +350,28 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('mouse click on sortby button', (done: Function) => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(dataSortbySize)
+            });
             // let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             // mouseEventArgs.target = li[0];
             // mouseEventArgs.ctrlKey = true;
@@ -1387,7 +1409,7 @@ describe('FileManager control LargeIcons view', () => {
                 items.click();
                 let size: any = document.getElementById('file_ddl_size');
                 size.click();
-                expect(count).toBe(2);
+                expect(count).toBe(1);
                 done();
             }, 400);
         });

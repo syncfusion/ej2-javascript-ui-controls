@@ -691,6 +691,33 @@ export class ListBox extends DropDownBase {
     }
 
     private triggerDrag(args: DragEventArgs): void {
+        let scrollParent: HTMLElement; let boundRect: DOMRect; let scrollMoved: number = 36;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let event: any = (args as any).event; let wrapper: HTMLElement;
+        if (args.target && (args.target.classList.contains("e-listbox-wrapper") || args.target.classList.contains("e-list-item")
+        || args.target.classList.contains("e-filter-parent") || args.target.classList.contains("e-input-group"))) {
+            if (args.target.classList.contains("e-list-item") || args.target.classList.contains("e-filter-parent")
+            || args.target.classList.contains("e-input-group")) {
+                wrapper = args.target.closest('.e-listbox-wrapper') as HTMLElement;
+            } else {
+                wrapper = args.target as HTMLElement;
+            }
+            if (this.allowFiltering) {
+                scrollParent = wrapper.querySelector('.e-list-parent');
+            } else {
+                scrollParent = wrapper;
+            }
+            boundRect = scrollParent.getBoundingClientRect() as DOMRect;
+            if ((boundRect.y + scrollParent.offsetHeight) - (event.pageY + scrollMoved) < 1) {
+                scrollParent.scrollTop = scrollParent.scrollTop + 10;
+            }
+            else if ((event.pageY - scrollMoved) - boundRect.y < 1) {
+                scrollParent.scrollTop = scrollParent.scrollTop - 10;
+            }
+        }
+        if (args.target === null) {
+            return;
+        }
         this.trigger('drag', this.getDragArgs(args as DragEventArgs));
         const listObj: ListBox = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
@@ -987,9 +1014,10 @@ export class ListBox extends DropDownBase {
                     }
                     if (objValue === dataValue) {
                         itemIdx = this.getIndexByValue(dataValue);
-                        liCollections.push(liElement[itemIdx]);
-                        removeIdxes.push(i);
-                        removeLiIdxes.push(itemIdx);
+                        const idx: number = itemIdx === i ? itemIdx : i;
+                        liCollections.push(liElement[idx]);
+                        removeIdxes.push(idx);
+                        removeLiIdxes.push(idx);
                     }
                 }
             }
@@ -1363,6 +1391,10 @@ export class ListBox extends DropDownBase {
                     ele.setAttribute('aria-selected', 'true');
                 });
                 this.list.setAttribute('aria-activedescendant', li.id);
+            } else {
+                selectedLi.forEach((ele: Element) => {
+                    ele.setAttribute('aria-selected', 'false');
+                });
             }
             if (!isKey && (this.maximumSelectionLength > (this.value && this.value.length) || !isSelect) &&
                 (this.maximumSelectionLength >= (this.value && this.value.length) || !isSelect) &&
@@ -1859,6 +1891,9 @@ export class ListBox extends DropDownBase {
                 }
             }
             removeClass([fli], 'e-focused');
+            if (e.ctrlKey && !e.shiftKey && !this.selectionSettings.showCheckbox) {
+                removeClass([fli], 'e-selected');
+            }
         }
         const cli: Element = ul.children[fliIdx];
         if (cli) {
@@ -1869,8 +1904,20 @@ export class ListBox extends DropDownBase {
             }
             (ul.children[fliIdx] as HTMLElement).focus();
             ul.children[fliIdx].classList.add('e-focused');
-            if (!e.ctrlKey) {
+            if (!e.ctrlKey || !this.selectionSettings.showCheckbox && e.shiftKey && (e.keyCode === 36 || e.keyCode === 35)) {
                 this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
+            }
+            if (this.selectionSettings.showCheckbox && e.ctrlKey && e.shiftKey && (e.keyCode === 36 || e.keyCode === 35)) {
+                let selectedidx : number = Array.prototype.indexOf.call(ul.children, fli);
+                let sidx : number = e.code === "Home" ? 0 : selectedidx;
+                let eidx : number = e.code === "Home" ? selectedidx: ul.children.length -1;
+                for (let i = sidx; i <= eidx; i++) { 
+                    const item: Element = ul.children[i];
+                    this.notify('updatelist', { li: item, e: {
+                        target: this.ulElement.getElementsByClassName('e-focused')[0],
+                        ctrlKey: e.ctrlKey, shiftKey: e.shiftKey
+                    }, module: 'listbox' });
+                }
             }
         }
     }

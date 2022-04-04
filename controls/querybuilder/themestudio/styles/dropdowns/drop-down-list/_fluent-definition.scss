@@ -15,7 +15,8 @@ $ddl-clear-icon-margin-right: 66px !default;
 $ddl-back-icon-margin: 0 10px 0 -52px !default;
 $ddl-back-icon-padding: 0 8px !default;
 $ddl-popup-shadow: $shadow-lg !default;
-$ddl-readonly-bg-color: $content-bg-color-alt2 !default;
+$ddl-readonly-bg-color: $content-bg-color !default;
+$ddl-filter-parent-border: 1px solid $flyout-border !default;
 
 // Small Size
 $ddl-small-list-font-size: $text-xs !default;
@@ -33,13 +34,13 @@ $ddl-popup-background-color: $flyout-bg-color !default;
 $ddl-filter-background-color: $flyout-bg-color !default;
 $ddl-filter-bg: $flyout-bg-color !default;
 $ddl-list-icon-color: $icon-color !default;
-$ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
+$ddl-filter-box-shadow: none !default;
 
 @include export-module('dropdownlist-bootstrap5') {
   #{&}.e-popup.e-ddl {
     border-radius: 4px;
     box-shadow:  none;
-    margin-top: 3px;
+    margin-top: 1px;
     @at-root {
       #{if(&, '&', '*')} .e-input-group {
         width: auto;
@@ -120,7 +121,7 @@ $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
   .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon:hover,
   .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-back-icon:active,
   .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-back-icon:hover {
-    background: transparent;
+    background: none;
     color: $ddl-list-icon-color;
   }
 
@@ -147,7 +148,7 @@ $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
   }
 
   .e-ddl#{&}.e-popup .e-input-group:not(.e-disabled) .e-clear-icon {
-    background: transparent;
+    background: none;
     display: flex;
     position: relative;
   }

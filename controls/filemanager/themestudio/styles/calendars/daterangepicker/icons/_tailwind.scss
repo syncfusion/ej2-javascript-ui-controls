@@ -2,6 +2,9 @@
   /*! component icons */
   .e-input-group-icon.e-range-icon,
   #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-range-icon {
+    border-bottom-right-radius: $range-icon-bottom-right-radius;
+    border-right: $range-control-border-right;
+    border-top-right-radius: $range-icon-top-right-radius;
     font-size: $range-icon-font-size;
     margin: $range-icon-margin;
     min-height: $range-icon-container-min-height;
@@ -9,7 +12,7 @@
     outline: none;
 
     #{if(&, '&', '*')}::before {
-      content: '\e718';
+      content: '\e74c';
       font-family: 'e-icons';
   }
 
@@ -21,17 +24,17 @@
 
   .e-daterangepicker {
     #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-next::before {
-      content: '\e7b7';
+      content: '\e748';
     }#{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-prev::before {
-      content: '\e70f';
+      content: '\e765';
     }#{if(&, '&', '*')} .e-change-icon::before {
-      content: '\e7a8';
+      content: '\e7f9';
     }#{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-next::before {
-      content: '\e70f';
+      content: '\e765';
     }#{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
-      content: '\e7b7';
+      content: '\e748';
     }#{if(&, '&', '*')}.e-rtl .e-start-end .e-change-icon::before {
-      content: '\e7a5';
+      content: '\e773';
     }
   }
 
@@ -41,8 +44,8 @@
     #{if(&, '&', '*')} .e-control-wrapper .e-input-group-icon.e-range-icon {
       font-size: $range-bigger-icon-font-size;
       margin: $range-icon-bigger-margin;
-      min-height: $range-icon-container-min-height;
-      min-width: $range-icon-container-min-width;
+      min-height: $range-bigger-icon-container-min-height;
+      min-width: $range-bigger-icon-container-min-width;
       outline: none;
     }
   }
@@ -61,3 +64,4 @@
     font-size: $range-bigger-small-icon-font-size;
   }
 }
+

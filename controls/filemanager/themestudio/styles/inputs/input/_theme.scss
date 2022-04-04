@@ -107,7 +107,8 @@
   .e-input-group .e-input[readonly] ~ span.e-input-group-icon,
   .e-input-group.e-control-wrapper .e-input[readonly] ~ span.e-input-group-icon,
   .e-float-input input[readonly] ~ span.e-input-group-icon,
-  .e-float-input.e-control-wrapper input[readonly] ~ span.e-input-group-icon {
+  .e-float-input.e-control-wrapper input[readonly] ~ span.e-input-group-icon,
+  .e-float-input.e-control-wrapper input[readonly] ~ span.e-clear-icon {
     @if $input-skin-name == 'bootstrap5' {
       background: $input-readonly-bg-color;
       color: $input-icon-font-color;
@@ -1027,7 +1028,7 @@
   .e-input-group.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) span:last-child.e-input-group-icon,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:first-child:focus,
   .e-input-group.e-control-wrapper.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) span:last-child.e-input-group-icon {
-    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'FluentUI' ) {
+    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'FluentUI' and $input-skin-name != 'bootstrap5') {
       border-color: $input-group-border-right-focus;
     }
   }
@@ -1239,6 +1240,9 @@
   .e-input-group .e-clear-icon:hover,
   .e-input-group.e-control-wrapper .e-clear-icon:hover {
     color: $input-clear-icon-hover-color;
+    @if ($input-skin-name == 'FluentUI') {
+      background: $input-clear-icon-hover-bg-color;
+    }
   }
 
   .e-float-input:not(.e-disabled) .e-clear-icon:hover,
@@ -1247,6 +1251,9 @@
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       color: $input-clear-icon-hover-color;
+    }
+    @if ($input-skin-name == 'FluentUI') {
+      background: $input-clear-icon-hover-bg-color;
     }
   }
 

@@ -431,6 +431,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             const replace: string = 'replaceWith';
             (this.getTable().querySelector('tbody') as HTMLElement)[replace](target);
             if (!this.isExpandCollapse || this.translateY === 0) {
+                this.translateY = this.translateY < 0 ? 0 : this.translateY;
                 getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
             } else {
                 this.isExpandCollapse = false;

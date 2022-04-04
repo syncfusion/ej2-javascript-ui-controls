@@ -173,6 +173,7 @@ export class DiagramScroller {
     }
 
     // Method added to get bounds value if diagram is loaded from negative axis.
+    // SF-359118 implemented for this ticket requirement.
     private getBounds() {
         let pageBounds: Rect;
         let postion: Rect = this.diagram.spatialSearch.getPageBounds(0, 0);

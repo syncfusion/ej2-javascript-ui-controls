@@ -3,6 +3,7 @@
   .e-listbox-wrapper,
   .e-listbox-container {
     -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
     cursor: pointer;
     display: block;
     position: relative;
@@ -33,7 +34,7 @@
         height: $listbox-item-height;
       }
       @else {
-        height: $listview-item-height;
+        height: $listbox-item-height;
       }
       line-height: $listbox-item-line-height;
       padding: $listbox-item-padding;
@@ -42,19 +43,15 @@
 
     &.e-filter-list {
       overflow: inherit;
-
-      & .e-list-parent {
-        overflow: auto;
-      }
     }
 
     .e-list-parent {
       height: 100%;
-      min-height: $listview-item-height;
+      min-height: $listbox-item-height;
     }
 
     & .e-list-item {
-      border-bottom: $listview-border-size solid;
+      border-bottom: $listbox-border-size solid;
       outline: none;
 
       &.e-disabled {
@@ -76,7 +73,7 @@
     }
 
     & .e-icon-back {
-      margin-top: $listview-icon-back-margin;
+      margin-top: $listbox-icon-back-margin;
     }
 
     & .e-list-header .e-headertemplate-text.nested-header {
@@ -87,9 +84,9 @@
       align-items: center;
       border-bottom: 1px solid;
       display: flex;
-      font-weight: $listview-header-font-weight;
-      height: $listview-header-height;
-      padding: 0 $listview-header-text-padding;
+      font-weight: $listbox-header-font-weight;
+      height: $listbox-header-height;
+      padding: 0 $listbox-header-text-padding;
     }
 
     & .e-has-header > .e-view {
@@ -98,21 +95,21 @@
 
     & .e-but-back {
       cursor: pointer;
-      padding-right: $listview-back-padding-right;
+      padding-right: $listbox-back-padding-right;
     }
 
     & .e-list-group-item:first-child {
       border: 0;
-      border-bottom: $listview-group-first-border-bottom solid $listview-border-bottom-color;
+      border-bottom: $listbox-group-first-border-bottom solid $listbox-border-bottom-color;
     }
 
     & .e-list-group-item {
-      border-bottom: $listview-group-border-bottom solid $listview-border-bottom-color;
-      border-top: $listview-group-border-top solid;
+      border-bottom: $listbox-group-border-bottom solid $listbox-border-bottom-color;
+      border-top: $listbox-group-border-top solid;
       font-weight: 600;
-      height: $listview-groupheader-item-height;
-      line-height: $listview-groupheader-item-line-height;
-      padding: $listview-item-padding;
+      height: $listbox-groupheader-item-height;
+      line-height: $listbox-groupheader-item-line-height;
+      padding: $listbox-item-padding;
     }
 
     & .e-icon-collapsible {
@@ -156,11 +153,11 @@
     }
 
     & .e-checkbox .e-checkbox-left {
-      margin: $listview-checkbox-left-margin;
+      margin: $listbox-checkbox-left-margin;
     }
 
     & .e-checkbox .e-checkbox-right {
-      margin: $listview-checkbox-right-margin;
+      margin: $listbox-checkbox-right-margin;
     }
 
     & .e-list-text {
@@ -187,7 +184,7 @@
 
     & .e-list-icon {
       height: 30px;
-      margin-right: $listview-icon-margin-right;
+      margin-right: $listbox-icon-margin-right;
       width: 30px;
     }
 
@@ -203,7 +200,7 @@
 
     & .e-text .e-headertext {
       display: inline-block;
-      line-height: $listview-header-line-height;
+      line-height: $listbox-header-line-height;
     }
 
     &.e-rtl {
@@ -230,24 +227,24 @@
       }
 
       & .e-icon-back {
-        margin-top: $listview-rtl-icon-back-margin;
+        margin-top: $listbox-rtl-icon-back-margin;
       }
 
       & .e-checkbox .e-checkbox-left {
-        margin: $listview-rtl-checkbox-left-margin;
+        margin: $listbox-rtl-checkbox-left-margin;
       }
 
       & .e-checkbox .e-checkbox-right {
-        margin: $listview-rtl-checkbox-right-margin;
+        margin: $listbox-rtl-checkbox-right-margin;
       }
 
       .e-checkbox-wrapper {
-        margin: $listview-rtl-checkbox-left-margin;
+        margin: $listbox-rtl-checkbox-left-margin;
       }
     }
 
     .e-checkbox-wrapper {
-      margin: $listview-checkbox-left-margin;
+      margin: $listbox-checkbox-left-margin;
       text-indent: 0;
       vertical-align: middle;
     }
@@ -288,6 +285,17 @@
 
   .e-listbox-wrapper:not(.e-listbox-container) {
     overflow: auto;
+  }
+
+  .e-listbox-wrapper {
+
+    &.e-filter-list {
+      overflow: inherit;
+
+      &.e-list-parent {
+        overflow: auto;
+      }
+    }
   }
 
   .e-listbox-wrapper.e-sortableclone,
@@ -391,22 +399,22 @@
     }
 
     .e-list-item {
-      border-bottom: $listview-border-bottom solid $listview-border-bottom-color;
-      border-left: $listview-border-left solid $listview-border-left-color;
-      border-right: $listview-border-right solid $listview-border-right-color;
-      border-top: $listview-border-top solid $listview-border-top-color;
+      border-bottom: $listbox-border-bottom solid $listbox-border-bottom-color;
+      border-left: $listbox-border-left solid $listbox-border-left-color;
+      border-right: $listbox-border-right solid $listbox-border-right-color;
+      border-top: $listbox-border-top solid $listbox-border-top-color;
     }
 
     &:not(.e-list-template) .e-list-item,
     .e-selectall-parent,
     .e-list-group-item,
     .e-list-header {
-      padding: $listview-bigger-item-padding;
+      padding: $listbox-bigger-item-padding;
     }
 
     &:not(.e-list-template) .e-list-item,
     .e-selectall-parent {
-      height: $listview-touch-item-height;
+      height: $listbox-touch-item-height;
       line-height: $listbox-touch-item-line-height;
       position: relative;
       @if ($skin-name == 'bootstrap4') {
@@ -415,16 +423,16 @@
     }
 
     .e-list-parent {
-      min-height: $listview-touch-item-height;
+      min-height: $listbox-touch-item-height;
     }
 
     .e-text-content {
-      font-size: $listview-touch-item-font-size;
+      font-size: $listbox-touch-item-font-size;
     }
 
     .e-list-group-item {
-      height: $listview-touch-groupheader-height;
-      line-height: $listview-touch-groupheader-line-height;
+      height: $listbox-touch-groupheader-height;
+      line-height: $listbox-touch-groupheader-line-height;
       @if ($skin-name == 'bootstrap4') {
         font-size: 16px;
         padding: 12px 20px;
@@ -434,8 +442,8 @@
     .e-list-header {
       align-items: center;
       display: flex;
-      font-weight: $listview-touch-header-font-weight;
-      height: $listview-touch-header-height;
+      font-weight: $listbox-touch-header-font-weight;
+      height: $listbox-touch-header-height;
       @if ($skin-name == 'bootstrap4') {
         font-size: 20px;
         line-height: 1.2;
@@ -452,7 +460,7 @@
     }
 
     .e-list-header .e-text {
-      font-size: $listview-touch-header-font-size;
+      font-size: $listbox-touch-header-font-size;
     }
 
     .e-but-back {

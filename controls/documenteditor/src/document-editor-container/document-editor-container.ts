@@ -75,7 +75,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public currentUser: string;
     /**
      * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
-     * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
+     * > If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
      *
      * @default '#FFFF00'
      */
@@ -273,12 +273,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public statusBarElement: HTMLElement;
-    /**
-     * Text Properties
-     *
-     * @private
-     */
-    public textProperties: TextProperties;
     /**
      * Header footer Properties
      *
@@ -569,8 +563,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Heading 3': 'Heading 3',
         'Heading 4': 'Heading 4',
         'Heading 5': 'Heading 5',
-        'Heading 6': 'Heading 6'
-
+        'Heading 6': 'Heading 6',
+        'ZoomLevelTooltip': 'Zoom level. Click or tap to open the Zoom options.',
+        'None': 'None'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -738,11 +733,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.restrictEditing) {
             this.restrictEditingToggleHelper(this.restrictEditing);
         }
-        this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
         this.imageProperties = new ImageProperties(this, this.enableRtl);
         this.tocProperties = new TocProperties(this, this.enableRtl);
-        this.tableProperties = new TableProperties(this, this.imageProperties, this.textProperties, this.enableRtl);
+        this.tableProperties = new TableProperties(this, this.imageProperties, this.enableRtl);
         this.statusBar = new StatusBar(this.statusBarElement, this);
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
@@ -823,6 +817,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if(!isNullOrUndefined(this.documentEditorSettings.enableOptimizedTextMeasuring)) {
             this.documentEditor.documentEditorSettings.enableOptimizedTextMeasuring = this.documentEditorSettings.enableOptimizedTextMeasuring;
         }
+        if(!isNullOrUndefined(this.documentEditorSettings.maximumRows)) {
+            this.documentEditor.documentEditorSettings.maximumRows = this.documentEditorSettings.maximumRows;
+        }
     }
     /**
      * @private
@@ -846,6 +843,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         // Toolbar container
         let isRtl: boolean = this.enableRtl;
         this.containerTarget = this.createElement('div', { className: 'e-de-ctn' });
+        this.containerTarget.contentEditable = 'false';
         this.createToolbarContainer(isRtl);
         let propertiesPaneContainerBorder: string;
         if (!isRtl) {
@@ -1045,9 +1043,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.toolbarModule.enableDisableInsertComment(true);
             this.toolbarModule.enableDisableUndoRedo();
         }
-        if (this.textProperties) {
-            this.textProperties.updateStyles();
-        }
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
@@ -1109,7 +1104,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPropertiesPaneOnSelection(): void {
-        if ((this.restrictEditing || this.textProperties === undefined) && !this.showPropertiesPane) {
+        if ((this.restrictEditing) && !this.showPropertiesPane) {
             return;
         }
         let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
@@ -1120,7 +1115,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             if (this.toolbarModule) {
                 this.toolbarModule.enableDisableToolBarItem(!isSelectionInProtectecRegion, true);
             }
-            this.textProperties.enableDisableElements(!allowFormatting && !isSelectionInProtectecRegion);
             this.tableProperties.enableDisableElements(!allowFormatting && !isSelectionInProtectecRegion);
             this.tocProperties.enableDisableElements(!isSelectionInProtectecRegion);
             this.headerFooterProperties.enableDisableElements(!isSelectionInProtectecRegion);
@@ -1130,7 +1124,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             if (this.toolbarModule) {
                 this.toolbarModule.enableDisableToolBarItem(isReadOnly, true || this.showPropertiesPane);
             }
-            this.textProperties.enableDisableElements(isReadOnly || this.showPropertiesPane);
             this.tableProperties.enableDisableElements(true);
             this.tocProperties.enableDisableElements(true);
             this.headerFooterProperties.enableDisableElements(true);
@@ -1174,8 +1167,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.toolbarModule && property !== 'headerfooter' && property !== 'toc') {
             this.toolbarModule.enableDisablePropertyPaneButton(true);
         }
-        this.textProperties.showTextProperties(property === 'text');
-        this.tableProperties.showTableProperties(property === 'table');
+        this.tableProperties.showTableProperties((property === 'table' || property === 'text'), property);
         this.imageProperties.showImageProperties(property === 'image');
         this.headerFooterProperties.showHeaderFooterPane(property === 'headerfooter');
         this.tocProperties.showTocPane(property === 'toc');
@@ -1225,12 +1217,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.documentEditorInternal) {
             this.unWireEvents();
             this.documentEditorInternal.destroy();
+            this.documentEditorInternal = undefined;
         }
-        this.documentEditorInternal = undefined;
-        if (this.textProperties) {
-            this.textProperties.destroy();
-        }
-        this.textProperties = undefined;
         if (this.headerFooterProperties) {
             this.headerFooterProperties.destroy();
         }

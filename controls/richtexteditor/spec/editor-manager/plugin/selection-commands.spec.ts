@@ -605,6 +605,82 @@ describe('EJ2-52289- Textcolor is removed for the range node, when removing the 
     });
 });
 
+describe('EJ2-57778- Console error occurs and format not applied, when removing the formats', () => {
+    //HTML value
+    let innervalue: string = `<p><strong>​<em>​<span style="text-decoration: underline;">Testing</span></em></strong></p>`;
+    let rteObj: any;
+    let rteID: any;
+    let boldItem: any;
+    let italicItem: any;
+    let underlineItem: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            },
+            created: function() {
+                rteID = document.body.querySelector('.e-richtexteditor').id;
+                boldItem = document.body.querySelector('#' + rteID + '_toolbar_Bold')
+                italicItem = document.body.querySelector('#' + rteID + '_toolbar_Italic')
+                underlineItem = document.body.querySelector('#' + rteID + '_toolbar_Underline')
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('when removing all formats in the editor', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.lastElementChild.firstElementChild.lastElementChild.firstElementChild.lastChild, 7);
+        boldItem.click();
+        expect((rteObj as any).inputElement.innerHTML).toBe('<p><strong>​<em>​<span style="text-decoration: underline;">Testing</span></em></strong><em><span style="text-decoration: underline;">​</span></em></p>');
+        italicItem.click();
+        expect((rteObj as any).inputElement.innerHTML).toBe('<p><strong>​<em>​<span style="text-decoration: underline;">Testing</span></em></strong><span style="text-decoration: underline;">​</span></p>');
+        underlineItem.click();
+        expect((rteObj as any).inputElement.innerHTML).toBe('<p><strong>​<em>​<span style="text-decoration: underline;">Testing</span></em></strong>​</p>');
+        done();
+    });
+});
+
+describe('EJ2-57778- Console error occurs, when removing the particular format', () => {
+    //HTML value
+    let innervalue: string = `<p>Testing</p>`;
+    let rteObj: any;
+    let rteID: any;
+    let boldItem: any;
+    let italicItem: any;
+    let underlineItem: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            },
+            created: function() {
+                rteID = document.body.querySelector('.e-richtexteditor').id;
+                boldItem = document.body.querySelector('#' + rteID + '_toolbar_Bold')
+                italicItem = document.body.querySelector('#' + rteID + '_toolbar_Italic')
+                underlineItem = document.body.querySelector('#' + rteID + '_toolbar_Underline')
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('when adding/removing bold format', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.lastElementChild.lastChild, 7);
+        boldItem.click();
+        expect((rteObj as any).inputElement.innerHTML).toBe('<p>Testing<strong>​</strong></p>');
+        boldItem.click();
+        expect((rteObj as any).inputElement.innerHTML).toBe('<p>Testing​</p>');
+        done();
+    });
+});
+
 describe('Selection Testing with Multiple nodes', () => {
     //HTML value
     let innervalue: string = '<p><strong>​<em>​<span style="text-decoration: underline;">​Testing</span></em>'

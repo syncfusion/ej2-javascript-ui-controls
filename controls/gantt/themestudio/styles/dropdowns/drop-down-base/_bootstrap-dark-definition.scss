@@ -11,6 +11,7 @@ $ddl-list-font-family: inherit !default;
 $ddl-list-gradient-color: $grey-white !default;
 $ddl-list-bg-color: $grey-dark !default;
 $ddl-list-header-bg-color: $grey-white !default;
+$ddl-list-tap-color: transparent  !default;
 $ddl-list-header-border-color: 1px $grey-base !default;
 $ddl-list-default-font-color: $grey-dark-font !default;
 $ddl-list-active-border-color: $grey-white !default;
@@ -43,6 +44,7 @@ $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: $grey-88 !default;
 $ddl-list-header-font-size: $ddl-group-list-font-size !default;
 $ddl-small-list-header-font-size: $ddl-group-list-font-size !default;
+$ddl-group-list-item-text-intent: 0 !default;
 
 // small size
 $ddl-small-icon-font-size: 14px !default;

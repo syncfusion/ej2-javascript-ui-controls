@@ -146,6 +146,9 @@
   & .e-menu-icon {
     font-size: $cmenu-icon-bigger-font-size;
     line-height: $cmenu-bigger-li-height;
+    @if $skin-name == 'tailwind' {
+      margin-right: $cmenu-icon-bigger-margin-right;
+    }
   }
 
   & .e-caret {

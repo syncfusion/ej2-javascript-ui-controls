@@ -44,7 +44,7 @@ export class XmlHttpRequestHandler {
     public send(jsonObject: object, httpRequestEventArgs?: XmlHttpRequestEventArgs): void {
         this.xmlHttpRequest = new XMLHttpRequest();
         this.xmlHttpRequest.withCredentials = httpRequestEventArgs.withCredentials;
-        this.xmlHttpRequest.timeout = (httpRequestEventArgs.timeout >= 0 ? httpRequestEventArgs.timeout : 0);
+        let timeout: number = (httpRequestEventArgs.timeout >= 0 ? httpRequestEventArgs.timeout : 0);
         this.customHeaders = httpRequestEventArgs.headers;
         
         this.xmlHttpRequest.onreadystatechange = () => {
@@ -55,15 +55,16 @@ export class XmlHttpRequestHandler {
         };
         if (!this.mode) {
             setTimeout(() => {
-                this.sendRequest(jsonObject);
+                this.sendRequest(jsonObject, timeout);
             });
         } else {
-            this.sendRequest(jsonObject);
+            this.sendRequest(jsonObject, timeout);
         }
     }
 
-    private sendRequest(jsonObj: object): void {
+    private sendRequest(jsonObj: object, timeout: number): void {
         this.xmlHttpRequest.open('POST', this.url, true);
+        this.xmlHttpRequest.timeout = timeout;
         if (this.contentType) {
             this.xmlHttpRequest.setRequestHeader('Content-Type', this.contentType);
         }

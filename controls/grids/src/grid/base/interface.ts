@@ -12,7 +12,7 @@ import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
-import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem } from './enum';
+import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle } from './enum';
 import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
@@ -534,6 +534,8 @@ export interface IGrid extends Component<HTMLElement> {
     localeObj?: L10n;
 
     isManualRefresh?: boolean;
+
+    isAutoFitColumns?: boolean;
 
     enableDeepCompare?: boolean;
 
@@ -1541,11 +1543,11 @@ export interface ExcelRow {
     /** Defines the group of rows to expand and collapse */
     grouping?: Object;
 }
-export interface Border {
+export interface ExcelBorder {
     /**  Defines the color of border */
     color?: string;
     /**  Defines the line style of border */
-    lineStyle?: BorderLineStyle;
+    lineStyle?: ExcelBorderLineStyle;
 }
 export interface ExcelStyle {
     /** Defines the color of font */
@@ -1571,11 +1573,13 @@ export interface ExcelStyle {
     /** Defines the wrapText for cell style */
     wrapText?: boolean;
     /** Defines the borders for cell style */
-    borders?: Border;
+    borders?: ExcelBorder;
     /** Defines the format of the cell */
     numberFormat?: string;
     /** Defines the type of the cell */
     type?: string;
+    /** Defines the strike through of the cell */
+    strikeThrough?: boolean;
 }
 export interface PdfStyle {
     /** Defines the horizontal alignment */

@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
-import { keyDown, cellNavigate, renameSheet, filterCellKeyDown, skipHiddenIdx, getUpdateUsingRaf } from '../common/index';
+import { keyDown, cellNavigate, renameSheet, filterCellKeyDown, getUpdateUsingRaf, isLockedCells } from '../common/index';
 import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, getCell, isHiddenCol } from '../../workbook/index';
-import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSelected } from '../../workbook/index';
+import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSelected, skipHiddenIdx } from '../../workbook/index';
 import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -36,7 +36,8 @@ export class KeyboardNavigation {
 
     private keyDownHandler(e: KeyboardEvent): void {
         if (!this.parent.isEdit && (document.activeElement.classList.contains('e-spreadsheet') ||
-            closest(document.activeElement, '.e-sheet')) && !closest(e.target as Element, '.e-name-box')) {
+            closest(document.activeElement, '.e-sheet')) && !closest(e.target as Element, '.e-name-box') &&
+            !(document.activeElement.classList.contains('e-ddl') && document.activeElement.classList.contains('e-input-focus'))) {
             let isNavigate: boolean;
             let scrollIdxes: number[];
             const isRtl: boolean = this.parent.enableRtl;
@@ -54,8 +55,14 @@ export class KeyboardNavigation {
             }
             if ((!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)))
                 || (e.shiftKey && e.keyCode === 9)) { //left key
-                if (actIdxes[1] > 0) {
-                    actIdxes[1] -= 1;
+                if (actIdxes[1] > 0 || sheet.isProtected) {
+                    if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                        actIdxes[1] -= 1;
+                    } else {
+                        const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                        actIdxes[1] = idx[1];
+                        actIdxes[0] = idx[0];
+                    }
                     isNavigate = true;
                 } else {
                     const content: Element = this.parent.getMainContent();
@@ -63,8 +70,14 @@ export class KeyboardNavigation {
                 }
             } else if (e.shiftKey && e.keyCode === 13) {    // Up key
                 if (!this.parent.element.querySelector('.e-find-toolbar')) {
-                    if (actIdxes[0] > 0) {
-                        actIdxes[0] -= 1;
+                    if (actIdxes[0] > 0 || sheet.isProtected) {
+                        if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                            actIdxes[0] -= 1;
+                        } else {
+                            const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                            actIdxes[1] = idx[1];
+                            actIdxes[0] = idx[0];
+                        }
                         isNavigate = true;
                     } else {
                         const content: Element = this.parent.getMainContent().parentElement;
@@ -72,25 +85,43 @@ export class KeyboardNavigation {
                     }
                 }
             } else if (!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 38) {    // Up key
-                if (actIdxes[0] > 0) {
-                    actIdxes[0] -= 1;
+                if (sheet.isProtected || actIdxes[0] > 0) {
+                    if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                        actIdxes[0] -= 1;
+                    } else {
+                        const cellIdx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                        actIdxes[1] = cellIdx[1];
+                        actIdxes[0] = cellIdx[0];
+                    }
                     isNavigate = true;
                 } else {
-                    const content: Element = this.parent.getMainContent().parentElement;
-                    if (actIdxes[0] === 0 && content.scrollTop) { content.scrollTop = 0; }
+                    const contentEle: Element = this.parent.getMainContent().parentElement;
+                    if (actIdxes[0] === 0 && contentEle.scrollTop) { contentEle.scrollTop = 0; }
                 }
             } else if ((!e.shiftKey && ((!isRtl && e.keyCode === 39) || (isRtl && e.keyCode === 37))) || e.keyCode === 9) { // Right key
                 const cell: CellModel = getCell(actIdxes[0], actIdxes[1], sheet);
                 if (cell && cell.colSpan > 1) { actIdxes[1] += (cell.colSpan - 1); }
                 if (actIdxes[1] < sheet.colCount - 1) {
-                    actIdxes[1] += 1;
+                    if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                        actIdxes[1] += 1;
+                    } else {
+                        const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                        actIdxes[1] = idx[1];
+                        actIdxes[0] = idx[0];
+                    }
                     isNavigate = true;
                 }
             } else if ((!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 40) || e.keyCode === 13) {      // Down Key
                 const cell: CellModel = getCell(actIdxes[0], actIdxes[1], sheet);
                 if (cell && cell.rowSpan > 1) { actIdxes[0] += (cell.rowSpan - 1); }
                 if (actIdxes[0] < sheet.rowCount - 1) {
-                    actIdxes[0] += 1;
+                    if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
+                        actIdxes[0] += 1;
+                    } else {
+                        const idx: number[] = this.getNextUnlockedCell(e.keyCode, actIdxes);
+                        actIdxes[1] = idx[1];
+                        actIdxes[0] = idx[0];
+                    }
                     isNavigate = true;
                 }
             }
@@ -169,6 +200,141 @@ export class KeyboardNavigation {
                 this.parent.notify(renameSheet, e);
             }
         }
+    }
+
+    private getNextUnlockedCell(keycode: number, actCellIdx: number[]): number[] {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        let index: number[];
+        if (keycode === 39) {
+            let colIdx: number = actCellIdx[1] + 1;
+            let rowIdx: number = actCellIdx[0];
+            if (actCellIdx[1] === sheet.usedRange.colIndex) {
+                colIdx = 0; rowIdx = rowIdx + 1;
+                if (actCellIdx[0] === sheet.usedRange.rowIndex) {
+                    rowIdx = 0;
+                }
+            }
+            if (actCellIdx[1] === sheet.usedRange.colIndex && actCellIdx[0] === sheet.usedRange.rowIndex) {
+                rowIdx = colIdx = 0;
+            }
+            for (let i: number = rowIdx; i <= sheet.usedRange.rowIndex + 1; i++ ) {
+                if (i > sheet.usedRange.rowIndex) { i = 0; }
+                for (let j: number = colIdx; j <= sheet.usedRange.colIndex; j++) {
+                    if (!isLockedCells(this.parent, [i, j, i, j])) {
+                        index = [i, j];
+                        return index;
+                    }
+                    colIdx = j;
+                }
+                rowIdx = i;
+                if (colIdx === sheet.usedRange.colIndex) {
+                    colIdx = 0;
+                    if (rowIdx === sheet.usedRange.rowIndex) {
+                        rowIdx = 0;
+                    } else {
+                        rowIdx++;
+                    }
+                }
+            }
+        }
+
+        if (keycode === 37) { //Right Key
+            let colIdx: number = actCellIdx[1] - 1;
+            let rowIdx: number = actCellIdx[0];
+            if (actCellIdx[1] === 0) {
+                colIdx = sheet.usedRange.colIndex;
+                rowIdx = rowIdx - 1;
+                if (actCellIdx[0] === 0) {
+                    rowIdx = sheet.usedRange.rowIndex;
+                }           
+            }
+            for (let i: number = rowIdx; i >= -1; i-- ) {
+                if (i < 0){
+                    i = sheet.usedRange.rowIndex;
+                }
+                for (let j: number = colIdx; j >= 0; j-- ) {
+                    if (!isLockedCells(this.parent, [i, j, i, j])) {
+                        index = [i, j];
+                        return index;
+                    }
+                    colIdx = j;
+                }
+                rowIdx = i;
+                if (colIdx === 0) {
+                    colIdx = sheet.usedRange.colIndex;
+                    if (rowIdx === 0) {
+                        rowIdx = sheet.usedRange.rowIndex;
+                    } else {
+                        rowIdx--;
+                    }
+                }
+            }
+        }
+        if (keycode === 40) { // Down Key
+            let colIdx: number = actCellIdx[1];
+            let rowIdx: number = actCellIdx[0] + 1;
+            if (actCellIdx[0] === sheet.usedRange.rowIndex) {
+                colIdx = colIdx + 1; rowIdx = 0;
+                if (actCellIdx[1] === sheet.usedRange.colIndex) {
+                    rowIdx = 0;
+                }
+            }
+            if (actCellIdx[1] === sheet.usedRange.colIndex && actCellIdx[0] === sheet.usedRange.rowIndex) {
+                rowIdx = colIdx = 0;
+            }
+            for (let i: number = colIdx; i <= sheet.usedRange.colIndex + 1; i++ ) {
+                if (i > sheet.usedRange.colIndex) { i = 0; }
+                for (let j: number = rowIdx; j<= sheet.usedRange.rowIndex; j++) {
+                    if (!isLockedCells(this.parent, [j, i, j, i])) {
+                        index = [j, i];
+                        return index;
+                    }
+                    rowIdx = j;
+                }
+                colIdx = i;
+                if (rowIdx === sheet.usedRange.rowIndex) {
+                    colIdx++;
+                    if (colIdx === sheet.usedRange.colIndex) {
+                        rowIdx = 0;
+                    } else {
+                        rowIdx = 0;
+                    }
+                }
+            }
+        }
+        if (keycode === 38) { // Up Key
+            let colIdx: number = actCellIdx[1];
+            let rowIdx: number = actCellIdx[0] - 1;
+            if (actCellIdx[0] === 0) {
+                colIdx = colIdx - 1;
+                rowIdx = sheet.usedRange.rowIndex;
+                if (actCellIdx[1] === 0) {
+                    colIdx = sheet.usedRange.colIndex;
+                }               
+            }
+            for (let i: number = colIdx; i >= -1; i-- ) {
+                if (i < 0) {
+                    i = sheet.usedRange.colIndex;
+                }
+                for (let j: number = rowIdx; j>= 0; j--) {
+                    if (!isLockedCells(this.parent, [j, i, j, i])) {
+                        index = [j, i];
+                        return index;
+                    }
+                    rowIdx = j;
+                }
+                colIdx = i;
+                if (rowIdx === 0) {
+                    rowIdx = sheet.usedRange.rowIndex;
+                    if (colIdx === 0) {
+                        colIdx = sheet.usedRange.colIndex;
+                    } else {
+                        colIdx--;
+                    }
+                }
+            }
+        }
+        return index;
     }
 
     private shiftSelection(e: KeyboardEvent): void {
@@ -305,7 +471,7 @@ export class KeyboardNavigation {
                 cont.scrollTop = 0; return;
             }
         }
-        if (hCont.scrollLeft) {
+        if (hCont && hCont.scrollLeft) {
             if (frozenCol && actIdxes[1] !== selectedRange[3]) {
                 if (actIdxes[1] === frozenCol) {
                     hCont.scrollLeft = 0; return;
@@ -323,10 +489,10 @@ export class KeyboardNavigation {
             this.parent.scrollModule.isKeyScroll = false;
         }
         const scrollLeftIdx: number = this.getRightIdx(leftIdx);
-        if (scrollLeftIdx <= actIdxes[1] || isScroll) {
+        if ((scrollLeftIdx <= actIdxes[1] || isScroll) && hCont) {
             hCont.scrollLeft += getColumnWidth(sheet, scrollLeftIdx, null, true) * x;
             this.parent.scrollModule.isKeyScroll = false;
-        } else if (leftIdx > actIdxes[1]) {
+        } else if (leftIdx > actIdxes[1] && hCont) {
             hCont.scrollLeft -= getColumnWidth(sheet, actIdxes[1], null, true) * x;
             this.parent.scrollModule.isKeyScroll = false;
         }

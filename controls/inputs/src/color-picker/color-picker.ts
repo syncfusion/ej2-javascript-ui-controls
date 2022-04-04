@@ -543,7 +543,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             }
             roundedColor = this.roundValue(colors[i]).toLowerCase();
             tile = this.createElement('span', {
-                className: TILE, attrs: { 'role': 'gridcell', 'aria-label': roundedColor, 'aria-selected': 'false' }
+                className: TILE, attrs: { 'role': 'gridcell', 'aria-label': roundedColor, 'aria-selected': 'false', 'tabindex': '0'}
             });
             this.trigger('beforeTileRender', <PaletteTileEventArgs>{ element: tile, presetName: key, value: colors[i] });
             row.appendChild(tile);
@@ -587,6 +587,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         hsvContainer.appendChild(this.createElement('div', { className: HSVAREA }));
         const dragHandler: HTMLElement = this.createElement('span', { className: HANDLER, attrs: { 'tabindex': '0' } });
         hsvContainer.appendChild(dragHandler);
+        if (this.value === null) {
+            this.value = '#008000ff';
+        }
         this.rgb = this.hexToRgb(this.value);
         this.hsv = this.rgbToHsv.apply(this, this.rgb);
         this.setHsvContainerBg();

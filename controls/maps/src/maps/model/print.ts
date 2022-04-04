@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { print as printWindow, createElement } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
-import { getElement } from '../utils/helper';
+import { getElement, getClientElement } from '../utils/helper';
 import { IPrintEventArgs } from '../model/interface';
 import { beforePrint } from '../model/constants';
 
@@ -52,7 +52,29 @@ export class Print {
      * @private
      */
     private getHTMLContent(elements?: string[] | string | Element): Element {
-        const div: Element = createElement('div');
+        const elementRect: ClientRect = getClientElement(this.control.element.id);
+        let div: Element = createElement('div');
+        let divElement: Element = this.control.element.cloneNode(true) as Element;
+        if (this.control.isTileMap) {
+            for (let i: number = 0; i < divElement.childElementCount; i++) {
+                if (divElement.children[i].id === this.control.element.id + '_tile_parent') {
+                    (divElement.children[i] as HTMLElement).style.removeProperty('height');
+                    (divElement.children[i] as HTMLElement).style.removeProperty('width');
+                    (divElement.children[i] as HTMLElement).style.removeProperty('top');
+                    (divElement.children[i] as HTMLElement).style.removeProperty('left');
+                    (divElement.children[i] as HTMLElement).style.removeProperty('right');
+                    (divElement.children[i] as HTMLElement).style.removeProperty('overflow');
+                    const svgElement: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+                    (divElement.children[i].children[0] as HTMLElement).style.overflow = 'hidden';
+                    (divElement.children[i].children[0] as HTMLElement).style.position = 'absolute';
+                    (divElement.children[i].children[0] as HTMLElement).style.height = svgElement.style.height;
+                    (divElement.children[i].children[0] as HTMLElement).style.width = svgElement.style.width;
+                    (divElement.children[i].children[0] as HTMLElement).style.left = svgElement.style.left;
+                    (divElement.children[i].children[0] as HTMLElement).style.top = svgElement.style.top;
+                    break;
+                }
+            }
+        }
         if (elements) {
             if (elements instanceof Array) {
                 Array.prototype.forEach.call(elements, (value: string) => {
@@ -64,7 +86,7 @@ export class Print {
                 div.appendChild(getElement(elements).cloneNode(true) as Element);
             }
         } else {
-            div.appendChild(this.control.element.cloneNode(true) as Element);
+            div.appendChild(divElement);
         }
         return div;
     }

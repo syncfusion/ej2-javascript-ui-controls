@@ -1,16 +1,16 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, CellSaveEventArgs, beginAction, completeAction } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, CellSaveEventArgs, completeAction } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, activeCellChanged } from '../../workbook/common/event';
 import { getCell, setCell } from '../../workbook/base/cell';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
-import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp, focus } from '../common/index';
-import { formulaBarOperation, removeDataValidation } from '../common/index';
+import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus } from '../common/index';
+import { formulaBarOperation, removeDataValidation, CellValidationEventArgs } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { isHiddenRow, setRow, ColumnModel } from '../../workbook/index';
+import { isHiddenRow, setRow, ColumnModel, beginAction, ActionEventArgs, getSwapRange } from '../../workbook/index';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../workbook/common/address';
+import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, cellValidation, updateCell } from '../../workbook/common/index';
 import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReference } from '../../workbook/index';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -74,14 +74,45 @@ export class DataValidation {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private removeValidationHandler(e: MouseEvent): void {
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const range: string = this.getRange(sheet.selectedRange);
-        const args: {range: string} = {range: sheet.name + '!' + range};
-        this.parent.notify(beginAction, { eventArgs: args, action: 'removeValidation' });
-        this.parent.removeDataValidation(range);
-        this.parent.notify(completeAction, { eventArgs: args, action: 'removeValidation' });
+    private removeValidationHandler(eventArgs: { isAction: boolean, range?: string }): void {
+        let sheet: SheetModel; let range: string;
+        if (eventArgs.range && eventArgs.range.includes('!')) {
+            range = eventArgs.range;
+            sheet = getSheet(this.parent, getSheetIndex(this.parent, range.split('!')[0]));
+            if (!sheet) {
+                return;
+            }
+        } else {
+            sheet = this.parent.getActiveSheet();
+            range = sheet.name + '!' + (eventArgs.range || this.getRange(sheet.selectedRange));
+        }
+        const args: { range: string, cancel: boolean } = { range: range, cancel: false };
+        if (eventArgs.isAction) {
+            this.parent.notify(beginAction, { eventArgs: args, action: 'removeValidation' });
+        }
+        if (!args.cancel) {
+            let isListValidation: boolean; let cell: CellModel;
+            const actCelIdx: number[] = getRangeIndexes(sheet.activeCell);
+            if (sheet.name === this.parent.getActiveSheet().name) {
+                const indexes: number[] = getSwapRange(getRangeIndexes(range));
+                if (actCelIdx[0] >= indexes[0] && actCelIdx[1] >= indexes[1] && actCelIdx[0] <= indexes[2] && actCelIdx[1] <= indexes[3]) {
+                    cell = getCell(actCelIdx[0], actCelIdx[1], sheet, false, true);
+                    isListValidation = cell.validation && cell.validation.type === 'List';
+                }
+            }
+            this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
+            if (isListValidation && !cell.validation) {
+                const td: HTMLElement = this.parent.getCell(actCelIdx[0], actCelIdx[1]);
+                if (td && td.getElementsByClassName('e-validation-list')[0]) {
+                    this.listObj.destroy();
+                    td.removeChild(td.getElementsByClassName('e-validation-list')[0]);
+                }
+            }
+            if (eventArgs.isAction) {
+                delete args.cancel;
+                this.parent.notify(completeAction, { eventArgs: args, action: 'removeValidation' });
+            }
+        }
     }
 
     private keyUpHandler(e: KeyboardEvent): void {
@@ -108,15 +139,26 @@ export class DataValidation {
         }
     }
 
-    private invalidDataHandler(args: { isRemoveHighlight: boolean }): void {
+    private invalidDataHandler(args: { isRemoveHighlight: boolean, range?: string, isPublic?: boolean }): void {
+        const eventArgs: { range: string, cancel: boolean } = { range: args.range || this.parent.dataValidationRange, cancel: false };
+        if (!eventArgs.range) {
+            return;
+        }
+        let actionArgs: ActionEventArgs;
+        if (!args.isPublic) {
+            actionArgs = { eventArgs: eventArgs, action: args.isRemoveHighlight ? 'removeHighlight' : 'addHighlight' };
+            this.parent.notify(beginAction, actionArgs);
+            if (eventArgs.cancel) {
+                return;
+            }
+        }
         if (args.isRemoveHighlight) {
-            this.parent.notify(beginAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'removeHighlight' });
-            this.parent.removeInvalidHighlight();
-            this.parent.notify(completeAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'removeHighlight' });
+            this.parent.removeInvalidHighlight(eventArgs.range);
         } else {
-            this.parent.notify(beginAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'addHighlight' });
-            this.parent.addInvalidHighlight();
-            this.parent.notify(completeAction, { eventArgs: {range: this.parent.dataValidationRange}, action: 'addHighlight' });
+            this.parent.addInvalidHighlight(eventArgs.range);
+        }
+        if (!args.isPublic) {
+            this.parent.notify(completeAction, actionArgs);
         }
     }
 
@@ -168,7 +210,8 @@ export class DataValidation {
                                     getColumnsWidth(sheet, viewport.leftIndex + 1, offset.left.idx, true) : 0;
                                 args.popup.refresh();
                             }
-                        }
+                        },
+                        close: (): void => focus(this.parent.element)
                     });
                     this.listObj.appendTo('#' + this.parent.element.id + 'listValid');
                 }
@@ -252,7 +295,6 @@ export class DataValidation {
                     count += 1;
                     cell = sheet.rows[rowIdx].cells[colIdx];
                     const data: string = this.parent.getDisplayText(cell) || '';
-                    if (validation.ignoreBlank && data === '') { continue; }
                     this.data.push({ text: data, id: 'list-' + count });
                 }
             }
@@ -274,20 +316,16 @@ export class DataValidation {
         if (sheet.isProtected && isLocked(cellObj, getColumn(sheet, cellIdx[1]))) {
             this.parent.notify(editAlert, null);
         } else {
-            this.parent.notify(
-                workbookEditOperation,
-                { action: 'updateCellValue', address: sheet.activeCell, value: value });
-            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIdx);
-            this.parent.trigger('cellSave', <CellSaveEventArgs>{
-                value: value, oldValue: cellObj && cellObj.value, address: sheet.name + '!' + sheet.activeCell,
-                displayText: this.parent.getDisplayText(getCell(cellIdx[0], cellIdx[1], sheet))
-            });
+            updateCell(
+                this.parent, sheet, { cell: { value: value }, rowIdx: cellIdx[0], colIdx: cellIdx[1], valChange: true, lastCell: true,
+                uiRefresh: true, checkCf: true });
+            this.parent.notify(completeAction, { action: 'cellSave', eventArgs: { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell } });
         }
     }
 
     private getRange(range: string): string {
-        const sheet: SheetModel = this.parent.getActiveSheet();
         const indexes: number[] = getRangeIndexes(range);
+        const sheet: SheetModel = this.parent.getActiveSheet();
         const maxRowCount: number = sheet.rowCount;
         const maxColCount: number = sheet.colCount;
         if (indexes[2] === maxRowCount - 1 && indexes[0] === 0) {
@@ -310,7 +348,7 @@ export class DataValidation {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let cell: CellModel;
         let range: string = sheet.selectedRange;
-        const indexes: number[] = getRangeIndexes(range);
+        const indexes: number[] = getSwapRange(getRangeIndexes(range));
         range = this.getRange(range);
         const validationArgs : { moreValidation: boolean, extendValidation: boolean} = this.validateRange(indexes, sheet);
         if (!validationArgs.extendValidation && !validationArgs.moreValidation || okClick) {
@@ -794,9 +832,7 @@ export class DataValidation {
     }
 
     private dlgClickHandler(dialogInst: Dialog): void {
-        this.parent.dataValidationRange = this.parent.dataValidationRange + this.parent.getActiveSheet().selectedRange + ',';
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let isValidList: boolean = true;
         let errorMsg: string;
         const dlgEle: HTMLElement = this.parent.element.querySelector('.e-datavalidation-dlg');
         const dlgFooter: HTMLElement = dlgEle.querySelector('.e-footer-content');
@@ -830,6 +866,7 @@ export class DataValidation {
         if (value2 !== '') {
             valArr.push(value2);
         }
+        let isValid: boolean = true;
         if (type === 'List') {
             if (value1.indexOf('=') !== -1) {
                 if (value1.indexOf(':') !== -1) {
@@ -841,17 +878,17 @@ export class DataValidation {
                         rangeAdd[0].replace(/[0-9]/g, '') === rangeAdd[1].replace(/[0-9]/g, '') : false;
                     const isSingleRow: boolean = address.match(/\d/g) ?
                         rangeAdd[0].replace(/\D/g, '') === rangeAdd[1].replace(/\D/g, '') : false;
-                    isValidList = isSheetNameValid ? (isSingleCol ? true : isSingleRow ? true : false) : false;
-                    if (!isValidList) {
+                    isValid = isSheetNameValid ? (isSingleCol ? true : isSingleRow ? true : false) : false;
+                    if (!isValid) {
                         errorMsg = l10n.getConstant('DialogError');
                     }
                 }
             } else if (value1.length > 256) {
-                isValidList = false;
+                isValid = false;
                 errorMsg = l10n.getConstant('ListLengthError');
             }
         }
-        if (type !== 'List' || isValidList) {
+        if (isValid) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const format: string = type;
             const validDlg: { isValidate: boolean, errorMsg: string } = this.isDialogValidator(valArr, format, operator);
@@ -862,36 +899,45 @@ export class DataValidation {
                 }
             }
             errorMsg = validDlg.errorMsg;
-            isValidList = validDlg.isValidate;
-            if (isValidList) {
-                const indexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
-                const cell: CellModel = getCell(indexes[0], indexes[1], sheet, false, true);
-                if (cell.validation && cell.validation.type === 'List') {
-                    const tdEle: HTMLElement = this.parent.getMainContent().
-                        getElementsByTagName('tr')[indexes[0]].getElementsByClassName('e-cell')[indexes[1]] as HTMLElement;
-                    if (tdEle && tdEle.getElementsByClassName('e-validation-list')[0]) {
-                        tdEle.removeChild(tdEle.getElementsByClassName('e-validation-list')[0]);
-                        this.listObj.destroy();
+            isValid = validDlg.isValidate;
+            if (isValid) {
+                const indexes: number[] = getCellIndexes(sheet.activeCell);
+                let cell: CellModel = getCell(indexes[0], indexes[1], sheet, false, true);
+                const isListValidationApplied: boolean = cell.validation && cell.validation.type === 'List';
+                const args: CellValidationEventArgs = { range: sheet.name + '!' + range, value1: value1, value2: value2, ignoreBlank:
+                    ignoreBlank, type: <ValidationType>type, operator: <ValidationOperator>operator, inCellDropDown: inCellDropDown,
+                    cancel: false };
+                this.parent.notify(beginAction, { eventArgs: args, action: 'validation' });
+                if (!args.cancel) {
+                    this.parent.notify(
+                        cellValidation, { rules: { type: args.type, operator: args.operator, value1: args.value1, value2: value2,
+                            ignoreBlank: args.ignoreBlank, inCellDropDown: args.inCellDropDown }, range: args.range });
+                    cell = getCell(indexes[0], indexes[1], sheet, false, true);
+                    if (cell.validation) {
+                        if (isListValidationApplied) {
+                            const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
+                            if (tdEle && tdEle.getElementsByClassName('e-validation-list')[0]) {
+                                this.listObj.destroy();
+                                tdEle.removeChild(tdEle.getElementsByClassName('e-validation-list')[0]);
+                            }
+                        }
+                        if (cell.validation.type === 'List') {
+                            this.listHandler();
+                        }
                     }
-                }
-                const rules: ValidationModel = {
-                    type: type as ValidationType, operator: operator as ValidationOperator,
-                    value1: value1, value2: value2, ignoreBlank: ignoreBlank, inCellDropDown: inCellDropDown
-                };
-                this.parent.addDataValidation(rules, range);
-                if (type === 'List' && isValidList) {
-                    this.listHandler();
-                }
-                if (!document.getElementsByClassName('e-validationerror-dlg')[0]) {
-                    if (dialogInst.dialogInstance) {
-                        dialogInst.dialogInstance.hide();
-                    } else {
-                        dialogInst.hide();
+                    delete args.cancel;
+                    this.parent.notify(completeAction, { eventArgs: args, action: 'validation' });
+                    if (!document.getElementsByClassName('e-validationerror-dlg')[0]) {
+                        if (dialogInst.dialogInstance) {
+                            dialogInst.dialogInstance.hide();
+                        } else {
+                            dialogInst.hide();
+                        }
                     }
                 }
             }
         }
-        if (!isValidList) {
+        if (!isValid) {
             const errorEle: HTMLElement = this.parent.createElement('div', {
                 className: 'e-dlg-error', id: 'e-invalid', innerHTML: errorMsg
             });
@@ -964,7 +1010,8 @@ export class DataValidation {
         return { isValidate: formValidation.isValidate, errorMsg: formValidation.errorMsg };
     }
 
-    private isValidationHandler(args: { value: string, range: number[], sheetIdx: number }): { isValidate: boolean, errorMsg: string } {
+    private isValidationHandler(
+        args: { value: string, range: number[], sheetIdx: number, td?: HTMLElement }): { isValidate: boolean, errorMsg: string } {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         args.value = args.value ? args.value : '';
         let isValidate: boolean;
@@ -1146,20 +1193,21 @@ export class DataValidation {
             }
         }
         errorMsg = l10n.getConstant('ValidationError');
-        if (isValidate) {
+        if (isValidate && cell && cell.validation && cell.validation.isHighlighted) {
             const style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
             if (!isHiddenRow(sheet, args.range[0])) {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                    style: style, rowIdx: args.range[0],
-                    colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
-                    onActionUpdate: true
+                    style: style, rowIdx: args.range[0], colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
+                    onActionUpdate: true, cell: args.td
                 });
             }}
         return { isValidate: isValidate, errorMsg: errorMsg };
     }
 
-    private checkDataValidation(args: { value: string, range: number[], sheetIdx: number, isCell: boolean }): void {
+    private checkDataValidation(args: { value: string, range: number[], sheetIdx: number, isCell: boolean, td?: HTMLElement, isValid?: boolean }): void {
         const cell: CellModel = getCell(args.range[0], args.range[1], this.parent.getActiveSheet());
+        args.td = args.td || this.parent.getCell(args.range[0], args.range[1]);
+        args.sheetIdx = args.sheetIdx || this.parent.activeSheetIndex;
         const formulaArgs : InvalidFormula = { skip: false, value: '' };
         if (cell.validation) {
             if (checkIsFormula(cell.validation.value1) &&
@@ -1181,12 +1229,12 @@ export class DataValidation {
         }
         if (!formulaArgs.skip) {
             const isValid: { isValidate: boolean, errorMsg: string } = this.isValidationHandler({
-                value: args.value, range: args.range, sheetIdx: args.sheetIdx
+                value: args.value, range: args.range, sheetIdx: args.sheetIdx, td: args.td
             });
             if (!isValid.isValidate && args.isCell) {
                 this.validationErrorHandler(isValid.errorMsg);
             }
-            this.parent.allowDataValidation = isValid.isValidate;
+            args.isValid = isValid.isValidate;
         }
     }
 
@@ -1315,12 +1363,7 @@ export class DataValidation {
             const el: HTMLElement = document.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
             errorDialogInst.hide();
             if (el.innerText) {
-                const range: Range = document.createRange();
-                range.setStart(el.childNodes[0], 0);
-                range.setEnd(el.childNodes[0], el.innerText.length);
-                const selection: Selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
+                window.getSelection().selectAllChildren(el);
                 if (this.listObj) {
                     this.listObj.showPopup();
                 }

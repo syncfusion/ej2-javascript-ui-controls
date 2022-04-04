@@ -1779,3 +1779,51 @@ describe('Delete column with comments ', () => {
         }
     });
 });
+describe('Check the comment while add the text without click the editor', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true, enableComment: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Check the comment while add the text without click the editor', () => {
+        console.log('Check the comment while add the text without click the editor');
+        editor.editor.insertComment("Hello world");
+        editor.editor.handleTextInput("Hello");
+        expect(editor.documentHelper.comments.length).toBe(1);
+        editor.openBlank();
+        editor.editor.insertComment("Hello world");
+        editor.selection.moveToDocumentStart();
+        editor.editor.handleTextInput("Hello");
+        expect(editor.documentHelper.comments.length).toBe(1);
+        editor.openBlank();
+        editor.editor.insertComment("Hello world");
+        editor.enableTrackChanges = true;
+        editor.editor.handleTextInput("Hello");
+        expect(editor.documentHelper.comments.length).toBe(1);
+        editor.openBlank();
+        editor.enableTrackChanges = false;
+        editor.editor.insertComment("Hello world");
+        editor.enableTrackChanges = true;
+        editor.selection.moveToDocumentStart();
+        editor.editor.handleTextInput("Hello");
+        expect(editor.documentHelper.comments.length).toBe(1);
+    });
+});

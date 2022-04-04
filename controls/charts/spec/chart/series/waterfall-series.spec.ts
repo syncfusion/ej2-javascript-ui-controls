@@ -682,7 +682,7 @@ describe('Waterfall Series', () => {
                 let path: Element = group.childNodes[0] as HTMLElement;
                 let text1: Element = group.childNodes[1] as HTMLElement;
                 let text2: Element = group.childNodes[2] as HTMLElement;
-                expect(path.getAttribute('fill') == 'rgba(0, 8, 22, 0.75)').toBe(true);
+                expect(path.getAttribute('fill') == '#000816').toBe(true);
                 expect((<HTMLElement>text1.childNodes[0]).getAttribute('fill') == '#dbdbdb').toBe(true);
                 expect(text1.childNodes[0].textContent.replace(/\u200E/g, '') == 'series1 Marketting and Sales ').toBe(true);
                 expect(text1.childNodes[1].textContent.replace(/\u200E/g, '') == ':').toBe(true);

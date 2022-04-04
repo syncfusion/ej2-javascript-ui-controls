@@ -64,7 +64,9 @@
         border-style: $border-type;
         border-width: $schedule-vertical-work-cells-border;
         color: $schedule-header-font-color;
-        text-align: left;
+        @if ($schedule-skin != 'FluentUI') {
+          text-align: left;
+        }
 
         &.e-header-cells {
           border-bottom-width: 0;
@@ -199,7 +201,9 @@
         border-style: $border-type;
         border-width: $schedule-month-work-cells-border;
         color: $schedule-header-font-color;
-        text-align: left;
+        @if ($schedule-skin != 'FluentUI') {
+          text-align: left;
+        }
 
         @if ($schedule-skin == 'tailwind') {
           font-size: 12px;
@@ -253,13 +257,6 @@
       .e-selected-cell {
         background-color: $schedule-select-bg-color;
         color: $schedule-select-font-color;
-
-        &.e-current-date .e-date-header {
-          @if ($schedule-skin == 'bootstrap5') {
-            background-color: $schedule-select-font-color;
-            color: $schedule-select-bg-color;
-          }
-        }
 
         .e-date-header {
           @if ($schedule-skin == 'highcontrast') {

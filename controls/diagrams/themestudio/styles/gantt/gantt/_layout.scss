@@ -1,4 +1,53 @@
 @include export-module('gantt-layout') {
+
+  .e-bigger {
+    .e-gantt {
+      .e-gantt-chart {
+        .e-timeline-header-container {
+          height: $gantt-bigger-header-border-height;
+        }
+
+        .e-timeline-top-header-cell {
+          height: $gantt-bigger-timeline-top-header-cell-height;
+        }
+      }
+
+      .e-gantt-tree-grid-pane {
+        .e-columnheader {
+          .e-headercell {
+            height: $gantt-bigger-treegrid-header-border-height !important; // sass-lint:disable-line no-important
+          }
+        }
+      }
+    }
+
+    .e-columnmenu {
+      @if $skin-name == 'bootstrap5-dark' or $skin-name == 'tailwind-dark' {
+        top: 35px;
+      }
+      @else if $skin-name == 'fluent-dark' {
+        top: 38px;
+      }
+      @else {
+        top: $bigger-column-menu-size;
+      }
+    }
+
+    .e-gantt-dialog {
+      .e-edit-form-column:nth-child(odd) {
+        padding: $gantt-bigger-dialog-edit-form-odd-padding;
+      }
+
+      .e-edit-form-column:nth-child(even) {
+        padding: $gantt-bigger-dialog-edit-form-even-padding;
+      }
+
+      .e-edit-form-row.e-scroll .e-edit-form-column:nth-child(even) {
+        padding: $gantt-bigger-dialog-edit-form-scroll-padding;
+      }
+    }
+  }
+
   #{&}.e-gantt {
     display: block;
     width: 100%;
@@ -511,9 +560,10 @@
       }
 
       .e-baseline-bar {
+        border-radius: 2px;
         box-sizing: border-box;
         position: absolute;
-        z-index: 3;
+        z-index: 2;
       }
 
       .e-milestone-top,
@@ -572,7 +622,6 @@
         position: absolute;
 
         .e-span {
-          font-size: 13px;
           position: absolute;
           transform: rotate(-90deg);
           white-space: nowrap;
@@ -866,6 +915,8 @@
 
       .e-btn.e-dlg-closeicon-btn {
         border-radius: 50%;
+        height: auto !important; // sass-lint:disable-line no-important
+        width: auto !important; // sass-lint:disable-line no-important
       }
 
     }

@@ -31,11 +31,13 @@ export function getElementSize(template: string, gauge: CircularGauge, parent: H
     let elementSize: Size; let element: HTMLElement;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const templateFn: any = getTemplateFunction(template, gauge);
-    const tooltipData: Element[] = templateFn ? templateFn({}, null, null, gauge.element.id + 'Template') : [];
+    const tooltipData: Element[] = templateFn ? ((gauge as any).isVue || (gauge as any).isVue3) ? templateFn({}, gauge, null, gauge.element.id + 'Template')
+        : templateFn({}, null, null, gauge.element.id + 'Template') : [];
     if (templateFn && tooltipData.length) {
         element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
         gauge.element.appendChild(element);
-        const templateElement: HTMLCollection = templateFn({}, null, null, gauge.element.id + 'Template');
+        const templateElement: HTMLCollection = ((gauge as any).isVue || (gauge as any).isVue3) ? templateFn({}, gauge, null, gauge.element.id + 'Template')
+            : templateFn({}, null, null, gauge.element.id + 'Template');
         let templateLength: number = templateElement.length;
         while (templateLength > 0) {
             element.appendChild(templateElement[0]);

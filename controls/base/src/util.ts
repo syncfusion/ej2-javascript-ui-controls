@@ -131,6 +131,10 @@ export function deleteObject(obj: any, key: string): void {
     delete obj[key];
 }
 /**
+ *@private 
+ */
+ export const containerObject: Window = window;
+/**
  * Check weather the given argument is only object.
  *
  * @param {any} obj - Object which is need to check.

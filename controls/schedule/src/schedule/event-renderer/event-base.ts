@@ -48,7 +48,7 @@ export class EventBase {
             event = this.updateEventDateTime(event);
             if (timeZonePropChanged) {
                 this.processTimezoneChange(event, oldTimezone);
-            } else if (!this.parent.isPrinting) {
+            } else if (!this.parent.isPrinting && !this.parent.uiStateValues.isResize) {
                 event = this.processTimezone(event);
             }
             for (let level: number = 0; level < resourceCollection.length; level++) {
@@ -1049,7 +1049,9 @@ export class EventBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            const templateName: string = 'eventTemplate' + (this.parent.activeViewOptions.group.resources.length > 0 &&
+                this.parent.currentView.indexOf('Year') === -1 ? '_' + resIndex : '');
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', {
                 className: cls.SUBJECT_CLASS, innerHTML: eventSubject
@@ -1170,7 +1172,7 @@ export class EventBase {
         return isHourRange || isSameRange;
     }
 
-    public allDayExpandScroll(dateHeader: HTMLElement, heightPropChanged?: boolean): void {
+    public allDayExpandScroll(dateHeader: HTMLElement): void {
         let indentHeight: number = 0;
         const headerRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.HEADER_ROW_CLASS));
         headerRows.forEach((element: HTMLElement) => {
@@ -1180,8 +1182,7 @@ export class EventBase {
         });
         indentHeight = dateHeader.offsetHeight - indentHeight;
         (this.parent.element.querySelector('.' + cls.ALLDAY_CELLS_CLASS) as HTMLElement).style.height = (indentHeight / 12) + 'em';
-        const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        if (this.parent.uiStateValues.expand && (content.offsetWidth - content.clientWidth > 0 || heightPropChanged || this.parent.element.classList.contains(cls.DEVICE_CLASS))) {
+        if (this.parent.uiStateValues.expand) {
             addClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
         } else {
             removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);

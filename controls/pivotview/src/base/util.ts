@@ -219,7 +219,51 @@ export class PivotUtil {
                     showRemoveIcon: set.showRemoveIcon,
                     showValueTypeIcon: set.showValueTypeIcon,
                     showEditIcon: set.showEditIcon,
-                    allowDragAndDrop: set.allowDragAndDrop
+                    allowDragAndDrop: set.allowDragAndDrop,
+                    expandAll: set.expandAll
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
+                } as { [key: string]: any }));
+                /* eslint-enable @typescript-eslint/no-explicit-any */
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    public static cloneOlapFieldSettings(collection: IOlapField[]): IOlapField[] {
+        if (collection) {
+            let clonedCollection: IOlapField[] = [];
+            for (let set of collection) {
+                clonedCollection.push(this.getDefinedObj({
+                    caption: set.caption,
+                    hasChildren: set.hasChildren,
+                    id: set.id,
+                    isSelected: set.isSelected,
+                    name: set.name,
+                    spriteCssClass: set.spriteCssClass,
+                    tag: set.tag,
+                    type: set.type,
+                    pid: set.pid,
+                    expanded: set.expanded,
+                    defaultHierarchy: set.defaultHierarchy,
+                    hasAllMember: set.hasAllMember,
+                    allMember: set.allMember,
+                    isChecked: set.isChecked,
+                    filterMembers: set.filterMembers,
+                    childMembers: set.childMembers,
+                    searchMembers: set.searchMembers,
+                    htmlAttributes: set.htmlAttributes,
+                    currrentMembers: set.currrentMembers,
+                    isHierarchy: set.isHierarchy,
+                    isNamedSets: set.isNamedSets,
+                    formatString: set.formatString,
+                    actualFilter: set.actualFilter,
+                    levels: set.levels,
+                    levelCount: set.levelCount,
+                    memberType: set.memberType,
+                    fieldType: set.fieldType,
+                    parentHierarchy: set.parentHierarchy
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
                 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -481,7 +525,8 @@ export class PivotUtil {
             showRemoveIcon: fieldList.showRemoveIcon,
             showValueTypeIcon: fieldList.showValueTypeIcon,
             showEditIcon: fieldList.showEditIcon,
-            allowDragAndDrop: fieldList.allowDragAndDrop
+            allowDragAndDrop: fieldList.allowDragAndDrop,
+            expandAll: fieldList.expandAll
         } : undefined);
         return { fieldName: fieldName, fieldItem: fieldItem, axis: 'fieldlist', position: -1 };
     }
@@ -503,7 +548,7 @@ export class PivotUtil {
                                 Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i]]) : [];
                         if (axes.indexOf(newAxesProp[i]) !== -1 && axes.indexOf(oldAxesProp[i]) !== -1 &&
                             oldAxis && newAxis && newAxis.length > 0 && oldAxis.length === newAxis.length) {
-                            let options: string[] = ['showFilterIcon', 'showSortIcon', 'showRemoveIcon', 'showValueTypeIcon', 'showEditIcon', 'allowDragAndDrop'];
+                            let options: string[] = ['showFilterIcon', 'showSortIcon', 'showRemoveIcon', 'showValueTypeIcon', 'showEditIcon', 'allowDragAndDrop', 'expandAll'];
                             for (let j: number = 0; j < newAxis.length; j++) {
                                 let oldAxisProp: string[] = Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i]][newAxis[j]]);
                                 let newAxisProp: string[] = Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i]][newAxis[j]]);
@@ -623,7 +668,8 @@ export class PivotUtil {
                     showValueTypeIcon: fieldList[keys[i]].ShowValueTypeIcon,
                     allowDragAndDrop: fieldList[keys[i]].AllowDragAndDrop,
                     isCalculatedField: fieldList[keys[i]].IsCalculatedField,
-                    showSubTotals: fieldList[keys[i]].ShowSubTotals
+                    showSubTotals: fieldList[keys[i]].ShowSubTotals,
+                    expandAll: fieldList[keys[i]].expandAll
                 };
             }
         }
@@ -697,7 +743,8 @@ export class PivotUtil {
                 dataType: report.Rows[i].DataType,
                 isCalculatedField: report.Rows[i].IsCalculatedField,
                 showValueTypeIcon: report.Rows[i].ShowValueTypeIcon,
-                type: report.Rows[i].Type
+                type: report.Rows[i].Type,
+                expandAll: report.Rows[i].expandAll
             });
         }
         for (let i: number = 0; i < report.Columns.length; i++) {
@@ -717,7 +764,8 @@ export class PivotUtil {
                 dataType: report.Columns[i].DataType,
                 isCalculatedField: report.Columns[i].IsCalculatedField,
                 showValueTypeIcon: report.Columns[i].ShowValueTypeIcon,
-                type: report.Columns[i].Type
+                type: report.Columns[i].Type,
+                expandAll: report.columns[i].expandAll
             });
         }
         for (let i: number = 0; i < report.FormatSettings.length; i++) {

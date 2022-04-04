@@ -12,7 +12,7 @@
         height: auto;
         min-height: auto;
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' or $tbar-skin == 'FluentUI' {
           height: $tab-big-height;
           min-height: $tab-big-height;
         }
@@ -57,6 +57,9 @@
 
         .e-scroll-nav {
           width: 50px;
+          @if $tab-skin == 'FluentUI' {
+            width: 38px;
+          }
           @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             border-radius: 4px;
             width: 38px;
@@ -197,6 +200,16 @@
 
           .e-tab-wrap {
             padding: $tab-big-io-wrap-padding;
+          }
+        }
+
+        @if $tab-skin == 'FluentUI' {
+          .e-icon-right {
+            margin: $tab-big-it-text-margin;
+
+            @media screen and (max-width: 480px) {
+              margin: $tab-mob-it-text-margin;
+            }
           }
         }
 
@@ -1303,6 +1316,16 @@
         .e-toolbar-item:not(.e-separator) {
           margin: $tab-big-rtl-item-margin;
 
+          @if $tab-skin == 'FluentUI' {
+            .e-icon-right {
+              margin: $tab-rtl-big-it-text-margin;
+
+              @media screen and (max-width: 480px) {
+                margin: $tab-rtl-mob-it-text-margin;
+              }
+            }
+          }
+
           .e-icon-left + .e-tab-text {
             margin: $tab-rtl-big-it-text-margin;
 
@@ -1467,7 +1490,7 @@
         min-height: $tab-nrml-height;
         position: relative;
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' or $tbar-skin == 'FluentUI' {
           height: $tab-nrml-height;
           min-height: $tab-nrml-height;
         }
@@ -1551,7 +1574,7 @@
         .e-scroll-nav {
           width: 40px;
           @if $tab-skin == 'FluentUI' {
-            width: 29px;
+            width: 32px;
           }
           @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
             border-radius: 4px;
@@ -1597,9 +1620,7 @@
         transition: left .125s cubic-bezier(.35, 0, .25, 1), right .25s cubic-bezier(.35, 0, .25, 1);
 
         @if $tab-skin == 'tailwind' {
-          border-radius: 2px;
-          bottom: -1px;
-          height: 2px;
+          border-radius: $tab-border-width;
           transition: all .4s cubic-bezier(.25,.46,.45,.94); // sass-lint:disable-line no-transition-all space-after-comma
         }
       }
@@ -1785,9 +1806,6 @@
         .e-icons.e-tab-icon {
           display: inline-flex;
           height: $tab-nrml-icon-container-size;
-          @if $tab-skin == 'FluentUI' {
-            height: $tab-big-nav-icon-size;
-          }
           min-width: $tab-nrml-icon-container-size;
           width: $tab-nrml-icon-container-size;
 
@@ -1818,6 +1836,16 @@
 
             @media screen and (max-width: 480px) {
               padding: $tab-big-wrap-padding;
+            }
+          }
+        }
+
+        @if $tab-skin == 'FluentUI' {
+          .e-icon-right {
+            margin: $tab-nrml-it-text-margin;
+
+            @media screen and (max-width: 480px) {
+              margin: $tab-mob-it-text-margin;
             }
           }
         }
@@ -2543,11 +2571,12 @@
 
               &::before {
                 background-color: $tab-alt-hdr-bg-color;
-                bottom: 5px;
+                bottom: 10px;
                 content: '';
                 height: 60%;
                 left: 99%;
                 position: absolute;
+                right: 0;
                 transition: bottom .267s cubic-bezier(.1, .25, .75, .9) 0s, height .267s cubic-bezier(.1, .25, .75, .9) 0s;
                 width: 2px;
               }
@@ -2599,11 +2628,12 @@
 
               &::before {
                 background-color: $tab-alt-hdr-bg-color;
-                bottom: 5px;
+                bottom: 10px;
                 content: '';
                 height: 60%;
                 left: 0;
                 position: absolute;
+                right: 99%;
                 transition: bottom .267s cubic-bezier(.1, .25, .75, .9) 0s, height .267s cubic-bezier(.1, .25, .75, .9) 0s;
                 width: 2px;
               }
@@ -2757,7 +2787,7 @@
       }
 
       &.e-progress {
-        overflow-x: hidden;
+        overflow: hidden;
       }
     }
 
@@ -3585,6 +3615,12 @@
         .e-toolbar-item:not(.e-separator) {
           margin: $tab-nrml-rtl-item-margin;
 
+          @if $tab-skin == 'FluentUI' {
+            .e-icon-right {
+              margin: $tab-rtl-nrml-it-text-margin;
+            }
+          }
+
           .e-icon-left + .e-tab-text {
             margin: $tab-rtl-nrml-it-text-margin;
           }
@@ -3823,6 +3859,16 @@
       }
     }
 
+    @if $tab-skin == 'FluentUI' {
+      .e-icon-right {
+        margin: $tab-nrml-it-text-margin;
+
+        @media screen and (max-width: 480px) {
+          margin: $tab-mob-it-text-margin;
+        }
+      }
+    }
+
     .e-icon-left + .e-tab-text {
       margin: $tab-nrml-it-text-margin;
 
@@ -4001,6 +4047,16 @@
 
       .e-tab-wrap {
         padding: $tab-big-io-wrap-padding;
+      }
+    }
+
+    @if $tab-skin == 'FluentUI' {
+      .e-icon-right {
+        margin: $tab-big-it-text-margin;
+
+        @media screen and (max-width: 480px) {
+          margin: $tab-mob-it-text-margin;
+        }
       }
     }
 

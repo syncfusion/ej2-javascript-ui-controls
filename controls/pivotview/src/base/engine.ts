@@ -649,7 +649,8 @@ export class PivotEngine {
                                                 showEditIcon: actualField.showEditIcon,
                                                 showRemoveIcon: actualField.showRemoveIcon,
                                                 showSubTotals: actualField.showValueTypeIcon,
-                                                allowDragAndDrop: actualField.allowDragAndDrop
+                                                allowDragAndDrop: actualField.allowDragAndDrop,
+                                                expandAll: actualField.expandAll
                                             };
                                             axis.splice(i, 0, newField);
                                         }
@@ -809,7 +810,8 @@ export class PivotEngine {
                                         showFilterIcon: actualField.showFilterIcon,
                                         showSortIcon: actualField.showSortIcon,
                                         showRemoveIcon: actualField.showRemoveIcon,
-                                        showEditIcon: actualField.showEditIcon
+                                        showEditIcon: actualField.showEditIcon,
+                                        expandAll: actualField.expandAll
                                     };
                                     axis.splice(i, 0, newField);
                                     break;
@@ -826,7 +828,8 @@ export class PivotEngine {
                                         allowDragAndDrop: customGroupField.allowDragAndDrop,
                                         showFilterIcon: customGroupField.showFilterIcon,
                                         showSortIcon: customGroupField.showSortIcon,
-                                        showEditIcon: customGroupField.showEditIcon
+                                        showEditIcon: customGroupField.showEditIcon,
+                                        expandAll: customGroupField.expandAll
                                     };
                                     axis.splice(i, 1, newField);
                                     break;
@@ -967,6 +970,8 @@ export class PivotEngine {
                         field.showNoDataItems : false;
                     this.fieldList[key].showSubTotals = (field && 'showSubTotals' in field) ?
                         field.showSubTotals : true;
+                    this.fieldList[key].expandAll = (field && 'expandAll' in field) ?
+                        field.expandAll : false;
                     if (this.isValueFiltersAvail && isValueFilteringEnabled) {
                         this.fieldList[key].dateMember = [];
                         this.fieldList[key].formattedMembers = {};
@@ -1004,6 +1009,8 @@ export class PivotEngine {
                             field.allowDragAndDrop : true,
                         showSubTotals: (field && 'showSubTotals' in field) ?
                             field.showSubTotals : true,
+                        expandAll: (field && 'expandAll' in field) ?
+                            field.expandAll : false,
                         aggregateType: (field && 'type' in field) ? field.type :
                             (((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ? 'string' :
                                 (type === undefined || type === 'undefined') ? 'number' : type) === 'number' ? 'Sum' : 'Count',
@@ -1050,6 +1057,8 @@ export class PivotEngine {
                         field.showNoDataItems : false,
                     isCalculatedField: (field && 'isCalculatedField' in field) ?
                         field.isCalculatedField : false,
+                    expandAll: (field && 'expandAll' in field) ?
+                        field.expandAll : false,
                     aggregateType: (field && 'type' in field) ? field.type :
                         (((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ? 'string' :
                             (type === undefined || type === 'undefined') ? 'number' : type) === 'number' ? 'Sum' : 'Count',
@@ -1103,6 +1112,7 @@ export class PivotEngine {
                 field.showValueTypeIcon = fields[cnt].showValueTypeIcon;
                 field.showEditIcon = fields[cnt].showEditIcon;
                 field.showSubTotals = fields[cnt].showSubTotals;
+                field.expandAll = fields[cnt].expandAll;
             }
         }
         while (lnt--) {
@@ -1219,6 +1229,7 @@ export class PivotEngine {
             let dateMember: IAxisSet[] = fList[key].dateMember;
             let membersCnt: number = 0;
             let fmembersCnt: number = 0;
+            let isFieldHasExpandAll: boolean = fList[key].expandAll;
             //let sort: string[] = [];
             for (let dl: number = 0; dl < dlen; dl++) {
                 let mkey: string = data[dl][this.fieldKeys[key] as string] as string;
@@ -1243,7 +1254,7 @@ export class PivotEngine {
                         membersCnt++;
                         members[mkey] = {
                             index: [dl], ordinal: membersCnt,
-                            isDrilled: this.isExpandAll ? true : false
+                            isDrilled: this.isExpandAll || isFieldHasExpandAll ? true : false
                         };
                         dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
                         //sort.push(mkey);
@@ -1255,7 +1266,7 @@ export class PivotEngine {
                         fmembersCnt++;
                         formattedMembers[fKey] = {
                             index: [dl], ordinal: fmembersCnt,
-                            isDrilled: this.isExpandAll ? true : false
+                            isDrilled: this.isExpandAll || isFieldHasExpandAll ? true : false
                         };
                     } else {
                         formattedMembers[fKey].index.push(dl);
@@ -2366,6 +2377,14 @@ export class PivotEngine {
             /* eslint-enable */
             rawHeaders = this.getSortedHeaders(
                 rawHeaders.concat(excessHeaders), this.fieldList[headersInfo.fields[0].name].sort).concat(grandHeader);
+            if (headersInfo.axis === 'row') {
+                this.cMembers = this.getIndexedHeaders(this.columns, this.data, 0, this.filterMembers, 'column', '');
+                this.insertAllMember(this.cMembers, this.filterMembers, '', 'column');
+            }
+            else {
+                this.rMembers = this.getIndexedHeaders(this.rows, this.data, 0, this.filterMembers, 'row', '');
+                this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
+            }
         }
         if (headersInfo.axis === 'row') {
             this.rowCount = 0;
@@ -2791,6 +2810,8 @@ export class PivotEngine {
             let hasValueField: boolean = false;
             let levelCount: number = 1;
             let isFieldAvail = false;
+            let field: IField = this.fieldList[drillOption.name];
+            let isDrillMemberExpand: boolean = (field && field.expandAll);
             for (let i: number = 0; i < this.rows.length; i++) {
                 if (this.rows[i].name == drillOption.name) {
                     let hasMeasureIndex = this.valueAxis && (this.isMultiMeasures || this.alwaysShowValueHeader) && this.measureIndex > -1 && this.measureIndex <= i;
@@ -2819,7 +2840,7 @@ export class PivotEngine {
                     this.fieldDrillCollection[memberString] = memberString;
                     if (hasValueField) {
                         let isAllValuesAvail: boolean = false;
-                        if (this.isExpandAll) {
+                        if (this.isExpandAll || isDrillMemberExpand) {
                             for (let field of this.values) {
                                 let name: string = field.caption ? field.caption : field.name;
                                 members[this.measureIndex] = name;
@@ -2831,7 +2852,7 @@ export class PivotEngine {
                                 }
                             }
                         }
-                        if ((this.isExpandAll && isAllValuesAvail) || !this.isExpandAll) {
+                        if (((this.isExpandAll || isDrillMemberExpand) && isAllValuesAvail) || !this.isExpandAll || !isDrillMemberExpand) {
                             members = drilledItem.split(drillOption.delimiter);
                             members.splice(this.measureIndex, 1);
                             if (vDrilledItem && vDrilledItem.memberName === drilledItem) {
@@ -2967,9 +2988,10 @@ export class PivotEngine {
                         member.valueSort.uniqueName = (member.actualText ? member.actualText : member.formattedText);
                     }
                     let memberString: string = member.valueSort.axis + this.valueSortSettings.headerDelimiter + member.valueSort.levelName;
+                    let isExpandMember: boolean = this.isExpandAll || (field && field.expandAll);
                     member.isDrilled = (valueFil && this.isValueFiltersAvail) ?
                         true : (member.hasChild && this.fieldDrillCollection[memberString]) ?
-                            this.isExpandAll ? false : true : childrens.members[headerValue].isDrilled;
+                            isExpandMember ? false : true : isExpandMember;
                     //if (!member.members) {
                     member.members = [];
                     //}
@@ -3375,10 +3397,11 @@ export class PivotEngine {
                         (level > this.measureIndex && row.axis === 'row' && row.valueSort.axis)) {
                         let vln: number = 0;
                         let isValueIndexFound: boolean = false;
+                        let rowUniqueName: string[] = row.valueSort.uniqueName ? row.valueSort.uniqueName.toString().split(this.valueSortSettings.headerDelimiter) : [];
                         for (let cln: number = 0, dln: number = 1, clt: number = columns.length; cln < clt; ++cln) {
                             if (!isValueIndexFound) {
                                 for (vln = 0; vln < vlt; vln++) {
-                                    if (row.valueSort.uniqueName && row.valueSort.uniqueName.toString().indexOf(this.values[vln].name) > -1) {
+                                    if (rowUniqueName.indexOf(this.values[vln].name) > -1) {
                                         isValueIndexFound = true;
                                         isValueCellUpdated = true;
                                         break;
@@ -3409,9 +3432,10 @@ export class PivotEngine {
                     this.recursiveRowData(rows, reformAxis, columns, rowIndex, data, vlt, isLeastNode, rln, vlt, level, rTotal, cTotal);
                 } else {
                     for (let cln: number = 0, dln: number = 1, clt: number = columns.length; cln < clt; ++cln) {
+                        let columnUniqueName: string[] = columns[cln].valueSort.uniqueName ? columns[cln].valueSort.uniqueName.toString().split(this.valueSortSettings.headerDelimiter) : [];
                         for (let vln: number = 0; vln < vlt; vln++) {
                             if (!this.valueAxis && !this.isLastHeaderHasMeasures) {
-                                if (columns[cln].valueSort.uniqueName && columns[cln].valueSort.uniqueName.toString().indexOf(this.values[vln].name) > -1) {
+                                if (columnUniqueName.indexOf(this.values[vln].name) > -1) {
                                     this.updateRowData(rows, columns, tnum, data, vln, rln, cln, dln, actCnt, rTotal, cTotal);
                                     dln = data[tnum].length;
                                 }
@@ -4240,8 +4264,9 @@ export class PivotEngine {
                 hData.uniqueName = (uniqueName ? (uniqueName + this.valueSortSettings.headerDelimiter) : '') + header.actualText;
                 header.valueSort = hData;
                 let drillInfo: string = hData.axis + this.valueSortSettings.headerDelimiter + hData.levelName;
-                if (header.isDrilled && ((this.isExpandAll && this.fieldDrillCollection[drillInfo]) ||
-                    (!this.isExpandAll && !this.fieldDrillCollection[drillInfo]))) {
+                let isFieldValueHeader: IField = this.fieldList[hData.axis as string];
+                if (header.isDrilled &&
+                    (((this.isExpandAll || isFieldValueHeader.expandAll) && this.fieldDrillCollection[drillInfo]) || ((!this.isExpandAll && !isFieldValueHeader.expandAll) && !this.fieldDrillCollection[drillInfo]))) {
                     header.isDrilled = false;
                 }
                 columnHeaders.push(header);
@@ -4914,6 +4939,7 @@ export interface IDataOptions {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      */
     rows?: IFieldOptions[];
     /**
@@ -4937,6 +4963,7 @@ export interface IDataOptions {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      */
     columns?: IFieldOptions[];
     /**
@@ -4958,6 +4985,7 @@ export interface IDataOptions {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      */
     values?: IFieldOptions[];
     /**
@@ -4976,6 +5004,7 @@ export interface IDataOptions {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      */
     filters?: IFieldOptions[];
     /**
@@ -5129,6 +5158,7 @@ export interface IDataOptions {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      */
     fieldMapping?: IFieldOptions[];
 }
@@ -5456,6 +5486,10 @@ export interface IFieldOptions {
      * Allows to specify the data type of specific field.
      */
     dataType?: string;
+    /**
+     * Allows you to expand or collapse all of the pivot table's headers for a specific field.
+     */
+    expandAll?: boolean;
 }
 
 /**
@@ -5746,6 +5780,10 @@ export interface IField {
      * It allows enable/disable sub total in pivot table.
      */
     showSubTotals?: boolean;
+    /**
+     * Allows you to expand or collapse all of the pivot table's headers for a specific field.
+     */
+    expandAll?: boolean;
 }
 
 /** 

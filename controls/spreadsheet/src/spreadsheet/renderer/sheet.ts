@@ -1,10 +1,10 @@
 import { formatUnit, detach, attributes, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { getCellIndexes, getRangeIndexes } from './../../workbook/common/address';
+import { getCellIndexes, getRangeIndexes, skipHiddenIdx } from './../../workbook/common/index';
 import { getColumnsWidth, getColumnWidth } from '../../workbook/base/column';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
-import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx, isReact, getDPRValue } from '../common/index';
+import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, isReact, getDPRValue } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, renderReactTemplates, rowHeightChanged } from '../common/index';
 import { colWidthChanged, clearUndoRedoCollection, getUpdatedScrollPosition } from '../common/index';
 import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getFormattedCellObject, getColorCode, getRowHeight } from '../../workbook/index';
@@ -103,8 +103,8 @@ export class SheetRender implements IRenderer {
     }
 
     public getScrollSize(addOffset?: boolean): number {
-        const prop: string = this.parent.enableRtl ? 'margin-left' : 'margin-right';
-        return parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) + (addOffset ? 1 : 0) : 0;
+        const scrollSize: number = parseInt(this.headerPanel.style[this.parent.enableRtl ? 'margin-left' : 'margin-right'], 10);
+        return scrollSize ? scrollSize + (addOffset ? 1 : 0) : 0;
     }
 
     private setHeaderPanelWidth(content: HTMLElement, width: number): void {
@@ -215,7 +215,9 @@ export class SheetRender implements IRenderer {
         const cHdrTBody: Element = this.headerPanel.querySelector('.e-column-header tbody');
         const cHdrRow: Element = this.rowRenderer.render(); cHdrTHead.appendChild(cHdrRow);
         this.getColHeaderTable().insertBefore(colGrp, cHdrTHead);
-        const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
+        const frozenRow: number = this.parent.frozenRowCount(sheet);
+        const frozenCol: number = this.parent.frozenColCount(sheet);
+        const lastFrozenCol: number = skipHiddenIdx(sheet, frozenCol - 1, false, 'columns');
         this.parent.notify(beforeContentLoaded, { top: args.top, left: args.left });
         const colCount: string = sheet.colCount.toString(); const rowCount: string = sheet.colCount.toString();
         const layout: string = args.top && args.left ? 'RowColumn' : (args.top ? 'Row' : (args.left ? 'Column' : ''));
@@ -256,16 +258,18 @@ export class SheetRender implements IRenderer {
                         }
                     }
                 }
-                if ( indexes[1] === args.indexes[1]) {
-                    hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
+                if (indexes[1] === args.indexes[1]) {
+                    this.cellRenderer.renderRowHeader(indexes[0], hRow);
                 }
             }
-            row.appendChild(this.cellRenderer.render(<CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value,
+            this.cellRenderer.render(<CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value,
                 address: key, lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: true, row: row, hRow: hRow,
                 pRow: row.previousSibling, pHRow: hRow.previousSibling, isRefreshing: args.isRefreshing,
                 first: layout ? (layout.includes('Row') ? (indexes[0] === args.indexes[0] ? 'Row' : (layout.includes('Column') ? (
-                    indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' }));
-            if (frozenCol && indexes[1] === frozenCol - 1) { row = null; }
+                    indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' });
+            if (frozenCol && indexes[1] === lastFrozenCol) {
+                row = null;
+            }
             if (value && value.format && (getColorCode(value.format) || value.format.indexOf('*') > -1)) {
                 this.parent.notify(getFormattedCellObject, { cell: value, value: value.value, format: value.format,
                     rowIndex: indexes[0], colIndex: indexes[1], td: this.parent.getCell(indexes[0], indexes[1]) });
@@ -276,10 +280,10 @@ export class SheetRender implements IRenderer {
                     const empty: Element = rowHdrColGrp.querySelector('.e-empty');
                     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                     empty ? rowHdrColGrp.insertBefore(col.cloneNode(true), empty) : rowHdrColGrp.appendChild(col.cloneNode(true));
-                    selectAllHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
+                    this.cellRenderer.renderColHeader(indexes[1], selectAllHdrRow);
                 } else {
                     this.updateCol(sheet, indexes[1], colGrp);
-                    cHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
+                    this.cellRenderer.renderColHeader(indexes[1], cHdrRow);
                 }
             }
         });
@@ -357,13 +361,13 @@ export class SheetRender implements IRenderer {
         const eventArgs: { top: number, left: number, sheet: SheetModel } = { top: args.top, left: args.left, sheet: sheet };
         this.parent.notify(getUpdatedScrollPosition, eventArgs);
         if (args.top != eventArgs.top) {
-            if (this.parent.scrollModule && (eventArgs.top - args.top) < getRowHeight(sheet, this.parent.scrollModule.offset.top.idx)) {
+            if (this.parent.scrollModule && this.parent.scrollModule.offset.top.idx && (eventArgs.top - args.top) < getRowHeight(sheet, this.parent.scrollModule.offset.top.idx)) {
                 this.parent.scrollModule.offset.top.size = eventArgs.top;
             }
             args.top = eventArgs.top;
         }
         if (args.left != eventArgs.left) {
-            if (this.parent.scrollModule && (eventArgs.left - args.left) < getColumnWidth(sheet, this.parent.scrollModule.offset.left.idx)) {
+            if (this.parent.scrollModule && this.parent.scrollModule.offset.left.idx && (eventArgs.left - args.left) < getColumnWidth(sheet, this.parent.scrollModule.offset.left.idx)) {
                 this.parent.scrollModule.offset.left.size = eventArgs.left
             }
             args.left = eventArgs.left;
@@ -402,11 +406,14 @@ export class SheetRender implements IRenderer {
         const hRow: Element = tHead.querySelector('tr'); hRow.innerHTML = '';
         const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
         if (frozenRow) { hTBody = hFrag.appendChild(hTBody.cloneNode(true) as Element); }
+        const lastFrozenRow: number = skipHiddenIdx(sheet, frozenRow - 1, false);
+        const notFirstRow: boolean =  this.parent.scrollSettings.enableVirtualization && this.parent.viewport.topIndex !==
+            skipHiddenIdx(sheet, 0, true);
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[0] === args.indexes[0]) {
                 col = this.updateCol(sheet, indexes[1], hColGrp); colGrp.appendChild(col.cloneNode());
-                hRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
+                this.cellRenderer.renderColHeader(indexes[1], hRow);
             }
             if (indexes[1] - frozenCol === args.indexes[1]) {
                 if (indexes[0] < frozenRow) {
@@ -415,18 +422,18 @@ export class SheetRender implements IRenderer {
                     row = tBody.children[count];
                 }
                 if (row) {
-                    row.innerHTML = ''; count++;
+                    row.innerHTML = '';
+                    count++;
                 } else {
                     return;
                 }
             }
-            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{
+            cell = this.cellRenderer.render(<CellRenderArgs>{
                 colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
-                first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : (this.parent.scrollSettings.
-                    enableVirtualization && indexes[0] === args.indexes[0] && this.parent.viewport.topIndex !==
-                    skipHiddenIdx(sheet, 0, true) ? 'Row' : ''), isRefreshing: true }));
+                first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' :
+                (notFirstRow && indexes[0] === args.indexes[0] ? 'Row' : ''), isRefreshing: true });
             this.checkColMerge(indexes, args.indexes, cell, value);
-            if (frozenRow && indexes[0] === frozenRow - 1) { count = 0; }
+            if (frozenRow && indexes[0] === lastFrozenRow) { count = 0; }
         });
         const appendColumns: Function = (): void => {
             table = this.getColHeaderTable(); removeAllChildren(table);
@@ -459,7 +466,11 @@ export class SheetRender implements IRenderer {
         const tBody: Element = this.parent.createElement('tbody');
         const hFrag: DocumentFragment = document.createDocumentFragment();
         const hTBody: Element = tBody.cloneNode() as Element; hFrag.appendChild(hTBody);
-        frag.appendChild(tBody); const frozenCol: number = this.parent.frozenColCount(sheet);
+        frag.appendChild(tBody);
+        const frozenCol: number = this.parent.frozenColCount(sheet);
+        const lastFrozenCol: number = skipHiddenIdx(sheet, frozenCol - 1, false, 'columns');
+        const notFirstCol: boolean = this.parent.scrollSettings.enableVirtualization && this.parent.viewport.leftIndex !==
+            skipHiddenIdx(sheet, 0, true, 'columns');
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[1] === args.indexes[1] || !row) {
@@ -472,20 +483,18 @@ export class SheetRender implements IRenderer {
                     tBody.appendChild(row);
                 }
                 if (indexes[1] === args.indexes[1]) {
-                    hdrRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
+                    this.cellRenderer.renderRowHeader(indexes[0], hdrRow);
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                 }
             }
             if (frozenCol) { hdrRow = (hTBody.lastElementChild as HTMLElement) || hdrRow; }
-            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{
+            cell = this.cellRenderer.render(<CellRenderArgs>{
                 rowIdx: indexes[0], colIdx: indexes[1], cell: value, address:
                     key, lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling,
-                pHRow: hdrRow.previousSibling,
-                isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
-                    'Row' : (this.parent.scrollSettings.enableVirtualization && indexes[1] === args.indexes[1] && this.parent.viewport.leftIndex
-                        !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : ''), isRefreshing: true }));
+                pHRow: hdrRow.previousSibling, isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
+                    'Row' : (notFirstCol && indexes[1] === args.indexes[1] ? 'Column' : ''), isRefreshing: true });
             this.checkRowMerge(indexes, args.indexes, cell, value);
-            if (frozenCol && indexes[1] === frozenCol - 1) { row = null; }
+            if (frozenCol && indexes[1] === lastFrozenCol) { row = null; }
         });
         if (this.colGroupWidth !== colGroupWidth) {
             this.updateLeftColGroup(colGroupWidth);
@@ -524,7 +533,7 @@ export class SheetRender implements IRenderer {
 
     public updateColContent(args: SheetRenderArgs): void {
         getUpdateUsingRaf((): void => {
-            let indexes: number[]; let row: Element; let refChild: Element; let cell: Element;
+            let indexes: number[]; let row: HTMLElement; let refChild: Element; let cell: Element;
             let rowCount: number = 0; let col: HTMLElement; const sheet: SheetModel = this.parent.getActiveSheet();
             const hRow: Element = this.parent.element.querySelector('.e-column-header .e-header-row');
             const hRefChild: Element = hRow.firstElementChild;
@@ -534,7 +543,10 @@ export class SheetRender implements IRenderer {
             const hColRefChild: Element = hColGrp.firstElementChild;
             const tBody: HTMLTableSectionElement = this.parent.element.querySelector('.e-sheet-content tbody');
             const hTBody: HTMLTableSectionElement = this.parent.element.querySelector('.e-column-header tbody');
-            const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
+            const frozenRow: number = this.parent.frozenRowCount(sheet);
+            const frozenCol: number = this.parent.frozenColCount(sheet);
+            const lastFrozenRow: number = skipHiddenIdx(sheet, frozenRow - 1, false);
+            let cellArgs: CellRenderArgs;
             (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
                 if (skipRender) { return; }
                 indexes = getRangeIndexes(key);
@@ -550,10 +562,10 @@ export class SheetRender implements IRenderer {
                         col = this.col.cloneNode() as HTMLElement;
                         col.style.width = formatUnit(getColumnWidth(sheet, indexes[1], null, true));
                         colGrp.insertBefore(col, colRefChild); hColGrp.insertBefore(col.cloneNode(), hColRefChild);
-                        hRow.insertBefore(this.cellRenderer.renderColHeader(indexes[1]), hRefChild);
+                        this.cellRenderer.renderColHeader(indexes[1], hRow, hRefChild);
                     } else {
                         col = this.updateCol(sheet, indexes[1], colGrp) as HTMLElement; hColGrp.appendChild(col.cloneNode());
-                        hRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
+                        this.cellRenderer.renderColHeader(indexes[1], hRow);
                     }
                     if (this.parent.scrollSettings.enableVirtualization && args.direction) {
                         /* eslint-disable */
@@ -565,31 +577,35 @@ export class SheetRender implements IRenderer {
                 }
                 if (indexes[1] === args.indexes[1]) {
                     if (indexes[0] < frozenRow) {
-                        row = hTBody.children[rowCount];
+                        row = hTBody.children[rowCount] as HTMLElement;
                     } else {
-                        row = tBody.children[rowCount];
-                        if (!row) { skipRender = true; return; }
+                        row = tBody.children[rowCount] as HTMLElement;
+                        if (!row) {
+                            skipRender = true;
+                            return;
+                        }
                     }
                     rowCount++;
                     refChild = row.firstElementChild;
                 }
-                cell = this.cellRenderer.render(<CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key,
+                cellArgs = { colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row,
                     lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: args.direction === 'first', first: args.direction ===
                     'last' && !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : '', checkNextBorder: args.direction
-                    === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', isRefreshing: args.direction === 'first' });
+                    === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', isRefreshing: args.direction === 'first' };
                 if (args.direction === 'last') {
+                    cellArgs.refChild = refChild;
+                    cell = this.cellRenderer.render(cellArgs);
                     this.checkColMerge(
                         indexes, args.indexes, cell, value, ((indexes[0] < frozenRow ? hTBody : tBody).rows[rowCount - 1] ||
-                        { cells: [] }).cells[0]);
-                    row.insertBefore(cell, refChild);
+                        { cells: [] }).cells[1]);
                 } else {
-                    row.appendChild(cell);
+                    cell = this.cellRenderer.render(cellArgs);
                 }
                 if (this.parent.scrollSettings.enableVirtualization && args.direction) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     detach((row as any)[args.direction + 'ElementChild']);
                 }
-                if (frozenRow && indexes[0] === frozenRow - 1) { rowCount = 0; }
+                if (frozenRow && indexes[0] === lastFrozenRow) { rowCount = 0; }
             });
             this.parent.notify(virtualContentLoaded, { refresh: 'Column', prevRowColCnt: args.prevRowColCnt });
             if (this.parent.allowChart) {
@@ -639,7 +655,7 @@ export class SheetRender implements IRenderer {
                     }
                 }
                 if (indexes[1] === args.indexes[1]) {
-                    hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
+                    this.cellRenderer.renderRowHeader(indexes[0], hRow);
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                     if (this.parent.scrollSettings.enableVirtualization && args.direction) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -648,11 +664,11 @@ export class SheetRender implements IRenderer {
                 }
             }
             if (frozenCol) { hRow = (rFrag.lastElementChild as HTMLElement) || hRow; }
-            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address:
+            cell = this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address:
                 cKey, lastCell: indexes[1] === args.indexes[3], row: row, pHRow: hRow.previousSibling,
             checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,
             isHeightCheckNeeded: args.direction === 'first' || args.direction === '', hRow: hRow, first: args.direction === 'last' &&
-                !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first' }));
+                !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first' });
             if (args.direction ===  'last' && tBody.rows.length) {
                 this.checkRowMerge(
                     indexes, args.indexes, cell, value, (indexes[1] < frozenCol ? rTBody : tBody).rows[0].cells[indexes[1] < frozenCol ?
@@ -736,6 +752,15 @@ export class SheetRender implements IRenderer {
         }
     }
 
+    public toggleGridlines(): void {
+        const sheetElem: Element = document.getElementById(this.parent.element.id + '_sheet');
+        if (this.parent.getActiveSheet().showGridLines) {
+            sheetElem.classList.remove('e-hide-gridlines');
+        } else {
+            sheetElem.classList.add('e-hide-gridlines');
+        }
+    }
+
     /**
      * Used to toggle row and column headers.
      *
@@ -770,15 +795,15 @@ export class SheetRender implements IRenderer {
         if (!sheet.showHeaders) { ele.classList.add('e-hide-headers'); }
     }
 
-    private rowHeightChange(args: { rowIdx: number, threshold: number }): void {
-        if (args.threshold) {
+    public rowHeightChanged(args: { rowIdx: number, threshold: number, isHideShow?: boolean }): void {
+        if (args.threshold || args.isHideShow) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             if (args.rowIdx < this.parent.frozenRowCount(sheet)) { this.setPanelHeight(sheet); }
         }
     }
 
-    private colWidthChange(args: { colIdx: number, threshold: number }): void {
-        if (args.threshold) {
+    public colWidthChanged(args: { colIdx: number, threshold: number, isHideShow?: boolean }): void {
+        if (args.threshold || args.isHideShow) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             if (args.colIdx < this.parent.frozenColCount(sheet)) { this.setPanelWidth(sheet, this.getRowHeaderPanel()); }
             this.checkTableWidth(sheet);
@@ -816,7 +841,8 @@ export class SheetRender implements IRenderer {
      * @returns {HTMLElement} - Select all content element.
      */
     public getScrollElement(): HTMLElement {
-        return (this.contentPanel.parentElement || this.contentPanel.nextElementSibling).querySelector('.e-scroller') as HTMLElement;
+        const elem: Element = (this.contentPanel.parentElement || this.contentPanel.nextElementSibling);
+        return elem && elem.querySelector('.e-scroller') as HTMLElement;
     }
 
     /**
@@ -884,8 +910,8 @@ export class SheetRender implements IRenderer {
 
     private addEventListener(): void {
         this.parent.on(created, this.triggerCreatedEvent, this);
-        this.parent.on(rowHeightChanged, this.rowHeightChange, this);
-        this.parent.on(colWidthChanged, this.colWidthChange, this);
+        this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
+        this.parent.on(colWidthChanged, this.colWidthChanged, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
     private destroy(): void {
@@ -894,8 +920,8 @@ export class SheetRender implements IRenderer {
     }
     private removeEventListener(): void {
         this.parent.off(created, this.triggerCreatedEvent);
-        this.parent.off(rowHeightChanged, this.rowHeightChange);
-        this.parent.off(colWidthChanged, this.colWidthChange);
+        this.parent.off(rowHeightChanged, this.rowHeightChanged);
+        this.parent.off(colWidthChanged, this.colWidthChanged);
         this.parent.off(spreadsheetDestroyed, this.destroy);
     }
 }

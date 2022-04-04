@@ -697,3 +697,90 @@ describe('Backspace on content control validation', () => {
         expect(() => { editor.editor.onBackSpace(); }).not.toThrowError();
     });
 });
+describe('paragraph and character format perservation in row insertion validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableEditorHistory: true, enableComment: true, enableSelection: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('paragraph and character format perservation in row insertion', function () {
+        editor.openBlank();
+        editor.editor.insertTable(2, 2);
+        editor.selection.select('0;0;1;0;0;0', '0;0;1;0;0;0');
+        editor.editor.insertText('text');
+        editor.selection.handleControlShiftLeftKey();
+        editor.editor.onApplyParagraphFormat('textAlignment', 'Center', false, true);
+        editor.editor.onApplyCharacterFormat('bold', true, false);
+        editor.editor.insertRow(false);
+        editor.editor.insertText('text');
+        expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');        
+    });
+});
+describe('character style validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableEditorHistory: true, enableComment: true, enableSelection: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('character style validation', function () {
+        editor.openBlank();
+        var temp = {
+            type: 'Character',
+            name: 'Paragraph 10',
+            basedOn: 'Default Paragraph Font',
+            characterFormat: {
+                fontSize: 32.0,
+                fontFamily: 'Calibri',
+                bold: true,
+            },
+        };
+        editor.editor.createStyle(JSON.stringify(temp));
+        editor.editor.insertText('syncfusion document editor');
+        editor.editor.applyStyle(temp.name);
+        editor.editor.insertText('component');
+        expect(editor.selection.characterFormat.fontSize).toBe(32);
+        editor.selection.handleControlLeftKey();
+        editor.selection.handleControlLeftKey();
+        editor.selection.handleControlLeftKey();
+        editor.editor.applyStyle(temp.name);
+        editor.editor.insertText('component');
+        expect(editor.selection.characterFormat.fontSize).toBe(32);
+        editor.selection.handleControlRightKey();
+        editor.selection.handleRightKey();
+        editor.editor.applyStyle(temp.name);
+    });
+});

@@ -381,8 +381,6 @@ export class BordersAndShadingDialog {
         let shadingContainerPosition: string;
         if (isRtl) {
             shadingContainerPosition = 'left:60px;';
-        } else {
-            shadingContainerPosition = 'left:17px;';
         }
         this.shadingContiner = createElement('div', {
             /* eslint-disable max-len */
@@ -391,7 +389,7 @@ export class BordersAndShadingDialog {
         }) as HTMLDivElement;
         const shadingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Shading'), className: 'e-de-table-border-heading',
-            styles: 'padding-top: 30px;left: 5px;'
+            styles: 'padding-top: 30px;'
         });
         const shadings: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display:flex;' });
         const label: HTMLDivElement = <HTMLDivElement>createElement('div', {
@@ -1066,7 +1064,12 @@ export class BordersAndShadingDialog {
             }
             this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
             this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
-            if (customBorder) {
+            if (!topBorder && !bottomBorder && !leftBorder && !rightBorder && !horizontalBorder && !verticalBorder) {
+                this.customDiv.classList.remove('e-de-table-border-inside-setting-click');
+                this.noneDiv.classList.add('e-de-table-border-inside-setting-click');
+                this.boxDiv.classList.remove('e-de-table-border-inside-setting-click');
+                this.allDiv.classList.remove('e-de-table-border-inside-setting-click');
+            } else if (customBorder) {
                 this.customDiv.classList.add('e-de-table-border-inside-setting-click');
                 this.noneDiv.classList.remove('e-de-table-border-inside-setting-click');
                 this.boxDiv.classList.remove('e-de-table-border-inside-setting-click');

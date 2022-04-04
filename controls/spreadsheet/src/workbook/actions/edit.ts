@@ -110,7 +110,9 @@ export class WorkbookEdit {
                 skipFormula = true;
             }
             if (!isFormula && !skipFormula) {
-                cell.formula = '';
+                if (cell.formula) {
+                    cell.formula = '';
+                }
                 cell.value = <string>parseIntValue(value);
             }
             const eventArgs: { [key: string]: string | number | boolean } = {
@@ -160,11 +162,13 @@ export class WorkbookEdit {
             cell.value = value;
         }
         this.parent.setUsedRange(range[0], range[1], sheet);
-        if (this.parent.allowChart) {
+        if (this.parent.chartColl.length) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
-        if (this.parent.allowConditionalFormat) {
-            this.parent.notify(checkConditionalFormat, { rowIdx: range[0], colIdx: range[1], cell: cell, isAction: true });
+        if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
+            this.parent.notify(
+                checkConditionalFormat, { rowIdx: range[0], colIdx: range[1], cell: cell, isAction: true,
+                    preventIfSheetNotRendered: true });
         }
     }
 }

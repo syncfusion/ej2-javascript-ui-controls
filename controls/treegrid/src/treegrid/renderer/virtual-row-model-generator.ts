@@ -27,10 +27,12 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         return super.getData();
     }
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
-        if (!isNullOrUndefined(notifyArgs.virtualInfo) && notifyArgs.virtualInfo.loadNext && notifyArgs.virtualInfo.nextInfo.page !== this.parent.pageSettings.currentPage) {
+        if (!isNullOrUndefined(notifyArgs.virtualInfo) && notifyArgs.virtualInfo.loadNext &&
+            notifyArgs.virtualInfo.nextInfo.page !== this.parent.pageSettings.currentPage) {
             this.parent.setProperties({ pageSettings: { currentPage: notifyArgs.virtualInfo.nextInfo.page } }, true);
         }
-        else if (!isNullOrUndefined(notifyArgs.virtualInfo) && !notifyArgs.virtualInfo.loadNext && notifyArgs.virtualInfo.page !== this.parent.pageSettings.currentPage) {
+        else if (!isNullOrUndefined(notifyArgs.virtualInfo) && !notifyArgs.virtualInfo.loadNext &&
+                 notifyArgs.virtualInfo.page !== this.parent.pageSettings.currentPage) {
             this.parent.setProperties({ pageSettings: { currentPage: notifyArgs.virtualInfo.page } }, true);
         }
         const info: VirtualInfo = this.getDataInfo();

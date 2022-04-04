@@ -33,44 +33,34 @@ export class TableDialog {
      * @returns {void}
      */
     public initTableDialog(localValue: L10n): void {
-        const id: string = this.documentHelper.owner.containerId + '_insert_Table';
-        this.target = createElement('div', { id: id, className: 'e-de-insert-table' });
+        this.target = createElement('div', { className: 'e-de-insert-table' });
         const parentDiv: HTMLElement = createElement('div');
 
-        const columnContainer: HTMLElement = createElement('div', {
-            className: 'e-de-insert-table-dlg-sub-header', innerHTML: localValue.getConstant('Number of columns')
-        });
-        const columnValue: HTMLElement = createElement('div', { className: 'e-de-insert-table-dlg-input' });
+        const columnValue: HTMLElement = createElement('div', { className: 'e-de-container-row' });
         this.columnsCountBox = createElement('input', {
-            attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + '_column'
+            attrs: { type: 'text' }
         }) as HTMLInputElement;
         columnValue.appendChild(this.columnsCountBox);
 
-        const rowContainer: HTMLElement = createElement('div', {
-            className: 'e-de-insert-table-dlg-sub-header', innerHTML: localValue.getConstant('Number of rows')
-        });
         const rowValue: HTMLElement = createElement('div');
         this.rowsCountBox = createElement('input', {
-            attrs: { type: 'text' }, id: this.documentHelper.owner.containerId + 'row'
+            attrs: { type: 'text' }
         }) as HTMLInputElement;
         rowValue.appendChild(this.rowsCountBox);
 
-        parentDiv.appendChild(columnContainer);
         parentDiv.appendChild(columnValue);
-        parentDiv.appendChild(rowContainer);
         parentDiv.appendChild(rowValue);
 
         this.target.appendChild(parentDiv);
-
-        this.columnsCountBox.addEventListener('keyup', this.keyUpInsertTable);
-        this.rowsCountBox.addEventListener('keyup', this.keyUpInsertTable);
 
         this.rowValueTextBox = new NumericTextBox({
             format: '#',
             value: 2,
             min: 1,
             strictMode: true,
-            enablePersistence: false
+            enablePersistence: false,
+            placeholder: localValue.getConstant('Number of rows'),
+            floatLabelType: 'Always'
         });
         this.rowValueTextBox.appendTo(this.rowsCountBox);
         this.columnValueTexBox = new NumericTextBox({
@@ -78,7 +68,9 @@ export class TableDialog {
             value: 2,
             min: 1,
             strictMode: true,
-            enablePersistence: false
+            enablePersistence: false,
+            placeholder: localValue.getConstant('Number of columns'),
+            floatLabelType: 'Always'
         });
         this.columnValueTexBox.appendTo(this.columnsCountBox);
     }
@@ -118,18 +110,6 @@ export class TableDialog {
     }
     /**
      * @private
-     * @param {KeyboardEvent} event - Specifies the event args.
-     * @returns {void}
-     */
-    public keyUpInsertTable = (event: KeyboardEvent): void => {
-        if (event.keyCode === 13) {
-            if (this.rowsCountBox.value !== '' && this.columnsCountBox.value !== '') {
-                this.onInsertTableClick();
-            }
-        }
-    };
-    /**
-     * @private
      * @returns {void}
      */
     public onCancelButtonClick = (): void => {
@@ -145,11 +125,15 @@ export class TableDialog {
             DialogUtility.alert(this.localeValue.getConstant('Number of columns must be between 1 and 63.'));
             return;
         }
-        if (this.rowValueTextBox.value < 1 || this.rowValueTextBox.value > 32767) {
-            DialogUtility.alert(this.localeValue.getConstant('Number of rows must be between 1 and 32767.'));
+        if (this.rowValueTextBox.value < 1 || this.rowValueTextBox.value > this.documentHelper.owner.documentEditorSettings.maximumRows) {
+            if(this.documentHelper.owner.locale == 'en-US') {
+                DialogUtility.alert('Number of rows must be between 1 and ' + this.documentHelper.owner.documentEditorSettings.maximumRows + '.');
+            } else {
+                DialogUtility.alert(this.localeValue.getConstant('Number of rows must be between 1 and 32767.'));
+            }
             return;
         }
-        if (this.rowValueTextBox.value <= 32767 && this.columnValueTexBox.value <= 63) {
+        if (this.rowValueTextBox.value <= this.documentHelper.owner.documentEditorSettings.maximumRows && this.columnValueTexBox.value <= 63) {
             const rowCount: number = this.rowValueTextBox.value;
             const columnCount: number = this.columnValueTexBox.value;
             if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {

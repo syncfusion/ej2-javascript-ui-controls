@@ -101,7 +101,7 @@ export class RangeTooltip {
             const element: HTMLElement = document.createElement('div');
             element.id = this.elementId + id;
             element.className = 'ejSVGTooltip';
-            element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
+            element.style.cssText = 'pointer-events:none; position:absolute;z-index: 1';
             if (!this.control.stockChart) {
                 getElement(this.elementId + '_Secondary_Element').appendChild(element);
             } else {
@@ -136,17 +136,17 @@ export class RangeTooltip {
                 {
                     location: { x: pointX, y: control.rangeSlider.sliderY },
                     content: argsData.text, marginX: 2,
-                    enableShadow: false,
+                    enableShadow: (this.control.theme === "Fluent" || this.control.theme === 'FluentDark') ? true : false,
                     marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
                     inverted: control.series.length > 0,
                     areaBounds: bounds, fill: tooltip.fill ? tooltip.fill : this.control.themeStyle.tooltipBackground,
                     theme: this.control.theme,
-                    //enableShadow: false,
                     clipBounds: { x: left },
                     border: tooltip.border, opacity: tooltip.opacity,
                     template: tooltip.template,
                     textStyle: argsData.textStyle,
                     availableSize: control.availableSize,
+                    controlName: 'RangeNavigator',
                     data: {
                         'start': this.getTooltipContent(this.control.startValue)[0],
                         'end': this.getTooltipContent(this.control.endValue)[0],

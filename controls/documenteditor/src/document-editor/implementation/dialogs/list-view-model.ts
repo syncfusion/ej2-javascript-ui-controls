@@ -41,7 +41,7 @@ export class ListViewModel {
         if (!isNullOrUndefined(this.list) && this.levelNumber >= 0 && this.levelNumber < 9) {
             if (!isNullOrUndefined(this.dialog.documentHelper.getAbstractListById(this.list.abstractListId))) {
                 if (this.dialog.documentHelper.getAbstractListById(this.list.abstractListId).levels.length <= this.levelNumber) {
-                    this.addListLevels();
+                    this.dialog.documentHelper.layout.addListLevels(this.list.abstractList);
                 }
                 return this.dialog.documentHelper.getAbstractListById(this.list.abstractListId).levels[this.levelNumber] as WListLevel;
             } else {
@@ -51,19 +51,12 @@ export class ListViewModel {
                     abstractList = new WAbstractList();
                     abstractList.abstractListId = this.list.abstractListId;
                 }
-                const listLevelAdv: WListLevel = new WListLevel(abstractList);
-                listLevelAdv.characterFormat = new WCharacterFormat(listLevelAdv);
-                listLevelAdv.paragraphFormat = new WParagraphFormat(listLevelAdv);
-                listLevelAdv.paragraphFormat.leftIndent = (1) * 48;
-                listLevelAdv.paragraphFormat.firstLineIndent = -24;
-                listLevelAdv.numberFormat = '%' + (1).toString() + '.';
-                listLevelAdv.listLevelPattern = 'UpRoman';
-                listLevelAdv.followCharacter = 'Tab';
-                listLevelAdv.startAt = 1;
-                listLevelAdv.restartLevel = 1;
                 this.dialog.documentHelper.abstractLists.push(abstractList);
-                return this.dialog.documentHelper.getAbstractListById(this.list.abstractListId).levels[0];
-                // return this.dialog.documentHelper.getAbstractListById(this.list.abstractListId).levels.getItem(0);
+                abstractList = this.dialog.documentHelper.getAbstractListById(this.list.abstractListId);
+                if (abstractList.levels.length <= this.levelNumber) {
+                    this.dialog.documentHelper.layout.addListLevels(this.list.abstractList);
+                }
+                return abstractList.levels[this.levelNumber] as WListLevel;
             }
         }
         return undefined;
@@ -107,6 +100,7 @@ export class ListViewModel {
         const abstractList: WAbstractList = new WAbstractList();
         abstractList.abstractListId = this.dialog.documentHelper.abstractLists.length + 1;
         this.list.abstractListId = abstractList.abstractListId;
+        this.list.abstractList = abstractList;
         this.dialog.documentHelper.lists.push(this.list);
         const listLevel: WListLevel = new WListLevel(abstractList);
         listLevel.paragraphFormat = new WParagraphFormat(listLevel);
@@ -140,9 +134,11 @@ export class ListViewModel {
      * @returns {void}
      */
     public destroy(): void {
-        this.list = undefined;
-        this.followCharacter = undefined;
-        this.levelNumber = undefined;
+        if (this.dialog && this.listIn) {
+            this.dialog.documentHelper.layout.clearInvalidList(this.listIn);
+        }
+        this.listIn = undefined;
+        this.levelNumberIn = undefined;
         this.listLevelPattern = undefined;
     }
 

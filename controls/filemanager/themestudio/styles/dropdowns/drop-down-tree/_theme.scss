@@ -68,7 +68,7 @@
     &.e-input-group.e-control-wrapper,
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {
-        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and  $ddt-skin-name != 'material-dark' {
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and  $ddt-skin-name != 'material-dark' and $ddt-skin-name != 'FluentUI' {
           background-color: $ddt-icon-bg-color;
         }
       }
@@ -76,8 +76,13 @@
 
     &.e-input-group.e-control-wrapper .e-input[readonly],
     &.e-float-input.e-control-wrapper input[readonly] {
-      @if $ddt-skin-name == 'bootstrap4' or $ddt-skin-name == 'bootstrap5' {
-        background: $ddt-readonly-input-bg-color;
+      @if $ddt-skin-name == 'bootstrap4' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+        @if $ddt-skin-name == 'FluentUI' {
+          background: transparent;
+        }
+        @else {
+          background: $ddt-readonly-input-bg-color;
+        }
 
         @if $ddt-skin-name == 'bootstrap5' {
           ~ span.e-input-group-icon.e-ddt-icon {

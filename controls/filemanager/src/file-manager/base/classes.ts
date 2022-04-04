@@ -150,6 +150,8 @@ export const SUBMENU_ICON: string = 'e-caret';
 /** @hidden */
 export const GRID_VIEW: string = 'e-content';
 /** @hidden */
+export const GRID_CONTENT: string = 'e-gridcontent';
+/** @hidden */
 export const ICON_VIEW: string = 'e-list-parent';
 /** @hidden */
 export const ICON_OPEN: string = 'e-icons e-fe-open';

@@ -52,6 +52,8 @@ export class Month extends ViewBase implements IRenderer {
         this.parent.notify(event.virtualScroll, e);
         this.scrollTopPanel(<HTMLElement>e.target);
         this.scrollLeftPanel(<HTMLElement>e.target);
+        this.parent.uiStateValues.top = (e.target as HTMLElement).scrollTop;
+        this.parent.uiStateValues.left = (e.target as HTMLElement).scrollLeft;
         this.setPersistence();
     }
 
@@ -86,23 +88,38 @@ export class Month extends ViewBase implements IRenderer {
             header.style[<any>args.cssProperties.padding] = '';
         }
         this.setColWidth(content);
-        if (args.scrollPosition) {
+        if (args.scrollPosition || !args.isPreventScrollUpdate && this.parent.currentView === 'TimelineMonth') {
+            const top: number = this.parent.currentView === 'TimelineMonth' ? this.parent.uiStateValues.top : args.scrollPosition.top;
             if (leftPanel) {
-                leftPanel.scrollTop = args.scrollPosition.top as number;
+                leftPanel.scrollTop = top;
             }
-            content.scrollTop = args.scrollPosition.top as number;
-            content.scrollLeft = args.scrollPosition.left as number;
-        } else {
-            const headerCell: HTMLElement = this.element.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="'
-                + this.parent.selectedDate.getTime().toString() + '"]');
-            if (!isNullOrUndefined(headerCell)) {
-                content.scrollLeft = !this.parent.enableRtl ?
-                    headerCell.offsetLeft : -(this.parent.getContentTable().offsetWidth - headerCell.offsetLeft - headerCell.offsetWidth);
+            content.scrollTop = top;
+            if (this.parent.uiStateValues.isInitial) {
+                this.scrollToSelectedDate();
+                this.parent.uiStateValues.isInitial = false;
             } else {
-                content.scrollLeft = 0;
+                content.scrollLeft = this.parent.currentView === 'TimelineMonth' ? this.parent.uiStateValues.left :
+                    args.scrollPosition.left;
             }
+        } else {
+            this.scrollToSelectedDate();
         }
         this.retainScrollPosition();
+    }
+
+    private scrollToSelectedDate(): void {
+        const headerCell: HTMLElement = this.element.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="'
+            + this.parent.selectedDate.getTime().toString() + '"]');
+        const content: HTMLElement = this.getContentAreaElement();
+        if (!isNullOrUndefined(headerCell)) {
+            content.scrollLeft = !this.parent.enableRtl ?
+                headerCell.offsetLeft : -(this.parent.getContentTable().offsetWidth - headerCell.offsetLeft - headerCell.offsetWidth);
+        } else {
+            content.scrollLeft = 0;
+        }
+        if (content.scrollLeft === 0 && this.parent.uiStateValues.isInitial) {
+            this.parent.uiStateValues.left = 0;
+        }
     }
 
     public setContentHeight(content: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
@@ -171,7 +188,7 @@ export class Month extends ViewBase implements IRenderer {
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             clsList.push(cls.VIRTUAL_SCROLL_CLASS);
         }
-        if (this.parent.eventSettings.ignoreWhitespace) {
+        if (this.parent.rowAutoHeight && this.parent.eventSettings.ignoreWhitespace) {
             clsList.push(cls.IGNORE_WHITESPACE);
         }
         addClass([this.element], clsList);

@@ -534,6 +534,9 @@ export class WBorder {
             if (border.hasValue('space')) {
                 this.space = border.space;
             }
+            if(border.hasValue('hasNoneStyle')) {
+                this.hasNoneStyle = border.hasNoneStyle;
+            }
         }
     }
     public static clear(): void {

@@ -247,6 +247,31 @@ export type LegendTitlePosition =
     'Right';
 
 /**
+ * Specifies text wrap options when the text overflowing the container
+ * *normal - Specifies to break words only at allowed break points.
+ * *wrap - Specifies to break a word once it is too long to fit on a line by itself.
+ * *anyWhere - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
+ */
+export type TextWrap =
+/** Specifies to break words only at allowed break points. */
+'Normal' |
+/** Specifies to break a word once it is too long to fit on a line by itself. */
+'Wrap' |
+/** Specifies to break a word at any point if there are no otherwise-acceptable break points in the line. */
+'AnyWhere';
+
+/**
+ * Specifies text overflow options when the text overflowing the container
+ * *Ellipsis - Specifies an ellipsis (“...”) to the clipped text.
+ * *clip - Specifies to break a word once it is too long to fit on a line by itself.
+ */
+ export type LabelOverflow =
+ /** Specifies an ellipsis (“...”) to the clipped text. */
+ 'Ellipsis' |
+ /** Specifies the text is clipped and not accessible. */
+ 'Clip';
+
+/**
  * Defines the alignment of the line break axis labels. They are
  * * center - align the label with center.
  * * left - align the label with left.

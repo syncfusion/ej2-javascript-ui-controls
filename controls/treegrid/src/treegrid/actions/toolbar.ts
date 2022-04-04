@@ -3,6 +3,7 @@ import { TreeGrid, ITreeData } from '../base';
 import * as events from '../base/constant';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations/src/toolbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { TreeActionEventArgs } from '..';
 /**
  * Toolbar Module for TreeGrid
  *
@@ -32,6 +33,7 @@ export class Toolbar {
      */
     public addEventListener(): void {
         this.parent.on(events.rowSelected, this.refreshToolbar, this);
+        this.parent.on(events.rowDeselected, this.refreshToolbar, this);
         this.parent.on(events.toolbarClick, this.toolbarClickHandler, this);
     }
 
@@ -42,6 +44,7 @@ export class Toolbar {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.rowSelected, this.refreshToolbar);
+        this.parent.off(events.rowDeselected, this.refreshToolbar);
         this.parent.off(events.toolbarClick, this.toolbarClickHandler);
     }
 
@@ -49,7 +52,8 @@ export class Toolbar {
         const tObj: TreeGrid = this.parent;
         if ((args.row as HTMLTableRowElement).rowIndex === 0 || tObj.getSelectedRecords().length > 1) {
             this.enableItems([tObj.element.id + '_gridcontrol_indent', tObj.element.id + '_gridcontrol_outdent'], false);
-        } else {
+        }
+        else if (args['name'] !== 'rowDeselected') {
             if (!isNullOrUndefined((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData))) {
                 if (!isNullOrUndefined((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData)) &&
                     ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level >
@@ -70,12 +74,21 @@ export class Toolbar {
                 }
             }
         }
+        if (args['name'] === 'rowDeselected') {
+            if (this.parent.toolbar['includes']('Indent')) {
+                this.enableItems([tObj.element.id + '_gridcontrol_indent'], false);
+            }
+            if (this.parent.toolbar['includes']('Outdent')) {
+                this.enableItems([tObj.element.id + '_gridcontrol_outdent'], false);
+            }
+        }
         if ((args.row as HTMLTableRowElement).rowIndex === 0 && !isNullOrUndefined((args.data as ITreeData).parentItem)) {
             this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
         }
     }
     private toolbarClickHandler(args: ClickEventArgs): void {
         const tObj: TreeGrid = this.parent;
+        const action: string = 'action';
         if (this.parent.editSettings.mode === 'Cell' && this.parent.grid.editSettings.mode === 'Batch' &&
             args.item.id === this.parent.grid.element.id + '_update') {
             args.cancel = true;
@@ -99,18 +112,41 @@ export class Toolbar {
             } else {
                 dropIndex = tObj.getSelectedRowIndexes()[0] - 1;
             }
-            tObj.reorderRows([tObj.getSelectedRowIndexes()[0]], dropIndex, 'child');
+            this.parent[action] = 'indenting';
+            this.eventTrigger('indenting', dropIndex);
         }
         if (args.item.id === tObj.grid.element.id + '_outdent' && tObj.getSelectedRecords().length) {
-            const index: number = tObj.getSelectedRowIndexes()[0];
             let dropIndex: number; const parentItem: ITreeData = (tObj.getSelectedRecords()[0] as ITreeData).parentItem;
             for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
                 if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === parentItem.taskData) {
                     dropIndex = i;
                 }
             }
-            tObj.reorderRows([index], dropIndex, 'below');
+            this.parent[action] = 'outdenting';
+            this.eventTrigger('outdenting', dropIndex);
         }
+    }
+
+    private eventTrigger(action: string, dropIndex: number): void {
+        const selectedRecords: string = 'selectedRecords';
+        const selectedRows: string = 'selectedRows';
+        this.parent[selectedRows] = this.parent.getSelectedRows();
+        this.parent[selectedRecords] = this.parent.getSelectedRecords();
+        const actionArgs: TreeActionEventArgs = {
+            requestType: action,
+            data: this.parent.getSelectedRecords(),
+            row: this.parent.getSelectedRows(),
+            cancel: false
+        };
+        this.parent.trigger(events.actionBegin, actionArgs, (actionArgs: TreeActionEventArgs) => {
+            if (!actionArgs.cancel) {
+                if (actionArgs.requestType === 'indenting'){
+                    this.parent.reorderRows([this.parent.getSelectedRowIndexes()[0]], dropIndex, 'child');
+                } else if (actionArgs.requestType === 'outdenting') {
+                    this.parent.reorderRows([this.parent.getSelectedRowIndexes()[0]], dropIndex, 'below');
+                }
+            }
+        });
     }
     /**
      * Gets the toolbar of the TreeGrid.

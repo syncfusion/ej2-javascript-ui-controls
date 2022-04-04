@@ -110,7 +110,8 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     private renderSummaryContent(e?: Object, table?: HTMLTableElement, cStart?: number, cEnd?: number): void {
-        const input: Object[] = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
+        const input: Object[] = this.parent.dataSource instanceof Array ? !this.parent.getDataModule().isRemote() &&
+            this.parent.parentDetails ? this.getData() : this.parent.dataSource : this.parent.currentViewData;
         const summaries: AggregateRowModel[] = <AggregateRowModel[]>this.modelGenerator.getData();
         const dummies: Column[] = isNullOrUndefined(cStart) ? this.modelGenerator.getColumns() :
             this.modelGenerator.getColumns(cStart, cEnd);
@@ -120,7 +121,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         const fragment: DocumentFragment = <DocumentFragment>document.createDocumentFragment();
 
         const rowrenderer: RowRenderer<AggregateColumnModel> = new RowRenderer<AggregateColumnModel>(this.locator, null, this.parent);
-        rowrenderer.element = this.parent.createElement('TR', { className: 'e-summaryrow' });
+        rowrenderer.element = this.parent.createElement('TR', { className: 'e-summaryrow', attrs: { role: 'row' } });
 
         for (let srow: number = 0, len: number = summaries.length; srow < len; srow ++) {
             const row: Row<AggregateColumnModel> = rows[srow];
@@ -186,6 +187,9 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             }
             if (this.parent.allowResizing) { this.updateFooterTableWidth(this.getTable() as HTMLElement); }
         }
+        if (isNullOrUndefined(e) && this.parent.isAutoFitColumns) {
+            this.parent.autoFitColumns();
+        }
         this.onScroll();
     }
 
@@ -235,9 +239,9 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     public getColFromIndex(index?: number): HTMLElement {
-        const left: number = this.parent.getVisibleFrozenLeftCount() || this.parent.getFrozenColumns();
-        const movable: number = this.parent.getVisibleMovableCount();
-        const right: number = this.parent.getVisibleFrozenRightCount();
+        const left: number = this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenColumns();
+        const movable: number = this.parent.getMovableColumnsCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
         const isDrag: number = this.parent.isRowDragable() && !(this.parent.getFrozenMode() === 'Right') ? 1 : 0;
         if (left && index < (left + isDrag)) {
             return this.freezeTable.querySelector(literals.colGroup).children[index] as HTMLElement;
@@ -284,6 +288,10 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         return -1;
     }
 
+    private getData(): object[] {
+        return this.parent.getDataModule().dataManager.executeLocal(this.parent.getDataModule().generateQuery(true));
+    }
+
     public onAggregates(editedData: Object[]): Object {
         editedData = editedData instanceof Array ? editedData : [];
         const field: string = this.parent.getPrimaryKeyFieldNames()[0];
@@ -295,9 +303,12 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         if (!this.parent.renderModule.data.isRemote() && this.parent.allowFiltering && this.parent.filterSettings.columns.length) {
             isFiltered = true;
         }
-        const currentViewData: Object[] = this.parent.dataSource instanceof Array ?
+        let currentViewData: Object[] = this.parent.dataSource instanceof Array ?
             (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource) : (this.parent.dataSource[gridData].json.length ?
                 this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords());
+        if (this.parent.parentDetails && !this.parent.getDataModule().isRemote()) {
+            currentViewData = this.getData();
+        }
         if (this.parent.editModule) {
             batchChanges = this.parent.editModule.getBatchChanges();
         }

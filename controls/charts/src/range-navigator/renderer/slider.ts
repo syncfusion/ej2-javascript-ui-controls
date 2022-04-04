@@ -86,7 +86,7 @@ export class RangeSlider {
         option.id = this.elementId + '_SelectedArea';
         option.fill = disabledColor || style.selectedRegionColor || range.themeStyle.selectedRegionColor;
         this.selectedElement = renderer.drawRectangle(option) as Element;
-        this.selectedElement.setAttribute('style', 'cursor: -webkit-grab');
+        (this.selectedElement as HTMLElement).style.cursor = '-webkit-grab';
         this.leftSlider = renderer.createGroup({
             'id': this.elementId + '_LeftSlider', 'style': 'cursor: ew-resize'
         });
@@ -179,7 +179,7 @@ export class RangeSlider {
     /**
      * Set slider value for range navigator
      */
-    public setSlider(start: number, end: number, trigger: boolean, showTooltip: boolean): void {
+    public setSlider(start: number, end: number, trigger: boolean, showTooltip: boolean, resize: boolean = false): void {
         const range: RangeNavigator = this.control;
         const padding: number = range.bounds.x;
         const axisRange: VisibleRangeModel = range.chartSeries.xAxis.actualRange;
@@ -234,7 +234,7 @@ export class RangeSlider {
             this.control.rangeTooltipModule.renderLeftTooltip(this);
             this.control.rangeTooltipModule.renderRightTooltip(this);
         }
-        if (trigger) {
+        if (trigger && !resize) {
             this.triggerEvent(axisRange);
         }
     }
@@ -351,7 +351,7 @@ export class RangeSlider {
      */
     private mouseDownHandler(e: PointerEvent): void {
         this.currentSlider = this.getCurrentSlider((<Element>e.target).id);
-        this.selectedElement.setAttribute('style', 'cursor: -webkit-grabbing');
+        (this.selectedElement as HTMLElement).style.cursor = '-webkit-grabbing';
         this.isDrag = !(this.currentSlider === 'UnSelectedArea' || !this.currentSlider);
         this.previousMoveX = this.control.mouseDownX;
     }
@@ -446,7 +446,7 @@ export class RangeSlider {
                 this.control.periodSelectorModule.datePicker.endDate = new Date(this.currentEnd);
             }
         }
-        this.selectedElement.setAttribute('style', 'cursor: -webkit-grab');
+        (this.selectedElement as HTMLElement).style.cursor = '-webkit-grab';
         control.startValue = this.currentStart;
         control.endValue = this.currentEnd;
         this.isDrag = false;

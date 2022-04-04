@@ -4,6 +4,7 @@ import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFo
 import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
 import { triggerDataChange, ExtendedRowModel } from '../common/index';
 import { getFormatFromType } from './number-format';
+import { extend } from '@syncfusion/ej2-base';
 
 /**
  * Data binding module
@@ -87,7 +88,7 @@ export class DataBind {
                     });
                     sRange -= insertRowCount; eRange -= insertRowCount;
                 }
-                if (sRange > count) {
+                if (sRange >= count) {
                     isEndReached = true;
                 } else if (eRange > count) {
                     eRange = count;
@@ -405,7 +406,7 @@ export class DataBind {
                     'dataSourceChanged',
                     { data: args.changedData, action: 'dataSourceChanged', rangeIndex: Number(args.rangeIdx), sheetIndex:
                     Number(args.sheetIdx) });
-                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true });
+                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true, checkCf: true });
             });
         }
     }
@@ -440,7 +441,6 @@ export class DataBind {
      * @param {string} args.type - Specify the type.
      * @param {string} args.pastedRange - Specify the pasted range.
      * @param {string} args.range - Specify the range.
-     * @param {boolean}  args.isUndoRedo - Specify the boolean value.
      * @param {string} args.requestType - Specify the requestType.
      * @param {Object[]} args.data - Specify the data.
      * @param {boolean}  args.isDataRequest - Specify the isDataRequest.
@@ -450,7 +450,7 @@ export class DataBind {
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number, modelType: string,
         deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, isMethod?: boolean, fillRange?: string
-        range: string, isUndoRedo: boolean, requestType: string, data?: Object[], isDataRequest?: boolean, pastedRange: string,
+        range: string, requestType: string, data?: Object[], isDataRequest?: boolean, pastedRange: string,
         skipFilterCheck?: boolean
     }): void {
         const changedData: Object[] = [{}];
@@ -627,7 +627,7 @@ export class DataBind {
     }
 
     private triggerDataChangeHandler(args: {
-        action: string, isUndo: boolean, eventArgs: {
+        action: string, isUndo: boolean, isUndoRedo?: boolean, eventArgs: {
             modelType: string, type: string, index: number,
             startIndex: number, endIndex: number, model: object[], deletedModel: object[], insertType: string, requestType: string
         }
@@ -641,20 +641,24 @@ export class DataBind {
         } else if (args.action === 'clipboard' && args.eventArgs.requestType === 'Formats') {
             triggerDataChange = false;
         }
-        if (args.isUndo && (args.action === 'delete' || args.action === 'insert')) {
-            if (args.action === 'delete') {
-                args.eventArgs.index = args.eventArgs.startIndex;
-                args.eventArgs.model = args.eventArgs.deletedModel;
-                args.eventArgs.insertType = 'below';
-            } else {
-                args.eventArgs.startIndex = args.eventArgs.index;
-                args.eventArgs.endIndex = args.eventArgs.index + args.eventArgs.model.length - 1;
-                args.eventArgs.deletedModel = args.eventArgs.model;
-                delete args.eventArgs.insertType;
-            }
-        }
         if (triggerDataChange && dataChangingActions.indexOf(args.action) > -1) {
-            this.parent.notify(dataChanged, args.eventArgs);
+            let evtArgs: { [key: string]: object | object[] | boolean | string | number };
+            if (args.isUndo && (args.action === 'delete' || args.action === 'insert')) {
+                evtArgs = extend({}, args.eventArgs) as { [key: string]: object | object[] | boolean | string | number };
+                if (args.action === 'delete') {
+                    evtArgs.index = evtArgs.startIndex;
+                    evtArgs.model = evtArgs.deletedModel;
+                    evtArgs.insertType = 'below';
+                } else {
+                    evtArgs.startIndex = evtArgs.index;
+                    evtArgs.endIndex = args.eventArgs.index + args.eventArgs.model.length - 1;
+                    evtArgs.deletedModel = evtArgs.model;
+                    delete evtArgs.insertType;
+                }
+            } else {
+                evtArgs = args.eventArgs;
+            }
+            this.parent.notify(dataChanged, evtArgs);
         }
     }
 

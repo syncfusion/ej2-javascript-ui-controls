@@ -1057,6 +1057,7 @@ describe('Resize module', () => {
 
         it('Column width after resize to fit', () => {
             gridObj.autoFitColumns([]);
+            expect(gridObj.isAutoFitColumns).toBeTruthy();
             expect(gridObj.getContentTable().style.width).toBe('100%');
         })
 
@@ -1092,7 +1093,7 @@ describe('Resize module', () => {
              let hdrele: Element= gridObj.element.querySelectorAll('.e-columnheader:nth-child(2)')[0].querySelectorAll('.e-headercell')[1];
              let lastcell: Element = gridObj.element.querySelectorAll('.e-columnheader:nth-child(2)')[0].querySelectorAll('.e-headercell')[2];
              expect(hdrele.classList.contains('e-lastcell')).toBeFalsy();
-             expect(lastcell.classList.contains('e-lastcell')).toBeTruthy();
+             expect(lastcell.classList.contains('e-laststackcell')).toBeTruthy();
 
         })
 

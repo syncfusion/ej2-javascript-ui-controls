@@ -80,6 +80,7 @@ $rte-inline-tmp-size-min-width: 66px;
 $rte-big-inline-tmp-color-min-width: 50px;
 $rte-inline-tmp-color-min-width: 55px;
 $rte-big-color-list-span-common-padding-left-right: 0;
+$rte-default-character-count-opacity: 1;
 //Layout Variables End
 
 //Theme Variables Start
@@ -89,12 +90,12 @@ $rte-content-bg: $content-bg-color !default;
 $rte-full-screen-bg: $content-bg-color !default;
 $rte-content-font-color: $content-text-color !default;
 $rte-item-color: $content-text-color !default;
-$rte-icons-color: $content-text-color !default;
+$rte-icons-color: $icon-color !default;
 $rte-img-popup-border: 1px solid $border-light !default;
 $rte-img-popup-box-shadow: $shadow !default;
 $rte-img-popup-color: $border-light !default;
 $rte-quick-item-active-bg: $secondary-bg-color-pressed !default;
-$rte-quick-item-active-font-color: $white !default;
+$rte-quick-item-active-font-color: $secondary-text-color-hover !default;
 $rte-quick-item-border: 0 !default;
 $rte-quick-item-hover-border-color: $secondary-border-color-hover !default;
 $rte-quick-item-active-border-color: $secondary-border-color-pressed !default;
@@ -135,7 +136,7 @@ $rte-link-valid-color: $danger !default;
 $rte-upload-drag-border-clr: $border-dark !default;
 $rte-img-header-clr: $content-text-color  !default;
 $rte-drop-text-clr: $content-text-color-alt2 !default;
-$rte-default-character-count-color: $content-text-color-disabled !default;
+$rte-default-character-count-color: $placeholder-text-color !default;
 $rte-warning-character-count-color: $warning  !default;
 $rte-error-character-count-color: $danger !default;
 $rte-img-border: dashed 2px $primary !default;
@@ -166,3 +167,23 @@ $rte-table-header-bg: $content-bg-color-alt1 !default;
 
 $rte-tb-hover-font-color: $secondary-text-color-hover;
 $transparent: $transparent;
+$rte-placeholder-padding: 16px !default;
+
+$rte-img-dlg-min-height: 390px !default;
+$rte-big-img-dlg-min-height: 425px !default;
+$rte-link-dlg-min-height: 339px !default;
+$rte-big-link-dlg-min-height: 385px !default;
+$rte-table-dlg-min-height: 253px !default;
+$rte-big-table-dlg-min-height: 299px !default;
+$rte-img-alt-dlg-min-height: 159px !default;
+$rte-big-img-alt-dlg-min-height: 193px !default;
+$rte-img-link-dlg-min-height: 192px !default;
+$rte-big-img-link-dlg-min-height: 229px !default;
+$rte-img-size-dlg-min-height: 247px !default;
+$rte-big-img-size-dlg-min-height: 299px !default;
+$rte-edit-table-dlg-min-height: 321px !default;
+$rte-big-edit-table-dlg-min-height: 373px !default;
+$rte-file-browser-dlg-min-height: 586px !default;
+$rte-big-file-browser-dlg-min-height: 641px !default;
+$toolbar-expand-icon-min-height: 40px !default;
+$rte-align-caret-icon-min-width: 24px !default;

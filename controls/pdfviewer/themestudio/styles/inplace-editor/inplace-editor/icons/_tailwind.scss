@@ -1,19 +1,19 @@
-@include export-module('inplaceeditor-tailwind-icons') {
+@include export-module('inplaceeditor-bootstrap-icons') {
 
   /*! inplaceeditor icons */
   .e-inplaceeditor,
   .e-inplaceeditor-tip {
 
     .e-save-icon::before {
-      content: '\e75d';
+      content: '\e774';
     }
 
     .e-cancel-icon::before {
-      content: '\e771';
+      content: '\e7e7';
     }
 
     .e-editable-overlay-icon::before {
-      content: '\e7d2';
+      content: '\e730';
     }
   }
 }

@@ -1,8 +1,8 @@
 // color
 $treegrid-right-arrow-icon-color: $icon-color !default;
 $treegrid-right-arrow-hover-color: $icon-color-hover !default;
-$childborder-color: $primary;
-$error-elem-color: $icon-color;
+$childborder-color: $primary !default;
+$error-elem-color: $danger !default;
 
 // Layout
 
@@ -22,7 +22,7 @@ $treegrid-frame-icon-width: 16px !default;
 $treegrid-content-right-padding: 21px !default;
 $treegrid-treecell-padding: 12px !default;
 $treegrid-bigger-treecell-padding: 7px !default;
-$treegrid-rowdrag-childborder-border: 2px solid $primary;
+$treegrid-rowdrag-childborder-border: 2px dashed $primary;
 $treegrid-rowdd-topbottom-border: 2px solid $primary !default;
 $treegrid-rowdd-boxshadow: $primary !default;
 $treegrid-rowdd-childborder-width: 2px 0 0 !default;

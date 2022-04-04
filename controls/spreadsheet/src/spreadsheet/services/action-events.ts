@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { SortEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, BeforeSaveEventArgs, triggerDataChange } from '../../workbook/index';
-import { BeforeSortEventArgs } from '../../workbook/index';
-import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, beginAction, positionAutoFillElement } from '../common/index';
+import { BeforeSortEventArgs, beginAction } from '../../workbook/index';
+import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, positionAutoFillElement } from '../common/index';
 import { BeforePasteEventArgs, setActionData, updateUndoRedoCollection, BeforeChartEventArgs, spreadsheetDestroyed } from '../common/index';
 
 /**
@@ -70,28 +70,36 @@ export class ActionEvents {
     private actionBeginHandler(args: {
         eventArgs: BeforeCellFormatArgs | BeforeOpenEventArgs | BeforeSaveEventArgs | BeforeSelectEventArgs
         | BeforeSortEventArgs | BeforePasteEventArgs | BeforeChartEventArgs,
-        action: string, preventAction?: boolean
+        action: string, preventAction?: boolean, isUndo?: boolean, isRedo?: boolean
     }): void {
         const preventAction: boolean = args.preventAction; delete args.preventAction;
-        this.parent.trigger('actionBegin', { action: args.action, args: args });
+        let actionArgs: { [key: string]: Object } = { action: args.action };
+        if (args.isUndo) { actionArgs.isUndo = true; delete args.isUndo; }
+        if (args.isRedo) { actionArgs.isUndo = false; delete args.isRedo; }
+        actionArgs.args = args;
+        this.parent.trigger('actionBegin', actionArgs);
         if (!preventAction && (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' ||
             args.action === 'cellSave' || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter'
-            || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart'
-            || args.action === 'cellDelete' || args.action === 'autofill' || args.action === 'removeValidation')) {
+            || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart' || args.action === 'chartDesign'
+            || args.action === 'cellDelete' || args.action === 'autofill' || args.action === 'removeValidation' || args.action === 'hyperlink' || args.action === 'removeHyperlink' || args.action === 'deleteImage')) {
             this.parent.notify(setActionData, { args: args });
         }
         if (preventAction) { args.preventAction = true; }
+        if (actionArgs.isUndo) { args.isUndo = true; }
+        if (actionArgs.isUndo === false) { args.isRedo = true; }
     }
 
     private actionCompleteHandler(
-        args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs, action: string, preventAction?: boolean }): void {
+        args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs, action: string, preventAction?: boolean, preventEventTrigger?: boolean }): void {
         const preventAction: boolean = args.preventAction; delete args.preventAction;
         this.parent.notify(triggerDataChange, args);
-        this.parent.trigger('actionComplete', args);
+        if (!args.preventEventTrigger) {
+            this.parent.trigger('actionComplete', args);
+        }
         if (!preventAction && args.action !== 'undoRedo' && args.action !== 'gotoSheet') {
             this.parent.notify(updateUndoRedoCollection, { args: args });
         }
-        this.parent.notify(positionAutoFillElement, null );
+        this.parent.notify(positionAutoFillElement, null);
     }
 
     private addEventListener(): void {

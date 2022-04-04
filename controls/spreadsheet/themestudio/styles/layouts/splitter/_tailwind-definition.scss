@@ -11,7 +11,7 @@ $bigger-splitbar-icon-size: 16px !default;
 //Layout Variables End
 
 //Theme Variables Start
-$navigation-arrow-background: $primary-text-color !default;
+$navigation-arrow-background: $transparent !default;
 $navigation-icon-background-hover: $primary !default;
 $navigation-icon-border-hover: $primary !default;
 $splitter-border-color: $border-light !default;
@@ -19,6 +19,7 @@ $splitter-background-color: $primary-text-color !default;
 $splitpane-font-color: $content-text-color !default;
 $splitbar-border-color: $border-light !default;
 $splitbar-hover-border-color: $primary !default;
+$resize-icon-hover-color: $splitbar-hover-border-color !default;
 $splitbar-icon-color: $icon-color !default;
 $collapse-icon-bg-color: $primary-text-color !default;
 $resize-icon-bg-color: $content-bg-color !default;

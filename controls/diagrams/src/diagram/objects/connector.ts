@@ -1990,6 +1990,8 @@ export class Connector extends NodeBase implements IElement {
 
         if (this.wrapper && this.wrapper.outerBounds) {
             const outerBounds: Rect = getOuterBounds(this);
+            // EJ2-56887 - Connector do not get rendered properly in symbol palette.
+            // Added the absolute command to change the connector height to positive if it is in negative value.
             const connWidth: number = Math.abs((this.wrapper.bounds.width || this.style.strokeWidth || 1) - 2);
             const connHeight: number = Math.abs((this.wrapper.bounds.height || this.style.strokeWidth || 1) - 2);
             tx = (outerBounds.width - connWidth);

@@ -1,4 +1,4 @@
-import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper, BodyWidget, TableRowWidget, TableCellWidget, ParagraphWidget, LineWidget, TextElementBox } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../test-helper.spec';
@@ -910,4 +910,48 @@ console.log('Table with leftindent > 0 and selection in first column test resize
         editor.editorHistory.undo();
         editor.editorHistory.redo();
     });
+});
+describe('Check the backspace is working properly in table case with bookmark', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+
+it('Check the backspace is working properly in table case with bookmark', () => {
+    console.log('Check the backspace is working properly in table case with bookmark');
+    container.openBlank();
+    container.editor.insertTable(1,1);
+    container.editor.insertBookmark('bookmark');
+    container.editor.insertTable(1,2);
+    container.selection.moveDown();
+    container.editor.insertText('hello');
+    container.editor.onBackSpace();
+    container.editor.onBackSpace();
+    let bodyWidget: BodyWidget = container.documentHelper.pages[0].bodyWidgets[0] as BodyWidget;
+    let tableWidget: TableWidget = bodyWidget.childWidgets[0] as TableWidget;
+    let tableRowWidget: TableRowWidget = tableWidget.childWidgets[0] as TableRowWidget;
+    let tableCellWidget: TableCellWidget = tableRowWidget.childWidgets[0] as TableCellWidget;
+    let paragraphWidget: ParagraphWidget = tableCellWidget.childWidgets[2] as ParagraphWidget;
+    let lineWidget: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
+    let textElementBox: TextElementBox = lineWidget.children[1] as TextElementBox;
+    expect(textElementBox.text).toBe('hel');
+});
 });

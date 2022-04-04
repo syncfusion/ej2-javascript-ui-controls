@@ -319,7 +319,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         this.dlg.classList.remove('e-checkboxfilter');
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' }) as HTMLUListElement;
-        this.parent.notify(events.filterDialogCreated, {});
+        if (options.column.showColumnMenu) {
+            this.parent.notify(events.filterDialogCreated, {});
+        }
         this.wireExEvents();
     }
 
@@ -559,7 +561,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     // eslint-disable-next-line max-len
     private renderOperatorUI(column: string, table: HTMLElement, elementID: string, predicates: PredicateModel[], isFirst?: boolean): { fieldElement: HTMLElement, operator: string } {
 
-        const fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
+        const fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields', attrs: { role: 'row' } });
         table.appendChild(fieldElement);
 
         const xlfloptr: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-optr' });
@@ -664,7 +666,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     private renderFilterUI(column: string, dlgConetntEle: Element): void {
         const predicates: PredicateModel[] = this.existingPredicate[column];
-        const table: HTMLElement = this.parent.createElement('table', { className: 'e-xlfl-table' });
+        const table: HTMLElement = this.parent.createElement('table', { className: 'e-xlfl-table', attrs: { role: 'grid' } });
         dlgConetntEle.appendChild(table);
 
         const colGroup: HTMLElement = this.parent.createElement(literals.colGroup);
@@ -678,7 +680,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         //Renders first value
         this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
 
-        const predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
+        const predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate', attrs: { role: 'row' } });
         table.appendChild(predicate);
 
         //Renders first radion button

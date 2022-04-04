@@ -1,9 +1,9 @@
-@include export-module('splitter-fluent-icons') {
+@include export-module('splitter-material-icons') {
   .e-splitter {
     .e-split-bar {
       &.e-split-bar-horizontal {
         .e-resize-handler::before {
-          content: '\e89d';
+          content: '\e7e3';
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
         }
@@ -11,7 +11,7 @@
 
       &.e-split-bar-vertical {
         & .e-resize-handler::before {
-          content: '\e89e';
+          content: '\e7fd';
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
         }

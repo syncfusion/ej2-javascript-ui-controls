@@ -1352,6 +1352,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
+     * 
      * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event actionBegin

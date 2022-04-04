@@ -110,7 +110,7 @@ describe('SVG Tooltip', () => {
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
             expect(groupElement.childElementCount).toBe(4);
-            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(143);
+            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(125);
            
         };
        tooltip.content = ['TooltipText'];
@@ -178,7 +178,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);            
             let path: Element = document.getElementById('tooltipcontainer_path');
-            expect(path.getAttribute('fill')).toBe('rgba(0, 8, 22, 0.75)');
+            expect(path.getAttribute('fill')).toBe('#000816');
             let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
             expect(headerpath.getAttribute('stroke')).toBe('#ffffff');
             let textElement: Element = document.getElementById('tooltipcontainer_text');
@@ -275,7 +275,7 @@ describe('SVG Tooltip', () => {
             expect(trackball.childElementCount).toBe(2);
             let textElement: Element = document.getElementById('tooltipcontainer_text');
             expect(textElement.childElementCount).toBe(4);
-            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(105);
+            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(104);
            
         };
        tooltip.content = ['TooltipText <br/> <b>Multiple Text<b>', 'Second line'];
@@ -456,7 +456,7 @@ describe('SVG Tooltip', () => {
             svgObject = getElement('tooltipcontainer_svg');        
             expect(svgObject).not.toBe(null);
             let path: Element = document.getElementById('tooltipcontainer_path');
-            expect(path.getAttribute('fill')).toBe('rgba(0, 0, 0, 0.9)');
+            expect(path.getAttribute('fill')).toBe('#020202');
             let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
             expect(headerpath.getAttribute('stroke')).toBe('rgba(255, 255, 255, 0.2)');
             let textElement: Element = document.getElementById('tooltipcontainer_text');

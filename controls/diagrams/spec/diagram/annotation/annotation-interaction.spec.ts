@@ -423,7 +423,7 @@ describe('Diagram Control', () => {
                 document.body.appendChild(ele);
                 let nodes: NodeModel[] = [{
                     id: 'node2', width: 100, height: 100, offsetX: 200, offsetY: 100,
-                    annotations: [{ offset: { x: 1, y: 0.5 }, width: 100, height: 150, content: 'Text Element' }]
+                    annotations: [{ offset: { x: 1, y: 0.5 }, width: 100, height: 150, content: 'Text Element'}]
                 }];
                 diagram = new Diagram({
                     width: 800, height: 500, nodes: nodes,
@@ -438,7 +438,6 @@ describe('Diagram Control', () => {
                 diagram.destroy();
                 ele.remove();
             });
-
             it('Without and with select constraints', (done: Function) => {
                 let node: NodeModel = (diagram.nodes[0] as NodeModel);
                 let annotation: DiagramElement = node.wrapper.children[1];
@@ -1699,6 +1698,71 @@ describe('Check annotation horizontalAlignment value ', () => {
         let txtElement: Element = document.getElementById('connector1_con1');
         expect((txtElement as any).x.animVal.value).toEqual(450.5);
         expect((txtElement as any).y.animVal.value).toEqual(293.29998779296875);
+        done();
+    });
+});
+
+describe('Hyperlink Link target',()=>{
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let diagramCanvas: HTMLElement;
+    let savedata: string;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'Hyperlink' });
+        document.body.appendChild(ele);
+        let nodes:NodeModel[] = [
+            {
+                id:'node1',height:100,width:100,offsetX:50,offsetY:50,
+                annotations:[{hyperlink:{link:'https://www.google.com',hyperlinkOpenState:'NewTab'}}]
+            }
+        ];
+        diagram = new Diagram({
+            width:1000,height:1000,nodes:nodes
+        });
+        diagram.appendTo('#Hyperlink');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking hyperlinkOpenState value at initial rendering',(done:Function)=>{
+        let hyperlinkOpenState = diagram.nodes[0].annotations[0].hyperlink.hyperlinkOpenState;
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas,50,50);
+        mouseEvents.mouseUpEvent(diagramCanvas,50,50);
+        expect(hyperlinkOpenState=='NewTab').toBe(true);
+        console.log('Hyperlink value at initial rendering is '+hyperlinkOpenState)
+        done();
+    });
+
+    it('Changing hyperlinkOpenState value to NewWindow at runtime',(done:Function)=>{
+        let hyperlinkOpenState = diagram.nodes[0].annotations[0].hyperlink.hyperlinkOpenState
+        hyperlinkOpenState = 'NewWindow';
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas,50,50);
+        mouseEvents.mouseUpEvent(diagramCanvas,50,50);
+        expect(hyperlinkOpenState=='NewWindow').toBe(true);
+        console.log('Hyperlink value changed to '+hyperlinkOpenState+' at runtime');
+        done();
+    });
+
+    it('Changing hyperlinkOpenState value to CurrentTab at runtime',(done:Function)=>{
+        let hyperlinkOpenState = diagram.nodes[0].annotations[0].hyperlink.hyperlinkOpenState
+        hyperlinkOpenState ='CurrentTab';
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas,50,50);
+        mouseEvents.mouseUpEvent(diagramCanvas,50,50);
+        expect(hyperlinkOpenState=='CurrentTab').toBe(true);
+        console.log('Hyperlink value changed to '+hyperlinkOpenState+' at runtime');
         done();
     });
 });
@@ -5203,3 +5267,4 @@ describe('Checking annotation', () => {
         done();
     });
 });
+

@@ -34,6 +34,13 @@ Following list of components are available in the package
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=breadcrumb#/material/breadcrumb/default.html)
   * [Product Page](https://www.syncfusion.com/javascript-ui-controls/js-breadcrumb)
 
+* Carousel - The Carousel component allows users to display images with content, links, etc., like a slide show. Typical uses of carousels include scrolling news headlines, featured articles on home pages, and image galleries.
+
+  * [Getting Started](https://ej2.syncfusion.com/documentation/carousel/getting-started?lang=typescript&utm_source=npm&utm_campaign=carousel)
+  * [API References](https://ej2.syncfusion.com/documentation/api/carousel?utm_source=npm&utm_campaign=carousel)
+  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=carousel#/material/carousel/default.html)
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/js-carousel)
+
 * ContextMenu - Graphical user interface that appears on the user right click/touch hold action. It has the support to provide nested level menu items.
 
   * [Getting Started](https://ej2.syncfusion.com/documentation/context-menu/getting-started?lang=typescript&utm_source=npm&utm_campaign=context-menu)
@@ -111,6 +118,14 @@ Sidebar component is used in the following samples.
 4. **Overflow Mode** - Used to limit the number of breadcrumb items to be displayed.
 5. **Accessibility** - Provided with built-in accessibility support that helps to access all the Breadcrumb component features through the keyboard, screen readers, or other assistive technology devices.
 
+### Carousel
+
+1. **Rendering** - The Carousel component can be rendered based on the items collection and data binding.
+2. **Animation** - Supports animation effects for moving previous/next item of Carousel.
+3. **Template Support** - The Carousel component items and buttons can also be rendered with custom templates.
+4. **Keyboard Support** - By default, the Carousel allows interaction with commands by using keyboard shortcuts.
+5. **Accessibility** - The Carousel provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
+
 ### ContextMenu
 
 1. **Separator** - Supports menu items grouping by using the Separator.
@@ -178,4 +193,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/navigations/CHANGELOG.md?utm_source=npm&utm_campaign=navigation)
 
-© Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

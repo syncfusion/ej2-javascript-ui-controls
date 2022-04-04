@@ -1,9 +1,9 @@
-import { Workbook, SheetModel, setColumn, ColumnModel } from '../base/index';
-import { ProtectSettings, applyLockCells, UnprotectArgs } from '../common/index';
+import { Workbook, SheetModel, setColumn, ColumnModel, getSheet, CellModel, setCell } from '../base/index';
+import { ProtectSettings, UnprotectArgs } from '../common/index';
 import { protectsheetHandler, protectSheetWorkBook, updateToggle, setLockCells } from '../common/index';
 import { unprotectsheetHandler } from '../common/index';
-import { getRangeIndexes,  getSwapRange } from '../common/index';
-import { isUndefined } from '@syncfusion/ej2-base';
+import { getSwapRange } from '../common/index';
+import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 /**
  * The `WorkbookSpreadSheet` module is used to handle the Protecting functionalities in Workbook.
  */
@@ -20,14 +20,16 @@ export class WorkbookProtectSheet {
         this.parent = workbook;
         this.addEventListener();
     }
-    private protectsheetHandler(args: {protectSettings: ProtectSettings, password?: string}): void {
-        const sheet: SheetModel = this.parent.getActiveSheet();
+    private protectsheetHandler(args: {protectSettings: ProtectSettings, password?: string, sheetIndex: number, triggerEvent: boolean}): void {
+        const sheetIndex: number = isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        this.parent.setSheetPropertyOnMute(sheet, 'isProtected', true);
         this.parent.setSheetPropertyOnMute(sheet, 'protectSettings', {
             selectCells: args.protectSettings.selectCells, formatCells: args.protectSettings.formatCells,
             formatColumns: args.protectSettings.formatColumns, formatRows: args.protectSettings.formatRows,
-            insertLink: args.protectSettings.insertLink
+            insertLink: args.protectSettings.insertLink, selectUnLockedCells: args.protectSettings.selectUnLockedCells
         });
-        this.parent.notify(protectSheetWorkBook, sheet.protectSettings);
+        this.parent.notify(protectSheetWorkBook, { sheetIndex: sheetIndex, triggerEvent: args.triggerEvent });
         this.parent.notify(updateToggle, { props: 'Protect' });
         sheet.password = args.password ? args.password : '';
         sheet.columns.forEach((column: ColumnModel) => {
@@ -75,14 +77,11 @@ export class WorkbookProtectSheet {
         }
     }
 
-    private lockCells(args?: {range: string | number[], isLocked?: boolean}): void {
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        let range: string | number[];
-        if (args) {
-            range = args.range;
-        } else {range = sheet.selectedRange; }
-        const indexes: number[] = typeof (range) === 'object' ? <number[]>range :
-            getSwapRange(getRangeIndexes(<string>range));
+    private lockCells(args: {range: string, isLocked?: boolean, triggerEvent?:boolean }): void {
+        const addressInfo = this.parent.getAddressInfo(args.range);
+        const indexes: number[] = getSwapRange(addressInfo.indices);
+        const sheet: SheetModel = getSheet(this.parent, addressInfo.sheetIndex);
+        const cell: CellModel = { isLocked: args.isLocked ? args.isLocked : false };
         if (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1) {
             for (let i: number = indexes[1]; i <= indexes[3]; i++) {
                 setColumn(sheet, i, { isLocked: args.isLocked });
@@ -90,11 +89,11 @@ export class WorkbookProtectSheet {
         }
         for (let i: number = indexes[0]; i <= indexes[2]; i++) {
             for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                if (this.parent.getActiveSheet().id === sheet.id) {
-                    this.parent.notify(applyLockCells, {  rowIdx: i, colIdx: j, isLocked: args.isLocked
-                    });
-                }
+                setCell(i, j, sheet, cell, true);
             }
+        }
+        if (args.triggerEvent) {
+            this.parent.notify('actionComplete', { action: 'lockCells', eventArgs: args });
         }
     }
     /**

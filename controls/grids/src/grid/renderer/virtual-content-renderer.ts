@@ -345,7 +345,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         const isReact: boolean = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
         if (!isReact) {
-            target = this.parent.createElement( literals.tbody);
+            target = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
             target.appendChild(newChild);
         } else {
             target = newChild as HTMLElement;
@@ -1078,7 +1078,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (isGroupAdaptive(this.parent)) {
             row = this.parent.getDataRows()[index];
         }
-        if (this.prevInfo) {
+        else if (this.prevInfo) {
             row = this.getRowCollection(index, false) as Element;
         }
         return row;

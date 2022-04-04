@@ -111,33 +111,29 @@
         }
       }
 
-      @if $skin-name == 'tailwind' {
-        .e-spin-tailwind {
-          @include tw-spinner-rotate;
-          display: block;
-          margin: 0 auto;
-          overflow: visible;
+      .e-spin-tailwind {
+        @include tw-spinner-rotate;
+        display: block;
+        margin: 0 auto;
+        overflow: visible;
 
-          .e-path-arc,
-          .e-path-circle {
-            fill: none;
-            stroke-width: $spin-tailwind-stroke-width;
-          }
+        .e-path-arc,
+        .e-path-circle {
+          fill: none;
+          stroke-width: $spin-tailwind-stroke-width;
         }
       }
 
-      @if $skin-name == 'bootstrap5' {
-        .e-spin-bootstrap5 {
-          @include boot5-spinner-rotate;
-          border-radius: 50%;
-          display: block;
-          margin: 0 auto;
+      .e-spin-bootstrap5 {
+        @include boot5-spinner-rotate;
+        border-radius: 50%;
+        display: block;
+        margin: 0 auto;
 
-          .e-path-circle {
-            fill: none;
-            stroke-linecap: square;
-            stroke-width: $spin-boot5-stroke-width;
-          }
+        .e-path-circle {
+          fill: none;
+          stroke-linecap: square;
+          stroke-width: $spin-boot5-stroke-width;
         }
       }
 

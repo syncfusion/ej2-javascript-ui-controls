@@ -1065,6 +1065,7 @@ describe('EJ2-52268 Filtering array of values on date column through filterByCol
     let data: object[] = [ { OrderID: 10248, CustomerID: 'VINET', OrderDate: new Date('08/16/2021') },
                             { OrderID: 10249, CustomerID: 'TOMSP', OrderDate: new Date('08/18/2021') },
                             { OrderID: 10250, CustomerID: 'HANAR', OrderDate: new Date('08/19/2021') },
+                            { OrderID: 10249, CustomerID: 'TOMSP', OrderDate: null},
                             { OrderID: 10251, CustomerID: 'VICTE', OrderDate: new Date('08/22/2021') }];
     beforeAll((done: Function) => {
         gridObj = createGrid(
@@ -1088,7 +1089,14 @@ describe('EJ2-52268 Filtering array of values on date column through filterByCol
             gridObj.actionComplete = actionComplete;
             gridObj.filterByColumn('OrderDate', 'equal', [new Date('08/16/2021'), new Date('08/18/2021')]);
         });
-
+        it('EJ2-57953 Filtering date column with null value in array ', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('OrderDate', 'equal', [new Date('08/16/2021'), null]);
+        });
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

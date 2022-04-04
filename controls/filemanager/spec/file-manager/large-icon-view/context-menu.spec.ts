@@ -13,6 +13,99 @@ import { MenuOpenEventArgs, MenuClickEventArgs } from '../../../src';
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
 describe('FileManager control LargeIcons view', () => {
+    describe('Navigation pane right click testing', () =>{
+        let i: number = 0;
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                fileOpen: (args: FileOpenEventArgs) => { i++ },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            setTimeout(function () {
+                let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
+                menuObj.animationSettings = { effect: 'None' };
+                menuObj.dataBind();
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            i = 0;
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('Navigation pane right clik folder navigation testing', (done: Function) => {            
+            let li: any = document.getElementById('file_tree').querySelectorAll('li');
+            mouseEventArgs.originalEvent.target = li[1].querySelector('.e-fullrow');
+            mouseEventArgs.originalEvent.which = 3;
+            feObj.navigationpaneModule.treeObj.clickHandler(mouseEventArgs);
+            feObj.navigationpaneModule.treeObj.dataBind();
+            setTimeout(() => {
+                expect(feObj.path).toBe('/Documents/');
+                done();
+            }, 500);
+        })
+        it('Navigation pane right clik folder navigation cancel testing', (done: Function) => {
+            let restrict: any = true;
+            feObj.fileOpen = function(args: FileOpenEventArgs){
+                args.cancel = restrict;
+            }
+            let li = document.getElementById('file_tree').querySelectorAll('li');
+            mouseEventArgs.originalEvent.target = li[1].querySelector('.e-fullrow');
+            mouseEventArgs.originalEvent.which = 3;
+            feObj.navigationpaneModule.treeObj.clickHandler(mouseEventArgs);
+            let evt = document.createEvent('MouseEvents');
+            evt.initEvent('contextmenu', true, true);
+            li[1].dispatchEvent(evt);
+            feObj.contextmenuModule.contextMenu.dataBind();
+            feObj.navigationpaneModule.treeObj.dataBind();
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let sourceElement: any = el.ej2_instances[0];
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
+            expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
+            expect(feObj.path).toBe('/');
+            restrict = false;
+            sourceElement.element.querySelectorAll('li')[0].click();
+            setTimeout(() => {
+                expect(feObj.path).toBe('/Documents/');
+                done();
+            }, 500);
+        })
+    })
     describe('context menu testing', () => {
         let i: number = 0;
         let mouseEventArgs: any, tapEvent: any;
@@ -731,6 +824,28 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         it('layout context menu with sortby', (done: Function) => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(dataSortbySize)
+            });
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             let li: any = document.getElementById('file_largeicons');
             mouseEventArgs.target = li;
@@ -743,7 +858,7 @@ describe('FileManager control LargeIcons view', () => {
             let nli: any = document.getElementById('file_tree').querySelectorAll('li');
             let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
             let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
-            expect(nli.length).toEqual(4);
+            expect(nli.length).toEqual(5);
             // expect(ntr.length).toEqual(3);
             expect(nar.length).toEqual(1);
             sourceElement.element.querySelectorAll('li')[0].click();
@@ -760,7 +875,7 @@ describe('FileManager control LargeIcons view', () => {
                 let nli: any = document.getElementById('file_tree').querySelectorAll('li');
                 let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
                 let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
-                expect(nli.length).toEqual(4);
+                expect(nli.length).toEqual(5);
                 // expect(ntr.length).toEqual(3);
                 expect(nar.length).toEqual(1);
                 expect(ntr[0].textContent).toBe("Food");

@@ -2,7 +2,49 @@
 
 ## [Unreleased]
 
+## 20.1.47 (2022-04-04)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#300959` - Provided support to fill empty space with extended timeline in zoom out action.
+- `#371372` - Unable to change end Date of manual parent task issue has been fixed.
+- `#363003` - Child mapping order not maintained in data source property issue has been fixed.
+
 ## 19.4.56 (2022-03-15)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#369264` - Event marker labels not visible when there is single record has been fixed
+- `#362146` - Row customization using `rowDataBound` event in `enableImmutableMode` issue has been fixed
+- `#363336` - Child records not updated properly in specific index issue has been fixed.
+- `#368609` - Indent and outdent toolbar item not showing when checkbox selection is enabled has been fixed.
+- `#363752` - Issue in assigning custom zooming levels in `load` event has been fixed.
+- `#368549` - Gantt chart indentation issue while adding a child task has been fixed.
+- `#359455` - Issue in giving height as view port for parent container has been fixed.
+
+## 19.4.55 (2022-03-08)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#366304` - Gantt line mismatches when we set system display as 100% and browser zoom settings as 90% has been fixed.
+- `#365994` - Right and left label template not working in `vue` has been fixed.
+
+## 19.4.54 (2022-03-01)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#366296` - When moving from once cell to another cell using tab key navigation issue has been fixed.
+- `#363358`,`F172781` - Drag and drop not working properly after row gets collapsed issue has been fixed.
+
+## 19.4.53 (2022-02-22)
 
 ### Gantt
 

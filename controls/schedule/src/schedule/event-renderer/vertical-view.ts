@@ -292,7 +292,9 @@ export class VerticalEvent extends EventBase {
             const elementId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = elementId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
+            const resIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
+            const templateName: string = 'eventTemplate' + (this.parent.activeViewOptions.group.resources.length > 0 ? '_' + resIndex : '');
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: recordSubject });
             if (isAllDay) {
@@ -478,6 +480,8 @@ export class VerticalEvent extends EventBase {
                     appointmentElement = this.createAppointmentElement(eventObj, true, record.data as Record<string, any>, resource);
                 }
                 addClass([appointmentElement], cls.ALLDAY_APPOINTMENT_CLASS);
+                const eventData: Record<string, any> = extend({}, record.data, null, true);
+                eventObj.data = eventData;
                 const args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false };
                 this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (!eventArgs.cancel) {
@@ -556,7 +560,11 @@ export class VerticalEvent extends EventBase {
                 subjectElement.style.maxHeight = formatUnit(maxHeight);
             }
             const index: number = this.parent.activeViewOptions.group.byDate ? (this.resources.length * dayIndex) + resource : dayCount;
-            this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
+            const eventData: Record<string, any> = {};
+            eventData[this.fields.startTime] = eventObj[this.fields.startTime];
+            eventData[this.fields.endTime] = eventObj[this.fields.endTime];
+            record.data = eventData;
+            this.appendEvent(record, appointmentElement, index, tempData.appLeft as string);
             this.wireAppointmentEvents(appointmentElement, eventObj);
             if (appHeight < this.cellHeight) {
                 const resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));

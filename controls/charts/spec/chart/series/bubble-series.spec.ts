@@ -599,13 +599,7 @@ describe('Chart Control', () => {
                 tooltipY = parseFloat(tooltip.style.top);
                 labelText = document.getElementById('container_Series_0_Point_6_Text_0');
                 dataLabelY = parseFloat(labelText.getAttribute('y'));
-                expect(tooltipY > dataLabelY).toBe(true);
-                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
-                // let translateX: string[] = transform[1].split(',');
-                // let translateY: string[] = translateX[0].split(')');
-                // labelText = document.getElementById('container_Series_0_Point_6_Text_0');
-                // dataLabelY = parseFloat(labelText.getAttribute('y'));
-                // expect(parseFloat(translateY[0]) > dataLabelY).toBe(true);
+                expect(tooltipY < dataLabelY).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

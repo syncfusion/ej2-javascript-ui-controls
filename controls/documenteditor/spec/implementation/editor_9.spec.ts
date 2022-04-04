@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, TableCellWidget, TableWidget, TableRowWidget, WSectionFormat } from '../../src/index';
+import { Editor, TableCellWidget, TableWidget, TableRowWidget, WSectionFormat, ListTextElementBox, WLevelOverride, WListLevel } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection, PageLayoutViewer } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
@@ -202,6 +202,112 @@ console.log('Third level validation');
         expect(editor.selection.paragraphFormat.firstLineIndent).toBe(-9);
     });
 });
+describe('Restart Numbering List validation - 1', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Apply restart numbering with different numberformat', () => {
+        console.log('Apply restart numbering with different numberformat');
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.selection.selectAll();
+        editor.editor.applyNumbering('.%1', 'Arabic');
+        editor.selection.handleUpKey();
+        editor.selection.handleDownKey();
+        editor.editor.applyRestartNumbering(editor.selection);
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');
+    });
+    it('undo after restart numbering list', () => {
+        editor.editorHistory.undo();
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.2');
+    });
+    it('redo after restart numbering list', () => {
+        editor.editorHistory.redo();
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');
+    });
+});
+
+describe('Restart Numbering List validation - 2', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Ensuring multiple list level for restart numbering', () => {
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.selection.selectAll();
+        editor.editor.applyNumbering('.%1', 'Arabic');
+        editor.selection.handleDownKey();
+        editor.selection.handleHomeKey();
+        editor.selection.handleTabKey(true,false);
+        editor.editor.applyBullet('\uf0b7', 'Symbol')
+        editor.selection.handleUpKey();
+        editor.editor.applyRestartNumbering(editor.selection);
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');
+        editor.selection.handleDownKey();
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).not.toBe('.1');
+    });
+    it('undo after multiple list level for restart numbering list', () => {
+        editor.editorHistory.undo();
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.2');
+    });
+    it('redo after multiple list level for restart numbering list', () => {
+        editor.editorHistory.redo();
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('.1');
+    });
+    it('Level Override  Clone validation', () => {
+        let levelOverride: WLevelOverride = new WLevelOverride();
+        levelOverride.startAt = 6;
+        levelOverride.overrideListLevel = new WListLevel(levelOverride);
+        let clonedOverride: WLevelOverride = levelOverride.clone();
+        expect(clonedOverride.overrideListLevel).not.toBe(undefined);
+    });
+});
+
+
 
 describe('Apply Borders Validation', () => {
     let editor: DocumentEditor = undefined;

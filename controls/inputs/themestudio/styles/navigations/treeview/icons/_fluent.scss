@@ -6,7 +6,7 @@
     .e-list-item {
 
       div.e-icons::before {
-        content: '\e80f';
+        content: '\e75c';
       }
     }
 
@@ -24,19 +24,19 @@
     &.e-drag-item {
 
       .e-icons.e-drop-in::before {
-        content: '\e7ba';
+        content: '\e768';
       }
 
       .e-icons.e-drop-out::before {
-        content: '\e720';
+        content: '\e839';
       }
 
       .e-icons.e-drop-next::before {
-        content: '\e7f4';
+        content: '\e736';
       }
 
       .e-icons.e-no-drop::before {
-        content: '\e720';
+        content: '\e839';
       }
     }
   }

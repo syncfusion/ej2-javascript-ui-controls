@@ -2,7 +2,6 @@ import { TextAlign, ClipMode, ValueAccessor, IFilter, IFilterUI, IEditCell, Comm
 import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-base';
 import { ITreeGridCellFormatter } from '../base/interface';
 import { SortComparer} from '@syncfusion/ej2-grids';
-import { TreeGrid } from '..';
 
 /**
  * Represents TreeGrid `Column` model class.
@@ -381,30 +380,8 @@ export class Column {
      */
     public freeze: freezeDirection;
 
-    private parent: TreeGrid;
-
     constructor(options: ColumnModel) {
         merge(this, options);
-    }
-
-    /**
-     * Update the State changes reflected for TreeGrid columndirective in react platform.
-     * 
-     * @param {Column} column - specifies the column
-     * @returns {void}
-     * @hidden
-     */
-     private setProperties(column: Column): void {
-        //Angular two way binding
-        const keys: string[] = Object.keys(column);
-        for (let i: number = 0; i < keys.length; i++) {
-            this[keys[i]] = column[keys[i]];
-            //Refresh the react columnTemplates on state change
-            if (this.parent && this.parent['isReact'] && keys[i] === 'template') {
-                const refreshReactColumnTemplateByUid: string = 'refreshReactColumnTemplateByUid';
-                this.parent.clipboardModule['treeGridParent'][refreshReactColumnTemplateByUid](this.uid);
-            }
-        }
     }
 }
 

@@ -1096,9 +1096,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.header !== '' && !isNullOrUndefined(this.header)) {
                 this.setHeader();
             }
-            if (this.showCloseIcon) {
-                this.renderCloseIcon();
-            }
+            this.renderCloseIcon();
             this.setContent();
             if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
                 this.setFooterTemplate();
@@ -1342,7 +1340,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             // eslint-disable-next-line
             const blazorContain: string[] = Object.keys(window) as string[];
             if (typeof (this.content) === 'string' && !isBlazor()) {
-                this.contentEle.innerHTML = this.sanitizeHelper(this.content);
+                this.setTemplate(this.content, this.contentEle, 'content');
             } else if (this.content instanceof HTMLElement) {
                 this.contentEle.appendChild(this.content);
             } else {
@@ -1378,11 +1376,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         let templateValue: string;
         if (!isNullOrUndefined((<HTMLElement>template).outerHTML)) {
             toElement.appendChild(template as HTMLElement);
-        } else if ((typeof template !== 'string') || (isBlazor() && !this.isStringTemplate)) {
+        } else if ((typeof template === 'string') || (typeof template !== 'string') || (isBlazor() && !this.isStringTemplate)) {
+            if ((typeof template === 'string')) {
+                template = this.sanitizeHelper(template as string);
+            }
             templateFn = compile(template as string);
             templateValue = template as string;
-        } else {
-            toElement.innerHTML = this.sanitizeHelper(template as string);
         }
         const fromElements: HTMLElement[] = [];
         if (!isNullOrUndefined(templateFn)) {
@@ -1495,17 +1494,19 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private renderCloseIcon(): void {
-        this.closeIcon = this.createElement('button', { className: DLG_CLOSE_ICON_BTN , attrs: {type: 'button'}});
-        this.closeIconBtnObj = new Button({ cssClass: 'e-flat', iconCss: DLG_CLOSE_ICON + ' ' + ICON });
-        this.closeIconTitle();
-        if (!isNullOrUndefined(this.headerContent)) {
-            prepend([this.closeIcon], this.headerContent);
-        } else {
-            this.createHeaderContent();
-            prepend([this.closeIcon], this.headerContent);
-            this.element.insertBefore(this.headerContent, this.element.children[0]);
+        if (this.showCloseIcon) {
+            this.closeIcon = this.createElement('button', { className: DLG_CLOSE_ICON_BTN , attrs: {type: 'button'}});
+            this.closeIconBtnObj = new Button({ cssClass: 'e-flat', iconCss: DLG_CLOSE_ICON + ' ' + ICON });
+            this.closeIconTitle();
+            if (!isNullOrUndefined(this.headerContent)) {
+                prepend([this.closeIcon], this.headerContent);
+            } else {
+                this.createHeaderContent();
+                prepend([this.closeIcon], this.headerContent);
+                this.element.insertBefore(this.headerContent, this.element.children[0]);
+            }
+            this.closeIconBtnObj.appendTo(this.closeIcon);
         }
-        this.closeIconBtnObj.appendTo(this.closeIcon);
     }
 
     private closeIconTitle(): void {

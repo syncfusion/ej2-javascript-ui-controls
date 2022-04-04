@@ -1,11 +1,10 @@
 import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
-import { initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs, focus } from '../common/index';
-import { beginAction, completeAction } from '../common/index';
+import { initiateConditionalFormat, locale, dialog, setCF, focus } from '../common/index';
 import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/base/index';
-import { getRangeIndexes, checkDateFormat, cFInitialCheck, isNumber, cFRender, cFDelete, DataBar } from '../../workbook/common/index';
+import { getRangeIndexes, checkDateFormat, cFInitialCheck, isNumber, cFRender, DataBar } from '../../workbook/common/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
 import { setCFRule, clearCells, getCellAddress, checkConditionalFormat } from '../../workbook/common/index';
-import { extend, getNumberDependable, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { closest, extend, getNumberDependable, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ColorScale, IconSet, HighlightCell, TopBottom, CFColor, ConditionalFormatModel } from '../../workbook/common/index';
@@ -43,7 +42,6 @@ export class ConditionalFormatting {
         this.parent.on(checkConditionalFormat, this.checkConditionalFormatHandler, this);
         this.parent.on(initiateConditionalFormat, this.initiateCFHandler, this);
         this.parent.on(setCF, this.setCFHandler, this);
-        this.parent.on(cFDelete, this.cFDeleteHandler, this);
         this.parent.on(clearCF, this.clearCFHandler, this);
         this.parent.on(clearCells, this.addClearCFHandler, this);
     }
@@ -55,27 +53,13 @@ export class ConditionalFormatting {
             this.parent.off(checkConditionalFormat, this.checkConditionalFormatHandler);
             this.parent.off(initiateConditionalFormat, this.initiateCFHandler);
             this.parent.off(setCF, this.setCFHandler);
-            this.parent.off(cFDelete, this.cFDeleteHandler);
             this.parent.off(clearCF, this.clearCFHandler);
         }
     }
 
     private setCF(conditionalFormat: ConditionalFormatModel): void {
         conditionalFormat.range = conditionalFormat.range || this.parent.getActiveSheet().selectedRange;
-        const eventArgs: CFormattingEventArgs = {
-            range: conditionalFormat.range, type: conditionalFormat.type, cFColor: conditionalFormat.cFColor,
-            value: conditionalFormat.value, sheetIdx: this.parent.activeSheetIndex, cancel: false
-        };
-        this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'conditionalFormat' });
-        if (!eventArgs.cancel) {
-            conditionalFormat.type = eventArgs.type;
-            conditionalFormat.cFColor = eventArgs.cFColor;
-            conditionalFormat.value = eventArgs.value;
-            conditionalFormat.range = eventArgs.range;
-            this.parent.notify(setCFRule, { conditionalFormat: conditionalFormat, isAction: true });
-            delete eventArgs.cancel;
-            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'conditionalFormat' });
-        }
+        this.parent.notify(setCFRule, { conditionalFormat: conditionalFormat, isAction: true });
     }
 
     private addClearCFHandler(args: { conditionalFormats: ConditionalFormatModel[], oldRange: string[], selectedRange: string }): void {
@@ -122,18 +106,6 @@ export class ConditionalFormatting {
                 const conditionalFormat: ConditionalFormatModel = clearCFormats[cCFIdx];
                 conditionalFormat.range = oldRange[cCFIdx];
                 this.parent.notify(setCFRule, { conditionalFormat: conditionalFormat });
-            }
-        }
-    }
-
-    private cFDeleteHandler(args: { rowIdx: number, colIdx: number }): void {
-        const td: HTMLElement = this.parent.getCell(args.rowIdx, args.colIdx);
-        if (td) {
-            if (td.querySelector('.e-cf-databar')) {
-                td.removeChild(td.querySelector('.e-cf-databar'));
-            }
-            if (td.querySelector('.e-iconsetspan')) {
-                td.removeChild(td.querySelector('.e-iconsetspan'));
             }
         }
     }
@@ -541,7 +513,10 @@ export class ConditionalFormatting {
     }
 
     private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel,
-        td: HTMLElement, isAction?: true }): void {
+        td: HTMLElement, isAction?: true, preventIfSheetNotRendered?: boolean }): void {
+        if (args.preventIfSheetNotRendered && !closest(this.parent.getMainContent(), '.e-sheet')) {
+            return;
+        }
         let indexes: number[];
         let isApply: boolean = false;
         let result: boolean = false;
@@ -1191,7 +1166,7 @@ export class ConditionalFormatting {
                     isApply = isGrearThan ? value.toLowerCase() > input.toLowerCase() : value.toLowerCase() < input.toLowerCase();
                 }
             }
-        } else if (value === '' && Number(input) !== 0 && !isGrearThan) {
+        } else if (value === '' && Number(input) > 0 && !isGrearThan) {
             isApply = true;
         }
         return isApply;

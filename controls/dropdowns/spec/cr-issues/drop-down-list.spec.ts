@@ -1483,4 +1483,43 @@ describe('DropDownList', () => {
             listObj.appendTo('#dropdownlist');
         });
     });
+    describe('EJ2-56514', () => {
+        let ddlObj1: any;
+        let ddlEle1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl1' });
+        let empList: any = [ 
+        { id: 1, sports: 'American Football' }, { id: 2, sports: 'Badminton' },
+        { id: 3, sports: 'Badminton' }, { id: 4, sports: 'Cricket' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle1);
+            ddlObj1 = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports', value: 'id' },
+                itemTemplate: '<div class="ename"> ${sports}</div>'
+            });
+            ddlObj1.appendTo(ddlEle1);
+        });
+        afterAll(() => {
+            ddlObj1.destroy();
+            ddlEle1.remove();
+        });
+        it('Dynamically set the text property from the same data source', (done) => {
+            ddlObj1.text = "Badminton";
+            ddlObj1.dataBind();
+            ddlObj1.showPopup();
+            let li: Element[] = ddlObj1.popupObj.element.querySelectorAll('li');
+            expect(li[2].classList.contains('e-active')).toBe(true);
+            ddlObj1.text = "Cricket";
+            ddlObj1.dataBind();
+            ddlObj1.showPopup();
+            let li1: Element[] = ddlObj1.popupObj.element.querySelectorAll('li');
+            expect(li1[3].classList.contains('e-active')).toBe(true);
+            ddlObj1.value = 2;
+            ddlObj1.dataBind();
+            ddlObj1.showPopup();
+            let li2: Element[] = ddlObj1.popupObj.element.querySelectorAll('li');
+            expect(li2[1].classList.contains('e-active')).toBe(true);
+            done();
+        });
+    });
 });

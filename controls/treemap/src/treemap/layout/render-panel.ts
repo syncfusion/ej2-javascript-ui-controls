@@ -552,7 +552,7 @@ export class LayoutPanel {
                 }
             });
         }
-        if (templateGroup.childNodes.length > 0 && !isNullOrUndefined(secondaryEle)) {
+        if (templateGroup.childNodes.length > 0) {
             secondaryEle.appendChild(templateGroup);
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);

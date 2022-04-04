@@ -2363,6 +2363,15 @@ export class Node extends NodeBase implements IElement {
     @Property()
     public children: string[];
 
+     /**
+     * Defines the space between the group node edges and its children
+     *
+     * @aspDefaultValueIgnore
+     * @default 0
+     */
+      @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+      public padding: MarginModel;
+
     /**
      * Defines the type of the container
      *
@@ -2622,7 +2631,7 @@ export class Node extends NodeBase implements IElement {
             break;
         }
         content.id = this.id + '_content'; content.relativeMode = 'Object';
-        // (EJ2-56444) - Added the below code to check whether node shape type is basic and shape is rectangle.
+            // (EJ2-56444) - Added the below code to check whether node shape type is basic and shape is rectangle.
         // This code added due to while render radial gradient in canvas mode we want to check this type and pass args according to that
         if(this.shape.type === "Basic" && (this.shape as BasicShape).shape === 'Rectangle') {
             content.shapeType = "Rectangle";
@@ -2925,6 +2934,7 @@ export class Node extends NodeBase implements IElement {
                     (annotationcontent as TextElement).hyperlink.textDecoration : style.textDecoration
             };
             (annotationcontent as TextElement).hyperlink.link = annotation.hyperlink.link || undefined;
+            (annotationcontent as TextElement).hyperlink.hyperlinkOpenState = annotation.hyperlink.hyperlinkOpenState || undefined;
             (annotationcontent as TextElement).hyperlink.content = annotation.hyperlink.content || undefined;
             (annotationcontent as TextElement).hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
             (annotationcontent as TextElement).content = link ? link.content ||
@@ -3093,7 +3103,7 @@ export class Lane extends ChildProperty<Shape> {
     public children: NodeModel[];
 
     /**
-     * Defines the height of the phase
+     * Defines the height of the lane
      *
      * @default 100
      */
@@ -3101,7 +3111,7 @@ export class Lane extends ChildProperty<Shape> {
     public height: number;
 
     /**
-     * Defines the height of the phase
+     * Defines the height of the lane
      *
      * @default 100
      */
@@ -3109,7 +3119,7 @@ export class Lane extends ChildProperty<Shape> {
     public width: number;
 
     /**
-     * Defines the collection of header in the phase.
+     * Defines the collection of header in the lane.
      *
      * @default new Header()
      */
@@ -3123,6 +3133,15 @@ export class Lane extends ChildProperty<Shape> {
      */
     @Property(true)
     public canMove: boolean;
+
+    /**
+     * Allows the user to save custom information about lanes. Example: addInfo: {'lane': 'lane 1 info' }
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public addInfo: Object 
 
     /**
      * Returns the name of class Lane
@@ -3148,7 +3167,7 @@ export class Phase extends ChildProperty<Shape> {
     public id: string;
 
     /**
-     * Sets the style of the lane
+     * Sets the style of the phase
      *
      * @default ''
      */
@@ -3164,12 +3183,21 @@ export class Phase extends ChildProperty<Shape> {
     public header: HeaderModel;
 
     /**
-     * Sets the offset of the lane
+     * Sets the offset of the phase
      *
      * @default 100
      */
     @Property(100)
     public offset: number;
+
+    /**
+     * Allows the user to save custom information about phases. Example: addInfo: {'phase': 'phase 1 info' }
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public addInfo: Object;
 
     /**
      * Returns the name of class Phase

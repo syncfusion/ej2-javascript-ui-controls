@@ -15,6 +15,7 @@
   }
 
   #{&}.e-timepicker.e-popup {
+    background-color: $timepicker-list-bg-color;
     border: $timepicker-list-border-color;
     border-radius: $timepicker-popup-border-radius;
     box-shadow: $timepicker-popup-shadow;

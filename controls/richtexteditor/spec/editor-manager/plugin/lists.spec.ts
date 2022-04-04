@@ -1622,7 +1622,60 @@ describe ('left indent testing', () => {
                 keyBoardEvent.event.which = 13;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
                 expect(editNode.querySelector('#firstli')).toBe(null);
-                innerValue = `<div id="content-edit"><ol id="olList"><li>First List</li><li id='secondli'>&#65279;&#65279;</li></ol></div>`;
+                innerValue = `<div id="content-edit"><ul><li>List Content 1</li><li id="imageList"><img src="blob:null/bc977338-2728-4625-b218-2099b4dfbf23" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1233px; min-height: 0px;"> </li></ul></div>`;
+            });
+
+            it(' enter key press inside list element with only image', () => {
+                startNode = editNode.querySelector('#imageList');
+                setCursorPoint(startNode, 1);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('#imageList')).not.toBe(null);
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
+        describe('Enter key press testing in list with empty space', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><ol><li id='firstli'>&nbsp;</li></ol></div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' enter key press after OL', () => {
+                startNode = editNode.querySelector('#firstli');
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('#firstli')).not.toBe(null);
+            });
+
+            it(' enter key press after UL', () => {
+                innerValue = `<div id="content-edit"><ul><li id='firstli'>&nbsp;</li></ul></div>`;
+                startNode = editNode.querySelector('#firstli');
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('#firstli')).not.toBe(null);
             });
             afterAll(() => {
                 detach(elem);
@@ -1746,6 +1799,76 @@ describe ('left indent testing', () => {
             editNode.focus();
             (editorObj as any).editorKeyDown(keyBoardEvent);
             expect(/[^\u0000-\u00ff]/.test(editNode.innerHTML)).toBe(false);
+        });
+
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Sublist not created when created after the tab keyaction', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: NodeListOf<HTMLLIElement>;
+        let endNode: HTMLElement;
+        let content: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ol><li>Content1</li><ol><li>Content2</li></ol><li>Content3</li></ol></div>`;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, which: 9 } };
+        let elem: HTMLElement;
+        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: content.trim()
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' Tab key navigation to create sublist with OL', () => {
+            startNode = editNode.querySelectorAll('li');
+            endNode = startNode[2].firstChild as HTMLElement;
+            setCursorPoint(endNode, 0);
+            keyBoardEvent.event.key = "Tab";
+            editNode.focus();
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(startNode[2].parentElement.childElementCount).toBe(2);
+        });
+
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Sublist not created when created after the tab keyaction', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: NodeListOf<HTMLLIElement>;
+        let endNode: HTMLElement;
+        let content: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ul><li>Content1</li><ul><li>Content2</li></ul><li>Content3</li></ul></div>`;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, which: 9 } };
+        let elem: HTMLElement;
+        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: content.trim()
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' Tab key navigation to create sublist with UL', () => {
+            startNode = editNode.querySelectorAll('li');
+            endNode = startNode[2].firstChild as HTMLElement;
+            setCursorPoint(endNode, 0);
+            keyBoardEvent.event.key = "Tab";
+            editNode.focus();
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(startNode[2].parentElement.childElementCount).toBe(2);
         });
 
         afterAll(() => {

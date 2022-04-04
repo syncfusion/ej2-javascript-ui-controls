@@ -41,7 +41,11 @@ export type MapsTheme =
     /** Renders a map with Bootstrap5 theme. */
     'Bootstrap5' |
     /**  Render a map with Bootstrap5 dark theme. */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark' |
+    /** Renders a map with Fluent theme. */
+    'Fluent' |
+    /**  Render a map with Fluent dark theme. */
+    'FluentDark';
 
 /**
  * Defines the position of the legend.

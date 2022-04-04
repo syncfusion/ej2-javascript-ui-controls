@@ -1,9 +1,9 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes } from '../index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete, workbookFormulaOperation, checkUniqueRange } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setCell, checkConditionalFormat, ExtendedRowModel } from './../index';
+import { setCell } from './../index';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -100,7 +100,12 @@ export function getData(
                         }
                     });
                 } else {
+                    const checkFrozenIdx: boolean = !!(!valueOnly && frozenIndexes && frozenIndexes.length);
                     while (sRow <= indexes[2]) {
+                        if (checkFrozenIdx && sRow >= frozenRow && sRow < frozenIndexes[0]) {
+                            sRow = frozenIndexes[0];
+                            continue;
+                        }
                         row = getRow(sheet, sRow);
                         i = indexes[1];
                         while (i <= indexes[3]) {
@@ -139,9 +144,9 @@ export function getData(
                             }
                             if (!valueOnly && isHiddenRow(sheet, sRow)) { sRow++; continue; }
                             if (!valueOnly && isHiddenCol(sheet, i)) { i++; continue; }
-                            if (!valueOnly && frozenIndexes && frozenIndexes.length) {
-                                if (sRow >= frozenRow && sRow < frozenIndexes[0]) { sRow++; continue; }
-                                if (i >= frozenCol && i < frozenIndexes[1]) { i++; continue; }
+                            if (checkFrozenIdx && i >= frozenCol && i < frozenIndexes[1]) {
+                                i = frozenIndexes[1];
+                                continue;
                             }
                             if (cellObj.style) {
                                 const style: CellStyleModel = {}; Object.assign(style, cellObj.style); cellObj.style = style;
@@ -168,7 +173,7 @@ export function getData(
  * @param {boolean} getIntValueFromDate - Specify the getIntValueFromDate.
  * @returns {string | Date} - To get the value format.
  */
-function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number,
+ export function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number,
                             sheet: SheetModel, getIntValueFromDate?: boolean): string | Date {
     const cell: CellModel = getCell(rowIndex, colIndex, sheet);
     if (cell) {
@@ -277,47 +282,6 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
                 model[i], 'usedRange',
                 { rowIndex: (model[i] as SheetModel).rows.length ? (model[i] as SheetModel).rows.length - 1 : 0, colIndex: cellCnt }
             );
-        }
-    }
-}
-
-/**
- * @hidden
- * @param {Workbook} context - Specifies the context.
- * @param {number[]} range - Specifies the address range.
- * @param {number} sheetIdx - Specifies the sheetIdx.
- * @param {boolean} valueOnly - Specifies the bool value.
- * @returns {void} - To clear the range.
- */
-export function clearRange(context: Workbook, range: number[], sheetIdx: number, valueOnly: boolean): void {
-    const sheet: SheetModel = getSheet(context, sheetIdx);
-    let cellValue: string; let skip: boolean;
-    for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
-        if (((getRow(sheet, sRIdx) || {}) as ExtendedRowModel).isFiltered) { continue; }
-        for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
-            cellValue = '';
-            const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [sRIdx, sCIdx], isUnique: false ,
-                uniqueRange: '' };
-            context.notify(checkUniqueRange, args); skip = false;
-            if (args.uniqueRange !== '') {
-                const rangeIndex: number[] = getIndexesFromAddress(args.uniqueRange);
-                skip = getCell(rangeIndex[0], rangeIndex[1], sheet).value === '#SPILL!';
-            }
-            if (!args.isUnique || skip) {
-                const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
-                context.notify(cFDelete, { rowIdx: sRIdx, colIdx: sCIdx });
-                if (cell) {
-                    cellValue = cell.value || (<unknown>cell.value === 0 ? '0' : '');
-                    delete cell.value; delete cell.formula; delete cell.hyperlink;
-                }
-                if (cellValue) {
-                    context.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRIdx, colIndex: sCIdx });
-                    context.trigger(
-                        'cellSave', { value: '', oldValue: cellValue, address: `${sheet.name}!${getCellAddress(sRIdx, sCIdx)}`, formula:
-                        (cell && cell.formula) || '', displayText: '' });
-                }
-                context.notify(checkConditionalFormat, { rowIdx: sRIdx, colIdx: sCIdx, cell: cell, isAction: true });
-            }
         }
     }
 }

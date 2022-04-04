@@ -189,7 +189,11 @@ export abstract class Widget implements IWidget {
         let widget: Widget = this;
         let index: number = this.indexInOwner;
         if (widget instanceof BodyWidget) {
-            widget = index > 0 ? widget.page.bodyWidgets[index - 1] : undefined;
+            if (widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote') {
+                widget = index > 0 ? widget.page.endnoteWidget.bodyWidgets[index - 1] : undefined;
+            } else {
+                widget = index > 0 ? widget.page.bodyWidgets[index - 1] : undefined;
+            }
         } else {
             widget = index > 0 ? widget.containerWidget.childWidgets[index - 1] as Widget : undefined;
         }
@@ -202,8 +206,13 @@ export abstract class Widget implements IWidget {
             return undefined;
         }
         if (widget instanceof BodyWidget) {
-            widget = index < widget.page.bodyWidgets.length - 1 ?
-                widget.page.bodyWidgets[index + 1] : undefined;
+            if (widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote') {
+                widget = index < widget.page.endnoteWidget.bodyWidgets.length - 1 ?
+                    widget.page.endnoteWidget.bodyWidgets[index + 1] : undefined;
+            } else {
+                widget = index < widget.page.bodyWidgets.length - 1 ?
+                    widget.page.bodyWidgets[index + 1] : undefined;
+            }
         } else {
             widget = index < widget.containerWidget.childWidgets.length - 1 ?
                 widget.containerWidget.childWidgets[index + 1] as Widget : undefined;
@@ -226,7 +235,13 @@ export abstract class Widget implements IWidget {
                 widget = widget.containerWidget.bodyWidgets[index - 1];
             } else {
                 let page: Page = widget.page.previousPage;
-                widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[page.bodyWidgets.length - 1] : undefined;
+                if (widget.containerWidget instanceof FootNoteWidget) {
+                    if (widget.containerWidget.footNoteType === 'Endnote') {
+                        widget = page && page.endnoteWidget && page.endnoteWidget.bodyWidgets.length > 0 ? page.endnoteWidget.bodyWidgets[page.endnoteWidget.bodyWidgets.length - 1] : undefined;
+                    }
+                } else {
+                    widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[page.bodyWidgets.length - 1] : undefined;
+                }
             }
         } else if (widget instanceof FootNoteWidget) {
             let page: Page = widget.page;
@@ -244,8 +259,11 @@ export abstract class Widget implements IWidget {
                 let previousContainer: Widget = undefined;
                 if (widget.containerWidget instanceof TableCellWidget) {
                     previousContainer = widget.containerWidget.getPreviousSplitWidget();
+                } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget && 
+                    widget.containerWidget.containerWidget.footNoteType === 'Endnote') {
+                    previousContainer = widget.containerWidget.previousWidget ? widget.containerWidget.previousWidget : widget.containerWidget.previousRenderedWidget;
                 } else if (!(widget.containerWidget instanceof TableRowWidget
-                    || widget.containerWidget instanceof HeaderFooterWidget)) {
+                    || widget.containerWidget instanceof HeaderFooterWidget || (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget))) {
                     // Since cells are lay outed left to right, we should not navigate to previous row.
                     previousContainer = widget.containerWidget.previousRenderedWidget;
                 }
@@ -270,14 +288,17 @@ export abstract class Widget implements IWidget {
         if (widget instanceof BodyWidget) {
             if (index < widget.page.bodyWidgets.length - 1 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index + 1];
-            } else if (widget.containerWidget instanceof FootNoteWidget) {
-                if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editor.removeEditRange) {
-                    return undefined;
-                }
+            } else if (widget.containerWidget instanceof FootNoteWidget && index < widget.containerWidget.bodyWidgets.length - 1) {
                 widget = widget.containerWidget.bodyWidgets[index + 1];
             } else if (widget.page.allowNextPageRendering) {
                 let page: Page = widget.page.nextPage;
-                widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
+                if (widget.containerWidget instanceof FootNoteWidget) {
+                    if (widget.containerWidget.footNoteType === 'Endnote') {
+                        widget = page && page.endnoteWidget && page.endnoteWidget.bodyWidgets.length > 0 ? page.endnoteWidget.bodyWidgets[0] : undefined;
+                    }
+                } else {
+                    widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
+                }
             } else {
                 widget = undefined;
             }
@@ -297,9 +318,11 @@ export abstract class Widget implements IWidget {
                 let nextContainer: Widget = undefined;
                 if (widget.containerWidget instanceof TableCellWidget) {
                     nextContainer = widget.containerWidget.getNextSplitWidget();
+                } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget && 
+                    widget.containerWidget.containerWidget.footNoteType === 'Endnote') {
+                    nextContainer = widget.containerWidget.nextWidget ? widget.containerWidget.nextWidget : widget.containerWidget.nextRenderedWidget;
                 } else if (!(widget.containerWidget instanceof TableRowWidget
-                    || widget.containerWidget instanceof HeaderFooterWidget
-                    || widget.containerWidget instanceof FootNoteWidget)) {
+                    || widget.containerWidget instanceof HeaderFooterWidget || (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget))) {
                     // Since cells are lay outed left to right, we should not navigate to next row.
                     nextContainer = widget.containerWidget.nextRenderedWidget;
                 }
@@ -626,6 +649,12 @@ export class BodyWidget extends BlockContainer {
         //     this.sectionFormat.destroy();
         // }
         this.sectionFormat = undefined;
+        if (this.page && this.page.headerWidgetIn) {
+            this.page.headerWidgetIn.page = undefined;
+        }
+        if (this.page && this.page.footerWidgetIn) {
+            this.page.footerWidgetIn.page = undefined;
+        }
         this.page = undefined;
         super.destroy();
     }
@@ -644,6 +673,10 @@ export class HeaderFooterWidget extends BlockContainer {
      * @private
      */
     public headerFooterType: HeaderFooterType;
+    /**
+     * @private
+     */
+    public parentHeaderFooter: HeaderFooterWidget;
     /**
      * @private
      */
@@ -834,6 +867,19 @@ export abstract class BlockWidget extends Widget {
 
     public getContainerWidth(): number {
         if (this.isInsideTable) {
+            let block: BlockWidget = this;
+            if ((block instanceof TableWidget) && block.tableFormat.preferredWidthType === 'Auto' && this.associatedCell.ownerTable.isGridUpdated) {
+                let containerWidth: number = 0;
+                let columnSpan: number = this.associatedCell.cellFormat.columnSpan;
+                let columnIndex: number = this.associatedCell.columnIndex;
+                for (let i: number = 0; i < columnSpan; i++) {
+                    containerWidth += this.associatedCell.ownerTable.tableHolder.columns[columnIndex].preferredWidth;
+                    columnIndex++;
+                }
+                if (containerWidth > 0) {
+                    return containerWidth;
+                }
+            }
             return this.associatedCell.getCellWidth(this);
         }
         if (this.containerWidget instanceof TextFrame) {
@@ -1690,10 +1736,11 @@ export class TableWidget extends BlockWidget {
      */
     public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
         this.checkTableColumns();
-        let tableWidth: number = this.tableHolder.getTotalWidth(0);
+        let tableWidth: number = this.tableHolder.getTotalWidth(1);
         if (tableWidth > minimumWordWidth) {
             minimumWordWidth = tableWidth;
         }
+        tableWidth = this.tableHolder.getTotalWidth(2);
         if (tableWidth > maximumWordWidth) {
             maximumWordWidth = tableWidth;
         }
@@ -1710,7 +1757,7 @@ export class TableWidget extends BlockWidget {
         if (isAutoFit || this.tableHolder.columns.length === 0) {
             this.buildTableColumns();
         }
-        this.isGridUpdated = true;
+        this.isGridUpdated = false;
     }
     /**
      * @private
@@ -1760,7 +1807,7 @@ export class TableWidget extends BlockWidget {
             if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
                 cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, row.rowFormat.gridAfterWidthType, tableWidth, null);
                 sizeInfo.minimumWidth = cellWidth;
-                this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth);
+                this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth, 'Point');
             }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
@@ -1786,10 +1833,10 @@ export class TableWidget extends BlockWidget {
                         // If the table gird alone calculated then column index of the rowspanned cell will be directly taken. 
                         // If the gird calculation is done from the UI level operations such as resizing then table holder will have the columns at that time we can get the column index from the table holder.
                         if (this.tableHolder.columns.length > 0) {
-                            this.tableHolder.addColumns(columnSpan, columnSpan = this.tableHolder.columns.indexOf(rowSpannedCell.ownerColumn) + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
+                            this.tableHolder.addColumns(columnSpan, columnSpan = this.tableHolder.columns.indexOf(rowSpannedCell.ownerColumn) + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth, cell.cellFormat.preferredWidthType);
                             cell.columnIndex = columnSpan;
                         } else {
-                            this.tableHolder.addColumns(columnSpan, columnSpan = rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
+                            this.tableHolder.addColumns(columnSpan, columnSpan = rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth,  cell.cellFormat.preferredWidthType);
                             cell.columnIndex = columnSpan;
                         }
                     }
@@ -1818,10 +1865,11 @@ export class TableWidget extends BlockWidget {
                 }
                 sizeInfo = cell.getCellSizeInfo(isAutoFit);
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
-                this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
+                this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth, cell.cellFormat.preferredWidthType);
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfterWidth > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
-                    this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth);
+                    sizeInfo.minimumWordWidth = sizeInfo.maximumWordWidth = sizeInfo.minimumWidth = cellWidth;
+                    this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth, 'Point');
                 }
             }
         }
@@ -1831,7 +1879,7 @@ export class TableWidget extends BlockWidget {
         this.tableHolder.validateColumnWidths();
         if (isAutoFit) {
             // Fits the column width automatically based on contents.
-            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable);
+            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, this.leftIndent + this.rightIndent);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
             this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
@@ -2364,7 +2412,11 @@ export class TableRowWidget extends BlockWidget {
                 prevOffset += ownerTable.getCellStartOffset(cell);
             }
             if (index < this.childWidgets.length) {
-                width = ownerTable.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, containerWidth, null);
+                let preferredWidth: number = cell.cellFormat.cellWidth;
+                if (preferredWidth === 0) {
+                    preferredWidth = cell.cellFormat.preferredWidth;
+                }
+                width = ownerTable.getCellWidth(preferredWidth, cell.cellFormat.preferredWidthType, containerWidth, null);
             } else {
                 width = ownerTable.getCellWidth(rowFormat.gridAfterWidth, rowFormat.gridAfterWidthType, containerWidth, null);
             }
@@ -2972,22 +3024,7 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getMinimumPreferredWidth(): number {
-        let defaultWidth: number = 0;
-        if ((this.cellFormat.preferredWidth > 0 && !this.ownerTable.tableFormat.allowAutoFit) || (this.cellFormat.preferredWidth > 0 &&
-            this.cellFormat.preferredWidthType !== 'Auto')) {
-            return this.cellFormat.preferredWidth;
-        } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
-            && this.cellFormat.cellWidth !== 0 && this.ownerTable &&
-            this.ownerTable.tableFormat.preferredWidthType !== 'Auto') {
-            // Get preferred Width from cell width.
-            return this.cellFormat.cellWidth;
-        } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
-            && this.cellFormat.cellWidth === 0 && this.previousWidget &&
-            (this.previousWidget as TableCellWidget).cellFormat.preferredWidth > 0) {
-            return (this.previousWidget as TableCellWidget).cellFormat.preferredWidth;
-        }
-
-        defaultWidth = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();
+        let defaultWidth: number = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();
         return defaultWidth;
     }
     /**
@@ -3691,7 +3728,7 @@ export class LineWidget implements IWidget {
                 (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
                     && !((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)
                     || !(element instanceof TextElementBox))) {
-                while (element.previousElement && (element.previousElement instanceof TextElementBox
+                while ((inline !== element) && element.previousElement && (element.previousElement instanceof TextElementBox
                     && !textHelper.isRTLText(element.previousElement.text) && !((textHelper.containsSpecialCharAlone(element.previousElement.text)
                         || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi)
                     || element.previousElement instanceof FieldElementBox
@@ -3719,7 +3756,7 @@ export class LineWidget implements IWidget {
                         ((textHelper.containsSpecialCharAlone(element.previousElement.text) || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi))))) {
                     endElement = element.previousElement;
                 } else if (!element.previousElement) {
-                    if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox) {
+                    if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox || element instanceof BookmarkElementBox) {
                         break;
                     }
                     endElement = element;
@@ -5856,9 +5893,13 @@ export class ImageElementBox extends ShapeBase {
             let bottom: number = 0;
             if (this.left !== 0) {
                 this.cropX = (this.left * this.cropWidthScale) / 100;
+            } else {
+                this.cropX = 0;
             }
             if (this.top !== 0) {
                 this.cropY = (this.top * this.cropHeightScale) / 100;
+            } else {
+                this.cropY = 0;
             }
             if (this.right !== 0) {
                 right = (this.right * this.cropWidthScale) / 100;
@@ -8008,11 +8049,11 @@ export class Page {
     /**
      * @private
      */
-    public headerWidget: HeaderFooterWidget = undefined;
+    public headerWidgetIn: HeaderFooterWidget = undefined;
     /**
      * @private
      */
-    public footerWidget: HeaderFooterWidget = undefined;
+    public footerWidgetIn: HeaderFooterWidget = undefined;
     /**
      * @private
      */
@@ -8026,9 +8067,43 @@ export class Page {
      */
     public currentPageNum: number = 1;
     /**
-     * 
+     * @private
      */
     public allowNextPageRendering: boolean = true;
+    /**
+     * @private
+     */
+    get headerWidget(): HeaderFooterWidget {
+        if (!isNullOrUndefined(this.headerWidgetIn)) {
+            if (this.headerWidgetIn.parentHeaderFooter) {
+                return this.headerWidgetIn.parentHeaderFooter;
+            }
+        }
+        return this.headerWidgetIn;
+    }
+    /**
+     * @private
+     */
+    set headerWidget(value: HeaderFooterWidget) {
+        this.headerWidgetIn = value;
+    }
+    /**
+     * @private
+     */
+    get footerWidget(): HeaderFooterWidget {
+        if (!isNullOrUndefined(this.footerWidgetIn)) {
+            if (this.footerWidgetIn.parentHeaderFooter) {
+                return this.footerWidgetIn.parentHeaderFooter;
+            }
+        }
+        return this.footerWidgetIn;
+    }
+    /**
+     * @private
+     */
+    set footerWidget(value: HeaderFooterWidget) {
+        this.footerWidgetIn = value;
+    }
     /**
      * @private
      */
@@ -8080,24 +8155,24 @@ export class Page {
     }
 
     public destroy(): void {
-        if (this.headerWidget) {
+        if (this.headerWidgetIn && !isNullOrUndefined(this.headerWidgetIn.parentHeaderFooter)) {
             if (this.viewer && this.documentHelper.owner.editor) {
-                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidget);
+                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidgetIn);
                 // Remove content control
-                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidget, false, true);
+                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidgetIn, false, true);
             }
-            this.headerWidget.destroy();
+            this.headerWidgetIn.destroy();
+            this.headerWidget = undefined;
         }
-        this.headerWidget = undefined;
-        if (this.footerWidget) {
+        if (this.footerWidgetIn && !isNullOrUndefined(this.footerWidgetIn.parentHeaderFooter)) {
             if (this.viewer && this.documentHelper.owner.editor) {
-                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidget);
+                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidgetIn);
                 // Remove content control
-                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidget, false, true);
+                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidgetIn, false, true);
             }
-            this.footerWidget.destroy();
-        }
-        this.footerWidget = undefined;
+            this.footerWidgetIn.destroy();
+            this.footerWidgetIn = undefined;
+        }     
         this.bodyWidgets = [];
         this.bodyWidgets = undefined;
         if (!isNullOrUndefined(this.documentHelper)) {
@@ -8145,7 +8220,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public addColumns(currentColumnIndex: number, columnSpan: number, width: number, sizeInfo: ColumnSizeInfo, offset: number): void {
+    public addColumns(currentColumnIndex: number, columnSpan: number, width: number, sizeInfo: ColumnSizeInfo, offset: number, preferredWidthType: WidthType): void {
         for (let i: number = this.columns.length; i < columnSpan; i++) {
             this.columns.push(new WColumn());
         }
@@ -8171,6 +8246,7 @@ export class WTableHolder {
         if (offset > this.columns[columnSpan - 1].endOffset) {
             this.columns[columnSpan - 1].endOffset = offset;
         }
+        this.columns[columnSpan - 1].widthType = preferredWidthType; 
     }
     /**
      * @private
@@ -8219,7 +8295,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean): void {
+    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, indent?: number): void {
         // Cell's preferred width should be considered until the table width fits to the container width.
         let maxTotal: number = 0;
         let minTotal: number = 0;
@@ -8227,6 +8303,7 @@ export class WTableHolder {
         // But currently there is no way to find any one of cell in particular column has 0 px preferred width set.
         // If all columns are set as 0 pixels, then this will work.
         let remainingWidthTotal: number = 0;
+        let isAllColumnPointWidth: boolean = true;
         for (let i: number = 0; i < this.columns.length; i++) {
             let column: WColumn = this.columns[i];
             // If preferred width of column is less than column minimum width and also column is empty, considered column preferred width
@@ -8235,22 +8312,32 @@ export class WTableHolder {
                 column.maximumWordWidth = column.preferredWidth;
                 column.minWidth = column.preferredWidth;
             }
+            if (column.widthType !== 'Point') {
+                isAllColumnPointWidth = false;
+            }
+            let difference: number = 0;
             maxTotal += column.preferredWidth > column.maximumWordWidth ? column.preferredWidth : column.maximumWordWidth;
             minTotal += column.preferredWidth > column.minimumWordWidth ? column.preferredWidth : column.minimumWordWidth;
             let preferred: number = column.preferredWidth === 0 ? column.minimumWordWidth : column.preferredWidth > column.minimumWordWidth ? column.preferredWidth : column.minimumWordWidth;
-            let difference: number = column.maximumWordWidth - preferred;
+            difference = column.maximumWordWidth - preferred;
             remainingWidthTotal += difference > 0 ? difference : 0;
         }
         // Try to fit maximum word width to match preferredTableWidth.
         if (maxTotal <= preferredTableWidth) {
             for (let i: number = 0; i < this.columns.length; i++) {
                 let column: WColumn = this.columns[i];
-                if (column.preferredWidth < column.maximumWordWidth) {
-                    if (isNestedTable) {
-                        column.preferredWidth = column.minimumWidth + column.minimumWordWidth;
-                    } else {
-                        column.preferredWidth = column.maximumWordWidth;
+                if (column.widthType === 'Point') {
+                    if (column.preferredWidth < column.minimumWordWidth) {
+                        column.preferredWidth = column.minimumWordWidth;
                     }
+                    continue;
+                }
+                if (column.preferredWidth < column.maximumWordWidth) {
+                    // if (isNestedTable) {
+                    //     column.preferredWidth = column.minimumWidth + column.minimumWordWidth;
+                    // } else {
+                    column.preferredWidth = column.maximumWordWidth;
+                    //}
                 }
             }
             // If the width is defined for table(cells undefined) then fit the columns to preferred table width using FitColumns.
@@ -8264,7 +8351,11 @@ export class WTableHolder {
             if (!isAuto) {
                 //let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 //if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
-                this.fitColumns(containerWidth, preferredTableWidth, isAuto);
+                let considerMinAsTableWidth: boolean = false;
+                if (preferredTableWidth < minTotal && minTotal + (isNullOrUndefined(indent) ? 0 : indent) < containerWidth) {
+                    considerMinAsTableWidth = true;
+                }
+                this.fitColumns(containerWidth, considerMinAsTableWidth ? minTotal : preferredTableWidth, isAuto);
                 return;
                 //}
                 //containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
@@ -8275,19 +8366,20 @@ export class WTableHolder {
                 availableWidth = availableWidth - minTotal;
                 for (let i: number = 0; i < this.columns.length; i++) {
                     let column: WColumn = this.columns[i];
+                    if (column.widthType === 'Point') {
+                        continue;
+                    }
                     if (column.preferredWidth === 0) {
                         column.preferredWidth = column.minimumWordWidth;
                     } else {
                         if (column.preferredWidth < column.minimumWordWidth) {
                             column.preferredWidth = column.minimumWordWidth;
                         }
-                        if (!isNestedTable) {
-                            let difference: number = column.maximumWordWidth - column.preferredWidth;
-                            difference = difference > 0 ? difference : 0;
-                            let factor: number = availableWidth * (difference / remainingWidthTotal);
-                            column.preferredWidth += isNaN(factor) ? 0 : factor;
-                        }
                     }
+                    let difference: number = column.maximumWordWidth - column.preferredWidth;
+                    difference = difference > 0 ? difference : 0;
+                    let factor: number = availableWidth * (difference / remainingWidthTotal);
+                    column.preferredWidth += isNaN(factor) ? 0 : factor;
                 }
             } else {
                 // Try to fit minimum width for each column and allot remaining space to columns based on their minimum word width.
@@ -8301,17 +8393,14 @@ export class WTableHolder {
                     }
                 } else {
                     let availableWidth: number = 0;
-                    if (totalMinWidth < containerWidth) {
+                    if ((totalMinWidth < containerWidth) && ((containerWidth - totalMinWidth) >= 1) && !isAllColumnPointWidth) {
                         availableWidth = containerWidth - totalMinWidth;
                         for (let i: number = 0; i < this.columns.length; i++) {
                             let column: WColumn = this.columns[i];
                             // The factor depends of current column's minimum word width and total minimum word width.
                             let factor: number = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
                             factor = isNaN(factor) ? 0 : factor;
-                            if (column.preferredWidth <= column.minimumWidth) {
-                                continue;
-                            }
-                            column.preferredWidth = column.minimumWidth + factor;
+                            column.preferredWidth = (column.minimumWidth == 0 ? 1 : column.minimumWidth) + factor;
                         }
                         // table width exceeds container width
                     } else if (totalPreferredWidth > containerWidth) {
@@ -8327,6 +8416,7 @@ export class WTableHolder {
         this.tableWidth = this.getTotalWidth(0);
 
     }
+
     /**
      * @private
      */
@@ -8445,6 +8535,10 @@ export class WColumn {
      * @private
      */
     public minimumWidth: number = 0;
+    /**
+     * @private
+     */
+    public widthType: WidthType;
     /**
      * @private
      */

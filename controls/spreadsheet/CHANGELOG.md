@@ -2,7 +2,176 @@
 
 ## [Unreleased]
 
+## 20.1.47 (2022-04-04)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I370011` - Creating new workbook not removing the filter issue resolved.
+- `#I366824` - Formula dependent cells are not updated on clear action issue resolved.
+- `#I357792` - Collaborative editing feature issues has been fixed.
+- `#I370463` - Getting maximum call stack exceed error during scrolling with large dataset issue resolved.
+- `#I366370` - Script error occurs on sheets property change issue resolved.
+- `#FB33176` - Chart not rendered if specified data range is not from active sheet issue resolved.
+- `#I349643` - Script error occurs on chart creation while importing excel file with custom date format issue resolved.
+- `#I371783` - Performance delay occurs while clearing the filter through context menu issue resolved.
+- `#I354089` - Hide / show rows not working with freeze pane if headers are hidden issue resolved.
+- `#I369939` - Closing circular reference dialog is not working issue has been fixed.
+
 ## 19.4.56 (2022-03-15)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-369240` - Previous formula displayed while switching the editing from formula cell to blank cell issue resolved.
+- `SF-367017` - `Ctrl selection` not working with freeze pane issue resolved.
+- `SF-367519` - Border not applied while copy / paste from MS word issue resolved.
+- `SF-367525` - Strike through not applied on external copy / paste issue resolved.
+
+## 19.4.55 (2022-03-08)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-366825` - Text align icon not updated properly while applying text format for number cell value issue resolved.
+- `SF-369477` - Rows not rendered properly while filtering and cell selection not proper with filtered rows in freeze pane issues resolved.
+
+## 19.4.54 (2022-03-01)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-367012` - Sort action not working on first row issue resolved.
+- `SF-367021` - Filter by selected cell value action on date field is not working issue resolved.
+- `SF-367013` - Sort not working after filtered the data in freeze pane issue resolved.
+- `SF-368464` - Performance issue while filtering the scrolled data with freeze pane issue resolved.
+- `SF-363047` - Insert row is not working while adding rows at the end in finite mode issue resolved.
+- `SF-364569` - External paste not working if copy indicator available in spreadsheet issue resolved.
+
+## 19.4.53 (2022-02-22)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-367008` - Data range is not updated properly while doing auto fill action issue resolved.
+- `SF-367016` - Script error occurs while performing auto fit action on hidden first column after freeze pane issue resolved.
+- `SF-364894` - Filtering is not proper in finite mode with less row count issue resolved.
+- `SF-367010` - Rows are corrupted on clear filtering action, when the rows are scroll down to bottom issue resolved.
+- `SF-367011` - Script error occurs while scrolling up after clearing the large filtered data issue resolved.
+- `SF-367014` - Content area scrolled improperly while entering large data in a cell issue resolved.
+- `SF-366314` - Horizontal scrolling is not proper after filtering with freeze pane issue resolved.
+- `SF-367009` - Scrolling is not proper after filtering the data with freeze row issue resolved.
+- `SF-362961` - Formula cell reference not updated properly for other sheets while inserting rows issue resolved.
+- `SF-362920` - Cell value is updated while selecting the find next button issue resolved.
+- `SF-362962` - Undo and redo actions show invalid expressions in some cases issue resolved.
+- `SF-359655` - Improvement for find and replace functionality with locked cells provided.
+- `SF-362996` - Invalid error when formula range is updated issue resolved.
+
+## 19.4.52 (2022-02-15)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-360092` - Cell navigation occurs while performing key navigation in cell template drop-down popup issue resolved.
+- `SF-361817` - Row alignment and cell selection is not proper with large font size during scrolling issue resolved.
+
+## 19.4.50 (2022-02-08)
+
+### Spreadsheet
+
+#### New Features
+
+- `F169781`, `SF-351357` - Provided filtering, sorting, show/hide rows and columns functionalities for freeze pane enabled spreadsheet.
+- `SF-359671`, `SF-356044`, `SF-361047` - `actionBegin` event triggered for undo / redo actions. Added `isUndo` and `isRedo` property in undo and redo action respectively to differentiate it from the regular action.
+
+#### Bug Fixes
+
+- `SF-354603` - Thousand separator is not working properly for custom number format issue has been fixed.
+- `SF-349643` - Excel with external file link takes more time to load issue fixed.
+- `SF-362947` - Cascading cell values does not get updated properly for imported file issue has been fixed.
+- `SF-362574` - After filtering the cell validation `isHighlighted` property is enabled and updated wrongly on other cells while scrolling issue resolved.
+- `SF-362013` - Dependent cells are not getting updated in unique formula issue has been fixed.
+- `SF-353164` - Value property is not available while cell containing formula in saved JSON issue has been fixed.
+- `SF-360130` - Conditional formatting is not working properly when insert/delete rows and columns issue has been fixed.
+- `SF-362001` - Copy and paste is not work properly with conditional formatting when save and load the spreadsheet as JSON issue has been fixed.
+- `SF-362018` - Script error on clearing column data validation issue is resolved.
+- `SF-362567` - Data is not updated in the list validation when row is inserted issue has been fixed.
+
+## 19.4.48 (2022-01-31)
+
+### Spreadsheet
+
+#### New Features
+
+- `SF-358321` - Triggered `beforeCellUpdate` event before updating the properties of the cell model while doing actions like editing, copy / paste and data validation, etc. Using this event, you can prevent the particular action.
+
+#### Bug Fixes
+
+- `SF-361363` - Autofill does not hide when selection is in hidden range after undo & redo on filtered rows issue has been fixed.
+- `SF-355507` - Copy indicator height when copy and pasting a wrap cell issue has been fixed.
+- `SF-361367` - Script error while pasting large range data on data validation applied cell in editing mode issue has been fixed.
+- `SF-361580` - Provided cancel argument in action begin event for cell delete and autofill.
+- `SF-360962` - Toolbar item not disable with protect sheet issue and edit alert dialog customization support provided.
+
+## 19.4.47 (2022-01-25)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-357914` - Multi range custom sort alert dialog not showing issue resolved.
+- `SF-360957` - Spinner loads endlessly while importing an excel file issue resolved.
+
+## 19.4.43 (2022-01-18)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-354173`, `SF-360223`, `SF-360057` - Selection misalignment and script error on undo operation after resize the row.
+- `SF-360109` - While copy paste the merge cell with all borders, the left border is missing in pasted cell.
+- `SF-360465, SF-360473` - Undo action for deleted column which is before the viewport area causes script error and selection misalignment issue resolved.
+- `SF-356947` - Row height not proper while applying larger font size when row set as custom height issue resolved.
+
+## 19.4.42 (2022-01-11)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-360112` - Script error occurs on continuous undo and redo operation for filtering action issue resolved.
+- `SF-360962` - Disable toolbar item for protect sheet and edit Alert dialog content customize support provided.
+- `SF-361036`, `SF-361123` - Copy paste is not working properly on filtered rows issue has been fixed.
+- `SF-360222` - Sorting is not working properly after undo issue has been fixed.
+- `SF-352381` - Data not rendered properly on horizontal scrolling in finite mode issue resolved.
+- `F171297` - Importing excel file contains conditional formatting with formula throws script error issue has been fixed.
+- `SF-359221` - Insert row not working properly while virtual scrolling is disabled issue is fixed.
+
+## 19.4.41 (2022-01-04)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `SF-360492` - Row height issue after performing undo operation has been resolved.
+- `SF-353871` - Cell alignment issue while copy paste merge cell issue is fixed.
+- `I349145`, `I347733` - Script error throws while set the height to hidden rows is resolved.
+- `SF-360109` - Bottom border missing while paste merge applied cell issue fixed.
+- `SF-354314` - External pasting formula cell which lies below the viewport not working issue has been fixed.
+- `SF-354314` - Performance issue on copying large cells which contains custom number format has been fixed.
+- `SF-359382` - Color applied for empty cell if less than condition value is in negative in conditional formatting issue has been fixed.
+- `SF-359673` - Find and replace is not working after scrolling to bottom in finite mode issue has been fixed.
+- `SF-357076`, `SF-360051` - If the column, row and select-all selection range contains a filtered range then, the sorting is applied to its filtered range.
+- `SF-358133` - cell save event arguments are not proper for cut / paste action issue resolved.
+- `SF-360303` - Selection issue while pasting the multiline character contained text in cell editing mode is resolved.
+
+## 19.4.40 (2021-12-28)
 
 ### Spreadsheet
 
@@ -27,6 +196,8 @@
 - `I346033` - Custom currency format is not applied for zero value issue has been fixed.
 - `I346033` - Text formula is not working with `ddd` format issue has been fixed.
 - `I346033` - Adding some value to multiplied range which contains empty cell issue has been fixed.
+- `I321503` - Cell selection issue after scrolling on imported sheet has been fixed.
+- `SF-358418` - Image resize option problem has been fixed.
 
 ## 19.4.38 (2021-12-17)
 

@@ -154,6 +154,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private compPrevValue: string | string[] | number | number[] | boolean[] | Date | Date[] | DateRange;
     private moduleList: string[] = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
     private afterOpenEvent: EmitType<TooltipEventArgs>;
+    private onScrollResizeHandler: EventListenerOrEventListenerObject;
 
     /**
      * @hidden
@@ -539,6 +540,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     protected preRender(): void {
+        this.onScrollResizeHandler = this.scrollResizeHandler.bind(this);
         if (isNOU(this.model)) {
             this.setProperties({ model: {} }, true);
         }
@@ -1367,8 +1369,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.wireEditEvent(this.editableOn);
         EventHandler.add(this.editIcon, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keydown', this.valueKeyDownHandler, this);
-        EventHandler.add(document, 'scroll', this.scrollResizeHandler, this);
-        window.addEventListener('resize', this.scrollResizeHandler.bind(this));
+        document.addEventListener('scroll', this.onScrollResizeHandler);
+        window.addEventListener('resize', this.onScrollResizeHandler);
         if (Array.prototype.indexOf.call(this.clearComponents, this.type) > -1) {
             EventHandler.add(this.element, 'mousedown', this.mouseDownHandler, this);
         }
@@ -1409,8 +1411,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private unWireEvents(): void {
         this.unWireEditEvent(this.editableOn);
         EventHandler.remove(this.editIcon, 'click', this.clickHandler);
-        EventHandler.remove(document, 'scroll', this.scrollResizeHandler);
-        window.removeEventListener('resize', this.scrollResizeHandler.bind(this));
+        document.removeEventListener('scroll', this.onScrollResizeHandler);
+        window.removeEventListener('resize', this.onScrollResizeHandler);
         EventHandler.remove(this.element, 'keydown', this.valueKeyDownHandler);
         if (Array.prototype.indexOf.call(this.clearComponents, this.type) > -1) {
             EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
@@ -1534,9 +1536,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         });
     }
     private enterKeyDownHandler(e: KeyboardEvent): void {
-        if (!closest(e.target as Element, '.' + classes.INPUT + ' .e-richtexteditor')) {
+        if (!closest(e.target as Element, '.' + classes.INPUT + ' .e-richtexteditor') && (!(e.currentTarget as Element).getElementsByTagName("textarea")[0])) {
             if ((e.keyCode === 13 && e.which === 13) && closest(e.target as Element, '.' + classes.INPUT)) {
                 this.save();
+                this.trigger('submitClick', e);
             } else if (e.keyCode === 27 && e.which === 27) {
                 this.cancelHandler('cancel');
             }

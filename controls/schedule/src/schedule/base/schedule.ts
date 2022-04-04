@@ -1494,6 +1494,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
+                        this.uiStateValues.isInitial = ['TimelineMonth', 'TimelineYear', 'Year'].indexOf(view) > -1 ? true : this.uiStateValues.isInitial;
                         this.viewIndex = navigationArgs.viewIndex;
                         this.setProperties({ currentView: view }, true);
                         if (this.headerModule) {
@@ -1637,7 +1638,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {
             this.uiStateValues = {
                 expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
-                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false, isCustomMonth: true
+                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false, isCustomMonth: true, isResize: false
             };
         }
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
@@ -2131,9 +2132,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.currentView === 'Month' || ((this.currentView !== 'Agenda' && this.currentView !== 'MonthAgenda')
             && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
+            this.uiStateValues.isResize = true;
             this.activeView.resetColWidth();
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.refreshEvents(false);
+            this.uiStateValues.isResize = false;
         } else {
             this.notify(events.contentReady, {});
         }
@@ -2151,6 +2154,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
+                } else {
+                    return compile(template);
                 }
             } catch (error) {
                 return compile(template);
@@ -2448,7 +2453,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             if (dateHeader.classList.contains(cls.ALLDAY_APPOINTMENT_AUTO)) {
                 removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_AUTO);
             }
-            this.eventBase.allDayExpandScroll(dateHeader, true);
+            this.eventBase.allDayExpandScroll(dateHeader);
         }
         if (!this.uiStateValues.expand) {
             allDayRow.style.height = '';
@@ -3203,7 +3208,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.crudModule.refreshDataManager();
         } else {
             if (this.activeViewOptions && this.activeViewOptions.eventTemplate) {
-                this.resetTemplates(['eventTemplate']);
+                let templateNames: string[] = ['eventTemplate'];
+                if (this.crudModule && this.crudModule.crudObj.isCrudAction &&
+                    ['Agenda', 'MonthAgenda', 'Year', 'TimelineYear'].indexOf(this.currentView) === -1) {
+                    templateNames = [];
+                    for (let i: number = 0, len: number = this.crudModule.crudObj.sourceEvent.length; i < len; i++) {
+                        templateNames.push('eventTemplate_' + this.crudModule.crudObj.sourceEvent[i].groupIndex);
+                        if (this.crudModule.crudObj.targetEvent[i] && this.crudModule.crudObj.sourceEvent[i].groupIndex !==
+                            this.crudModule.crudObj.targetEvent[i].groupIndex) {
+                            templateNames.push('eventTemplate_' + this.crudModule.crudObj.targetEvent[i].groupIndex);
+                        }
+                    }
+                }
+                this.resetTemplates(templateNames);
             }
             const eventsData: Record<string, any>[] = this.eventsData || [];
             const blockData: Record<string, any>[] = this.blockData || [];

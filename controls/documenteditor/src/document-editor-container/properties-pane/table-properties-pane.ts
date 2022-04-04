@@ -53,7 +53,6 @@ export class TableProperties {
     private borderSizeColorElement: HTMLCollectionOf<Element>;
     public element: HTMLElement;
     private prevContext: ContextType;
-    private textProperties: TextProperties;
     private isTopMarginApply: boolean = false;
     private isRightMarginApply: boolean = false;
     private isBottomMarginApply: boolean = false;
@@ -69,7 +68,7 @@ export class TableProperties {
         return this.container.documentEditor;
     }
     /* eslint-disable-next-line max-len */
-    public constructor(container: DocumentEditorContainer, imageProperty: ImageProperties, textProperties: TextProperties, isRtl?: boolean) {
+    public constructor(container: DocumentEditorContainer, imageProperty: ImageProperties, isRtl?: boolean) {
         this.container = container;
         this.isRtl = isRtl;
         if (this.isRtl) {
@@ -80,11 +79,10 @@ export class TableProperties {
         this.elementId = this.documentEditor.element.id;
         this.initializeTablePropPane();
         this.prevContext = this.documentEditor.selection.contextType;
-        this.textProperties = textProperties;
     }
     private initializeTablePropPane(): void {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        this.tableProperties = createElement('div', { id: this.elementId + '_tableProperties', styles: 'overflow: auto' });
+        this.tableProperties = createElement('div', { className: 'e-de-scrollbar-hide', styles: 'overflow: auto' });
         this.initFillColorDiv();
         this.initBorderStylesDiv();
         this.initCellDiv();
@@ -102,7 +100,6 @@ export class TableProperties {
      * @returns {void}
      */
     public enableDisableElements(enable: boolean): void {
-        this.textProperties.enableDisableElements(enable);
         if (enable) {
             classList(this.element, [], ['e-de-overlay']);
         } else {
@@ -115,7 +112,7 @@ export class TableProperties {
         this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
         this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
         /* eslint-disable-next-line max-len */
-        const items: TabItemModel[] = [{ header: { text: tableHeader }, content: this.tableProperties }, { header: { text: textHeader }, content: this.tableTextProperties.element }] as TabItemModel[];
+        const items: TabItemModel[] = [{ header: { text: textHeader }, content: this.tableTextProperties.element }, { header: { text: tableHeader }, content: this.tableProperties }] as TabItemModel[];
         this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection.bind(this) });
         this.propertiesTab.isStringTemplate = true;
         this.propertiesTab.appendTo(this.element);
@@ -351,11 +348,11 @@ export class TableProperties {
         const borderStyleDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
         this.tableProperties.appendChild(borderStyleDiv);
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.classList.add('e-de-table-prop-label');
+        //label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Border Style');
         borderStyleDiv.appendChild(label);
-        const parentDiv: HTMLElement = createElement('div', { id: this.elementId + '_borderStyleDiv', className: 'e-de-border-style-div', styles: 'display:inline-flex;' });
-        const styleDiv: HTMLElement = createElement('div', { styles: 'width:126px;height:126px', className: 'e-de-grp-btn-ctnr' });
+        const parentDiv: HTMLElement = createElement('div', { styles: 'display:inline-flex;' });
+        const styleDiv: HTMLElement = createElement('div', { styles: 'width:min-content;height:126px', className: 'e-de-grp-btn-ctnr' });
         const div1: HTMLElement = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-top' });
         styleDiv.appendChild(div1);
         const div2: HTMLElement = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-middle' });
@@ -401,7 +398,7 @@ export class TableProperties {
         const cellDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
         this.tableProperties.appendChild(cellDiv);
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.classList.add('e-de-table-prop-label');
+        //label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Cell');
         cellDiv.appendChild(label);
         const parentDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn' });
@@ -410,7 +407,7 @@ export class TableProperties {
             parentDiv.classList.add('e-de-rtl');
             label.classList.add('e-de-rtl');
         }
-        const btnStyle: string = 'width:' + 38 + 'px;';
+        const btnStyle: string = '';
         this.horizontalMerge = this.createButtonTemplate(this.elementId + '_tableOutlineBorder', 'e-de-ctnr-mergecell e-icons', parentDiv, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Merge cells'));
         //this.verticalMerge = this.createButtonTemplate(this.elementId + '_tableAllBorder', 'e-de-icon-merge-column e-icons', parentDiv, 'e-de-prop-font-button', btnStyle, 'Vertical Merge');
         cellDiv.appendChild(parentDiv);
@@ -419,7 +416,7 @@ export class TableProperties {
         const tableOperationDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
         this.tableProperties.appendChild(tableOperationDiv);
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.classList.add('e-de-table-prop-label');
+        //label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Insert Or Delete');
         tableOperationDiv.appendChild(label);
         const parentDiv: HTMLElement = createElement('div', { className: 'e-de-insert-del-cell', styles: 'display:inline-flex' });
@@ -434,7 +431,7 @@ export class TableProperties {
             label.classList.add('e-de-rtl');
         }
         parentDiv.appendChild(div2);
-        const btnStyle: string = 'width:' + 38 + 'px;';
+        const btnStyle: string = '';
         this.insertColumnLeft = this.createButtonTemplate(this.elementId + '_insertColumnLeft', 'e-de-ctnr-insertleft e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Insert columns to the left'));
         this.insertColumnRight = this.createButtonTemplate(this.elementId + '_insertColumnRight', 'e-de-ctnr-insertright e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Insert columns to the right'));
         this.insertRowAbove = this.createButtonTemplate(this.elementId + '_insertRowAbove', 'e-de-ctnr-insertabove e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Insert rows above'));
@@ -447,10 +444,10 @@ export class TableProperties {
         const cellMarginDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding e-de-cellmargin-text' });
         this.tableProperties.appendChild(cellMarginDiv);
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.classList.add('e-de-table-prop-label');
+        //label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Cell Margin');
         cellMarginDiv.appendChild(label);
-        const parentDiv: HTMLElement = createElement('div', { className: 'e-de-cell-margin', styles: 'height: 60px;display:inline-flex' });
+        const parentDiv: HTMLElement = createElement('div', { styles: 'display:inline-flex' });
         if (this.isRtl) {
             label.classList.add('e-de-rtl');
         }
@@ -459,24 +456,24 @@ export class TableProperties {
         this.topMargin = this.createCellMarginTextBox(this.localObj.getConstant('Top'), this.elementId + '_topMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, this.localObj.getConstant('Top margin'));
         this.bottomMargin = this.createCellMarginTextBox(this.localObj.getConstant('Bottom'), this.elementId + '_bottomMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, this.localObj.getConstant('Bottom margin'));
         this.leftMargin = this.createCellMarginTextBox(this.localObj.getConstant('Left'), this.elementId + '_leftMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, this.localObj.getConstant('Left margin'));
-        this.rightMargin = this.createCellMarginTextBox(this.localObj.getConstant('Right'), this.elementId + '_rightMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, this.localObj.getConstant('Right margin'));
+        this.rightMargin = this.createCellMarginTextBox(this.localObj.getConstant('Right'), this.elementId + '_rightMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, this.localObj.getConstant('Right margin'), true);
         cellMarginDiv.appendChild(parentDiv);
     }
     private initAlignText(): void {
         const alignmentDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding', styles: 'border-bottom-width:0px' });
         this.tableProperties.appendChild(alignmentDiv);
         const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.classList.add('e-de-table-prop-label');
+        //label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Align Text');
         alignmentDiv.appendChild(label);
-        const parentDiv: HTMLElement = createElement('div', { className: 'e-de-align-text', styles: 'margin-bottom: 10px;' });
+        const parentDiv: HTMLElement = createElement('div');
         if (this.isRtl) {
             parentDiv.classList.add('e-de-rtl');
             label.classList.add('e-de-rtl');
         }
         const div: HTMLElement = createElement('div', { className: this.groupButtonClass });
         parentDiv.appendChild(div);
-        const btnStyle: string = 'width:' + 38 + 'px;';
+        const btnStyle: string = '';
         this.alignTop = this.createButtonTemplate(this.elementId + '_alignTop', 'e-de-ctnr-aligntop e-icons', div, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Align top'));
         // this.alignCenterVertical = this.createButtonTemplate(this.elementId + '_alignCenterVertical', 'e-de-icon-merge-column e-icons', parentDiv, 'e-de-prop-font-button', btnStyle, 'Align Center Vertical');
         // this.alignRight = this.createButtonTemplate(this.elementId + '_alignRight', 'e-de-icon-merge-column e-icons', parentDiv, 'e-de-prop-font-button', btnStyle, 'Align Right');
@@ -487,9 +484,11 @@ export class TableProperties {
         alignmentDiv.appendChild(parentDiv);
     }
     /* eslint-disable-next-line max-len */
-    private createCellMarginTextBox(textboxLabel: string, textboxId: string, parentDiv: HTMLElement, styles: string, parentStyle: string, maxValue: number, toolTipText: string): NumericTextBox {
+    private createCellMarginTextBox(textboxLabel: string, textboxId: string, parentDiv: HTMLElement, styles: string, parentStyle: string, maxValue: number, toolTipText: string, isRight?: boolean): NumericTextBox {
         const cellMarginParentDiv: HTMLElement = createElement('div', { styles: parentStyle });
-        cellMarginParentDiv.classList.add('e-de-cell-text-box');
+        if(!isRight) {
+            cellMarginParentDiv.classList.add('e-de-cell-text-box');
+        }
         const cellMarginLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label' });
         cellMarginLabel.textContent = textboxLabel;
         cellMarginParentDiv.appendChild(cellMarginLabel);
@@ -511,27 +510,28 @@ export class TableProperties {
         noneOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('No Border');
         });
-        const oneOption: HTMLElement = this.createDropdownOption(ulTag, '1px');
+        let pixel: string = this.localObj.getConstant('px');
+        const oneOption: HTMLElement = this.createDropdownOption(ulTag, '1' + pixel);
         oneOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('1px');
         });
-        const oneHalfOption: HTMLElement = this.createDropdownOption(ulTag, '1.5px');
+        const oneHalfOption: HTMLElement = this.createDropdownOption(ulTag, '1.5' + pixel);
         oneHalfOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('1.5px');
         });
-        const twoOption: HTMLElement = this.createDropdownOption(ulTag, '2px');
+        const twoOption: HTMLElement = this.createDropdownOption(ulTag, '2' + pixel);
         twoOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('2px');
         });
-        const threeOption: HTMLElement = this.createDropdownOption(ulTag, '3px');
+        const threeOption: HTMLElement = this.createDropdownOption(ulTag, '3' + pixel);
         threeOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('3px');
         });
-        const fourOption: HTMLElement = this.createDropdownOption(ulTag, '4px');
+        const fourOption: HTMLElement = this.createDropdownOption(ulTag, '4' + pixel);
         fourOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('4px');
         });
-        const fiveOption: HTMLElement = this.createDropdownOption(ulTag, '5px');
+        const fiveOption: HTMLElement = this.createDropdownOption(ulTag, '5' + pixel);
         fiveOption.addEventListener('click', (): void => {
             this.onBorderSizeChange('5px');
         });
@@ -625,25 +625,25 @@ export class TableProperties {
         inputElement.parentElement.setAttribute('title', toolTipText);
         return colorPicker;
     }
-    public showTableProperties(isShow: boolean): void {
+    public showTableProperties(isShow: boolean, propertyType: string): void {
         if (isShow) {
-            if (this.prevContext !== this.documentEditor.selection.contextType) {
-                this.propertiesTab.selectedItem = 0;
-                this.tableTextProperties.appliedHighlightColor = this.textProperties.appliedHighlightColor;
-                this.tableTextProperties.appliedBulletStyle = this.textProperties.appliedBulletStyle;
-                this.tableTextProperties.appliedNumberingStyle = this.textProperties.appliedNumberingStyle;
+            if (propertyType === 'text') {
+                this.propertiesTab.hideTab(1, true);
+            } else {
+                this.propertiesTab.hideTab(1, false);
+                if (this.prevContext !== this.documentEditor.selection.contextType) {
+                    this.propertiesTab.selectedItem = 1;
+                }
             }
+            this.prevContext = this.documentEditor.selection.contextType;
             this.onSelectionChange();
             this.tableTextProperties.onSelectionChange();
-            this.textProperties.appliedHighlightColor = this.tableTextProperties.appliedHighlightColor;
-            this.textProperties.appliedBulletStyle = this.tableTextProperties.appliedBulletStyle;
-            this.textProperties.appliedNumberingStyle = this.tableTextProperties.appliedNumberingStyle;
         }
         if (!isShow && this.parentElement.style.display === 'none' || (isShow && this.parentElement.style.display === 'block')) {
             return;
         }
         this.parentElement.style.display = isShow ? 'block' : 'none';
-        if (isShow){
+        if (isShow) {
             const tabHeaderHeight: HTMLElement = (this.parentElement.getElementsByClassName('e-tab-header')[0] as HTMLElement);
             if (tabHeaderHeight) {
                 const paneHeight: number = this.parentElement.offsetHeight - tabHeaderHeight.offsetHeight;

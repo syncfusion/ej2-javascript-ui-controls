@@ -9459,4 +9459,40 @@ describe('MultiSelect', () => {
             }, 800);
         });
     });
+    describe('EJ2-56422-Empty header is created while typing custom value in the input.', () => {
+        let listObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let datasource: { [key: string]: Object }[] = [
+            { vegetable: 'Cabbage', category: 'Leafy and Salad' , Id: "item1"}, { vegetable: 'Spinach', category: 'Leafy and Salad', Id: "item2" },
+            { vegetable: 'Wheatgrass', category: 'Leafy and Salad', Id: "item3" }, { vegetable: 'Yarrow', category: 'Leafy and Salad' , Id: "item4"},
+            { vegetable: 'Chickpea', category: 'Beans', Id: "item5" }, { vegetable: 'Green bean', category: 'Beans', Id: "item6" },
+            { vegetable: 'Horse gram', category: 'Beans', Id: "item7" }, { vegetable: 'Garlic', category: 'Bulb and Stem', Id: "item8" },
+            { vegetable: 'Nopal', category: 'Bulb and Stem', Id: "item9"}, { vegetable: 'Onion', category: 'Bulb and Stem', Id: "item10" }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('testing allowcustom with groupby', () => {
+            listObj = new MultiSelect({allowCustomValue: true,
+                dataSource: datasource,
+                fields: { groupBy: 'category', text: 'vegetable', value: 'ID' },});
+            listObj.appendTo(element);
+            (<any>listObj).inputElement.value = "t";
+            keyboardEventArgs.keyCode = 13;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            keyboardEventArgs.altKey = false;
+            expect(listObj.liCollections[0].classList.contains('e-list-item')).toBe(true);
+            expect(listObj.liCollections[0].classList.contains('e-list-group-item')).toBe(false);
+            expect((<any>listObj).ulElement.textContent === "t").toBe(true); 
+        });
+    });
 });

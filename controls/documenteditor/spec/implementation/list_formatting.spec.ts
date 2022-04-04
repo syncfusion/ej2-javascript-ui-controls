@@ -1642,3 +1642,134 @@ console.log('Increase list level validation Bullets');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(2);
     });
 });
+let pasteContent1:object={"sections":[{"blocks":[{"characterFormat":{"bold":false,"italic":false,"underline":"None","strikethrough":"None","fontSize":11.0,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11.0,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":36.0,"rightIndent":0.0,"firstLineIndent":-18.0,"beforeSpacing":0.0,"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"List Paragraph","listFormat":{"listLevelNumber":0,"listId":0},"keepWithNext":false,"keepLinesTogether":false,"widowControl":true,"bidi":false,"contextualSpacing":true},"inlines":[{"text":"Paragraph1","characterFormat":{"bold":false,"italic":false,"underline":"None","strikethrough":"None","fontSize":11.0,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11.0,"fontFamilyBidi":"Calibri","allCaps":false}}]},{"characterFormat":{"bold":false,"italic":false,"underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontSize":11.0,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"boldBidi":false,"fontSizeBidi":11.0,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":36.0,"rightIndent":0.0,"firstLineIndent":-18.0,"beforeSpacing":0.0,"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"List Paragraph","listFormat":{"listLevelNumber":0,"listId":0},"keepWithNext":false,"keepLinesTogether":false,"widowControl":true,"bidi":false,"contextualSpacing":true},"inlines":[{"text":"Paragraph2","characterFormat":{"bold":false,"italic":false,"underline":"None","strikethrough":"None","fontSize":11.0,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11.0,"fontFamilyBidi":"Calibri","allCaps":false}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","columns":{"column":[{"width":0.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}}],"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","widowControl":true},"lists":[{"listId":0,"abstractListId":0}],"abstractLists":[{"abstractListId":0,"levels":[{"startAt":1,"restartLevel":0,"listLevelPattern":"Arabic","followCharacter":"Tab","numberFormat":"%1.","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11.0,"fontFamily":"Calibri","fontColor":"#00000000","fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":36.0,"firstLineIndent":-18.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":1,"listLevelPattern":"LowLetter","followCharacter":"Tab","numberFormat":"%2.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":72.0,"firstLineIndent":-18.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":2,"listLevelPattern":"LowRoman","followCharacter":"Tab","numberFormat":"%3.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":108.0,"firstLineIndent":-9.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":3,"listLevelPattern":"Arabic","followCharacter":"Tab","numberFormat":"%4.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":144.0,"firstLineIndent":-18.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":4,"listLevelPattern":"LowLetter","followCharacter":"Tab","numberFormat":"%5.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":180.0,"firstLineIndent":-18.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":5,"listLevelPattern":"LowRoman","followCharacter":"Tab","numberFormat":"%6.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":216.0,"firstLineIndent":-9.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":6,"listLevelPattern":"Arabic","followCharacter":"Tab","numberFormat":"%7.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":252.0,"firstLineIndent":-18.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":7,"listLevelPattern":"LowLetter","followCharacter":"Tab","numberFormat":"%8.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":288.0,"firstLineIndent":-18.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}},{"startAt":1,"restartLevel":8,"listLevelPattern":"LowRoman","followCharacter":"Tab","numberFormat":"%9.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":324.0,"firstLineIndent":-9.0,"tabs":[{"tabJustification":"Left","position":0.0,"tabLeader":"None","deletePosition":0.0}]}}]}],"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"underline":"None","strikethrough":"None","fontSize":11.0,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11.0,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","widowControl":true}},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"List Paragraph","basedOn":"Normal","next":"List Paragraph","characterFormat":{"bold":false,"italic":false,"underline":"None","strikethrough":"None","fontSize":11.0,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11.0,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":36.0,"rightIndent":0.0,"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","widowControl":true,"contextualSpacing":true}}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"lastParagraphMarkCopied":true,"footnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2007"};
+describe('apply paste option mergeWithExistingFormat validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        editor.enableLocalPaste = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = "";
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it("bullet list Validation",()=>{
+        editor.openBlank();
+        editor.editor.insertText('Sample');
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(editor.selection.paragraphFormat.listText).toBe('\uf0b7');
+        editor.editor.onEnter();
+        editor.editor.pasteContents(pasteContent1);
+        editor.editor.copiedTextContent=undefined;
+        editor.selection.moveUp();
+        expect(editor.selection.paragraphFormat.listText).toBe('2.');
+        editor.selection.moveDown();
+        editor.editor.applyPasteOptions('MergeWithExistingFormatting');
+        expect(editor.selection.paragraphFormat.listText).toBe('');
+    })
+    it("applying paste option multiple time",()=>{
+        console.log("applying paste option multiple time");
+        let i:number=0;
+        while(i<=30){
+            editor.editor.applyPasteOptions("KeepSourceFormatting");
+            editor.editor.applyPasteOptions("MergeWithExistingFormatting");
+            i++;
+        }
+        expect(editor.selection.paragraphFormat.listText).toBe('');
+    })
+});
+describe('applying list to the paragraph on table', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, SfdtExport, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        editor.enableLocalPaste = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = "";
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('toggling bullet list to the paragraph on table',()=>{
+        console.log('apply bullet list to the paragraph on table');
+        editor.openBlank();
+        editor.editor.insertTable(2,2);
+        editor.editor.insertText('Sample');
+        editor.selection.selectParagraph();
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(0);
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+    });
+    it('toggling numbering list to the paragraph on table',()=>{
+        console.log('apply numbering list to the paragraph on table');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+        editor.editor.applyNumbering("%1)",'Arabic');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(1);
+        editor.editor.applyNumbering("%1)",'Arabic');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+    });
+    it('toggling bullet list to the multiple paragraph on table',()=>{
+        console.log('toggling bullet list to the multiple paragraph on table');
+        editor.openBlank();
+        editor.editor.insertTable(2,2);
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.selection.selectParagraph();
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(0);
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+    });
+    it('selecting normal paragraph ang list paragraph and toggling bullet',()=>{
+        editor.openBlank();
+        editor.editor.insertTable(2,2);
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        editor.editor.insertText('Sample');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(0);
+        editor.editor.onEnter();
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(0);
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+        editor.editor.insertText('Sample');
+        editor.selection.selectParagraph();
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(0);
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(editor.selection.start.paragraph.paragraphFormat.listFormat.listId).toBe(-1);
+    });
+});

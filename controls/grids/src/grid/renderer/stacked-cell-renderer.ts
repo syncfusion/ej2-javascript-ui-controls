@@ -70,6 +70,9 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
             handler.className = cell.column.allowResizing ? 'e-rhandler e-rcursor' : 'e-rsuppress';
             node.appendChild(handler);
         }
+        if (cell.className) {
+            node.classList.add(cell.className);
+        }
         this.parent.trigger(headerCellInfo, {cell, node});
         return node;
     }

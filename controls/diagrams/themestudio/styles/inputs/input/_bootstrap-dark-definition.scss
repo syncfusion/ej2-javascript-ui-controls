@@ -234,6 +234,7 @@ $input-box-border-width: 1px !default;
 $float-input-border-width: 1px !default;
 $input-focus-border-width: 1px !default;
 $input-readonly-bg-color: none !default;
+$float-label-rtl-value: -7px !default;
 
 @mixin input-sizing {
   box-sizing: border-box;

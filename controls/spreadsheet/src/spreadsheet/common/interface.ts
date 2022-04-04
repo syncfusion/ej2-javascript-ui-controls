@@ -1,9 +1,9 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType } from './../../workbook/index';
-import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel, TopBottom } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel } from './../../workbook/index';
+import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell, ChartTheme } from './../../workbook/index';
+import { CellInfoEventArgs, CFColor, ChartTheme } from './../../workbook/index';
 import { SortCollectionModel } from './../../workbook/index';
 
 
@@ -36,6 +36,9 @@ export interface IRenderer {
     getColHeaderHeight(sheet: SheetModel, skipHeader?: boolean): number
     setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement): void;
     getScrollSize(addOffset?: boolean): number;
+    rowHeightChanged(args: { rowIdx: number, isHideShow?: boolean }): void;
+    colWidthChanged(args: { colIdx: number, isHideShow?: boolean }): void;
+    toggleGridlines(): void;
 }
 
 /** @hidden */
@@ -121,19 +124,19 @@ export interface IScrollArgs {
  * @hidden
  */
 export interface IRowRenderer {
-    render(index?: number, isRowHeader?: boolean, skipHidden?: boolean): Element;
-    refresh(index: number, pRow: Element, hRow?: Element, header?: boolean): Element;
+    render(index?: number, isRowHeader?: boolean, preventHiddenCls?: boolean): Element;
+    refresh(index: number, pRow: Element, hRow?: Element, header?: boolean, preventHiddenCls?: boolean): Element;
 }
 
 /**
  * @hidden
  */
 export interface ICellRenderer {
-    renderColHeader(index: number): Element;
-    renderRowHeader(index: number): Element;
+    renderColHeader(index: number, row: Element, refChild?: Element): void;
+    renderRowHeader(index: number, row: Element, refChild?: Element): void;
     render(args: CellRenderArgs): Element;
     refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean): void;
-    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCf?: boolean): void;
+    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCf?: boolean, checkWrap?: boolean): void;
 }
 
 /**
@@ -265,6 +268,8 @@ export interface CellRenderArgs {
     sheetIndex?: number;
     checkCf?: boolean;
     onActionUpdate?: boolean;
+    refChild?: Element;
+    formulaRefresh?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -332,6 +337,7 @@ export interface ConditionalFormatEventArgs {
 export interface CollaborativeEditArgs {
     action: string;
     eventArgs: UndoRedoEventArgs;
+    cancel: boolean;
 }
 
 /** @hidden */
@@ -348,8 +354,12 @@ export interface HideShowEventArgs {
     actionUpdate?: boolean;
     mergeCollection?: MergeArgs[];
     isFiltering?: true;
-    aboveViewport?: boolean;
     cancel?: boolean;
+    freezePane?: boolean;
+    isUndo?: boolean;
+    isRedo?: boolean;
+    refreshUI?: boolean;
+    sheetIndex?: number;
 }
 
 /** @hidden */
@@ -395,6 +405,7 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     sheetIdx?: number;
     validation?: CellValidationEventArgs;
     previousSort?: SortCollectionModel;
+    conditionalFormats:ConditionalFormatModel[];
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
@@ -444,6 +455,7 @@ export interface PreviousCellDetails {
     colSpan: number;
     hyperlink: string | HyperlinkModel;
     image: ImageModel[];
+    chart: ChartModel[];
     isLocked?: boolean;
     validation?: CellValidationEventArgs
 }
@@ -489,20 +501,6 @@ export interface CellValidationEventArgs {
 }
 
 /**
- * CFormattingEventArgs
- *
- * @hidden
- */
-export interface CFormattingEventArgs {
-    range?: string;
-    type?: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
-    cFColor?: CFColor;
-    value?: string;
-    sheetIdx?: number;
-    cancel: boolean;
-}
-
-/**
  * BeforeChartEventArgs
  *
  * @hidden
@@ -530,4 +528,26 @@ export interface ScrollEventArgs {
     skipHidden?: boolean;
     skipRowVirualScroll?: boolean;
     skipColVirualScroll?: boolean;
+}
+
+/**
+ * Interface for AutoFillEventArgs.
+ */
+export interface AutoFillEventArgs {
+    /** Defines the range of the data which is used to perform autofill. */
+    dataRange: string;
+    /** Defines the range in which autofill will be performed. */
+    fillRange: string;
+    /** Defines the autofill performing direction. */
+    direction: AutoFillDirection;
+    /** Defines the fill type options. */
+    fillType: AutoFillType;
+    /** Set `true` if autofill needs to be cancel in `actionBegin` event. By default, it will be `false`. */
+    cancel?: boolean;
+}
+
+/** @hidden */
+export interface duplicateSheetOption {
+    sheetIndex: number;
+    newSheetIndex: number;
 }

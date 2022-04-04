@@ -220,11 +220,7 @@ export interface IPointerDragEventArgs {
 /**
  * Specifies the event arguments for the resize event in circular gauge.
  */
-export interface IResizeEventArgs {
-    /**
-     * Specifies the name of the event.
-     */
-    name: string;
+export interface IResizeEventArgs extends ICircularGaugeEventArgs {
     /**
      * Specifies the size of the circular gauge before it gets resized.
      */

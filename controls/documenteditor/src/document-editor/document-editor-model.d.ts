@@ -31,7 +31,7 @@ export interface DocumentEditorSettingsModel {
 
     /**
      * Specifies the device pixel ratio for the image generated for printing.
-     * Remarks: Increasing the device pixel ratio will increase the image file size, due to high resolution of image.
+     * > Increasing the device pixel ratio will increase the image file size, due to high resolution of image.
      */
     printDevicePixelRatio?: number;
 
@@ -43,6 +43,14 @@ export interface DocumentEditorSettingsModel {
      * @returns {boolean} - `true` use optimized text measuring approach to match Microsoft Word pagination; otherwise, `false`
      */
     enableOptimizedTextMeasuring?: boolean;
+
+    /**
+     * Gets or sets the maximum number of rows allowed while inserting a table in Document editor component.
+     * > The maximum value is 32767, as per Microsoft Word application and you can set any value less than 32767 to this property. If you set any value greater than 32767, then Syncfusion Document editor will automatically reset as 32767.
+     * @default 32767
+     * @returns {number}
+     */
+    maximumRows?: number;
 
 }
 
@@ -89,7 +97,7 @@ export interface DocumentEditorModel extends ComponentModel{
 
     /**
      * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
-     * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
+     * > If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
      *
      * @default '#FFFF00'
      */

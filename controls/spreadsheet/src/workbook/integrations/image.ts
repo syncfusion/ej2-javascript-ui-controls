@@ -1,6 +1,7 @@
 import { getRangeIndexes, ImageModel } from '../common/index';
 import { CellModel, SheetModel, getCell, setCell, getSheetIndex, Workbook } from '../base/index';
 import { setImage } from '../common/event';
+import { isUndefined } from '@syncfusion/ej2-base';
 /**
  * Specifies image.
  */
@@ -17,7 +18,7 @@ export class WorkbookImage {
         const sheetIdx: number = (args.range && args.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent, args.range.split('!')[0]) : this.parent.activeSheetIndex;
         const indexes: number[] = getRangeIndexes(imgRange);
-        const sheet: SheetModel = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
+        const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIdx];
         const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
         let oldImgData: ImageModel[];
         const imgData: ImageModel[] = args.options;

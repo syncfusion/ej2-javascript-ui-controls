@@ -6,6 +6,7 @@ import { isNullOrUndefined as isNOU, createElement, EventHandler, detach, Browse
 const elementClass: string [] = ['north-west', 'north', 'north-east', 'west', 'east', 'south-west', 'south', 'south-east'];
 const RESIZE_HANDLER =  'e-resize-handle';
 const FOCUSED_HANDLER = 'e-focused-handle';
+const DIALOG_RESIZABLE = 'e-dlg-resizable';
 const RESTRICT_LEFT: string [] = ['e-restrict-left'];
 const RESIZE_WITHIN_VIEWPORT = 'e-resize-viewport';
 const dialogBorderResize: string [] = ['north', 'west', 'east', 'south'];
@@ -192,6 +193,11 @@ function onMouseDown(e: MouseEvent): void {
             return;
         }
     }
+    if (this.targetEle && targetElement && targetElement.querySelector('.' + DIALOG_RESIZABLE)) {
+        containerElement = this.target === 'body' || 'document.body' || document.body ? null : this.targetEle;
+        maxWidth = this.targetEle.clientWidth;
+        maxHeight = this.targetEle.clientHeight;
+	}
     const target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
     EventHandler.add(target, 'mousemove', onMouseMove, this);
     EventHandler.add(document, 'mouseup', onMouseUp, this);

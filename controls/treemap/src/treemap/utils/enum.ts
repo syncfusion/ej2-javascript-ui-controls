@@ -203,7 +203,11 @@ export type TreeMapTheme =
     /** Render a treemap with Bootstrap5 theme. */
     'Bootstrap5' |
     /**  Render a treemap with Bootstrap5 dark theme. */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark' |
+    /** Render a treemap with Fluent theme. */
+    'Fluent' |
+    /**  Render a treemap with Fluent dark theme. */
+    'FluentDark';
 /**
  * Defines the rendering directions to render the treemap items in the treemap.
  */

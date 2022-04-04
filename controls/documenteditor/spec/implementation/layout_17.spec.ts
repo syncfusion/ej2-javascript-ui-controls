@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { BodyWidget, ParagraphWidget, ElementBox, LineWidget, TextElementBox, TabElementBox, HeaderFooters, Page, TableWidget, TableRowWidget, TableCellWidget, ListTextElementBox, ShapeElementBox, FieldElementBox } from '../../src/document-editor/implementation/viewer/page';
+import { BodyWidget, ParagraphWidget, ElementBox, LineWidget, TextElementBox, TabElementBox, HeaderFooters, Page, TableWidget, TableRowWidget, TableCellWidget, ListTextElementBox, ShapeElementBox, FieldElementBox, BlockWidget } from '../../src/document-editor/implementation/viewer/page';
 import { WSectionFormat, WParagraphFormat, WCharacterFormat, WParagraphStyle, WStyle, WTabStop } from '../../src/document-editor/implementation/format/index';
 import { Selection, Editor, EditorHistory, HelperMethods, WebLayoutViewer, DocumentHelper } from '../../src/document-editor/index';
 import { TestHelper } from '../test-helper.spec';
@@ -16003,3 +16003,1030 @@ let doc2: object = {
 //       expect(Math.round(afterY)).toEqual(Math.round(y));
 //    });
 // });
+let nestedWrapTableDoc: any = {
+   "sections": [
+       {
+           "blocks": [
+               {
+                   "rows": [
+                       {
+                           "rowFormat": {
+                               "allowBreakAcrossPages": true,
+                               "isHeader": false,
+                               "height": 161.5,
+                               "heightType": "AtLeast",
+                               "borders": {
+                                   "left": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   },
+                                   "right": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   },
+                                   "top": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   },
+                                   "bottom": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   },
+                                   "vertical": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   },
+                                   "horizontal": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   },
+                                   "diagonalDown": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   },
+                                   "diagonalUp": {
+                                       "lineStyle": "None",
+                                       "lineWidth": 0.0,
+                                       "shadow": false,
+                                       "space": 0.0,
+                                       "hasNoneStyle": false
+                                   }
+                               }
+                           },
+                           "cells": [
+                               {
+                                   "blocks": [
+                                       {
+                                           "rows": [
+                                               {
+                                                   "rowFormat": {
+                                                       "allowBreakAcrossPages": true,
+                                                       "isHeader": false,
+                                                       "height": 118.5,
+                                                       "heightType": "AtLeast",
+                                                       "borders": {
+                                                           "left": {
+                                                               "lineStyle": "Single",
+                                                               "lineWidth": 0.5,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false,
+                                                               "color": "#000000FF"
+                                                           },
+                                                           "right": {
+                                                               "lineStyle": "Single",
+                                                               "lineWidth": 0.5,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false,
+                                                               "color": "#000000FF"
+                                                           },
+                                                           "top": {
+                                                               "lineStyle": "Single",
+                                                               "lineWidth": 0.5,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false,
+                                                               "color": "#000000FF"
+                                                           },
+                                                           "bottom": {
+                                                               "lineStyle": "Single",
+                                                               "lineWidth": 0.5,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false,
+                                                               "color": "#000000FF"
+                                                           },
+                                                           "vertical": {
+                                                               "lineStyle": "Single",
+                                                               "lineWidth": 0.5,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false,
+                                                               "color": "#000000FF"
+                                                           },
+                                                           "horizontal": {
+                                                               "lineStyle": "Single",
+                                                               "lineWidth": 0.5,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false,
+                                                               "color": "#000000FF"
+                                                           },
+                                                           "diagonalDown": {
+                                                               "lineStyle": "None",
+                                                               "lineWidth": 0.0,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false
+                                                           },
+                                                           "diagonalUp": {
+                                                               "lineStyle": "None",
+                                                               "lineWidth": 0.0,
+                                                               "shadow": false,
+                                                               "space": 0.0,
+                                                               "hasNoneStyle": false
+                                                           }
+                                                       }
+                                                   },
+                                                   "cells": [
+                                                       {
+                                                           "blocks": [
+                                                               {
+                                                                   "characterFormat": {
+                                                                       "fontSize": 8.0,
+                                                                       "fontColor": "#00000000",
+                                                                       "fontSizeBidi": 8.0,
+                                                                       "fontFamilyBidi": "Times New Roman"
+                                                                   },
+                                                                   "inlines": []
+                                                               }
+                                                           ],
+                                                           "cellFormat": {
+                                                               "columnSpan": 1,
+                                                               "rowSpan": 1,
+                                                               "preferredWidth": 204.5,
+                                                               "preferredWidthType": "Point",
+                                                               "verticalAlignment": "Top",
+                                                               "borders": {
+                                                                   "left": {
+                                                                       "lineStyle": "Single",
+                                                                       "lineWidth": 0.5,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false,
+                                                                       "color": "#000000FF"
+                                                                   },
+                                                                   "right": {
+                                                                       "lineStyle": "Single",
+                                                                       "lineWidth": 0.5,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false,
+                                                                       "color": "#000000FF"
+                                                                   },
+                                                                   "top": {
+                                                                       "lineStyle": "Single",
+                                                                       "lineWidth": 0.5,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false,
+                                                                       "color": "#000000FF"
+                                                                   },
+                                                                   "bottom": {
+                                                                       "lineStyle": "Single",
+                                                                       "lineWidth": 0.5,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false,
+                                                                       "color": "#000000FF"
+                                                                   },
+                                                                   "vertical": {
+                                                                       "lineStyle": "None",
+                                                                       "lineWidth": 0.0,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false
+                                                                   },
+                                                                   "horizontal": {
+                                                                       "lineStyle": "None",
+                                                                       "lineWidth": 0.0,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false
+                                                                   },
+                                                                   "diagonalDown": {
+                                                                       "lineStyle": "None",
+                                                                       "lineWidth": 0.0,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false
+                                                                   },
+                                                                   "diagonalUp": {
+                                                                       "lineStyle": "None",
+                                                                       "lineWidth": 0.0,
+                                                                       "shadow": false,
+                                                                       "space": 0.0,
+                                                                       "hasNoneStyle": false
+                                                                   }
+                                                               },
+                                                               "cellWidth": 204.5
+                                                           }
+                                                       }
+                                                   ]
+                                               }
+                                           ],
+                                           "title": null,
+                                           "description": null,
+                                           "wrapTextAround": true,
+                                           "positioning": {
+                                               "allowOverlap": true,
+                                               "distanceTop": 0.0,
+                                               "distanceRight": 9.0,
+                                               "distanceLeft": 9.0,
+                                               "distanceBottom": 0.0,
+                                               "verticalOrigin": "Paragraph",
+                                               "verticalAlignment": "None",
+                                               "verticalPosition": -1.45,
+                                               "horizontalOrigin": "Page",
+                                               "horizontalAlignment": "Left",
+                                               "horizontalPosition": 296.3
+                                           },
+                                           "tableFormat": {
+                                               "allowAutoFit": true,
+                                               "leftIndent": 0.0,
+                                               "tableAlignment": "Left",
+                                               "preferredWidthType": "Auto",
+                                               "borders": {
+                                                   "left": {
+                                                       "lineStyle": "Single",
+                                                       "lineWidth": 0.5,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false,
+                                                       "color": "#000000FF"
+                                                   },
+                                                   "right": {
+                                                       "lineStyle": "Single",
+                                                       "lineWidth": 0.5,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false,
+                                                       "color": "#000000FF"
+                                                   },
+                                                   "top": {
+                                                       "lineStyle": "Single",
+                                                       "lineWidth": 0.5,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false,
+                                                       "color": "#000000FF"
+                                                   },
+                                                   "bottom": {
+                                                       "lineStyle": "Single",
+                                                       "lineWidth": 0.5,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false,
+                                                       "color": "#000000FF"
+                                                   },
+                                                   "vertical": {
+                                                       "lineStyle": "Single",
+                                                       "lineWidth": 0.5,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false,
+                                                       "color": "#000000FF"
+                                                   },
+                                                   "horizontal": {
+                                                       "lineStyle": "Single",
+                                                       "lineWidth": 0.5,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false,
+                                                       "color": "#000000FF"
+                                                   },
+                                                   "diagonalDown": {
+                                                       "lineStyle": "None",
+                                                       "lineWidth": 0.0,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false
+                                                   },
+                                                   "diagonalUp": {
+                                                       "lineStyle": "None",
+                                                       "lineWidth": 0.0,
+                                                       "shadow": false,
+                                                       "space": 0.0,
+                                                       "hasNoneStyle": false
+                                                   }
+                                               },
+                                               "bidi": false,
+                                               "horizontalPositionAbs": "Left",
+                                               "horizontalPosition": 296.3
+                                           }
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fdg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fd"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fd"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "D"
+                                               },
+                                               {
+                                                   "text": "f"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "F"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "G"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fdg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fdg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fd"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Gdf"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Gdf"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Gdfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fdg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfgdfgdf"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fdgfdg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Fdg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Df"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dfgdf"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dffg"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Sd"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Sdfdsf"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "Dsfds"
+                                               }
+                                           ]
+                                       },
+                                       {
+                                           "inlines": [
+                                               {
+                                                   "text": "dsfdsfdsf"
+                                               }
+                                           ]
+                                       }
+                                   ],
+                                   "cellFormat": {
+                                       "columnSpan": 1,
+                                       "rowSpan": 1,
+                                       "preferredWidth": 467.5,
+                                       "preferredWidthType": "Point",
+                                       "verticalAlignment": "Top",
+                                       "borders": {
+                                           "left": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           },
+                                           "right": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           },
+                                           "top": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           },
+                                           "bottom": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           },
+                                           "vertical": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           },
+                                           "horizontal": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           },
+                                           "diagonalDown": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           },
+                                           "diagonalUp": {
+                                               "lineStyle": "None",
+                                               "lineWidth": 0.0,
+                                               "shadow": false,
+                                               "space": 0.0,
+                                               "hasNoneStyle": false
+                                           }
+                                       },
+                                       "cellWidth": 467.5
+                                   }
+                               }
+                           ]
+                       }
+                   ],
+                   "title": null,
+                   "description": null,
+                   "tableFormat": {
+                       "allowAutoFit": true,
+                       "leftIndent": 0.0,
+                       "tableAlignment": "Left",
+                       "preferredWidthType": "Auto",
+                       "borders": {
+                           "left": {
+                               "lineStyle": "Single",
+                               "lineWidth": 0.5,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false,
+                               "color": "#000000FF"
+                           },
+                           "right": {
+                               "lineStyle": "Single",
+                               "lineWidth": 0.5,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false,
+                               "color": "#000000FF"
+                           },
+                           "top": {
+                               "lineStyle": "Single",
+                               "lineWidth": 0.5,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false,
+                               "color": "#000000FF"
+                           },
+                           "bottom": {
+                               "lineStyle": "Single",
+                               "lineWidth": 0.5,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false,
+                               "color": "#000000FF"
+                           },
+                           "vertical": {
+                               "lineStyle": "Single",
+                               "lineWidth": 0.5,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false,
+                               "color": "#000000FF"
+                           },
+                           "horizontal": {
+                               "lineStyle": "Single",
+                               "lineWidth": 0.5,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false,
+                               "color": "#000000FF"
+                           },
+                           "diagonalDown": {
+                               "lineStyle": "None",
+                               "lineWidth": 0.0,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false
+                           },
+                           "diagonalUp": {
+                               "lineStyle": "None",
+                               "lineWidth": 0.0,
+                               "shadow": false,
+                               "space": 0.0,
+                               "hasNoneStyle": false
+                           }
+                       },
+                       "bidi": false,
+                       "horizontalPositionAbs": "Left",
+                       "horizontalPosition": 0.0
+                   }
+               },
+               {
+                   "inlines": [
+                       {
+                           "text": "Test"
+                       }
+                   ]
+               }
+           ],
+           "headersFooters": {},
+           "sectionFormat": {
+               "headerDistance": 36.0,
+               "footerDistance": 36.0,
+               "pageWidth": 612.0,
+               "pageHeight": 792.0,
+               "leftMargin": 72.0,
+               "rightMargin": 72.0,
+               "topMargin": 72.0,
+               "bottomMargin": 72.0,
+               "differentFirstPage": false,
+               "differentOddAndEvenPages": false,
+               "bidi": false,
+               "restartPageNumbering": false,
+               "pageStartingNumber": 0,
+               "endnoteNumberFormat": "LowerCaseRoman",
+               "footNoteNumberFormat": "Arabic",
+               "restartIndexForFootnotes": "DoNotRestart",
+               "restartIndexForEndnotes": "DoNotRestart",
+               "columns": {
+                   "column": [
+                       {
+                           "width": 468.0,
+                           "space": 36.0
+                       }
+                   ],
+                   "numberOfColumns": 1,
+                   "equalWidth": true
+               }
+           }
+       }
+   ],
+   "fontSubstitutionTable": {
+       "DengXian": "等线",
+       "DengXian Light": "等线 Light"
+   },
+   "characterFormat": {
+       "fontSize": 11.0,
+       "fontFamily": "Calibri",
+       "fontSizeBidi": 11.0,
+       "fontFamilyBidi": "Arial"
+   },
+   "paragraphFormat": {
+       "afterSpacing": 8.0,
+       "lineSpacing": 1.0791666507720947,
+       "lineSpacingType": "Multiple"
+   },
+   "background": {
+       "color": "#FFFFFFFF"
+   },
+   "styles": [
+       {
+           "type": "Paragraph",
+           "name": "Normal",
+           "next": "Normal",
+           "characterFormat": {
+               "fontSize": 10.0,
+               "fontFamily": "Times New Roman",
+               "fontColor": "#000000FF",
+               "fontSizeBidi": 12.0
+           },
+           "paragraphFormat": {
+               "afterSpacing": 0.0,
+               "lineSpacing": 1.0,
+               "lineSpacingType": "Multiple"
+           }
+       },
+       {
+           "type": "Character",
+           "name": "Default Paragraph Font"
+       }
+   ],
+   "defaultTabWidth": 36.0,
+   "formatting": false,
+   "trackChanges": false,
+   "protectionType": "NoProtection",
+   "enforcement": false,
+   "dontUseHTMLParagraphAutoSpacing": false,
+   "alignTablesRowByRow": false,
+   "formFieldShading": true,
+   "footnotes": {
+       "separator": [
+           {
+               "inlines": [
+                   {
+                       "text": "\u0003"
+                   }
+               ]
+           }
+       ],
+       "continuationSeparator": [
+           {
+               "inlines": [
+                   {
+                       "text": "\u0004"
+                   }
+               ]
+           }
+       ],
+       "continuationNotice": [
+           {
+               "inlines": []
+           }
+       ]
+   },
+   "endnotes": {
+       "separator": [
+           {
+               "inlines": [
+                   {
+                       "text": "\u0003"
+                   }
+               ]
+           }
+       ],
+       "continuationSeparator": [
+           {
+               "inlines": [
+                   {
+                       "text": "\u0004"
+                   }
+               ]
+           }
+       ],
+       "continuationNotice": [
+           {
+               "inlines": []
+           }
+       ]
+   },
+   "compatibilityMode": "Word2013"
+};
+describe('Nested position table height issue validation', () => {
+   let editor: DocumentEditor = undefined;
+   beforeAll(() => {
+      let ele: HTMLElement = createElement('div', { id: 'container' });
+      document.body.appendChild(ele);
+      DocumentEditor.Inject(Selection, Editor)
+      editor = new DocumentEditor({ isReadOnly: false, enableEditor: true });
+      (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+      (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+      (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+      (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+      editor.appendTo('#container');
+   });
+   afterAll((done) => {
+      editor.destroy();
+      document.body.removeChild(document.getElementById('container'));
+      editor = undefined;
+      document.body.innerHTML = '';
+      setTimeout(function () {
+         done();
+      }, 1000);
+   });
+   it('Nested position table height issue validation', () => {
+      editor.open(JSON.stringify(nestedWrapTableDoc));
+      expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as BlockWidget).height).toBeGreaterThan(840);
+      expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as BlockWidget).height).toBeLessThan(845);
+   });
+});

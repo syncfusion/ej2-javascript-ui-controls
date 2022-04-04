@@ -55,7 +55,8 @@ export class CellEdit {
             args.cancel = true;
             return;
         }
-        if (data.hasChildRecords && (field === taskSettings.endDate || field === taskSettings.duration
+        if (data.hasChildRecords && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
+            data['isManual'] == false) || this.parent.taskMode == 'Auto')) || field === taskSettings.duration
             || field === taskSettings.dependency || field === taskSettings.progress
             || field === taskSettings.work || field === 'taskType')) {
             args.cancel = true;
@@ -420,7 +421,8 @@ export class CellEdit {
             this.parent.setRecordValue('autoWidth',
                                        this.parent.dataOperation.calculateWidth(ganttRecord, false), ganttRecord.ganttProperties, true);
         }
-        if (!isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0) {
+        if (!isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0 &&
+           !isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
             this.parent.editModule.taskbarEditModule.updateSegmentProgress(args.data.ganttProperties);
         }
         if (!args.data.hasChildRecords) {

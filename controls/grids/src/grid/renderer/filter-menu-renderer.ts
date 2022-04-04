@@ -163,7 +163,9 @@ export class FilterMenuRenderer {
             getFilterMenuPostion(target, this.dlgObj);
         }
         this.renderFilterUI(target, column);
-        this.parent.notify(events.filterDialogCreated, {});
+        if (column.showColumnMenu) {
+            this.parent.notify(events.filterDialogCreated, {});
+        }
         if (this.parent.enableAdaptiveUI) {
             this.dlgObj.element.style.left = '0px';
             this.dlgObj.element.style.maxHeight = 'none';
@@ -313,6 +315,9 @@ export class FilterMenuRenderer {
             }
         }
         this.closeDialog();
+        if (this.parent.showColumnMenu) {
+            this.parent.notify(events.afterFilterColumnMenuClose, {});
+        }
     }
 
     private closeResponsiveDialog(): void {
@@ -322,7 +327,7 @@ export class FilterMenuRenderer {
     private clearBtnClick(column: Column): void {
         this.filterObj.removeFilteredColsByField(column.field);
         this.closeDialog();
-        const iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
+        const iconClass: string = this.parent.showColumnMenu && column.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
         const col: Element = this.parent.element.querySelector('[e-mappinguid="' + column.uid + '"]').parentElement;
         const flIcon: Element = col.querySelector(iconClass);
         if (flIcon) {

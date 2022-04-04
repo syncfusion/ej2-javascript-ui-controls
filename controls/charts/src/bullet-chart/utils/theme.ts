@@ -304,54 +304,54 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             rangeStrokes: [{ color: '#6C757D' }, { color: '#495057' }, { color: '#343A40' }]
         };
         break;
-    // case 'Fluent':
-    //     style = {
-    //         majorTickLineColor: '#C8C6C4',
-    //         minorTickLineColor: '#C8C6C4',
-    //         background: 'rgba(255, 255, 255, 0.0001)',
-    //         labelFontColor: '#3B3A39',
-    //         categoryFontColor: '#3B3A39',
-    //         labelFontFamily: 'Segoe UI',
-    //         tooltipFill: '#FFFFFF',
-    //         legendLabel: '#3B3A39',
-    //         tooltipBoldLabel: '#323130',
-    //         featuredMeasureColor: '#A19F9D',
-    //         comparativeMeasureColor: '#A19F9D',
-    //         titleFontColor: '#201F1E',
-    //         dataLabelFontColor: '#3B3A39',
-    //         titleFontFamily: 'Segoe UI',
-    //         subTitleFontColor: '#201F1E',
-    //         subTitleFontFamily: 'Segoe UI',
-    //         firstRangeColor: '#C8C6C4',
-    //         secondRangeColor: '#D2D0CE',
-    //         thirdRangeColor: '#EDEBE9',
-    //         rangeStrokes: [{ color: '#C8C6C4' }, { color: '#D2D0CE' }, { color: '#EDEBE9' }]
-    //     };
-    //     break;
-    // case 'FluentDark':
-    //     style = {
-    //         majorTickLineColor: '#484644',
-    //         minorTickLineColor: '#484644',
-    //         background: 'transparent',
-    //         labelFontColor: '#C8C6C4',
-    //         categoryFontColor: '#C8C6C4',
-    //         labelFontFamily: 'Segoe UI',
-    //         tooltipFill: '#252423',
-    //         legendLabel: '#C8C6C4',
-    //         tooltipBoldLabel: '#F3F2F1',
-    //         featuredMeasureColor: '#797775',
-    //         comparativeMeasureColor: '#797775',
-    //         titleFontColor: '#F3F2F1',
-    //         dataLabelFontColor: '#C8C6C4',
-    //         titleFontFamily: 'Segoe UI',
-    //         subTitleFontColor: '#F3F2F1',
-    //         subTitleFontFamily: 'Segoe UI',
-    //         firstRangeColor: '#484644',
-    //         secondRangeColor: '#3B3A39',
-    //         thirdRangeColor: '#292827',
-    //         rangeStrokes: [{ color: '#484644' }, { color: '#3B3A39' }, { color: '#292827' }]
-    //     };
-    //     break;
+    case 'Fluent':
+        style = {
+            majorTickLineColor: '#C8C6C4',
+            minorTickLineColor: '#C8C6C4',
+            background: 'rgba(255, 255, 255, 0.0001)',
+            labelFontColor: '#3B3A39',
+            categoryFontColor: '#3B3A39',
+            labelFontFamily: 'Segoe UI',
+            tooltipFill: '#FFFFFF',
+            legendLabel: '#3B3A39',
+            tooltipBoldLabel: '#323130',
+            featuredMeasureColor: '#A19F9D',
+            comparativeMeasureColor: '#A19F9D',
+            titleFontColor: '#201F1E',
+            dataLabelFontColor: '#3B3A39',
+            titleFontFamily: 'Segoe UI',
+            subTitleFontColor: '#201F1E',
+            subTitleFontFamily: 'Segoe UI',
+            firstRangeColor: '#C8C6C4',
+            secondRangeColor: '#D2D0CE',
+            thirdRangeColor: '#EDEBE9',
+            rangeStrokes: [{ color: '#C8C6C4' }, { color: '#D2D0CE' }, { color: '#EDEBE9' }]
+        };
+        break;
+    case 'FluentDark':
+        style = {
+            majorTickLineColor: '#484644',
+            minorTickLineColor: '#484644',
+            background: 'transparent',
+            labelFontColor: '#C8C6C4',
+            categoryFontColor: '#C8C6C4',
+            labelFontFamily: 'Segoe UI',
+            tooltipFill: '#252423',
+            legendLabel: '#C8C6C4',
+            tooltipBoldLabel: '#F3F2F1',
+            featuredMeasureColor: '#797775',
+            comparativeMeasureColor: '#797775',
+            titleFontColor: '#F3F2F1',
+            dataLabelFontColor: '#C8C6C4',
+            titleFontFamily: 'Segoe UI',
+            subTitleFontColor: '#F3F2F1',
+            subTitleFontFamily: 'Segoe UI',
+            firstRangeColor: '#484644',
+            secondRangeColor: '#3B3A39',
+            thirdRangeColor: '#292827',
+            rangeStrokes: [{ color: '#484644' }, { color: '#3B3A39' }, { color: '#292827' }]
+        };
+        break;
     default:
         // eslint-disable-next-line no-self-assign
         style = style;

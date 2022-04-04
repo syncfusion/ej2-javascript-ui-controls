@@ -1,0 +1,18 @@
+@include export-module('check-box-bootstrap-dark-icons') {
+  .e-checkbox-wrapper,
+  .e-css.e-checkbox-wrapper {
+    @at-root {
+      & .e-check {
+        &::before {
+          content: '\e21d';
+      }
+    }
+
+      & .e-stop {
+        &::before {
+          content: '\e99f';
+        }
+      }
+    }
+  }
+}

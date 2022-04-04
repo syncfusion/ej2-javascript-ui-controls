@@ -348,7 +348,7 @@ describe('Vertical View Event Render Module', () => {
             IsAllDay: true
         }];
         beforeAll((done: DoneFn) => {
-            const model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 2), eventSettings:{spannedEventPlacement: 'TimeSlot'} };
+            const model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 2), eventSettings: { spannedEventPlacement: 'TimeSlot' } };
             schObj = util.createSchedule(model, appointments, done);
         });
         afterAll(() => {
@@ -358,9 +358,9 @@ describe('Vertical View Event Render Module', () => {
             const allDayWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-all-day-appointment-wrapper'));
             expect(allDayWrapper[3].childElementCount).toEqual(0);
             const spannedEVent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
-            let eventDetails = schObj.getEventDetails(spannedEVent);
+            const eventDetails: Record<string, any> = schObj.getEventDetails(spannedEVent);
             expect(eventDetails.IsAllDay).toEqual(false);
-            expect(spannedEVent.classList.contains("e-all-day-appointment")).toEqual(false);
+            expect(spannedEVent.classList.contains('e-all-day-appointment')).toEqual(false);
             expect(spannedEVent.offsetTop).toEqual(720);
             expect(spannedEVent.offsetHeight).toEqual(1008);
         });
@@ -371,9 +371,9 @@ describe('Vertical View Event Render Module', () => {
             const allDayWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-all-day-appointment-wrapper'));
             expect(allDayWrapper[3].childElementCount).toBeGreaterThan(0);
             const spannedEVent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
-            let eventDetails = schObj.getEventDetails(spannedEVent);
+            const eventDetails: Record<string, any> = schObj.getEventDetails(spannedEVent);
             expect(eventDetails.IsAllDay).toEqual(false);
-            expect(spannedEVent.classList.contains("e-all-day-appointment")).toEqual(true);
+            expect(spannedEVent.classList.contains('e-all-day-appointment')).toEqual(true);
             expect(spannedEVent.offsetTop).toEqual(62);
             expect(spannedEVent.offsetHeight).toEqual(22);
         });
@@ -942,9 +942,9 @@ describe('Vertical View Event Render Module', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
-        it('checking appointment presents after change start and endHour', () => {
+        it('checking appointment presents after change start and endHour', (done: DoneFn) => {
             schObj.dataBound = () => {
-                expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toEqual(3);
+                expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toEqual(5);
                 const app1: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]') as HTMLElement;
                 expect(app1.querySelectorAll('.e-indicator').length).toEqual(2);
                 expect(app1.querySelectorAll('.e-indicator')[0].classList.contains('e-up-icon')).toBe(true);
@@ -957,6 +957,7 @@ describe('Vertical View Event Render Module', () => {
                 expect(app3.querySelectorAll('.e-indicator').length).toEqual(1);
                 expect(app3.querySelectorAll('.e-indicator')[0].classList.contains('e-up-icon')).toBe(false);
                 expect(app3.querySelectorAll('.e-indicator')[0].classList.contains('e-down-icon')).toBe(true);
+                done();
             };
             expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toEqual(5);
             schObj.startHour = '09:00';
@@ -1529,6 +1530,36 @@ describe('Vertical View Event Render Module', () => {
             expect(eventList.querySelector('.e-subject').innerHTML).toBe('Burning Man');
         });
 
+    });
+
+    describe('EJ2-56503 - Vertical view event rendered arguments checking', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Normal event',
+            StartTime: new Date(2017, 10, 8, 10),
+            EndTime: new Date(2017, 10, 8, 12)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: ['Week'],
+                height: 'auto', width: '100%',
+                selectedDate: new Date(2017, 10, 6)
+            };
+            schObj = util.createSchedule(model, sampleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking event rendered event args', (done: DoneFn) => {
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                expect((args.data[schObj.eventFields.startTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 10).getTime());
+                expect((args.data[schObj.eventFields.endTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 12).getTime());
+                expect(args.data.data).toBeTruthy();
+                done();
+            };
+            schObj.refreshEvents();
+        });
     });
 
     it('memory leak', () => {

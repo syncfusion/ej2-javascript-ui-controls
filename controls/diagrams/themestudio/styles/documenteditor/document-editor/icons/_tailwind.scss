@@ -2,23 +2,23 @@
   .e-documenteditor {
     .e-close::before {
       color: $icon-color;
-      content: '\e771';
+      content: '\e7e7';
       font-family: 'e-icons';
       font-size: 14px;
     }
 
     .e-de-op-search-icon::before {
-      content: '\e737';
+      content: '\e754';
       font-family: 'e-icons';
     }
 
     .e-arrow-up::before {
-      content: '\e768';
+      content: '\e87a';
       font-family: 'e-icons';
     }
 
     .e-arrow-down::before {
-      content: '\e732';
+      content: '\e70d';
       font-family: 'e-icons';
     }
 
@@ -27,113 +27,103 @@
     }
 
     .e-de-op-close-icon::before {
-      content: '\e771';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
 
     .e-de-op-search-close-icon::before {
       color: $icon-color;
-      content: '\e771';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
 
     .e-de-new-cmt::before {
-      color: $icon-color;
-      content: '\e78a';
+      content: '\e805';
       font-family: 'e-icons';
     }
 
     .e-de-menu-icon::before {
-      color: $icon-color;
-      content: '\e75b';
+      content: '\e770';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-mark-icon::before {
       color: $icon-color;
-      content: '\e83b';
+      content: '\e733';
       font-family: 'e-icons';
       font-size: 13px;
     }
 
     .e-de-cmt-post::before {
-      content: '\e863';
+      content: '\e71d';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-rply-icon::before {
       color: $icon-color;
-      content: '\e815';
+      content: '\e85e';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-cancel::before {
-      color: $icon-color;
-      content: '\e771';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-delete::before {
-      color: $icon-color;
-      content: '\e78d';
+      content: '\e820';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-reopen::before {
-      color: $icon-color;
-      content: '\e85c';
+      content: '\e782';
       font-family: 'e-icons';
     }
 
     .e-de-nav-up::before {
-      color: $icon-color;
-      content: '\e7a0';
+      content: '\e7dd';
       font-family: 'e-icons';
     }
 
     .e-de-nav-right-arrow::before {
-      color: $icon-color;
-      content: '\e707';
+      content: '\e748';
       font-family: 'e-icons';
     }
 
     .e-de-nav-left-arrow::before {
-      color: $icon-color;
-      content: '\e761';
+      content: '\e765';
       font-family: 'e-icons';
     }
 
     .e-de-save-icon::before {
-      color: $icon-color;
-      content: '\e75d';
+      content: '\e774';
       font-family: 'e-icons';
     }
 
     .e-de-cancel-icon::before {
-      color: $icon-color;
-      content: '\e771';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
   }
 
   .e-de-ctn-title-print::before {
-    content: '\e76c';
+    content: '\e75d';
   }
 
   .e-de-acceptchange::before {
     color: $icon-color;
-    content: '\e853';
+    content: '\e7a8';
     font-family: 'e-icons';
   }
 
   .e-de-rejectchange::before {
     color: $icon-color;
-    content: '\e805';
+    content: '\e815';
     font-family: 'e-icons';
   }
 
   .e-de-ctn-title-download::before {
-    content: '\e794';
+    content: '\e7a1';
   }
 
   .e-de-table-properties-alignment:hover {
@@ -154,39 +144,39 @@
 
   .e-de-table-left-alignment::before {
     color: $icon-color;
-    content: '\e7fe';
+    content: '\e7f6';
     font-size: $de-table-alignment-font-size;
   }
 
   .e-de-table-center-alignment::before {
     color: $icon-color;
-    content: '\e7f7';
+    content: '\e7f1';
     font-size: $de-table-alignment-font-size;
   }
 
   .e-de-table-right-alignment::before {
     color: $icon-color;
-    content: '\e7f4';
+    content: '\e703';
     font-size: $de-table-alignment-font-size;
   }
 
   .e-de-tablecell-top-alignment::before {
     color: $icon-color;
-    content: '\e800';
+    content: '\e775';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
   }
 
   .e-de-tablecell-center-alignment::before {
     color: $icon-color;
-    content: '\e7f6';
+    content: '\e7e5';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
   }
 
   .e-de-tablecell-bottom-alignment::before {
     color: $icon-color;
-    content: '\e7f5';
+    content: '\e7d9';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
   }
@@ -237,14 +227,14 @@
 
   .e-de-table-border-none-setting::before {
     color: $icon-color;
-    content: '\e7fa';
+    content: '\e7eb';
     font-size: $de-border-none-setting-font-size;
     position: absolute;
   }
 
   .e-de-table-border-box-setting::before {
     color: $icon-color;
-    content: '\e7ff';
+    content: '\e834';
     font-size: $de-border-setting-font-size;
     left: 2px;
     position: absolute;
@@ -253,7 +243,7 @@
 
   .e-de-table-border-all-setting::before {
     color: $icon-color;
-    content: '\e7fc';
+    content: '\e7e8';
     font-family: 'e-icons';
     font-size: $de-border-setting-font-size;
     left: 2px;
@@ -263,7 +253,7 @@
 
   .e-de-table-border-custom-setting::before {
     color: $icon-color;
-    content: '\e7fb';
+    content: '\e7d5';
     font-size: $de-border-setting-font-size;
     left: 2px;
     position: absolute;
@@ -272,7 +262,7 @@
 
   .e-de-table-border-toptop-alignment::before {
     color: $icon-color;
-    content: '\e7a7';
+    content: '\e7e0';
     font-family: 'e-icons';
     font-size: 16px;
     left: 4px;
@@ -282,7 +272,7 @@
 
   .e-de-table-border-topcenter-alignment::before {
     color: $icon-color;
-    content: '\e73b';
+    content: '\e83b';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -291,7 +281,7 @@
 
   .e-de-table-border-topbottom-alignment::before {
     color: $icon-color;
-    content: '\e791';
+    content: '\e766';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -300,7 +290,7 @@
 
   .e-de-table-border-diagionalup-alignment::before {
     color: $icon-color;
-    content: '\e764';
+    content: '\e79d';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -309,7 +299,7 @@
 
   .e-de-table-border-diagionaldown-alignment::before {
     color: $icon-color;
-    content: '\e7ca';
+    content: '\e784';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -318,7 +308,7 @@
 
   .e-de-table-border-bottomleft-alignment::before {
     color: $icon-color;
-    content: '\e784';
+    content: '\e806';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -327,7 +317,7 @@
 
   .e-de-table-border-bottomcenter-alignment::before {
     color: $icon-color;
-    content: '\e702';
+    content: '\e792';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -336,7 +326,7 @@
 
   .e-de-table-border-bottomright-alignment::before {
     color: $icon-color;
-    content: '\e72e';
+    content: '\e7ab';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -344,118 +334,95 @@
   }
 
   .e-menu-item .e-de-cmt-add::before {
-    color: $icon-color;
-    content: '\e82a';
+    content: '\e82c';
   }
 
   .e-menu-item .e-de-cut::before {
-    color: $icon-color;
-    content: '\e763';
+    content: '\e7fb';
   }
 
   .e-menu-item .e-de-spellcheck::before {
-    color: $icon-color;
-    content: '\e83e';
+    content: '\e7f0';
   }
 
   .e-menu-item .e-de-copy::before {
-    color: $icon-color;
-    content: '\e7ce';
+    content: '\e77c';
   }
 
   .e-menu-item .e-de-paste::before {
-    color: $icon-color;
-    content: '\e75e';
+    content: '\e70b';
   }
 
   .e-menu-item .e-de-continue-numbering::before {
-    color: $icon-color;
-    content: '\e7b8';
+    content: '\e718';
   }
 
   .e-menu-item .e-de-restart-at::before {
-    color: $icon-color;
-    content: '\e7df';
+    content: '\e715';
   }
 
   .e-menu-item .e-de-insertlink::before {
-    color: $icon-color;
-    content: '\e74a';
-  }
-
-  .e-menu-item .e-de-open-hyperlink::before {
-    color: $icon-color;
-    content: '\e77a';
-  }
-
-  .e-menu-item .e-de-copy-hyperlink::before {
-    color: $icon-color;
-    content: '\e786';
-  }
-
-  .e-menu-item .e-de-open-properties::before {
-    color: $icon-color;
-    content: '\e743';
-  }
-
-  .e-menu-item .e-de-edit-hyperlink::before {
-    color: $icon-color;
-    content: '\e7ad';
-  }
-
-  .e-menu-item .e-de-remove-hyperlink::before {
-    color: $icon-color;
-    content: '\e714';
-  }
-
-  .e-menu-item .e-de-fonts::before {
-    color: $icon-color;
-    content: '\e766';
-  }
-
-  .e-menu-item .e-de-paragraph::before {
-    color: $icon-color;
-    content: '\e7ae';
-  }
-
-  .e-menu-item .e-de-table::before {
-    color: $icon-color;
-    content: '\e79f';
-  }
-
-  .e-menu-item .e-de-insertabove::before {
-    color: $icon-color;
-    content: '\e7dd';
-  }
-
-  .e-menu-item .e-de-insertbelow::before {
-    color: $icon-color;
     content: '\e757';
   }
 
+  .e-menu-item .e-de-open-hyperlink::before {
+    content: '\e797';
+  }
+
+  .e-menu-item .e-de-copy-hyperlink::before {
+    content: '\e745';
+  }
+
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e77e';
+  }
+
+  .e-menu-item .e-de-edit-hyperlink::before {
+    content: '\e722';
+  }
+
+  .e-menu-item .e-de-remove-hyperlink::before {
+    content: '\e80c';
+  }
+
+  .e-menu-item .e-de-fonts::before {
+    content: '\e76f';
+  }
+
+  .e-menu-item .e-de-paragraph::before {
+    content: '\e7b8';
+  }
+
+  .e-menu-item .e-de-table::before {
+    content: '\e7d1';
+  }
+
+  .e-menu-item .e-de-insertabove::before {
+    content: '\e836';
+  }
+
+  .e-menu-item .e-de-insertbelow::before {
+    content: '\e801';
+  }
+
   .e-menu-item .e-de-insertleft::before {
-    color: $icon-color;
-    content: '\e7db';
+    content: '\e78b';
   }
 
   .e-menu-item .e-de-insertright::before {
-    color: $icon-color;
-    content: '\e710';
+    content: '\e70e';
   }
 
   .e-menu-item .e-de-delete-table::before {
-    color: $icon-color;
-    content: '\e703';
+    content: '\e811';
   }
 
   .e-menu-item .e-de-deleterow::before {
-    color: $icon-color;
-    content: '\e75a';
+    content: '\e7f2';
   }
 
   .e-menu-item .e-de-deletecolumn::before {
-    color: $icon-color;
-    content: '\e721';
+    content: '\e714';
   }
 
   // .e-de-tablecell-top-alignment {
@@ -471,201 +438,173 @@
   // }
 
   .e-de-bold::before {
-    color: $icon-color;
-    content: '\e79d';
+    content: '\e737';
     font-family: 'e-icons';
   }
 
   .e-de-italic::before {
-    color: $icon-color;
-    content: '\e722';
+    content: '\e75a';
     font-family: 'e-icons';
   }
 
   .e-de-underline::before {
-    color: $icon-color;
-    content: '\e7d4';
+    content: '\e82f';
     font-family: 'e-icons';
   }
 
   .e-de-indent::before {
-    color: $icon-color;
-    content: '\e735';
+    content: '\e72a';
     font-family: 'e-icons';
   }
 
   .e-de-outdent::before {
-    color: $icon-color;
-    content: '\e7ac';
+    content: '\e810';
     font-family: 'e-icons';
   }
 
   .e-de-align-left::before {
-    color: $icon-color;
-    content: '\e7ae';
+    content: '\e7b8';
     font-family: 'e-icons';
   }
 
   .e-de-align-center::before {
-    color: $icon-color;
-    content: '\e74f';
+    content: '\e813';
     font-family: 'e-icons';
   }
 
   .e-de-align-right::before {
-    color: $icon-color;
-    content: '\e772';
+    content: '\e719';
     font-family: 'e-icons';
   }
 
   .e-de-justify::before {
-    color: $icon-color;
-    content: '\e723';
+    content: '\e721';
     font-family: 'e-icons';
   }
 
   .e-de-single-spacing::before {
-    color: $icon-color;
-    content: '\e7e5';
+    content: '\e771';
     font-family: 'e-icons';
   }
 
   .e-de-double-spacing::before {
-    color: $icon-color;
-    content: '\e7e7';
+    content: '\e7c4';
     font-family: 'e-icons';
   }
 
   .e-de-one-point-five-spacing::before {
-    color: $icon-color;
-    content: '\e7eb';
+    content: '\e725';
     font-family: 'e-icons';
   }
 
   .e-de-before-spacing::before {
-    color: $icon-color;
-    content: '\e833';
+    content: '\e7b5';
     font-family: 'e-icons';
   }
 
   .e-de-after-spacing::before {
-    color: $icon-color;
-    content: '\e80f';
+    content: '\e767';
     font-family: 'e-icons';
   }
 
   .e-de-icon-bullet-list-dot::before {
-    color: $icon-color;
-    content: '\e7e8';
+    content: '\e747';
     font-family: 'e-icons';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-icon-bullet-list-circle::before {
-    color: $icon-color;
-    content: '\e803';
+    content: '\e7d0';
     font-family: 'e-icons';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-icon-bullet-list-square::before {
-    color: $icon-color;
-    content: '\e804';
+    content: '\e7be';
     font-family: 'e-icons';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-icon-bullet-list-tick::before {
-    color: $icon-color;
-    content: '\e7ec';
+    content: '\e7fc';
     font-family: 'e-icons';
     font-size: 12px;
   }
 
   .e-de-icon-bullet-list-flower::before {
-    color: $icon-color;
-    content: '\e7e4';
+    content: '\e79b';
     font-family: 'e-icons';
     font-size: 12px;
   }
 
   .e-de-icon-bullet-list-arrow::before {
-    color: $icon-color;
-    content: '\e7e9';
+    content: '\e763';
     font-family: 'e-icons';
     font-size: 12px;
   }
 
   .e-de-icon-bullet-list-none::before {
-    color: $icon-color;
-    content: '\e7e1';
+    content: '\e7f3';
     font-family: 'e-icons';
     font-size: 24px;
   }
 
   .e-de-icon-autofit::before {
-    color: $icon-color;
-    content: '\e71a';
+    content: '\e74a';
     font-family: 'e-icons';
   }
 
   .e-de-icon-fixed-columnwidth::before {
-    color: $icon-color;
-    content: '\e76e';
+    content: '\e785';
     font-family: 'e-icons';
   }
 
   .e-de-icon-auto-fitwindow::before {
-    color: $icon-color;
-    content: '\e773';
+    content: '\e759';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-text::before {
-    color: $icon-color;
-    content: '\e807';
+    content: '\e70f';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-source::before {
-    color: $icon-color;
-    content: '\e84f';
+    content: '\e842';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-merge::before {
-    color: $icon-color;
-    content: '\e85d';
+    content: '\e752';
     font-family: 'e-icons';
   }
 
   .e-btn-icon .e-de-paste::before,
   .e-icon-btn .e-de-paste::before {
-    color: $icon-color;
-    content: '\e75e';
+    content: '\e70b';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-column::before {
-    content: '\e869';
+    content: '\e885';
   }
 
   .e-item .e-de-paste-row::before {
-    content: '\e866';
+    content: '\e884';
   }
 
   .e-item .e-de-paste-overwrite-cells::before {
-    content: '\e86b';
+    content: '\e886';
   }
 
   .e-item .e-de-paste-nested-table::before {
-    content: '\e864';
+    content: '\e883';
   }
 
   .e-item .e-de-paste-merge-table::before {
-    content: '\e861';
+    content: '\e882';
   }
 }

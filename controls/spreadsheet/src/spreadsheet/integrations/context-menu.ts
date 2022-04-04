@@ -5,8 +5,8 @@ import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
 import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect } from '../common/index';
-import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale } from '../common/index';
-import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel } from '../../workbook/common/index';
+import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
+import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel} from '../../workbook/common/index';
 import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow } from '../../workbook/index';
 
 /**
@@ -99,7 +99,7 @@ export class ContextMenu {
                     end: this.parent.activeSheetIndex, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex });
                 break;
             case id + '_hide_sheet':
-                this.parent.notify(hideSheet, null);
+                this.parent.notify(hideSheet, { sheetIndex: this.parent.activeSheetIndex, triggerEvent: true });
                 break;
             case id + '_duplicate':
                 duplicateSheet(this.parent, undefined, true);
@@ -191,13 +191,13 @@ export class ContextMenu {
                 this.parent.notify(openHyperlink, null);
                 break;
             case id + '_removeHyperlink':
-                this.parent.removeHyperlink(this.parent.getActiveSheet().selectedRange);
+                this.parent.notify(removeHyperlink, { range: this.parent.getActiveSheet().selectedRange });
                 break;
             case id + '_protect':
                 sheet = this.parent.getActiveSheet();
                 this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
                 isActive = sheet.isProtected ? false : true;
-                this.parent.notify(applyProtect, { isActive: isActive });
+                this.parent.notify(applyProtect, { isActive: isActive, sheetIndex: this.parent.activeSheetIndex, triggerEvent: true });
                 break;
             }
         }
@@ -261,7 +261,8 @@ export class ContextMenu {
                     args.element.querySelector('#' + this.parent.element.id + '_cmenu_delete_row');
                 if (this.parent.allowInsert && insertEle.classList.contains('e-disabled')) {
                     insertEle.classList.remove('e-disabled');
-                } else if (!this.parent.allowInsert && !insertEle.classList.contains('e-disabled')) {
+                } else if ((!this.parent.allowInsert || !!this.parent.element.querySelector('.e-selectall.e-highlight')) &&
+                    !insertEle.classList.contains('e-disabled')) {
                     insertEle.classList.add('e-disabled');
                 }
                 if (this.parent.allowDelete && deleteEle.classList.contains('e-disabled')) {
@@ -332,8 +333,8 @@ export class ContextMenu {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]], ['Above', 'Below']);
-            if (!sheet.frozenRows && !sheet.frozenColumns && (!targetEle || targetEle.classList.contains('e-rowresize') ||
-                !targetEle.parentElement || !targetEle.parentElement.classList.value.includes('e-hide'))) {
+            if (!targetEle || targetEle.classList.contains('e-rowresize') || !targetEle.parentElement ||
+                !targetEle.parentElement.classList.value.includes('e-hide')) {
                 this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
             }
         } else if (target === 'ColumnHeader') {
@@ -341,7 +342,7 @@ export class ContextMenu {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]], ['Before', 'After']);
-            if (!sheet.frozenRows && !sheet.frozenColumns && (!targetEle || !targetEle.classList.value.includes('e-hide'))) {
+            if (!targetEle || !targetEle.classList.value.includes('e-hide')) {
                 this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
             }
         } else if (target === 'SelectAll') {

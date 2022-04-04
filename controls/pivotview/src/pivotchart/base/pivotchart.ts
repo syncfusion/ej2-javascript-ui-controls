@@ -755,7 +755,7 @@ export class PivotChart {
 
     private pointClick(args: IPointEventArgs): void {
         let dataSource: any = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.seriesIndex].dataSource;
-        if (((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) && this.parent.dataSourceSettings.rows.length > 1) {
+        if (((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) && (this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.rows.length > 1)) {
             this.pivotIndex = {
                 rIndex: dataSource ? dataSource[args.pointIndex].rIndex : undefined,
                 cIndex: dataSource ? dataSource[args.pointIndex].cIndex : undefined,
@@ -816,6 +816,7 @@ export class PivotChart {
                 currentYAxis.labelFormat = currentYAxis.labelFormat ?
                     currentYAxis.labelFormat : (percentChart ? '' : (!resFormat ? format : 'N'));
                 currentYAxis.title = currentYAxis.title ? currentYAxis.title : measureAggregatedName;
+                currentYAxis.zoomFactor = isNullOrUndefined(this.chartSettings.primaryYAxis.zoomFactor) ? 1 : this.chartSettings.primaryYAxis.zoomFactor;
                 currentYAxis.edgeLabelPlacement = this.chartSettings.primaryYAxis.edgeLabelPlacement ? this.chartSettings.primaryYAxis.edgeLabelPlacement : this.persistSettings.primaryYAxis.edgeLabelPlacement;
                 if (this.chartSettings.chartSeries.type === 'Bar' || this.chartSettings.chartSeries.type === 'StackingBar' ||
                     this.chartSettings.chartSeries.type === 'StackingBar100') {
@@ -865,6 +866,7 @@ export class PivotChart {
                 (((formatSetting.format.toLowerCase().match(/n[0-10]|p[0-10]|c[0-10]/) === null) || lengthofFormat > 3) ? 'N' : formatSetting.format) :
                 this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
             currentYAxis = this.persistSettings.primaryYAxis ? this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
+            currentYAxis.zoomFactor = isNullOrUndefined(this.chartSettings.primaryYAxis.zoomFactor) ? 1 : this.chartSettings.primaryYAxis.zoomFactor;
             currentYAxis.rowIndex = 0;
             currentYAxis.columnIndex = 0;
             currentYAxis.edgeLabelPlacement = this.chartSettings.primaryYAxis.edgeLabelPlacement ? this.chartSettings.primaryYAxis.edgeLabelPlacement : this.persistSettings.primaryYAxis.edgeLabelPlacement;
@@ -1204,13 +1206,6 @@ export class PivotChart {
             }
             (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.width = width + 'px';
         }
-        this.parent.chart.height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
-            this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
-            this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ?  /* eslint-disable-line */
-            isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
-            (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
-                ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() :
-                this.getChartHeight().toString() : this.getChartHeight().toString();
         this.updateView();
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.chartLoaded, args);
@@ -1407,7 +1402,7 @@ export class PivotChart {
         }
     }
 
-    private getChartHeight(): string {
+    public getChartHeight(): string {
         let height: string;
         let offSetHeight: number;
         if (isNullOrUndefined(this.parent.getHeightAsNumber())) {
@@ -1623,7 +1618,7 @@ export class PivotChart {
         if (this.parent && this.parent.isDestroyed) {
             return;
         }
-        if (this.engineModule) {
+        if (this.engineModule && !this.parent.destroyEngine) {
             this.engineModule.fieldList = {};
             this.engineModule = {} as PivotEngine | OlapEngine;
         }

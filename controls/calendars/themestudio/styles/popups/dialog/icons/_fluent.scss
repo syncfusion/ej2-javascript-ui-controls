@@ -1,7 +1,7 @@
 @include export-module('dialog-fluent-icons') {
   .e-dialog {
     .e-icon-dlg-close::before {
-      content: '\e74f';
+      content: '\e7e7';
       position: relative;
     }
 
@@ -21,7 +21,7 @@
     .e-south-west::before,
     .e-north-east::before,
     .e-north-west::before {
-      content: '\e870';
+      content: '\e761';
     }
   }
 }

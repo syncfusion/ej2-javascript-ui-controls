@@ -25,6 +25,7 @@ export class ContextMenu {
     private currentItems: MenuItemModel[] = [];
     private currentElement: HTMLElement = null;
     private disabledItems: string[] = [];
+    private targetNodeElement: HTMLElement;
     // eslint-disable-next-line
     public menuItemData: object;
     /**
@@ -88,14 +89,11 @@ export class ContextMenu {
         let data: { [key: string]: Object };
         let treeFolder: boolean = false;
         let target: Element = args.event.target as Element;
-        this.menuTarget = <HTMLElement>target;
+        this.menuTarget = this.targetNodeElement = <HTMLElement>target;
         this.currentElement = args.element;
         if (target.classList.contains('e-spinner-pane')) {
             target = this.parent.navigationpaneModule.activeNode.getElementsByClassName(CLS.FULLROW)[0];
-            this.menuTarget = <HTMLElement>target;
-        }
-        if (target.classList.contains(CLS.FULLROW)) {
-            this.parent.selectedItems.length = 0;
+            this.menuTarget = this.targetNodeElement = <HTMLElement>target;
         }
         this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr.e-row') as HTMLElement : target as HTMLElement;
         const view: string = this.getTargetView(target);
@@ -197,7 +195,7 @@ export class ContextMenu {
             this.enableItems(this.disabledItems, false, true);
             args.cancel = menuOpenArgs.cancel;
             if (menuOpenArgs.cancel) {
-                this.menuTarget = this.currentElement = null;
+                this.menuTarget = this.targetNodeElement = this.currentElement = null;
             }
         });
     }
@@ -319,7 +317,11 @@ export class ContextMenu {
             this.parent.itemData = details;
         } else {
             this.parent.notify(events.selectedData, {});
-            details = this.parent.itemData;
+            if (this.parent.activeModule === 'navigationpane' && itemText === 'open') {
+                details = [this.menuItemData];
+            } else {
+                details = this.parent.itemData;
+            }
         }
         const eventArgs: MenuClickEventArgs = {
             cancel: false,
@@ -391,6 +393,8 @@ export class ContextMenu {
                 case 'open':
                     if (this.parent.visitedItem) {
                         this.parent.notify(events.openInit, { target: this.parent.visitedItem });
+                    } else if (this.parent.activeModule === 'navigationpane') {
+                        this.parent.navigationpaneModule.openFileOnContextMenuClick(closest(this.targetNodeElement, 'li') as HTMLLIElement);
                     }
                     break;
                 case 'details':

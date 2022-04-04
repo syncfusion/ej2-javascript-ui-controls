@@ -1878,6 +1878,119 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 200);
         });
     });
+    describe('Removing the image with link and caption applied', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        let innerHTML1: string = `
+            <p>testing&nbsp;<span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><a href="http://www.google.com" contenteditable="true" target="_blank"><img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/></a><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('image remove with quickToolbar check', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('img');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(function () {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
+                expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+                quickTBItem.item(3).click();
+                expect((<any>rteObj).contentModule.getEditPanel().querySelector('span.e-img-caption')).toBe(null);
+                done();
+            }, 200);
+        });
+    });
+    
+    describe('Removing the image with link and caption applied', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        let innerHTML1: string = `
+            <p>testing&nbsp;<span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><a href="http://www.google.com" contenteditable="true" target="_blank"><img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/></a><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('image remove with quickToolbar check', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('img');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(function () {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
+                expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+                quickTBItem.item(3).click();
+                expect((<any>rteObj).contentModule.getEditPanel().querySelector('span.e-img-caption')).toBe(null);
+                done();
+            }, 200);
+        });
+    });
 
     describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
         let rteEle: HTMLElement;
@@ -2028,6 +2141,69 @@ client side. Customer easy to edit the contents and get the HTML content for
             keyBoardEvent.code = 'Backspace';
             (rteObj as any).keyDown(keyBoardEvent);
             expect((<any>rteObj).inputElement.querySelector('.e-img-caption')).toBe(null);
+            done();
+        });
+    });
+
+    describe('EJ2-56517- Image with caption is not deleted when press backspace button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let innerHTML1: string = `testing
+        <span class="e-img-caption e-rte-img-caption e-imgbreak" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="test.png" width="auto" height="auto" style="min-width: 0px; max-width: 645px; min-height: 0px;" class="e-imgbreak e-rte-image e-resize e-img-focus"><span class="e-img-inner" contenteditable="true">image caption</span></span></span>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Image delete action checking using backspace key', (done: Function) => {
+            expect((<any>rteObj).inputElement.querySelector('.e-imgbreak')).not.toBe(null);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, (rteObj as any).inputElement.childNodes[0]);
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-imgbreak')).toBe(null);
+            done();
+        });
+    });
+
+    describe('EJ2-56517- Image with caption is not deleted when pressing delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML1: string = `testing<span class="e-img-caption e-rte-img-caption e-imgbreak" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="test.png" width="auto" height="auto" style="min-width: 0px; max-width: 645px; min-height: 0px;" class="e-imgbreak e-rte-image e-resize e-img-focus"><span class="e-img-inner" contenteditable="true">image caption</span></span></span>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value: innerHTML1,
+                insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Image delete action checking using delete key', (done: Function) => {
+            expect((<any>rteObj).inputElement.querySelector('.e-imgbreak')).not.toBe(null);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, (rteObj as any).inputElement.childNodes[0]);
+            keyBoardEvent.keyCode = 46;
+            keyBoardEvent.code = 'Delete';
+            keyBoardEvent.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-img-imgbreak')).toBe(null);
             done();
         });
     });
@@ -3878,6 +4054,54 @@ client side. Customer easy to edit the contents and get the HTML content for
                     done();
                 }, 100);
             }, 100);
+        });
+    });
+    describe('EJ2-58062 - RTE Drag and Drop Image', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        let actionCompleteContent: boolean = false;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                        <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                        </textarea>
+                        <div id="dateError"></div>
+                    </div>
+                    ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                actionComplete: actionCompleteFun
+            });
+            function actionCompleteFun(args: any): void {
+                actionCompleteContent = true;
+            }
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-imginline'))
+            done();
+        });
+        it("EJ2-58062 - Check insertDragImage -Internal image when File data is returned", function () {
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('e-rte-drag-image');
+            image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            rteObj.inputElement.appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+            detach(document.getElementsByTagName('IMG')[0]);
         });
     });
 });

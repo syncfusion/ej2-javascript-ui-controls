@@ -10,7 +10,7 @@ import { TextStyleModel, TooltipBorderModel, TooltipModel, ToolLocationModel, Ar
 import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate } from './interface';
 import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';
 import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';
-import { removeElement, TextOption, TooltipLocation, PathOption } from './helper';
+import { removeElement, TextOption, TooltipLocation, PathOption, withInAreaBounds } from './helper';
 import { TooltipShape, TooltipTheme, TooltipPlacement } from './enum';
 
 /**
@@ -197,6 +197,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public shared: boolean;
 
     /**
+     * To enable crosshair tooltip animation.
+     *
+     * @default false.
+     * @private
+     */
+     @Property(false)
+     public crosshair: boolean;
+
+    /**
      * To enable shadow for the tooltip.
      *
      * @default true.
@@ -356,7 +365,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    @Property(2)
+    @Property(4)
     public rx: number;
 
     /**
@@ -364,7 +373,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    @Property(2)
+    @Property(4)
     public ry: number;
 
     /**
@@ -388,7 +397,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @private
      */
-    @Property(12)
+    @Property(7)
     public arrowPadding: number;
 
     /**
@@ -469,6 +478,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public controlInstance: object;
 
     /**
+     * Specifies the control name.
+     *
+     * @default ''
+     * @private
+     */
+     @Property('')
+     public controlName: string;
+
+    /**
      * Triggers before each axis range is rendered.
      *
      * @event tooltipRender
@@ -510,6 +528,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
     private toolTipInterval: number;
     private padding: number;
+    private areaMargin: number;
     private textElements: Element[];
     private templateFn: Function;
     private formattedText: string[];
@@ -518,7 +537,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private valueX: number;
     /** @private */
     private valueY: number;
-    private tipRadius: number;
     public fadeOuted: boolean;
     /** @private */
     private renderer: SvgRenderer;
@@ -528,7 +546,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private isWrap: boolean;
     private leftSpace: number;
     private rightSpace: number;
-    private wrappedText: string;
+    private wrappedText: string;    
+    private revert: boolean;
+    private outOfBounds: boolean;
 
 
     /**
@@ -560,6 +580,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.themeStyle = getTooltipThemeColor(this.theme);
         this.formattedText = [];
         this.padding = 5;
+        this.areaMargin = 10;
         this.isFirst = true;
         this.markerPoint = [];
     }
@@ -668,7 +689,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let rect: Rect;
         let isTop: boolean = false; let isLeft: boolean = false;
         let isBottom: boolean = false; let x: number = 0; let y: number = 0;
-        this.tipRadius = 1;
 
         if (this.header !== '') {
             this.elementSize.height += this.marginY;
@@ -710,7 +730,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const start: number = this.border.width / 2;
         const pointRect: Rect = new Rect(start + x, start + y, rect.width - start, rect.height - start);
         groupElement.setAttribute('opacity', '1');
-        if (this.enableAnimation && !this.shared && !this.isFirst) {
+        if (this.enableAnimation && !this.isFirst && !this.crosshair) {
             this.animateTooltipDiv(tooltipDiv, rect);
         } else {
             this.updateDiv(tooltipDiv, rect.x, rect.y);
@@ -726,7 +746,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         pathElement.setAttribute('d', findDirection(
             this.rx, this.ry, pointRect, arrowLocation,
-            this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius
+            this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.controlName
         ));
         if (this.enableShadow && this.theme !== 'Bootstrap4') {
             // To fix next chart initial tooltip opacity issue in tab control
@@ -748,9 +768,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             defElement.innerHTML = shadow;
         }
 
-        pathElement.setAttribute('stroke', this.border.color);
+        let borderColor: string = this.theme === "Fluent" ? "FFFFFF" : this.theme === "FluentDark" ? "323130" : this.border.color;
+        pathElement.setAttribute('stroke', borderColor);
 
         this.changeText(new TooltipLocation(x, y), isBottom, !isLeft && !isTop && !isBottom);
+
+        if (this.revert) {
+            this.inverted = !this.inverted;
+            this.revert = false;
+        }
 
         return new Side(isBottom, !isLeft && !isTop && !isBottom);
 
@@ -987,7 +1013,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.elementSize = new Size(rect.width, rect.height);
             const tooltipRect: Rect = this.shared ? this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y)
                 : this.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
-            if (this.enableAnimation && !this.shared && !this.isFirst) {
+            if (this.enableAnimation && !this.isFirst && !this.crosshair) {
                 this.animateTooltipDiv(<HTMLDivElement>this.element, tooltipRect);
             } else {
                 this.updateDiv(<HTMLDivElement>element, tooltipRect.x, tooltipRect.y);
@@ -1088,6 +1114,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const clipY: number = this.clipBounds.y;
         const boundsX: number = bounds.x;
         const boundsY: number = bounds.y;
+        this.outOfBounds = false;
         if (!this.inverted) {
             location = new TooltipLocation(
                 location.x + clipX - this.elementSize.width / 2 - this.padding,
@@ -1112,16 +1139,56 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 tipLocation.x += ((location.x + width) - (boundsX + bounds.width));
                 location.x -= ((location.x + width) - (boundsX + bounds.width));
             }
-            if (arrowLocation.x + this.arrowPadding / 2 > width - this.rx) {
-                arrowLocation.x = width - this.rx - this.arrowPadding / 2;
-                tipLocation.x = width;
-                this.tipRadius = 0;
+            if (arrowLocation.x + this.arrowPadding > width - this.rx) {
+                arrowLocation.x = width - this.rx - this.arrowPadding;
+                tipLocation.x = width - this.rx - this.arrowPadding;
             }
-            if (arrowLocation.x - this.arrowPadding / 2 < this.rx) {
-                arrowLocation.x = this.rx + this.arrowPadding / 2;
-                tipLocation.x = 0;
-                this.tipRadius = 0;
+            if (arrowLocation.x - this.arrowPadding < this.rx) {
+                arrowLocation.x = tipLocation.x = this.rx + this.arrowPadding;
             }
+
+            if (this.controlName === 'Chart') {
+                if (((bounds.x + bounds.width) - (location.x + arrowLocation.x)) < this.areaMargin + this.arrowPadding || (location.x + arrowLocation.x) < this.areaMargin + this.arrowPadding) {
+                    this.outOfBounds = true;
+                }
+    
+                if (!withInAreaBounds(location.x, location.y, bounds) || this.outOfBounds ) {
+                    this.inverted = !this.inverted;
+                    this.revert = true;
+                    location = new TooltipLocation(
+                        symbolLocation.x + markerHeight + clipX,
+                        symbolLocation.y + clipY - this.elementSize.height / 2 - (this.padding)
+                    );
+                    tipLocation.x = arrowLocation.x = 0;
+                    tipLocation.y = arrowLocation.y = height / 2;
+                    if ((location.x + this.arrowPadding + width > boundsX + bounds.width) || (this.isNegative)) {
+                        location.x = (symbolLocation.x > bounds.width ? bounds.width : symbolLocation.x)
+                            + clipX - markerHeight - (this.arrowPadding + width);
+                    }
+                    if (location.x < boundsX) {
+                        location.x = (symbolLocation.x < 0 ? 0 : symbolLocation.x) + markerHeight + clipX;
+                    }
+                    if (location.y <= boundsY) {
+                        tipLocation.y -= (boundsY - location.y);
+                        arrowLocation.y -= (boundsY - location.y);
+                        location.y = boundsY;
+                    }
+                    if (location.y + height >= bounds.height + boundsY) {
+                        arrowLocation.y += ((location.y + height) - (bounds.height + boundsY));
+                        tipLocation.y += ((location.y + height) - (bounds.height + boundsY));
+                        location.y -= ((location.y + height) - (bounds.height + boundsY));
+                    }
+                    if ((this.arrowPadding) + arrowLocation.y > height - this.ry) {
+                        arrowLocation.y = height - this.arrowPadding - this.ry;
+                        tipLocation.y = height;
+                    }
+                    if (arrowLocation.y - this.arrowPadding < this.ry) {
+                        arrowLocation.y = (this.arrowPadding) + this.ry;
+                        tipLocation.y = 0;
+                    }
+                }
+            }
+
         } else {
             location = new TooltipLocation(
                 location.x + clipX + markerHeight,
@@ -1129,7 +1196,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             );
             arrowLocation.y = tipLocation.y = height / 2;
             if ((location.x + width + this.arrowPadding > boundsX + bounds.width) || (this.isNegative)) {
-                location.x = (symbolLocation.x > bounds.width ? bounds.width : symbolLocation.x)
+                location.x = (symbolLocation.x > bounds.width + bounds.x ? bounds.width : symbolLocation.x)
                     + clipX - markerHeight - (width + this.arrowPadding);
             }
             if (location.x < boundsX) {
@@ -1145,15 +1212,54 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 tipLocation.y += ((location.y + height) - (boundsY + bounds.height));
                 location.y -= ((location.y + height) - (boundsY + bounds.height));
             }
-            if (arrowLocation.y + this.arrowPadding / 2 > height - this.ry) {
-                arrowLocation.y = height - this.ry - this.arrowPadding / 2;
+            if (arrowLocation.y + this.arrowPadding > height - this.ry) {
+                arrowLocation.y = height - this.ry - this.arrowPadding;
                 tipLocation.y = height;
-                this.tipRadius = 0;
             }
-            if (arrowLocation.y - this.arrowPadding / 2 < this.ry) {
-                arrowLocation.y = this.ry + this.arrowPadding / 2;
-                tipLocation.y = 0;
-                this.tipRadius = 0;
+            if (arrowLocation.y - this.arrowPadding < this.ry) {
+                arrowLocation.y = tipLocation.y = this.ry + this.arrowPadding;
+            }
+
+            if (this.controlName === 'Chart') {
+                if ((location.y + arrowLocation.y) < this.areaMargin + this.arrowPadding || ((bounds.y + bounds.height) - (location.y + arrowLocation.y)) < this.areaMargin + this.arrowPadding) {
+                    this.outOfBounds = true;
+                }
+    
+                if (!withInAreaBounds(location.x, location.y, bounds) || this.outOfBounds) {
+                    this.inverted = !this.inverted;
+                    location = new TooltipLocation(
+                        symbolLocation.x + clipX - this.padding - this.elementSize.width / 2,
+                        symbolLocation.y + clipY - this.elementSize.height - (2 * this.padding) - markerHeight - this.arrowPadding
+                    );
+                    this.revert = true;
+                    tipLocation.x = arrowLocation.x = width / 2;
+                    tipLocation.y = arrowLocation.y = 0;
+                    if (location.y < boundsY || (this.isNegative)) {
+                        location.y = (symbolLocation.y < 0 ? 0 : symbolLocation.y) + markerHeight + clipY;
+                    }
+                    if (location.y + this.arrowPadding + height > boundsY + bounds.height) {
+                        location.y = Math.min(symbolLocation.y, boundsY + bounds.height) + clipY
+                            - this.elementSize.height - (2 * this.padding) - markerHeight - this.arrowPadding;
+                    }
+                    tipLocation.x = width / 2;
+                    if (location.x < boundsX) {
+                        tipLocation.x -= (boundsX - location.x);
+                        arrowLocation.x -= (boundsX - location.x);
+                        location.x = boundsX;
+                    }
+                    if (location.x + width > bounds.width + boundsX) {
+                        arrowLocation.x += ((location.x + width) - (bounds.width + boundsX));
+                        tipLocation.x += ((location.x + width) - (bounds.width + boundsX));
+                        location.x -= ((location.x + width) - (bounds.width + boundsX));
+                    }
+                    if ((this.arrowPadding) + arrowLocation.x > width - this.rx) {
+                        tipLocation.x = width - this.rx - (this.arrowPadding);
+                        arrowLocation.x = width - this.rx - (this.arrowPadding);
+                    }
+                    if (arrowLocation.x - (this.arrowPadding) < this.rx) {
+                        arrowLocation.x = tipLocation.x = this.rx + (this.arrowPadding);
+                    }
+                }
             }
         }
         return new Rect(location.x, location.y, width, height);
@@ -1167,8 +1273,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             progress: (args: AnimationOptions): void => {
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;
-                tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
-                tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
+                if ((this.controlName === 'Chart' && this.shared) && !this.enableRTL) {
+                    tooltipDiv.style.transition = "transform " + 0.1 + "s";
+                    tooltipDiv.style.transform = "translate(" + (x + currenDiff * (rect.x - x)) + "px," + (y + currenDiff * (rect.y - y)) + "px)";
+                } else {
+                    tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
+                    tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
+                }
             },
             end: (model: AnimationOptions): void => {
                 this.updateDiv(tooltipDiv, rect.x, rect.y);
@@ -1179,8 +1290,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private updateDiv(tooltipDiv: HTMLDivElement, x: number, y: number): void {
-        tooltipDiv.style.left = x + 'px';
-        tooltipDiv.style.top = y + 'px';
+        if ((this.controlName === 'Chart' && this.shared && !this.crosshair) && !this.enableRTL) {
+            tooltipDiv.style.transform = "translate(" + x + "px," + y + "px)";
+        } else {
+            tooltipDiv.style.left = x + 'px';
+            tooltipDiv.style.top = y + 'px';
+        }
     }
 
 
@@ -1189,6 +1304,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             try {
                 if (document.querySelectorAll(this.template).length) {
                     this.templateFn = templateComplier(document.querySelector(this.template).innerHTML.trim());
+                } else {
+                    this.templateFn = templateComplier(this.template);
                 }
             } catch (e) {
                 this.templateFn = templateComplier(this.template);
@@ -1200,6 +1317,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public fadeOut(): void {
         const tooltipElement: HTMLElement = (this.isCanvas && !this.template) ? <HTMLElement>getElement(this.element.id + '_svg') :
             <HTMLElement>getElement(this.element.id);
+        const tooltipDiv: HTMLElement = <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
             if (tooltipGroup.nodeType != Node.ELEMENT_NODE) {
@@ -1223,6 +1341,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 end: () => {
                     this.fadeOuted = true;
                     this.endAnimation(tooltipGroup);
+                    tooltipDiv.style.transition = "";
                 }
             });
         }

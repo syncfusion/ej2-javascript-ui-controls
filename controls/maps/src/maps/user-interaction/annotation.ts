@@ -54,7 +54,7 @@ export class Annotations {
             if (argsData.cancel) {
                 return;
             }
-            templateFn = getTemplateFunction(argsData.content);
+            templateFn = getTemplateFunction(argsData.content, this.map);
             if (templateFn && templateFn(
                 this.map, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex).length) {
                 templateElement = Array.prototype.slice.call(templateFn(

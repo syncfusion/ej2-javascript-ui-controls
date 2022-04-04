@@ -86,6 +86,7 @@ export class Formula {
         const action: string = <string>args.action;
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let dialogInst: Dialog;
+        let dialogContent: string;
         switch (action) {
         case 'renderAutoComplete':
             this.renderAutoComplete();
@@ -110,20 +111,23 @@ export class Formula {
             break;
         case 'isCircularReference':
             dialogInst = (this.parent.serviceLocator.getService(dialog) as Dialog);
-            dialogInst.show({
-                height: 180, width: 400, isModal: true, showCloseIcon: true,
-                content: l10n.getConstant('CircularReference'),
-                beforeOpen: (args: BeforeOpenEventArgs): void => {
-                    const dlgArgs: DialogBeforeOpenEventArgs = {
-                        dialogName: 'CircularReferenceDialog',
-                        element: args.element, target: args.target, cancel: args.cancel
-                    };
-                    this.parent.trigger('dialogBeforeOpen', dlgArgs);
-                    if (dlgArgs.cancel) {
-                        args.cancel = true;
+            dialogContent = l10n.getConstant('CircularReference');
+            if (!(dialogInst.dialogInstance && dialogInst.dialogInstance.visible && dialogInst.dialogInstance.content === dialogContent)) {
+                dialogInst.show({
+                    height: 180, width: 400, isModal: true, showCloseIcon: true,
+                    content: l10n.getConstant('CircularReference'),
+                    beforeOpen: (args: BeforeOpenEventArgs): void => {
+                        const dlgArgs: DialogBeforeOpenEventArgs = {
+                            dialogName: 'CircularReferenceDialog',
+                            element: args.element, target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
                     }
-                }
-            });
+                });
+            }
             args.argValue = '0';
             break;
 

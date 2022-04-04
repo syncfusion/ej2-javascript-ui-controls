@@ -94,6 +94,11 @@
       visibility: visible;
     }
 
+    &.e-left.e-open.e-dock.e-blazor-dock,
+    &.e-right.e-open.e-dock.e-blazor-dock {
+      transition: width .5s ease, visibility 500ms;
+    }
+
     &.e-left.e-open.e-disable-animation,
     &.e-right.e-open.e-disable-animation,
     &.e-right.e-close.e-disable-animation,

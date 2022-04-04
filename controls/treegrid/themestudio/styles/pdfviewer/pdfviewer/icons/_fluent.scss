@@ -6,7 +6,6 @@
 
     .e-pv-icon-search::before {
       font-family: 'e-icons';
-      font-size: 12px;
     }
 
     .e-pv-open-document-icon::before {
@@ -472,7 +471,7 @@
   }
 
   .e-pv-eye-icon::before {
-    content: '\e345';
+    content: '\e7de';
     cursor: $pv-eye-icon-hover-cursor;
     font-family: 'e-icons';
     font-size: $pv-eye-icon-font-size;
@@ -480,7 +479,7 @@
   }
 
   .e-pv-eye-slash-icon::before {
-    content: '\e721';
+    content: '\e887';
     cursor: $pv-eye-icon-hover-cursor;
     font-family: 'e-icons';
     font-size: $pv-eye-icon-font-size;

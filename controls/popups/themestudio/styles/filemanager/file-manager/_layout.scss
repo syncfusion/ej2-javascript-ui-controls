@@ -962,6 +962,12 @@
       }
     }
 
+    &.e-dialog.e-fe-upload-dialog {
+      .e-dlg-content {
+        overflow: auto;
+      }
+    }
+
     &.e-contextmenu-wrapper ul .e-menu-item.e-separator,
     &.e-contextmenu-container ul .e-menu-item.e-separator {
       margin: $fe-cm-separator-margin;

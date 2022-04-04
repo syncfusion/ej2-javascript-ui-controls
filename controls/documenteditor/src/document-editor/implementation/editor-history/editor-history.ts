@@ -523,7 +523,7 @@ export class EditorHistory {
      * @returns {void}
      */
     public undo(): void {
-        if ((this.owner.isReadOnlyMode &&
+        if ((this.owner.isReadOnlyMode && !this.owner.documentHelper.isCommentOnlyMode &&
             (this.owner.documentHelper.protectionType !== 'FormFieldsOnly')) ||
             !this.canUndo() || !this.owner.enableHistoryMode) {
             return;
@@ -543,7 +543,7 @@ export class EditorHistory {
      * @returns {void}
      */
     public redo(): void {
-        if ((this.owner.isReadOnlyMode &&
+        if ((this.owner.isReadOnlyMode && !this.owner.documentHelper.isCommentOnlyMode &&
             (this.owner.documentHelper.protectionType !== 'FormFieldsOnly'))
             || !this.canRedo() || !this.owner.enableHistoryMode) {
             return;

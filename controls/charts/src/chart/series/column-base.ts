@@ -36,8 +36,8 @@ export class ColumnBase {
         if (series.columnWidthInPixel) {
             return new DoubleRange(0, 0);
         }
-        const position: number = !series.chart.enableSideBySidePlacement ? 0 : series.position;
-        const rectCount: number = !series.chart.enableSideBySidePlacement ? 1 : series.rectCount;
+        const position: number = series.type === 'Histogram' || !series.chart.enableSideBySidePlacement ? 0 : series.position;
+        const rectCount: number = series.type === 'Histogram' || !series.chart.enableSideBySidePlacement ? 1 : series.rectCount;
         series.isRectSeries = true;
         const visibleSeries: Series[] = series.chart.visibleSeries;
         const seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing

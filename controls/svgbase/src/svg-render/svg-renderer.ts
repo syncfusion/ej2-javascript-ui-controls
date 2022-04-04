@@ -384,7 +384,7 @@ export class SvgRenderer {
             stop.setAttribute('stop-color', colors[i].color);
             stop.setAttribute('stop-opacity', colors[i].opacity ? (colors[i].opacity) : '1');
             if (!isNullOrUndefined(colors[i].style)) {
-                stop.setAttribute('style', colors[i].style);
+                (stop as HTMLElement).style.cssText = colors[i].style;
             }
             gradient.appendChild(stop);
         }
@@ -435,7 +435,7 @@ export class SvgRenderer {
         const keys: string[] = Object.keys(options);
         for (let i: number = 0; i < keys.length; i++) {
             if (keys[i] === 'style') {
-                element['style'] = options[keys[i]];
+                (element as HTMLElement).style.cssText = options[keys[i]];
             } else {
                 element.setAttribute(keys[i], options[keys[i]]);
             }

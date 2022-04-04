@@ -2,19 +2,13 @@
 
 ## [Unreleased]
 
-## 19.4.38 (2021-12-17)
+## 20.1.47 (2022-04-04)
 
 ### Tree Grid
 
-#### New Features
-
-- Provided support for `expandByKey`, `collapseByKey` methods and improved `expantAtLevel`, `collapseAtLevel` methods for nested records in tree grid.
-- Provided Adaptive UI layout support for all devices.
-
 #### Bug Fixes
 
-- `#I348001`,`#I349046`,`#I349018` Throws script error while performing scroll on Virtualization enabled has been fixed.
-- `#F167694`  Resolved state changes not reflected for Treegrid column directive.
+- `#I369691` - Indent / Outdent functionality can now be enabled without allowRowDragAndDrop property.
 
 ## 19.2.44 (2021-06-30)
 

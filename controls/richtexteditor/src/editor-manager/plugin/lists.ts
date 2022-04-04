@@ -103,7 +103,11 @@ export class Lists {
             range.startContainer.parentElement.closest('LI');
         const endNode: Element = range.endContainer.nodeName === 'LI' ? (range.endContainer as Element) :
             range.endContainer.parentElement.closest('LI');
-        if (!isNOU(startNode) && !isNOU(endNode) && startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '') {
+        if (!isNOU(startNode) && !isNOU(endNode) && startNode === endNode && startNode.tagName === 'LI' &&
+            startNode.textContent.trim() === '' && startNode.querySelectorAll('IMG').length === 0) {
+            if (startNode.innerHTML.indexOf('&nbsp;') >= 0) {
+                return;
+            }
             if (startNode.textContent.charCodeAt(0) === 65279) {
                 startNode.textContent = '';
             }
@@ -236,7 +240,7 @@ export class Lists {
                 e.event.stopPropagation();
                 this.currentAction = this.getAction(nodes[0]);
                 if (e.event.shiftKey) {
-                    this.revertList(nodes as HTMLElement[]);
+                    this.revertList(nodes as HTMLElement[], e);
                     this.revertClean();
                 } else {
                     isNested = this.nestedList(nodes);
@@ -394,6 +398,8 @@ export class Lists {
                         const nestedElement: Element = createElement((elements[i].parentNode as Element).tagName);
                         append([nestedElement], prevSibling as Element);
                         append([elements[i] as Element], nestedElement);
+                    } else if (prevSibling.tagName === 'OL' || prevSibling.tagName === 'UL') {
+                        append([elements[i] as Element], prevSibling as Element);
                     }
                 }
             } else {
@@ -406,7 +412,15 @@ export class Lists {
     }
 
     private applyListsHandler(e: IHtmlSubCommands): void {
-        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        if (range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
+        range.startOffset === range.endOffset && range.startOffset === 0 &&
+        this.parent.editableElement.textContent.length === 0 && (this.parent.editableElement.childNodes[0].nodeName != 'TABLE' &&
+        this.parent.editableElement.childNodes[0].nodeName != 'IMG')) {
+            const focusNode: Node = range.startContainer.childNodes[0];
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, focusNode, focusNode, 0, 0);
+            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        }
         this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.currentAction = e.subCommand;
         this.currentAction = e.subCommand = this.currentAction === 'NumberFormatList' ? 'OL' : this.currentAction === 'BulletFormatList' ? 'UL' : this.currentAction;
@@ -480,7 +494,7 @@ export class Lists {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
         }
-        this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector, e.item);
+        this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector, e.item, e);
         if (e.callBack) {
             e.callBack({
                 requestType: this.currentAction,
@@ -503,10 +517,10 @@ export class Lists {
         }
     }
 
-    private applyLists(elements: HTMLElement[], type: string, selector?: string, item?: IAdvanceListItem): void {
+    private applyLists(elements: HTMLElement[], type: string, selector?: string, item?: IAdvanceListItem, e?: IHtmlSubCommands): void {
         let isReverse: boolean = true;
         if (this.isRevert(elements, type) && isNOU(item)) {
-            this.revertList(elements);
+            this.revertList(elements, e);
             this.removeEmptyListElements();
         } else {
             this.checkLists(elements, type, item);
@@ -666,7 +680,7 @@ export class Lists {
         }
     }
 
-    private revertList(elements: HTMLElement[]): void {
+    private revertList(elements: HTMLElement[], e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         const temp: Element[] = [];
         for (let i: number = elements.length - 1; i >= 0; i--) {
             for (let j: number = i - 1; j >= 0; j--) {
@@ -716,7 +730,9 @@ export class Lists {
                         ' class="' + className + ' e-rte-wrap-inner"';
                     const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
                         this.domNode.attributes(parentNode) + '></' + CONSTANT.DEFAULT_TAG + '>';
-                    this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
+                    if (e.enterAction !== 'BR') {
+                        this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
+                    }
                 } else if (this.domNode.contents(element)[0].nodeType === 3) {
                     const replace: string = this.domNode.createTagString(
                         CONSTANT.DEFAULT_TAG, parentNode, this.parent.domNode.encode(this.domNode.contents(element)[0].textContent));

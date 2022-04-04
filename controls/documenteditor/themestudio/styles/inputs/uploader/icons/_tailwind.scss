@@ -1,26 +1,26 @@
-@include export-module('uploader-tailwind-icons') {
+@include export-module('uploader-bootstrap4-icons') {
   .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
-    content: '\e771';
+    content: '\e7e7';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
-    content: '\e788';
+    content: '\e77b';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
-    content: '\e711';
+    content: '\e706';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
-    content: '\e725';
+    content: '\e70c';
   }
 
   .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
-    content: '\e78d';
+    content: '\e820';
   }
 
   .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
-    content: '\e769';
+    content: '\e81b';
   }
 
   .e-upload .e-upload-files .e-icons.e-msie::before {
@@ -32,4 +32,3 @@
     right: $ie-abort-icon-position-value;
   }
 }
-  

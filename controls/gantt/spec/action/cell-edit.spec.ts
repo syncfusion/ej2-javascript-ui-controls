@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Toolbar } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -284,7 +284,7 @@ describe('Gantt Edit module', () => {
                 expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[1]['unit']).toBe(100);
             }
         });
-        it('Editing parent task resource column by adding a resource', () => {
+	it('Editing parent task resource column by adding a resource', () => {
             ganttObj.dataBind();
             expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo).toBe(null);
             let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(10)') as HTMLElement;
@@ -1375,6 +1375,70 @@ describe('taskType with resourceUnit mapping', () => {
             // let gantt: any = (document.getElementsByClassName('e-gantt')[0] as any).ej2_instances[0];
             ganttObj.updateTaskId(2,40);
             expect(ganttObj.currentViewData[1]['TaskID']).toBe('40');
+        });
+    });
+    describe('Cell Edit', () => {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: editingData,
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                  id: 'TaskID',
+                  name: 'TaskName',
+                  startDate: 'StartDate',
+                  endDate: 'EndDate',
+                  duration: 'Duration',
+                  progress: 'Progress',
+                  dependency: 'Predecessor',
+                  child: 'subtasks',
+                  notes: 'info',
+                  resourceInfo: 'resources',
+                },
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  allowNextRowEdit: true,
+                  showDeleteConfirmDialog: true,
+                },
+                toolbar: ['Add','Edit','Update','Delete','Cancel'],
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                gridLines: 'Both',
+                height: '450px',
+                columns: [
+                  { field: 'TaskID', width: 60 },
+                  {field: 'TaskName',headerText: 'Job Name',width: '250',clipMode: 'EllipsisWithTooltip',},
+                  { field: 'StartDate' },
+                  { field: 'Duration' },
+                  { field: 'Progress' },
+                  { field: 'Predecessor' },
+                ],
+                splitterSettings: {columnIndex: 6},
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+              }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+        });
+        it('Tab navigation to next row', () => {
+            ganttObj.dataBind();
+            let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(7)') as HTMLElement;
+            triggerMouseEvent(customColumn, 'dblclick');
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(1)') as HTMLElement };
+            ganttObj.keyboardModule.keyAction(args1);
+            expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
         });
     });
 });

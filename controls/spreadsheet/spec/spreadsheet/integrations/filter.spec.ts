@@ -1,11 +1,11 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
-import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet } from "../../../src";
-import { createElement } from "@syncfusion/ej2-base";
+import { defaultData, filterData } from '../util/datasource.spec';
+import { Spreadsheet, filterByCellValue } from '../../../src/index';
+import { classList } from "@syncfusion/ej2-base";
 
 describe('Filter ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
-
+    
     describe('public method ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -262,5 +262,229 @@ describe('Filter ->', () => {
                 });
             });
         });
+        describe('SF-360112 ->', () => {
+            let filterArgs: any;
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: filterData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Script error while performing undo continuously after applying filters', (done: Function) => {
+                const id: string = '#' + helper.id;
+                helper.getElement(`${id}_sorting`).click();
+                helper.getElement(`${id}_applyfilter`).click();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('selectRange', ['G1']);
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const cbox: HTMLElement = helper.getElement('.e-checkboxlist').lastElementChild.querySelector('.e-checkbox-wrapper');
+                        (cbox.querySelector('.e-chk-hidden') as HTMLInputElement).checked = false;
+                        classList(cbox.querySelector('.e-frame') as HTMLInputElement, ['e-uncheck'], ['e-check']);
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            helper.triggerKeyNativeEvent(90, true);
+                            helper.triggerKeyNativeEvent(90);
+                            setTimeout(() => {
+                                helper.invoke('endEdit');
+                                helper.triggerKeyNativeEvent(90, true);
+                                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('SF-361036, SF-361123 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+
+            it('Paste is not working on filtered rows', (done: Function) => {
+                helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }, { field: 'E', predicate: 'or', operator: 'equal', value: '20' }], 'A1:H1']);
+                setTimeout(() => {
+                    helper.invoke('copy', ['A9']).then(() => {
+                        helper.invoke('paste', ['A5']);
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Loafers');
+                            expect(helper.invoke('getCell', [6, 0]).textContent).toBe('Sneakers');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('SF-364894 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ ranges: [{ dataSource: defaultData }], rowCount: 11 }], scrollSettings: { isFinite: true },
+                    created: (): void => {
+                        helper.invoke('merge', ['A2:G2']);
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Filtering is not proper in finite mode with less row count and merged cell', (done: Function) => {
+                helper.invoke('applyFilter', [[{ field: 'F', predicate: 'or', operator: 'equal', value: '1210' }], 'A1:H11']);
+                setTimeout(() => {
+                    expect(helper.invoke('getContentTable').rows.length).toBe(2);
+                    expect(helper.getInstance().viewport.bottomIndex).toBe(9);
+                    done();
+                });
+            });
+        });
+        describe('SF-367021 ->', () => {
+            let spreadsheet: any;
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B4:B4' }],
+                    created: (): void => {
+                        spreadsheet = helper.getInstance()
+                        for (let i: number = 1; i < 11; i++) {
+                            spreadsheet.updateCell({ format: 'dd/MM/yyyy' }, 'B' + (i + 1));
+                        }
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Filter by date cell value not working', (done: Function) => {
+                spreadsheet.notify(filterByCellValue, null);
+                setTimeout(() => {
+                    const predicates: any[] = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(predicates.length).toBe(1);
+                    expect(predicates[0].field).toBe('B');
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[1].isFiltered).toBeTruthy();
+                    expect(helper.invoke('getContentTable').rows[1].cells[1].textContent).toBe('27/07/2014');
+                    done();
+                });
+            });
+        });
+        describe('SF-368464 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], frozenRows: 1, frozenColumns: 1, paneTopLeftCell: 'A1002' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Filtering issue with freeze pane when the sheet is scrolled', (done: Function) => {
+                const tableRowCount: number = helper.invoke('getContentTable').rows.length;
+                helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
+                setTimeout(() => {
+                    expect(helper.invoke('getContentTable').rows.length).toBe(tableRowCount);
+                    done();
+                });
+            });
+        });
+        describe('SF-369477 ->', () => {
+            let spreadsheet: any;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'D7:D9', paneTopLeftCell: 'A7', frozenRows: 1 }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Cells jumbled up while filtering with freeze pane', (done: Function) => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].topLeftCell).toBe('A1');
+                expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A7');
+                helper.triggerKeyNativeEvent(46);
+                helper.invoke(
+                    'applyFilter', [[{ field: 'D', matchCase: false, operator: 'notequal', predicate: 'and', value: null,
+                    ignoreAccent: false }, { field: 'D', matchCase: false, operator: 'notequal', predicate: 'and', value: undefined }],
+                    'A1:H11'])
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].topLeftCell).toBe('A1');
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A10');
+                    done();
+                });
+            });
+            it('Apply filter in multiple column and clear filter using context menu', (done: Function) => {
+                helper.invoke('selectRange', ['E2']);
+                let predicates: any[] = [].slice.call(spreadsheet.filterModule.filterCollection.get(0));
+                predicates.push(
+                    { value: 10, field: 'E', predicate: 'and', operator: 'notequal', type: 'number', matchCase: false,
+                    ignoreAccent: false });
+                helper.invoke('applyFilter', [predicates, 'A1:H11']);
+                setTimeout(() => {
+                    predicates = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(predicates.length).toBe(3);
+                    expect(predicates[2].field).toBe('E');
+                    expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[5].isFiltered).toBeTruthy();
+                    expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-icon').classList.contains('e-filtered')).toBeTruthy();
+                    helper.setAnimationToNone('#spreadsheet_contextmenu');
+                    const checkFn: Function = (): void => {
+                        expect(helper.getElement('#' + helper.id + '_cmenu_clearfilter').classList.contains('e-disabled')).toBeFalsy();
+                    };
+                    helper.openAndClickCMenuItem(4, 1, [6, 1], false, false, checkFn);
+                    setTimeout(() => {
+                        expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(2);
+                        expect(spreadsheet.sheets[0].rows[5].hidden).toBeFalsy();
+                        expect(spreadsheet.sheets[0].rows[5].isFiltered).toBeFalsy();
+                        expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-icon').classList.contains('e-filtered')).toBeFalsy();
+                        done();
+                    });
+                });
+            });
+            it('Clear filter in final filtered column in a range using context menu', (done: Function) => {
+                helper.invoke('selectRange', ['D2']);
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-icon').classList.contains('e-filtered')).toBeTruthy();
+                helper.openAndClickCMenuItem(3, 1, [6, 1]);
+                setTimeout(() => {
+                    expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(0);
+                    expect(spreadsheet.sheets[0].rows[6].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[6].isFiltered).toBeFalsy();
+                    expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-icon').classList.contains('e-filtered')).toBeFalsy();
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Filter Icon Missing In Duplicate Sheet ->', () => {
+
+        describe('EJ2-55527 ->', () =>  {
+
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+    
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            
+            it('Filter issue in duplicate sheet', (done: Function) => {
+
+                helper.invoke('applyFilter', [[{ field: 'A', predicate: 'or', operator: 'equal', value: 'Casual Shoes' }], 'A1:H11']);
+                helper.invoke('duplicateSheet', [0]);
+                setTimeout(() => {
+                    expect(helper.invoke("getCell",[0,0]).querySelector('span').classList).toContain('e-filtered');
+                    expect(helper.getInstance().filterCollection[1].filterRange).toContain('A1:H11');
+                    expect(JSON.stringify(helper.getInstance().filterModule.filterRange.get(1))).toBe('{"range":[0,0,10,7]}');
+                    done();
+                });
+            });
+        });  
     });
 });

@@ -61,7 +61,7 @@ export class Annotations {
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
         this.gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
             if (!argsData.cancel) {
-                templateFn = getTemplateFunction(argsData.content);
+                templateFn = getTemplateFunction(argsData.content, this.gauge);
                 if (templateFn && templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length) {
                     templateElement = Array.prototype.slice.call(templateFn(this.gauge, this.gauge, argsData.content, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     const length: number = templateElement.length;
@@ -87,13 +87,13 @@ export class Annotations {
                     const leftTransformValue: number = parseInt(transformValue.split(",")[0]);
                     const topTransformValue: number = parseInt(transformValue.split(",")[1]);
                     if (this.gauge.orientation === 'Vertical') {
-                        left = line.x + annotation.x + leftTransformValue - extraWidth;
-                        top = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.height) + line.y);
-                        top += annotation.y;
+                        left = line.x + parseFloat(annotation.x.toString()) + leftTransformValue - extraWidth;
+                        top = ((valueToCoefficient(parseFloat(annotation.axisValue.toString()), axis, this.gauge.orientation, range) * line.height) + line.y);
+                        top += parseFloat(annotation.y.toString());
                     } else {
-                        left = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.width) + line.x - extraWidth);
-                        left += annotation.x;
-                        top = line.y + annotation.y + topTransformValue;
+                        left = ((valueToCoefficient(parseFloat(annotation.axisValue.toString()), axis, this.gauge.orientation, range) * line.width) + line.x - extraWidth);
+                        left += parseFloat(annotation.x.toString());
+                        top = line.y + parseFloat(annotation.y.toString()) + topTransformValue;
                     }
                     left -= (offset.width / 2);
                     top -= (offset.height / 2);

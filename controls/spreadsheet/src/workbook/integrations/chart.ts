@@ -1,7 +1,7 @@
 import { getRangeIndexes, ChartModel, inRange } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetNameFromAddress } from '../base/index';
 import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder } from '../common/event';
-import { closest, isNullOrUndefined, getComponent } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, getComponent, isUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '@syncfusion/ej2-charts';
 
 /**
@@ -77,7 +77,7 @@ export class WorkbookChart {
                 chart[i].height = chart[i].height || 290;
                 chart[i].width = chart[i].width || 480;
                 this.parent.notify(initiateChart, {
-                    option: chart[i], chartCount: this.parent.chartCount, isInitCell: args.isInitCell, isUndoRedo: args.isUndoRedo,
+                    option: chart[i], chartCount: this.parent.chartCount, isInitCell: args.isInitCell, triggerEvent: args.isUndoRedo,
                     dataSheetIdx: args.dataSheetIdx, range: args.range, isPaste: args.isPaste
                 });
                 this.parent.chartColl.push(chart[i]);
@@ -88,7 +88,7 @@ export class WorkbookChart {
                     const sheetIdx: number = (chart[i].range && chart[i].range.indexOf('!') > 0) ?
                         getSheetIndex(this.parent, chart[i].range.split('!')[0]) : this.parent.activeSheetIndex;
                     const indexes: number[] = args.isPaste ? getRangeIndexes(args.range) : getRangeIndexes(chart[i].range);
-                    const sheet: SheetModel = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
+                    const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIdx];
                     const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
                     if (cell && cell.chart) {
                         cell.chart.push(chart[i]);
@@ -166,9 +166,7 @@ export class WorkbookChart {
 
     private deleteChartColl(args: { id: string }): void {
         for (let idx: number = 0; idx < this.parent.chartColl.length; idx++) {
-            const chartElement: HTMLElement = document.getElementById(this.parent.chartColl[idx].id);
-            const overlayElement: HTMLElement = document.getElementById(args.id);
-            if (overlayElement && chartElement && closest(chartElement, '.' + overlayElement.classList[1]) === overlayElement) {
+            if (this.parent.chartColl[idx].id + '_overlay' === args.id) {
                 this.parent.chartColl.splice(idx, 1);
             }
         }

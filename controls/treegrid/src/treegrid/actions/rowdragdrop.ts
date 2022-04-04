@@ -1,7 +1,7 @@
 import { TreeGrid } from '../base/treegrid';
 import { Grid, RowDD as GridDragDrop, RowDropEventArgs, parentsUntil } from '@syncfusion/ej2-grids';
 import { EJ2Intance, RowDragEventArgs, getObject, Scroll } from '@syncfusion/ej2-grids';
-import { closest, isNullOrUndefined, classList, setValue, extend, getValue, removeClass, addClass } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, classList, setValue, extend, getValue, removeClass, addClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
@@ -30,6 +30,8 @@ export class RowDD {
     private isDraggedWithChild: boolean = false;
     /** @hidden */
     public isMultipleGrid: string;
+    /** @hidden */
+    private hasDropItem: boolean = true;
     /** @hidden */
     public isaddtoBottom: boolean = false;
     /**
@@ -77,6 +79,8 @@ export class RowDD {
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
         const tObj: TreeGrid = this.parent;
+        const action: string = 'action';
+        const updateRowAndCellElements: string = 'updateRowAndCellElements';
         if (fromIndexes[0] !== toIndex && ['above', 'below', 'child'].indexOf(position) !== -1) {
             if (position === 'above') {
                 this.dropPosition = 'topSegment';
@@ -103,9 +107,20 @@ export class RowDD {
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
+            if (this.parent[action] === 'outdenting') {
+                if (!isNullOrUndefined(data[0].parentItem)) {
+                    data[0].level = data[0].parentItem.level + 1;
+                }
+            }
             this.parent.grid.refresh();
             if (this.parent.enableImmutableMode && this.dropPosition === 'middleSegment') {
-                const index: number = this.parent.treeColumnIndex + 1;
+                let index: number;
+                if (this.parent.allowRowDragAndDrop) {
+                    index = this.parent.treeColumnIndex + 1;
+                }
+                else if ( this.parent[action] === 'indenting') {
+                    index = this.parent.treeColumnIndex;
+                }
                 const row: HTMLTableRowElement = this.parent.getRows()[fromIndexes[0]];
                 const dropData: Object = args.data[0];
                 const totalRecord: Object[] = []; const rows: HTMLTableRowElement[] = [];
@@ -114,13 +129,21 @@ export class RowDD {
                 const parentData: Object = getParentData(this.parent, args.data[0][parentUniqueID]);
                 const parentrow: HTMLTableRowElement = this.parent.getRows()[toIndex];
                 totalRecord.push(parentData); rows.push(parentrow);
-                for (let i: number = 0; i < totalRecord.length; i++) {
-                    this.parent.renderModule.cellRender({
-                        data: totalRecord[i], cell: rows[i].cells[index] ,
-                        column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
-                        requestType: 'rowDragAndDrop'
-                    });
+                this.parent[updateRowAndCellElements](totalRecord, rows, index);
+            }
+            if (this.parent.enableImmutableMode && this.parent[action] === 'outdenting') {
+                let index: number;
+                if (this.parent.allowRowDragAndDrop) {
+                    index = this.parent.treeColumnIndex + 1;
                 }
+                else if ( this.parent[action] === 'outdenting') {
+                    index = this.parent.treeColumnIndex;
+                }
+                const record: Object = args.data[0];
+                const row: HTMLTableRowElement = this.parent.getRows()[fromIndexes[0]];
+                const totalRecord: Object[] = []; const rows: HTMLTableRowElement[] = [];
+                totalRecord.push(record); rows.push(row);
+                this.parent[updateRowAndCellElements](totalRecord, rows, index);
             }
         } else {
             return;
@@ -264,7 +287,8 @@ export class RowDD {
         }
         // eslint-disable-next-line max-len
         if (tempDataSource && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem) && !isNullOrUndefined(droppedRecord.taskData)) {
-            for (let i: number = 0; i < Object.keys(tempDataSource).length; i++) {
+            const keys: string[] = Object.keys(tempDataSource);
+            for (let i: number = 0; i < keys.length; i++) {
                 if (tempDataSource[i][this.parent.childMapping] === droppedRecord.taskData[this.parent.childMapping]) {
                     idx = i;
                 }
@@ -460,7 +484,7 @@ export class RowDD {
         const dragelem: Element = document.getElementsByClassName('e-cloneproperties')[0];
         const errorelem: number = dragelem.querySelectorAll('.e-errorelem').length;
         if (!errorelem && !this.parent.rowDropSettings.targetID) {
-            const ele: Element = document.createElement('div');
+            const ele: HTMLElement = document.createElement('div');
             classList(ele, ['e-errorcontainer'], []);
             classList(ele, ['e-icons', 'e-errorelem'], []);
             const errorVal: Element = dragelem.querySelector('.errorValue');
@@ -476,14 +500,35 @@ export class RowDD {
             spanContent.innerHTML = content;
             dragelem.querySelector('.e-rowcell').appendChild(ele);
             dragelem.querySelector('.e-rowcell').appendChild(spanContent);
+            const dropItemSpan: HTMLElement = document.querySelector('.e-dropitemscount');
+            if (this.hasDropItem && dropItemSpan) {
+                const dropItemLeft: number = parseInt(dropItemSpan.style.left, 10) + ele.offsetWidth + 16;
+                const spanLeft: number = !this.parent.enableRtl ? dropItemLeft : 0;
+                dropItemSpan.style.left = `${ spanLeft }px`;
+                this.hasDropItem = false;
+            }
         }
     }
 
     private removeErrorElem(): void {
-        const errorelem: Element = document.querySelector('.e-errorelem');
+        const errorelem: HTMLElement = document.querySelector('.e-errorelem');
+        const errorValue: HTMLElement = document.querySelector('.errorValue');
+        const dropItemSpan: HTMLElement = document.querySelector('.e-dropitemscount');
         if (errorelem) {
+            if (dropItemSpan) {
+                const dropItemLeft: number = parseInt(dropItemSpan.style.left, 10) - errorelem.offsetWidth - 16;
+                setStyleAttribute(errorValue, {
+                    paddingLeft: '0px'
+                });
+                if (!this.parent.enableRtl) {
+                    setStyleAttribute(dropItemSpan, {
+                        left: `${ dropItemLeft }px`
+                    });
+                }
+            }
             errorelem.remove();
         }
+        this.hasDropItem = true;
     }
 
     private topOrBottomBorder(target: Element): void {
@@ -807,6 +852,7 @@ export class RowDD {
                         }
                         if (isNullOrUndefined(droppedRecord.parentItem)) {
                             delete draggedRecord.parentItem;
+                            delete draggedRecord.parentUniqueID;
                             draggedRecord.level = 0;
                             if (this.parent.parentIdMapping) {
                                 draggedRecord[this.parent.parentIdMapping] = null;
@@ -1014,7 +1060,7 @@ export class RowDD {
                 if (childRecords && childRecords.length > 0) {
                     childIndex = childRecords.indexOf(deletedRow);
                     flatParentData.childRecords.splice(childIndex, 1);
-                    if (!this.parent.parentIdMapping) {
+                    if (!this.parent.parentIdMapping || tObj.enableImmutableMode) {
                         editAction({ value: deletedRow, action: 'delete' }, this.parent,
                                    isSelfReference, deletedRow.index, deletedRow.index);
                     }

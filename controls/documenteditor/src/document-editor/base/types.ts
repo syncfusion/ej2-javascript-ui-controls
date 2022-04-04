@@ -1258,8 +1258,11 @@ export type ProtectionType =
     /**
      * Allow form filling only.
      */
-    'FormFieldsOnly';
-
+    'FormFieldsOnly' |
+    /**
+     * Allow comments only.
+     */
+    'CommentsOnly';
 /**
  * Specifies the paste options
  */
@@ -1282,7 +1285,7 @@ export type PasteOptions =
  *
  * @private
  */
-export type TablePasteOptions = 'InsertAsRows' | 'NestTable' | 'InsertAsColumns' | 'OverwriteCells' | 'DefaultPaste';
+export type TablePasteOptions = 'InsertAsRows' | 'NestTable' | 'InsertAsColumns' | 'OverwriteCells' | 'DefaultPaste' | 'TextOnly';
 
 /**
  * Specifies the layout type

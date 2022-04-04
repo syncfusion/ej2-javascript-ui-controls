@@ -1656,6 +1656,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public actionFailure: EmitType<PivotActionFailureEventArgs>;
+    /** @hidden */
+    public destroyEngine: boolean = false;
 
     /* eslint-enable */
     /**
@@ -2014,7 +2016,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             invalidCSV: 'Invalid CSV data',
             stacked: 'Stacked',
             single: 'Single',
-            multipleAxisMode: 'Multiple Axis Mode'
+            multipleAxisMode: 'Multiple Axis Mode',
+            grandTotalPosition: 'Grand totals position',
+            top: 'Top',
+            bottom: 'Bottom'
         };
         /* eslint-enable */
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
@@ -2240,13 +2245,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.headerCellInfo = this.gridSettings.headerCellInfo ? this.gridSettings.headerCellInfo.bind(this) : undefined;
         this.resizing = this.gridSettings.resizing ? this.gridSettings.resizing.bind(this) : undefined;
         this.resizeStop = this.gridSettings.resizeStop ? this.gridSettings.resizeStop.bind(this) : undefined;
-        this.pdfHeaderQueryCellInfo = this.gridSettings.pdfHeaderQueryCellInfo ?
-            this.gridSettings.pdfHeaderQueryCellInfo.bind(this) : undefined;
-        this.pdfQueryCellInfo = this.gridSettings.pdfQueryCellInfo ? this.gridSettings.pdfQueryCellInfo.bind(this) : undefined;
-        this.excelHeaderQueryCellInfo = this.gridSettings.excelHeaderQueryCellInfo ?
-            this.gridSettings.excelHeaderQueryCellInfo.bind(this) : undefined;
-        this.excelQueryCellInfo = this.gridSettings.excelQueryCellInfo ?
-            this.gridSettings.excelQueryCellInfo.bind(this) : undefined;
+        this.pdfHeaderQueryCellInfo = this.gridSettings.pdfHeaderQueryCellInfo ? this.gridSettings.pdfHeaderQueryCellInfo : undefined;
+        this.pdfQueryCellInfo = this.gridSettings.pdfQueryCellInfo ? this.gridSettings.pdfQueryCellInfo : undefined;
+        this.excelHeaderQueryCellInfo = this.gridSettings.excelHeaderQueryCellInfo ? this.gridSettings.excelHeaderQueryCellInfo : undefined;
+        this.excelQueryCellInfo = this.gridSettings.excelQueryCellInfo ? this.gridSettings.excelQueryCellInfo : undefined;
         this.columnDragStart = this.gridSettings.columnDragStart ? this.gridSettings.columnDragStart.bind(this) : undefined;
         this.columnDrag = this.gridSettings.columnDrag ? this.gridSettings.columnDrag.bind(this) : undefined;
         this.columnDrop = this.gridSettings.columnDrop ? this.gridSettings.columnDrop.bind(this) : undefined;
@@ -2611,6 +2613,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let keyEntity: string[] = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
         /* eslint-disable */
         let columnRender: any = this.gridSettings['columnRender'];
+        let excelQueryCellInfo: any = this.gridSettings['excelQueryCellInfo'];
+        let excelHeaderQueryCellInfo: any = this.gridSettings['excelHeaderQueryCellInfo'];
+        let pdfQueryCellInfo: any = this.gridSettings['pdfQueryCellInfo'];
+        let pdfHeaderQueryCellInfo: any = this.gridSettings['pdfHeaderQueryCellInfo'];
         let chartLoadEvent: any = this.chartSettings['load'];
         let chartLoadedEvent: any = this.chartSettings['loaded'];
         let chartTextRenderEvent: any = this.chartSettings['textRender'];
@@ -2620,6 +2626,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let chartPointClickEvent: any = this.chartSettings['pointClick'];
         let chartTooltipRenderEvent: any = this.chartSettings['tooltipRender'];
         this.gridSettings['columnRender'] = undefined;
+        this.gridSettings['excelQueryCellInfo'] = undefined;
+        this.gridSettings['excelHeaderQueryCellInfo'] = undefined;
+        this.gridSettings['pdfQueryCellInfo'] = undefined;
+        this.gridSettings['pdfHeaderQueryCellInfo'] = undefined;
         this.chartSettings['tooltipRender'] = undefined;
         this.chartSettings['load'] = undefined;
         this.chartSettings['loaded'] = undefined;
@@ -2630,6 +2640,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartSettings['pointClick'] = undefined;
         let persistData: string = this.addOnPersist(keyEntity);
         this.gridSettings['columnRender'] = columnRender;
+        this.gridSettings['excelQueryCellInfo'] = excelQueryCellInfo;
+        this.gridSettings['excelHeaderQueryCellInfo'] = excelHeaderQueryCellInfo;
+        this.gridSettings['pdfQueryCellInfo'] = pdfQueryCellInfo;
+        this.gridSettings['pdfHeaderQueryCellInfo'] = pdfHeaderQueryCellInfo;
         this.chartSettings['load'] = chartLoadEvent;
         this.chartSettings['loaded'] = chartLoadedEvent;
         this.chartSettings['textRender'] = chartTextRenderEvent;
@@ -2814,23 +2828,36 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             this.displayOption.primary : newProp.displayOption.view);
                         if (this.showGroupingBar || this.showFieldList) {
                             if (this.showFieldList && this.pivotFieldListModule) {
+                                this.pivotFieldListModule.destroyEngine = true;
                                 this.pivotFieldListModule.destroy();
+                                this.pivotFieldListModule.destroyEngine = false;
                             }
-                            if (this.showGroupingBar && this.groupingBarModule) {
-                                this.groupingBarModule.destroy();
-                            }
+                            /**
+                             * Below lines are affected the grouping bar render between table and chart. 
+                             * In "Init subcomponent" function, grouping bar rendered properly for table and chart view.
+                             * So, The below lines are commanded out.        
+                             */
+                            // if (this.showGroupingBar && this.groupingBarModule) {
+                            //     this.groupingBarModule.destroy();
+                            // }
                             this.notify(events.initSubComponent, this);
                         }
                         if (!this.grid && newProp.displayOption.view !== 'Chart') {
                             this.renderEmptyGrid();
                             if (newProp.displayOption.view === 'Table') {
                                 if (this.pivotChartModule) {
+                                    this.destroyEngine = true;
                                     this.pivotChartModule.destroy();
+                                    this.destroyEngine = false;
                                     this.chart = undefined;
                                     this.pivotChartModule = undefined;
                                 }
                             }
                         } else if (!this.pivotChartModule && this.displayOption.view !== 'Table') {
+                            if (this.grid) {
+                                this.grid.destroy();
+                                this.grid = undefined;
+                            }
                             this.pivotChartModule = new PivotChart();
                         }
                     } else if (this.showToolbar && !isNullOrUndefined(newProp.displayOption) && newProp.displayOption.view) {
@@ -2955,6 +2982,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
+                } else {
+                    return compile(template);
                 }
             } catch (error) {
                 return compile(template);
@@ -3810,12 +3839,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let hasField: boolean = false;
         if (cell && this.dataType === 'olap') {
             let measureName: string = cell.actualText as string;
-            if (!isNullOrUndefined(measureName) && !this.olapEngineModule.fieldList[measureName]) {
+            if (!isNullOrUndefined(measureName) && this.olapEngineModule.fieldList && !this.olapEngineModule.fieldList[measureName]) {
                 let tupleInfo: ITupInfo[] = this.olapEngineModule.tupRowInfo;
                 measureName = cell.rowOrdinal > -1 && tupleInfo.length > 0 && tupleInfo[cell.rowOrdinal] &&
                     !isNullOrUndefined(tupleInfo[cell.rowOrdinal].measureName) ? tupleInfo[cell.rowOrdinal].measureName : measureName;
             }
-            if (this.olapEngineModule.fieldList[measureName]) {
+            if (this.olapEngineModule.fieldList && this.olapEngineModule.fieldList[measureName]) {
                 let field: IOlapField = this.olapEngineModule.fieldList[measureName];
                 aggregateType = field.isCalculatedField ? field.type : field.aggregateType;
                 caption = (this.olapEngineModule.dataFields[measureName] &&
@@ -3824,7 +3853,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 hasField = true;
             }
         } else {
-            if (cell && this.engineModule.fieldList[cell.actualText]) {
+            if (cell && this.engineModule.fieldList && this.engineModule.fieldList[cell.actualText]) {
                 let field: IField = this.engineModule.fieldList[cell.actualText];
                 aggregateType = field.aggregateType;
                 if ((aggregateType !== 'DistinctCount') && (field.type !== 'number' || field.type === 'include' as string ||
@@ -4392,6 +4421,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.chart && ((this.showToolbar && this.currentView === 'Chart') || !this.showToolbar)) {
                 this.chart.width = (this.showToolbar && this.grid) ? this.getGridWidthAsNumber().toString() :
                     (this.displayOption.view === 'Both' && this.grid) ? this.getGridWidthAsNumber().toString() : this.getWidthAsNumber().toString();
+                this.chart.height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.chartSettings.chartSeries.type) < 0 &&
+                    this.chartSettings.enableScrollOnMultiAxis && this.chartSettings.enableMultipleAxis &&
+                    this.dataSourceSettings.values.length > 0 ? Number(this.chart.height) > (this.dataSourceSettings.values.length * 235) + 100 ? /* eslint-disable-line */
+                    isNaN(Number(this.pivotChartModule.getChartHeight())) ? this.pivotChartModule.getChartHeight().toString() : (Number(this.pivotChartModule.getChartHeight()) - 5).toString() :
+                    (!isNaN(Number(this.pivotChartModule.getChartHeight())) || this.dataSourceSettings.values.length > 1) ?
+                        ((this.dataSourceSettings.values.length * 235) + 100).toString() :
+                        this.pivotChartModule.getChartHeight().toString() : this.pivotChartModule.getChartHeight().toString();
                 if (this.displayOption.view === 'Chart' && this.showGroupingBar && this.groupingBarModule &&
                     this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.refreshUI();
@@ -4688,7 +4724,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
     /* eslint-disable */
-    private initEngine(): void {
+    /** @hidden */
+    public initEngine(): void {
         if (this.dataType === 'pivot') {
             let data: any = !isNullOrUndefined(this.dataSourceSettings.dataSource) ? (this.dataSourceSettings.dataSource as IDataSet[])[0] :
                 !isNullOrUndefined(this.engineModule.data) ? (this.engineModule.data as IDataSet[])[0] : undefined;

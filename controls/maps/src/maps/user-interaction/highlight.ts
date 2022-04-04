@@ -12,7 +12,10 @@ import { BorderModel } from '../model/base-model';
 
 export class Highlight {
     private maps: Maps;
-    private highlightSettings: HighlightSettingsModel;
+    /**
+     * @private
+     */
+    public highlightSettings: HighlightSettingsModel;
     constructor(maps: Maps) {
         this.maps = maps;
         this.addEventListener();
@@ -97,15 +100,7 @@ export class Highlight {
                 this.highlightSettings = this.maps.layers[layerIndex].navigationLineSettings[index].highlightSettings;
             }
             if (this.highlightSettings.enable) {
-                if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
-                    this.maps.legendModule.shapeHighLightAndSelection(
-                        targetEle, data, this.highlightSettings, 'highlight', layerIndex);
-                }
-                const selectHighLight: boolean = targetEle.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible ?
-                    this.maps.legendModule.shapeToggled : true;
-                if (selectHighLight) {
-                    this.mapHighlight(targetEle, shapeData, data);
-                }
+                this.handleHighlight(targetEle, layerIndex, data, shapeData);
             } else {
                 const element: Element = document.getElementsByClassName('highlightMapStyle')[0];
                 if (!isNullOrUndefined(element)) {
@@ -128,19 +123,36 @@ export class Highlight {
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
             removeClass(targetEle);
-            if (this.maps.legendSettings.visible) {
+            if (this.maps.legendSettings.visible && this.maps.legendModule) {
                 this.maps.legendModule.removeShapeHighlightCollection();
             }
         } else if ((targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') !== -1 ||
-            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) &&
+            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendModule &&
             this.maps.legendSettings.visible && targetEle.id.indexOf('_Text') === -1) {
             this.maps.legendModule.legendHighLightAndSelection(targetEle, 'highlight');
         } else {
-            if (this.maps.legendSettings.visible) {
+            if (this.maps.legendSettings.visible && this.maps.legendModule) {
                 this.maps.legendModule.removeLegendHighlightCollection();
             }
         }
     }
+
+    /**
+     * @private
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public handleHighlight(targetElement: Element, layerIndex: number, data: any, shapeData: any): void {
+        if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1 && this.maps.legendModule) {
+            this.maps.legendModule.shapeHighLightAndSelection(
+                targetElement, data, this.highlightSettings, 'highlight', layerIndex);
+        }
+        const selectHighLight: boolean = targetElement.id.indexOf('shapeIndex') > -1 && (this.maps.legendSettings.visible && this.maps.legendModule) ?
+            this.maps.legendModule.shapeToggled : true;
+        if (selectHighLight) {
+            this.mapHighlight(targetElement, shapeData, data);
+        }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private mapHighlight(targetEle: Element, shapeData: any, data: any): void {
         const layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);

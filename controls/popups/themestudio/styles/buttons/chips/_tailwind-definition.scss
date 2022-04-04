@@ -19,15 +19,16 @@ $chip-avatar-margin: 0 3px 0 -8px !default;
 $chip-avatar-content-font-size: $text-xs !default;
 $chip-leading-icon-font-size: 12px !default;
 $chip-leading-icon-size: 16px !default;
-$chip-leading-icon-margin: 0 8px 0 -4px !default;
-$chip-multiselection-icon-margin-top: 0 !default;
+$chip-leading-icon-margin: 0 4px 0 0 !default;
+$chip-multi-selection-icon-margin: 0 4px 0 -4px !default;
+$chip-multi-selection-icon-margin-top: 0 !default;
 $chip-delete-icon-font-size: 14px !default;
-$chip-delete-icon-size: 16px !default;
+$chip-delete-icon-size: 14px !default;
 $chip-delete-icon-margin: 0 -4px 0 4px !default;
 //RTL
 $chip-rtl-avatar-wrapper-border-radius: 0 !default;
 $chip-rtl-avatar-margin: 0 -7px 0 3px !default;
-$chip-rtl-leading-icon-margin: 0 -4px 0 8px !default;
+$chip-rtl-leading-icon-margin: 0 0 0 4px !default;
 $chip-rtl-delete-icon-margin: 0 4px 0 -4px !default;
 //Touch
 $chip-touch-border-radius: 0 !default;
@@ -43,8 +44,9 @@ $chip-touch-avatar-content-font-size: $text-base !default;
 $chip-touch-leading-icon-font-size: 16px !default;
 $chip-touch-leading-icon-size: 20px !default;
 $chip-touch-leading-icon-margin: 0 8px 0 -4px !default;
+$chip-touch-multi-selection-icon-margin: 0 4px 0 -4px !default;
 $chip-touch-delete-icon-font-size: 16px !default;
-$chip-touch-delete-icon-size: 24px !default;
+$chip-touch-delete-icon-size: 16px !default;
 $chip-touch-delete-icon-margin: 0 -4px 0 8px !default;
 //Touch-RTL
 $chip-touch-rtl-avatar-wrapper-border-radius: 0 !default;

@@ -81,7 +81,8 @@ export class LayerPanel {
                 'transparent', { width: 1, color: 'Gray' }, 1,
                 {
                     x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-                    width: areaRect.width, height: (areaRect.height < 0) ? 0 : areaRect.height
+                    width: areaRect.width, height: (areaRect.height < 0) ? 0 : !isNullOrUndefined(this.mapObject.legendModule) &&
+                    this.mapObject.legendModule.totalPages.length > 0 ? this.mapObject.legendModule.legendTotalRect.height : areaRect.height
                 }));
         }
 
@@ -551,7 +552,7 @@ export class LayerPanel {
                         }
                         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
                             (currentShapeData['property'][properties]) : ''));
-                        pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
+                        pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 3).toString());
                         if (drawingType === 'LineString') {
                             pathEle.setAttribute('style', 'outline:none');
                         }

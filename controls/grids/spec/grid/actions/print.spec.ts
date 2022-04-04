@@ -21,12 +21,12 @@ describe('Print module', () => {
     describe('Print without paging', () => {
         let gridObj: Grid;
         let actionComplete: Function;
-        (<any>window).open = () => {
-            return {
-                document: { write: () => { }, close: () => { } },
-                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
-            };
-        };
+        // (<any>window).open = () => {
+        //     return {
+        //         document: { write: () => { }, close: () => { } },
+        //         close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+        //     };
+        // };
 
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -76,12 +76,12 @@ describe('Print module', () => {
     describe('Print with paging', () => {
         let gridObj: Grid;
         let actionComplete: Function;
-        (<any>window).open = () => {
-            return {
-                document: { write: () => { }, close: () => { } },
-                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
-            };
-        };
+        // (<any>window).open = () => {
+        //     return {
+        //         document: { write: () => { }, close: () => { } },
+        //         close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+        //     };
+        // };
 
         beforeAll((done: Function) => {
             gridObj = createGrid({
@@ -125,12 +125,12 @@ describe('Print module', () => {
     describe('Print empty grid', () => {
         let gridObj: Grid;
         let actionComplete: Function;
-        (<any>window).open = () => {
-            return {
-                document: { write: () => { }, close: () => { } },
-                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
-            };
-        };
+        // (<any>window).open = () => {
+        //     return {
+        //         document: { write: () => { }, close: () => { } },
+        //         close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+        //     };
+        // };
 
         beforeAll((done: Function) => {
             gridObj = createGrid({
@@ -178,12 +178,12 @@ describe('Print module', () => {
     describe('Print with custom action', () => {
         let gridObj: Grid;
         let actionComplete: Function;
-        (<any>window).open = () => {
-            return {
-                document: { write: () => { }, close: () => { } },
-                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
-            };
-        };
+        // (<any>window).open = () => {
+        //     return {
+        //         document: { write: () => { }, close: () => { } },
+        //         close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+        //     };
+        // };
 
         beforeAll((done: Function) => {
             gridObj = createGrid({
@@ -470,6 +470,52 @@ describe('Print module', () => {
             destroy(printGrid);
             gridObj = null;
             printGrid = null;
+        });
+    });
+
+    describe('EJ2 - 57790 - Print not working when sortComparer property set to a column =>', () => {
+        let gridObj: Grid;
+        let printGrid: Grid;
+        // (<any>window).open = () => {
+        //     return {
+        //         document: { write: () => { }, close: () => { } },
+        //         close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+        //     };
+        // };
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: employeeData.slice(0, 4),
+                allowSorting: true,
+                sortSettings: {
+                    columns: [ { field: 'FirstName', direction: 'Ascending' } ],
+                },
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125,
+                      sortComparer: (reference: string, comparer:  string) => {
+                        if (reference < comparer) return -1;
+                        else if (reference > comparer) return 1;
+                        return 0;
+                      }, },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                    { field: 'Country', headerText: 'Country', width: 110 }
+                ],
+            }, done);
+        });
+        it('sorting after print', (done: Function) => {
+            window.print = () => { };
+            (<any>Window).print = () => { };
+            gridObj.printComplete = function (args) {
+                done();
+            }
+            gridObj.print();
+        });
+        afterAll(() => {
+            gridObj.printModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

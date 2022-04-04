@@ -215,7 +215,11 @@ export class ImageCommand {
     private removeImage(e: IHtmlItem): void {
         if (closest(e.item.selectNode[0], 'a')) {
             if (e.item.selectNode[0].parentElement.nodeName === 'A' && !isNOU(e.item.selectNode[0].parentElement.innerText)) {
-                detach(e.item.selectNode[0]);
+                if (!isNOU(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION))) {
+                    detach(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION));
+                } else {
+                    detach(e.item.selectNode[0]);
+                }
             } else {
                 detach(closest(e.item.selectNode[0], 'a'));
             }

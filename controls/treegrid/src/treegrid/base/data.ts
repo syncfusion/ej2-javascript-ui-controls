@@ -144,7 +144,8 @@ export class DataManipulation {
         if (!this.parent.idMapping) {
             this.hierarchyData = <Object[]> data;
         } else {
-            for (let i: number = 0; i < Object.keys(data).length; i++) {
+            const keys: string[] = Object.keys(data);
+            for (let i: number = 0; i < keys.length; i++) {
                 const tempData: Object = data[i];
                 this.hierarchyData.push(extend({}, tempData));
                 if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
@@ -385,7 +386,8 @@ export class DataManipulation {
 
     private createRecords(data: Object, parentRecords?: ITreeData): ITreeData[] {
         const treeGridData: ITreeData[] = [];
-        for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++) {
+        const keys: string[] = Object.keys(data);
+        for (let i: number = 0, len: number = keys.length; i < len; i++) {
             const currentData: ITreeData = extend({}, data[i]);
             currentData.taskData = data[i];
             let level: number = 0;

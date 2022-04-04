@@ -308,12 +308,12 @@ export class Render {
         if (!isNullOrUndefined(tbody)) {
             remove(tbody);
         }
-        tbody = this.parent.createElement( literals.tbody);
+        tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } } );
         let spanCount: number = 0;
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
         }
-        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow' });
+        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow', attrs: { role: 'row' } });
         tr.appendChild(this.parent.createElement('td', {
             innerHTML: this.l10n.getConstant('EmptyRecord'),
             attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString() }

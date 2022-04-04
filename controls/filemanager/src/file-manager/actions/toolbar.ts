@@ -161,9 +161,12 @@ export class Toolbar {
     private toolbarCreateHandler(): void {
         if (!isNOU(select('#' + this.getId('SortBy'), this.parent.element))) {
             const items: SplitButtonItemModel[] = [
-                { id: this.getPupupId('name'), text: getLocaleText(this.parent, 'Name'), iconCss: CLS.TB_OPTION_DOT },
-                { id: this.getPupupId('size'), text: getLocaleText(this.parent, 'Size') },
-                { id: this.getPupupId('date'), text: getLocaleText(this.parent, 'DateModified') },
+                { id: this.getPupupId('name'), text: getLocaleText(this.parent, 'Name'),
+                    iconCss: this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : '' },
+                { id: this.getPupupId('size'), text: getLocaleText(this.parent, 'Size'),
+                    iconCss: this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '' },
+                { id: this.getPupupId('date'), text: getLocaleText(this.parent, 'DateModified'),
+                    iconCss: this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '' },
                 { separator: true },
                 { id: this.getPupupId('ascending'), text: getLocaleText(this.parent, 'Ascending'),
                     iconCss: this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '' },

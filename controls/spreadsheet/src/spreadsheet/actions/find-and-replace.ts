@@ -3,7 +3,7 @@ import { findDlg, locale, dialog, gotoDlg, replace, findHandler, focus } from '.
 import { DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
-import { ToolbarFind, goto, FindOptions, showDialog, count, replaceAllDialog, findKeyUp } from '../../workbook/index';
+import { ToolbarFind, goto, FindOptions, showDialog, replaceAllDialog, findKeyUp } from '../../workbook/index';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -235,12 +235,7 @@ export class FindAndReplace {
                 value: value, sheetIndex: sheetIndex, findOpt: findOpt.findOption, mode: mode, isCSen: isCSen,
                 isEMatch: isEMatch, searchBy: searchBy, isAction: true
             };
-            if (findOpt.findOption === 'next' || findOpt.findOption === 'prev') {
-                this.parent.find(args);
-            } else if (findOpt.countArgs.countOpt === 'count') {
-                this.parent.notify(count, args);
-                findOpt.countArgs.findCount = args.findCount;
-            }
+            this.parent.find(args);
         }
     }
     private replaceHandler(replace: { [key: string]: string }): void {
@@ -261,7 +256,8 @@ export class FindAndReplace {
             isEMatch: eMatchCheckbox.checked, searchBy: searchDDL.value.toString(), findOpt: findOption, replaceValue: replaceWith.value,
             replaceBy: replace.findDlgArgs ? replace.findDlgArgs : replace.replaceMode, sheetIndex: sheetIndex
         };
-        this.parent.replace(args);
+        (args as unknown as { triggerEvent: boolean }).triggerEvent = true;
+        this.parent.replaceHandler(args);
     }
 
     private gotoHandler(address?: { [key: string]: string }): void {

@@ -71,6 +71,7 @@ const HEADERTEMPLATE_PROPERTY: string = 'HeaderTemplate';
 const FOOTERTEMPLATE_PROPERTY: string = 'FooterTemplate';
 const NORECORDSTEMPLATE_PROPERTY: string = 'NoRecordsTemplate';
 const ACTIONFAILURETEMPLATE_PROPERTY: string = 'ActionFailureTemplate';
+const HIDE_GROUPLIST: string = 'e-hide-group-header';
 
 export interface DropDownBaseClassList {
     root: string
@@ -874,7 +875,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             }
                             this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
                             setTimeout(() => {
-                                if (this.getModuleName() === 'multiselect' && this.itemTemplate != null && (ulElement.childElementCount > 0 && ulElement.children[0].childElementCount > 0)) {
+                                if (this.getModuleName() === 'multiselect' && this.itemTemplate != null && (ulElement.childElementCount > 0 && (ulElement.children[0].childElementCount > 0 || (this.fields.groupBy && ulElement.children[1] && ulElement.children[1].childElementCount > 0)))) {
                                     this.updateDataList();
                                 }
                             });
@@ -982,12 +983,22 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if ((this as any).isReact) {
             this.clearTemplate(['itemTemplate', 'groupTemplate', 'actionFailureTemplate', 'noRecordsTemplate']);
         }
-        this.list.innerHTML = '';
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
-        this.list.appendChild(ulElement);
-        this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
-        this.ulElement = this.list.querySelector('ul');
-        this.postRender(this.list, list, this.bindEvent);
+        if (this.getModuleName() === 'multiselect' && this.properties.allowCustomValue && this.fields.groupBy) {
+            for (let i: number = 0; i< ulElement.childElementCount; i++) {
+                if (ulElement.children[i].classList.contains('e-list-group-item')) {
+                    if (isNullOrUndefined(ulElement.children[i].innerHTML) || ulElement.children[i].innerHTML == "") {
+                        addClass([ulElement.children[i]], HIDE_GROUPLIST) }
+                }
+            }
+        }
+        if (!isNullOrUndefined(this.list)) {
+            this.list.innerHTML = '';
+            this.list.appendChild(ulElement);
+            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+            this.ulElement = this.list.querySelector('ul');
+            this.postRender(this.list, list, this.bindEvent);    
+        }
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
     protected postRender(
@@ -1038,7 +1049,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     headerItems, option, this);
                 //EJ2-55168- Group checkbox is not working with group template
                 if (this.isGroupChecking) {
-                    for (var i = 0; i < tempHeaders.length; i++) {
+                    for (let i: number = 0; i < tempHeaders.length; i++) {
                         this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i] });
                     }
                 }
@@ -1050,7 +1061,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     headerItems, option, this);
                 //EJ2-55168- Group checkbox is not working with group template
                 if (this.isGroupChecking) {
-                    for (var i = 0; i < tempHeaders.length; i++) {
+                    for (let i: number = 0; i < tempHeaders.length; i++) {
                         this.notify('addItem', { module: 'CheckBoxSelection', item: tempHeaders[i] });
                     }
                 }
@@ -1490,7 +1501,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 li.innerText = itemText;
             }
             if (this.itemTemplate && !isHeader) {
-                const compiledString: Function = compile(this.itemTemplate);
+                const itemCheck: boolean = this.templateCompiler(this.itemTemplate);
+                const compiledString: Function = itemCheck ? compile(select(this.itemTemplate, document).innerHTML.trim()) : compile(this.itemTemplate);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const addItemTemplate: any = compiledString(
                     item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);

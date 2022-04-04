@@ -2325,6 +2325,12 @@ describe('Grid Touch Selection', () => {
             (gridObj.selectionModule as any).clearSelAfterRefresh({ requrestType: 'virtualscroll' });
         });
 
+        it('ctrl cell selection', () => {
+            // check row object and idx
+            gridObj.selectionModule.addCellsToSelection([{ rowIndex: 0, cellIndex: 3 }]);
+            expect(gridObj.getRows()[0].children[5].classList.contains('e-cellselectionbackground')).toBeTruthy();
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = rowSelecting = cellSelected = rows = cellSelecting = preventDefault = null;
@@ -4741,6 +4747,55 @@ describe('EJ2-48271 - Selected Row Index issue after deselection with checkbox',
         gridObj.rowDeselected = rowDeselected;
         gridObj.clearSelection();
 
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-56885 - Previously selected data is not returned in selection events when select rows with CTRL key', () => {
+    let gridObj: Grid;
+    let rowSelecting: (e?: Object) => void;
+    let rowSelected: (e?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { type: 'Multiple' },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250 },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('Selecting first row', (done: Function) => {
+        rowSelected = (): void => {
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.getRows()[0].querySelector('.e-rowcell') as HTMLElement).click();
+    });
+
+    it('multi row - ctrl click testing- selecting second row', (done: Function) => {
+        rowSelected = (args?: any) => {
+            expect(args.data.length).toBe(2);
+            expect(args.row.length).toBe(2);
+            gridObj.rowSelected = null;
+            done();
+        };
+        rowSelecting = (args?: any) => {
+            expect(args.data.length).toBe(2);
+            expect(args.row.length).toBe(2);
+            gridObj.rowSelecting = null;
+        };
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.rowSelected = rowSelected;
+        (gridObj.selectionModule as any).clickHandler({target: gridObj.getRows()[1].querySelector('.e-rowcell'), ctrlKey: true});
     });
     afterAll(() => {
         destroy(gridObj);

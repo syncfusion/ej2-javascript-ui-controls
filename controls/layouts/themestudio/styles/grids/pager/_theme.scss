@@ -6,7 +6,7 @@
     color: $pager-color;
     opacity: $pager-content-opacity;
 
-    div.e-icons {
+    div.e-icons.e-pager-default {
       color: $pager-icon-color;
     }
 
@@ -88,9 +88,33 @@
 
     .e-currentitem,
     .e-currentitem:hover {
+      @if $pager-skin == 'bootstrap5' {
+        border-right-color: $primary-light;
+      }
       background: $pager-active-bg-color;
       color: $pager-active-color;
       opacity: 1;
+    }
+
+    .e-numericitem.e-focused,
+    .e-first.e-focused,
+    .e-prev.e-focused,
+    .e-next.e-focused,
+    .e-last.e-focused,
+    .e-mfirst.e-focused,
+    .e-mprev.e-focused,
+    .e-mnext.e-focused,
+    .e-mlast.e-focused {
+      background-color: $pager-focus-bg-color;
+    }
+
+    .e-currentitem.e-numericitem.e-focused {
+      background: $pager-active-bg-color;
+      box-shadow: $pager-focus-active-box-shadow;
+    }
+
+    .e-focused {
+      box-shadow: $pager-focus-shadow;
     }
 
     @media (max-width: 590px) {

@@ -1,6 +1,6 @@
-import { Workbook, SheetModel, CellModel, getData } from '../base/index';
+import { Workbook, SheetModel, CellModel, getData, getSheet } from '../base/index';
 import { DataManager, Query, Deferred, Predicate } from '@syncfusion/ej2-data';
-import { getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, getCellAddress } from '../common/index';
+import { getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, skipHiddenIdx } from '../common/index';
 import { BeforeFilterEventArgs, FilterOptions, FilterEventArgs, setRow, ExtendedRowModel, getSheetIndex } from '../index';
 import { initiateFilter, hideShow } from '../common/event';
 
@@ -52,7 +52,7 @@ export class WorkbookFilter {
         eventArgs: { args: BeforeFilterEventArgs, promise: Promise<FilterEventArgs>, refresh?: boolean }): void {
         const args: BeforeFilterEventArgs = eventArgs.args;
         const deferred: Deferred = new Deferred();
-        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = getSheet(this.parent, this.parent.getAddressInfo(args.range).sheetIndex);
         const filterOptions: FilterOptions = args.filterOptions || {};
         eventArgs.promise = deferred.promise;
         if (filterOptions.datasource) {
@@ -110,31 +110,34 @@ export class WorkbookFilter {
             if (this.parent.getModuleName() === 'spreadsheet') {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 const parent: any = this.parent;
-                if ((parent.scrollSettings.enableVirtualization && (jsonData.length > parent.viewport.rowCount +
-                    (parent.getThreshold('row') * 2))) || refresh || !!sheet.frozenColumns || !!sheet.frozenRows) {
-                    let hide: boolean;
+                let hide: boolean;
+                let refreshUI: boolean;
+                if ((parent.scrollSettings.enableVirtualization && (jsonData.length > (parent.viewport.rowCount +
+                    (parent.getThreshold('row') * 2))) || sheet.frozenRows || sheet.frozenColumns) || refresh) {
                     jsonData.forEach((data: { [key: string]: CellModel }) => {
                         hide = result.indexOf(data) < 0;
                         setRow(sheet, Number(data[rowKey]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
                     });
-                    if (sheetIdx !== parent.activeSheetIndex) {
-                        return;
-                    }
-                    parent.renderModule.refreshSheet(false, true, true);
+                    refreshUI = sheetIdx === parent.activeSheetIndex;
+                    const paneIndexes: number[] = getRangeIndexes(sheet.paneTopLeftCell);
+                    this.parent.updateTopLeftCell(
+                        skipHiddenIdx(sheet, paneIndexes[0], true) - this.parent.frozenRowCount(sheet), null, 'col');
                 } else {
-                    let aboveViewport: boolean;
                     jsonData.forEach((data: { [key: string]: CellModel }) => {
-                        const eventArgs: { [key: string]: number | boolean } = {
-                            startIndex: Number(data[rowKey]) - 1, hide: result.indexOf(data) < 0, isFiltering: true, aboveViewport: false
-                        };
-                        eventArgs.endIndex = eventArgs.startIndex;
-                        this.parent.notify(hideShow, eventArgs);
-                        if (!aboveViewport) { aboveViewport = <boolean>eventArgs.aboveViewport; }
+                        hide = result.indexOf(data) < 0;
+                        if (refreshUI) {
+                            setRow(sheet, Number(data[rowKey]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
+                        } else {
+                            const eventArgs: { [key: string]: number | boolean } = { startIndex: Number(data[rowKey]) - 1, hide: hide,
+                                isFiltering: true, sheetIndex: sheetIdx };
+                            eventArgs.endIndex = eventArgs.startIndex;
+                            this.parent.notify(hideShow, eventArgs);
+                            refreshUI = <boolean>eventArgs.refreshUI;
+                        }
                     });
-                    if (aboveViewport && range) {
-                        const index: number[] = getRangeIndexes(range);
-                        this.parent.goTo(getCellAddress(index[0], index[1]));
-                    }
+                }
+                if (refreshUI) {
+                    parent.renderModule.refreshSheet(false, false, true);
                 }
             } else {
                 let hide: boolean;

@@ -3086,14 +3086,14 @@ describe("Accordion Testing", () => {
             expect(ele.getAttribute('aria-multiselectable')).toBe('true');
             expect(ele.children[0].firstElementChild.getAttribute('aria-disabled')).toBe('false');
             expect(ele.children[0].getAttribute('aria-expanded')).toBe('false');
-            expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toBe('false');
+            expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toEqual(null);
             expect(ele.children[0].firstElementChild.getAttribute('aria-label')).toBe('collapsed');
             expect(ele.children[0].children[0].getAttribute('role')).toBe('heading');
             expect(ele.children[1].children[0].getAttribute('role')).toBe('heading');
             expect(ele.children[1].children[0].getAttribute('aria-controls')).toBe(null);
             expect(ele.children[1].firstElementChild.getAttribute('aria-disabled')).toBe('false');
             expect(ele.children[1].getAttribute('aria-expanded')).toBe('false');
-            expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toBe('false');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toEqual(null);
             expect(ele.children[1].firstElementChild.getAttribute('aria-label')).toBe('collapsed');
             expect(ele.children[0].children[0].getAttribute('tabindex')).toBe('0');
             expect(ele.children[1].children[0].getAttribute('tabindex')).toBe('0');
@@ -3195,7 +3195,7 @@ describe("Accordion Testing", () => {
         afterEach((): void => {
             let ele: HTMLElement = document.getElementById('accordion');
             expect(ele.children[1].getAttribute('aria-expanded')).toBe('false');
-            expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toBe('false');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toEqual(null);
             expect(ele.children[1].children[1].getAttribute('aria-hidden')).toBe('true');
             if (accordion) {
                 accordion.destroy();
@@ -3225,10 +3225,10 @@ describe("Accordion Testing", () => {
         it("Accordion Aria Attributes with ExpandItem Public method", (done: Function) => {
             let ele: HTMLElement = document.getElementById('accordion');
             expect(ele.children[0].getAttribute('aria-expanded')).toBe('true');
-            expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toBe('true');
+            expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toEqual(null);
             expect(ele.children[0].firstElementChild.getAttribute('aria-label')).toBe('expanded');
             expect(ele.children[1].getAttribute('aria-expanded')).toBe('true');
-            expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toBe('true');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toEqual(null);
             expect(ele.children[1].firstElementChild.getAttribute('aria-label')).toBe('expanded');
             expect(ele.children[1].children[1].getAttribute('aria-hidden')).toBe('false');
             expect(ele.children[0].children[1].getAttribute('aria-hidden')).toBe('false');
@@ -3729,6 +3729,90 @@ describe("Accordion Testing", () => {
             const accordionItems: NodeListOf<Element> = accordion.querySelectorAll('.e-acrdn-item');
             expect(accordionItems[0].id).toEqual('ItemOne');
             expect(accordionItems[1].id).toEqual('ItemTwo');
+        });
+    });
+
+    describe("BLAZ-20806-Nested Accordion rendering testing", () => {
+        let accordion: Accordion;
+        document.body.innerHTML = "";
+        function create(): void {
+            let nestAcc: Accordion = new Accordion({
+                expandMode: "Single",
+                items: [{
+                    header: "nestItem1", content: "nested Content"
+                }]
+            });
+            nestAcc.appendTo("#nestedAccordion");
+        }
+        beforeEach((done: Function) => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    created: create,
+                    expandMode: "Single",
+                    items: [
+                        { header: "Item1", content: "<div id = 'nestedAccordion'></div>", expanded: true },
+                        { header: "Item2", content: "Content of Item2" }
+                    ]
+                }, ele);
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        afterEach((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Check nested accordion", () => {
+            const acrdnItemPanel: Element = accordion.element.querySelector("." + CLS_CONTENT);
+            const nestAcrdn: HTMLElement = <HTMLElement>acrdnItemPanel.firstElementChild.firstElementChild;
+            expect(nestAcrdn.classList.contains(CLS_ROOT)).toBe(true);
+            expect(acrdnItemPanel.classList.contains(CLS_NEST)).toBe(true);
+        });
+    });
+
+    describe("BLAZ-20806-Non nested Accordion rendering testing", () => {
+        let accordion: Accordion;
+        document.body.innerHTML = "";
+        function create(): void {
+            let nestAcc: Accordion = new Accordion({
+                expandMode: "Single",
+                items: [{
+                    header: "nestItem1", content: "nested Content"
+                }]
+            });
+            nestAcc.appendTo("#nestedAccordion");
+        }
+        beforeEach((done: Function) => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    created: create,
+                    expandMode: "Single",
+                    items: [
+                        { header: "Item1", content: "<div>nested accordion content</div><div id = 'nestedAccordion'></div>", expanded: true },
+                        { header: "Item2", content: "Content of Item2" }
+                    ]
+                }, ele);
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        afterEach((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Check non nested accordion", () => {
+            const acrdnItemPanel: Element = accordion.element.querySelector("." + CLS_CONTENT);
+            const nestAcrdn: HTMLElement = <HTMLElement>acrdnItemPanel.firstElementChild.firstElementChild;
+            expect(nestAcrdn.classList.contains(CLS_ROOT)).toBe(false);
+            expect(acrdnItemPanel.classList.contains(CLS_NEST)).toBe(false);
+            const childAcrdn: Element = acrdnItemPanel.firstElementChild.children[1];
+            expect(childAcrdn.classList.contains(CLS_ROOT)).toBe(true);
         });
     });
 

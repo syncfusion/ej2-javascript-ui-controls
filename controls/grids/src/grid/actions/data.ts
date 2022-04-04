@@ -11,6 +11,8 @@ import { ServiceLocator } from '../services/service-locator';
 import { Column, ColumnModel } from '../models/column';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { SortDirection } from '../base/enum';
+import { Page } from '..';
+import { Pager } from '../..';
 
 /**
  * Grid data module is used to generate query and data source.
@@ -175,7 +177,9 @@ export class Data implements IDataProcessor {
             if (!isNullOrUndefined(gObj.infiniteScrollModule) && gObj.enableInfiniteScrolling) {
                 this.parent.notify(events.infinitePageQuery, query);
             } else {
-                query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
+                query.page(gObj.pageSettings.currentPage, gObj.allowPaging && gObj.pagerModule as Page &&
+                    ((gObj.pagerModule as Page).pagerObj as Pager).isAllPage && !this.dataManager.dataSource.offline ? null :
+                    gObj.pageSettings.pageSize);
             }
         }
         return query;

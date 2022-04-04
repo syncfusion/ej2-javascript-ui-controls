@@ -698,7 +698,8 @@ export class EventWindow {
     }
 
     private onChange(args: ChangeEventArgs): void {
-        const target: HTMLTableCellElement = (args.event.target) as HTMLTableCellElement;
+        const targetSelector: string = `.${cls.EVENT_WINDOW_ALL_DAY_CLASS},.${cls.TIME_ZONE_CLASS},.${cls.EVENT_WINDOW_REPEAT_CLASS}`;
+        const target: Element = closest(args.event.target as Element, targetSelector);
         if (target.classList.contains(cls.EVENT_WINDOW_ALL_DAY_CLASS)) {
             this.onAllDayChange(args.checked);
         } else if (target.classList.contains(cls.TIME_ZONE_CLASS)) {
@@ -869,7 +870,8 @@ export class EventWindow {
 
     private showDetails(eventData: Record<string, any>): void {
         const eventObj: Record<string, any> = <Record<string, any>>extend({}, eventData, null, true);
-        if ((<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
+        if ((!this.cellClickAction || this.cellClickAction && !isNullOrUndefined(this.parent.editorTemplate)) &&
+            (<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
             this.trimAllDay(eventObj);
         }
         this.eventData = eventObj;

@@ -188,11 +188,18 @@ export class NormalEdit {
             row: gObj.getRowByIndex(index)
         };
         gObj.showSpinner();
+        if (gObj.enableInfiniteScrolling) {
+            this.uid = (args.row as Element).getAttribute('data-uid');
+            const index =  parseInt((args.row as Element).getAttribute('aria-rowindex'));
+            this.parent.notify(events.refreshInfiniteEditrowindex, { index: index });
+        }
         gObj.notify(events.updateData, args);
         if (args.promise) {
             args.promise.then(() => gObj.refresh()).catch((e: ReturnType) => this.edFail(e));
         } else {
-            gObj.refresh();
+            if (!gObj.enableInfiniteScrolling) {
+                gObj.refresh();
+            }
         }
     }
 

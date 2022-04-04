@@ -11,7 +11,7 @@ import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderF
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
 import { TimePickerBase } from '../timepicker/timepicker';
 import { DateTimePickerModel } from './datetimepicker-model';
-import {MaskPlaceholderModel} from '../calendar/calendar-model'
+import {MaskPlaceholderModel} from '../common/maskplaceholder-model'
 
 //class constant defination
 const DATEWRAPPER: string = 'e-date-wrapper';
@@ -1171,7 +1171,7 @@ export class DateTimePicker extends DatePicker {
             };
             this.addTimeSelection();
             this.trigger('change', this.changedArgs);
-            this.previousDateTime = this.value;
+            this.previousDateTime = this.previousDate = this.value;
         }
     }
     private setTimeScrollPosition(): void {

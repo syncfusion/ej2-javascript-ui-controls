@@ -434,7 +434,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     private createDiv(): void {
         let tooltipDiv: Element = document.createElement('div');
         tooltipDiv.id = this.element.id + '_Secondary_Element';
-        tooltipDiv.setAttribute('style', 'position: relative');
+        (tooltipDiv as HTMLElement).style.position = 'relative';
         this.element.appendChild(tooltipDiv);
         this.element.style.display = 'block';
         this.element.style.position = 'relative';

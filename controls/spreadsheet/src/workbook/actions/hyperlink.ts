@@ -1,8 +1,6 @@
-import { Workbook, SheetModel } from '../base/index';
-import { setLinkModel } from '../common/event';
+import { Workbook, SheetModel, CellModel, setCell } from '../base/index';
+import { setLinkModel, getRangeIndexes, updateCell } from '../common/index';
 import { HyperlinkModel } from '../common/class-model';
-import { getRangeIndexes } from '../common/address';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * The `WorkbookHyperlink` module is used to handle Hyperlink action in Spreadsheet.
@@ -39,7 +37,7 @@ export class WorkbookHyperlink {
         }
     }
 
-    public setLinkHandler(args: { hyperlink: string | HyperlinkModel, cell: string }): void {
+    public setLinkHandler(args: { hyperlink: string | HyperlinkModel, cell: string, displayText: string, triggerEvt?: boolean }): void {
         let hyperlink: string | HyperlinkModel = args.hyperlink;
         let cellAddr: string = args.cell;
         let range: string[];
@@ -64,37 +62,32 @@ export class WorkbookHyperlink {
         if (!sheet) {
             return;
         }
-        if (isNullOrUndefined(sheet.rows[rowIdx])) {
-            sheet.rows[rowIdx] = {};
-        }
-        if (isNullOrUndefined(sheet.rows[rowIdx].cells)) {
-            sheet.rows[rowIdx].cells = [];
-        }
-        if (isNullOrUndefined(sheet.rows[rowIdx].cells[colIdx])) {
-            sheet.rows[rowIdx].cells[colIdx] = {};
-        }
-        if (sheet.rows[rowIdx].cells[colIdx].style) {
-            sheet.rows[rowIdx].cells[colIdx].style.textDecoration = 'underline';
-            sheet.rows[rowIdx].cells[colIdx].style.color = '#00e';
-        } else {
-            sheet.rows[rowIdx].cells[colIdx].style = { textDecoration: 'underline', color: '#00e' };
-        }
+        const cell: CellModel = {};
         if (typeof (hyperlink) === 'string') {
             if (hyperlink.indexOf('http://') !== 0 && hyperlink.indexOf('https://') !== 0 && hyperlink.indexOf('ftp://') !== 0) {
                 hyperlink = hyperlink.toLowerCase().indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
                 address = hyperlink;
             }
-            sheet.rows[rowIdx].cells[colIdx].hyperlink = hyperlink;
+            cell.hyperlink = hyperlink;
         } else {
             address = hyperlink.address;
             if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
                 address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
             }
-            sheet.rows[rowIdx].cells[colIdx].hyperlink = {
+            cell.hyperlink = {
                 address: address
             };
         }
-
+        if (args.displayText) {
+            cell.value = args.displayText;
+        }
+        if (!updateCell(this.parent, sheet, { cell: cell, rowIdx: rowIdx, colIdx: colIdx, preventEvt: !args.triggerEvt })) {
+            if (!sheet.rows[rowIdx].cells[colIdx].style) {
+                sheet.rows[rowIdx].cells[colIdx].style = {};
+            }
+            sheet.rows[rowIdx].cells[colIdx].style.textDecoration = 'underline';
+            sheet.rows[rowIdx].cells[colIdx].style.color = '#00e';
+        }
     }
 
     /**

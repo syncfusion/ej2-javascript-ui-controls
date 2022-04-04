@@ -4,8 +4,8 @@ import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, Ag
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol } from '../common/index';
-import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getFormulaInfoTable } from '../common/index';
+import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, checkUniqueRange } from '../common/index';
+import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
 import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula } from '../common/index';
 
 
@@ -68,9 +68,9 @@ export class WorkbookFormula {
         this.parent.on(getUniqueRange, this.getUniqueRange, this);
         this.parent.on(removeUniquecol, this.removeUniquecol, this);
         this.parent.on(clearFormulaDependentCells, this.clearFormulaDependentCells, this);
-        this.parent.on(getFormulaInfoTable, this.getFormulaInfoTable, this);
         this.parent.on(formulaInValidation, this.formulaInValidation, this);
         this.parent.on(refreshInsertDelete, this.refreshInsertDelete, this);
+        this.parent.on(getUpdatedFormulaOnInsertDelete, this.getUpdatedFormulaOnInsertDelete, this);
     }
 
     private removeEventListener(): void {
@@ -80,9 +80,9 @@ export class WorkbookFormula {
             this.parent.off(getUniqueRange, this.getUniqueRange);
             this.parent.off(removeUniquecol, this.removeUniquecol);
             this.parent.off(clearFormulaDependentCells, this.clearFormulaDependentCells);
-            this.parent.off(getFormulaInfoTable, this.getFormulaInfoTable);
             this.parent.off(formulaInValidation, this.formulaInValidation);
             this.parent.off(refreshInsertDelete, this.refreshInsertDelete);
+            this.parent.off(getUpdatedFormulaOnInsertDelete, this.getUpdatedFormulaOnInsertDelete);
         }
     }
 
@@ -165,7 +165,7 @@ export class WorkbookFormula {
             }
             this.refreshCalculate(
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value,
-                <boolean>args.isFormula, <number>args.sheetIndex, <boolean>args.isRefreshing, <boolean>args.skip
+                <boolean>args.isFormula, <number>args.sheetIndex, <boolean>args.isRefreshing
             );
             args.value = args.value ? args.value.toString().split('-*').join('-').split('/*').join('/').split('*/').
                 join('*').split('-/').join('-').split('*+').join('*').split('+*').join('+') : args.value;
@@ -233,12 +233,6 @@ export class WorkbookFormula {
     }
     private addCustomFunction(functionHandler: string | Function, functionName: string): void {
         this.calculateInstance.defineFunction(functionName, functionHandler);
-    }
-    private getFormulaInfoTable(args: {cellRef: string, toSkip: boolean }): void {
-        let cellRef: string = args.cellRef;
-        cellRef = cellRef.split(':')[0];
-        cellRef = '!' + this.parent.activeSheetIndex + '!' + cellRef;
-        args.toSkip = isNullOrUndefined(this.calculateInstance.getFormulaInfoTable().get(cellRef));
     }
     private updateSheetInfo(): void {
         this.sheetInfo = [];
@@ -414,7 +408,7 @@ export class WorkbookFormula {
         }
     }
     private refreshCalculate(
-        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean, skip?: boolean): void {
+        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): void {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
         let sheetId: string = sheet.id + '';
         const sheetName: string = sheet.name;
@@ -422,7 +416,7 @@ export class WorkbookFormula {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
-            this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing, sheetName, skip);
+            this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing, sheetName);
             const referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true) {
                 let rowId: number;
@@ -680,10 +674,9 @@ export class WorkbookFormula {
         if (!args.Count || args.countOnly) { return; }
         for (i = 0; i < 4; i++) {
             calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i])(range));
-            const eventArgs: { [key: string]: string | number | boolean } = {
-                formattedText: calcValue,
-                value: calcValue,
-                format: actCellfrmt,
+            const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
+                formattedText: calcValue, value: calcValue, format: actCellfrmt,
+                cell: { value: calcValue, format: actCellfrmt },
                 onLoad: true
             };
             if (actCellfrmt) {
@@ -704,10 +697,10 @@ export class WorkbookFormula {
                 for (let j: number = 0, colLen: number = sheet.usedRange.colIndex; j <= colLen; j++) {
                     cell = getCell(i, j, sheet, false, true);
                     if (cell.formula && checkIsFormula(cell.formula)) {
-                        if (index === sheetIndex) {
-                            this.updateFormula(args, cell);
+                        if (index === sheetIndex && ((i < args.startIndex && i > args.endIndex) || args.isInsert)) {
+                            this.updateFormula(args, cell, i, j);
                         } else if (cell.formula.includes(args.sheet.name)) {
-                            this.updateFormula(args, cell);
+                            this.updateFormula(args, cell, i, j, true);
                         }
                     }
                 }
@@ -719,8 +712,15 @@ export class WorkbookFormula {
         this.refreshNamedRange(args);
     }
 
-    private updateFormula(args: InsertDeleteEventArgs, cell: CellModel): void {
+    private getUpdatedFormulaOnInsertDelete(args: { insertDeleteArgs: InsertDeleteEventArgs, cell: CellModel, row: number, col: number }): void {
+        this.updateFormula(args.insertDeleteArgs, args.cell, args.row, args.col);
+    }
+
+    private updateFormula(args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, otherSheet?: boolean): void {
         let ref: string; let pVal: string; let index: number[]; let updated: boolean;
+        if (cell.formula && cell.formula.includes('UNIQUE')) {
+            this.clearUniqueRange(row, col, args.sheet);
+        }
         const splitFormula: string[] = this.parseFormula(cell.formula, true);
         for (let i: number = 0; i < splitFormula.length; i++) {
             ref = splitFormula[i].trim().replace(/[$]/g, '');
@@ -728,7 +728,11 @@ export class WorkbookFormula {
                 pVal = i && splitFormula[i - 1].trim();
                 if (pVal && pVal[pVal.length - 1] === '!') {
                     pVal = pVal.replace(/['!]/g, '');
-                    if (pVal !== args.sheet.name) { continue; }
+                    if (pVal !== args.sheet.name) {
+                        continue;
+                    }
+                } else if (otherSheet) {
+                    continue;
                 }
                 index = getRangeIndexes(ref);
                 updated = this.parent.updateRangeOnInsertDelete(args, index);
@@ -741,6 +745,18 @@ export class WorkbookFormula {
         const newFormula: string = '=' + splitFormula.join('');
         if (cell.formula !== newFormula) {
             cell.formula = newFormula; cell.value = null;
+        }
+    }
+
+    private clearUniqueRange(row: number, col: number, sheet: SheetModel): void {
+        const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } =
+        { cellIdx: [row, col, row, col], isUnique: false, uniqueRange: '' };
+        this.parent.notify(checkUniqueRange, uniqueArgs);
+        const range: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+        for (let i: number = range[0]; i <= range[2]; i++) {
+            for (let j: number = range[1]; j <= range[3]; j++) {
+                delete getCell(i, j, sheet, false, true).value;
+            }
         }
     }
 

@@ -197,6 +197,7 @@ export const defaultLocale: object = {
     SortEmptyFieldError: 'Sort criteria column should not be empty.',
     SortDuplicateFieldError: ' is mentioned more than once. Duplicate columns must be removed.',
     SortOutOfRangeError: 'Select a cell or range inside the used range and try again.',
+    MultiRangeSortError: "This can't be done on a multiple range selection. Select a single range and try again.",
     SortAndFilter: 'Sort & Filter',
     Filter: 'Filter',
     ClearAllFilter: 'Clear',
@@ -366,7 +367,8 @@ export const defaultLocale: object = {
     ProtectSheet: 'Protect Sheet',
     UnprotectSheet: 'Unprotect Sheet',
     LockCells: 'Lock Cells',
-    SelectCells: 'Select cells',
+    SelectCells: 'Select Locked cells',
+    SelectUnLockedCells: 'Select Unlocked Cells',
     FormatCells: 'Format cells',
     FormatRows: 'Format rows',
     FormatColumns: 'Format columns',
@@ -600,5 +602,7 @@ export const defaultLocale: object = {
     CustomFormatSample: 'Type',
     UnProtectWorksheet: 'Unprotect Sheet',
     ReEnterPassword: 'Re-enter password to proceed',
-    SheetPassword: 'Password to unprotect sheet:'
+    SheetPassword: 'Password to unprotect sheet:',
+    Fluent: 'Fluent',
+    FluentDark: 'FluentDark'
 };

@@ -1,5 +1,5 @@
 import { Calculate, FormulaError, CalcSheetFamilyItem } from './index';
-import { CommonErrors, FailureEventArgs, FormulasErrorsStrings } from '../common/index';
+import { CommonErrors, FailureEventArgs, FormulasErrorsStrings, isExternalFileLink } from '../common/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 export class Parser {
     private parent: Calculate;
@@ -79,6 +79,9 @@ export class Parser {
     public parse(text: string, fkey?: string): string {
         if (this.parent.isTextEmpty(text)) {
             return text;
+        }
+        if (isExternalFileLink(text)) {
+            return this.parent.getErrorStrings()[CommonErrors.ref];
         }
         if (this.parent.getFormulaCharacter() !== String.fromCharCode(0) && this.parent.getFormulaCharacter() === text[0]) {
             text = text.substring(1);

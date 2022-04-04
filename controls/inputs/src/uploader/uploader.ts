@@ -2894,7 +2894,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private removecanceledFile(e: Event, file: FileInfo): void {
         const liElement: HTMLElement = this.getLiElement(file);
-        if (liElement.querySelector('.' + RETRY_ICON) || isNullOrUndefined(liElement.querySelector('.' + ABORT_ICON))) {
+        if (isNullOrUndefined(liElement) || liElement.querySelector('.' + RETRY_ICON) || isNullOrUndefined(liElement.querySelector('.' + ABORT_ICON))) {
             return;
         }
         this.updateStatus(file, this.localizedTexts('fileUploadCancel'), '5');
@@ -3135,6 +3135,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             try {
                 if (selectAll(uploadTemplate, document).length) {
                     return compile(select(uploadTemplate, document).innerHTML.trim());
+                } else {
+                    return compile(uploadTemplate);
                 }
             } catch (exception) {
                 return compile(uploadTemplate);

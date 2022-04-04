@@ -126,11 +126,19 @@ $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
 
   .e-input-group.e-ddl .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon,
   .e-input-group.e-control-wrapper.e-ddl .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon,
-  .e-float-input.e-ddl input[readonly] ~ span.e-input-group-icon.e-ddl-icon,
+  .e-float-input.e-ddl input[readonly]  ~ span.e-input-group-icon.e-ddl-icon,
   .e-float-input.e-control-wrapper.e-ddl input[readonly] ~ span.e-input-group-icon.e-ddl-icon {
     background: transparent;
     color: $ddl-list-icon-color;
   }
+
+  .e-input-group.e-ddl.e-readonly .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon.e-search-icon,
+  .e-input-group.e-control-wrapper.e-readonly .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon.e-search-icon,
+  .e-float-input.e-ddl.e-readonly .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon.e-search-icon,
+  .e-float-input.e-control-wrapper.e-ddl.e-readonly .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon.e-search-icon {
+    background: $content-bg-color-alt2;
+  }
+
 
   .e-input-group:not(.e-disabled) .e-control#{&}.e-dropdownlist ~ .e-ddl-icon,
   .e-input-group.e-disabled.e-ddl .e-control#{&}.e-dropdownlist ~ .e-input-group-icon,

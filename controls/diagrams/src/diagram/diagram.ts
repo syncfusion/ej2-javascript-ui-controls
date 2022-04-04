@@ -49,7 +49,7 @@ import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
-import { Connector,BezierSegment } from './objects/connector';
+import { Connector, BezierSegment } from './objects/connector';
 import { ConnectorModel, BpmnFlowModel, OrthogonalSegmentModel } from './objects/connector-model';
 import { SnapSettings } from './diagram/grid-lines';
 import { RulerSettings } from './diagram/ruler-settings';
@@ -4580,17 +4580,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public removeDependentConnector(node: Node): void {
-        let connector: ConnectorModel;
-        let edges: string[] = [];
-        edges = edges.concat(node.outEdges, node.inEdges);
-        for (let i: number = edges.length - 1; i >= 0; i--) {
-            connector = this.nameTable[edges[i]];
-            if (connector) {
-                this.connectorTable[connector.id] = cloneObject(connector);
-                this.remove(connector);
+        if (node) {
+            let connector: ConnectorModel;
+            let edges: string[] = [];
+            edges = edges.concat(node.outEdges, node.inEdges);
+            for (let i: number = edges.length - 1; i >= 0; i--) {
+                connector = this.nameTable[edges[i]];
+                if (connector) {
+                    this.connectorTable[connector.id] = cloneObject(connector);
+                    this.remove(connector);
+                }
             }
         }
-
     }
 
     /**
@@ -4967,6 +4968,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             parentNode.wrapper.children.splice(j, 1);
                         }
                     }
+                    // EJ2-57179 - Below lines added to remove the childs to swimlane after Redo.
+                    let swimlaneNode: NodeModel = this.getObject((parentNode as Node).parentId);
+                    if (swimlaneNode && (swimlaneNode as Node).shape instanceof SwimLane) {
+                        for (let h: number = 0; h < ((swimlaneNode as Node).shape as SwimLane).lanes.length; h++) {
+                            let laneId = (node as Node).parentId.split((swimlaneNode as Node).id);
+                            if (((swimlaneNode as Node).shape as SwimLane).lanes[h].id === laneId[1].slice(0, -1)) {
+                                for (let y: number = 0; y < ((swimlaneNode as Node).shape as SwimLane).lanes[h].children.length; y++) {
+                                    if ((node as Node).id === ((swimlaneNode as Node).shape as SwimLane).lanes[h].children[y].id) {
+                                        ((swimlaneNode as Node).shape as SwimLane).lanes[h].children.splice(y, 1);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             parentNode.wrapper.measure(new Size());
@@ -5009,6 +5025,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 } else {
                     parentNode.children.push(id);
                     parentNode.wrapper.children.push(childNode.wrapper);
+                    // SF-362880 - Below lines added for adding the childs to swimlane after Undo.
+                    let swimlane: NodeModel = this.getObject((node as Node).parentId);
+                    if (swimlane && (swimlane as Node).shape instanceof SwimLane) {
+                        for (let h: number = 0; h < ((swimlane as Node).shape as SwimLane).lanes.length; h++) {
+                            let laneId = (childNode as Node).parentId.split((node as Node).parentId);
+                            if (((swimlane as Node).shape as SwimLane).lanes[h].id === laneId[1].slice(0, -1)) {
+                                ((swimlane as Node).shape as SwimLane).lanes[h].children.push(childNode);
+                                break;
+                            }
+                        }
+                    }
                 }
                 parentNode.wrapper.measure(new Size());
                 parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
@@ -5293,6 +5320,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     viewPort, this.dataSourceSettings.id, this.diagramActions);
                 update = true;
                 if (this.layoutAnimateModule && layout.rootNode && !this.diagramActions) {
+                    this.updateNodeExpand(layout.rootNode as Node, layout.rootNode.isExpanded);
+                }
+                // EJ2-58221 - added to render the layout properly based on parent node isExpanded property.
+                else if (!this.layoutAnimateModule && layout.rootNode && !layout.rootNode.isExpanded) {
                     this.updateNodeExpand(layout.rootNode as Node, layout.rootNode.isExpanded);
                 }
             } else if (this.mindMapChartModule) {
@@ -6966,6 +6997,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             portContainer.style.fill = 'none';
             portContainer.style.strokeColor = 'none'; portContainer.horizontalAlignment = 'Stretch';
             portContainer.verticalAlignment = 'Stretch'; canvas.style = obj.style;
+            canvas.padding.left = obj.padding.left;canvas.padding.right = obj.padding.right;canvas.padding.top = obj.padding.top;canvas.padding.bottom = obj.padding.bottom;
             portContainer.children = []; portContainer.preventContainer = true;
             if (obj.container) { portContainer.relativeMode = 'Object'; }
             let checkPorts: boolean = (obj.ports && obj.ports.length > 0) ? true : false;
@@ -7449,7 +7481,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         let centerPoint = this.getMidPoint(obj);
                         this.diagramRenderer.updateNode(
                             obj.wrapper as DiagramElement, diagramElementsLayer,
-                            htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id),centerPoint);
+                            htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id), centerPoint);
                         this.updateCanupdateStyle(obj.wrapper.children, true);
                     }
                 }
@@ -8696,11 +8728,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private focusOutEdit(): void {
         this.endEdit();
+        // EJ2-57743 - Added below code to refresh the diagram layer after the annotation gets edited in canvas mode.
+        if(this.mode === 'Canvas' && this.scroller.currentZoom !== 1) {
+            this.refreshDiagramLayer();
+        }
     }
 
     private endEditCommand(): void {
         this.endEdit();
         this.textEditing = false;
+        // EJ2-57743 - Added below code to refresh the diagram layer after the annotation gets edited in canvas mode.
+        if(this.mode === 'Canvas' && this.scroller.currentZoom !== 1) {
+            this.refreshDiagramLayer();
+        }
     }
     /**
      * @private
@@ -9343,6 +9383,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             } update = true;
             updateConnector = true;
         }
+        if (node.padding !== undefined) {
+            actualObject.wrapper.padding.left =node.padding.left  !==undefined?node.padding.left:actualObject.wrapper.padding.left;
+            actualObject.wrapper.padding.right =node.padding.right  !==undefined?node.padding.right:actualObject.wrapper.padding.right;
+            actualObject.wrapper.padding.top =node.padding.top !==undefined?node.padding.top:actualObject.wrapper.padding.top;
+            actualObject.wrapper.padding.bottom =node.padding.bottom  !==undefined?node.padding.bottom:actualObject.wrapper.padding.bottom;
+            update = true;
+        }
         if (node.pivot !== undefined) {
             actualObject.wrapper.pivot = node.pivot; update = true;
         }
@@ -9509,7 +9556,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateSelector();
                 }
             }
-            if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) { this.updateQuad(actualObject); }
+            if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) {
+                this.updateQuad(actualObject);
+                // EJ2-57436 - Added the below code to check if node has parent id or not.
+                // If node has parentId means then send the parent node to updatequad method to add the parent node in negative quadrant
+                if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
+                    let parentNode: NodeModel = this.nameTable[actualObject.parentId];
+                    this.updateQuad(parentNode as IElement);
+                }
+            }
             if (!isLayout) {
                 // eslint-disable-next-line max-len
                 this.commandHandler.connectorSegmentChange(actualObject, existingInnerBounds, (node.rotateAngle !== undefined) ? true : false);
@@ -9649,7 +9704,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private updateConnectorProperties(connector: ConnectorModel): void {
         if (this.preventConnectorsUpdate) {
             const index: number = this.selectionConnectorsList.indexOf(connector);
-            if (index === -1) { this.selectionConnectorsList.push(connector); }
+            if (index === -1 && connector) { this.selectionConnectorsList.push(connector); }
         } else {
             const conn: Connector = {
                 sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint, sourceID: connector.sourceID,
@@ -11201,7 +11256,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         };
 
         this.droppable.out = (args: Object) => {
-            if (this.currentSymbol && (!this.eventHandler.focus || (args as any).evt.type === "touchmove")) {
+            // EJ2-57221 - Added the below code to check if we drag the node from symbol palette using touch or mouse. 
+            if ((args as any).evt.type === "touchmove") {
+                this.eventHandler.mouseLeave((args as any).evt);
+            }
+            if (this.currentSymbol && (!this.eventHandler.focus)) {
                 this.unSelect(this.currentSymbol); this.removeFromAQuad(this.currentSymbol);
                 if (this.mode !== 'SVG' && this.currentSymbol.shape.type === 'Native') {
                     this.removeElements(this.currentSymbol);

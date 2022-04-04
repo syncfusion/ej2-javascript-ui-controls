@@ -7,6 +7,7 @@ import { ProtectionType } from '../../base/types';
 import { Base64 } from '../editor/editor-helper';
 import { ListView } from '@syncfusion/ej2-lists';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { Key } from 'selenium-webdriver';
 
 /**
  * @private
@@ -31,6 +32,7 @@ export class RestrictEditing {
     public unProtectDialog: UnProtectDocumentDialog;
     public stopProtectionDiv: HTMLElement;
     public contentDiv1: HTMLElement;
+    public contentDiv2: HTMLElement;
     public restrictPaneWholeDiv: HTMLElement;
     private closeButton: HTMLButtonElement;
     public protectionType: ProtectionType = 'ReadOnly';
@@ -61,7 +63,7 @@ export class RestrictEditing {
         if (!this.restrictPane) {
             this.localObj = new L10n('documenteditor', this.viewer.owner.defaultLocale);
             this.localObj.setLocale(this.viewer.owner.locale);
-            this.initPane(this.localObj);
+            this.initPane(this.localObj, this.documentHelper.owner.enableRtl);
         }
         if (isShow) {
             this.restrictPane.style.display = 'block';
@@ -76,15 +78,17 @@ export class RestrictEditing {
         }
     }
 
-    private initPane(localValue: L10n): void {
-        this.restrictPane = createElement('div', { className: 'e-de-restrict-pane', styles: 'display:none' });
+    private initPane(localValue: L10n, isRtl?: boolean): void {
+        this.restrictPane = createElement('div', { className: 'e-de-restrict-pane'});
+        if (isRtl) {
+            this.restrictPane.classList.add('e-rtl');
+        }
         const headerWholeDiv: HTMLElement = createElement('div', { className: 'e-de-rp-whole-header' });
         const headerDiv1: HTMLElement = createElement('div', {
-            styles: 'width:75%',
             innerHTML: localValue.getConstant('Restrict Editing'), className: 'e-de-rp-header'
         });
         this.closeButton = createElement('button', {
-            className: 'e-de-rp-close-icon e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
+            className: 'e-de-rp-close-icon e-de-close-icon e-btn e-flat e-icon-btn',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         headerWholeDiv.appendChild(this.closeButton);
@@ -107,31 +111,37 @@ export class RestrictEditing {
         formatWholeDiv.appendChild(formatDiv);
         let allowFormatting: HTMLInputElement = createElement('input', {
             attrs: { type: 'checkbox' },
-            id: this.viewer.owner.containerId + '_allowFormat',
         }) as HTMLInputElement;
         formatWholeDiv.appendChild(allowFormatting);
         this.allowFormat = this.createCheckBox(localObj.getConstant('Allow formatting'), allowFormatting);
         this.restrictPaneWholeDiv.appendChild(formatWholeDiv);
         // Editing restrictions
         let editRestrictWholeDiv: HTMLElement = createElement('div', { className: 'e-de-rp-sub-div' });
-        let editRestrict: HTMLElement = createElement('div', {
-            innerHTML: localObj.getConstant('Editing restrictions'),
-            className: 'e-de-rp-format'
-        });
-        editRestrictWholeDiv.appendChild(editRestrict);
+        // let editRestrict: HTMLElement = createElement('div', {
+        //     innerHTML: localObj.getConstant('Editing restrictions'),
+        //     className: 'e-de-rp-format'
+        // });
+        // editRestrictWholeDiv.appendChild(editRestrict);
         let readOnly: HTMLInputElement = createElement('input', {
             attrs: { type: 'checkbox' },
-            id: this.viewer.owner.containerId + '_readOnly'
         }) as HTMLInputElement;
         let protectionTypeInput: HTMLInputElement = createElement('input', {
-            id: this.viewer.owner.containerId + '_readOnly',
             className: 'e-prop-font-style'
         }) as HTMLInputElement;
         editRestrictWholeDiv.appendChild(protectionTypeInput);
-        let protectionTypeValue: string[] = ['Read only', 'Filling in forms'];
+        let protectionTypeValue: {[Key:string]: Object}[] =
+        [
+            {Value: 'Read only', Name: localObj.getConstant('Read only')},
+            {Value: 'Filling in forms', Name: localObj.getConstant('Filling in forms')},
+            {Value: 'Comments', Name: localObj.getConstant('Comments')}
+        ]
         this.protectionTypeDrop = new DropDownList({
             dataSource: protectionTypeValue,
-            cssClass: 'e-de-prop-dropdown'
+            cssClass: 'e-de-prop-dropdown',
+            floatLabelType:'Always',
+            placeholder: localObj.getConstant('Editing restrictions'),
+            fields: {text:'Name', value: 'Value'},
+            enableRtl: this.documentHelper.owner.enableRtl
         });
         this.protectionTypeDrop.value = 'Read only';
         this.protectionTypeDrop.appendTo(protectionTypeInput);
@@ -157,7 +167,6 @@ export class RestrictEditing {
         this.userWholeDiv.appendChild(userDiv);
         let subContentDiv: HTMLElement = createElement('div', {
             innerHTML: localObj.getConstant('Select Part Of Document And User'),
-            styles: 'margin-bottom:8px;',
             className: 'e-de-rp-sub-content-div'
         });
         this.userWholeDiv.appendChild(subContentDiv);
@@ -167,15 +176,15 @@ export class RestrictEditing {
             cssClass: 'e-de-user-listView',
             dataSource: [{ text: 'Everyone' }],
             showCheckBox: true,
-            select: this.selectHandler.bind(this)
+            select: this.selectHandler.bind(this),
+            enableRtl: this.documentHelper.owner.enableRtl
         });
 
         this.addedUser.appendTo(emptyuserDiv);
         this.addUser = createElement('button', {
-            id: this.viewer.owner.containerId + '_addUser',
-            className: 'e-btn e-primary e-flat',
+            className: 'e-btn e-primary e-flat e-de-rp-mu-btn',
             innerHTML: localObj.getConstant('More users') + '...',
-            styles: 'margin-top: 3px',
+            //styles: 'margin-top: 3px',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.userWholeDiv.appendChild(this.addUser);
@@ -184,7 +193,6 @@ export class RestrictEditing {
         let lastDiv: HTMLElement = createElement('div', { className: 'e-de-rp-enforce' });
         this.restrictPaneWholeDiv.appendChild(lastDiv);
         this.enforceProtection = createElement('button', {
-            id: this.viewer.owner.containerId + '_addUser',
             innerHTML: localObj.getConstant('Enforcing Protection'),
             className: 'e-btn e-de-rp-btn-enforce',
             attrs: { type: 'button' }
@@ -194,11 +202,14 @@ export class RestrictEditing {
         this.stopProtectionDiv = createElement('div', { styles: 'display:none' });
         let headerDiv: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('Your permissions'), className: 'e-de-rp-stop-div1' });
         this.stopProtectionDiv.appendChild(headerDiv);
-        let content: string = localObj.getConstant('Protected Document');
-        this.contentDiv1 = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
-        this.stopProtectionDiv.appendChild(this.contentDiv1);
-        let contentDiv2: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles'), className: 'e-de-rp-stop-div3' });
-        this.stopProtectionDiv.appendChild(contentDiv2);
+        let contentWholeDiv = createElement('div',{className: 'e-de-rp-stop-div2'});
+        this.stopProtectionDiv.appendChild(contentWholeDiv);
+        let content1: string = localObj.getConstant('Protected Document');
+        this.contentDiv1 = createElement('div', { innerHTML: content1 });
+        contentWholeDiv.appendChild(this.contentDiv1);
+        let content2: string = localObj.getConstant('ReadOnlyProtection');
+        this.contentDiv2 = createElement('div', { innerHTML: content2 });
+        contentWholeDiv.appendChild(this.contentDiv2);
         this.stopReadOnlyOptions = createElement('div');
         this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);
         let navigateNext: HTMLElement = createElement('div', { className: 'e-de-rp-enforce-nav' });
@@ -219,12 +230,12 @@ export class RestrictEditing {
         showAllRegionButton.addEventListener('click', this.showAllRegion);
         this.stopReadOnlyOptions.appendChild(showAllRegion);
 
-        let highlightRegion: HTMLElement = createElement('div', { className: 'e-de-rp-enforce-nav e-de-rp-nav-lbl' });
+        let highlightRegion: HTMLElement = createElement('div', { className: 'e-de-rp-nav-lbl e-de-rp-more-less' });
         let highlightRegionInput: HTMLInputElement = <HTMLInputElement>createElement('input', { attrs: { type: 'checkbox' }, className: 'e-btn e-de-rp-nav-btn' });
         highlightRegion.appendChild(highlightRegionInput);
         this.stopReadOnlyOptions.appendChild(highlightRegion);
 
-        this.highlightCheckBox = new CheckBox({ label: localObj.getConstant('Highlight the regions I can edit') }, highlightRegionInput);
+        this.highlightCheckBox = new CheckBox({ label: localObj.getConstant('Highlight the regions I can edit') ,enableRtl:this.documentHelper.owner.enableRtl }, highlightRegionInput);
         let lastButtonDiv: HTMLElement = createElement('div', { className: 'e-de-rp-enforce' });
         this.stopProtection = createElement('button', {
             innerHTML: localObj.getConstant('Stop Protection'),
@@ -243,10 +254,16 @@ export class RestrictEditing {
             this.stopProtectionDiv.style.display = 'none';
             this.restrictPaneWholeDiv.style.display = 'block';
         }
-        if (this.documentHelper.protectionType === 'ReadOnly') {
-            this.stopReadOnlyOptions.style.display = 'block';
-        } else {
-            this.stopReadOnlyOptions.style.display = 'none';
+        switch (this.documentHelper.protectionType) {
+            case 'ReadOnly':
+                this.stopReadOnlyOptions.style.display = 'block';
+                break;
+            case 'CommentsOnly':
+                this.stopReadOnlyOptions.style.display = 'block';
+                break;
+            default:
+                this.stopReadOnlyOptions.style.display = 'none';
+                break;
         }
     }
     /**
@@ -278,23 +295,36 @@ export class RestrictEditing {
         this.unProtectDialog.show();
     }
     private protectionTypeDropChanges(args: any): void {
-        if (args.value === 'Read only') {
-            this.protectionType = 'ReadOnly';
-            this.userWholeDiv.style.display = 'block';
-            this.enforceProtection.style.marginLeft = '0px';
-        } else if (args.value === 'Filling in forms') {
-            this.protectionType = 'FormFieldsOnly';
-            this.userWholeDiv.style.display = 'none';
-            this.enforceProtection.style.marginLeft = '8px';
-        } else {
-            this.protectionType = 'NoProtection';
-            this.addedUser.uncheckAllItems();
-            this.viewer.owner.editor.removeAllEditRestrictions();
-        }
-        if (args.value === 'Filling in forms') {
-            this.contentDiv1.innerHTML = this.localObj.getConstant('FormFieldsOnly');
-        } else {
-            this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
+        switch (args.value) {
+            case 'Read only':
+                this.protectionType = 'ReadOnly';
+                this.userWholeDiv.style.display = 'block';
+                //this.enforceProtection.style.marginLeft = '0px';
+                this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
+                this.contentDiv2.innerHTML = this.localObj.getConstant('ReadOnlyProtection');
+                //this.contentDiv2.style.display = 'block';
+                break;
+            case 'Filling in forms':
+                this.protectionType = 'FormFieldsOnly';
+                this.userWholeDiv.style.display = 'none';
+                //this.enforceProtection.style.marginLeft = '8px';
+                this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
+                this.contentDiv2.innerHTML = this.localObj.getConstant('FormFieldsOnly');
+                //this.contentDiv2.style.display = 'block';
+                break;
+            case 'Comments':
+                this.protectionType = 'CommentsOnly';
+                this.userWholeDiv.style.display = 'block';
+                //this.enforceProtection.style.marginLeft = '0px';
+                this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
+                this.contentDiv2.innerHTML = this.localObj.getConstant('CommentsOnly');
+                //this.contentDiv2.style.display = 'none';
+                break;
+            default:
+                this.protectionType = 'NoProtection';
+                this.addedUser.uncheckAllItems();
+                this.viewer.owner.editor.removeAllEditRestrictions();
+                break;
         }
     }
     private selectHandler(args: any): void {
@@ -323,10 +353,16 @@ export class RestrictEditing {
         //     this.protectionType = this.documentHelper.protectionType;
         // }
         this.allowFormat.checked = !this.documentHelper.restrictFormatting;
-        if (this.documentHelper.protectionType === 'ReadOnly') {
-            this.protectionTypeDrop.value = 'Read only';
-        } else if (this.documentHelper.protectionType === 'FormFieldsOnly') {
-            this.protectionTypeDrop.value = 'Filling in forms';
+        switch (this.documentHelper.protectionType) {
+            case 'ReadOnly':
+                this.protectionTypeDrop.value = 'Read only';
+                break;
+            case 'FormFieldsOnly':
+                this.protectionTypeDrop.value = 'Filling in forms';
+                break;
+            case 'CommentsOnly':
+                this.protectionTypeDrop.value = 'Comments';
+                break;
         }
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;

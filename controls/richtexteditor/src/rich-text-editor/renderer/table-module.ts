@@ -333,7 +333,7 @@ export class Table {
                 ele.classList.add(classes.CLS_TABLE_SEL);
                 this.addRow(selection, event, true);
                 ele.classList.remove(classes.CLS_TABLE_SEL);
-                nextElement = nextElement.parentElement.nextSibling.firstChild as HTMLElement;
+                nextElement = nextElement.parentElement.nextSibling ? nextElement.parentElement.nextSibling.firstChild as HTMLElement : nextElement.parentElement.firstChild;
                 // eslint-disable-next-line
                 (nextElement.textContent.trim() !== '' && closest(nextElement, 'td')) ?
                     selection.setSelectionNode(this.contentModule.getDocument(), nextElement) :
@@ -555,7 +555,7 @@ export class Table {
             return;
         }
         const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
-        const closestTable: Element = closest(target, 'table');
+        const closestTable: Element = closest(target, 'table.e-rte-table');
         if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable) {
             this.removeResizeElement();
             this.removeHelper(e as MouseEvent);
@@ -636,6 +636,7 @@ export class Table {
         const offset: OffsetPosition = elem.getBoundingClientRect();
         const doc: Document = elem.ownerDocument;
         let offsetParent: Node = elem.offsetParent || doc.documentElement;
+        let isNestedTable: boolean = false;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
             (<HTMLElement>offsetParent).style.position === 'static') {
@@ -643,15 +644,28 @@ export class Table {
         }
         if (offsetParent.nodeName === 'TD' && elem.nodeName === 'TABLE') {
             offsetParent = closest(offsetParent, '.e-rte-content');
+            isNestedTable = true;
         }
         if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
             // eslint-disable-next-line
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
-        return {
-            top: elem.offsetTop,
-            left: elem.offsetLeft
-        };
+        if (isNestedTable) {
+            isNestedTable = false;
+            let topValue: number = this.parent.inputElement && this.parent.inputElement.scrollTop > 0 ?
+            (this.parent.inputElement.scrollTop + offset.top) - parentOffset.top : offset.top - parentOffset.top;
+            let leftValue: number = this.parent.inputElement && this.parent.inputElement.scrollLeft > 0 ?
+            (this.parent.inputElement.scrollLeft + offset.left) - parentOffset.left : offset.left - parentOffset.left;
+            return {
+                top: topValue,
+                left: leftValue
+            };
+        } else {
+            return {
+                top: elem.offsetTop,
+                left: elem.offsetLeft
+            };
+        }
     }
 
     private getPointX(e: PointerEvent | TouchEvent): number {

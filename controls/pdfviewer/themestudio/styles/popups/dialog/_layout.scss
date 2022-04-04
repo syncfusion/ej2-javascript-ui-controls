@@ -215,6 +215,14 @@
       padding: $dialog-footer-content-padding;
     }
 
+    @if $skin-name == 'FluentUI' {
+      &.e-dlg-resizable {
+        & .e-footer-content {
+          padding-bottom: $dialog-footer-content-padding-bottom;
+        }
+      }
+    }
+
     & .e-footer-content .e-btn {
       margin-left: $dialog-footer-button-margin-left;
     }

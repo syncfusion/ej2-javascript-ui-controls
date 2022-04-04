@@ -205,7 +205,7 @@ export function getLabelFormat(format: string): string {
 
 /** @private */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getTemplateFunction(template: string): any {
+export function getTemplateFunction(template: string, gauge: LinearGauge): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,6 +213,8 @@ export function getTemplateFunction(template: string): any {
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+        } else if ((gauge as any).isVue || (gauge as any).isVue3) {
+            templateFn = templateComplier(template);
         }
     } catch (e) {
         templateFn = templateComplier(template);
@@ -531,11 +533,11 @@ export function getRangePalette(theme: LinearGaugeTheme): string[] {
             palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
             '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
             break;
-        case 'fluentui':
+        case 'fluent':
             palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
                 '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
             break;
-        case 'fluentuidark':
+        case 'fluentdark':
             palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
                 '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
             break;
@@ -734,6 +736,9 @@ export function getBox(
 /** @private */
 export function getExtraWidth(gaugeElement: HTMLElement): number {
     const svgElement: HTMLElement = getElement(gaugeElement.id + '_svg');
-    const extraWidth: number = gaugeElement.getBoundingClientRect().left - svgElement.getBoundingClientRect().left;
+    let extraWidth: number = 0;
+    if (!isNullOrUndefined(svgElement) && !isNullOrUndefined(gaugeElement)) {
+        extraWidth = gaugeElement.getBoundingClientRect().left - svgElement.getBoundingClientRect().left;
+    }
     return extraWidth;
 }

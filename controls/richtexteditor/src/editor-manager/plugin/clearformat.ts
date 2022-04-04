@@ -249,7 +249,8 @@ export class ClearFormat {
         for (let index: number = 0; index < textNodes.length; index++) {
             let currentInlineNode: Node = textNodes[index];
             let currentNode: Node;
-            while (!this.domNode.isBlockNode(currentInlineNode as Element)) {
+            while (!this.domNode.isBlockNode(currentInlineNode as Element) &&
+            (currentInlineNode.parentElement && !currentInlineNode.parentElement.classList.contains('e-img-inner'))) {
                 currentNode = currentInlineNode;
                 currentInlineNode = currentInlineNode.parentElement;
             }
@@ -264,7 +265,7 @@ export class ClearFormat {
     private static removeInlineParent(textNodes: Node): void {
         const nodes: Node[] = InsertMethods.unwrap( textNodes );
         for (let index: number = 0; index < nodes.length; index++) {
-            if ( nodes[index].parentNode.childNodes.length === 1
+            if (nodes[index].parentNode.childNodes.length === 1 && !(nodes[index].parentNode as HTMLElement).classList.contains('e-img-inner')
                 && IsFormatted.inlineTags.indexOf(nodes[index].parentNode.nodeName.toLocaleLowerCase()) > -1 ) {
                 this.removeInlineParent(nodes[index].parentNode);
             } else if (IsFormatted.inlineTags.indexOf(nodes[index].nodeName.toLocaleLowerCase()) > -1) {

@@ -1,6 +1,11 @@
 @include export-module('datepicker-theme') {
   #{&}.e-datepicker,
-  .e-bigger.e-small #{&}.e-datepicker {
+  .e-bigger.e-small #{&}.e-datepicker,
+  .e-bigger #{&}.e-datepicker,
+  .e-small #{&}.e-datepicker,
+  .e-bigger.e-small#{&}.e-datepicker,
+  .e-bigger#{&}.e-datepicker,
+  .e-small#{&}.e-datepicker {
     #{if(&, '&', '*')}.e-popup-wrapper {
       border: $datepicker-popup-border;
       box-shadow: $datepicker-popup-box-shadow;

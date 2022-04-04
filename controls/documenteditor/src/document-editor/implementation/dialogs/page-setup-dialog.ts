@@ -77,37 +77,36 @@ export class PageSetupDialog {
      * @returns {void}
      */
     public initPageSetupDialog(locale: L10n, isRtl?: boolean): void {
-        const id: string = this.documentHelper.owner.containerId + '_pagesetup_dialog';
-        this.target = createElement('div', { id: id, className: 'e-de-pagesetup-dlg-container' });
-        const ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_MarginTabContainer' });
+        this.target = createElement('div');
+        const ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div');
         this.target.appendChild(ejtabContainer);
         this.marginTab = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_marginPropertyTab', styles: 'position: relative;'
+            styles: 'position: relative;', className: 'e-de-dlg-tab-first-child'
         });
         this.paperTab = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_paperSizePropertyTab', styles: 'position: relative;'
+            styles: 'position: relative;', className: 'e-de-dlg-tab-first-child'
         });
         this.layoutTab = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_CellPropertiesDialogTab', styles: 'position: relative;'
+            styles: 'position: relative;', className: 'e-de-dlg-tab-first-child'
         });
-        const ejtab: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_PageSetupDialogTab', className: 'e-de-page-setup-ppty-tab' });
+        const ejtab: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-page-setup-ppty-tab' });
         const headerContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-tab-header' });
         const marginHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_marginHeader', innerHTML: locale.getConstant('Margin')
+            innerHTML: locale.getConstant('Margin')
         });
         const paperHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_paperHeader', innerHTML: locale.getConstant('Paper')
+            innerHTML: locale.getConstant('Paper')
         });
         const layoutHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_layoutHeader', innerHTML: locale.getConstant('Layout')
+            innerHTML: locale.getConstant('Layout')
         });
         headerContainer.appendChild(marginHeader);
         headerContainer.appendChild(paperHeader);
         headerContainer.appendChild(layoutHeader);
 
-        const marginContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_marginContent' });
-        const paperContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_paperContent' });
-        const layoutContent: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_layoutContent' });
+        const marginContent: HTMLDivElement = <HTMLDivElement>createElement('div');
+        const paperContent: HTMLDivElement = <HTMLDivElement>createElement('div');
+        const layoutContent: HTMLDivElement = <HTMLDivElement>createElement('div');
         marginContent.appendChild(this.marginTab);
         paperContent.appendChild(this.paperTab);
         layoutContent.appendChild(this.layoutTab);
@@ -132,71 +131,58 @@ export class PageSetupDialog {
      * @returns {void}
      */
     public initMarginProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
-        const marginDiv: HTMLDivElement = createElement('div', {
-            id: 'margin_div',
-            className: 'e-de-page-setup-dlg-sub-container', styles: 'height:135px;'
-        }) as HTMLDivElement;
-        const leftMarginDiv: HTMLDivElement = createElement('div', { id: 'left_margin', className: 'e-de-page-setup-dlg-left-sub-container' }) as HTMLDivElement;
+        const marginDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        const leftMarginDiv: HTMLDivElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
         marginDiv.appendChild(leftMarginDiv);
-        const rightMarginDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
+        const rightMarginDiv: HTMLDivElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
         marginDiv.appendChild(rightMarginDiv);
         if (isRtl) {
             leftMarginDiv.classList.add('e-de-rtl');
             rightMarginDiv.classList.add('e-de-rtl');
         }
 
-        const topLabel: HTMLLabelElement = createElement('label', {
-            innerHTML: locale.getConstant('Top'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_TopLabel', styles: 'padding-top:0px;'
-        }) as HTMLLabelElement;
         const topTextBox: HTMLInputElement = createElement('input', {
-            attrs: { 'type': 'text' }, id: this.target.id + '_Top'
+            attrs: { 'type': 'text' }
         }) as HTMLInputElement;
-        const bottomBoxLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Bottom'),
-            className: 'e-de-page-setup-dlg-sub-title-header', id: this.target.id + '_bottomLabel'
-        });
+
         const bottomTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' },
-            id: this.target.id + '_bottom'
         });
-        leftMarginDiv.appendChild(topLabel);
-        leftMarginDiv.appendChild(topTextBox);
-        leftMarginDiv.appendChild(bottomBoxLabel);
-        leftMarginDiv.appendChild(bottomTextBox);
-        const leftBoxLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Left'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
-            id: this.target.id + '_leftLabel'
-        });
+        const topContainer: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        topContainer.appendChild(topTextBox);
+        leftMarginDiv.appendChild(topContainer);
+        const bottomContainer: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
+        bottomContainer.appendChild(bottomTextBox);
+        leftMarginDiv.appendChild(bottomContainer);
+
         const leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_left'
         });
-        const rightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Right'),
-            id: this.target.id + '_rightLabel', className: 'e-de-page-setup-dlg-sub-title-header'
-        });
+
         const rightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'text' },
-            id: this.target.id + '_right'
         });
-        rightMarginDiv.appendChild(leftBoxLabel);
-        rightMarginDiv.appendChild(leftTextBox);
-        rightMarginDiv.appendChild(rightLabel);
-        rightMarginDiv.appendChild(rightTextBox);
+
+        const leftContainer: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
+        leftContainer.appendChild(leftTextBox);
+        rightMarginDiv.appendChild(leftContainer);
+        const rightContainer: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
+        rightContainer.appendChild(rightTextBox);
+        rightMarginDiv.appendChild(rightContainer);
         element.appendChild(marginDiv);
 
-        this.topMarginBox = new NumericTextBox({ value: 71, width: 170, decimals: 2 });
+        this.topMarginBox = new NumericTextBox({ value: 71, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Top') });
         this.topMarginBox.appendTo(topTextBox);
-        this.leftMarginBox = new NumericTextBox({ value: 73, width: 170, decimals: 2 });
+        this.leftMarginBox = new NumericTextBox({ value: 73, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Left') });
         this.leftMarginBox.appendTo(leftTextBox);
-        this.bottomMarginBox = new NumericTextBox({ value: 72, width: 170, decimals: 2 });
+        this.bottomMarginBox = new NumericTextBox({ value: 72, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Bottom') });
         this.bottomMarginBox.appendTo(bottomTextBox);
-        this.rightMarginBox = new NumericTextBox({ value: 74, width: 170, decimals: 2 });
+        this.rightMarginBox = new NumericTextBox({ value: 74, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Right') });
         this.rightMarginBox.appendTo(rightTextBox);
 
-        const orientationDiv: HTMLDivElement = createElement('div', { id: 'orientation_div', className: 'e-de-page-setup-dlg-sub-container-port' }) as HTMLDivElement;
-        const orientationLabeldiv: HTMLElement = createElement('div', { id: '_orientationLabelDiv', className: 'e-de-page-setup-dlg-sub-label', innerHTML: locale.getConstant('Orientation') });
-        const orientationPropDiv: HTMLDivElement = createElement('div', { id: '_orientationPropDiv', styles: 'display: flex;', className: 'e-de-page-setup-dlg-orientation-prop' }) as HTMLDivElement;
+        const orientationDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        const orientationLabeldiv: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Orientation') });
+        const orientationPropDiv: HTMLDivElement = createElement('div', { styles: 'display: flex;'}) as HTMLDivElement;
         let portraitDivStyles: string;
         if (isRtl) {
             portraitDivStyles = 'padding-left: 30px;';
@@ -205,11 +191,11 @@ export class PageSetupDialog {
         }
         const portraitDiv: HTMLDivElement = createElement('div', { id: '_portraitDiv', styles: portraitDivStyles }) as HTMLDivElement;
         const portrait: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'radiobutton' }, id: this.target.id + '_portrait'
+            attrs: { 'type': 'radiobutton' }
         });
         const landscapeDiv: HTMLDivElement = createElement('div', { id: '_landscapeDiv' }) as HTMLDivElement;
         const landscape: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'radiobutton' }, id: this.target.id + '_landscape'
+            attrs: { 'type': 'radiobutton' }
         });
         portraitDiv.appendChild(portrait); landscapeDiv.appendChild(landscape);
         orientationPropDiv.appendChild(portraitDiv); orientationPropDiv.appendChild(landscapeDiv);
@@ -229,47 +215,46 @@ export class PageSetupDialog {
      */
     public initPaperSizeProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
         const sizeDiv: HTMLDivElement = createElement('div', {
-            id: 'size_div',
-            className: 'e-de-page-setup-dlg-sub-size-container'
+            className: 'e-de-container-row'
         }) as HTMLDivElement;
-        const leftSizeDiv: HTMLDivElement = createElement('div', { id: 'left_size', className: 'e-de-page-setup-dlg-left-sub-container' }) as HTMLDivElement;
+        const leftSizeDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
         sizeDiv.appendChild(leftSizeDiv);
-        const rightSizeDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-sub-container' }) as HTMLDivElement;
+        const rightSizeDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
         sizeDiv.appendChild(rightSizeDiv);
         if (isRtl) {
             leftSizeDiv.classList.add('e-de-rtl');
             rightSizeDiv.classList.add('e-de-rtl');
         }
 
-        const widthLabel: HTMLLabelElement = createElement('label', {
-            innerHTML: locale.getConstant('Width'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_widthLabel', styles: 'padding-top:0px;'
-        }) as HTMLLabelElement;
+        // const widthLabel: HTMLLabelElement = createElement('label', {
+        //     innerHTML: locale.getConstant('Width'), className: 'e-de-page-setup-dlg-sub-header',
+        //     id: this.target.id + '_widthLabel', styles: 'padding-top:0px;'
+        // }) as HTMLLabelElement;
         const widthTextBox: HTMLInputElement = createElement('input', {
-            attrs: { 'type': 'text' }, id: this.target.id + '_Width'
+            attrs: { 'type': 'text' }
         }) as HTMLInputElement;
 
-        leftSizeDiv.appendChild(widthLabel);
+        //leftSizeDiv.appendChild(widthLabel);
         leftSizeDiv.appendChild(widthTextBox);
 
-        const heightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Height'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
-            id: this.target.id + '_heightLabel'
-        });
+        // const heightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        //     innerHTML: locale.getConstant('Height'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
+        //     id: this.target.id + '_heightLabel'
+        // });
         const heightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' }, id: this.target.id + '_height'
+            attrs: { 'type': 'text' }
         });
-        rightSizeDiv.appendChild(heightLabel);
+        //rightSizeDiv.appendChild(heightLabel);
         rightSizeDiv.appendChild(heightTextBox);
         element.appendChild(sizeDiv);
 
-        this.widthBox = new NumericTextBox({ value: 612, width: 170, decimals: 2 });
+        this.widthBox = new NumericTextBox({ value: 612, width: 170, decimals: 2, floatLabelType: 'Always', placeholder:  locale.getConstant('Width')});
         this.widthBox.appendTo(widthTextBox);
-        this.heightBox = new NumericTextBox({ value: 792, width: 170, decimals: 2 });
+        this.heightBox = new NumericTextBox({ value: 792, width: 170, decimals: 2,  floatLabelType: 'Always', placeholder:  locale.getConstant('Height') });
         this.heightBox.appendTo(heightTextBox);
-        const paperSizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_paperSizeDiv', styles: 'height:37px;', className: 'e-de-page-setup-dlg-sub-container' });
+        const paperSizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
         const paperSize: HTMLElement = createElement('select', {
-            id: this.target.id + '_papersize', styles: 'width:170px;padding-bottom: 20px;',
+            styles: 'width:170px;padding-bottom: 20px;',
             innerHTML: '<option value="letter">' + locale.getConstant('Letter') +
                 '</option><option value="tabloid">' + locale.getConstant('Tabloid') +
                 '</option><option value="legal">' + locale.getConstant('Legal') +
@@ -295,15 +280,15 @@ export class PageSetupDialog {
      * @returns {void}
      */
     public initLayoutProperties(element: HTMLDivElement, locale: L10n, isRtl?: boolean): void {
-        const layoutDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_layoutDiv', className: 'e-de-page-setup-dlg-layout-sub-container' });
-        const firstPageDiv: HTMLDivElement = createElement('div', { id: '_firstPageDiv', styles: 'height: 27px;', className: 'e-de-page-setup-dlg-first-page-prop' }) as HTMLDivElement;
+        const layoutDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-dlg-container' });
+        const firstPageDiv: HTMLDivElement = createElement('div', { styles: 'height: 27px;' }) as HTMLDivElement;
         const checkBox1: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'checkbox' }, id: this.target.id + '_oddoreven'
+            attrs: { 'type': 'checkbox' }
         });
         firstPageDiv.appendChild(checkBox1);
-        const oddOrEvenDiv: HTMLDivElement = createElement('div', { id: '_oddOrEvenDiv', styles: 'height: 27px;', className: 'e-de-page-setup-dlg-odd-or-even-prop' }) as HTMLDivElement;
+        const oddOrEvenDiv: HTMLDivElement = createElement('div', { styles: 'height: 27px;' }) as HTMLDivElement;
         const checkBox2: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'checkbox' }, id: this.target.id + '_even'
+            attrs: { 'type': 'checkbox' }
         });
         oddOrEvenDiv.appendChild(checkBox2);
         layoutDiv.appendChild(firstPageDiv); layoutDiv.appendChild(oddOrEvenDiv);
@@ -313,48 +298,37 @@ export class PageSetupDialog {
         this.checkBox1.appendTo(checkBox1); this.checkBox2.appendTo(checkBox2);
         element.appendChild(layoutDiv);
 
-        const textLabelDiv: HTMLDivElement = createElement('div', { id: '_textLabelDiv', className: 'e-de-page-setup-dlg-sub-label' }) as HTMLDivElement;
-        const textLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('From edge'), id: this.target.id + '_textLabel'
+        const textLabelDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        const textLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', { className: 'e-de-para-dlg-heading',innerHTML: locale.getConstant('From edge')
         });
         textLabelDiv.appendChild(textLabel);
         element.appendChild(textLabelDiv);
 
-        const propertyDiv: HTMLDivElement = createElement('div', { id: '_headerFooeterPropDiv', className: 'e-de-page-setup-dlg-sub-container', styles: 'height: 65px;' }) as HTMLDivElement;
-        const leftLayoutDiv: HTMLDivElement = createElement('div', { id: '_leftLayoutDiv', className: 'e-de-page-setup-dlg-left-layout-container' }) as HTMLDivElement;
+        const propertyDiv: HTMLDivElement = createElement('div', { className: 'e-de-dlg-row' }) as HTMLDivElement;
+        const leftLayoutDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
         propertyDiv.appendChild(leftLayoutDiv);
-        const rightLayoutDiv: HTMLDivElement = createElement('div', { className: 'e-de-page-setup-dlg-right-layout-container' }) as HTMLDivElement;
+        const rightLayoutDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
         propertyDiv.appendChild(rightLayoutDiv);
         if (isRtl) {
             rightLayoutDiv.classList.add('e-de-rtl');
             leftLayoutDiv.classList.add('e-de-rtl');
         }
 
-        const headerLabel: HTMLLabelElement = createElement('label', {
-            innerHTML: locale.getConstant('Header'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_headerLabel', styles: 'padding-top:0px;'
-        }) as HTMLLabelElement;
         const headerBox: HTMLInputElement = createElement('input', {
-            attrs: { 'type': 'text' }, id: this.target.id + '_header'
+            attrs: { 'type': 'text' }
         }) as HTMLInputElement;
 
-        leftLayoutDiv.appendChild(headerLabel);
         leftLayoutDiv.appendChild(headerBox);
 
-        const footerLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Footer'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
-            id: this.target.id + '_footerLabel'
-        });
         const footerBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' }, id: this.target.id + '_footer'
+            attrs: { 'type': 'text' }
         });
-        rightLayoutDiv.appendChild(footerLabel);
         rightLayoutDiv.appendChild(footerBox);
         element.appendChild(propertyDiv);
 
-        this.headerBox = new NumericTextBox({ value: 612, width: 170, decimals: 2 });
+        this.headerBox = new NumericTextBox({ value: 612, width: 170, decimals: 2, floatLabelType: 'Always', placeholder: locale.getConstant('Header') });
         this.headerBox.appendTo(headerBox);
-        this.footerBox = new NumericTextBox({ value: 792, width: 170, decimals: 2 });
+        this.footerBox = new NumericTextBox({ value: 792, width: 170, decimals: 2, floatLabelType: 'Always', placeholder: locale.getConstant('Footer') });
         this.footerBox.appendTo(footerBox);
     }
     /**

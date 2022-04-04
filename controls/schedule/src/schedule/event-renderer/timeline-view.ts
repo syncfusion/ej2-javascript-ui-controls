@@ -25,6 +25,7 @@ export class TimelineEvent extends MonthEvent {
     private content: HTMLElement;
     private rowIndex: number = 0;
     public inlineValue: boolean;
+    private cellTops: number[] = [];
 
     constructor(parent: Schedule, type: string) {
         super(parent);
@@ -145,9 +146,7 @@ export class TimelineEvent extends MonthEvent {
         const cellTd: HTMLElement = this.getCellTd();
         const overlapCount: number = (isNullOrUndefined(this.parent.eventSettings.sortComparer)) ? this.getIndex(startTime) : this.getSortComparerIndex(startTime, endTime);
         event.Index = overlapCount;
-        const elem: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_CLASS);
-        const eleHeight: number = (elem) ? elem.getBoundingClientRect().height : 0;
-        const appHeight: number = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
+        const appHeight: number = this.eventHeight;
         const diffInDays: number = eventData.count as number;
         const eventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
         eventObj[this.fields.startTime] = eventData[this.fields.startTime];
@@ -163,7 +162,10 @@ export class TimelineEvent extends MonthEvent {
             const position: number = this.getPosition(startTime, endTime, event[this.fields.isAllDay] as boolean, this.day);
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
             this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
-            const top: number = this.getRowTop(resIndex);
+            if (isNullOrUndefined(this.cellTops[resIndex])) {
+                this.cellTops[resIndex] = this.getRowTop(resIndex);
+            }
+            const top: number = this.cellTops[resIndex];
             const appTop: number = (top + (this.maxHeight ? 0 : EVENT_GAP)) + (overlapCount * (appHeight + EVENT_GAP));
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
@@ -266,7 +268,8 @@ export class TimelineEvent extends MonthEvent {
         }
     }
     public updateCellHeight(cell: HTMLElement, height: number): void {
-        if ((height > cell.getBoundingClientRect().height)) {
+        const cellHeight: number = cell.style.height === '' ? this.cellHeight : parseInt(cell.style.height, 10);
+        if (height > cellHeight) {
             setStyleAttribute(cell, { 'height': height + 'px' });
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 const resourceCell: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +

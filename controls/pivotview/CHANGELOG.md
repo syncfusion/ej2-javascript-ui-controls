@@ -2,7 +2,111 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I366940` - When the defer layout update option is enabled, the field list UI will now properly refresh while drag and drop measures.
+- `#I367463` - When virtual scrolling is enabled, the pivot table now properly refresh based on the specified height.
+- In Angular, grouping will now work properly with the static field list.
+- `#I370021` - While resizing, the pivot chart is now properly refreshed.
+
+#### New Features
+
+- Provided support to expand all members (aka, headers) in a specific field in the Pivot Table's row and column axes.
+- Provided built-in option in toolbar UI, grand totals will now display either at the first or last position in the Pivot Table's row and column axes.
+
+## 19.4.55 (2022-03-08)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- When virtual scrolling is enabled, the pivot table now properly refresh based on the specified height.
+
+## 19.4.54 (2022-03-01)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- When the defer layout update option is enabled, the field list UI will now properly refresh while performing checkbox selection.
+
+## 19.4.53 (2022-02-22)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- When changing the report dynamically using the toolbar UI options, the Pivot Chart is now properly displayed.
+- `#I366940` - When defer layout update is enabled, measures are properly added to the field list UI.
+
+## 19.4.52 (2022-02-15)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- Events to customize cell values using PivotEngine export are now working properly in Angular.
+
+## 19.4.50 (2022-02-08)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I359726`, `#I354750` - When using the virtual scrolling feature, the pivot table can now be exported properly to Excel and CSV formats.
+- Even the value fields starts with the same unique name, the Pivot Table values are now properly displayed.
+- `#I363972` - With the toolbar UI, the Pivot Chart is now refreshed properly while performing checkbox selection in the chart menu.
+
+## 19.4.47 (2022-01-25)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I362895` - The field list UI will now be refreshed properly when dragging a field using the `fieldDrop` event with defer layout update.
+
+## 19.4.43 (2022-01-18)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I346790` - The Pivot Table is now properly refreshed with virtual scrolling when using touch.
+
+#### New Features
+
+- `#I354750` - Provided events support to customize cell values in PivotEngine export.
+
+## 19.4.42 (2022-01-11)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I359726` - When exporting the Pivot Table to PDF format, styles can now be properly applied to the header and footer.
+- `#I359726` - When exporting the Pivot Table to Excel format, the headers are now properly shown.
+
+## 19.4.41 (2022-01-04)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I340908` - In Firefox browser, the Pivot Table is now refreshed properly with virtual scrolling.
+
+## 19.4.40 (2021-12-28)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- The Pivot Chart is now properly shown with the default value of the "zoomFactor" property.
+
+## 19.4.38 (2021-12-17)
 
 ### Pivot Table
 

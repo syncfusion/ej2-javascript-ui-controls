@@ -356,7 +356,7 @@ export class DragAndDrop {
             const element: HTMLElement[] = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
             dropIndex = element.indexOf(this.dragObj.targetClone);
         }
-        if (this.kanbanObj.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
+        if (!isNullOrUndefined(this.kanbanObj) && this.kanbanObj.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target as HTMLElement, '.' + cls.MULTI_COLUMN_KEY_CLASS + ':not(.' + cls.DISABLED_CLASS + ')');
         }
         if (contentCell || columnKey) {

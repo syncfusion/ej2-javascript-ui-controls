@@ -2,7 +2,7 @@
  * To render holidays and weekends in Gantt
  */
 import { Gantt } from '../base/gantt';
-import { createElement, formatUnit, remove } from '@syncfusion/ej2-base';
+import { createElement, formatUnit, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 
 export class NonWorkingDay {
@@ -26,6 +26,7 @@ export class NonWorkingDay {
             this.nonworkingContainer = createElement('div', {
                 className: cls.nonworkingContainer
             });
+            this.nonworkingContainer.setAttribute("role","NonWorkingDays")
             this.parent.ganttChartModule.chartBodyContent.appendChild(this.nonworkingContainer);
         }
     }
@@ -62,8 +63,11 @@ export class NonWorkingDay {
         let toDate: Date;
         const container: HTMLElement = createElement('div');
         const height: number = this.parent.contentHeight;
-        const scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
-        const viewportHeight: number = parseInt(scrollElement.style.height, 10);
+        let toolbarHeight: number = 0;
+        if(!isNullOrUndefined(this.parent.toolbarModule)) {
+           toolbarHeight =  this.parent.toolbarModule.element.offsetHeight 
+        }
+        const viewportHeight: number = this.parent.ganttHeight- toolbarHeight-this.parent.ganttChartModule.chartTimelineContainer.offsetHeight; 
         for (let i: number = 0; i < this.parent.holidays.length; i++) {
             if (this.parent.holidays[i].from && this.parent.holidays[i].to) {
                 fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].from);
@@ -154,9 +158,12 @@ export class NonWorkingDay {
     }
 
     private updateHolidayLabelHeight(): void {
-        const height: number = this.parent.contentHeight;
-        const scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
-        const viewportHeight: number = parseInt(scrollElement.style.height, 10);
+        const height: number = this.parent.getContentHeight();
+        let toolbarHeight: number = 0;
+        if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
+           toolbarHeight =  this.parent.toolbarModule.element.offsetHeight 
+        }
+        const viewportHeight: number =  this.parent.ganttHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
         const top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         const labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);
         for (let i: number = 0; i < labels.length; i++) {

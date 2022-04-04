@@ -6,14 +6,14 @@ import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Popup } from '@syncfusion/ej2-popups';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
+    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineYear,
     ResourceDetails, EJ2Instance, ScheduleModel, TimelineViews, ActionEventArgs
 } from '../../../src/schedule/index';
-import { resourceData } from '../base/datasource.spec';
+import { resourceData, resourceGroupData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
-Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews);
+Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineYear);
 
 describe('Schedule Resources', () => {
     beforeAll(() => {
@@ -1049,6 +1049,54 @@ describe('Schedule Resources', () => {
             (schObj.element.querySelector('.e-resource-tree-icon.e-resource-collapse') as HTMLElement).click();
             schObj.scrollToResource(1, 'Categories');
             expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toBeGreaterThanOrEqual(59);
+        });
+    });
+
+    describe('EJ2-55924-Resource appointments are rendered in default appointment colors', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '580px', selectedDate: new Date(2018, 4, 1),
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId',
+                        title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'OwnerId',
+                        title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [0, 1, 2, 3], startHour: '00:00', endHour: '08:00', css: 'e-na' },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', workDays: [3, 4], startHour: '08:00', endHour: '16:00', css: 'e-st' },
+                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', startHour: '16:00', endHour: '23:59', css: 'e-mi' }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
+                        workDaysField: 'workDays', startHourField: 'startHour', endHourField: 'endHour', cssClassField: 'css'
+                    }],
+                views: [
+                    { option: 'TimelineYear', orientation: 'Vertical', displayName: 'VerticalYear' }
+                ]
+            };
+            schObj = util.createSchedule(model, resourceGroupData, done);
+        });
+        beforeEach((done: DoneFn) => done());
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking resource appointment color', () => {
+            const appElements: NodeListOf<Element> = schObj.element.querySelectorAll('[data-id="Appointment_1"]');
+            expect((appElements[0] as HTMLElement).style.backgroundColor).toEqual('rgb(255, 170, 0)');
+            expect((appElements[1] as HTMLElement).style.backgroundColor).toEqual('rgb(116, 153, 225)');
+            expect((appElements[2] as HTMLElement).style.backgroundColor).toEqual('rgb(248, 163, 152)');
         });
     });
 

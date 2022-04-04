@@ -22,6 +22,7 @@ export class Page implements IAction {
     private isInitialLoad: boolean;
     private isInitialRender: boolean = true;
     private evtHandlers: { event: string, handler: Function }[];
+    private isCancel: boolean = false;
 
     //Module declarations
     private parent: IGrid;
@@ -86,7 +87,7 @@ export class Page implements IAction {
                 created: this.addAriaAttr.bind(this)
             },
             ['parentObj', 'propName']);
-        this.pagerObj = new Pager(pagerObj);
+        this.pagerObj = new Pager(pagerObj, undefined, this.parent);
         this.pagerObj.hasParent = true;
         this.pagerObj.on(events.pagerRefresh, this.renderReactPagerTemplate, this);
         this.pagerObj.allowServerDataBinding = false;
@@ -204,7 +205,7 @@ export class Page implements IAction {
 
     private clickHandler(e: { currentPage: number, newProp: PagerModel, oldProp: PagerModel, cancel: boolean }): void {
         const gObj: IGrid = this.parent;
-        if (this.isForceCancel || isActionPrevent(gObj) && !gObj.prevPageMoving) {
+        if (this.isForceCancel || isActionPrevent(gObj) && !gObj.prevPageMoving && !this.isCancel) {
             if (!this.isForceCancel) {
                 if (!isNullOrUndefined(e.newProp) && !isNullOrUndefined(e.newProp.pageSize)) {
                     gObj.notify(events.preventBatch, { instance: this, handler: this.setPageSize, arg1: e.newProp.pageSize });
@@ -232,10 +233,16 @@ export class Page implements IAction {
             cancel: false, requestType: 'paging', previousPage: prevPage,
             currentPage: e.currentPage, type: events.actionBegin
         };
-        this.parent.notify(events.modelChanged, args);
+        if (!this.isCancel) {
+            this.parent.notify(events.modelChanged, args);
+        }
         if ((<{ cancel?: boolean }>args).cancel) {
             e.cancel = true;
+            this.pagerObj.currentPage = prevPage;
+            this.isCancel = true;
+            return;
         }
+        this.isCancel = false;
         this.parent.requestTypeAction = 'paging';
     }
 

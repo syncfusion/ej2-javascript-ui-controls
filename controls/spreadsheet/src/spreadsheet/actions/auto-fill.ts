@@ -1,10 +1,10 @@
-import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, beginAction, completeAction, showAggregate, dialog, locale, fillRange, hideAutoFillOptions, performUndoRedo, hideAutoFillElement } from '../../spreadsheet/index';
+import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, fillRange, hideAutoFillOptions, performUndoRedo, hideAutoFillElement } from '../../spreadsheet/index';
 import { Spreadsheet, contentLoaded, positionAutoFillElement, getCellPosition, getRowIdxFromClientY } from '../../spreadsheet/index';
 import { performAutoFill, isLockedCells } from '../../spreadsheet/index';
-import { ICellRenderer, editAlert  } from '../common/index';
+import { ICellRenderer, editAlert, AutoFillEventArgs } from '../common/index';
 import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, Workbook, getRowsHeight, getColumnsWidth, isInRange } from '../../workbook/index';
-import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol } from '../../workbook/index';
+import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol, beginAction } from '../../workbook/index';
 import { addClass, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { ItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -100,17 +100,16 @@ export class AutoFill {
     private autoFillOptionClick(args: { type: AutoFillType }): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const range: number[] = getRangeIndexes(this.parent.selectionModule.dAutoFillCell);
+        const range: number[] = getSwapRange(getRangeIndexes(this.parent.selectionModule.dAutoFillCell));
         const currcell: number[] = getRangeIndexes(sheet.selectedRange);
         const minr: number = range[0]; const minc: number = range[1]; const maxr: number = range[2]; const maxc: number = range[3];
         const dir: AutoFillDirection = this.getDirection({ rowIndex: maxr, colIndex: maxc }, { rowIndex: currcell[2],
             colIndex: currcell[3] });
-        const dataRange: number[] = getSwapRange([minr, minc, maxr, maxc]);
+        const dataRange: number[] = [minr, minc, maxr, maxc];
         const fillRange: number[] = this.getFillRange({ rowIndex: minr, colIndex: minc }, { rowIndex: maxr, colIndex: maxc },
                                                       { rowIndex: currcell[2], colIndex: currcell[3] }, dir);
         this.refreshAutoFillOption(l10n.getConstant(args.type));
-        this.parent.notify(performUndoRedo, { isUndo: true, isPublic: true, preventEvt: args.type === 'FillWithoutFormatting' });
-        this.parent.selectRange(sheet.name + '!' + getRangeAddress(currcell));
+        this.parent.notify(performUndoRedo, { isUndo: true, isPublic: true, preventEvt: args.type === 'FillWithoutFormatting', preventReSelect: true });
         const eventArgs: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
             isFillOptClick: boolean } = { dataRange: sheet.name + '!' + getRangeAddress(dataRange), fillRange:
             sheet.name + '!' + getRangeAddress(fillRange), direction: dir, fillType: args.type, isFillOptClick: true };
@@ -158,12 +157,13 @@ export class AutoFill {
         let height: number; let width: number;
         let pos: { top: number, left: number };
         const cell: HTMLElement = this.parent.getCell(rowIdx, colIdx);
-        if ((isColSelected && isHiddenCol(sheet, indexes[3])) || isRowSelected && isHiddenRow(sheet, indexes[2]) ||
-            (cell && cell.classList.contains('e-formularef-selection'))) {
+        if (isHiddenCol(sheet, indexes[3]) || isHiddenRow(sheet, indexes[2]) ||
+            (cell && cell.classList.contains('e-formularef-selection')) || (sheet.isProtected && sheet.protectSettings.selectUnLockedCells
+                && isLockedCells(this.parent, indexes))) {
             this.hideAutoFillElement();
             return;
         }
-        if ((!sheet.isProtected && !sheet.protectSettings.selectCells) || sheet.protectSettings.selectCells) {
+        if ((sheet.isProtected && (sheet.protectSettings.selectCells || sheet.protectSettings.selectUnLockedCells)) || !sheet.isProtected) {
             if (isRowSelected) {
                 tdiff = -5;
                 ldiff = -1;
@@ -380,22 +380,21 @@ export class AutoFill {
             this.parent.notify(getRowIdxFromClientY, rowObj);
             this.parent.notify(getColIdxFromClientX, colObj);
             const autofillRange: fillRangeInfo = this.getAutoFillRange({ rowIndex: rowObj.clientY, colIndex: colObj.clientX });
-            const isLockedCell: boolean = isLockedCells(this.parent, autofillRange.fillRange);
-            if (sheet.isProtected && isLockedCell) {
-                this.parent.notify(editAlert, null);
-                return;
-            }
             if (autofillRange && autofillRange.fillRange) {
-                const eventArgs: {
-                    dataRange: string,
-                    fillRange: string,
-                    direction: AutoFillDirection,
-                    fillType: AutoFillType
-                } = {
+                const eventArgs: AutoFillEventArgs = {
                     dataRange: sheet.name + '!' + args.dAutoFillCell,
                     fillRange: sheet.name + '!' + getRangeAddress(autofillRange.fillRange), direction: autofillRange.direction,
-                    fillType: this.parent.autoFillSettings.fillType
+                    fillType: this.parent.autoFillSettings.fillType, cancel: false
                 };
+                this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'autofill' });
+                if (eventArgs.cancel) {
+                    return;
+                }
+                const isLockedCell: boolean = isLockedCells(this.parent, autofillRange.fillRange);
+                if (sheet.isProtected && isLockedCell) {
+                    this.parent.notify(editAlert, null);
+                    return;
+                }
                 this.performAutoFillAction(eventArgs, autofillRange, isLockedCell);
                 if (this.isMergedRange(getRangeIndexes(eventArgs.dataRange))) {
                     this.parent.renderModule.refreshSheet();
@@ -501,8 +500,7 @@ export class AutoFill {
         return null;
     }
 
-    private performAutoFillAction(args: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType },
-                                  autoFillRange?: fillRangeInfo, isLockedCell?: boolean): void {
+    private performAutoFillAction(args: AutoFillEventArgs, autoFillRange?: fillRangeInfo, isLockedCell?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (this.isMergedRange(getRangeIndexes(args.fillRange))) {
@@ -517,7 +515,6 @@ export class AutoFill {
             }, false);
             return;
         }
-        this.parent.notify(beginAction, { eventArgs: args, action: 'autofill' });
         this.isVerticalFill = args.direction === 'Down' || args.direction === 'Up';
         this.parent.notify(setAutoFill, {
             dataRange: args.dataRange,

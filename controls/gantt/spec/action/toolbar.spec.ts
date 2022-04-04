@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, Filter } from '../../src/index';
-import { projectData1 } from '../base/data-source.spec';
+import { projectData1, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt toolbar support', () => {
@@ -328,7 +328,7 @@ describe('Gantt toolbar support', () => {
             ganttObj.toolbarModule.destroy();
         });
     });
-     describe('Do indent in immutable mode ', () => {
+    describe('Do indent in immutable mode ', () => {
         let ganttObj: Gantt;
         let editingData: Object[] = [
             {
@@ -482,6 +482,76 @@ describe('Gantt toolbar support', () => {
             ganttObj.selectRow(4);
             let indent: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_indent') as HTMLElement;
             triggerMouseEvent(indent, 'click');
+        });
+    });
+    describe('Custom Zooming levels ', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: [ 'ZoomIn', 'ZoomOut', 'ZoomToFit'],
+                load: (args?: any) => {
+                    let gantt: any=(document.getElementsByClassName('e-gantt')[0] as any).ej2_instances[0];
+                    const zoomingLevels: any = gantt.getZoomingLevels();
+                    const zoomOutLimit: number = 4;
+                    const zoomInLimit: number = 14;
+                    gantt.zoomingLevels = zoomingLevels.slice(
+                        zoomOutLimit,
+                        zoomInLimit
+                    );
+                },
+                actionComplete: (args?: any) => {
+                    if(args.requestType == "AfterZoomOut") {
+                        expect(args.timeline.level).toBe(14);
+                    }
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Zoom out', () => {
+            let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
+            triggerMouseEvent(zoomIn, 'click');
+            expect(ganttObj.timelineModule.topTier == 'Week');
         });
     });
 });

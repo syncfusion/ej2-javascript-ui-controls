@@ -351,8 +351,20 @@ export class StampAnnotation {
         image.onload = (): void => {
             let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
             // eslint-disable-next-line max-len
-            let customStampWidth: number = this.pdfViewer.customStampSettings.width > 0 ? this.pdfViewer.customStampSettings.width : 100;
-            let customStampHeight: number = this.pdfViewer.customStampSettings.height > 0 ? this.pdfViewer.customStampSettings.height : 100;
+            let customStampWidth: number = 0;
+            let customStampHeight: number = 0;
+            let standardImageRatio: number = 100;
+            // eslint-disable-next-line max-len
+            if (image.naturalHeight >= image.naturalWidth)
+            {
+                customStampHeight = ((image.naturalHeight/image.naturalHeight)*standardImageRatio);
+                customStampWidth = ((image.naturalWidth/image.naturalHeight)*standardImageRatio);
+            }
+            else
+            {
+                customStampHeight = ((image.naturalHeight/image.naturalWidth)*standardImageRatio);
+                customStampWidth = ((image.naturalWidth/image.naturalWidth)*standardImageRatio);
+            }
             let customStampleft: number = 0;
             let customStamptop: number = 0;
             // eslint-disable-next-line max-len

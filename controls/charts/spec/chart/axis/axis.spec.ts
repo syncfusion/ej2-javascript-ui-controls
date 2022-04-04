@@ -20,6 +20,7 @@ import { categoryData } from '../base/data.spec';
 Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic, Zoom, ScrollBar, AreaSeries);
 
 
+
 describe('Chart Control', () =>{
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;

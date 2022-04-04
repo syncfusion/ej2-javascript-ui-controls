@@ -1,0 +1,128 @@
+//default
+$sheet-skin: 'highcontrast-light' !default;
+$spreadsheet-border-color: transparent !default;
+$spreadsheet-border-width: 1px;
+$spreadsheet-border: none !default;
+$header-cell-bg-color: initial !default;
+$header-cell-color: initial !default;
+$select-all-size: 26px !default;
+$select-all-bg-color: $spreadsheet-border-color !default;
+$select-all-hover-bg-color: $spreadsheet-border-color !default;
+$select-all-active-bg-color: $selection-bg !default;
+$cell-background: #fff !default;
+$cell-color: #000 !default;
+$cell-border-color: transparent !default;
+$hdr-cell-border-color: $cell-border-color !default;
+$dlg-error-color: #dd2c2c !default;
+$agg-clr: #808080;
+//enddefault
+//selection
+$selection-bg-color: lighten($selection-bg, 32%) !default;
+$selection-border-color: $selection-bg !default;
+$hdr-selection-bg-color: #e6e6e6 !default;
+$hdr-selection-border: 1px solid !default;
+$hdr-selection-border-color: #000 !default;
+$hdr-selection-color: #424242 !default;
+$hdr-hover-bg-color: #eee !default;
+$copy-indicator-t-b: 'data:image/gif;base64,R0lGODlhBgAEAJECAP///2hXCP///wAAACH/C05FVFNDQVBFMi4wAwEAAAAh/wtYTVAgRGF0YVhNUDw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQ1IDc5LjE2MzQ5OSwgMjAxOC8wOC8xMy0xNjo0MDoyMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjc1OTE1RUUxRDA5RTExRTk4QjMxOEIwNUE2RDI1MkQ5IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjc1OTE1RUUyRDA5RTExRTk4QjMxOEIwNUE2RDI1MkQ5Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NzU5MTVFREZEMDlFMTFFOThCMzE4QjA1QTZEMjUyRDkiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NzU5MTVFRTBEMDlFMTFFOThCMzE4QjA1QTZEMjUyRDkiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4B//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5OPi4eDf3t3c29rZ2NfW1dTT0tHQz87NzMvKycjHxsXEw8LBwL++vby7urm4t7a1tLOysbCvrq2sq6qpqKempaSjoqGgn56dnJuamZiXlpWUk5KRkI+OjYyLiomIh4aFhIOCgYB/fn18e3p5eHd2dXRzcnFwb25tbGtqaWhnZmVkY2JhYF9eXVxbWllYV1ZVVFNSUVBPTk1MS0pJSEdGRURDQkFAPz49PDs6OTg3NjU0MzIxMC8uLSwrKikoJyYlJCMiISAfHh0cGxoZGBcWFRQTEhEQDw4NDAsKCQgHBgUEAwIBAAAh+QQFAwACACwAAAAABgAEAAACB4wDcJh6uQoAIfkEBQMAAgAsAAAAAAYABAAAAgiMAXYZqM1CAQAh+QQFAwACACwBAAAABAAEAAACBhQUhnksBQAh+QQFAwACACwBAAAABAAEAAACBoQihpcMBQAh+QQFAwACACwAAAAABgAEAAACBwSCYcl6aQoAIfkEBQMAAgAsAAAAAAYABAAAAghEHmComHtAAQA7' !default;
+$copy-indicator-l-r: 'data:image/gif;base64,R0lGODlhBAAGAJECAP///2hXCP///wAAACH/C05FVFNDQVBFMi4wAwEAAAAh/wtYTVAgRGF0YVhNUDw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQ1IDc5LjE2MzQ5OSwgMjAxOC8wOC8xMy0xNjo0MDoyMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjQ5Mjk0QTkxRDA5RTExRTlCM0NFODQ0Q0E4MkQwQjVBIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjQ5Mjk0QTkyRDA5RTExRTlCM0NFODQ0Q0E4MkQwQjVBIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NDkyOTRBOEZEMDlFMTFFOUIzQ0U4NDRDQTgyRDBCNUEiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NDkyOTRBOTBEMDlFMTFFOUIzQ0U4NDRDQTgyRDBCNUEiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4B//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5OPi4eDf3t3c29rZ2NfW1dTT0tHQz87NzMvKycjHxsXEw8LBwL++vby7urm4t7a1tLOysbCvrq2sq6qpqKempaSjoqGgn56dnJuamZiXlpWUk5KRkI+OjYyLiomIh4aFhIOCgYB/fn18e3p5eHd2dXRzcnFwb25tbGtqaWhnZmVkY2JhYF9eXVxbWllYV1ZVVFNSUVBPTk1MS0pJSEdGRURDQkFAPz49PDs6OTg3NjU0MzIxMC8uLSwrKikoJyYlJCMiISAfHh0cGxoZGBcWFRQTEhEQDw4NDAsKCQgHBgUEAwIBAAAh+QQFAwACACwAAAAABAAGAAACBwQShsurCQoAIfkEBQMAAgAsAAAAAAQABgAAAgeMA2B5qN4KACH5BAUDAAIALAAAAQAEAAQAAAIFjAOpeVEAIfkEBQMAAgAsAAABAAQABAAAAgZMAIaoGQUAIfkEBQMAAgAsAAAAAAQABgAAAghMAIbGvJdCAQAh+QQFAwACACwAAAAABAAGAAACB4QRqctxUAAAOw==' !default;
+//end selection
+//Tab
+$sheets-btn-height: 38px !default;
+$msheets-btn-height: 38px !default;
+$sheet-tab-panel-bg-color: initial !default;
+$sheet-tab-bg-color: $sheet-tab-panel-bg-color !default;
+$sheet-tab-hover-bg-color: $hdr-hover-bg-color !default;
+$sheet-tab-active-bg-color: initial !default;
+$select-icon-color: #0078d7 !default;
+//End Tab
+//Formula bar
+$formula-bar-bg-color: transparent !default;
+$formula-bar-font-size: 14px !default;
+$bigger-formula-bar-font-size: 15px !default;
+$name-box-width: 112px !default;
+$namebox-icon-size: 8px !default;
+$formula-textarea-width: calc(100% - 168px) !default;
+$formula-bar-color: initial !default;
+$mformula-bar-height: 42px !default;
+$expand-icon-margin: 4px !default;
+//End formula bar
+//Ribbon
+$fontsize-btn-width: 68px !default;
+$bigger-fontsize-btn-width: 85px !default;
+$align-ddb-item-height: 26px !default;
+$align-ddb-ul-padding: 7px 6px !default;
+$align-ddb-item-padding: 0 5px !default;
+$align-ddb-item-margin: 0 6px !default;
+$ctrl-btn-padding: 12px !default;
+$ribbon-btn-width: 36px !default;
+$ribbon-btn-height: 35px !default;
+$ribbon-btn-padding: 0 !default;
+$bigger-ribbon-btn-height: 45px !default;
+$bigger-ribbon-btn-padding: 5px !default;
+$cpicker-btn-width: 37px !default;
+$bigger-cpicker-btn-width: 45px !default;
+$menu-extension-padding: 10px !default;
+$ribbon-item-hover-border-color: transparent !default;
+$ribbon-item-active-border-color: transparent !default;
+$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
+$normal-btn-padding: 8px !default;
+//End Ribbon
+//Insert dialog box
+$dlg-list-border: $spreadsheet-border !default;
+$dlg-description-font-weight: 500 !default;
+$dlg-content-padding: 18px !default;
+$dlg-category-margin-bottom: 5px !default;
+$dlg-min-height: 510px !default;
+//End Insert dialogbox
+//Sorting
+$sort-error-bg-color: #fce7e9;
+$sort-error-font-color: #333;
+//End Sorting
+//Hyperlink
+$hyper-link-color: #00e !default;
+$hyper-doc-border-color: #c8c8c8 !default;
+$hyper-text-border: #979797  !default;
+//End Hyperlink
+//Filtering
+$filter-icon-margin-bottom: 10px !default;
+$filter-icon-bigger-margin-bottom: 18px !default;
+//End Filtering
+//Find And Replace
+$find-popup-border-top-color: #fafafa !default;
+$find-popup-border-color: #e0e0e0 !default;
+$find-tool-dlg-width: 357px !default;
+$find-tool-dlg-height: 45px !default;
+$find-dlg-width: 518px !default;
+$bigger-find-tool-dlg-width: 414px !default;
+$bigger-find-tool-dlg-height: 54px !default;
+$bigger-find-goto-dlg-height: 237px !default;
+//End Find And Replace
+//Protect Sheet
+$protect-dlg-height: 405px !default;
+$protect-dlg-width: 302px !default;
+//End Protect Sheet
+//Conditional Formatting
+$ele-color: #616161;
+$ele-hover-color: #eee;
+$dark-ele-color: #303030;
+$dark-ele-hover-color: rgba(255, 255, 255, .1) !default;
+//End Conditional Formatting
+//Formula selection
+$vborder-selection: #673ab8;
+$pborder-selection: #9c27b0;
+$cborder-selection: #029688;
+$gborder-selection: #4caf51;
+$oborder-selection: #fe9800;
+$bborder-selection: #3f52b5;
+//End Formula selection
+//Freeze pane
+$freezepane-color: $selection-bg !default;
+//End Freeze pane
+$mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
+//Custom Format
+$custom-listview-color: #ddd;
+//End Custom Format
+//File Name Dialog
+$open-dlg-width: 340px !default;
+//File Name Dialog

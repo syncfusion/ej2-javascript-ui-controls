@@ -7,6 +7,10 @@
     line-height: 1;
     outline: none;
     user-select: none;
+    @if $skin-name == 'FluentUI' {
+      border: 1px solid transparent;
+      padding: 3px;
+    }
     @at-root {
 
       & label {
@@ -18,9 +22,14 @@
         white-space: nowrap;
       }
 
-      &:focus {
+      &:focus,
+      &.e-focus {
         & .e-frame {
           box-shadow: $cbox-focussed-box-shadow;
+        }
+        @if $skin-name == 'FluentUI' {
+          border: 1px solid $cbox-border-color;
+          padding: 3px;
         }
       }
 
@@ -114,6 +123,18 @@
         & .e-frame {
           margin: 0;
 
+          &:hover {
+            background-color: $cbox-hover-bgcolor;
+            border-color: $cbox-hover-border-color;
+            @if $skin-name == 'FluentUI' {
+              &:not(.e-check),
+              &:not(.e-stop)::before {
+                content: $cbox-check-content;
+                font-size: $cbox-check-fontsize;
+              }
+            }
+          }
+
           + .e-ripple-container {
             left: $cbox-ripple-size;
             right: auto;
@@ -178,6 +199,18 @@
       height: $cbox-small-height;
       line-height: $cbox-small-lineheight;
       width: $cbox-small-width;
+
+      &:hover {
+        background-color: $cbox-hover-bgcolor;
+        border-color: $cbox-hover-border-color;
+        @if $skin-name == 'FluentUI' {
+          &:not(.e-check),
+          &:not(.e-stop)::before {
+            content: $cbox-check-content;
+            font-size: $cbox-small-check-fontsize;
+          }
+        }
+      }
     }
 
     & .e-check {
@@ -212,6 +245,20 @@
       height: $cbox-bigger-small-height;
       line-height: $cbox-bigger-small-lineheight;
       width: $cbox-bigger-small-width;
+
+      &:hover {
+        @if $skin-name != 'FluentUI' {
+          background-color: $cbox-hover-bgcolor;
+          border-color: $cbox-hover-border-color;
+        }
+        @if $skin-name == 'FluentUI' {
+          &:not(.e-check),
+          &:not(.e-stop)::before {
+            content: $cbox-check-content;
+            font-size: $cbox-bigger-small-check-fontsize;
+          }
+        }
+      }
     }
 
     & .e-check {
@@ -247,6 +294,18 @@
       line-height: $cbox-bigger-lineheight;
       width: $cbox-bigger-width;
 
+      &:hover {
+        background-color: $cbox-hover-bgcolor;
+        border-color: $cbox-hover-border-color;
+        @if $skin-name == 'FluentUI' {
+          &:not(.e-check),
+          &:not(.e-stop)::before {
+            content: $cbox-check-content;
+            font-size: $cbox-bigger-check-fontsize;
+          }
+        }
+      }
+
       +.e-label {
         font-size: $cbox-bigger-font-size;
         line-height: $cbox-bigger-height;
@@ -279,6 +338,18 @@
     &.e-rtl {
       & .e-frame {
         margin: 0;
+
+        &:hover {
+          background-color: $cbox-hover-bgcolor;
+          border-color: $cbox-hover-border-color;
+          @if $skin-name == 'FluentUI' {
+            &:not(.e-check),
+            &:not(.e-stop)::before {
+              content: $cbox-check-content;
+              font-size: $cbox-bigger-check-fontsize;
+            }
+          }
+        }
 
         +.e-label {
           margin-left: 0;

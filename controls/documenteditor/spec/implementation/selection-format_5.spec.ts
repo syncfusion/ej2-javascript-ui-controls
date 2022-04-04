@@ -5,7 +5,6 @@ import { Editor } from '../../src/index';
 import { Selection } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/index';
 import { TestHelper } from '../test-helper.spec';
-
 describe('Selection Paragraph format line  spacing apply validation', () => {
     let editor: DocumentEditor;
     let documentHelper: DocumentHelper;
@@ -205,5 +204,19 @@ console.log('paragraph format different style with empty paragraph validation');
         editor.selection.handleShiftUpKey();
         editor.selection.handleShiftUpKey();
         expect(editor.selection.paragraphFormat.styleName).toBeUndefined();
+    });
+    it('Character format strikethrough validation',()=>{
+        console.log("'Character format strikethrough validation'");
+        editor.openBlank();
+        editor.editor.insertText('hello world');
+        editor.editor.onEnter();
+        editor.editor.insertText('hello world');
+        editor.selection.selectAll();
+        editor.editor.applyBullet(String.fromCharCode(61623), 'Symbol');
+        expect(editor.selection.characterFormat.strikethrough).toBe('None');
+        editor.editor.toggleStrikethrough();
+        expect(editor.selection.characterFormat.strikethrough).toBe('SingleStrike');
+        editor.editor.toggleStrikethrough();
+        expect(editor.selection.characterFormat.strikethrough).toBe('None');
     });
 }); 

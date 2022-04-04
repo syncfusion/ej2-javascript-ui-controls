@@ -1658,6 +1658,55 @@ export const levelBasedData: Record<string, any>[] = [
     }
 ];
 
+export const moreIndicatorData: Record<string, any>[] = [{
+    Id: 2,
+    Subject: 'id 2',
+    StartTime: new Date(2021, 1, 17, 0, 0),
+    EndTime: new Date(2021, 1, 18, 0, 0),
+    IsAllDay: true,
+    GroupId: 2
+},
+{
+    Id: 3,
+    Subject: 'id 3',
+    StartTime: new Date(2021, 1, 14, 0, 0),
+    EndTime: new Date(2021, 1, 18, 0, 0),
+    IsAllDay: true,
+    GroupId: 2
+},
+{
+    Id: 4,
+    Subject: 'id 4',
+    StartTime: new Date(2021, 1, 10, 0, 0),
+    EndTime: new Date(2021, 1, 16, 0, 0),
+    IsAllDay: true,
+    GroupId: 2
+},
+{
+    Id: 5,
+    Subject: 'id 5',
+    StartTime: new Date(2021, 1, 10, 0, 0),
+    EndTime: new Date(2021, 1, 17, 0, 0),
+    IsAllDay: true,
+    GroupId: 2
+},
+{
+    Id: 1,
+    Subject: 'id 1',
+    StartTime: new Date(2021, 1, 13, 0, 0),
+    EndTime: new Date(2021, 1, 19, 0, 0),
+    IsAllDay: true,
+    GroupId: 2
+},
+{
+    Id: 7,
+    Subject: 'id 6',
+    StartTime: new Date(2021, 1, 13, 0, 0),
+    EndTime: new Date(2021, 1, 19, 0, 0),
+    IsAllDay: true,
+    GroupId: 2
+}];
+
 /**
  * Method to generate data for year view
  *

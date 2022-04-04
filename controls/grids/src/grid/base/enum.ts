@@ -579,6 +579,15 @@ export type ExcelVAlign =
     'Justify';
 
 /**
+ * Defines excel border line style.
+ */
+ export type ExcelBorderLineStyle =
+    /** thin line style  */
+    'thin' |
+    /** thick line style  */
+    'thick';
+
+/**
  * Defines border line style.
  */
 export type BorderLineStyle =

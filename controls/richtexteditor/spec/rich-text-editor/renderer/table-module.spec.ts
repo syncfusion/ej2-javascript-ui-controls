@@ -697,6 +697,44 @@ describe('Table creation', () => {
         });
     });
 
+    describe('Table tabKey pressed with header being selected for new rows', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 9,
+            shiftKey: false
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th class="e-cell-select"><br></th></tr></thead><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Tabkey at end of table td for creating new row', () => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table.querySelectorAll('tr').length === 4).toBe(true);
+            expect(table.querySelectorAll('td').length === 9).toBe(true);
+            let selObj: NodeSelection = new NodeSelection();
+            (table as HTMLElement).querySelectorAll('td')[2].classList.add("e-cell-select");
+            (table as HTMLElement).querySelectorAll('td')[5].classList.add("e-cell-select");
+            (table as HTMLElement).querySelectorAll('td')[8].classList.add("e-cell-select");
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), table.querySelectorAll('td')[8], table.querySelectorAll('td')[8], 0, 0);
+            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+            expect(table.querySelectorAll('td')[9].innerText).toBe('\n');
+            expect(table.querySelectorAll('td')[10].innerText).toBe('\n');
+            expect(table.querySelectorAll('td')[11].innerText).toBe('\n');
+        });
+    });
+
     describe('table dialog open close ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2034,8 +2072,40 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     done();
                 }, 500);
             });
-
         });
+
+        describe("EJ2-57672: List apply when insert table popup opened", () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let controlId: string;
+            let editNode: HTMLElement;
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                            'UnorderedList', 'Outdent', 'Indent']
+                    }
+                });
+                rteEle = rteObj.element;
+                controlId = rteEle.id;
+                editNode = (rteObj as any).inputElement;
+            });
+
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it(' List apply when insert table popup opened', (done) => {
+                let firstNode: HTMLElement = rteObj.inputElement;
+                setCursorPoint(firstNode as Element, 0);
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateTable') as HTMLElement;
+                item.click();
+                let listItem: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_OrderedList') as HTMLElement;
+                listItem.click();
+                expect((window.getSelection().anchorNode as any).nextElementSibling.nodeName === 'BR').toBe(true);
+                done();
+            });
+        });
+
         describe(" EJ2-19873:  Inserting table in the list produces one extra empty list", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
@@ -2942,6 +3012,76 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("EJ2-56516 - Table cell merge with empty columns", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `"<p>Text</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;">test 2</td><td style="width: 33.3333%;">test 3</td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p>Editor</p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Merge two columns with content and one empty', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[2].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelector('table td').innerHTML).toBe("test 2<br>test 3");
+                done();
+            }, 400);
+        });
+    });
+
+    describe("EJ2-56516 - Table cell merge with empty rows", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `"<p>Text</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;">test 2</td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p>Editor</p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Merge two rows with content and empty', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[3].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelector('table td').innerHTML).toBe("test 2");
+                done();
+            }, 400);
+        });
+    });
+
     describe("Table cell merge", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3025,6 +3165,76 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             setTimeout(function () {
                 (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
                 (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                done();
+            }, 400);
+        });
+    });
+
+    describe("EJ2-56516 - Table cell merge with row of contents", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `"<p>Text</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;">test 1</td><td style="width: 33.3333%;">test 2</td><td style="width: 33.3333%;">test 3</td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p>Editor</p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Merge three columns with content', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[2].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelector('table td').innerHTML).toBe("test 1<br>test 2<br>test 3");
+                done();
+            }, 400);
+        });
+    });
+
+    describe("EJ2-56516 - Table cell merge with column of contents", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `"<p>Text</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 33.3333%;">test 1</td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;">test 2</td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p>Editor</p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Merge two rows with content', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[3].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelector('table td').innerHTML).toBe("test 1<br>test 2");
                 done();
             }, 400);
         });

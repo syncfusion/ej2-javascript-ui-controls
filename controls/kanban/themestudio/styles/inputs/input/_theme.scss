@@ -107,7 +107,8 @@
   .e-input-group .e-input[readonly] ~ span.e-input-group-icon,
   .e-input-group.e-control-wrapper .e-input[readonly] ~ span.e-input-group-icon,
   .e-float-input input[readonly] ~ span.e-input-group-icon,
-  .e-float-input.e-control-wrapper input[readonly] ~ span.e-input-group-icon {
+  .e-float-input.e-control-wrapper input[readonly] ~ span.e-input-group-icon,
+  .e-float-input.e-control-wrapper input[readonly] ~ span.e-clear-icon {
     @if $input-skin-name == 'bootstrap5' {
       background: $input-readonly-bg-color;
       color: $input-icon-font-color;
@@ -990,6 +991,15 @@
   }
 
   // sass-lint:disable no-vendor-prefixes 
+  .e-input-group:not(.e-success):not(.e-warning).e-error,
+  .e-input-group.e-control-wrapper:not(.e-success):not(.e-warning).e-error {
+    @if $input-skin-name == 'FluentUI' {
+      -webkit-box-shadow: $input-error-border-shadow;
+      box-shadow: $input-error-border-shadow;
+    }
+  }
+
+  // sass-lint:disable no-vendor-prefixes 
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning).e-error,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning).e-error {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
@@ -999,11 +1009,29 @@
   }
 
   // sass-lint:disable no-vendor-prefixes 
+  .e-input-group:not(.e-error):not(.e-warning).e-success,
+  .e-input-group.e-control-wrapper:not(.e-error):not(.e-warning).e-success {
+    @if $input-skin-name == 'FluentUI' {
+      -webkit-box-shadow: $input-success-border-shadow;
+      box-shadow: $input-success-border-shadow;
+     }
+   }
+
+  // sass-lint:disable no-vendor-prefixes 
   .e-input-group.e-input-focus:not(.e-error):not(.e-warning).e-success,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-error):not(.e-warning).e-success {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
       -webkit-box-shadow: $input-success-border-shadow;
       box-shadow: $input-success-border-shadow;
+    }
+  }
+
+  // sass-lint:disable no-vendor-prefixes 
+  .e-input-group:not(.e-success):not(.e-error).e-warning,
+  .e-input-group.e-control-wrapper:not(.e-success):not(.e-error).e-warning {
+    @if $input-skin-name == 'FluentUI' {
+      -webkit-box-shadow: $input-warning-border-shadow;
+      box-shadow: $input-warning-border-shadow;
     }
   }
 
@@ -1027,7 +1055,7 @@
   .e-input-group.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) span:last-child.e-input-group-icon,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:first-child:focus,
   .e-input-group.e-control-wrapper.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) span:last-child.e-input-group-icon {
-    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'FluentUI' ) {
+    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'FluentUI' and $input-skin-name != 'bootstrap5') {
       border-color: $input-group-border-right-focus;
     }
   }

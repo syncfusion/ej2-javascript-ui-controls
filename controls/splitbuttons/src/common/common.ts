@@ -1,4 +1,4 @@
-import { ChildProperty, extend, deleteObject, Property, BaseEventArgs, addClass } from '@syncfusion/ej2-base';
+import { ChildProperty, extend, deleteObject, Property, BaseEventArgs, addClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ItemModel } from './common-model';
 /**
  * Defines the icon position of Split Button.
@@ -97,6 +97,7 @@ export function setBlankIconStyle(popup: HTMLElement): void {
     const blankIconList: HTMLElement[] = [].slice.call(popup.getElementsByClassName('e-blank-icon'));
     if (!blankIconList.length) { return; }
     let iconLi: HTMLElement = popup.querySelector('.e-item:not(.e-blank-icon):not(.e-separator)') as HTMLElement;
+	if (isNullOrUndefined(iconLi)) {return; }
     if (iconLi.classList.contains('e-url')) { iconLi = iconLi.querySelector('.e-menu-url'); }
     const icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
     let cssProp: { padding: string, margin: string };

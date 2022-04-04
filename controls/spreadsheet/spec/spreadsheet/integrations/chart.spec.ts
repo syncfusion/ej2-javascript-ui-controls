@@ -80,5 +80,25 @@ describe('Chart ->', () => {
             //     done();
             // });
         });
+        describe('ej2-react-ui-components/issues/79 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: 'Price' }, { value: 'Quantity' }, { value: 'Discount' }] }, { cells: [{ value: '10' }, { value: '5' },
+                    { value: '2' }] }, { cells: [{ value: '25' }, { value: '7' }, { value: '1' }] }] }, { rows: [{ cells: [{ chart: [{ type: 'Column', theme: 'Material',
+                    isSeriesInRows: false, range: 'Sheet1!A1:C3', height: 290, width: 480, top: 5, left: 10 }] }] }] }],
+                    activeSheetIndex: 1 }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Charts are not loaded if data range is not from active sheet', (done: Function) => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                expect(chart.style.top).toEqual('5px');
+                expect(chart.style.left).toEqual('10px');
+                expect(helper.getInstance().sheets[1].rows[0].cells[0].chart[0].range).toEqual('Sheet1!A1:C3');
+                done();
+            });
+        });
     });
 });

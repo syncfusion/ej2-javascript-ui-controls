@@ -267,6 +267,9 @@
         @else {
           padding: 5px;
         }
+        @if $fm-skin-name == 'FluentUI' {
+          font-size: 16px;
+        }
         position: absolute;
         z-index: 1;
 
@@ -394,6 +397,12 @@
 
         .e-gridheader .e-headercontent {
           @include visibility(visible);
+        }
+      }
+
+      @if $fm-skin-name == 'FluentUI' {
+        .e-checkbox-wrapper:hover .e-frame {
+          font-size: 10px;
         }
       }
 
@@ -530,7 +539,7 @@
 
         &.e-focused {
           box-shadow: none;
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' {
             td {
               box-shadow: $fe-grid-row-ie-box-shadow;
             }
@@ -850,7 +859,7 @@
       .e-grid.e-rtl {
 
         .e-row.e-focused {
-          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'bootstrap5' and $fm-skin-name != 'FluentUI' {
             td:first-child {
               box-shadow: $fe-grid-row-lc-ie-box-shadow;
             }
@@ -962,6 +971,12 @@
       }
     }
 
+    &.e-dialog.e-fe-upload-dialog {
+      .e-dlg-content {
+        overflow: auto;
+      }
+    }
+
     &.e-contextmenu-wrapper ul .e-menu-item.e-separator,
     &.e-contextmenu-container ul .e-menu-item.e-separator {
       margin: $fe-cm-separator-margin;
@@ -1026,6 +1041,12 @@
       @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
         .e-dlg-content {
           padding-top: 16px;
+        }
+      }
+
+      @if $fm-skin-name == 'FluentUI' {
+        .e-dlg-content {
+          padding-top: 2px;
         }
       }
 
@@ -1550,6 +1571,9 @@
             @if ($fm-skin-name == 'material' or $fm-skin-name == 'material-dark') {
               height: 39px;
             }
+            @if ($fm-skin-name == 'FluentUI') {
+              height: 30px;
+            }
           }
 
           .e-clear-icon::before {
@@ -1564,11 +1588,17 @@
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           font-size: 16px;
         }
+        @else if $fm-skin-name == 'FluentUI' {
+          font-size: 18px;
+        }
         @if $fm-skin-name == 'tailwind' {
           margin: 7px 4px;
         }
         @else if $fm-skin-name == 'bootstrap5' {
           margin: 4px;
+        }
+        @else if $fm-skin-name == 'FluentUI' {
+          margin: 3px;
         }
         @else {
           margin: 7px 0;

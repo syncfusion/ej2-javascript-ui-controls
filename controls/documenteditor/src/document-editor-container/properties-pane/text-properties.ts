@@ -54,9 +54,6 @@ export class Text {
         const element: string = this.documentEditor.element.id + '_font_properties';
         const textDiv: HTMLElement = this.createDiv(element + '_text', wholeDiv);
         classList(textDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
-        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
-        label.innerHTML = this.localObj.getConstant('Text');
-        textDiv.appendChild(label);
         const fontDiv: HTMLElement = this.createDiv(element + '_sizeStyle', textDiv, 'display:inline-flex;');
         classList(fontDiv, ['e-de-ctnr-segment'], []);
         if (isRtl) {
@@ -136,7 +133,7 @@ export class Text {
     }
     private createChangecase = (container: HTMLElement): void => {
         const items: ItemModel[] = [{
-            text: this.localObj.getConstant('UPPERCASE')
+            text: this.localObj.getConstant('UPPERCASE'), id: 'uppercase'
         }];
         this.changeCaseDropdown = new DropDownButton({
             items: items,
@@ -158,9 +155,9 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        const text: string = args.item.text;
+        const text: string = args.item.id;
         switch (text) {
-        case 'UPPERCASE':
+        case 'uppercase':
             if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
                 this.documentEditor.editor.changeCase('Uppercase');
             }
@@ -197,7 +194,6 @@ export class Text {
     }
     private initializeHighlightColorElement(): void {
         this.highlightColorElement = createElement('div', {
-            id: 'highlight_color_ppty',
             styles: 'display:none;width:157px',
             className: 'e-de-cntr-highlight-pane'
         });
@@ -386,6 +382,7 @@ export class Text {
         const fontSize: string[] = ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72', '96'];
         this.fontSize = new ComboBox({
             dataSource: fontSize, popupHeight: '180px',
+            popupWidth: '80px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
@@ -646,7 +643,8 @@ export class Text {
             }
             if (this.documentEditor.selection.characterFormat.fontColor) {
                 let fontColor: string = this.documentEditor.selection.characterFormat.fontColor;
-                if (fontColor === '#00000000') {
+                // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
+                if (fontColor === 'empty' || fontColor === '#00000000') {
                     fontColor = '#000000';
                 }
                 this.fontColorInputElement.value = fontColor;

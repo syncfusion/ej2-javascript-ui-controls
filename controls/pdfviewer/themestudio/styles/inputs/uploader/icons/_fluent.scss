@@ -1,26 +1,26 @@
-@include export-module('uploader-fluent-icons') {
+@include export-module('uploader-bootstrap4-icons') {
   .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
-    content: '\e74f';
+    content: '\e7e7';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
-    content: '\e7c5';
+    content: '\e77b';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
-    content: '\e7a3';
+    content: '\e706';
   }
 
   .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
-    content: '\e80d';
+    content: '\e70c';
   }
 
   .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
-    content: '\e75b';
+    content: '\e820';
   }
 
   .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
-    content: '\e709';
+    content: '\e81b';
   }
 
   .e-upload .e-upload-files .e-icons.e-msie::before {

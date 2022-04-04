@@ -2,8 +2,8 @@
  * Gantt Drag and drop spec
  */
 import { Gantt, Edit, Selection, IGanttData, RowDD } from '../../src/index';
-import { dragSelfReferenceData, normalResourceData, resourceCollection, editingData } from '../base/data-source.spec';
-import { createGantt, destroyGantt } from '../base/gantt-util.spec';
+import { dragSelfReferenceData, normalResourceData, resourceCollection, editingData, projectData } from '../base/data-source.spec';
+import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 
 Gantt.Inject(Edit, Selection, RowDD);
 describe('Gantt Drag and Drop support', () => {
@@ -367,5 +367,214 @@ describe('Gantt Drag and Drop support', () => {
            let chartRow: HTMLElement = document.querySelector('#' + ganttObj_self.element.id + 'GanttTaskTableBody > tr:nth-child(5)') as HTMLElement;
            expect(chartRow.style.display).toBe('table-row');
         });    
-    }); 
+    });
+       describe('Drag and drop', () => {
+        let ganttObj_self: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_self = createGantt(
+                {
+                    dataSource: projectData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency:'Predecessor',
+                        child: 'subtasks'
+                    },
+                allowRowDragAndDrop: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019')
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj_self) {
+                destroyGantt(ganttObj_self);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+       it('Drag and drop after Expand/Collapse', function ()  {
+           ganttObj_self.collapseByID(6);
+           ganttObj_self.reorderRows([4],3, 'child');
+           ganttObj_self.actionComplete = (args: any): void => {
+            if (args.requestType === 'rowDropped') {
+                expect(ganttObj_self.currentViewData[7].parentItem.index).toBe(5);
+            }
+        };      
+        });    
+    });
+        describe('Childrecords update', () => {
+        let ganttObj_self: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_self = createGantt(
+                {
+                    dataSource: projectData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency:'Predecessor',
+                        child: 'subtasks'
+                    },
+                allowRowDragAndDrop: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019')
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj_self) {
+                destroyGantt(ganttObj_self);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+       it('Update childrecords in parent item', function ()  {
+           ganttObj_self.collapseByID(6);
+           ganttObj_self.reorderRows([4],3, 'child');
+           ganttObj_self.actionComplete = (args: any): void => {
+            if (args.requestType === 'rowDropped') {
+                expect(ganttObj_self.currentViewData[7].parentItem.index).toBe(5);
+            }
+        };      
+        });
+      });
+    describe('RowData customization in immutable mode', () => {
+        let ganttObj_self: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_self = createGantt(
+                {
+                    dataSource: projectData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Indent', 'Outdent'],
+                    rowDataBound: function (args) {
+                        if ((args.data).childRecords.length > 0) {
+                            args.row.classList.add('summary-class');
+                        }
+                        else {
+                            args.row.classList.remove('summary-class');
+                        }
+                    },
+                    actionComplete: function (args) {
+                        expect(ganttObj_self.treeGrid.getRows()[2].classList.contains('summary-class')).toBe(true);
+                    },
+                    allowSelection: true,
+                    enableImmutableMode: true,
+                    allowRowDragAndDrop: true,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj_self) {
+                destroyGantt(ganttObj_self);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Perform indent', function () {
+            ganttObj_self.selectRow(3);
+            let indentRecord: HTMLElement = ganttObj_self.element.querySelector('#' + ganttObj_self.element.id + '_indent') as HTMLElement;
+            triggerMouseEvent(indentRecord, 'click');
+        });
+    });
 });

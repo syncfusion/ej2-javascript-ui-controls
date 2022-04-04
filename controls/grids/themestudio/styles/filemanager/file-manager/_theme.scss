@@ -158,20 +158,27 @@
     .e-grid {
 
       .e-gridheader {
-
-        tr:first-child th {
-          background: $fe-grid-header-bg-color;
-        }
+        @if $fm-skin-name != 'FluentUI' {
+          tr:first-child th {
+            background: $fe-grid-header-bg-color;
+          }
+       }
 
         .e-headercell {
 
           &:not(.e-fe-grid-icon):hover {
             background: $fe-hover-bg-color;
           }
-
-          &.e-fe-checkbox:hover {
-            background: $fe-grid-header-bg-color;
+          @if $fm-skin-name == 'FluentUI' {
+            &.e-fe-checkbox:hover {
+              background: $content-bg-color;
           }
+        }
+          @else {
+            &.e-fe-checkbox:hover {
+              background: $fe-grid-header-bg-color;
+          }
+        }
 
           &.e-fe-grid-icon .e-headercelldiv:hover {
             background: $fe-hover-bg-color;

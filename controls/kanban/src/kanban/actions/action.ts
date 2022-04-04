@@ -61,7 +61,7 @@ export class Action {
         } else if (target.classList.contains(cls.FROZEN_SWIMLANE_ROW_CLASS)) {
             const swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SWIMLANE_ROW_CLASS));
             let targetIcon: HTMLElement = this.parent.layoutModule.frozenSwimlaneRow.querySelector('.' + cls.ICON_CLASS);
-            this.rowExpandCollapse(swimlaneRows[this.parent.layoutModule.frozenOrder]);
+            this.rowExpandCollapse(e, swimlaneRows[this.parent.layoutModule.frozenOrder]);
             const isCollapsed: boolean = targetIcon.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS) ? true : false;
             if (isCollapsed) {
                 classList(targetIcon, [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
@@ -150,12 +150,13 @@ export class Action {
         });
     }
 
-    public rowExpandCollapse(e: Event | HTMLElement): void {
+    public rowExpandCollapse(e: Event | HTMLElement, isFrozenElem?: HTMLElement): void {
         const headerTarget: HTMLElement = (e instanceof HTMLElement) ? e : e.target as HTMLElement;
+        let currentSwimlaneHeader: HTMLElement = !isNullOrUndefined(isFrozenElem) ? isFrozenElem : headerTarget;
         const args: ActionEventArgs = { cancel: false, target: headerTarget, requestType: 'rowExpandCollapse' };
         this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
-                const target: HTMLTableRowElement = closest(headerTarget as Element, '.' + cls.SWIMLANE_ROW_CLASS) as HTMLTableRowElement;
+                const target: HTMLTableRowElement = closest(currentSwimlaneHeader as Element, '.' + cls.SWIMLANE_ROW_CLASS) as HTMLTableRowElement;
                 const key: string = target.getAttribute('data-key');
                 const tgtRow: Element = this.parent.element.querySelector('.' + cls.CONTENT_ROW_CLASS + `:nth-child(${target.rowIndex + 2})`);
                 const targetIcon: Element = target.querySelector(`.${cls.SWIMLANE_ROW_EXPAND_CLASS},.${cls.SWIMLANE_ROW_COLLAPSE_CLASS}`);

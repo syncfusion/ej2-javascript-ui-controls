@@ -124,6 +124,7 @@ export class ContextMenu {
         this.contextMenu.id = this.documentHelper.owner.containerId + 'e-de-contextmenu';
         document.body.appendChild(this.contextMenu);
         let ul: HTMLUListElement = document.createElement('ul');
+        ul.contentEditable = 'false';
         ul.style.width = 'auto';
         ul.id = this.documentHelper.owner.containerId + 'e-de-contextmenu-list';
         ul.style.listStyle = 'none';
@@ -409,7 +410,7 @@ export class ContextMenu {
                 }
                 break;
             case id + CONTEXTMENU_ADD_COMMENT:
-                if (!this.documentHelper.owner.isReadOnlyMode) {
+                if (!this.documentHelper.owner.isReadOnlyMode || this.documentHelper.isCommentOnlyMode) {
                     this.documentHelper.owner.editor.isUserInsert = true;
                     this.documentHelper.owner.editorModule.insertComment();
                     this.documentHelper.owner.editor.isUserInsert = false;
@@ -540,9 +541,9 @@ export class ContextMenu {
      * @param {string} content 
      */
     private callSelectedOption(content: string): void {
-        if (content === 'Add to Dictionary') {
+        if (content === this.locale.getConstant('Add to Dictionary')) {
             this.spellChecker.handleAddToDictionary();
-        } else if (content === 'Ignore All') {
+        } else if (content === this.locale.getConstant('Ignore All')) {
             this.spellChecker.handleIgnoreAllItems();
         } else {
             this.spellChecker.manageReplace(content);
@@ -811,6 +812,9 @@ export class ContextMenu {
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         let isHideComment: boolean = this.documentHelper.owner.isReadOnlyMode || this.documentHelper.owner.enableHeaderAndFooter || !this.documentHelper.owner.enableComment;
         addComment.style.display = isHideComment ? 'none' : 'block';
+        if(this.documentHelper.isCommentOnlyMode){
+            addComment.style.display='block';
+        }
         (addComment.previousSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         (addComment.nextSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         if (owner.isReadOnlyMode) {

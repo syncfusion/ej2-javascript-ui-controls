@@ -8,6 +8,7 @@ $ddl-list-font-family: inherit !default;
 $ddl-list-gradient-color: $white !default;
 $ddl-list-bg-color: $white !default;
 $ddl-list-header-bg-color: $white !default;
+$ddl-list-tap-color: transparent !default;
 $ddl-list-default-font-color: $gray-900 !default;
 $ddl-list-active-border-color: $white !default;
 $ddl-list-active-font-color: $primary-font !default;
@@ -54,6 +55,7 @@ $ddl-bigger-small-line-height: 34px !default;
 $ddl-bigger-small-list-font-color: $gray-900 !default;
 $ddl-bigger-small-list-text-indent: 16px !default;
 $ddl-bigger-small-list-header-font-size: 14px !default;
+$ddl-group-list-item-text-intent: 0 !default;
 
 @include export-module('dropdownbase-bootstrap4') {
   .e-dropdownbase .e-list-item .e-list-icon {

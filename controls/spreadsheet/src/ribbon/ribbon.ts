@@ -586,7 +586,9 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                         if (this.items[tabIdx].content[j].id === items[i]) { items[i] = j; break; }
                     }
                 }
-                if (typeof(items[i]) === 'string') { return; }
+                if (typeof(items[i]) === 'string') {
+                    if (items.length - 1 > i) { continue; } else { return; }
+                }
                 this.items[tabIdx].content[items[i]].disabled = !enable;
                 if (tabIdx !== this.selectedTab) { this.setProperties({ 'items': this.items }, true); }
             }

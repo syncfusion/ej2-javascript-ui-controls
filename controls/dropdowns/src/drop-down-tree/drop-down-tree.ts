@@ -1603,14 +1603,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const l10nLocale: Object = { overflowCountTemplate: '+${count} more..', totalCountTemplate: '${count} selected' };
             this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             const remainContent: string = this.l10n.getConstant('overflowCountTemplate');
+            const totalContent: string = this.l10n.getConstant('totalCountTemplate');
             const remainElement: HTMLElement = this.createElement('span', { className: REMAIN_WRAPPER });
-            // eslint-disable-next-line
-            const compiledString: Function = compile(remainContent);
-            // eslint-disable-next-line
-            const totalCompiledString: Function = compile(this.l10n.getConstant('totalCountTemplate'));
-            remainElement.appendChild(
-                compiledString({ 'count': this.value.length }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0]);
             this.overFlowWrapper.appendChild(remainElement);
+            remainElement.innerText = remainContent.replace('${count}',this.value.length.toString());
             const remainSize: number = remainElement.offsetWidth;
             remove(remainElement);
             if (this.showDropDownIcon) {
@@ -1681,7 +1677,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
             if (remaining > 0) {
                 this.overFlowWrapper.appendChild(
-                    this.updateRemainTemplate(remainElement, remaining, compiledString, totalCompiledString)
+                    this.updateRemainTemplate(remainElement, remaining, remainContent, totalContent)
                 );
             }
             if (this.mode === 'Box' && !this.overFlowWrapper.classList.contains(TOTAL_COUNT_WRAPPER)) {
@@ -1697,19 +1693,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private updateRemainTemplate(
         remainElement: HTMLElement,
         remaining: number,
-        // eslint-disable-next-line
-        compiledString: Function,
-        // eslint-disable-next-line
-        totalCompiledString: Function): HTMLElement {
+        remainContent: string,
+        totalContent: string): HTMLElement {
         if (this.overFlowWrapper.firstChild && this.overFlowWrapper.firstChild.nodeType === 3 &&
             this.overFlowWrapper.firstChild.nodeValue === '') {
             this.overFlowWrapper.removeChild(this.overFlowWrapper.firstChild);
         }
         remainElement.innerHTML = '';
-        remainElement.appendChild(
-            (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
-                compiledString({ 'count': remaining }, this, 'overflowCountTemplate', null, !this.isStringTemplate)[0] :
-                totalCompiledString({ 'count': remaining }, this, 'totalCountTemplate', null, !this.isStringTemplate)[0]);
+        remainElement.innerText = (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
+        remainContent.replace('${count}', remaining.toString()) : totalContent.replace('${count}', remaining.toString());
         if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
             removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
         } else {
@@ -2152,6 +2144,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             nodeSelecting: this.onBeforeSelect.bind(this),
             nodeTemplate: this.itemTemplate
         });
+        this.treeObj.root = this.root ? this.root : this;
         this.treeObj.appendTo('#' + this.tree.id);
     }
 
@@ -3007,6 +3000,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
+                } else {
+                    return compile(template);
                 }
             } catch (e) {
                 return compile(template);

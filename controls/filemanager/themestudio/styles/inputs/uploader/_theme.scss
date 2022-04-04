@@ -10,6 +10,7 @@
 
     #{if(&, '&', '*')} .e-file-drop {
       color: $file-drop-text-color;
+      vertical-align: middle;
     }
 
     #{if(&, '&', '*')} .e-upload-files {
@@ -35,7 +36,7 @@
           .e-file-status,
           .e-file-information {
             color: $drop-text-color;
-            @if $skin-name == 'FluentUI' {
+            @if $skin-name == 'FluentUI' or $skin-name == 'tailwind' {
               color: $file-status-color;
             }
           }
@@ -110,7 +111,29 @@
   }
 
   .e-upload-drag-hover {
-    outline: $drag-hover-border;
+    @if $skin-name == 'FluentUI' or $skin-name == 'tailwind' {
+      border-color: transparent;
+    }
   }
 
+  .e-upload .e-upload-actions .e-file-clear-btn.e-flat:not(:hover) {
+    @if $skin-name == 'tailwind' {
+      // sass-lint:disable no-vendor-prefixes
+      -webkit-tap-highlight-color: $upload-btn-tap-highlight;
+      background-color: $upload-flat-btn-bgcolor;
+      border-color: $upload-flat-btn-border-color;
+      box-shadow: $upload-flat-btn-box-shadow;
+      color: $upload-flat-btn-color;
+    }
+  }
+
+  .e-upload .e-upload-actions .e-file-upload-btn.e-flat.e-primary:not(:hover) {
+    @if $skin-name == 'tailwind' {
+      // sass-lint:disable no-vendor-prefixes
+      -webkit-tap-highlight-color: $upload-btn-tap-highlight;
+      background-color: $upload-btn-primary-bgcolor;
+      border-color: $upload-btn-primary-border-color;
+      color: $upload-btn-primary-color;
+    }
+  }
 }

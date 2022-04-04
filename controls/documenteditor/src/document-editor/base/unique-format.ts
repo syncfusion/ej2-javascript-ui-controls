@@ -392,6 +392,12 @@ export class WUniqueFormat {
         if (property === 'widowControl') {
             return 14;
         }
+        if (property === 'spaceBeforeAuto') {
+            return 15;
+        }
+        if (property === 'spaceAfterAuto') {
+            return 16;
+        }
         return 0;
     }
     private static getSectionFormatType(property: string): number {
@@ -559,6 +565,12 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('afterSpacing', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('spaceBeforeAuto', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('spaceAfterAuto', source, modifiedProperty, modifiedValue, 3)) {
             return false;
         }
         if (this.isNotEqual('lineSpacing', source, modifiedProperty, modifiedValue, 3)) {

@@ -95,8 +95,8 @@
                 accumulation.loaded = null;
                 element = document.getElementById('pie_Series_0_Point_0');
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Dots_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Dots_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Dots';
@@ -107,8 +107,8 @@
                 accumulation.loaded = null;
                 element = document.getElementById('pie_Series_0_Point_0');
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_DiagonalForward_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_DiagonalForward_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'DiagonalForward';
@@ -117,8 +117,8 @@
          it('Patterns with Crosshatch', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Crosshatch_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Crosshatch_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Crosshatch';
@@ -127,8 +127,8 @@
         it('Patterns with Pacman', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Pacman_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Pacman_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Pacman';
@@ -137,8 +137,8 @@
         it('Patterns with DiagonalBackward', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_DiagonalBackward_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_DiagonalBackward_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'DiagonalBackward';
@@ -147,8 +147,8 @@
         it('Patterns with Grid', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Grid_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Grid_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Grid';
@@ -157,8 +157,8 @@
         it('Patterns with Turquoise', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[1].id === 'pie_Turquoise_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[1].id === 'pie_Turquoise_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Turquoise';
@@ -167,8 +167,8 @@
         it('Patterns with Star', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Star_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Star_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Star';
@@ -177,8 +177,8 @@
         it('Patterns with Triangle', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'pie_Triangle_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[2].id === 'pie_Triangle_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Triangle';
@@ -187,8 +187,8 @@
         it('Patterns with Chessboard', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'pie_Chessboard_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[2].id === 'pie_Chessboard_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Chessboard';
@@ -197,8 +197,8 @@
         it('Patterns with Circle', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Circle_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Circle_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Circle';
@@ -206,8 +206,8 @@
         });
         it('Patterns with Tile', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Tile_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Tile_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Tile';
@@ -216,8 +216,8 @@
         it('Patterns with HorizontalDash', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_HorizontalDash_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_HorizontalDash_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'HorizontalDash';
@@ -226,8 +226,8 @@
         it('Patterns with VerticalDash', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_VerticalDash_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_VerticalDash_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'VerticalDash';
@@ -238,8 +238,8 @@
         it('Patterns with Rectangle', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Rectangle_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Rectangle_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Rectangle';
@@ -249,8 +249,8 @@
         it('Patterns with Box', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Box_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Box_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Box';
@@ -259,8 +259,8 @@
         it('Patterns with VerticalStripe', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_VerticalStripe_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_VerticalStripe_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'VerticalStripe';
@@ -269,8 +269,8 @@
         it('Patterns with Bubble', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Bubble_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_Bubble_Selection_0').toBe(true);
                 done();
             };
             accumulation.highlightPattern = 'Bubble';
@@ -279,8 +279,8 @@
         it('Patterns with HorizontalStripe', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_HorizontalStripe_Selection_0').toBe(true);
+               expect(document.getElementById(id +'_svg').querySelectorAll('pattern').length).toBe(8);
+                expect(document.getElementById(id +'_svg').querySelectorAll('pattern')[0].id === 'pie_HorizontalStripe_Selection_0').toBe(true);
                 done();
             };
 

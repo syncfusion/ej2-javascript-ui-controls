@@ -106,9 +106,10 @@ export class ListDialog {
     public showListDialog(): void {
         const locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         locale.setLocale(this.documentHelper.owner.locale);
-
+        let bindEvent: boolean = false;
         if (!this.target) {
             this.initListDialog(locale, this.documentHelper.owner.enableRtl);
+            bindEvent = true;
         }
         this.isListCharacterFormat = true;
         this.documentHelper.dialog2.header = locale.getConstant('Define new Multilevel list');
@@ -134,7 +135,9 @@ export class ListDialog {
             buttonModel: { content: locale.getConstant('Cancel'), cssClass: 'e-flat e-list-dlg' }
         }];
         this.documentHelper.dialog2.dataBind();
-        this.wireAndBindEvent(locale, isRtl);
+        if (bindEvent) {
+            this.wireAndBindEvent(locale, isRtl);
+        }
         this.documentHelper.dialog2.beforeOpen = this.loadListDialog;
         this.documentHelper.dialog2.close = this.closeListDialog;
         this.documentHelper.dialog2.position = { X: 'center', Y: 'top' };
@@ -249,6 +252,9 @@ export class ListDialog {
      * @returns {void}
      */
     private onTextIndentChanged = (args: ChangeEventArgs): void => {
+        if(!args.isInteracted) {
+            return;
+        }
         this.viewModel.listLevel.paragraphFormat.leftIndent = args.value as number;
     };
     /**
@@ -257,6 +263,9 @@ export class ListDialog {
      * @returns {void}
      */
     private onStartValueChanged = (args: ChangeEventArgs): void => {
+        if(!args.isInteracted) {
+            return;
+        }
         if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
             this.viewModel.listLevel.startAt = args.value as number;
         }
@@ -271,12 +280,6 @@ export class ListDialog {
         if (isNullOrUndefined(this.listLevel)) {
             return;
         }
-        if (isNullOrUndefined(this.listLevel.characterFormat)) {
-            this.listLevel.characterFormat = new WCharacterFormat(this.viewModel.listLevel);
-        }
-        if (!isNullOrUndefined(this.listLevel.paragraphFormat)) {
-            this.listLevel.paragraphFormat = new WParagraphFormat(this.viewModel.listLevel);
-        }
         this.updateDialogValues();
         this.updateRestartLevelBox();
     };
@@ -286,6 +289,9 @@ export class ListDialog {
      * @returns {void}
      */
     private onNumberFormatChanged = (args: any): void => {
+        if(!args.isInteracted) {
+            return;
+        }
         this.viewModel.listLevel.numberFormat = args.target.value;
     };
     /**
@@ -294,7 +300,10 @@ export class ListDialog {
      * @returns {void}
      */
     private onAlignedAtValueChanged = (args: ChangeEventArgs): void => {
-        this.viewModel.listLevel.paragraphFormat.firstLineIndent = args.value as number;
+        if(!args.isInteracted) {
+            return;
+        }
+        this.viewModel.listLevel.paragraphFormat.firstLineIndent = this.alignedAt.value  - this.viewModel.listLevel.paragraphFormat.leftIndent;
     };
     private updateRestartLevelBox(): void {
         const containerId: string = this.documentHelper.owner.containerId;
@@ -328,7 +337,7 @@ export class ListDialog {
      * @returns {void}
      */
     private onFollowCharacterValueChanged = (args: ChangeEventArgs): void => {
-        if (args.value) {
+        if (args.isInteracted) {
             this.viewModel.followCharacter = args.value as FollowCharacterType;
         }
     };
@@ -338,6 +347,9 @@ export class ListDialog {
      * @returns {void}
      */
     private onLevelPatternValueChanged = (args: ChangeEventArgs): void => {
+        if(!args.isInteracted) {
+            return;
+        }
         this.viewModel.listLevelPattern = args.value as ListLevelPattern;
         const numberFormat: string = '%' + (this.levelNumber + 1).toString();
 
@@ -346,7 +358,6 @@ export class ListDialog {
         if (this.listLevel.listLevelPattern === 'Bullet') {
             this.listLevel.numberFormat = String.fromCharCode(61623);
             numberFormatTextBox.value = this.listLevel.numberFormat;
-            this.listLevel.characterFormat.fontFamily = 'Wingdings';
         } else {
             if (this.listLevel.listLevelPattern === 'None') {
                 this.listLevel.numberFormat = '';
@@ -360,10 +371,10 @@ export class ListDialog {
     private listPatternConverter(listLevelPattern: ListLevelPattern): number {
         switch (listLevelPattern) {
         case 'Arabic': return 0;
-        case 'LowLetter': return 1;
+        case 'UpRoman': return 1;
         case 'LowRoman': return 2;
         case 'UpLetter': return 3;
-        case 'UpRoman': return 4;
+        case 'LowLetter': return 4;
         case 'Number': return 5;
         case 'LeadingZero': return 6;
         case 'Bullet': return 7;
@@ -402,26 +413,35 @@ export class ListDialog {
         if (isNullOrUndefined(this.listLevel)) {
             return;
         }
+        this.updateDialogValues();
+        if (this.documentHelper.selection.caret.style.display !== 'none') {
+            this.documentHelper.selection.caret.style.display = 'none';
+        }
+    };
+    
+    private calculateAlignedAt(): number {
+        if (this.viewModel.listLevel.paragraphFormat.firstLineIndent < 0) {
+            return this.viewModel.listLevel.paragraphFormat.leftIndent + this.viewModel.listLevel.paragraphFormat.firstLineIndent;
+        }
+        else {
+            return this.viewModel.listLevel.paragraphFormat.firstLineIndent;
+        }
+    }
+    private updateDialogValues(): void {
         if (isNullOrUndefined(this.listLevel.characterFormat)) {
             this.listLevel.characterFormat = new WCharacterFormat(this.viewModel.listLevel);
         }
         if (isNullOrUndefined(this.listLevel.paragraphFormat)) {
             this.listLevel.paragraphFormat = new WParagraphFormat(this.viewModel.listLevel);
         }
-        this.updateDialogValues();
-        if (this.documentHelper.selection.caret.style.display !== 'none') {
-            this.documentHelper.selection.caret.style.display = 'none';
-        }
-    };
-    private updateDialogValues(): void {
-
         //const restartByTextBox: HTMLSelectElement = document.getElementById(this.documentHelper.owner.containerId + '_restartBy') as HTMLSelectElement;
         if (!isNullOrUndefined(this.viewModel) && !isNullOrUndefined(this.viewModel.listLevel)) {
             this.startAt.value = this.viewModel.listLevel.startAt;
             this.textIndent.value = this.viewModel.listLevel.paragraphFormat.leftIndent;
-            this.alignedAt.value = this.viewModel.listLevel.paragraphFormat.firstLineIndent;
+            this.alignedAt.value = this.calculateAlignedAt();
             this.followNumberWith.index = this.followCharacterConverter(this.viewModel.followCharacter);
             this.numberFormat.value = this.viewModel.listLevel.numberFormat;
+            this.numberFormat.style.fontFamily = this.viewModel.listLevel.characterFormat.fontFamily;
             this.numberStyle.index = this.listPatternConverter(this.viewModel.listLevelPattern);
             this.listLevelElement.index = this.viewModel.levelNumber;
             //this.viewModel.levelNumber = this.viewModel.levelNumber;
@@ -432,15 +452,21 @@ export class ListDialog {
      * @returns {void}
      */
     private showFontDialog = (): void => {
-        this.documentHelper.owner.fontDialogModule.showFontDialog(this.listLevel.characterFormat);
+        this.documentHelper.owner.fontDialogModule.showFontDialog(this.listLevel.characterFormat, true);
     };
+    /**
+     * @private
+     */
+    public updateCharacterFormat(format: WCharacterFormat): void {
+        this.listLevel.characterFormat.copyFormat(format);
+    }
     /**
      * @private
      * @returns {void}
      */
     private onApplyList = (): void => {
         if (!isNullOrUndefined(this.owner)) {
-            this.documentHelper.selection.paragraphFormat.setList(this.list);
+            this.documentHelper.selection.paragraphFormat.setList(this.list, true);
         }
         this.documentHelper.dialog2.hide();
         this.documentHelper.updateFocus();
@@ -472,6 +498,7 @@ export class ListDialog {
         this.restartBy.index = -1;
         this.viewModel.destroy();
     }
+
 
     /**
      * @private

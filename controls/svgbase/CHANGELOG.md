@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
-
-### Svg Base
-
-#### Bug Fixes
-
-- `#I357720` - Header line in the tooltip is now proper when text wrap is enabled.
-
-## 19.4.38 (2021-12-17)
+## 20.1.47 (2022-04-04)
 
 ### Svg Base
 

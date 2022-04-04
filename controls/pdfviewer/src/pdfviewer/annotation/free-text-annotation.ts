@@ -5,7 +5,7 @@ import {
     // eslint-disable-next-line
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection, AllowedInteraction
 } from '../..';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -190,6 +190,10 @@ export class FreeTextAnnotation {
      * @private
      */
     public previousText: string = 'Type Here';
+    /**
+     * @private
+     */
+     public currentPosition: any= [];
 
 
 
@@ -1023,11 +1027,15 @@ export class FreeTextAnnotation {
      * @private
      */
     public addInuptElemet(currentPosition: PointModel, annotation: PdfAnnotationBaseModel = null, pageIndex?: number): void {
+        this.currentPosition = [];
         if (isNullOrUndefined(pageIndex)) {
             pageIndex = this.pdfViewerBase.currentPageNumber - 1;
         }
         if (annotation) {
             pageIndex = annotation.pageIndex;
+        }
+        if (isBlazor() && annotation === null && this.pdfViewer.selectedItems.annotations.length === 0) {
+            this.updateTextProperties();
         }
         this.inputBoxElement.id = this.pdfViewer.element.id + '_freeText_' + pageIndex + '_' + this.inputBoxCount;
         const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
@@ -1121,7 +1129,7 @@ export class FreeTextAnnotation {
             this.pdfViewer.nodePropertyChange(this.selectedAnnotation, {});
         }
         if (this.pdfViewerBase.isMixedSizeDocument) {
-            this.inputBoxElement.style.left = (currentPosition.x) + canvass.offsetLeft + 'px';
+            this.inputBoxElement.style.left = (parseFloat(this.inputBoxElement.style.left)) + canvass.offsetLeft + 'px';
         }
         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
         if (this.pdfViewer.freeTextSettings.enableAutoFit) {
@@ -1139,6 +1147,7 @@ export class FreeTextAnnotation {
             this.inputBoxElement.select();
             this.pdfViewerBase.isFreeTextSelected = true;
         }
+        this.currentPosition.push(parseInt(this.inputBoxElement.style.left) / zoomFactor, parseInt(this.inputBoxElement.style.top) / zoomFactor, parseInt(this.inputBoxElement.style.width) / zoomFactor, parseInt(this.inputBoxElement.style.height) / zoomFactor);
     }
     private applyFreetextStyles(zoomFactor: number, isReadonly?: boolean): void {
         this.inputBoxElement.style.height = (this.defaultHeight * zoomFactor) + 'px';
@@ -1426,5 +1435,18 @@ export class FreeTextAnnotation {
         let inputBoxpadding : number = 2; // we have set the input box padding for the free text.
         topPadding = (topPadding - inputBoxpadding)* (fontSize / 16); 
         return [leftPadding , topPadding];
+    }
+    /**
+     * @private
+     * This method used tp get the current position of x and y.
+    */
+    public addInputInZoom(currentPosition : any) : void {
+        let zoomFactor : number = this.pdfViewerBase.getZoomFactor();
+        this.inputBoxElement.style.left = (currentPosition.x * zoomFactor) + 'px';
+        this.inputBoxElement.style.top = (currentPosition.y * zoomFactor) + 'px';
+        this.inputBoxElement.style.height = (currentPosition.height * zoomFactor) + 'px'
+        this.inputBoxElement.style.width = (currentPosition.width * zoomFactor) + 'px';
+        this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
+        this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
     }
 }

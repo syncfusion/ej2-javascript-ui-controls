@@ -507,7 +507,7 @@ export class GroupingBar implements IAction {
     }
     private dropIndicatorUpdate(e: MouseEvent): void {
         if ((this.parent.isDragging && (e.target as HTMLElement).classList.contains(cls.DROPPABLE_CLASS) && e.type === 'mouseover') ||
-            e.type === 'mouseleave') {
+            (!this.parent.isDragging || (!(e.target as HTMLElement).classList.contains(cls.DROPPABLE_CLASS) && e.type === 'mouseleave'))) {
             removeClass(
                 [].slice.call(this.parent.element.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
             removeClass(

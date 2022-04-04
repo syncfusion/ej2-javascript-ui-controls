@@ -1248,13 +1248,13 @@ export class PivotButton implements IAction {
     private updateFilterState(fieldName: string, args: Event): void {
         let isNodeUnChecked: boolean = false;
         let filterItem: IFilter = { items: [], name: fieldName, type: 'Include' };
-        let engineModule: OlapEngine = this.parent.olapEngineModule;
+        let engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         if (this.parent.dataType === 'olap' && engineModule &&
-            !engineModule.fieldList[fieldName].isHierarchy) {
+            !(engineModule.fieldList[fieldName] as IOlapField).isHierarchy) {
             let cMembers: IMembers = engineModule.fieldList[fieldName].members;
             let sMembers: IMembers = (engineModule as OlapEngine).fieldList[fieldName].currrentMembers;
             filterItem.items = this.parent.pivotCommon.filterDialog.memberTreeView.getAllCheckedNodes();
-            filterItem.levelCount = engineModule.fieldList[fieldName].levelCount;
+            filterItem.levelCount = (engineModule.fieldList[fieldName] as IOlapField).levelCount;
             isNodeUnChecked = (filterItem.items.length ===
                 (this.parent.pivotCommon.filterDialog.memberTreeView.fields.dataSource as { [key: string]: object }[]).length ? false : true);
             if ((engineModule as OlapEngine).fieldList[fieldName].searchMembers.length > 0 && !isNodeUnChecked) {
@@ -1287,10 +1287,10 @@ export class PivotButton implements IAction {
             this.removeDataSourceSettings(fieldName);
         }
         if (this.parent.allowDeferLayoutUpdate) {
-            this.parent.engineModule.fieldList[filterItem.name].filterType = filterItem.type.toLowerCase();
-            this.parent.engineModule.fieldList[filterItem.name].filter = [];
+            engineModule.fieldList[filterItem.name].filterType = filterItem.type.toLowerCase();
+            engineModule.fieldList[filterItem.name].filter = [];
             for (let i: number = 0; i < filterItem.items.length; i++) {
-                this.parent.engineModule.fieldList[filterItem.name].filter.push(filterItem.items[i] as string);
+                engineModule.fieldList[filterItem.name].filter.push(filterItem.items[i] as string);
             }
         }
         let filterEventArgs: MemberFilteringEventArgs = {
@@ -1319,6 +1319,7 @@ export class PivotButton implements IAction {
                 this.refreshPivotButtonState(fieldName, isNodeUnChecked);
                 if (!isNodeUnChecked) {
                     this.removeDataSourceSettings(fieldName);
+                    filterItem = {};
                 }
                 this.parent.lastFilterInfo = filterItem;
                 let actionInfo: PivotActionInfo = {

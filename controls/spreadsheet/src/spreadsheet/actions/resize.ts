@@ -64,7 +64,9 @@ export class Resize {
     private unWireResizeCursorEvent(): void {
         EventHandler.remove(this.parent.getRowHeaderContent(), 'mousemove', this.setTarget);
         const headerPanel: Element = this.parent.element.getElementsByClassName('e-header-panel')[0];
-        if (headerPanel) { EventHandler.remove(headerPanel, 'mousemove', this.setTarget); }
+        if (headerPanel) {
+            EventHandler.remove(headerPanel, 'mousemove', this.setTarget);
+        }
     }
 
     private unwireEvents(): void {
@@ -137,7 +139,10 @@ export class Resize {
         }
         EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
-        this.wireResizeCursorEvent(this.parent.getRowHeaderContent(), this.parent.element.getElementsByClassName('e-header-panel')[0]);
+        const colHeader: Element = this.parent.element.getElementsByClassName('e-header-panel')[0];
+        if (colHeader) {
+            this.wireResizeCursorEvent(this.parent.getRowHeaderContent(), colHeader);
+        }
         this.parent.notify(positionAutoFillElement, null );
         this.parent.notify(hideAutoFillOptions, null );
     }
@@ -480,7 +485,7 @@ export class Resize {
     }
 
     private showHideCopyIndicator(): void{
-        const copyIndicator: HTMLElement = this.parent.element.querySelector('.e-copy-indicator');
+        const copyIndicator: HTMLElement = this.parent.element.getElementsByClassName('e-copy-indicator')[0] as HTMLElement;
         let isIndicator: boolean = false;
         if (copyIndicator) {
             detach(copyIndicator);
@@ -511,9 +516,20 @@ export class Resize {
             }
         }
         this.trgtEle.classList.remove('e-unhide-column');
-        this.parent.hideColumn(startIdx, endIdx, false);
+        const hideEvtArgs: HideShowEventArgs = { startIndex: startIdx, endIndex: endIdx, hide: false, isCol: true, autoFit: true };
+        this.parent.notify(hideShow, hideEvtArgs);
         this.showHideCopyIndicator();
-        if (width === undefined) { this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx }); }
+        if (width === undefined) {
+            if (hideEvtArgs.autoFit) {
+                this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx })
+            } else {
+                const performAutoFit: Function = (): void => {
+                    this.parent.off(contentLoaded, performAutoFit);
+                    this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx });
+                };
+                this.parent.on(contentLoaded, performAutoFit, this);
+            }
+        }
     }
 
     private setRowHeight(rowIdx: number, viewportIdx: number, height: string, prevData?: string): void {

@@ -99,7 +99,9 @@ export class Overlay {
             parent = this.parent.getMainContent();
         }
         div.style.top = pos.top + 'px'; div.style.left = pos.left + 'px';
-        parent.appendChild(div);
+        if (sheetIndex === this.parent.activeSheetIndex) {
+            parent.appendChild(div);
+        }
         this.renderResizeHandles(div);
         this.addEventListener(div);
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
@@ -180,7 +182,7 @@ export class Overlay {
             case 'e-ss-overlay-t':
                 height1 = Math.max(this.originalMouseY - e.clientY + this.originalHeight, 20);
                 top = e.clientY - (this.originalMouseY - this.originalResizeTop);
-                if (height1 > 180 && top > checkOffset[0]) {
+                if (height1 > 20 && top > checkOffset[0]) {
                     overlayElem.style.height = height1 + 'px';
                     overlayElem.style.top = top + 'px';
                     this.resizedReorderTop = top; // resized divTop
@@ -191,7 +193,7 @@ export class Overlay {
                 break;
             case 'e-ss-overlay-r':
                 width1 = this.originalWidth + (e.pageX - this.originalMouseX);
-                if (width1 > 180) {
+                if (width1 > 20) {
                     overlayElem.style.width = width1 + 'px';
                     this.currentWidth = width1;
                     this.parent.notify(refreshChartSize, {
@@ -200,7 +202,7 @@ export class Overlay {
                 break;
             case 'e-ss-overlay-b':
                 height2 = this.originalHeight + (e.pageY - this.originalMouseY);
-                if (height2 > 180) {
+                if (height2 > 20) {
                     overlayElem.style.height = height2 + 'px';
                     this.currenHeight = height2;
                     this.parent.notify(refreshChartSize, {
@@ -210,7 +212,7 @@ export class Overlay {
             case 'e-ss-overlay-l':
                 width2 = Math.max(this.originalMouseX - e.clientX + this.originalWidth, 20);
                 left = e.clientX - (this.originalMouseX - this.originalResizeLeft);
-                if (width2 > 180 && left > checkOffset[1]) {
+                if (width2 > 20 && left > checkOffset[1]) {
                     overlayElem.style.width = width2 + 'px';
                     overlayElem.style.left = left + 'px';
                     this.resizedReorderLeft = left; //resized divLeft

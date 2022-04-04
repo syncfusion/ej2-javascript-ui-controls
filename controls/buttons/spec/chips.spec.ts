@@ -1222,12 +1222,25 @@ describe('Chips', () => {
                     }
                 });
 
+                it('click event (Chipset) with space key- selection(Multiple)', () => {
+                    chips = new ChipList({ text: 'chip content', chips: deepCloning(jsonArray), selection: "Multiple", click: onClick }, '#chip');
+                    let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                    (chips as any).keyHandler({ target: chipCollection[1], keyCode: 32, type: 'keydown' });
+                    function onClick(e: ClickEventArgs) {
+                        expect((e.data as ChipModel).text).toBe('chip2');
+                        expect(e.element).toBe(chipCollection[1]);
+                        expect(e.text).toBe('chip2');
+                        expect(e.index).toBe(1);
+                        expect(e.selected).toBe(true);
+                    }
+                });
+
                 it('Pressing wrong key', () => {
                     chips = new ChipList({ text: 'chip content', chips: deepCloning(jsonArray), selection: "Multiple" }, '#chip');
                     let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
                     let clickfunction: jasmine.Spy = jasmine.createSpy('clickfunction');
                     chips.click = clickfunction;
-                    (chips as any).keyHandler({ target: chipCollection[1], keyCode: 32, type: 'keydown' });
+                    (chips as any).keyHandler({ target: chipCollection[1], keyCode: 34, type: 'keydown' });
                     expect(clickfunction).not.toHaveBeenCalled();
                 });
                 it('wrong target', () => {
@@ -1256,6 +1269,7 @@ describe('Chips', () => {
                     }
                     chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
                     expect(chipCollection.length).toBe(2);
+                    expect(chipCollection[1].classList.contains('e-focused')).toBe(true);
                 });
                 it('delete event - cancel (Chipset)', () => {
                     chips = new ChipList({ text: 'chip content', chips: deepCloning(jsonArray), selection: "Single", enableDelete: true, delete: onDelete }, '#chip');

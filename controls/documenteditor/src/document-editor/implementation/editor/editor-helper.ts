@@ -313,7 +313,10 @@ export class HelperMethods {
     public static formatClippedString(base64ImageString: string): ImageFormatInfo {
         let extension: string = '';
         let formatClippedString: string = '';
-        if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
+        if (this.startsWith(base64ImageString, 'data:image/svg+xml;base64,')) {
+            extension = '.svg';
+            formatClippedString = base64ImageString.replace('data:image/svg+xml;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
             extension = '.bmp';
             formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
         } else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
@@ -431,12 +434,20 @@ export class HelperMethods {
     private static capitaliseFirstInternal(value: string): string {
         return (value.charAt(0).toUpperCase() + value.slice(1, value.length).toLowerCase());
     }
-    public static getModifiedDate(date: string): string {
-        const modifiedDate: Date = new Date(date);
+    public static getModifiedDate(date: string): string {        
+        const modifiedDate: Date = HelperMethods.getLocaleDate(date)
         const dateString: string = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
         const time: string = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
         const dateTime: string = dateString + ' ' + time;
         return dateTime;
+    }
+    public static getUtcDate(): string {
+        const now = new Date();
+        return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
+    }
+    public static getLocaleDate(date: string): Date {
+        const dt: Date = new Date(date);
+        return new Date(dt.getTime() + dt.getTimezoneOffset() * 60000);
     }
     public static getCompatibilityModeValue(compatibilityMode: CompatibilityMode): string {
         let compatValue: string;
@@ -967,6 +978,20 @@ export interface ImageFormatInfo {
 export interface PositionInfo {
     startPosition: TextPosition
     endPosition: TextPosition
+}
+
+/**
+ * Specifies the field information.
+ */
+export interface FieldInfo {
+    /** 
+     *  Specifies the field code.
+     */
+    code: string
+    /** 
+     *  Specifies the field result.
+     */
+    result: string
 }
 
 /**

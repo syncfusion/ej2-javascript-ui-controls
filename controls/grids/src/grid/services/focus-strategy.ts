@@ -119,6 +119,26 @@ export class FocusStrategy {
     }
 
     protected onKeyPress(e: KeyboardEventArgs): void {
+        if (this.parent.allowPaging) {
+            if (this.parent.pagerModule.pagerObj.checkPagerHasFocus()) {
+                this.parent.pagerModule.pagerObj.changePagerFocus(e);
+                return;
+            }
+            if (this.parent.pagerModule.pagerObj.element.tabIndex === 0 && (e.keyCode === 38 || (e.shiftKey && e.keyCode === 9))) {
+                e.preventDefault();
+                this.getFocusedElement().focus();
+                return;
+            } else if (this.parent.pagerModule.pagerObj.element.tabIndex === 0 && e.keyCode === 9) {
+                e.preventDefault();
+                this.parent.pagerModule.pagerObj.setPagerFocus();
+                return;
+            }
+            if (this.parent.pagerModule.pagerObj.checkFirstPagerFocus()) {
+                const lastRow: number = this.getContent().matrix.rows;
+                const lastColumn: number = this.getContent().matrix.columns;
+                this.getContent().matrix.current = [lastRow, lastColumn];
+            }
+        }
         if (this.skipOn(e)) {
             return;
         }
@@ -142,10 +162,26 @@ export class FocusStrategy {
             if (e.action === 'shiftTab' && bValue.toString() === [0, 0].toString()) {
                 this.parent.element.tabIndex = -1;
             }
+            if (this.parent.allowPaging && !this.parent.pagerModule.pagerObj.checkPagerHasFocus() && this.allowToPaging(e)
+                && bValue.toString() !== [0, 0].toString()) {
+                e.preventDefault();
+                if (e.keyCode === 40) {
+                    this.parent.pagerModule.pagerObj.setPagerContainerFocus();
+                } else if (e.keyCode === 9) {
+                    this.parent.pagerModule.pagerObj.setPagerFocus();
+                }
+            }
             return;
         }
         e.preventDefault();
         this.focus(e);
+    }
+
+    private allowToPaging(e: KeyboardEventArgs): boolean {
+        if (this.parent.editSettings.mode === 'Batch' && this.parent.editSettings.allowAdding && e.keyCode !== 40) {
+            return false;
+        }
+        return true;
     }
 
     private skipOn(e: KeyboardEventArgs): boolean {
@@ -359,7 +395,7 @@ export class FocusStrategy {
                 }
             );
             if (!Browser.isDevice && e && e.args) {
-                if (!this.focusByClick && e.args.requestType === 'paging') {
+                if (!this.focusByClick && e.args.requestType === 'paging' && !this.parent.pagerModule.pagerObj.checkPagerHasFocus()) {
                     this.skipFocus = false; this.parent.element.focus();
                 }
                 if (e.args.requestType === 'grouping') {
@@ -648,7 +684,10 @@ export class ContentFocus implements IFocus {
         const navigator: number[] = this.keyActions[e.action];
         let current: number[] = this.getCurrentFromAction(e.action, navigator, e.action in this.keyActions, e);
         if (!current) { return; }
-        if ((['tab', 'shiftTab'].indexOf(e.action) > -1 && this.matrix.current || []).toString() === current.toString()) {
+        if (((['tab', 'shiftTab'].indexOf(e.action) > -1 && this.matrix.current || []).toString() === current.toString())
+            || (this.parent.allowPaging && !this.parent.pagerModule.pagerObj.checkPagerHasFocus()
+            && this.matrix.current[0] === this.matrix.rows && ((this.parent.editSettings.mode === 'Batch'
+            && this.parent.editSettings.allowAdding && e.keyCode === 40) || (e.keyCode === 40)))) {
             if (current.toString() === [this.matrix.rows, this.matrix.columns].toString() ||
                 current.toString() === [0, 0].toString() || (this.matrix.current[0] === this.matrix.rows &&
                     this.matrix.current.toString() === current.toString())) {

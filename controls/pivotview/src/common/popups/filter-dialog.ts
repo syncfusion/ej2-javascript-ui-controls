@@ -1001,7 +1001,6 @@ export class FilterDialog {
      */
     public updateCheckedState(fieldCaption?: string): void {    /* eslint-disable-line */
         let filterDialog: Element = this.dialogPopUp.element;
-        setStyleAndAttributes(filterDialog, { 'role': 'menu', 'aria-haspopup': 'true' });
         let list: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
         let fieldName: string = filterDialog.getAttribute('data-fieldname');
         let uncheckedNodes: number = this.getUnCheckedNodes(fieldName);

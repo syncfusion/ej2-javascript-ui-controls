@@ -8,7 +8,7 @@ import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups'
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
 import { XmlHttpRequestHandler, beforePaneSwitchEvent, toolbarClickEvent, beforeFileOpenEvent } from '../../document-editor/base/index';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
-import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs } from './../../index';
+import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType } from './../../index';
 
 const TOOLBAR_ID: string = '_toolbar';
 const NEW_ID: string = '_new';
@@ -190,7 +190,7 @@ export class Toolbar {
                 document.body.appendChild(this.filePicker);
             }
             this.imagePicker = createElement('input', {
-                attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp' }, className: 'e-de-ctnr-file-picker'
+                attrs: { type: 'file', accept: '.jpg,.jpeg,.png,.bmp,.svg' }, className: 'e-de-ctnr-file-picker'
             }) as HTMLInputElement;
             if (Browser.isIE) {
                 document.body.appendChild(this.imagePicker);
@@ -279,9 +279,13 @@ export class Toolbar {
     private onWrapText(text: string): string {
         let content: string = '';
         const index: number = text.lastIndexOf(' ');
-        content = text.slice(0, index);
-        text.slice(index);
-        content += '<div class="e-de-text-wrap">' + text.slice(index) + '</div>';
+        if (index !== -1) {
+            content = text.slice(0, index);
+            text.slice(index);
+            content += '<div class="e-de-text-wrap">' + text.slice(index) + '</div>';
+        } else {
+            content = text;
+        }
         return content;
     }
     private wireEvent(): void {
@@ -403,7 +407,8 @@ export class Toolbar {
                     break;
                 case 'Image':
                     toolbarItems.push({
-                        template: '<button title="' + locale.getConstant('Insert inline picture from a file.') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + INSERT_IMAGE_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-image e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Image') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
+                        template: '<button title="' + locale.getConstant('Insert inline picture from a file.') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + INSERT_IMAGE_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-image e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Image') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        id: id + INSERT_IMAGE_ID
                     });
                     break;
                 case 'Table':
@@ -462,7 +467,8 @@ export class Toolbar {
                     break;
                 case 'Break':
                     toolbarItems.push({
-                        template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
+                        template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        id: id + BREAK_ID
                     });
                     break;
                 case 'Find':
@@ -486,7 +492,8 @@ export class Toolbar {
                     break;
                 case 'FormFields':
                     toolbarItems.push({
-                        template: '<button title="' + locale.getConstant('Form Fields') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + FORM_FIELDS_ID + '"><span class="e-btn-icon e-de-formfield e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Form Fields')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
+                        template: '<button title="' + locale.getConstant('Form Fields') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + FORM_FIELDS_ID + '"><span class="e-btn-icon e-de-formfield e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Form Fields')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        id : id + FORM_FIELDS_ID
                     });
                     break;
                 case 'UpdateFields':
@@ -740,7 +747,7 @@ export class Toolbar {
         } else if (element) {
             if (!isNullOrUndefined(this.documentEditor) && (this.documentEditor.isReadOnly ||
                 this.documentEditor.documentHelper.isDocumentProtected)) {
-                enable = false;
+                enable = this.documentEditor.documentHelper.isCommentOnlyMode || !this.documentEditor.isReadOnlyMode;
             }
             this.toolbar.enableItems(element.parentElement, enable);
         }
@@ -780,7 +787,7 @@ export class Toolbar {
         for (const item of this.toolbar.items) {
             const itemId: string = item.id;
             if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
-                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
+                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID
                 && item.type !== 'Separator') {
                 if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
                     continue;
@@ -789,8 +796,11 @@ export class Toolbar {
                     itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
                     itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
                     itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
-                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID && itemId !== id + TRACK_ID
-                    && itemId !== id + FOOTNOTE_ID && itemId !== id + ENDNOTE_ID) {
+                    && itemId !== id + FORM_FIELDS_ID && itemId !== id + BREAK_ID && itemId !== id + TRACK_ID
+                    && itemId !== id + FOOTNOTE_ID && itemId !== id + ENDNOTE_ID && itemId !== id + UPDATE_FIELDS_ID) {
+                    continue;
+                }
+                if(isProtectedContent && this.documentEditor.documentHelper.isFormFillProtectedMode && itemId === id + UPDATE_FIELDS_ID) {
                     continue;
                 }
                 const element: HTMLElement = document.getElementById(item.id);
@@ -814,8 +824,9 @@ export class Toolbar {
             }
             classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
         }
+        let protectionType: ProtectionType = this.documentEditor.documentHelper.protectionType;
         if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
-            this.documentEditor.documentHelper.protectionType === 'FormFieldsOnly')) {
+            (protectionType === 'FormFieldsOnly' || protectionType === 'CommentsOnly'))) {
             this.enableDisableUndoRedo();
         }
     }

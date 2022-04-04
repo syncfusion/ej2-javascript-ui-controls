@@ -229,7 +229,7 @@ export class MaskedDateTime {
         let inputValue: string = this.parent.inputElement.value;
         let previousVal: string = this.previousValue.substring(0, start + this.previousValue.length - inputValue.length);
         let newVal: string = inputValue.substring(0, start);
-        let newDateValue: Date = this.maskDateValue;
+        let newDateValue: Date = new Date(+this.maskDateValue);
         
         let maxDate: number = new Date(newDateValue.getFullYear(), newDateValue.getMonth() + 1, 0).getDate();
         if (previousVal.indexOf(newVal) === 0 && (newVal.length === 0 || this.previousHiddenMask[newVal.length - 1] !== this.previousHiddenMask[newVal.length])) {

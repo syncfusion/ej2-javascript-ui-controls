@@ -1112,7 +1112,7 @@ export class DialogEdit {
                     field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
                     edit: {
                         write: (args: CObject): void => {
-			    let datePickerModel: object;
+                            let datePickerModel: object;
 			    if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString])) {
                                 datePickerModel = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
                             } else {
@@ -1122,7 +1122,7 @@ export class DialogEdit {
                             }
 			    const value: string = args.rowData[(args.column as GridColumnModel).field];
                             setValue('value', value, datePickerModel);
-			    const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i]]].editType](datePickerModel);
+		            const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i]]].editType](datePickerModel);
                             datePicker.appendTo(args.element as HTMLElement);
                         },
                         read: (args: HTMLElement): Date => {
@@ -1544,7 +1544,8 @@ export class DialogEdit {
                 disabled = true;
             }
             if (this.editedRecord.hasChildRecords) {
-                if (column.field === this.parent.taskFields.endDate || column.field === this.parent.taskFields.duration ||
+                if ((column.field === this.parent.taskFields.endDate && ((!isNullOrUndefined(this.editedRecord['isManual']) &&
+                    this.editedRecord['isManual'] == false) || this.parent.taskMode == 'Auto')) || column.field === this.parent.taskFields.duration ||
                     column.field === this.parent.taskFields.progress || column.field === this.parent.taskFields.work ||
                     column.field === 'taskType') {
                     disabled = true;

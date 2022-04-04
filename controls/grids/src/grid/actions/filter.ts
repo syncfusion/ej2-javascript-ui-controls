@@ -124,7 +124,7 @@ export class Filter implements IAction {
                 const cellrender: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
                 cellrender.addCellRenderer(CellType.Filter, new FilterCellRenderer(this.parent, this.serviceLocator));
                 this.valueFormatter = this.serviceLocator.getService<IValueFormatter>('valueFormatter');
-                rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar' });
+                rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar', attrs: { role: 'row' } });
                 const row: Row<Column> = this.generateRow();
                 row.data = this.values;
                 if (gObj.getFrozenMode() === 'Right') {
@@ -273,6 +273,9 @@ export class Filter implements IAction {
         this.filterObjIndex =  this.getFilteredColsIndexByField(col);
         this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
         const arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) ? this.value : [this.value];
+        const moduleName : string = (this.parent.dataSource as DataManager).adaptor && (<{ getModuleName?: Function }>(
+            this.parent.dataSource as DataManager).adaptor).getModuleName ? (<{ getModuleName?: Function }>(
+            this.parent.dataSource as DataManager).adaptor).getModuleName(): undefined;
         for (let i: number = 0, len: number = arrayVal.length; i < len; i++) {
             const field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
             const isMenuNotEqual: boolean = this.operator === 'notequal';
@@ -287,7 +290,8 @@ export class Filter implements IAction {
             } else {
                 this.filterSettings.columns.push(this.currentFilterObject);
             }
-            if (isNullOrUndefined(this.value) && (this.operator === 'equal' || this.operator === 'notequal')) {
+            if (isNullOrUndefined(this.value) && (this.operator === 'equal' || this.operator === 'notequal') &&
+                (moduleName !== 'ODataAdaptor' && moduleName !== 'ODataV4Adaptor')) {
                 this.filterSettings.columns = [];
                 if (col.type === 'string') {
                     this.filterSettings.columns.push({
@@ -496,6 +500,9 @@ export class Filter implements IAction {
         this.fieldName = fieldName;
         this.operator = filterOperator;
         filterValue = !isNullOrUndefined(filterValue) ? filterValue.toString() : filterValue;
+        if (filterValue === "") {
+            filterValue = null;
+        }
         if (this.column.type === 'number' || this.column.type === 'date') {
             this.matchCase = true;
         }
@@ -548,6 +555,9 @@ export class Filter implements IAction {
         if ((this.column.type === 'date' || this.column.type === 'datetime') && filterValue &&
             (filterValue as string).split(',').length > 1) {
             this.values[this.column.field] = (((filterValue as string)).split(',')).map((val: string) => {
+                if (val === "") {
+                    val = null;
+                }
                 return this.setFormatForFlColumn(new Date(val), this.column);
             });
         } else {
@@ -824,7 +834,7 @@ export class Filter implements IAction {
                 const fltrElement: Element = this.parent.getColumnHeaderByField(column.field);
                 fltrElement.removeAttribute('aria-filtered');
                 if (this.filterSettings.type !== 'FilterBar') {
-                    const iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
+                    const iconClass: string = this.parent.showColumnMenu && column.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
                     fltrElement.querySelector(iconClass).classList.remove('e-filtered');
                 }
                 this.isRemove = true;
@@ -1265,7 +1275,8 @@ export class Filter implements IAction {
         if (this.values[args.field]) {
             delete this.values[args.field];
         }
-        const iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
+        const col: Column = this.parent.getColumnByField(args.field);
+        const iconClass: string = this.parent.showColumnMenu && col.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
         const filterIconElement: Element = this.parent.getColumnHeaderByField(args.field).querySelector(iconClass);
         if (args.action === 'filtering') {
             this.filterSettings.columns = this.filterSettings.columns.concat(args.filterCollection);
@@ -1323,9 +1334,10 @@ export class Filter implements IAction {
 
     private addFilteredClass(fieldName: string): void {
         let filterIconElement: Element;
-        if (this.parent.showColumnMenu) {
+        const col: Column = this.parent.getColumnByField(fieldName);
+        if (this.parent.showColumnMenu && col.showColumnMenu) {
             filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-columnmenu');
-        } else if (this.parent.getColumnByField(fieldName)) {
+        } else if (col) {
             filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-icon-filter');
         }
         if (filterIconElement) {

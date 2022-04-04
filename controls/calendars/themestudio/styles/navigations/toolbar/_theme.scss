@@ -211,10 +211,14 @@
           }
         }
 
-        @if $tbar-skin == 'highcontrast' or $tbar-skin == 'fabric' {
+        @if $tbar-skin == 'highcontrast' or $tbar-skin == 'fabric' or $tbar-skin == 'FluentUI' {
           .e-btn:focus {
             outline: none;
           }
+        }
+
+        &:not(.e-separator) {
+          background: $tbar-item-pop-bg-color;
         }
       }
     }

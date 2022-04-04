@@ -124,6 +124,30 @@ export class KeyboardInteraction {
             break;
         case 'escape':
             this.processEscape(e);
+            break;
+        case 'fTwelve':
+            if (this.parent.allowInline && this.parent.inlineModule) {
+                e.preventDefault();
+                this.processFTwelve(e);
+            }
+            break;
+        }
+    }
+
+    private processFTwelve(e: KeyboardEventArgs): void {
+        const target: HTMLTableCellElement = e.target as HTMLTableCellElement;
+        if (target.classList.contains(cls.WORK_CELLS_CLASS) || target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+            this.parent.activeCellsData = this.getSelectedElements(target);
+            const args: CellClickEventArgs = <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e });
+            const inlineArgs: InlineClickArgs = {
+                element: args.element as HTMLElement,
+                groupIndex: args.groupIndex, type: 'Cell'
+            };
+            this.parent.notify(event.inlineClick, inlineArgs);
+        }
+        if (target.classList.contains(cls.APPOINTMENT_CLASS)) {
+            target.click();
+            return;
         }
     }
     private addEventListener(): void {

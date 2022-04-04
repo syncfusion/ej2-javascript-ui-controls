@@ -4987,5 +4987,50 @@ describe('Masked DatePicker', () => {
         
 
 });
+describe('EJ2CORE-735 - Date reset to first month after clearing the selected date by using backspace key',function(){
+    let datePicker:any;
+    beforeEach(function(){
+        let element: HTMLElement = createElement('input',{id:'date'});
+        document.body.appendChild(element);
+    });
+    afterEach(function(){
+        if(datePicker){
+            datePicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('check the input is updated',function(){
+        datePicker = new DatePicker({
+            format: 'MM/dd/yyyy',
+            enableMask: true,
+            strictMode: true,
+        });
+        datePicker.appendTo('#date');
+        expect(datePicker.element.value).toBe('month/day/year');
+        datePicker.value = new Date('5/5/2020');
+        datePicker.dataBind();
+        datePicker.element.focus();
+        datePicker.element.selectionStart = 6;
+        datePicker.element.selectionEnd = 10;
+        datePicker.element.value = '05/05/';
+        datePicker.inputHandler();
+        datePicker.element.selectionStart = 6;
+        expect(datePicker.inputElement.value === "05/05/year").toBe(true)
+        datePicker.element.selectionStart = 3;
+        datePicker.element.selectionEnd = 5;
+        datePicker.element.value = '05//year';
+        datePicker.element.selectionStart = 3;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "05/day/year").toBe(true)
+        datePicker.element.selectionStart = 0;
+        datePicker.element.selectionEnd = 2;
+        datePicker.element.value = '/day/year';
+        datePicker.element.selectionStart = 0;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "month/day/year").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "month/day/year").toBe(true)
+    });
+});
 
 });

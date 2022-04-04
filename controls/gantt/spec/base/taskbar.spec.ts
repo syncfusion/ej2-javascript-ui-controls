@@ -133,7 +133,7 @@ describe('Gantt taskbar rendering', () => {
             ganttObj.baselineColor = '';
             ganttObj.dataBound = () => {
                 expect((ganttObj.element.querySelector('.' + cls.chartRow) as HTMLElement).offsetHeight).toBe(40);
-                expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(24);
+                expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(18);
                 done();
             }
             ganttObj.refresh();

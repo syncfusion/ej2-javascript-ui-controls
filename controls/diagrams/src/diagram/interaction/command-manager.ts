@@ -1814,6 +1814,21 @@ export class CommandHandler {
             newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
+        // EJ2-57157 - Added to consider the lane header at selection change when selecting a lane.
+        if (obj.length > 0 && (obj[0] as SwimLaneModel).isLane) {
+            let swimlaneNode: NodeModel = this.diagram.getObject((obj[0] as Node).parentId);
+            (obj[0].shape as any).header = [];
+            let laneId: string = '';
+            for (let j = 0; j < obj.length; j++) {
+                for (let i = 0; i < (swimlaneNode.shape as SwimLaneModel).lanes.length; i++) {
+                    let parentId = (obj[0] as Node).id.split((obj[0] as Node).parentId);
+                    laneId = parentId[1].slice(0, -1);
+                    if (laneId === (swimlaneNode.shape as SwimLaneModel).lanes[i].id) {
+                        (obj[0].shape as any).header.push((swimlaneNode.shape as SwimLaneModel).lanes[i].header)
+                    }
+                }
+            }
+        }
         this.diagram.enableServerDataBinding(false);
         let select: boolean = true;
         if (!isBlazor()) {
@@ -2299,71 +2314,82 @@ export class CommandHandler {
      * @param {NodeModel | ConnectorModel} object - provide the objects value.
      * @private
      */
-    public sendToBack(object?: NodeModel | ConnectorModel): void {
+     public sendToBack(object?: NodeModel | ConnectorModel): void {
         this.diagram.protectPropertyChange(true);
         if (hasSelection(this.diagram) || object) {
+            // EJ2-57772 - Added the below code to iterate all the selected nodes / connectors in the diagram and 
+            // perform send to back operation
+            const selectedItems: SelectorModel = this.diagram.selectedItems;
+            let objects: (NodeModel | ConnectorModel)[] = [];
+            if (object && object.id) {
+                objects.push(object);
+            } else {
+                objects = objects.concat(selectedItems.nodes);
+                objects = objects.concat(selectedItems.connectors);
+            }
             let objectId: string = (object && object.id);
-            objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id);
-            const index: number = this.diagram.nameTable[objectId].zIndex;
-            const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
-            const zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
-            const tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
-            const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-            let tempIndex: number = 0;
-            //Checks whether the selected node is the only node in the node array.
-            //Checks whether it is not a group and the nodes behind it are not it’s children.
-            if (this.diagram.nodes.length !== 1 && (this.diagram.nameTable[objectId].children === undefined ||
-                this.checkObjectBehind(objectId, zIndexTable, index))) {
-                let obj: NodeModel = this.diagram.nameTable[objectId];
-                for (let i: number = index; i > 0; i--) {
-                    if (zIndexTable[i]) {
-                        //When there are empty records in the zindex table
-                        if (!zIndexTable[i - 1]) {
-                            zIndexTable[i - 1] = zIndexTable[i];
-                            this.diagram.nameTable[zIndexTable[i - 1]].zIndex = i;
-                            delete zIndexTable[i];
-                        } else {
-                            //bringing the objects forward
-                            zIndexTable[i] = zIndexTable[i - 1];
+            for (let i: number = 0; i < objects.length; i++) {
+                objectId = objects[i].id;
+                const index: number = this.diagram.nameTable[objectId].zIndex;
+                const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
+                const zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
+                const tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
+                const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                let tempIndex: number = 0;
+                //Checks whether the selected node is the only node in the node array.
+                //Checks whether it is not a group and the nodes behind it are not it’s children.
+                if (this.diagram.nodes.length !== 1 && (this.diagram.nameTable[objectId].children === undefined ||
+                    this.checkObjectBehind(objectId, zIndexTable, index))) {
+                    let obj: NodeModel = this.diagram.nameTable[objectId];
+                    for (let i: number = index; i > 0; i--) {
+                        if (zIndexTable[i]) {
+                            //When there are empty records in the zindex table
+                            if (!zIndexTable[i - 1]) {
+                                zIndexTable[i - 1] = zIndexTable[i];
+                                this.diagram.nameTable[zIndexTable[i - 1]].zIndex = i;
+                                delete zIndexTable[i];
+                            } else {
+                                //bringing the objects forward
+                                zIndexTable[i] = zIndexTable[i - 1];
+                                this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                            }
+                        }
+                    }
+                    for (let i: number = index; i > 0; i--) {
+                        if (zIndexTable[i]) {
                             this.diagram.nameTable[zIndexTable[i]].zIndex = i;
                         }
                     }
-                }
-                for (let i: number = index; i > 0; i--) {
-                    if (zIndexTable[i]) {
-                        this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                    if (obj.shape.type !== 'SwimLane') {
+                        zIndexTable[0] = this.diagram.nameTable[objectId].id;
+                        this.diagram.nameTable[objectId].zIndex = 0;
+                    } else {
+                        tempIndex = this.swapZIndexObjects(index, zIndexTable, objectId, tempTable);
                     }
-                }
-                if (obj.shape.type !== 'SwimLane') {
-                    zIndexTable[0] = this.diagram.nameTable[objectId].id;
-                    this.diagram.nameTable[objectId].zIndex = 0;
-                } else {
-                    tempIndex = this.swapZIndexObjects(index, zIndexTable, objectId, tempTable);
-                }
-                if (this.diagram.mode === 'SVG') {
-                    let obj: NodeModel = this.diagram.nameTable[objectId];
-                    let i: number = obj.shape.type !== 'SwimLane' ? 1 : tempIndex;
-                    if (i !== tempIndex) {
-                        i = (obj.children && obj.children.length > 0) ? index : 1;
+                    if (this.diagram.mode === 'SVG') {
+                        let obj: NodeModel = this.diagram.nameTable[objectId];
+                        let i: number = obj.shape.type !== 'SwimLane' ? 1 : tempIndex;
+                        if (i !== tempIndex) {
+                            i = (obj.children && obj.children.length > 0) ? index : 1;
+                        }
+                        let target: string = zIndexTable[i];
+                        // EJ2-49326 - (CR issue fix) An exception raised when send the swimlane back to the normal node.
+                        while (!target && i < index) {
+                            target = zIndexTable[++i];
+                        }
+                        // EJ2-46656 - CR issue fix
+                        target = this.resetTargetNode(objectId, target, i, zIndexTable);
+                        target = this.diagram.nameTable[target].parentId ? this.checkParentExist(target) : target;
+                        this.moveSvgNode(objectId, target);
+                        this.updateNativeNodeIndex(objectId);
+                    } else {
+                        this.diagram.refreshCanvasLayers();
                     }
-                    let target: string = zIndexTable[i];
-                    // EJ2-49326 - (CR issue fix) An exception raised when send the swimlane back to the normal node.
-                    while (!target && i < index) {
-                        target = zIndexTable[++i];
+                    const redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                    const entry: HistoryEntry = { type: 'SendToBack', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+                    if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                        this.addHistoryEntry(entry);
                     }
-                    // EJ2-46656 - CR issue fix
-                    target = this.resetTargetNode(objectId, target, i, zIndexTable);
-                    target = this.diagram.nameTable[target].parentId ? this.checkParentExist(target) : target;
-                    this.moveSvgNode(objectId, target);
-                    this.updateNativeNodeIndex(objectId);
-                } else {
-                    this.diagram.refreshCanvasLayers();
-                }
-                const redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-                const entry: HistoryEntry = { type: 'SendToBack', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
-                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
-                    this.addHistoryEntry(entry);
                 }
             }
         }
@@ -2519,170 +2545,181 @@ export class CommandHandler {
      *  @param {NodeModel | ConnectorModel } obj - Provide the nodeArray element .
      * @private
      */
-    public bringToFront(obj?: NodeModel | ConnectorModel): void {
+     public bringToFront(obj?: NodeModel | ConnectorModel): void {
         this.diagram.protectPropertyChange(true);
         if (hasSelection(this.diagram) || obj) {
+            // EJ2-57772 - Added the below code to iterate all the selected nodes / connectors in the diagram and 
+            // perform bring to front operation
             let objectName: string = (obj && obj.id);
-            objectName = objectName || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id);
-            const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
-            const zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
-            const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-            let tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
-            let tempIndex: number = 0;
-            //find the maximum zIndex of the tabel
-            let tabelLength: number = Number(Object.keys(zIndexTable).sort(
-                (a: string, b: string) => { return Number(a) - Number(b); }).reverse()[0]);
-            const index: number = this.diagram.nameTable[objectName].zIndex;
-            const oldzIndexTable: string[] = [];
-            let length: number = 0;
-            for (let i: number = 0; i <= tabelLength; i++) {
-                oldzIndexTable.push(zIndexTable[i]);
+            const selectedItems: SelectorModel = this.diagram.selectedItems;
+            let objects: (NodeModel | ConnectorModel)[] = [];
+            if (obj && obj.id) {
+                objects.push(obj);
+            } else {
+                objects = objects.concat(selectedItems.nodes);
+                objects = objects.concat(selectedItems.connectors);
             }
-            let object: NodeModel = this.diagram.nameTable[objectName];
-            if (object.shape.type === 'SwimLane') {
-                for (let i: number = tabelLength; i >= index; i--) {
-                    if (zIndexTable[i] && !(this.diagram.nameTable[zIndexTable[i]].parentId === objectName)) {
-                        length = i;
-                        tabelLength = length;
-                        break;
-                    }
-                }
-            }
-            for (let i: number = index; i < tabelLength; i++) {
-                //When there are empty records in the zindex table
-                if (zIndexTable[i]) {
-                    if (!zIndexTable[i + 1]) {
-                        zIndexTable[i + 1] = zIndexTable[i];
-                        this.diagram.nameTable[zIndexTable[i + 1]].zIndex = i;
-                        delete zIndexTable[i];
-                    } else {
-                        //bringing the objects backward
-                        zIndexTable[i] = zIndexTable[i + 1];
-                        this.diagram.nameTable[zIndexTable[i]].zIndex = i;
-                    }
-                }
-            }
-            for (let i: number = index; i < tabelLength; i++) {
-                if (zIndexTable[i]) {
-                    this.diagram.nameTable[zIndexTable[i]].zIndex = i;
-                }
-            }
-            if (object.shape.type !== 'SwimLane') {
-                zIndexTable[tabelLength] = this.diagram.nameTable[objectName].id;
-                this.diagram.nameTable[objectName].zIndex = tabelLength;
-            }
-            else {
-                let childCount: number = 0;
-                let childIndex: number = -1;
+            for (let i: number = 0; i < objects.length; i++) {
+                objectName = objects[i].id;
+                const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
+                const zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
+                const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                let tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
                 let tempIndex: number = 0;
-                let laneIndex: number = 0;
-                let cloneTable: {} = JSON.parse(JSON.stringify(zIndexTable));
-                for (let i: number = 0; i <= index; i++) {
-                    if (zIndexTable[i] && this.diagram.nameTable[zIndexTable[i]].parentId === objectName) {
-                        if (childIndex === -1) {
-                            childIndex = i;
-                            tempIndex = i;
+                //find the maximum zIndex of the tabel
+                let tabelLength: number = Number(Object.keys(zIndexTable).sort(
+                    (a: string, b: string) => { return Number(a) - Number(b); }).reverse()[0]);
+                const index: number = this.diagram.nameTable[objectName].zIndex;
+                const oldzIndexTable: string[] = [];
+                let length: number = 0;
+                for (let i: number = 0; i <= tabelLength; i++) {
+                    oldzIndexTable.push(zIndexTable[i]);
+                }
+                let object: NodeModel = this.diagram.nameTable[objectName];
+                if (object.shape.type === 'SwimLane') {
+                    for (let i: number = tabelLength; i >= index; i--) {
+                        if (zIndexTable[i] && !(this.diagram.nameTable[zIndexTable[i]].parentId === objectName)) {
+                            length = i;
+                            tabelLength = length;
                             break;
                         }
                     }
                 }
-                for (let i: number = 0; i <= tabelLength; i++) {
-                    if (tempTable[i] && tempTable[i] !== objectName && this.diagram.nameTable[tempTable[i]].parentId !== objectName) {
-                        let node: Node = this.diagram.nameTable[tempTable[i]];
-                        let swimlaneObject: Node = this.diagram.nameTable[objectName];
-                        if (node.zIndex >= swimlaneObject.zIndex) {
-                            childCount++;
+                for (let i: number = index; i < tabelLength; i++) {
+                    //When there are empty records in the zindex table
+                    if (zIndexTable[i]) {
+                        if (!zIndexTable[i + 1]) {
+                            zIndexTable[i + 1] = zIndexTable[i];
+                            this.diagram.nameTable[zIndexTable[i + 1]].zIndex = i;
+                            delete zIndexTable[i];
+                        } else {
+                            //bringing the objects backward
+                            zIndexTable[i] = zIndexTable[i + 1];
+                            this.diagram.nameTable[zIndexTable[i]].zIndex = i;
                         }
                     }
                 }
-                let k: number = childIndex;
-                for (let i = 0; i <= childCount; i++) {
-                    while (!zIndexTable[k]) {
+                for (let i: number = index; i < tabelLength; i++) {
+                    if (zIndexTable[i]) {
+                        this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                    }
+                }
+                if (object.shape.type !== 'SwimLane') {
+                    zIndexTable[tabelLength] = this.diagram.nameTable[objectName].id;
+                    this.diagram.nameTable[objectName].zIndex = tabelLength;
+                }
+                else {
+                    let childCount: number = 0;
+                    let childIndex: number = -1;
+                    let tempIndex: number = 0;
+                    let laneIndex: number = 0;
+                    let cloneTable: {} = JSON.parse(JSON.stringify(zIndexTable));
+                    for (let i: number = 0; i <= index; i++) {
+                        if (zIndexTable[i] && this.diagram.nameTable[zIndexTable[i]].parentId === objectName) {
+                            if (childIndex === -1) {
+                                childIndex = i;
+                                tempIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    for (let i: number = 0; i <= tabelLength; i++) {
+                        if (tempTable[i] && tempTable[i] !== objectName && this.diagram.nameTable[tempTable[i]].parentId !== objectName) {
+                            let node: Node = this.diagram.nameTable[tempTable[i]];
+                            let swimlaneObject: Node = this.diagram.nameTable[objectName];
+                            if (node.zIndex >= swimlaneObject.zIndex) {
+                                childCount++;
+                            }
+                        }
+                    }
+                    let k: number = childIndex;
+                    for (let i = 0; i <= childCount; i++) {
+                        while (!zIndexTable[k]) {
+                            k++;
+                        }
+                        laneIndex = this.diagram.nameTable[zIndexTable[k]].zIndex;
                         k++;
                     }
-                    laneIndex = this.diagram.nameTable[zIndexTable[k]].zIndex;
-                    k++;
-                }
-                for (let i: number = laneIndex; i <= tabelLength; i++) {
-                    while (!cloneTable[childIndex]) {
+                    for (let i: number = laneIndex; i <= tabelLength; i++) {
+                        while (!cloneTable[childIndex]) {
+                            childIndex++;
+                        }
+                        while (!zIndexTable[i]) {
+                            i++;
+                        }
+                        zIndexTable[i] = cloneTable[childIndex];
+                        this.diagram.nameTable[zIndexTable[i]].zIndex = i;
                         childIndex++;
                     }
-                    while (!zIndexTable[i]) {
-                        i++;
-                    }
-                    zIndexTable[i] = cloneTable[childIndex];
-                    this.diagram.nameTable[zIndexTable[i]].zIndex = i;
-                    childIndex++;
-                }
-                zIndexTable[tabelLength] = this.diagram.nameTable[objectName].id;
-                this.diagram.nameTable[objectName].zIndex = tabelLength;
-                k = index + 1;
-                let j: number = tempIndex;
-                for (let i: number = 0; i < childCount; i++) {
-                    while (!tempTable[k]) {
+                    zIndexTable[tabelLength] = this.diagram.nameTable[objectName].id;
+                    this.diagram.nameTable[objectName].zIndex = tabelLength;
+                    k = index + 1;
+                    let j: number = tempIndex;
+                    for (let i: number = 0; i < childCount; i++) {
+                        while (!tempTable[k]) {
+                            k++;
+                        }
+                        while (this.diagram.nameTable[tempTable[k]].parentId === objectName) {
+                            k++;
+                        }
+                        while (!zIndexTable[j]) {
+                            j++;
+                        }
+                        zIndexTable[j] = tempTable[k];
+                        this.diagram.nameTable[zIndexTable[j]].zIndex = j;
                         k++;
-                    }
-                    while (this.diagram.nameTable[tempTable[k]].parentId === objectName) {
-                        k++;
-                    }
-                    while (!zIndexTable[j]) {
                         j++;
                     }
-                    zIndexTable[j] = tempTable[k];
-                    this.diagram.nameTable[zIndexTable[j]].zIndex = j;
-                    k++;
-                    j++;
                 }
-            }
-            if (this.diagram.mode === 'SVG') {
-                const diagramLayer: SVGGElement = this.diagram.diagramLayer as SVGGElement;
-                //const child: string[] = this.getChildElements(this.diagram.nameTable[objectName].wrapper.children);
-                //const targerNodes: Object = [];
-                let element: HTMLElement = getDiagramElement(objectName + '_groupElement', this.diagram.element.id);
-                const nodes: NodeModel[] = this.diagram.selectedItems.nodes;
-                if (nodes.length > 0 && (nodes[0].shape.type === 'Native' || nodes[0].shape.type === 'HTML')) {
-                    element.parentNode.removeChild(element);
-                    for (let j: number = 0; j < this.diagram.views.length; j++) {
-                        element = getDiagramElement(
-                            objectName + (nodes[0].shape.type === 'HTML' ? '_html_element' : '_content_groupElement'),
-                            this.diagram.views[j]);
-                        const lastChildNode: HTMLElement = element.parentNode.lastChild as HTMLElement;
-                        lastChildNode.parentNode.insertBefore(element, lastChildNode.nextSibling);
-                    }
-                    const htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
-                    this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[objectName].wrapper, diagramLayer, htmlLayer);
-                } else {
-                    Object.keys(zIndexTable).forEach((key: string) => {
-                        let zIndexValue: string = zIndexTable[key];
-                        if ((zIndexValue !== objectName) && (this.diagram.nameTable[zIndexValue].parentId) !== objectName) {
-                            //EJ2-42101 - SendToBack and BringToFront not working for connector with group node
-                            //Added @Dheepshiva to restrict the objects with lower zIndex
-                            if (zIndexValue !== undefined &&
-                                (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(zIndexValue))) {
-                                let objectNode: Node | Connector = this.diagram.nameTable[objectName];
-                                let zIndexNode: Node | Connector = this.diagram.nameTable[zIndexValue];
-                                if (objectNode.parentId === '' && zIndexNode.parentId === '' && zIndexNode.parentId === undefined
-                                    && objectNode.parentId !== zIndexNode.id) {
-                                    this.moveSvgNode(zIndexValue, objectName);
-                                    this.updateNativeNodeIndex(objectName);
-                                } else {
-                                    if (this.checkGroupNode(objectName, zIndexValue, this.diagram.nameTable)) {
+                if (this.diagram.mode === 'SVG') {
+                    const diagramLayer: SVGGElement = this.diagram.diagramLayer as SVGGElement;
+                    //const child: string[] = this.getChildElements(this.diagram.nameTable[objectName].wrapper.children);
+                    //const targerNodes: Object = [];
+                    let element: HTMLElement = getDiagramElement(objectName + '_groupElement', this.diagram.element.id);
+                    const nodes: NodeModel[] = this.diagram.selectedItems.nodes;
+                    if (nodes.length > 0 && (nodes[0].shape.type === 'Native' || nodes[0].shape.type === 'HTML')) {
+                        element.parentNode.removeChild(element);
+                        for (let j: number = 0; j < this.diagram.views.length; j++) {
+                            element = getDiagramElement(
+                                objectName + (nodes[0].shape.type === 'HTML' ? '_html_element' : '_content_groupElement'),
+                                this.diagram.views[j]);
+                            const lastChildNode: HTMLElement = element.parentNode.lastChild as HTMLElement;
+                            lastChildNode.parentNode.insertBefore(element, lastChildNode.nextSibling);
+                        }
+                        const htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
+                        this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[objectName].wrapper, diagramLayer, htmlLayer);
+                    } else {
+                        Object.keys(zIndexTable).forEach((key: string) => {
+                            let zIndexValue: string = zIndexTable[key];
+                            if ((zIndexValue !== objectName) && (this.diagram.nameTable[zIndexValue].parentId) !== objectName) {
+                                //EJ2-42101 - SendToBack and BringToFront not working for connector with group node
+                                //Added @Dheepshiva to restrict the objects with lower zIndex
+                                if (zIndexValue !== undefined &&
+                                    (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(zIndexValue))) {
+                                    let objectNode: Node | Connector = this.diagram.nameTable[objectName];
+                                    let zIndexNode: Node | Connector = this.diagram.nameTable[zIndexValue];
+                                    if (objectNode.parentId === '' && zIndexNode.parentId === '' && zIndexNode.parentId === undefined
+                                        && objectNode.parentId !== zIndexNode.id) {
                                         this.moveSvgNode(zIndexValue, objectName);
                                         this.updateNativeNodeIndex(objectName);
+                                    } else {
+                                        if (this.checkGroupNode(objectName, zIndexValue, this.diagram.nameTable)) {
+                                            this.moveSvgNode(zIndexValue, objectName);
+                                            this.updateNativeNodeIndex(objectName);
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
+                } else {
+                    this.diagram.refreshCanvasLayers();
                 }
-            } else {
-                this.diagram.refreshCanvasLayers();
-            }
-            const redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-            const entry: HistoryEntry = { type: 'BringToFront', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
-            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
-                this.addHistoryEntry(entry);
+                const redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                const entry: HistoryEntry = { type: 'BringToFront', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(entry);
+                }
             }
         }
         this.diagram.protectPropertyChange(false);
@@ -3681,6 +3718,7 @@ export class CommandHandler {
         if (canDragSourceEnd(connector as Connector) && checkBoundaryConstraints
             && (endPoint !== 'BezierSourceThumb') && canPageEditable(this.diagram)) {
             oldChanges = { sourcePoint: connector.sourcePoint } as Connector;
+            oldChanges = cloneObject(oldChanges) as any;
             connector.sourcePoint.x += tx;
             connector.sourcePoint.y += ty;
             if (endPoint === 'ConnectorSourceEnd' && connector.type === 'Orthogonal') {
@@ -4056,6 +4094,7 @@ Remove terinal segment in initial
         if (canDragTargetEnd(connector as Connector) && endPoint !== 'BezierTargetThumb'
             && boundaryConstraints && canPageEditable(this.diagram)) {
             oldChanges = { targetPoint: connector.targetPoint } as Connector;
+            oldChanges = cloneObject(oldChanges) as any;
             connector.targetPoint.x += tx;
             connector.targetPoint.y += ty;
             if (endPoint === 'ConnectorTargetEnd' && connector.type === 'Orthogonal' &&

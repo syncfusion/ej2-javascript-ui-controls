@@ -491,13 +491,11 @@ export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize
 
 export function measureElement(element: HTMLElement, parentElement: HTMLElement): Size {
     const size: Size = new Size(0, 0);
-    if (!isNullOrUndefined(parentElement)) {
-        parentElement.appendChild(element);
-        size.height = element.offsetHeight;
-        size.width = element.offsetWidth;
-        const measureElementId: HTMLElement = document.getElementById(element.id);
-        measureElementId.parentNode.removeChild(measureElementId);
-    }
+    parentElement.appendChild(element);
+    size.height = element.offsetHeight;
+    size.width = element.offsetWidth;
+    const measureElementId: HTMLElement = document.getElementById(element.id);
+    measureElementId.parentNode.removeChild(measureElementId);
     return size;
 }
 

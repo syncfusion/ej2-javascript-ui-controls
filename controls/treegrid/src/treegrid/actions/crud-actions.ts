@@ -62,7 +62,9 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                                 const childRecords: Object[] = parentData ? parentData[control.childMapping] : [];
                                 for (let p: number = childRecords.length - 1; p >= 0; p--) {
                                     if (childRecords[p][control.idMapping] === currentData[control.idMapping]) {
-                                        parentData['childRecords'].splice(p, 1);
+                                        if (!control.enableImmutableMode) {
+                                            parentData['childRecords'].splice(p, 1);
+                                        }
                                         childRecords.splice(p, 1);
                                         if (!childRecords.length) {
                                             parentData.hasChildRecords = false;
@@ -356,6 +358,11 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
                 column: control.grid.getColumns()[control.treeColumnIndex],
                 requestType: action
             });
+            if (control.enableImmutableMode && control['action'] === 'indenting' || control['action'] === 'outdenting') {
+                control.renderModule.RowModifier({
+                    data: record, row: row
+                });
+            }
         }
     }
 }

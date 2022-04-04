@@ -673,7 +673,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Creating Chart for range navigator
      */
-    public renderChart(): void {
+    public renderChart(resize: boolean = false): void {
         this.chartSeries.renderSeries(this);
         this.rangeAxis.renderGridLines();
         this.rangeAxis.renderAxisLabels();
@@ -681,14 +681,14 @@ export class RangeNavigator extends Component<HTMLElement> {
         this.createSecondaryElement();
         this.setSliderValue();
         this.renderPeriodSelector();
-        this.renderSlider();
+        this.renderSlider(resize);
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
         this.trigger('loaded', { rangeNavigator: this });
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, false,
-            this.tooltip.enable && this.tooltip.displayMode === 'Always'
+            this.tooltip.enable && this.tooltip.displayMode === 'Always', resize
         );
     }
     /**
@@ -708,18 +708,18 @@ export class RangeNavigator extends Component<HTMLElement> {
         if (this.tooltip.enable) {
             const tooltipDiv: Element = this.createElement('div');
             tooltipDiv.id = this.element.id + '_Secondary_Element';
-            tooltipDiv.setAttribute('style', 'position: relative');
+            (tooltipDiv as HTMLElement).style.position = 'relative';
             this.element.appendChild(tooltipDiv);
         }
     }
     /**
      * Slider Calculation ane rendering performed here
      */
-    private renderSlider(): void {
+    private renderSlider(resize: boolean): void {
         this.rangeSlider.render(this);
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, true,
-            this.tooltip.enable && this.tooltip.displayMode === 'Always'
+            this.tooltip.enable && this.tooltip.displayMode === 'Always', resize
         );
     }
 
@@ -838,7 +838,7 @@ export class RangeNavigator extends Component<HTMLElement> {
                 this.chartSeries.processXAxis(this);
                 this.chartSeries.calculateGroupingBounds(this);
                 this.chartSeries.processYAxis(this);
-                this.renderChart();
+                this.renderChart(true);
             },
             500);
         }

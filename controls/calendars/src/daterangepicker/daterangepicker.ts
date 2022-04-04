@@ -3942,7 +3942,7 @@ export class DateRangePicker extends CalendarBase {
         this.disabledDayCnt = null;
         const localDate: Date = new Date(+this.startValue);
         let count: number = 0;
-        while (+ localDate <= +this.endValue) {
+        while (+ localDate <= +this.endValue && +this.endValue <= +this.max ) {
             this.virtualRenderCellArgs = {
                 date: localDate,
                 isDisabled: false

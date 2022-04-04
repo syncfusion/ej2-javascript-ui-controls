@@ -816,6 +816,17 @@ export type TextDecoration =
     'None';
 
 /**
+ * Defines how to open the annotation hyperlink in the new tab, current tab or new window
+ */
+ export type LinkTarget = 
+ /**Opens hyperlink in the same tab */
+ 'CurrentTab' |
+ /**Opens hyperlink in the new tab */
+ 'NewTab'   |
+ /**Opens hyperlink in the new window*/
+ 'NewWindow';
+    
+/**
  * Defines how the text has to be aligned
  * Left - Aligns the text at the left of the text bounds
  * Right - Aligns the text at the right of the text bounds

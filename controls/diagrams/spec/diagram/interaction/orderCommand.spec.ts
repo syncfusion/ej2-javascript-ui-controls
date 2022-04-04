@@ -902,3 +902,55 @@ describe('SendToBack and BringToFront of native nodes', () => {
         done();
     });
 });
+
+describe('Order commands for Multiple selection', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [{
+            id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100, style: { fill: 'red' },
+        },
+        {
+            id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 100, style: { fill: 'blue' }
+        },
+        {
+            id: 'node3', width: 200, height: 100, offsetX: 400, offsetY: 150
+        }
+        ];
+
+        diagram = new Diagram({
+            width: '1050px', height: '500px', nodes: nodes,
+
+        });
+        diagram.appendTo('#diagram');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Multi-select the nodes and perform bringToFront', (done: Function) => {
+        diagram.select([diagram.nodes[0], diagram.nodes[1]]);
+        diagram.bringToFront();
+        expect(diagram.nodes[0].zIndex === 1 && diagram.nodes[1].zIndex === 2).toBe(true);
+        done();
+    });
+
+    it('Multi-select the nodes and perform sendToBack', (done: Function) => {
+        diagram.select([diagram.nodes[0], diagram.nodes[1]]);
+        diagram.sendToBack();
+        expect(diagram.nodes[0].zIndex === 1 && diagram.nodes[1].zIndex === 0).toBe(true);
+        done();
+    });
+});

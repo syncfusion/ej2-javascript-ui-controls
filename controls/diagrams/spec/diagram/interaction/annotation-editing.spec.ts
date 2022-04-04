@@ -246,4 +246,56 @@ describe('Diagram Control', () => {
         })
 
     });
+
+    describe('Annotation get disappeared in canvas Issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+       
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+
+            ele = createElement('div', { id: 'diagramorder2' });
+            document.body.appendChild(ele);
+
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 400, y: 100 }
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Annotation' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200,
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350,
+            };
+            diagram = new Diagram({
+                width: 800, height: 800, nodes: [node, node2],
+                connectors: [connector],
+                mode: 'Canvas'
+            });
+            diagram.appendTo('#diagramorder2');
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Edit the annotation and check annotation content', (done: Function) => {
+            diagram.zoomTo({ type: 'ZoomOut', zoomFactor: 0.2 });
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.startTextEdit(diagram.nodes[0]);
+            (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'editText1';
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+            expect((diagram.nodes[0] as NodeModel).annotations[0].content == 'editText1').toBe(true);
+            done();
+        });
+    })
 });

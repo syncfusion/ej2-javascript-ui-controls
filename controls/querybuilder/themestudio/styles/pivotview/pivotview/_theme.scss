@@ -28,8 +28,13 @@
 
     .e-grid
     .e-rowcell {
-      font-size: $pivotgrid-content-font-size;
+      // sass-lint:disable-all
+      font-size: $pivotgrid-content-font-size !important;
       padding-left: 8px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     .e-gtot,
@@ -43,6 +48,9 @@
 
     .e-grid .e-gridheader {
       border-bottom-width: 1px;
+      @if($skin-name == 'bootstrap5') {
+        border-bottom-color: $border-light;
+      }
     }
 
     .e-gtot {
@@ -70,6 +78,7 @@
 
         @if ($skin-name == 'tailwind') {
           vertical-align: middle;
+          margin-left: 4px
         }
       }
     }
@@ -98,7 +107,20 @@
       }
     }
 
+    .e-toolbar .e-tbar-btn {
+      @if ($skin-name == 'tailwind') {
+        background-color: transparent;
+    }
+
+      &:hover {
+        @if ($skin-name == 'tailwind') {
+          background-color: $pivot-toolbar-icon-hover-color;
+    }
+    }
+    }
+
     // sass-lint:disable-all
+
     .e-grid .e-rowsheader.e-active,
     .e-grid .e-rowsheader.e-cellselectionbackground,
     .e-grid .e-columnsheader.e-active,
@@ -217,7 +239,16 @@
 
     .e-grid .e-rowsheader {
       padding-left: 8px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
 
+      @if ($skin-name == 'tailwind') {
+        padding-left: 12px;
+      }
+      
       &.e-active {
         .e-icons {
           color: $pivotgrid-button-active-icon-color !important;
@@ -246,12 +277,17 @@
 
       @if($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') {
         text-transform: none;
+        padding-left: 12px !important;
       }
 
       @if($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
         padding-top: 0px !important;
         padding-bottom: 0px !important;
       }
+    }
+
+    .sf-grid .e-spinner-pane {
+    z-index: 1 !important;
     }
 
     .sf-grid .e-headercelldiv,
@@ -278,7 +314,7 @@
 
     .e-stackedheadertext.e-cellvalue,
     .e-stackedheadercelldiv.e-cellvalue {
-      padding-left: 8px !important;
+      padding-left: 12px !important;
       margin-top: 5px;
 
       @if ($pivotgrid-skin == 'highcontrast-light') or ($pivotgrid-skin == 'highcontrast') {
@@ -287,6 +323,7 @@
 
       @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') or ($pivotgrid-skin == 'fabric-dark') {
         margin-top: 2px;
+        padding-left: 8px !important;
       }
   
       @if ($skin-name == 'FluentUI') {
@@ -863,7 +900,7 @@
     }
     // sass-lint:enable-all  
 
-    .e-icons:not(.e-frame):not(.e-btn-icon):not(.e-sort):not(.e-dropdown-icon):not(.e-pv-filter):not(.e-pv-filtered):not(.e-remove):not(.e-edit) {
+    .e-icons:not(.e-frame):not(.e-btn-icon):not(.e-sort):not(.e-dropdown-icon):not(.e-pv-filter):not(.e-pv-filtered):not(.e-remove):not(.e-edit):not(.e-drag) {
       height: auto;
       width: auto;
     }
@@ -1041,7 +1078,7 @@
       // sass-lint:disable-all
       .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
-        padding-right: 8px !important;
+        padding-right: 12px !important;
       }
 
       .e-sortfilterdiv {
@@ -1231,6 +1268,10 @@
     // sass-lint:disable-all
     .e-grid .e-rowsheader {
       padding-left: 8px !important;
+      @if ($skin-name == 'tailwind') {
+        padding-left: 16px !important;
+        padding-right: 12px !important;
+      }
     }
 
     .e-grid .e-headercelldiv {
@@ -1241,6 +1282,10 @@
       padding-left: 8px !important;
     }
 
+    .e-grid .e-gridheader .e-headercell .e-rhandler {
+      height: 100% !important;
+    }
+
     .e-stackedheadercelldiv,
     .e-stackedheadertext,
     .e-headertext,
@@ -1249,6 +1294,10 @@
       @if ($pivotgrid-skin == 'bootstrap4') {
         font-size: $pivotview-bigger-grid-header-font-size !important;
       }
+    }
+    .e-bigger .e-stackedheadercelldiv
+    {
+      padding-left: 16px !important;
     }
 
     th .e-expand,
@@ -1291,7 +1340,8 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
-            font-size: $pivotgrid-bigger-button-icon-size;
+            // sass-lint:disable-all
+            font-size: $pivotgrid-bigger-button-icon-size !important;
             height: $pivotgrid-bigger-button-icon-wrapper-size;
             width: $pivotgrid-bigger-button-icon-wrapper-size;
             @if ($pivotgrid-skin == 'bootstrap4') {
@@ -1381,7 +1431,8 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
-            font-size: $pivotgrid-bigger-button-icon-size;
+            // sass-lint:disable-all
+            font-size: $pivotgrid-bigger-button-icon-size !important;
             height: $pivotgrid-bigger-button-icon-wrapper-size;
             width: $pivotgrid-bigger-button-icon-wrapper-size;
             @if ($pivotgrid-skin == 'bootstrap4') {
@@ -1453,7 +1504,11 @@
     // sass-lint:enable-all
 
     .e-rowcell {
-      font-size: $pivotgrid-bigger-content-font-size;
+      // sass-lint:disable-all
+      font-size: $pivotgrid-bigger-content-font-size !important;
+      @if($skin-name == 'tailwind') {
+        padding: 0 12px;
+      }
     }
 
     &.e-rtl {
@@ -1497,13 +1552,13 @@
       // sass-lint:disable-all
       .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
-        padding-right: 8px !important;
+        padding-right: 16px !important;
       }
 
       // sass-lint:enable-all
     }
 
-    @if ($skin-name == 'tailwind') {
+    @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
       .e-expand::before {
         font-size: $pivotgrid-expand-bigger-icon-fontsize;
       }

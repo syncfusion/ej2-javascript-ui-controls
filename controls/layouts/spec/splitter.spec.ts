@@ -51,6 +51,27 @@ describe('Splitter Control', () => {
             // expect(splitterObj.element.querySelectorAll('.e-split-bar-horizontal').length).toBe(1);
         });
     });
+    describe('EJ2-56412 - Render Splitter', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '100px'}, 'default');
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('height api testing', () => {
+            setTimeout(() => {
+                expect(splitterObj).not.toBe(null);
+            }, 500);
+
+        });
+    });
     describe('Height', () => {
         let splitterObj: any;
         beforeAll((): void => {

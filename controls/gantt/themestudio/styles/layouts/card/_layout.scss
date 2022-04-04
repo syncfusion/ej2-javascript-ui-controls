@@ -51,6 +51,10 @@
       min-height: $card-header-bigger-minheight;
       padding: $card-header-bigger-padding;
 
+      @if $skin-name == 'bootstrap5' {
+        padding-bottom: $card-header-bigger-padding-bottom;
+      }
+
       .e-card-content {
         padding-left: 0;
         padding-right: 0;
@@ -280,6 +284,10 @@
       min-height: $card-header-minheight;
       padding: $card-header-nrml-padding;
       width: inherit;
+
+      @if $skin-name == 'bootstrap5' {
+        padding-bottom: $card-header-nrml-padding-bottom;
+      }
 
       .e-card-content {
         padding-left: 0;

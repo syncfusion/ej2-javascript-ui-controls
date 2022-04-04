@@ -905,7 +905,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         return ariaAttributes;
     }
     private updateListARIA(): void {
-        attributes(this.ulElement, { 'id': this.element.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
+        if (!isNullOrUndefined(this.ulElement)) {
+            attributes(this.ulElement, { 'id': this.element.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
+        }
         const disableStatus: boolean = (this.inputElement.disabled) ? true : false;
         attributes(this.inputElement, this.getAriaAttributes());
         if (disableStatus) {
@@ -1074,7 +1076,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         if (listEle.length > 0) {
                             addClass([listEle[0]], dropDownBaseClasses.focus);
                         } else {
-                            this.ulElement = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;
+                            //EJ2-57588 - for this task, we prevent the ul element cloning ( this.ulElement = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;)
                             if (!(this.list && this.list.querySelectorAll('.' + dropDownBaseClasses.li).length > 0)) {
                                 this.l10nUpdate();
                                 addClass([this.list], dropDownBaseClasses.noData);
@@ -3035,8 +3037,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     protected updateDataList(): void {
-        if (this.mainList && this.ulElement && (this.mainList.childElementCount < this.ulElement.childElementCount || ((this.ulElement.childElementCount > 0 && this.ulElement.children[0].childElementCount > 0) && ( this.mainList.children[0].childElementCount < this.ulElement.children[0].childElementCount)))) {
-            this.mainList = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;
+        if (this.mainList && this.ulElement) {
+            let isDynamicGroupItemUpdate : boolean = this.mainList.childElementCount < this.ulElement.childElementCount;
+            let isReactTemplateUpdate : boolean = ((this.ulElement.childElementCount > 0 && this.ulElement.children[0].childElementCount > 0) && ( this.mainList.children[0].childElementCount < this.ulElement.children[0].childElementCount));
+            let isAngularTemplateUpdate : boolean = this.itemTemplate && this.ulElement.childElementCount > 0 && (this.ulElement.children[0].childElementCount > 0 || (this.fields.groupBy && this.ulElement.children[1] && this.ulElement.children[1].childElementCount > 0));
+            if (isDynamicGroupItemUpdate || isReactTemplateUpdate || isAngularTemplateUpdate) {
+                //EJ2-57748 - for this task, we prevent the ul element cloning ( this.mainList = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;)
+                this.mainList = this.ulElement;
+            }
         }
     }
     protected isValidLI(li: Element | HTMLElement): boolean {
@@ -3371,11 +3379,13 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private wireListEvents(): void {
-        EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
-        EventHandler.add(this.list, 'mousedown', this.onListMouseDown, this);
-        EventHandler.add(this.list, 'mouseup', this.onMouseClick, this);
-        EventHandler.add(this.list, 'mouseover', this.onMouseOver, this);
-        EventHandler.add(this.list, 'mouseout', this.onMouseLeave, this);
+        if (!isNullOrUndefined(this.list)) {
+            EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
+            EventHandler.add(this.list, 'mousedown', this.onListMouseDown, this);
+            EventHandler.add(this.list, 'mouseup', this.onMouseClick, this);
+            EventHandler.add(this.list, 'mouseover', this.onMouseOver, this);
+            EventHandler.add(this.list, 'mouseout', this.onMouseLeave, this);
+        }
     }
     private unwireListEvents(): void {
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
@@ -3672,7 +3682,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
         }
         if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
-            let target: Element = <Element>(event ? event.target : null);
+            let target: Element = <Element>(event ? (this.groupTemplate ? closest(event.target as Element, '.e-list-group-item') : event.target ) : null);
             target = (event && (event as KeyboardEvent).keyCode === 32) ? list : target;
             target = (target && target.classList.contains('e-frame')) ? target.parentElement.parentElement : target;
             if (target && target.classList.contains('e-list-group-item')) {
@@ -4030,6 +4040,16 @@ export class MultiSelect extends DropDownBase implements IInput {
             case 'selectAllText': this.notify('selectAllText', false);
                 break;
             case 'popupHeight':
+                    if (this.popupObj) {
+                        let overAllHeight: number = parseInt(<string>this.popupHeight, 10);
+                        if (this.popupHeight !== 'auto') {
+                            this.list.style.maxHeight = formatUnit(overAllHeight);
+                            this.popupWrapper.style.maxHeight = formatUnit(this.popupHeight);
+                        } else {
+                            this.list.style.maxHeight = formatUnit(this.popupHeight);
+                        }
+                    }
+                break;
             case 'headerTemplate':
             case 'footerTemplate':
                 this.reInitializePoup();
@@ -4498,6 +4518,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.mainData = null;
         this.filterParent = null;
         this.ulElement = null;
+        this.mainListCollection = null;
         super.destroy();
         const temp: string[] = ['readonly', 'aria-disabled', 'aria-placeholder', 'placeholder'];
         let length: number = temp.length;

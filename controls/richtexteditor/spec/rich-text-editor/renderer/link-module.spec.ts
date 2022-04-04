@@ -614,7 +614,7 @@ describe('IE 11 insert link', () => {
             expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
             expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value).toBe('https://www.syncfusion.com');
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            expect(document.getElementsByTagName('a')[0].firstChild.textContent).toBe("syncfusion");          
+            expect((rteObj as any).element.getElementsByTagName('a')[0].firstChild.textContent).toBe("syncfusion");          
         });
         it('Apply link to the link element along with extra text', () => {
             rteObj.value = '<p>hello<a>syncfusion</a>test</p>';
@@ -630,6 +630,35 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
         });
     });
+    
+    describe('EJ2-57822 - insert link to the content before link content issue', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class="focusNode">The Rich Text Editor (RTE) control is an easy to render in the client side. Customer <a class="e-rte-anchor" href="http://fdbdfbdb" title="http://fdbdfbdb" target="_blank">easy</a> to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`,
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('insert link to the content before link content issue', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let focusNode = rteObj.element.querySelector('.focusNode');
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), focusNode.childNodes[0], focusNode.childNodes[0], 76, 84);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'Customer ').toBe(true);
+        });
+    });
+
     describe('EJ2-51959- Link is not generated properly, when pasteCleanUpModule is imported', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

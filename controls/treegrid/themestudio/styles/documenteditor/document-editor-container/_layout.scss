@@ -58,5 +58,31 @@
     position: absolute;
     top: 100px;
   }
+
+  // sass-lint:disable-all
+  .e-de-scrollbar-hide::-webkit-scrollbar {
+    width: 0;
+  }
+
+  .e-de-scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  // sass-lint:enable-all
+  @if $skin-name == 'FluentUI' {
+    //Font color icons is smaller when comparing with other icons.
+    .e-de-ctnr-group-btn .e-btn .e-btn-icon.e-icons.e-de-ctnr-fontcolor,
+    .e-de-ctnr-group-btn .e-btn .e-btn-icon.e-icons.e-de-ctnr-change-case {
+      font-size: 18px;
+    }
+
+    .e-bigger {
+      .e-de-ctnr-group-btn .e-btn .e-btn-icon.e-icons.e-de-ctnr-fontcolor,
+      .e-de-ctnr-group-btn .e-btn .e-btn-icon.e-icons.e-de-ctnr-change-case {
+        font-size: 21px;
+      }
+    }
+  }
 }
 

@@ -1,12 +1,12 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, stackedData } from './datasource.spec';
+import { sampleData, projectData, stackedData, projectData2 } from './datasource.spec';
 import { PageEventArgs, QueryCellInfoEventArgs, doesImplementInterface, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { Column, ColumnModel } from '../../src';
 import { ITreeData } from '../../src/treegrid/base/interface';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { ColumnChooser } from '../../src/treegrid/actions/column-chooser';
-import { select } from '@syncfusion/ej2-base';
+import { select, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Grid Column spec 
@@ -601,6 +601,48 @@ describe('EJ2-53066 - getCheckedRecords method when collapsing records after fil
     }
     gridObj.grid.actionComplete = actionComplete;
     gridObj.filterByColumn("startDate","equal","2/3/2017");
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('EJ2-55635 - changing datasource for TreeGrid when treeColumnIndex and checkbox selection enabled for column template', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: projectData2,
+        idMapping: 'TaskID',
+        parentIdMapping: 'parentID',
+        height: 300,
+        treeColumnIndex: 2,
+        columns: [
+          {
+            type: 'checkbox',
+            width: 50,
+          },
+          { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
+          { headerText: '', width: 160, template: "<span>${TaskName}</span>" },
+          {
+            field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120,  format: { skeleton: 'yMd', type: 'date' }},
+          {
+            field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+          {
+            field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110},
+          {
+            field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110},
+          { field: 'Priority', headerText: 'Priority', width: 110 },
+        ],
+      },
+      done
+    );
+  });
+  
+  it('Checking checkbox column template', (done: Function) => {
+    expect(isNullOrUndefined((gridObj.columns[0] as any).template)).toBe(true);
+    done();
   });
   afterAll(() => {
     destroy(gridObj);

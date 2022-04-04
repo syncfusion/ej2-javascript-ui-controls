@@ -386,7 +386,9 @@ export class DiagramEventHandler {
     }
 
     public mouseDown(evt: PointerEvent): void {
-        if (this.inAction === true && (this.tool) instanceof NodeDrawingTool) {
+        // EJ2-57541 - Added the below code to check whether diagram tool is instance of node drawing tool or connector drawing tool.
+        // If node or connector drawing tool means then we have returned without perform any operation. 
+        if (this.inAction === true && ( (this.tool) instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool )) {
             return;
         }
         this.focus = true;
@@ -432,6 +434,10 @@ export class DiagramEventHandler {
                 if (this.diagram.textEditing && !this.isMouseOnScrollBar(evt)) {
                     this.diagram.endEdit();
                     this.diagram.textEditing = false;
+                    // EJ2-57743 - Added below code to refresh the diagram layer after the annotation gets edited in canvas mode.
+                    if(this.diagram.mode === 'Canvas' && this.diagram.scroller.currentZoom !== 1) {
+                        this.diagram.refreshDiagramLayer();
+                    }
                 }
                 let target: NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel;
                 const objects: IElement[] = this.objectFinder.findObjectsUnderMouse(
@@ -1060,12 +1066,20 @@ export class DiagramEventHandler {
         this.diagram.tooltipObject.close();
         const ctrlKey: boolean = this.isMetaKey(evt);
         if (ctrlKey) {
-            this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
+            // SF-362356 - Command below line to implement smooth scroll in diagram.
+            // this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
+            const isZoomingIn = evt.deltaY > 0;
+            if (isZoomingIn) {
+                this.diagram.zoomTo({ type: "ZoomIn", zoomFactor: 0.02, focusPoint: mousePosition })
+            }
+            else {
+                this.diagram.zoomTo({ type: "ZoomOut", zoomFactor: 0.02, focusPoint: mousePosition })
+            }
             evt.preventDefault();
         } else {
             const horizontalOffset: number = this.diagram.scroller.horizontalOffset;
             const verticalOffset: number = this.diagram.scroller.verticalOffset;
-            const change: number = up ? 20 : -20;
+            const change: number = up ? 10 : -10;
             if (this.tool && (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)) {
                 this.eventArgs = {};
                 this.getMouseEventArgs(mousePosition, this.eventArgs);
@@ -1389,21 +1403,23 @@ export class DiagramEventHandler {
             const content: string | HTMLElement = this.getContent();
             let children: NodeModel | ConnectorModel;
             if (this.hoverElement && (this.hoverElement as NodeModel).children && (this.hoverElement as NodeModel).children.length > 0) {
+                // EJ2-56981 - Below method is used to check if the mouse pointer position and group children node gets intersect or not
                 children = this.findIntersectChild(this.hoverElement as NodeModel);
             }
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
+                // EJ2-56981 - If children returned means then update tooltip for child node else update tooltip for group node.
                 if(children) {
                     updateTooltip(this.diagram, children);
                 } else {
                     updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
                 }
-                
             }
             this.diagram.tooltipObject.offsetX = 0;
             this.diagram.tooltipObject.offsetY = 0;
             const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             if (obj instanceof Node && obj.children && obj.children.length > 0) {
+                // EJ2-56981 - If children returned means then update tooltip for child node else update tooltip for group node.
                 obj = children ? children as Node : obj;
             }
             let idName: string = ((obj as Node).shape && (((obj as Node).shape) instanceof Native)) ? '_content_native_element' : '_groupElement';

@@ -618,6 +618,17 @@ export class PdfViewerBase {
      */
     public isPrint: boolean = false;
     private downloadFileName: string = '';
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
+    public isFocusField: boolean = false;
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
+    public focusField: any = [];
+    private isMoving: boolean;
 
     /**
      * Initialize the constructor of PDFViewerBase
@@ -1439,14 +1450,18 @@ export class PdfViewerBase {
                 }
                 this.formfieldvalue = null;
             } else if (this.pdfViewer.formFieldsModule) {
+                for (let i: number = 0; i < data.PdfRenderedFormFields.length; i++) {
+                    if (data.PdfRenderedFormFields[i].FieldName == '') {
+                        data.PdfRenderedFormFields.splice(i, 1);
+                    }
+                }
                 this.setItemInSessionStorage(data.PdfRenderedFormFields, '_formfields');
             }
-            if (this.pdfViewer.enableFormFields && this.pdfViewer.formFieldsModule && !this.pdfViewer.formDesignerModule) {
+            if (this.pdfViewer.enableFormFields && this.pdfViewer.formFieldsModule) {
                 this.pdfViewer.formFieldsModule.formFieldCollections();
             }
             if (this.pdfViewer.formFieldCollections.length > 0) {
                 this.pdfViewer.isFormFieldDocument = true;
-
                 this.enableFormFieldButton(true);
             }
         }
@@ -1787,9 +1802,15 @@ export class PdfViewerBase {
         proxy.isToolbarInkClicked = false;
         pdfViewer.formFieldCollections = [];
         proxy.passwordData = '';
+        proxy.isFocusField = false;
+        proxy.focusField = [];
         proxy.updateDocumentEditedProperty(false);
         if (pdfViewer.formDesignerModule) {
             pdfViewer.formDesignerModule.formFieldIndex = 0;
+            if (proxy.activeElements) {
+                pdfViewer.clearSelection(proxy.activeElements.activePageID);
+            }
+            pdfViewer.zIndexTable = [];
         }
         proxy.initiateTextSelectMode();
         proxy.RestrictionEnabled(proxy.restrictionList, true);
@@ -2348,7 +2369,7 @@ export class PdfViewerBase {
     }
 
     private createFileInputElement(): void {
-        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+        if (Browser.isDevice || !this.pdfViewer.enableDesktopMode) {
             // eslint-disable-next-line max-len
             if (this.pdfViewer.enableAnnotationToolbar && this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.createCustomStampElement();
@@ -3799,7 +3820,7 @@ export class PdfViewerBase {
                         }
                         // eslint-disable-next-line
                         let target: any = event.target;
-                        if (this.viewerContainer.contains(event.target as HTMLElement) && target.className !== 'e-pdfviewer-formFields') {
+                        if (this.viewerContainer.contains(event.target as HTMLElement) && target.className !== 'e-pdfviewer-formFields' && target.className !== 'e-pv-formfield-input') {
                             if (!this.isClickedOnScrollBar(event, true) && !this.isScrollbarMouseDown) {
                                 this.pdfViewer.textSelectionModule.textSelectionOnMouseup(event);
                             } else {
@@ -3893,11 +3914,14 @@ export class PdfViewerBase {
                 if (!this.isLongTouchPropagated) {
                     this.longTouchTimer = setTimeout(
                         () => {
-                            this.isTouchDesignerMode = true;
-                            this.contextMenuModule.open(this.touchClientY, this.touchClientX, this.viewerContainer);
+                            if (!this.isMoving) {
+                                this.isTouchDesignerMode = true;
+                                this.contextMenuModule.open(this.touchClientY, this.touchClientX, this.viewerContainer);
+                            }
                         }, 1000);
                 }
                 this.isLongTouchPropagated = true;
+                this.isMoving = false;
             }
             else if ((this.pdfViewer.textSelectionModule && !this.isTextSelectionDisabled)) {
                 this.pdfViewer.textSelectionModule.clearTextSelection();
@@ -4140,6 +4164,9 @@ export class PdfViewerBase {
      * @returns {void}
      */
     private viewerContainerOnTouchMove = (event: TouchEvent): void => {
+        if(this.action === 'Drag'){
+          this.isMoving = true;
+        }
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             clearTimeout(this.singleTapTimer);
             this.tapCount = 0;
@@ -4588,7 +4615,9 @@ export class PdfViewerBase {
                     if (!image) {
                         image = new Image();
                         image.id = this.pdfViewer.element.id + '_tileimg_' + pageIndex + '_' + this.getZoomFactor() + '_' + tileX + '_' + tileY;
+                        if(pageDiv){
                         pageDiv.append(image);
+                        }
                     }
                     (image as HTMLImageElement).src = imageData;
                     image.onload = (): void => {
@@ -4613,8 +4642,10 @@ export class PdfViewerBase {
                             if (proxy.isTextMarkupAnnotationModule()) {
                                 proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotations(pageIndex);
                             }
+                            if(canvas){
                             canvas.style.display = 'none';
                             canvas.src = '#';
+                            }
                             const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
                             for (let i: number = 0; i < oldPageDiv.length; i++) {
                                 pageDiv.removeChild(oldPageDiv[i]);
@@ -4628,8 +4659,9 @@ export class PdfViewerBase {
                         }
                     };
                     let currentImageWidth: number = (((width * this.getZoomFactor()) / zoomFactor) / scaleFactor);
-                    let currentImageTop: number = (((matrix.Elements[5] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
-                    let currentImageLeft: number = (((matrix.Elements[4] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
+                    let matrixElements: any = matrix.Elements ? matrix.Elements : matrix.Values;
+                    let currentImageTop: number = (((matrixElements[5] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
+                    let currentImageLeft: number = (((matrixElements[4] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
                     (image as HTMLImageElement).width = currentImageWidth;
                     (image as HTMLImageElement).style.width = currentImageWidth + 'px';    
                     image.style.top = currentImageTop + 'px';
@@ -4802,9 +4834,9 @@ export class PdfViewerBase {
     // eslint-disable-next-line
     private onPageRender(data: any, pageIndex: number, pageDiv: HTMLElement): void {
         // eslint-disable-next-line
-        const aElement: any = pageDiv.getElementsByTagName('a');
+        const aElement: any = pageDiv && pageDiv.getElementsByTagName('a');
         let isAnnotationRendered: boolean = false;
-        if (aElement.length !== 0) {
+        if (aElement && aElement.length !== 0) {
             for (let index: number = aElement.length - 1; index >= 0; index--) {
                 aElement[index].parentNode.removeChild(aElement[index]);
             }
@@ -7165,6 +7197,8 @@ export class PdfViewerBase {
                         }
                     }
                     if (this.tool != null) {
+                        const info: Info = { ctrlKey: evt.ctrlKey, shiftKey: evt.shiftKey };
+                        this.eventArgs.info = info;
                         this.tool.mouseMove(this.eventArgs);
                     }
                 }

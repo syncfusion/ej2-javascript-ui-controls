@@ -572,7 +572,7 @@ export class ExcelExport {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (excelRow as any).height = templateRowHeight;
             }
-            if (this.groupedColLength < 8 && (level + 1) > 0) {
+            if (this.groupedColLength && this.groupedColLength < 8 && (level + 1) > 0) {
                 excelRow.grouping = { outlineLevel: (level + 1), isCollapsed: true };
                 excelRows.push(excelRow);
             } else {

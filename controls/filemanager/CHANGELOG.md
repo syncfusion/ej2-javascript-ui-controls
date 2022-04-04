@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
-
-### File Manager
-
-#### New Features
-
-- Provided support to customize the default search placeholder text of the File Manager.
-
 ## 19.2.56 (2021-08-17)
 
 ### File Manager

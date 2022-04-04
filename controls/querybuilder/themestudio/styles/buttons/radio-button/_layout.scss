@@ -54,6 +54,10 @@
       user-select: none;
       vertical-align: middle;
       white-space: nowrap;
+      @if $skin-name == 'FluentUI' {
+        border: 1px solid transparent;
+        height: 20px;
+      }
 
       & .e-label {
         display: inline-block;
@@ -64,6 +68,13 @@
         padding-left: $radio-btn-padding-left;
         vertical-align: text-top;
         white-space: normal;
+      }
+
+      &:focus,
+      &.e-focus {
+        @if $skin-name == 'FluentUI' {
+          border: 1px solid $radio-btn-border-color;
+        }
       }
 
       &::before {
@@ -355,6 +366,46 @@
     }
   }
 
+  .e-bigger .e-radio {
+
+    &:not(:checked):hover {
+      +label,
+      +label.e-rtl,
+      +label.e-right {
+        @if $skin-name == 'FluentUI' {
+          &::after {
+            background-color: $radio-btn-uncheck-background-color;
+            border: 1px solid;
+            border-radius: 50%;
+            box-sizing: border-box;
+            color: $radio-btn-uncheck-color;
+            content: '';
+            height: $radio-btn-bigger-icon-height;
+            left: $radio-btn-bigger-icon-left;
+            position: absolute;
+            top: $radio-btn-bigger-icon-top;
+            transform: scale(1);
+            width: $radio-btn-bigger-icon-width;
+          }
+        }
+      }
+
+      +label.e-rtl,
+      +label.e-right {
+        &::after {
+          left: auto;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-radio+label {
+    @if $skin-name == 'FluentUI' {
+      border: 1px solid transparent;
+      height: 24px;
+    }
+  }
+
   .e-bigger .e-radio+label,
   .e-radio+label.e-bigger {
 
@@ -362,6 +413,14 @@
       font-size: $radio-btn-bigger-font-size;
       line-height: $radio-btn-bigger-line-height;
       padding-left: $radio-btn-bigger-padding;
+    }
+
+    &:focus,
+    &.e-focus {
+      @if $skin-name == 'FluentUI' {
+        border: 1px solid $radio-btn-border-color;
+        height: 24px;
+      }
     }
 
     &::before {

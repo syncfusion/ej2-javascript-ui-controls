@@ -166,8 +166,6 @@ export const getFilteredColumn: string = 'getFilteredColumn';
 /** @hidden */
 export const completeAction: string = 'actionComplete';
 /** @hidden */
-export const beginAction: string = 'actionBegin';
-/** @hidden */
 export const filterCellKeyDown: string = 'filterCellKeyDown';
 /** @hidden */
 export const getFilterRange: string = 'getFilterRange';
@@ -224,6 +222,10 @@ export const removeDataValidation: string = 'removeDataValidation';
 /** @hidden */
 export const showAggregate: string = 'showAggregate';
 /** @hidden */
+export const goToSheet: string = 'goToSheet';
+/** @hidden */
+export const showSheet: string = 'showSheet';
+/** @hidden */
 export const initiateConditionalFormat: string = 'initiateConditionalFormat';
 /** @hidden */
 export const setCF: string = 'setCF';
@@ -243,8 +245,6 @@ export const addressHandle: string = 'addressHandle';
 export const initiateEdit: string = 'initiateEdit';
 /** @hidden */
 export const forRefSelRender: string = 'forRefSelRender';
-/** @hidden */
-export const blankWorkbook: string = 'blankWorkbook';
 /** @hidden */
 export const insertImage: string = 'insertImage';
 /** @hidden */
@@ -284,6 +284,8 @@ export const chartDesignTab: string = 'chartDesignTab';
 /** @hidden */
 export const addChartEle: string = 'addChartEle';
 /** @hidden */
+export const undoRedoForChartDesign: string = 'undoRedoForChartDesign';
+/** @hidden */
 export const isReact: string = 'isReact';
 /** @hidden */
 export const renderReactTemplates: string = 'renderReactTemplates';
@@ -295,6 +297,10 @@ export const protectWorkbook: string = 'protectWorkbook';
 export const unProtectWorkbook: string = 'unProtectWorkbook';
 /** @hidden */
 export const getPassWord: string = 'getPassWord';
+/** @hidden */
+export const setProtectWorkbook: string = 'setProtectWorkbook';
+/** @hidden */
+export const removeWorkbookProtection: string = 'removeWorkbookProtection';
 /** @hidden */
 export const importProtectWorkbook: string = 'importProtectWorkbook';
 /** @hidden */
@@ -327,3 +333,5 @@ export const unProtectSheetPassword: string = 'unProtectSheetPassword';
 export const updateTranslate: string = 'updateTranslate';
 /** @hidden */
 export const getUpdatedScrollPosition: string = 'getUpdatedScrollPosition';
+/** @hidden */
+export const updateScrollValue: string = 'updateScrollValue';

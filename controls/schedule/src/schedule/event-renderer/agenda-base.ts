@@ -32,7 +32,7 @@ export class AgendaBase extends ViewBase {
                 moduleName: 'agenda',
                 listClass: this.parent.activeView.viewClass,
                 itemClass: this.parent.activeView.viewClass,
-                template: '<div class=' + cls.AGENDA_NO_EVENT_CLASS + '>${subject}</div>'
+                template: `<div class="${cls.AGENDA_NO_EVENT_CLASS}">${this.parent.localeObj.getConstant('noEvents')}</div>`
             });
         } else {
             listElement = ListBase.createList(this.parent.createElement, listData, {
@@ -146,7 +146,7 @@ export class AgendaBase extends ViewBase {
     public wireEventActions(): void {
         const eventElement: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
         for (const element of eventElement) {
-            this.parent.eventBase.wireAppointmentEvents(element, null, true);
+            this.parent.eventBase.wireAppointmentEvents(element, this.parent.getEventDetails(element), true);
         }
         const dateHeaderElement: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-m-date'));
         for (const element of dateHeaderElement) {

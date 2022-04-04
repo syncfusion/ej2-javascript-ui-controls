@@ -1,14 +1,18 @@
-import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
-import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
-import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, beginAction } from './index';
-import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, UndoRedoEventArgs } from '../index';
+import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
+import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
+import { HideShowEventArgs, invalidData } from './../common/index';
+import { duplicateSheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, hideShow, HyperlinkModel, moveSheet, protectsheetHandler, setLinkModel, setLockCells } from '../../workbook/index';
+import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
+import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
-import { ValidationModel, setValidation, removeValidation, clearCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
+import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow, updateCell } from '../../workbook/index';
 import { getCell, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
-import { workbookFormulaOperation, DefineNameModel, clearRange, getAddressInfo, getSheet, setCellFormat } from '../../workbook/index';
+import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, ExtendedRowModel } from '../../workbook/index';
+import { checkUniqueRange, checkConditionalFormat, ActionEventArgs, skipHiddenIdx } from '../../workbook/index';
+import { applyProtect, chartDesignTab, copy, cut, freeze, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet, updateToggleItem } from './event';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -111,23 +115,26 @@ function getHeightFromDirection(element: HTMLElement, direction: string, classLi
  */
 export function inView(context: Spreadsheet, range: number[], isModify?: boolean): boolean {
     if (context.scrollSettings.enableVirtualization) {
-        const topIdx: number = context.viewport.topIndex;
-        const leftIdx: number = context.viewport.leftIndex;
+        const sheet: SheetModel = context.getActiveSheet();
+        const frozenRow: number = context.frozenRowCount(sheet);
+        const frozenCol: number = context.frozenColCount(sheet);
+        const topIdx: number = context.viewport.topIndex + frozenRow;
+        const leftIdx: number = context.viewport.leftIndex + frozenCol;
         const bottomIdx: number = context.viewport.bottomIndex;
         const rightIdx: number = context.viewport.rightIndex;
-        const sheet: SheetModel = context.getActiveSheet();
-        let inView: boolean;
         if (sheet.frozenRows || sheet.frozenColumns) {
-            return context.insideViewport(range[0], range[1]) || context.insideViewport(range[2], range[3]);
-        } else {
-            inView = topIdx <= range[0] && bottomIdx >= range[2] && leftIdx <= range[1] && rightIdx >= range[3];
-            if (inView) { return true; }
+            if (context.insideViewport(range[0], range[1]) || context.insideViewport(range[2], range[3])) {
+                return true;
+            }
+        } else if (topIdx <= range[0] && bottomIdx >= range[2] && leftIdx <= range[1] && rightIdx >= range[3]) {
+            return true;
         }
+        let inView: boolean = false;
         if (isModify) {
             if (range[0] < topIdx && range[2] < topIdx || range[0] > bottomIdx && range[2] > bottomIdx) {
                 return false;
             } else {
-                if (range[0] < topIdx && range[2] > topIdx) {
+                if (range[0] < topIdx && range[2] > topIdx && range[0] >= frozenRow) {
                     range[0] = topIdx;
                     inView = true;
                 }
@@ -139,7 +146,7 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
             if (range[1] < leftIdx && range[3] < leftIdx || range[1] > rightIdx && range[3] > rightIdx) {
                 return false;
             } else {
-                if (range[1] < leftIdx && range[3] > leftIdx) {
+                if (range[1] < leftIdx && range[3] > leftIdx && range[1] >= frozenCol) {
                     range[1] = leftIdx;
                     inView = true;
                 }
@@ -202,11 +209,14 @@ export function getCellPosition(
  * @param {number[]} range - Specify the range
  * @param {string} cls - Specify the class name
  * @param {boolean} preventAnimation - Specify the preventAnimation.
+ * @param {boolean} isMultiRange - Specify the multi range selection.
+ * @param {boolean} removeCls - Specify to remove the class from selection.
  * @returns {void} - To set the position
  * @hidden
  */
 export function setPosition(
-    parent: Spreadsheet, ele: HTMLElement, range: number[], cls: string = 'e-selection', preventAnimation?: boolean): Promise<null> | void {
+    parent: Spreadsheet, ele: HTMLElement, range: number[], cls: string = 'e-selection', preventAnimation?: boolean, isMultiRange?: boolean,
+    removeCls?: boolean): Promise<null> | void {
     const sheet: SheetModel = parent.getActiveSheet();
     if (sheet.frozenRows || sheet.frozenColumns) {
         let content: HTMLElement;
@@ -220,17 +230,16 @@ export function setPosition(
                 if (!rangeEle) { rangeEle = ele.cloneNode(true) as HTMLElement; content.appendChild(rangeEle); }
                 ele = rangeEle;
                 locateElem(
-                    ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation, true, parent.viewport.beforeFreezeHeight,
-                    parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
+                    parent, ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation, true,
+                    parent.viewport.beforeFreezeHeight, parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
             } else {
-                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation);
+                locateElem(parent, ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation);
             }
             if (ele.style.display) { ele.style.display = ''; }
             removeRangeEle(parent.getSelectAllContent(), content, 'e-active-cell');
             removeRangeEle(parent.getColumnHeaderContent(), content, 'e-active-cell');
             removeRangeEle(parent.getRowHeaderContent(), content, 'e-active-cell');
-        }
-        else if (cls === 'e-autofill') {
+        } else if (cls === 'e-autofill') {
             let contentElem: HTMLElement;
             const freezeRow: number = parent.frozenRowCount(sheet); const freezeCol: number = parent.frozenColCount(sheet);
             if (range[0] < freezeRow || range[1] < freezeCol) {
@@ -241,11 +250,12 @@ export function setPosition(
                 if (!rangeEle) { rangeEle = ele.cloneNode(true) as HTMLElement; contentElem.appendChild(rangeEle); }
                 ele = rangeEle;
                 locateElem(
-                    ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, true, parent.viewport.beforeFreezeHeight,
-                    parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-autofill');
+                    parent, ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, true,
+                    parent.viewport.beforeFreezeHeight, parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-autofill');
             }
             else {
-                locateElem(ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, false, 0, 0, 0, 'e-autofill');
+                locateElem(
+                    parent, ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, false, 0, 0, 0, 'e-autofill');
             }
             if (ele.style.display) { ele.style.display = ''; }
             removeRangeEle(parent.getSelectAllContent(), contentElem, 'e-autofill');
@@ -258,12 +268,12 @@ export function setPosition(
             if ((range[0] < freezeRow || range[1] < freezeCol)) {
                 if (range[3] + 1 === freezeCol && range[2] + 1 > freezeRow) {
                     locateElem(
-                        parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
-                        preventAnimation, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
+                        parent, parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow,
+                        freezeCol, preventAnimation, false, 0, 0, 0, 'e-filloption', true, { left: -4 });
                 } else if (range[2] + 1 === freezeRow && range[3] + 1 > freezeCol) {
                     locateElem(
-                        parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
-                        preventAnimation, false, 0, 0, 0, 'e-filloption', true, { top: -4 });
+                        parent, parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow,
+                        freezeCol, preventAnimation, false, 0, 0, 0, 'e-filloption', true, { top: -4 });
                 } else if (range[3] + 1 === freezeCol && range[2] + 1 < freezeRow) { // for upper side
                     contentElem = parent.getColumnHeaderContent();
                     const rangeElem: HTMLElement = contentElem.querySelector('.' + cls);
@@ -272,12 +282,12 @@ export function setPosition(
                     }
                     ele = parent.autofillModule.autoFillDropDown.element;
                     locateElem(
-                        ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, false, 0, 0, 0, 'e-filloption', true,
-                        { left: -4 });
+                        parent, ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, false, 0, 0, 0, 'e-filloption',
+                        true, { left: -4 });
                 } else if (range[2] + 1 === freezeRow && range[3] + 1 === freezeCol) { // corner cell
                     locateElem(
-                        parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
-                        preventAnimation, false, 0, 0, 0, 'e-filloption', true, { top: -4, left: -4 });
+                        parent, parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow,
+                        freezeCol, preventAnimation, false, 0, 0, 0, 'e-filloption', true, { top: -4, left: -4 });
                 }
                 else {
                     contentElem = range[0] < freezeRow && range[1] < freezeCol ? parent.getSelectAllContent() :
@@ -288,13 +298,13 @@ export function setPosition(
                     }
                     ele = parent.autofillModule.autoFillDropDown.element;
                     locateElem(
-                        ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, true, parent.viewport.
+                        parent, ele, range, sheet, parent.enableRtl, freezeRow, freezeCol, preventAnimation, true, parent.viewport.
                             beforeFreezeHeight, parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth, 'e-filloption', true);
                 }
             }
             else {
                 locateElem(
-                    parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
+                    parent, parent.getMainContent().querySelector('.e-filloption'), range, sheet, parent.enableRtl, freezeRow, freezeCol,
                     preventAnimation, false, 0, 0, 0, 'e-filloption', true);
             }
             if (ele.style.display) { ele.style.display = ''; }
@@ -305,16 +315,22 @@ export function setPosition(
         } else {
             const swapRange: number[] = getSwapRange(range);
             if (swapRange[0] < frozenRow || swapRange[1] < frozenCol) {
-                ele.classList.add('e-hide');
+                if (!ele.classList.contains('e-multi-range')) {
+                    ele.classList.add('e-hide');
+                }
                 const ranges: number[][] = [];
                 if (swapRange[0] < frozenRow && swapRange[1] < frozenCol) {
                     if (swapRange[2] < frozenRow && swapRange[3] < frozenCol) {
                         ranges.push(range);
-                        removeRangeEle(parent.getColumnHeaderContent(), content, 'e-selection');
-                        removeRangeEle(parent.getRowHeaderContent(), content, 'e-selection');
+                        if (!isMultiRange) {
+                            removeRangeEle(parent.getColumnHeaderContent(), content, cls, true);
+                            removeRangeEle(parent.getRowHeaderContent(), content, cls, true);
+                        }
                     } else if (swapRange[2] > frozenRow - 1) {
                         if (swapRange[3] < frozenCol) {
-                            removeRangeEle(parent.getColumnHeaderContent(), content, 'e-selection');
+                            if (!isMultiRange) {
+                                removeRangeEle(parent.getColumnHeaderContent(), content, cls, true);
+                            }
                             ranges.push([swapRange[0], swapRange[1], frozenRow - 1, swapRange[3]]);
                             ranges.push([frozenRow, swapRange[1], swapRange[2], swapRange[3]]);
                         } else {
@@ -327,7 +343,9 @@ export function setPosition(
                         if (swapRange[2] < frozenRow) {
                             ranges.push([swapRange[0], swapRange[1], swapRange[2], frozenCol - 1]);
                             ranges.push([swapRange[0], frozenCol, swapRange[2], swapRange[3]]);
-                            removeRangeEle(parent.getRowHeaderContent(), content, 'e-selection');
+                            if (!isMultiRange) {
+                                removeRangeEle(parent.getRowHeaderContent(), content, cls, true);
+                            }
                         } else {
                             ranges.push([frozenRow, swapRange[1], swapRange[2], frozenCol - 1]);
                             ranges.push([swapRange[0], swapRange[1], frozenRow - 1, frozenCol - 1]);
@@ -338,20 +356,30 @@ export function setPosition(
                 } else if (swapRange[0] < frozenRow) {
                     if (swapRange[2] < frozenRow) {
                         ranges.push(range);
+                        if (!isMultiRange) {
+                            removeRangeEle(parent.getRowHeaderContent(), content, cls, true);
+                        }
                     } else {
                         ranges.push([swapRange[0], swapRange[1], frozenRow - 1, swapRange[3]]);
                         ranges.push([frozenRow, swapRange[1], swapRange[2], swapRange[3]]);
-                        removeRangeEle(parent.getSelectAllContent(), content, 'e-selection');
-                        removeRangeEle(parent.getRowHeaderContent(), content, 'e-selection');
+                        if (!isMultiRange) {
+                            removeRangeEle(parent.getSelectAllContent(), content, cls, true);
+                            removeRangeEle(parent.getRowHeaderContent(), content, cls, true);
+                        }
                     }
                 } else {
                     if (swapRange[3] < frozenCol) {
                         ranges.push(range);
+                        if (!isMultiRange) {
+                            removeRangeEle(parent.getSelectAllContent(), content, cls, true);
+                        }
                     } else {
                         ranges.push([swapRange[0], swapRange[1], swapRange[2], frozenCol - 1]);
                         ranges.push([swapRange[0], frozenCol, swapRange[2], swapRange[3]]);
-                        removeRangeEle(parent.getSelectAllContent(), content, 'e-selection');
-                        removeRangeEle(parent.getColumnHeaderContent(), content, 'e-selection');
+                        if (!isMultiRange) {
+                            removeRangeEle(parent.getSelectAllContent(), content, cls, true);
+                            removeRangeEle(parent.getColumnHeaderContent(), content, cls, true);
+                        }
                     }
                 }
                 let removeEle: Element;
@@ -401,57 +429,70 @@ export function setPosition(
                     } else {
                         rangeEle = content.querySelector('.' + cls);
                         if (!rangeEle) {
-                            rangeEle = ele.cloneNode(true) as HTMLElement; content.appendChild(rangeEle);
+                            rangeEle = ele.cloneNode(true) as HTMLElement;
+                            if (isMultiRange && !rangeEle.classList.contains('e-multi-range')) {
+                                rangeEle.classList.add('e-multi-range');
+                            }
+                            content.appendChild(rangeEle);
+                        }
+                        if (removeCls) {
+                            rangeEle.classList.remove(cls);
                         }
                     }
                     locateElem(
-                        rangeEle, rng, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation, false,
+                        parent, rangeEle, rng, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation, false,
                         parent.viewport.beforeFreezeHeight, parent.viewport.beforeFreezeWidth, parent.sheetModule.colGroupWidth);
-                    if (rangeEle.classList.contains('e-hide')) { rangeEle.classList.remove('e-hide'); }
+                    if (rangeEle.classList.contains('e-hide')) {
+                        rangeEle.classList.remove('e-hide');
+                    }
                 });
             } else {
-                removeRangeEle(parent.getSelectAllContent(), null, 'e-selection');
-                removeRangeEle(parent.getColumnHeaderContent(), null, 'e-selection');
-                removeRangeEle(parent.getRowHeaderContent(), null, 'e-selection');
-                locateElem(ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation);
+                if (!isMultiRange) {
+                    removeRangeEle(parent.getSelectAllContent(), null, cls, true);
+                    removeRangeEle(parent.getColumnHeaderContent(), null, cls, true);
+                    removeRangeEle(parent.getRowHeaderContent(), null, cls, true);
+                }
+                locateElem(parent, ele, range, sheet, parent.enableRtl, frozenRow, frozenCol, preventAnimation);
                 if (cls === 'e-range-indicator' || !parent.getMainContent().querySelector('.' + cls)) {
                     parent.getMainContent().appendChild(ele);
+                }
+                if (ele.classList.contains('e-hide')) {
+                    ele.classList.remove('e-hide');
+                }
+                if (removeCls) {
+                    ele.classList.remove(cls);
                 }
             }
         }
     }  else {
-        const promise: Promise<null> = locateElem(ele, range, sheet, parent.enableRtl, 0, 0, preventAnimation) as Promise<null>;
+        const promise: Promise<null> = locateElem(parent, ele, range, sheet, parent.enableRtl, 0, 0, preventAnimation) as Promise<null>;
         if (ele && !parent.getMainContent().querySelector('.' + cls)) { parent.getMainContent().appendChild(ele); }
         return promise;
     }
 }
 /**
  * @param {Element} content - Specify the content element.
- * @param {HTMLElement} checkElement - Specify the element.
- * @param {string} clsName - Specify the class name.
+ * @param {HTMLElement} checkEle - Specify the element.
+ * @param {string} cls - Specify the class name.
+ * @param {string} isSelection - Specify the selection element.
+ * @param {string} removeCls - Specify to remove class from element.
  * @returns {void} - remove element with given range
  */
-export function removeRangeEle(content: Element, checkElement: HTMLElement, clsName: string): void {
-    let ele: HTMLElement;
-    if (clsName === 'e-active-cell') {
-        if (content !== checkElement) {
-            ele = content.querySelector('.e-active-cell');
-            if (ele) { detach(ele); }
+export function removeRangeEle(content: Element, checkEle: HTMLElement, cls: string, isSelection?: boolean, removeCls?: boolean): void {
+    if (isSelection || content !== checkEle) {
+        if (removeCls) {
+            const collection: NodeListOf<Element> = content.querySelectorAll('.' + cls);
+            let i: number = 0;
+            while (i < collection.length) {
+                collection[i].classList.remove(cls);
+                i++;
+            }
+        } else {
+            const ele: Element = content.querySelector('.' + cls);
+            if (ele) {
+                detach(ele);
+            }
         }
-    } else if (clsName === 'e-autofill') {
-        if (content !== checkElement) {
-            ele = content.querySelector('.e-autofill');
-            if (ele) { detach(ele); }
-        }
-    } else if (clsName === 'e-filloption') {
-        if (content !== checkElement) {
-            ele = content.querySelector('.e-filloption');
-            if (ele) { detach(ele); }
-        }
-    }
-    else {
-        ele = content.querySelector('.e-selection');
-        if (ele) { detach(ele); }
     }
 }
 
@@ -478,17 +519,25 @@ export function removeRangeEle(content: Element, checkElement: HTMLElement, clsN
  * @returns {void} - Position element with given range
  */
 export function locateElem(
-    ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow: number, frozenColumn: number,
+    parent: Spreadsheet, ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow: number, frozenColumn: number,
     preventAnimation?: boolean, isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number,
     cls?: string, isFillOptShow?: boolean, freezeFillOpt?: {top?: number; left?: number}): Promise<null> | void {
     const swapRange: number[] = getSwapRange(range);
     const cellPosition: { top: number, left: number } = getCellPosition(
         sheet, swapRange, frozenRow, frozenColumn, freezeScrollHeight, freezeScrollWidth, rowHdrWidth);
     const startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
-    const height: number = getRowsHeight(sheet, range[0], range[2], true);
-    const width: number = getColumnsWidth(sheet, range[1], range[3], true);
-    const isRowSelected: boolean = (range[1] === 0 && range[3] === sheet.colCount - 1);
-    const isColSelected: boolean = (range[0] === 0 && range[2] === sheet.rowCount - 1);
+    let height: number; let width: number;
+    if (parent.scrollSettings.isFinite) {
+        height = swapRange[0] >= sheet.rowCount ? 0 : getRowsHeight(
+            sheet, swapRange[0], swapRange[2] < sheet.rowCount ? swapRange[2] : sheet.rowCount - 1, true);
+        width = swapRange[1] >= sheet.colCount ? 0 : getColumnsWidth(
+            sheet, swapRange[1], swapRange[3] < sheet.colCount ? swapRange[3] : sheet.colCount - 1, true);
+    } else {
+        height = getRowsHeight(sheet, swapRange[0], swapRange[2], true);
+        width = getColumnsWidth(sheet, swapRange[1], swapRange[3], true);
+    }
+    const isRowSelected: boolean = (swapRange[1] === 0 && swapRange[3] === sheet.colCount - 1);
+    const isColSelected: boolean = (swapRange[0] === 0 && swapRange[2] === sheet.rowCount - 1);
     let top: number = 0; let tdiff: number = -5;
     let ldiff: number = -5;
     let left: number = 0;
@@ -1133,13 +1182,13 @@ export function findMaxValue(
  * @param {Spreadsheet} spreadsheet - specify the spreadsheet.
  * @param {boolean} isRedo - Specifyt the boolean value.
  * @param {CollaborativeEditArgs[]} undoCollections - Specify the undo collections.
- * @param {any} actionEventArgs - Specify the actionEventArgs.
+ * @param {object} actionEventArgs - Specify the actionEventArgs.
  * @param {UndoRedoEventArgs} actionEventArgs.eventArgs - Specify the eventArgs.
  * @returns {void} - To update the Action.
  */
 export function updateAction(
     options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean, undoCollections?: CollaborativeEditArgs[],
-    actionEventArgs?: { eventArgs: UndoRedoEventArgs }): void {
+    actionEventArgs?: ActionEventArgs): void {
     /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
     const eventArgs: any = options.eventArgs;
     let chartElement: HTMLElement;
@@ -1152,6 +1201,14 @@ export function updateAction(
     let clipboardPromise: Promise<Object>;
     let model: RowModel[];
     let sheet: SheetModel;
+    let addressInfo: { indices: number[], sheetIndex: number };
+    let isFromUpdateAction: boolean = (options as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction || isUndefined(isRedo);
+    if ((options as unknown as { isUndoRedo: boolean }).isUndoRedo) {
+        isFromUpdateAction = (options as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction = true;
+        delete (options as unknown as { isUndoRedo: boolean }).isUndoRedo;
+        spreadsheet.notify(performUndoRedo, options);
+        return;
+    }
     switch (options.action) {
     case 'sorting':
         args = {
@@ -1169,29 +1226,21 @@ export function updateAction(
             spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(args.range));
         });
         break;
-    case 'cellSave': {
+    case 'cellSave':
         cellEvtArgs = options.eventArgs as CellSaveEventArgs;
-        const cellSaveArgs: UndoRedoEventArgs = { element: cellEvtArgs.element, value: cellEvtArgs.value,
+        const cellSaveArgs: CellSaveEventArgs = { element: cellEvtArgs.element, value: cellEvtArgs.value,
             oldValue: cellEvtArgs.oldValue, address: cellEvtArgs.address, displayText: cellEvtArgs.displayText,
-            formula: cellEvtArgs.formula, originalEvent: cellEvtArgs.originalEvent } as UndoRedoEventArgs;
-        if (actionEventArgs) {
-            actionEventArgs.eventArgs = cellSaveArgs;
-            spreadsheet.notify(beginAction, actionEventArgs);
-        }
-        cellValue = cellSaveArgs.formula ? (isRedo ? { value: cellSaveArgs.formula } : { formula: cellSaveArgs.formula })
-            : { value: cellSaveArgs.value };
+            formula: cellEvtArgs.formula, originalEvent: cellEvtArgs.originalEvent };
+        cellValue = cellSaveArgs.formula ? { formula: cellSaveArgs.formula } : { value: cellSaveArgs.value };
         spreadsheet.updateCell(cellValue, cellSaveArgs.address);
-        if (actionEventArgs) {
-            spreadsheet.trigger('cellSave', actionEventArgs.eventArgs);
+        if (isRedo === true) {
+            spreadsheet.trigger('cellSave', cellSaveArgs);
         }
         break;
-    }
-    case 'cellDelete': {
+    case 'cellDelete':
         const addrInfo: { sheetIndex: number, indices: number[] } = getAddressInfo(spreadsheet, options.eventArgs.address);
-        clearRange(spreadsheet, addrInfo.indices, addrInfo.sheetIndex, true);
-        spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(options.eventArgs.address));
+        clearRange(spreadsheet, addrInfo.indices, addrInfo.sheetIndex);
         break;
-    }
     case 'format':
         if (eventArgs.requestType === 'CellFormat') {
             if (eventArgs.style && eventArgs.style.border && !isNullOrUndefined(eventArgs.borderType)) {
@@ -1199,15 +1248,15 @@ export function updateAction(
                 Object.assign(style, eventArgs.style, null, true);
                 eventArgs.style.border = undefined;
                 spreadsheet.notify(
-                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: getRangeIndexes(eventArgs.range),
-                        onActionUpdate: true });
+                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range,
+                        onActionUpdate: !isFromUpdateAction });
                 eventArgs.style.border = style.border;
                 spreadsheet.setBorder(eventArgs.style, eventArgs.range, eventArgs.borderType);
                 eventArgs.style = style;
             } else {
                 spreadsheet.notify(
-                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: getRangeIndexes(eventArgs.range),
-                        onActionUpdate: true });
+                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range,
+                        onActionUpdate: !isFromUpdateAction });
             }
             getUpdateUsingRaf((): void => spreadsheet.selectRange(spreadsheet.getActiveSheet().selectedRange));
         } else {
@@ -1215,62 +1264,104 @@ export function updateAction(
         }
         break;
     case 'clipboard':
-        if (eventArgs.copiedInfo.isCut && !isRedo) { return; }
-        clipboardPromise = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange) : spreadsheet.copy(eventArgs.copiedRange);
-        clipboardPromise.then(() => spreadsheet.paste(eventArgs.pastedRange, eventArgs.type));
+        clipboardPromise = new Promise((resolve: Function) => { resolve((() => { /** */ })()); });
+        addressInfo = spreadsheet.getAddressInfo(eventArgs.copiedRange);
+        spreadsheet.notify(eventArgs.copiedInfo.isCut ? cut : copy, {
+            range: addressInfo.indices, sId: getSheet(spreadsheet, addressInfo.sheetIndex).id,
+            promise: promise, invokeCopy: true, isPublic: true, isFromUpdateAction: true
+        });
+        clipboardPromise.then(() => spreadsheet.notify(paste, {
+            range: getIndexesFromAddress(eventArgs.pastedRange),
+            sIdx: getSheetIndex(spreadsheet, getSheetNameFromAddress(eventArgs.pastedRange)),
+            type: eventArgs.type, isAction: false, isInternal: true, isFromUpdateAction: true
+        }));
         break;
     case 'gridLines':
         spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showGridLines', eventArgs.isShow);
+        (spreadsheet.serviceLocator.getService('sheet') as IRenderer).toggleGridlines();
         break;
     case 'headers':
         spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showHeaders', eventArgs.isShow);
+        (spreadsheet.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
         break;
     case 'resize':
     case 'resizeToFit':
         if (eventArgs.isCol) {
             if (eventArgs.hide === undefined) {
-                spreadsheet.setColWidth(eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                spreadsheet.setColWidth(isFromUpdateAction ? eventArgs.oldWidth : eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
             } else {
                 spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
         } else {
             if (eventArgs.hide === undefined) {
-                spreadsheet.setRowHeight(eventArgs.height, eventArgs.index, eventArgs.sheetIdx + 1);
+                spreadsheet.setRowHeight(isFromUpdateAction ? eventArgs.oldHeight : eventArgs.height, eventArgs.index, eventArgs.sheetIdx + 1);
             } else {
                 spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
         }
         break;
     case 'renameSheet':
-        spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.index - 1], 'name', eventArgs.value);
+        const sheetIndex: number = getSheetIndexFromId(spreadsheet, eventArgs.index);
+        spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[sheetIndex], 'name', eventArgs.value);
+        spreadsheet.notify(sheetNameUpdate, {
+            items: spreadsheet.element.querySelector('.e-sheet-tabs-items'),
+            value: eventArgs.value,
+            idx: sheetIndex
+        });
+        break;
+    case 'hideSheet':
+        spreadsheet.notify(hideSheet, { sheetIndex: eventArgs.sheetIndex });
+        break;
+    case 'showSheet':
+        spreadsheet.notify(showSheet, eventArgs);
         break;
     case 'removeSheet':
         spreadsheet.notify(removeSheetTab, { index: eventArgs.index, isAction: true, count: eventArgs.sheetCount, clicked: true });
+        break;
+    case 'gotoSheet':
+        spreadsheet.notify(goToSheet, { selectedIndex: eventArgs.currentSheetIndex, previousIndex: eventArgs.previousSheetIndex });
+        break;
+    case 'moveSheet':
+        moveSheet(spreadsheet, eventArgs.position, eventArgs.sheetIndexes);
         break;
     case 'wrap':
         wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet as Workbook);
         break;
     case 'hideShow':
         if (eventArgs.isCol) {
-            spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+            spreadsheet.notify(
+                hideShow, <HideShowEventArgs>{ startIndex: eventArgs.startIndex, endIndex: eventArgs.endIndex, isCol: true,
+                    hide: isRedo === false ? !eventArgs.hide : eventArgs.hide });
         } else {
-            spreadsheet.hideRow(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+            spreadsheet.notify(
+                hideShow, <HideShowEventArgs>{ startIndex: eventArgs.startIndex, endIndex: eventArgs.endIndex,
+                    hide: isRedo === false ? !eventArgs.hide : eventArgs.hide });
         }
         break;
     case 'replace':
         spreadsheet.updateCell({ value: eventArgs.replaceValue }, eventArgs.address);
         break;
+    case 'replaceAll':
+        eventArgs.addressCollection.forEach((address: string) => {
+            spreadsheet.updateCell({ value: eventArgs.replaceValue }, address);
+        });
+        break;
     case 'filter':
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        promise = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
         if (isRedo === false) {
             spreadsheet.notify(
-                initiateFilterUI, {
-                    predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.index, isUndoRedo: true
-                });
+                initiateFilterUI, { predicates: eventArgs.previousPredicates, range: eventArgs.range, sIdx: eventArgs.sheetIndex, promise:
+                    promise, isInternal: true });
         } else {
             spreadsheet.notify(
-                initiateFilterUI, {
-                    predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.index, isUndoRedo: true
-                });
+                initiateFilterUI, { predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.sheetIndex, promise: promise,
+                    isInternal: true, useFilterRange: eventArgs.useFilterRange });
+        }
+        if (actionEventArgs && !isFromUpdateAction) {
+            promise.then((): void => {
+                spreadsheet.notify(completeAction, extend({ isUndo: !isRedo, isUndoRedo: !isFromUpdateAction }, actionEventArgs));
+            });
         }
         break;
     case 'insert':
@@ -1282,13 +1373,13 @@ export function updateAction(
         }
         if (isRedo === false) {
             spreadsheet.notify(
-                deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, end:
-                options.eventArgs.index + (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isUndoRedo: true });
+                deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, isUndoRedo: true, end:
+                    options.eventArgs.index + (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType });
         } else {
             spreadsheet.notify(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, end: options.eventArgs.index +
-                    (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount:
-                    options.eventArgs.sheetCount, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
+                    (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, checkCount: isRedo === undefined ? options.eventArgs.sheetCount : null, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true, insertType: options.eventArgs.insertType,
+                isFromUpdateAction: isFromUpdateAction });
         }
         break;
     case 'delete':
@@ -1296,42 +1387,38 @@ export function updateAction(
             sheet = spreadsheet;
         } else {
             sheet = getSheet(spreadsheet, options.eventArgs.activeSheetIndex);
-            if (!sheet) { break; }
+            if (!sheet) {
+                break;
+            }
         }
         if (isRedo === false) {
             spreadsheet.notify(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.deletedModel, modelType:
-                    options.eventArgs.modelType, isAction: false, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames:
-                    options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true });
+                    options.eventArgs.modelType, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames:
+                    options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true,
+                    insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before', conditionalFormats: options.eventArgs.conditionalFormats, prevAction: options.action  });
         } else {
             spreadsheet.notify(
-                deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.startIndex, checkCount:
-                    options.eventArgs.sheetCount, end: options.eventArgs.endIndex, modelType: options.eventArgs.modelType,
-                isUndoRedo: true });
+                deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.startIndex,
+                    checkCount: options.eventArgs.sheetCount, end: options.eventArgs.endIndex, modelType: options.eventArgs.modelType,
+                    isUndoRedo: true, insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before' });
         }
         break;
     case 'validation':
-        if (isRedo) {
-            const rules: ValidationModel = { type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1, value2:
-                eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown };
-            spreadsheet.notify(setValidation, { rules: rules, range: eventArgs.range });
+        if (isRedo === false) {
+            spreadsheet.notify(removeDataValidation, { range: eventArgs.range });
         } else {
-            spreadsheet.notify(removeValidation, { range: eventArgs.range });
+            spreadsheet.notify(
+                cellValidation, { rules: { type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1, value2:
+                    eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown },
+                    range: eventArgs.range });
         }
         break;
     case 'removeHighlight':
-        if (isRedo) {
-            spreadsheet.removeInvalidHighlight(eventArgs.range);
-        } else {
-            spreadsheet.addInvalidHighlight(eventArgs.range);
-        }
-        break;
     case 'addHighlight':
-        if (isRedo) {
-            spreadsheet.addInvalidHighlight(eventArgs.range);
-        } else {
-            spreadsheet.removeInvalidHighlight(eventArgs.range);
-        }
+        spreadsheet.notify(
+            invalidData, { isRemoveHighlight: options.action === 'removeHighlight' ? isRedo !== false : isRedo === false,
+            range: eventArgs.range, isPublic: true });
         break;
     case 'merge':
         options.eventArgs.isAction = false;
@@ -1347,15 +1434,11 @@ export function updateAction(
         eventArgs.model = model;
         break;
     case 'clear':
-        spreadsheet.notify(clearViewer, { options: options.eventArgs, isPublic: true });
+        spreadsheet.notify(clearViewer, { options: options.eventArgs, isPublic: true, isFromUpdateAction: isFromUpdateAction });
         break;
     case 'conditionalFormat':
-        if (isRedo) {
-            const conditionalFormat: ConditionalFormatModel = { type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
-                range: eventArgs.range };
-            spreadsheet.notify(setCFRule, { conditionalFormat: conditionalFormat, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true });
-        } else {
-            spreadsheet.notify(clearCFRule, { range: eventArgs.range, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true });
+        if (isRedo === false) {
+            spreadsheet.notify(clearCFRule, { range: eventArgs.range, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true, isFromUpdateAction: isFromUpdateAction });
             for (let undoCollIdx: number = 0; undoCollIdx < undoCollections.length; undoCollIdx++) {
                 if (undoCollections[undoCollIdx].action === 'conditionalFormat') {
                     const conditionalFormat: ConditionalFormatModel = {
@@ -1367,6 +1450,11 @@ export function updateAction(
                         cFUndo, { conditionalFormat: conditionalFormat, sheetIdx: undoCollections[undoCollIdx].eventArgs.sheetIdx });
                 }
             }
+        } else {
+            const conditionalFormat: ConditionalFormatModel = { type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
+                range: eventArgs.range };
+            spreadsheet.notify(
+                setCFRule, { conditionalFormat: conditionalFormat, sheetIdx: eventArgs.sheetIdx, isRedo: true, isAction: false, isFromUpdateAction: isFromUpdateAction });
         }
         break;
     case 'clearCF':
@@ -1380,81 +1468,98 @@ export function updateAction(
         }
         break;
     case 'insertImage':
-        if (isRedo) {
+        if (isRedo === false) {
+            spreadsheet.notify(
+                deleteImage, { id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range, preventEventTrigger: true });
+        } else {
             spreadsheet.notify(
                 createImageElement, { options: { src: options.eventArgs.imageData, height: options.eventArgs.imageHeight, width:
                 options.eventArgs.imageWidth, imageId: options.eventArgs.id }, range: options.eventArgs.range, isPublic: false,
                 isUndoRedo: true });
+        }
+        break;
+    case 'deleteImage':
+        if (isRedo === false) {
+            spreadsheet.notify(
+                createImageElement, { options: { src: options.eventArgs.imageData, height: options.eventArgs.imageHeight, width:
+                options.eventArgs.imageWidth, imageId: options.eventArgs.id }, range: options.eventArgs.address, isPublic: false,
+                isUndoRedo: true });
         } else {
             spreadsheet.notify(
-                deleteImage, { id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range });
+                deleteImage, { id: options.eventArgs.id, range: options.eventArgs.address, preventEventTrigger: true });
         }
         break;
     case 'imageRefresh':
         element = document.getElementById(options.eventArgs.id);
-        if (isRedo) {
-            options.eventArgs.isUndoRedo = true;
-            spreadsheet.notify(refreshImgCellObj, options.eventArgs);
-        } else {
+        if (isRedo === false) {
             spreadsheet.notify(
                 refreshImgCellObj, { prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft, currentTop:
                 options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id, currentHeight:
                 options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
                 prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true });
+        } else {
+            options.eventArgs.isUndoRedo = true;
+            spreadsheet.notify(refreshImgCellObj, options.eventArgs);
         }
-        element.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
-        element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
-        element.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
-        element.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+        element.style.height = isRedo === false ? options.eventArgs.prevHeight + 'px' : options.eventArgs.currentHeight + 'px';
+        element.style.width = isRedo === false ? options.eventArgs.prevWidth + 'px' : options.eventArgs.currentWidth + 'px';
+        element.style.top = isRedo === false ? options.eventArgs.prevTop + 'px' : options.eventArgs.currentTop + 'px';
+        element.style.left = isRedo === false ? options.eventArgs.prevLeft + 'px' : options.eventArgs.currentLeft + 'px';
         break;
     case 'insertChart':
-        if (isRedo) {
+        if (isRedo === false) {
+            spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.range, isUndoRedo: true });
+        } else {
             const chartOptions: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width }];
             spreadsheet.notify(
-                setChart, { chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange });
-        } else {
-            spreadsheet.notify(deleteChart, { id: eventArgs.id, isUndoRedo: true });
+                setChart, { chart: chartOptions, isUndoRedo: false, range: eventArgs.posRange });
         }
         break;
     case 'deleteChart':
-        if (isRedo) {
-            spreadsheet.notify(deleteChart, { id: eventArgs.id });
-        } else {
+        if (isRedo === false) {
             const chartOpts: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
                 left: eventArgs.left }];
             spreadsheet.notify(
-                setChart, { chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange });
+                setChart, { chart: chartOpts, isUndoRedo: false, range: eventArgs.posRange });
+        } else {
+            spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.range, isUndoRedo: true });
         }
         break;
     case 'chartRefresh':
         chartElement = document.getElementById(options.eventArgs.id);
         if (chartElement) {
-            chartElement.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
-            chartElement.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
-            chartElement.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
-            chartElement.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+            chartElement.style.height = isRedo === false ? options.eventArgs.prevHeight + 'px' : options.eventArgs.currentHeight + 'px';
+            chartElement.style.width = isRedo === false ? options.eventArgs.prevWidth + 'px' : options.eventArgs.currentWidth + 'px';
+            chartElement.style.top = isRedo === false ? options.eventArgs.prevTop + 'px' : options.eventArgs.currentTop + 'px';
+            chartElement.style.left = isRedo === false ? options.eventArgs.prevLeft + 'px' : options.eventArgs.currentLeft + 'px';
         }
-        if (isRedo) {
-            options.eventArgs.isUndoRedo = true;
-            spreadsheet.notify(
-                refreshChartSize, { height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement });
+        if (isRedo === false) {
+            spreadsheet.notify(refreshChartCellObj, extend({}, options.eventArgs, {
+                currentColIdx: options.eventArgs.prevColIdx, currentHeight: options.eventArgs.prevHeight,
+                currentLeft: options.eventArgs.prevLeft, currentRowIdx: options.eventArgs.prevRowIdx,
+                currentTop: options.eventArgs.prevTop, currentWidth: options.eventArgs.prevWidth,
+                prevColIdx: options.eventArgs.currentColIdx, prevHeight: options.eventArgs.currentHeight,
+                prevLeft: options.eventArgs.currentLeft, prevRowIdx: options.eventArgs.currentRowIdx,
+                prevTop: options.eventArgs.currentTop, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
+            }));
         } else {
-            spreadsheet.notify(
-                refreshChartSize, { height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement });
+            options.eventArgs.isUndoRedo = true;
+            spreadsheet.notify(refreshChartCellObj, options.eventArgs);
         }
+        break;
+    case 'chartDesign':
+        spreadsheet.notify(chartDesignTab, options.eventArgs);
         break;
     case 'autofill':
-        if (isRedo) {
-            spreadsheet.notify(
-                setAutoFill, { fillRange: options.eventArgs.fillRange, dataRange: options.eventArgs.dataRange,
-                    fillType: options.eventArgs.fillType, direction: options.eventArgs.direction });
-        }
+        spreadsheet.notify(
+            setAutoFill, { fillRange: options.eventArgs.fillRange, dataRange: options.eventArgs.dataRange,
+                fillType: options.eventArgs.fillType, direction: options.eventArgs.direction });
         break;
     case 'removeValidation':
-        if (isRedo) {
-            spreadsheet.notify(removeValidation, { range: eventArgs.range });
+        if (isRedo !== false) {
+            spreadsheet.notify(removeDataValidation, { range: eventArgs.range });
         }
         break;
     case 'addDefinedName':
@@ -1469,6 +1574,36 @@ export function updateAction(
                 workbookFormulaOperation, { action: 'addDefinedName', isAdded: false, definedName: definedName, isEventTrigger: true });
         }
         break;
+    case 'hyperlink':
+        spreadsheet.notify(setLinkModel, { hyperlink: eventArgs.hyperlink, cell: eventArgs.address, displayText: eventArgs.displayText, triggerEvt: false });
+        spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(eventArgs.address));
+        break;
+    case 'removeHyperlink':
+        spreadsheet.notify(removeHyperlink, { range: eventArgs.address, preventEventTrigger: true });
+        break;
+    case 'freezePanes':
+        spreadsheet.freezePanes(eventArgs.row, eventArgs.column, eventArgs.sheetIndex);
+        break;
+    case 'duplicateSheet':
+        duplicateSheet(spreadsheet, eventArgs.sheetIndex);
+        break;
+    case 'protectSheet':
+        if(eventArgs.isProtected) {
+            spreadsheet.notify(protectsheetHandler, eventArgs);
+        } else {
+            spreadsheet.setSheetPropertyOnMute(getSheet(spreadsheet, eventArgs.sheetIndex), 'password', '');
+            spreadsheet.notify(applyProtect, { isActive: true, sheetIndex: eventArgs.sheetIndex });
+        }
+        break;
+    case 'protectWorkbook':
+        if (eventArgs.isProtected) {
+            spreadsheet.notify(setProtectWorkbook, eventArgs);
+        } else {
+            spreadsheet.notify(removeWorkbookProtection, null);
+        }
+        break;
+    case 'lockCells':
+        spreadsheet.notify(setLockCells, eventArgs);
     }
 }
 
@@ -1515,13 +1650,18 @@ export function setRowEleHeight(
     const frozenCol: number = parent.frozenColCount(sheet);
     const dprHgt: number = getDPRValue(height);
     row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
-    if (row) { row.style.height = `${dprHgt}px`; }
+    if (row) {
+        row.style.height = `${dprHgt}px`;
+    }
     if (sheet.frozenColumns) {
         hRow = parent.getRow(rowIdx, null, frozenCol - 1);
     } else {
-        hRow = hRow || parent.getRow(rowIdx, parent.getRowHeaderTable());
+        const frozenRow: number = parent.frozenRowCount(sheet);
+        hRow = hRow || parent.getRow(rowIdx, rowIdx < frozenRow ? parent.sheetModule.getSelectAllTable() : parent.getRowHeaderTable());
     }
-    if (hRow) { hRow.style.height = `${dprHgt}px`; }
+    if (hRow) {
+        hRow.style.height = `${dprHgt}px`;
+    }
     setRowHeight(sheet, rowIdx, height);
     parent.setProperties({ sheets: parent.sheets }, true);
     if (notifyRowHgtChange) {
@@ -1534,20 +1674,22 @@ export function setRowEleHeight(
  * @param {Workbook} context - Specify the context
  * @param {CellStyleModel} style - specify the style.
  * @param {number} lines - specify the lines
+ * @param {number} lineHeight - Specify the line height.
  * @returns {number} - get Text Height
  */
-export function getTextHeight(context: Workbook, style: CellStyleModel, lines: number = 1): number {
+export function getTextHeight(context: Workbook, style: CellStyleModel, lines: number = 1, lineHeight?: number): number {
     const fontSize: string = (style && style.fontSize) || context.cellStyle.fontSize;
-    const fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
-    const hgt: number = fontSizePx * getLineHeight(style) * lines;
+    const fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) / 0.75 : parseInt(fontSize, 10);
+    const hgt: number = fontSizePx * (lineHeight || getLineHeight(style && style.fontFamily ? style : context.cellStyle)) * lines;
     return Math.ceil(hgt % 1 > 0.9 ? hgt + 1 : hgt); // 0.9 -> if it is nearest value adding extra 1 pixel
 }
 
 /**
+ * @hidden
  * @param {CellStyleModel} style - cell style
  * @returns {number} - returns line height
  */
-function getLineHeight(style: CellStyleModel): number {
+ export function getLineHeight(style: CellStyleModel): number {
     let lineHeight: number = textLineHeight;
     if (style) {
         if (style.fontFamily === 'Arial Black') {
@@ -1566,7 +1708,7 @@ function getLineHeight(style: CellStyleModel): number {
  * @param {CellStyleModel} parentStyle - specify the parentStyle
  * @returns {number} - get Text Width
  */
-export function getTextWidth(text: string, style: CellStyleModel, parentStyle: CellStyleModel): number {
+export function getTextWidth(text: string, style: CellStyleModel, parentStyle: CellStyleModel, preventDpr?: boolean): number {
     if (!style) {
         style = parentStyle;
     }
@@ -1574,7 +1716,7 @@ export function getTextWidth(text: string, style: CellStyleModel, parentStyle: C
     const context: CanvasRenderingContext2D = canvas.getContext('2d');
     context.font = (style.fontStyle || parentStyle.fontStyle) + ' ' + (style.fontWeight || parentStyle.fontWeight) + ' '
         + (style.fontSize || parentStyle.fontSize) + ' ' + (style.fontFamily || parentStyle.fontFamily);
-    return getDPRValue(context.measureText(text).width, true);
+    return preventDpr ? context.measureText(text).width : getDPRValue(context.measureText(text).width, true);
 }
 
 /**
@@ -1586,39 +1728,64 @@ export function getTextWidth(text: string, style: CellStyleModel, parentStyle: C
  * @returns {number} - Setting maximum height while doing formats and wraptext
  */
 export function getLines(text: string, colwidth: number, style: CellStyleModel, parentStyle: CellStyleModel): number {
-    let width: number;
+    let width: number; let splitTextArr: string[]; let lWidth: number; let cWidth: number;
     let prevWidth: number = 0;
     const textArr: string[] = text.toString().split(' ');
     const spaceWidth: number = getTextWidth(' ', style, parentStyle);
+    let hypenWidth: number;
     let lines: number;
     let cnt: number = 0;
     let lineCnt: number = 0; let maxCnt: number = 0;
-    textArr.forEach((txt: string) => {
-        let lWidth: number = 0;
-        let cWidth: number = 0;
-        width = getTextWidth(txt, style, parentStyle);
-        if (textArr[textArr.length - 1] !== txt) {
-            width = width + spaceWidth;
+    const calculateCount: Function = (txt: string, isHypenSplit: boolean): void => {
+        if (prevWidth) {
+            cnt++;
         }
+        if (width / colwidth >= 1) {
+            txt.split('').forEach((val: string) => {
+                cWidth = getTextWidth(val, style, parentStyle, true);
+                lWidth += cWidth;
+                if (lWidth > colwidth) {
+                    cnt++;
+                    lWidth = cWidth;
+                }
+            });
+            width = getDPRValue(lWidth, true);
+        }
+        if (!isHypenSplit) { addSpace(width); }
+        prevWidth = width;
+    };
+    const addSpace: Function = (size: number): void => {
+        width += ((size + spaceWidth) / colwidth >= 1 ? 0 : spaceWidth);
+    };
+    textArr.forEach((txt: string) => {
+        lWidth= 0; cWidth = 0;
+        width = getTextWidth(txt, style, parentStyle);
         lines = (prevWidth + width) / colwidth;
-        if (lines >= 1) {
-            if (prevWidth) {
-                cnt++;
-            }
-            if (width / colwidth >= 1) {
-                txt.split('').forEach((val: string) => {
-                    cWidth = getTextWidth(val, style, parentStyle);
-                    lWidth += cWidth;
-                    if (lWidth > colwidth) {
-                        cnt++;
-                        lWidth = cWidth;
+        if (lines > 1) {
+            splitTextArr = txt.split('-');
+            if (splitTextArr.length > 1) {
+                splitTextArr.forEach((splitText: string) => {
+                    lWidth= 0; cWidth = 0;
+                    if (!hypenWidth) { hypenWidth = getTextWidth('-', style, parentStyle); }
+                    width = getTextWidth(splitText, style, parentStyle);
+                    if (splitTextArr[splitTextArr.length - 1] !== splitText) {
+                        width += hypenWidth;
+                    }
+                    lines = (prevWidth + width) / colwidth;
+                    if (lines >= 1) {
+                        calculateCount(splitText, splitTextArr[splitTextArr.length - 1] !== splitText);
+                    } else {
+                        if (splitTextArr[splitTextArr.length - 1] === splitText && textArr[textArr.length - 1] !== txt) {
+                            addSpace(prevWidth + width);
+                        }
+                        prevWidth += width;
                     }
                 });
-                prevWidth = lWidth + spaceWidth;
             } else {
-                prevWidth = width;
+                calculateCount(txt, false);
             }
         } else {
+            addSpace(prevWidth + width);
             prevWidth += width;
         }
     });
@@ -1657,7 +1824,7 @@ function getBorderWidth(rowIdx: number, colIdx: number, sheet: SheetModel): numb
     if (!(cell.style && (cell.style.border || cell.style.borderRight)) && rightSideCell.style && rightSideCell.style.borderLeft) {
         width += parseFloat(rightSideCell.style.borderLeft.split('px')[0]);
     }
-    return width;
+    return width > 0 && width < 1 ? 1 : width;
 }
 
 /**
@@ -1672,7 +1839,6 @@ function getBorderWidth(rowIdx: number, colIdx: number, sheet: SheetModel): numb
 export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetModel): number {
     let height: number = 0;
     const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
-    const bottomSideCell: CellModel = getCell(rowIdx + 1, colIdx, sheet, null, true);
     if (cell.style) {
         if (cell.style.border) {
             height = (rowIdx === 0 ? 2 : 1) * parseFloat(cell.style.border.split('px')[0]);
@@ -1685,10 +1851,11 @@ export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetMode
             }
         }
     }
+    const bottomSideCell: CellModel = getCell(rowIdx + 1, colIdx, sheet, null, true);
     if (!(cell.style && (cell.style.border || cell.style.borderBottom)) && bottomSideCell.style && bottomSideCell.style.borderTop) {
         height += parseFloat(bottomSideCell.style.borderTop.split('px')[0]);
     }
-    return height;
+    return Math.ceil(height) || 1; // 1 -> For default bottom border
 }
 
 /**
@@ -1702,7 +1869,7 @@ export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetMode
  * @hidden
  */
 export function getExcludedColumnWidth(sheet: SheetModel, rowIdx: number, startColIdx: number, endColIdx: number = startColIdx): number {
-    return getColumnsWidth(sheet, startColIdx, endColIdx, true) - getDPRValue((4 + getBorderWidth(rowIdx, startColIdx, sheet))); // 4 -> For cell padding
+    return getColumnsWidth(sheet, startColIdx, endColIdx, true) - getDPRValue((4 + (getBorderWidth(rowIdx, startColIdx, sheet) || 1))); // 4 -> For cell padding
 }
 
 /**
@@ -1712,12 +1879,14 @@ export function getExcludedColumnWidth(sheet: SheetModel, rowIdx: number, startC
  * @param {SheetModel} sheet - Specify the sheet.
  * @param {CellStyleModel} style - Specify the style.
  * @param {number} lines - Specify the lines.
+ * @param {number} lineHeight - Specify the line height.
  * @returns {number} - get text height with border.
  * @hidden
  */
-export function getTextHeightWithBorder(context: Workbook, rowIdx: number,
-                                        colIdx: number, sheet: SheetModel, style: CellStyleModel, lines?: number): number {
-    return getTextHeight(context, style, lines) + (getBorderHeight(rowIdx, colIdx, sheet) || 1); // 1 -> For default bottom border
+export function getTextHeightWithBorder(
+    context: Workbook, rowIdx: number, colIdx: number, sheet: SheetModel, style: CellStyleModel, lines?: number,
+    lineHeight?: number): number {
+    return getTextHeight(context, style, lines, lineHeight) + getBorderHeight(rowIdx, colIdx, sheet);
 }
 
 /**
@@ -1756,27 +1925,6 @@ export function getMaxHgt(sheet: SheetModel, rIdx: number): number {
         });
     }
     return maxHgt;
-}
-/**
- * @hidden
- * @param {SheetModel} sheet - Specify the sheet
- * @param {number} index - specify the index
- * @param {boolean} increase - specify the boolean value.
- * @param {string} layout - specify the string
- * @returns {number} - To skip the hidden index
- *
- */
-export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
-    if (index < 0) { index = -1; }
-    if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
-        if (increase) {
-            index++;
-        } else {
-            index--;
-        }
-        index = skipHiddenIdx(sheet, index, increase, layout);
-    }
-    return index;
 }
 
 /**
@@ -1830,4 +1978,60 @@ export function isLockedCells(parent: Spreadsheet, rangeIndexes?: number[]): boo
  */
 export function isDiscontinuousRange(range: string): boolean {
     return range.includes(' ');
+}
+
+/**
+ * @hidden
+ * @param {Spreadsheet} context - Specifies the context.
+ * @param {number[]} range - Specifies the address range.
+ * @param {number} sheetIdx - Specifies the sheetIdx.
+ * @returns {void} - To clear the range.
+ */
+export function clearRange(context: Spreadsheet, range: number[], sheetIdx: number): void {
+    const sheet: SheetModel = getSheet(context, sheetIdx);
+    let skip: boolean; let cell: CellModel; let newCell: CellModel; let td: HTMLElement;
+    const uiRefresh: boolean = sheetIdx === context.activeSheetIndex;
+    for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
+        if (((getRow(sheet, sRIdx) || {}) as ExtendedRowModel).isFiltered) { continue; }
+        for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
+            const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [sRIdx, sCIdx], isUnique: false ,
+                uniqueRange: '' };
+            context.notify(checkUniqueRange, args); skip = false;
+            if (args.uniqueRange !== '') {
+                const rangeIndex: number[] = getIndexesFromAddress(args.uniqueRange);
+                skip = getCell(rangeIndex[0], rangeIndex[1], sheet).value === '#SPILL!';
+            }
+            if (!args.isUnique || skip) {
+                cell = getCell(sRIdx, sCIdx, sheet);
+                if (cell) {
+                    newCell = {};
+                    if (cell.formula) {
+                        newCell.formula = '';
+                    }
+                    if (cell.value || <unknown>cell.value === 0) {
+                        newCell.value = '';
+                    }
+                    if (cell.hyperlink) {
+                        newCell.hyperlink = '';
+                    }
+                    td = context.getCell(sRIdx, sCIdx);
+                    if (!Object.keys(newCell).length || updateCell(
+                        context, sheet, { cell: newCell, rowIdx: sRIdx, colIdx: sCIdx, valChange: true, uiRefresh: uiRefresh, td: td,
+                            cellDelete: true })) {
+                        continue;
+                    }
+                    if (td) {
+                        if (td.querySelector('.e-cf-databar')) {
+                            td.removeChild(td.querySelector('.e-cf-databar'));
+                        }
+                        if (td.querySelector('.e-iconsetspan')) {
+                            td.removeChild(td.querySelector('.e-iconsetspan'));
+                        }
+                    }
+                    context.notify(
+                        checkConditionalFormat, { rowIdx: sRIdx, colIdx: sCIdx, cell: getCell(sRIdx, sCIdx, sheet), isAction: true });
+                }
+            }
+        }
+    }
 }

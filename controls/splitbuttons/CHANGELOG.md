@@ -2,13 +2,29 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 19.4.40 (2021-12-28)
 
 ### DropDownButton
 
 #### Bug Fixes
 
-- createPopupOnClick scenario not handled properly in DropDownButton issue has been resolved.
+- ColorPicker is not closed while clicks again the DropDownButton issue has been resolved.
+
+## 19.4.38 (2021-12-17)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- Overflow issue in ColorPicker has been resolved.
+
+## 19.3.48 (2021-11-02)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `createPopupOnClick` property scenario not handled properly in `DropDownButton` has been resolved.
 
 ## 19.2.55 (2021-08-11)
 

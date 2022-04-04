@@ -1,9 +1,9 @@
-﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, skipHiddenIdx } from '../common/index';
+﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
-import { extend, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
-import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook, setColumn } from '../../workbook/index';
-import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, setRow } from '../../workbook/index';
+import { extend, remove } from '@syncfusion/ej2-base';
+import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/index';
+import { getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, skipHiddenIdx } from '../../workbook/index';
 import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact, updateTranslate } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
 import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus, getUpdatedScrollPosition } from '../common/index';
@@ -78,31 +78,34 @@ export class Render {
         } else {
             this.parent.viewport.beforeFreezeHeight = this.parent.viewport.beforeFreezeWidth = 0;
         }
+        const frozenRow: number = this.parent.frozenRowCount(sheet);
+        const frozenCol: number = this.parent.frozenColCount(sheet);
         if (!this.parent.scrollSettings.enableVirtualization || isTopLeftCell) {
             this.refreshUI({ rowIndex: indexes[0], colIndex: indexes[1], refresh: 'All' }, null, initLoad, isRefreshing);
             if (isFreezeScrolled) {
-                this.parent.viewport.topIndex = skipHiddenIdx(sheet, 0, true);
-                this.parent.viewport.leftIndex = skipHiddenIdx(sheet, 0, true, 'columns');
+                this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenRow, true) - frozenRow;
+                this.parent.viewport.leftIndex = skipHiddenIdx(sheet, frozenCol, true, 'columns') - frozenCol;
             }
         } else {
             const pIndexes: number[] = sheet.paneTopLeftCell === sheet.topLeftCell ? indexes : getCellIndexes(sheet.paneTopLeftCell);
-            const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const eventArgs: ScrollEventArgs = { preventScroll: true };
-            eventArgs.scrollTop = scrollTop || (pIndexes[0] > frozenRow ?
-                getRowsHeight(sheet, frozenRow ? frozenRow : 0, pIndexes[0] - 1, true) : 0);
-            eventArgs.scrollLeft = scrollLeft || (pIndexes[1] > frozenCol ?
-                getColumnsWidth(sheet, frozenCol ? frozenCol : 0, pIndexes[1] - 1, true) : 0);
+            eventArgs.scrollTop = scrollTop || (pIndexes[0] > frozenRow ? getRowsHeight(sheet, frozenRow, pIndexes[0] - 1, true) : 0);
+            eventArgs.scrollLeft = scrollLeft || (pIndexes[1] > frozenCol ? getColumnsWidth(sheet, frozenCol, pIndexes[1] - 1, true) : 0);
             this.parent.notify(onContentScroll, eventArgs);
             let threshold: number = this.parent.getThreshold('row');
             const rowIndex: number = sheet.frozenRows ? indexes[0] : (indexes[0] > threshold ?
                 skipHiddenIdx(sheet, indexes[0] - threshold, true) : 0);
             const frozenIndexes: number[] = [];
-            if (sheet.frozenRows) { frozenIndexes.push(pIndexes[0] - threshold > frozenRow ? (pIndexes[0] - threshold) : frozenRow); }
+            if (sheet.frozenRows) {
+                frozenIndexes.push(pIndexes[0] - threshold > frozenRow ? pIndexes[0] - threshold : frozenRow);
+            }
             threshold = this.parent.getThreshold('col');
             const colIndex: number = sheet.frozenColumns ? indexes[1] :
                 (indexes[1] > threshold ? skipHiddenIdx(sheet, indexes[1] - threshold, true, 'columns') : 0);
             if (sheet.frozenColumns) {
-                if (!frozenIndexes.length) { frozenIndexes.push(frozenRow); }
+                if (!frozenIndexes.length) {
+                    frozenIndexes.push(frozenRow);
+                }
                 frozenIndexes.push(pIndexes[1] - threshold > frozenCol ? pIndexes[1] - threshold : frozenCol);
             } else if (frozenIndexes.length) {
                 frozenIndexes.push(frozenCol);
@@ -111,11 +114,11 @@ export class Render {
                 { rowIndex: rowIndex, colIndex: colIndex, refresh: 'All', top: eventArgs.scrollTop, left: eventArgs.scrollLeft,
                     frozenIndexes: frozenIndexes }, null, initLoad, isRefreshing);
             if (isFreezeScrolled) {
-                if (frozenIndexes[0] >= frozenRow) {
-                    this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenIndexes[0] - frozenRow, true);
+                if (frozenRow && frozenIndexes[0] >= frozenRow) {
+                    this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenIndexes[0], true) - frozenRow;
                 }
-                if (frozenIndexes[1] >= frozenCol) {
-                    this.parent.viewport.leftIndex = skipHiddenIdx(sheet, frozenIndexes[1] - frozenCol, true, 'columns');
+                if (frozenCol && frozenIndexes[1] >= frozenCol) {
+                    this.parent.viewport.leftIndex = skipHiddenIdx(sheet, frozenIndexes[1], true, 'columns') - frozenCol;
                 }
             }
         }
@@ -148,52 +151,92 @@ export class Render {
                 let lastCol: number = args.colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
                 const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
                 if (args.frozenIndexes.length) {
-                    lastRow += (args.frozenIndexes[0] - frozenRow); lastCol += (args.frozenIndexes[1] - frozenCol);
+                    lastRow += (args.frozenIndexes[0] - frozenRow);
+                    lastCol += (args.frozenIndexes[1] - frozenCol);
                 }
-                lastRow += sheet.frozenRows; lastCol += sheet.frozenColumns;
-                let count: number = sheet.rowCount - 1; let diff: number = 0;
-                let indexes: number[] = this.parent.skipHidden(args.rowIndex, lastRow, 'rows', false);
+                lastRow += sheet.frozenRows;
+                lastCol += sheet.frozenColumns;
+                const rowIdx: number = args.frozenIndexes[0] > frozenRow ? args.frozenIndexes[0] : args.rowIndex + frozenRow;
+                let indexes: number[] = this.parent.skipHidden(rowIdx, lastRow, 'rows', false);
                 lastRow = indexes[1];
-                if (args.rowIndex !== indexes[0]) {
-                    const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
-                    if (topLeftCell[0] === args.rowIndex) {
-                        this.parent.updateTopLeftCell(indexes[0], topLeftCell[1], 'row');
+                if (rowIdx !== indexes[0]) {
+                    const topLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
+                    if (topLeftCell[0] === rowIdx) {
+                        this.parent.updateTopLeftCell(indexes[0] - frozenRow, topLeftCell[1], 'col');
                     }
                 }
+                indexes[0] -= frozenRow;
+                let count: number = sheet.rowCount - 1;
+                let diff: number = 0;
+                let startRow: number = args.rowIndex;
                 if (this.parent.scrollSettings.isFinite && lastRow > count) {
-                    diff = lastRow - count; lastRow = skipHiddenIdx(sheet, count, false);
-                    if (indexes[0] > skipHiddenIdx(sheet, 0, true)) {
-                        diff = args.rowIndex - diff; diff = diff > -1 ? diff : 0;
-                        diff = this.decreaseHidden(diff, args.rowIndex - 1);
-                        if (args.top && diff < args.rowIndex) {
-                            this.parent.notify(updateTranslate, { height: getRowsHeight(sheet, diff, args.rowIndex - 1), isRender: true });
+                    diff = lastRow - count;
+                    lastRow = skipHiddenIdx(sheet, count, false);
+                    if (indexes[0] + frozenRow > skipHiddenIdx(sheet, frozenRow, true)) {
+                        let startIdx: number = args.rowIndex - diff;
+                        startIdx = startIdx < 0 ? 0 : startIdx;
+                        startIdx = this.decreaseHidden(startIdx, args.rowIndex - 1, frozenRow);
+                        if (args.top && startIdx < args.rowIndex) {
+                            this.parent.notify(
+                                updateTranslate, { height: getRowsHeight(sheet, startIdx + frozenRow, args.rowIndex - 1 + frozenRow, true),
+                                    isRender: true });
                         }
-                        this.parent.viewport.topIndex = indexes[0] = diff;
+                        this.parent.viewport.topIndex = indexes[0] = startIdx;
+                        startRow = args.refresh === 'Row' ? startIdx : startRow;
                     }
                 }
-                let startRow: number = args.rowIndex = indexes[0];
-                count = sheet.colCount - 1; diff = 0;
-                if (this.parent.scrollSettings.isFinite && lastCol > count) {
-                    diff = lastCol - count; lastCol = count;
-                    if (diff && !isNullOrUndefined(this.parent.viewport.leftIndex)) {
-                        diff = this.parent.viewport.leftIndex - diff > -1 ? this.parent.viewport.leftIndex - diff : 0;
-                        this.parent.viewport.leftIndex = args.colIndex = skipHiddenIdx(sheet, diff, true, 'columns');
-                    }
+                if (args.refresh === 'Row') {
+                    args.rowIndex = skipHiddenIdx(sheet, startRow + frozenRow, true) - frozenRow;
+                } else {
+                    startRow = args.rowIndex = frozenRow ? skipHiddenIdx(sheet, startRow, true) : indexes[0];
                 }
-                const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
-                indexes = this.parent.skipHidden(args.colIndex, lastCol, 'columns');
-                if (args.colIndex !== indexes[0]) {
-                    if (topLeftCell[1] === args.colIndex) { this.parent.updateTopLeftCell(topLeftCell[0], indexes[0], 'col'); }
-                    args.colIndex = indexes[0];
-                }
-                let startCol: number = args.colIndex;
+                const colIdx: number = args.frozenIndexes[1] > frozenCol ? args.frozenIndexes[1] : args.colIndex + frozenCol;
+                indexes = this.parent.skipHidden(colIdx, lastCol, 'columns', false);
                 lastCol = indexes[1];
-                if (args.refresh === 'Row') { startRow += frozenRow;
-                    if (frozenRow) { lastRow += topLeftCell[0]; }
+                if (colIdx !== indexes[0]) {
+                    const topLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
+                    if (topLeftCell[1] === colIdx) {
+                        this.parent.updateTopLeftCell(topLeftCell[0], indexes[0] - frozenCol, 'row');
+                    }
+                }
+                indexes[0] -= frozenCol;
+                count = sheet.colCount - 1;
+                diff = 0;
+                let startCol: number = args.colIndex;
+                if (this.parent.scrollSettings.isFinite && lastCol > count) {
+                    diff = lastCol - count;
+                    lastCol = skipHiddenIdx(sheet, count, false, 'columns');
+                    if (indexes[0] + frozenCol > skipHiddenIdx(sheet, frozenCol, true, 'columns')) {
+                        let startIdx: number = args.colIndex - diff;
+                        startIdx = startIdx > -1 ? startIdx : 0;
+                        startIdx = this.decreaseHidden(startIdx, args.colIndex - 1, frozenCol, 'columns');
+                        if (args.left && startIdx < args.colIndex) {
+                            this.parent.notify(
+                                updateTranslate, { width: getColumnsWidth(sheet, startIdx + frozenCol, args.colIndex - 1 + frozenCol, true),
+                                    isRender: true });
+                        }
+                        this.parent.viewport.leftIndex = indexes[0] = startIdx;
+                        startCol = args.refresh === 'Column' ? startIdx : startCol;
+                    }
+                }
+                if (args.refresh === 'Column') {
+                    args.colIndex = skipHiddenIdx(sheet, startCol + frozenCol, true, 'columns') - frozenCol;
+                } else {
+                    startCol = args.colIndex = frozenCol ? skipHiddenIdx(sheet, startCol, true, 'columns') : indexes[0];
+                }
+                if (args.refresh === 'Row') {
+                    startRow += frozenRow;
+                    if (frozenRow) {
+                        lastRow += getCellIndexes(sheet.topLeftCell)[0];
+                    }
+                    lastCol = this.parent.viewport.rightIndex;
                 }
                 if (args.refresh === 'Column') {
                     startCol += frozenCol;
-                    if (frozenCol) { lastCol += topLeftCell[1]; }
+                    if (frozenCol) {
+                        lastCol += getCellIndexes(sheet.topLeftCell)[1];
+                    }
+                    lastRow = this.parent.viewport.bottomIndex;
                 }
                 this.parent.viewport.topIndex = args.rowIndex; this.parent.viewport.bottomIndex = lastRow;
                 this.parent.viewport.leftIndex = args.colIndex; this.parent.viewport.rightIndex = lastCol;
@@ -275,7 +318,7 @@ export class Render {
             if (topLeftCell[0] !== 0) { args.top = getRowsHeight(args.sheet, 0, topLeftCell[0] - 1, true); }
         }
         if (args.sheet.frozenColumns) {
-            const frozenCol: number = this.parent.frozenRowCount(args.sheet);
+            const frozenCol: number = this.parent.frozenColCount(args.sheet);
             if (paneTopLeftCell[1] > frozenCol) { args.left = getColumnsWidth(args.sheet, frozenCol, paneTopLeftCell[1] - 1, true); }
         } else {
             args.colIndex && (args.colIndex = 0);
@@ -299,15 +342,21 @@ export class Render {
         let scrollTop: number = 0; let scrollLeft: number = 0;
         if (resize) {
             const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
-            if (mainPanel) { scrollTop = mainPanel.scrollTop; }
+            if (mainPanel) {
+                scrollTop = mainPanel.scrollTop;
+            }
             const sheetContent: Element = this.parent.getMainContent();
-            if (sheetContent) { scrollLeft = sheetContent.scrollLeft; }
+            if (sheetContent) {
+                scrollLeft = sheetContent.scrollLeft;
+            }
         }
         this.removeSheet();
         this.renderSheet();
         this.parent.notify(deInitProperties, {});
         this.checkTopLeftCell(false, isOpen, scrollTop, scrollLeft);
-        if (focusEle) { focus(this.parent.element); }
+        if (focusEle) {
+            focus(this.parent.element);
+        }
     }
 
     /**
@@ -345,23 +394,17 @@ export class Render {
         }
     }
 
-    public decreaseHidden(startIdx: number, endIdx: number, layout: string = 'rows'): number {
+    public decreaseHidden(startIdx: number, endIdx: number, freezeCount: number, layout: string = 'rows'): number {
+        startIdx += freezeCount;
+        endIdx += freezeCount;
         const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = endIdx; i >= startIdx; i--) {
             if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
-                if (sheet.frozenColumns || sheet.frozenRows) {
-                    if (layout === 'rows') {
-                        setRow(sheet, i, { hidden: false });
-                    } else {
-                        setColumn(sheet, i, { hidden: false });
-                    }
-                    continue;
-                }
                 startIdx--;
-                if (startIdx < 0) { startIdx = skipHiddenIdx(sheet, 0, true, layout); break; }
+                if (startIdx < freezeCount) { startIdx = skipHiddenIdx(sheet, freezeCount, true, layout); break; }
             }
         }
-        return startIdx;
+        return startIdx - freezeCount;
     }
 
     /**
@@ -386,7 +429,6 @@ export class Render {
 
     private addEventListener(): void {
         this.parent.on(initialLoad, this.instantiateRenderer, this);
-        this.parent.on(dataRefresh, this.refreshSheet, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
         this.parent.on(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler, this);
         this.parent.on(getUpdatedScrollPosition, this.updateTopLeftScrollPosition, this);
@@ -394,7 +436,6 @@ export class Render {
 
     private removeEventListener(): void {
         this.parent.off(initialLoad, this.instantiateRenderer);
-        this.parent.off(dataRefresh, this.refreshSheet);
         this.parent.off(spreadsheetDestroyed, this.destroy);
         this.parent.off(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler);
         this.parent.off(getUpdatedScrollPosition, this.updateTopLeftScrollPosition);

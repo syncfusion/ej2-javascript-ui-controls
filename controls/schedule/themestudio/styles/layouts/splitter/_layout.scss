@@ -90,7 +90,7 @@
             .e-navigate-arrow {
               &:not(.e-arrow-down) {
                 border-radius: 50%;
-                bottom: 18px;
+                bottom: 20px;
                 right: 22px;
               }
 
@@ -98,7 +98,7 @@
                 border-radius: 50%;
                 left: 22px;
                 right: auto;
-                top: 18px;
+                top: 20px;
 
                 &::after {
                   right: auto;
@@ -310,14 +310,14 @@
 
           &:not(.e-arrow-down) {
             border-radius: 50%;
-            bottom: 18px;
+            bottom: 20px;
             left: 22px;
          }
 
           &.e-arrow-down {
             border-radius: 50%;
             right: 22px;
-            top: 18px;
+            top: 20px;
           }
 
           &.e-arrow-down::before,

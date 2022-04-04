@@ -209,7 +209,11 @@ export type ChartTheme =
 /**  Render a chart with Tailwind theme. */
 'Tailwind' |
 /**  Render a chart with TailwindDark theme. */
-'TailwindDark' ;
+'TailwindDark' |
+/**  Render a chart with Fluent theme. */
+'Fluent' |
+/**  Render a chart with FluentDark theme. */
+'FluentDark' ;
 
 /**
  * Defines the position of the legend. They are

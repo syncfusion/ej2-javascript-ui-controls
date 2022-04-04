@@ -2,7 +2,39 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
+
+### Carousel
+
+The Carousel component allows users to display images with content, links, etc., like a slide show. Typical uses of carousels include scrolling news headlines, featured articles on home pages, and image galleries.
+
+- **Rendering** - The Carousel component can be rendered based on the items collection and data binding.
+- **Animation** - Supports animation effects for moving previous/next item of Carousel.
+- **Template Support** - The Carousel component items and buttons can also be rendered with custom templates.
+- **Keyboard Support** - By default, the Carousel allows interaction with commands by using keyboard shortcuts.
+- **Accessibility** - The Carousel provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
+
+### Tab
+
+#### Bug Fixes
+
+- `SF-369202, #F173364` - An issue with another tab item content is rendered in newly added tab item content has been fixed.
+
+## 19.4.55 (2022-03-08)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I368643` - Resolved theme related issue in menu component.
+
+### Tab
+
+#### Bug Fixes
+
+- `SF-369303` - An issue with hiding tab item dynamically with `visible` property not working has been fixed.
+
+## 19.4.53 (2022-02-22)
 
 ### Sidebar
 
@@ -24,7 +56,7 @@
 
 #### Bug Fixes
 
-- Issue with 'setItem' method has been fixed.
+- Issue with `setItem` method has been fixed.
 
 ## 19.4.47 (2022-01-25)
 
@@ -66,7 +98,7 @@
 
 #### Bug Fixes
 
-- `#I346314` - Issue with stopPropagation not works for context menu has been resolved.
+- `#I346314` - Issue with `stopPropagation` not works for context menu has been resolved.
 
 ## 19.4.38 (2021-12-17)
 

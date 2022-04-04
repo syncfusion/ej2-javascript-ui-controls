@@ -1,7 +1,8 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Workbook, CellModel, getCell, SheetModel, setCell, isHiddenRow, isHiddenCol, getRow } from '../base/index';
-import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, isNumber, refreshCell, intToDate, dateToInt, getFillInfo } from './../common/index';
-import { checkIsFormula, workbookEditOperation, getColumnHeaderText, getCellAddress, ExtendedRowModel } from './../common/index';
+import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getRow } from '../base/index';
+import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo } from './../common/index';
+import { checkIsFormula, getColumnHeaderText, ExtendedRowModel, isNumber } from './../common/index';
+import { updateCell, intToDate, dateToInt } from './../common/index';
 
 /**
  * WorkbookAutoFill module allows to perform auto fill functionalities.
@@ -163,7 +164,7 @@ export class WorkbookAutoFill {
                             }
                         }
                         val = patrn.copy ? (data[l] && !isNullOrUndefined(data[l].value) ? data[l].value : '') :
-                            patrn.dataVal + Math.abs(Number(val));
+                            (patrn.start ? Math.abs(Number(val)) + patrn.dataVal : patrn.dataVal + Math.abs(Number(val)));
                     }
                     if (isRFill) {
                         patrn['i']--;
@@ -232,20 +233,9 @@ export class WorkbookAutoFill {
                 if (checkIsFormula(val)) {
                     cellProps.formula = val;
                 }
-                setCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, cellProps);
-                this.parent.notify(
-                    workbookEditOperation,
-                    {
-                        action: 'updateCellValue', address: [cellIdx.rowIndex, cellIdx.colIndex, cellIdx.rowIndex,
-                            cellIdx.colIndex], value: cellProps.formula ? cellProps.formula : cellProps.value
-                    });
-                this.parent.notify(refreshCell, { rowIndex: cellIdx.rowIndex, colIndex: cellIdx.colIndex });
-                if (cellProps.value !== prevCellData.value) {
-                    this.parent.trigger(
-                        'cellSave', { value: cellProps.value, oldValue: prevCellData.value, formula: cellProps.formula, address:
-                            `${sheet.name}!${getCellAddress(cellIdx.rowIndex, cellIdx.colIndex)}`,
-                        displayText: this.parent.getDisplayText(cellProps) });
-                }
+                updateCell(
+                    this.parent, sheet, { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
+                        uiRefresh: true, pvtExtend: true });
                 cellProps = {};
                 j++;
             }
@@ -300,8 +290,9 @@ export class WorkbookAutoFill {
                     Object.assign(cellProperty, data[k], null, true);
                     cellProperty.value = prevCellData.value;
                     cellProperty.formula = prevCellData.formula;
-                    setCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, cellProperty);
-                    this.parent.notify(refreshCell, { rowIndex: cellIdx.rowIndex, colIndex: cellIdx.colIndex });
+                    updateCell(
+                        this.parent, sheet, { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
+                            uiRefresh: true, pvtExtend: true });
                     cellProperty = {};
                     j++;
                 }
@@ -310,21 +301,9 @@ export class WorkbookAutoFill {
                     k = j % dlen;
                     cellIdx = cells[j];
                     Object.assign(cellProperty, data[k], null, true);
-                    prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, false, true);
-                    setCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, cellProperty);
-                    this.parent.notify(
-                        workbookEditOperation,
-                        {
-                            action: 'updateCellValue', address: [cellIdx.rowIndex, cellIdx.colIndex, cellIdx.rowIndex,
-                                cellIdx.colIndex], value: cellProperty.formula ? cellProperty.formula : cellProperty.value
-                        });
-                    this.parent.notify(refreshCell, { rowIndex: cellIdx.rowIndex, colIndex: cellIdx.colIndex });
-                    if (cellProperty.value !== prevCellData.value) {
-                        this.parent.trigger(
-                            'cellSave', { value: cellProperty.value, oldValue: prevCellData.value, formula: cellProperty.formula, address:
-                                `${sheet.name}!${getCellAddress(cellIdx.rowIndex, cellIdx.colIndex)}`,
-                            displayText: this.parent.getDisplayText(cellProperty) });
-                    }
+                    updateCell(
+                        this.parent, sheet, { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
+                        uiRefresh: true, pvtExtend: true });
                     cellProperty = {};
                     j++;
                 }
@@ -371,40 +350,52 @@ export class WorkbookAutoFill {
         let val: string[] | string | number;
         let type: string;
         let i: number = 0;
-        let obj: { val: string[] | number[], type: string, dataVal?: string } = { val: null, type: null };
+        let obj: { val: string[] | number[], type: string, dataVal?: string, start?: boolean } = { val: null, type: null };
         const patrn: { val: string[] | number[], type: string }[] = [];
         const data: CellModel[] = this.getRangeData({ range: range, sheetIdx: this.parent.activeSheetIndex });
-        const dlen: number = data.length;
+        const dlen: number = data.length; let isStartNum: boolean;
         if (dlen) {
             let count: number; let dataVal: string;
             const minusOperator: Function = (data: string): string => {
-                return data && data[data.length - 1] === '-' ? data.slice(0, data.length - 1) : data;
+                return !isStartNum && data && data[data.length - 1] === '-' ? data.slice(0, data.length - 1) : data;
             }
             while (i < dlen) {
                 val = data[i] ? (data[i].formula ? data[i].formula : (isNullOrUndefined(data[i].value) ? '' : data[i].value)) : '';
                 type = this.getType(val, data[i] && data[i].format === 'h:mm:ss AM/PM');
-                if (type === 'string' && isNumber(val[val.length - 1])) {
-                    count = 1;
-                    do {
-                        count++;
-                    } while (isNumber(val[val.length - count]));
-                    type = 'number';
-                    count -= 1;
-                    dataVal = val.slice(0, val.length - count);
-                    val = Number(val.slice(val.length - count, val.length));
-                    if (obj.dataVal && obj.dataVal !== dataVal && obj.dataVal === minusOperator(dataVal)) { dataVal = obj.dataVal; }
-                } else {
-                    dataVal = '';
+                dataVal = '';
+                if (type === 'string') {
+                    isStartNum = false;
+                    if (isNumber(val[0])) {
+                        count = 0;
+                        do {
+                            count++;
+                        } while (isNumber(val[count]));
+                        if (val[count] === ' ') {
+                            isStartNum = true; type = 'number';
+                            dataVal = val.slice(count, val.length); val = Number(val.slice(0, count));
+                        }
+                    }
+                    val = val as string;
+                    if (!isStartNum && isNumber(val[val.length - 1])) {
+                        count = 1;
+                        do {
+                            count++;
+                        } while (isNumber(val[val.length - count]));
+                        type = 'number';
+                        count -= 1;
+                        dataVal = val.slice(0, val.length - count); val = Number(val.slice(val.length - count, val.length));
+                        if (obj.dataVal && obj.dataVal !== dataVal && obj.dataVal === minusOperator(dataVal)) { dataVal = obj.dataVal; }
+                    }
                 }
                 if (i === 0) {
                     obj = { val: [val as string], type: type };
-                    if (dataVal) { obj.dataVal = dataVal; }
+                    if (dataVal) { obj.dataVal = dataVal; obj.start = isStartNum; }
                 } else if (type === obj.type && (!obj.dataVal || minusOperator(obj.dataVal) === minusOperator(dataVal))) {
                     (obj.val as string[]).push(val as string);
                 } else {
                     patrn.push(obj);
                     obj = { val: [val as string], type: type };
-                    if (dataVal) { obj.dataVal = dataVal; }
+                    if (dataVal) { obj.dataVal = dataVal; obj.start = isStartNum; }
                 }
                 i++;
             }
@@ -448,9 +439,9 @@ export class WorkbookAutoFill {
         let len: number;
         let i: number = 0;
         const pattern: PatternInfo[] | number[] = [];
-        const patrns: { val?: number[] | string[], type: string, dataVal?: string }[] = this.getDataPattern(range);
+        const patrns: { val?: number[] | string[], type: string, dataVal?: string, start?: boolean }[] = this.getDataPattern(range);
         const plen: number = patrns.length;
-        let patrn: { val?: number[] | string[] | string | number, type?: string, isInPattern?: boolean, dataVal?: string };
+        let patrn: { val?: number[] | string[] | string | number, type?: string, isInPattern?: boolean, dataVal?: string, start?: boolean };
         if (patrns) {
             while (i < plen) {
                 patrn = patrns[i];
@@ -466,7 +457,7 @@ export class WorkbookAutoFill {
                     regVal = this.getPredictionValue(patrn.dataVal ? (patrn.val as number[]).slice(0, 2) : patrn.val as number[]);
                     temp = { regVal: regVal, type: patrn.type, i: diff };
                     if (patrn.dataVal) {
-                        temp.dataVal = patrn.dataVal; temp.val = patrn.val;
+                        temp.dataVal = patrn.dataVal; temp.val = patrn.val; temp.start = patrn.start;
                     }
                     (pattern as PatternInfo[]).push(temp);
                     j = 1;
@@ -851,5 +842,6 @@ interface PatternInfo {
     type?: string, i?: number,
     val?: string[] | number[] | string | number,
     dataVal?: string,
-    copy?: boolean
+    copy?: boolean,
+    start?: boolean
 }

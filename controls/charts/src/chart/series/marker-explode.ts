@@ -6,7 +6,7 @@ import { Chart } from '../chart';
 import { Border } from '../../common/model/base';
 import { MarkerSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
-import { Browser, extend, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, extend, remove, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { ChartData } from '../../chart/utils/get-data';
 import { withInBounds, PointData, stopTimer } from '../../common/utils/helper';
 import { ColorValue, colorNameToHex, convertHexToColor } from '../../common/utils/helper';
@@ -124,7 +124,11 @@ export class MarkerExplode extends ChartData {
         if (this.currentPoints.length > 0) {
             if (length === 0 || chart.isPointMouseDown || (length > 0 && this.previousPoints[0].point !== this.currentPoints[0].point)) {
                 if (this.previousPoints.length > 0) {
-                    this.removeHighlightedMarker();
+                    for (const previousPoint of this.previousPoints) {
+                        if (!isNullOrUndefined(previousPoint)) {
+                            this.removeHighlightedMarker(previousPoint.series as Series, previousPoint.point as Points);
+                        }
+                    }
                 }
                 for (const data of <PointData[]>this.currentPoints) {
                     if (
@@ -146,13 +150,26 @@ export class MarkerExplode extends ChartData {
         if (!chart.tooltip.enable && ((this.currentPoints.length === 0 && this.isRemove) || (remove && this.isRemove) ||
                 !withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect))) {
             this.isRemove = false;
-            this.markerExplode = +setTimeout(
-                (): void => {
-                    this.removeHighlightedMarker();
-                },
-                2000);
+            if (!isNullOrUndefined(this.previousPoints[0])) {
+                this.markerExplode = +setTimeout(
+                    (): void => {
+                        this.removeHighlightedMarker(this.previousPoints[0].series as Series, this.previousPoints[0].point as Points );
+                    },
+                    2000);
+            }
         }
         this.currentPoints = [];
+    }
+
+    private animationDuration(): number {
+        let duration: number = 200;
+        if (this.chart.maxPointCount > 100) {
+            duration = 10;
+        }
+        else if (this.chart.maxPointCount > 50) {
+            duration = 100;
+        }
+        return duration;
     }
 
     private drawTrackBall(series: Series, point: Points, location: ChartLocation, index: number): void {
@@ -185,6 +202,11 @@ export class MarkerExplode extends ChartData {
         const borderWidth: number = marker.border ? marker.border.width : seriesMarker.border.width;
         const markerShadow: string = series.chart.themeStyle.markerShadow ||
             'rgba(' + colorValue.r + ',' + colorValue.g + ',' + colorValue.b + ',0.2)';
+        const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
+            point.index + '_Symbol');
+        if (!isNullOrUndefined(markerElement)) {
+            markerElement.setAttribute('visibility', 'hidden');
+        }
         for (let i: number = 0; i < 2; i++) {
             const options: PathOption = new PathOption(
                 symbolId + '_' + i,
@@ -197,7 +219,7 @@ export class MarkerExplode extends ChartData {
                                                this.chart.svgRenderer, series.clipRect);
             // incident: 252450 point click selection not working while maker explode
             //symbol.setAttribute('style', 'pointer-events:none');
-            symbol.setAttribute('class', 'EJ2-Trackball');
+            symbol.setAttribute('class', 'EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
             const selectionId: string = element.id.indexOf('Symbol') !== -1 ? '_Symbol' : '';
             const seletionElem: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
                 point.index + selectionId);
@@ -209,16 +231,100 @@ export class MarkerExplode extends ChartData {
             symbol.setAttribute('transform', element.getAttribute('transform'));
             this.chart.svgObject.appendChild(symbol);
         }
+        this.doAnimation(series, point, false);
+    }
+
+    /**
+     * Animates the series.
+     *
+     * @param  {Series} series - Defines the series to animate.
+     * @returns {void}
+     */
+     public doAnimation(series: Series, point: Points, endAnimate: boolean = false): void {
+        const duration: number = this.animationDuration();
+        const delay: number = series.animation.delay;
+        const rectElements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+        for (let i: number = 0, len: number = rectElements.length; i < len; i++) {
+            this.trackballAnimate(
+                <HTMLElement>rectElements[i], delay, duration, series,
+                point.index, point.symbolLocations[0], false, endAnimate
+            );
+        }
+    }
+
+    /**
+    * Animation Effect Calculation End
+    *
+    * @private
+    */
+     public trackballAnimate(
+        elements: Element, delays: number, durations: number, series: Series,
+        pointIndex: number, point: ChartLocation, isLabel: boolean, endAnimate: boolean
+    ): void {
+
+        const centerX: number = point.x;
+        const centerY: number = point.y;
+        const clipX: number = (series.type !== "Polar" && series.type !== "Radar") ? series.clipRect.x : 0;
+        const clipY: number = (series.type !== "Polar" && series.type !== "Radar") ? series.clipRect.y : 0;
+        let height: number = 0;
+        (<HTMLElement>elements).style.visibility = 'hidden';
+        let reducedHeight: number = endAnimate ? -8 : 1;
+        new Animation({}).animate(<HTMLElement>elements, {
+            duration: durations,
+            delay: delays,
+            progress: (args: AnimationOptions): void => {
+                if (args.timeStamp > args.delay) {
+                    args.element.style.visibility = 'visible';
+                    height = ((args.timeStamp - args.delay) / args.duration);
+                    elements.setAttribute('transform', 'translate(' + (centerX + clipX)
+                        + ' ' + (centerY + clipY) + ') scale(' + (height/reducedHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                }
+            },
+            end: () => {
+                (<HTMLElement>elements).style.visibility = '';
+                if (!isLabel && (pointIndex === series.points.length - 1)) {
+                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                }
+
+                if (endAnimate) {
+                    remove(elements);
+                }
+
+            }
+        });
     }
 
     /**
      * @hidden
-     */
-    public removeHighlightedMarker(): void {
-        const elements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball');
-        for (let i: number = 0, len: number = elements.length; i < len; i++) {
-            remove(elements[0]);
+    */
+    public removeHighlightedMarker(series: Series = null, point: Points = null, fadeOut: boolean = false): void {
+        if (!isNullOrUndefined(series) && !isNullOrUndefined(point)) {
+            const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
+                point.index + '_Symbol');
+            const trackballElements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+            for (let i: number = 0, len: number = trackballElements.length; i < len; i++) {
+                remove(trackballElements[0]);
+            }
+            if (!isNullOrUndefined(markerElement)) {
+                markerElement.setAttribute('visibility', 'visible');
+            }
         }
-        this.previousPoints = [];
+        else {
+            for (const point of series.points) {
+                const elements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+                const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
+                    point.index + '_Symbol');
+                for (let i: number = 0, len: number = elements.length; i < len; i++) {
+                    if (!isNullOrUndefined(markerElement)) {
+                        markerElement.setAttribute('visibility', 'visible');
+                    }
+                    remove(elements[0]);
+                }
+            }
+        }
+
+        if (fadeOut) {
+            this.previousPoints = [];
+        }
     }
 }

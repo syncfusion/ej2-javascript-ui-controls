@@ -191,7 +191,7 @@ export class DropDownButtons {
                     }
                     this.alignDropDown = this.toolbarRenderer.renderDropDownButton({
                         iconCss: 'e-justify-left e-icons',
-                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS,
+                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_ALIGN_TB_BTN,
                         itemName: 'Alignments', items: model.alignmentItems, element: targetElement
                     } as IDropDownModel);
                     break;

@@ -194,7 +194,7 @@ export class TextHelper {
     }
     public containsSpecialCharAlone(text: string): boolean {
         /* eslint-disable */
-        let specialChars: string = '*|.\:[]{}-`\;()@&$#%!~?' + ' ' + "'";
+        let specialChars: string = '*|.\:[]{}-`\;()@&$#%!~?,' + ' ' + "'";
         for (let i: number = 0; i < text.length; i++) {
             if (specialChars.indexOf(text.charAt(i)) === -1) {
                 return false;

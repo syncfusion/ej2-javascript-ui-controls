@@ -444,7 +444,7 @@ export class HeaderRenderer {
             break;
         case 'e-today':
             currentTime = util.resetTime(this.parent.getCurrentTime());
-            if (this.parent.currentView === 'Agenda' || !this.parent.isSelectedDate(currentTime) ||
+            if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda' || !this.parent.isSelectedDate(currentTime) ||
                 this.parent.currentView === 'Month' && this.parent.activeViewOptions.displayDate && !this.hasSelectedDate() &&
                 util.resetTime(this.parent.activeViewOptions.displayDate) !== currentTime || this.parent.currentView === 'Month' &&
                 this.parent.activeViewOptions.numberOfWeeks > 0 && !this.hasSelectedDate()

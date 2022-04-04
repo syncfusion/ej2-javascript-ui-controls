@@ -3,7 +3,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper } from '../viewer';
 import { FieldElementBox, ElementBox, TextFormField } from '../viewer/page';
-import { NumericTextBox, NumericFocusEventArgs, NumericBlurEventArgs, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { NumericTextBox, NumericFocusEventArgs, NumericBlurEventArgs, ChangeEventArgs as NumericChangeEventArgs, TextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, ComboBox, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 import { TextFormFieldType } from '../../base/types';
@@ -20,9 +20,9 @@ export class TextFormFieldDialog {
     private tooltipTextInput: HTMLInputElement;
     private bookmarkTextInput: HTMLInputElement;
     private fillInEnable: CheckBox;
-    private defaultTextLabel: HTMLElement;
+    private defaultTextLabel: TextBox;
     private defaultTextDiv: HTMLElement;
-    private textFormatLabel: HTMLElement;
+    private textFormatLabel: TextBox;
     private typeDropDown: DropDownList;
     private textFormatDropDown: ComboBox;
     private fieldBegin: FieldElementBox;
@@ -53,67 +53,85 @@ export class TextFormFieldDialog {
     private initTextDialog(localValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div');
         let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        let firstDiv: HTMLElement = createElement('div', { className: 'e-de-div-seperate-dlg' });
-        let typeDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
-        this.defaultTextDiv = createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
-        let typeLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Type')
-        });
+        let firstDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        let typeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        this.defaultTextDiv = createElement('div', { className: 'e-de-subcontainer-right' });
+        // let typeLabel: HTMLElement = createElement('div', {
+        //     className: 'e-de-ff-dlg-heading-small',
+        //     innerHTML: localValue.getConstant('Type')
+        // });
+        //define the array of complex data
+        let typeDropDownitems: { [key: string]: Object }[] = [
+            { Value: 'Regular text', Name: localValue.getConstant('Regular text') },
+            { Value: 'Number', Name: localValue.getConstant('Number') },
+            { Value: 'Date', Name: localValue.getConstant('Date') }
+            ];
         let typeDropDownList: HTMLInputElement = createElement('input') as HTMLInputElement;
-        let typeDropDownitems: string[] = ['Regular text', 'Number', 'Date'];
         this.typeDropDown = new DropDownList({
             dataSource: typeDropDownitems,
             popupHeight: '150px',
             value: 'Regular text',
-            change: this.changeTypeDropDown.bind(this)
+            change: this.changeTypeDropDown.bind(this),
+            floatLabelType: 'Always',
+            placeholder: localValue.getConstant('Type'),
+            fields: { text: 'Name', value: 'Value' }
         });
-        this.defaultTextLabel = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Default text')
-        });
+        // this.defaultTextLabel = createElement('div', {
+        //     className: 'e-de-ff-dlg-heading-small',
+        //     innerHTML: localValue.getConstant('Default text')
+        // });
         this.defaultTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-        let secondDiv: HTMLElement = createElement('div', { className: 'e-de-div-seperate-dlg' });
-        let maxLengthDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
-        let maxLengthLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Maximum length')
-        });
+        let secondDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        let maxLengthDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        // let maxLengthLabel: HTMLElement = createElement('div', {
+        //     className: 'e-de-ff-dlg-heading-small',
+        //     innerHTML: localValue.getConstant('Maximum length')
+        // });
         let maxLength: HTMLInputElement = createElement('input') as HTMLInputElement;
         this.maxLengthNumber = new NumericTextBox({
             format: 'n', value: 0, min: 0, max: 32767, width: '100%', enablePersistence: false,
+            placeholder: localValue.getConstant('Maximum length'), floatLabelType: 'Always',
             change: function (args: NumericChangeEventArgs): void {
                 if (!args.value) {
-                    this.element.value = 'Unlimited';
+                    this.element.value = localValue.getConstant('Unlimited');
                 }
             },
             focus: function (args: NumericFocusEventArgs): void {
                 if (!args.value) {
-                    this.element.value = 'Unlimited';
+                    this.element.value = localValue.getConstant('Unlimited');
                 }
             },
             blur: function (args: NumericBlurEventArgs): void {
                 if (!args.value) {
                     let proxy: NumericTextBox = this;
                     setTimeout((): void => {
-                        proxy.element.value = 'Unlimited';
+                        proxy.element.value = localValue.getConstant('Unlimited');
                     }, 0);
                 }
             },
         });
-        let textFromatDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
-        this.textFormatLabel = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Text format')
-        });
+        let textFromatDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        // this.textFormatLabel = createElement('div', {
+        //     className: 'e-de-ff-dlg-heading-small',
+        //     innerHTML: localValue.getConstant('Text format')
+        // });
         let textFormatList: HTMLInputElement = createElement('input') as HTMLInputElement;
-        let formatDropDownitems: string[] = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
+        let formatDropDownitems: { [key: string]: Object }[] =
+            [
+                { Value: "Uppercase", Name: localValue.getConstant("Uppercase") },
+                { Value: "Lowercase", Name: localValue.getConstant("Lowercase") },
+                { Value: "FirstCapital", Name: localValue.getConstant("FirstCapital") },
+                { Value: "Titlecase", Name: localValue.getConstant("TitleCase") }
+            ];
         this.textFormatDropDown = new ComboBox({
             dataSource: formatDropDownitems,
             popupHeight: '150px',
             allowCustom: true,
             showClearButton: false,
-            change: this.updateTextFormtas.bind(this)
+            change: this.updateTextFormtas.bind(this),
+            placeholder: localValue.getConstant('Text format'),
+            floatLabelType: 'Always',
+            fields: { text: 'Name', value: 'Value' }
         });
         this.textFormatDropDown.focus = (): void => {
             (this.textFormatDropDown.element as HTMLInputElement).select();
@@ -122,18 +140,18 @@ export class TextFormFieldDialog {
             className: 'e-de-ff-dlg-heading',
             innerHTML: localValue.getConstant('Field settings')
         });
-        let thirdDiv: HTMLElement = createElement('div', { className: 'e-de-div-seperate-dlg' });
-        let toolTipTotalDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
-        let bookmarkTotalDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
-        let toolTipHeadingLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Tooltip')
-        });
+        let thirdDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        let toolTipTotalDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        let bookmarkTotalDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        // let toolTipHeadingLabel: HTMLElement = createElement('div', {
+        //     className: 'e-de-ff-dlg-heading-small',
+        //     innerHTML: localValue.getConstant('Tooltip')
+        // });
         this.tooltipTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-        let bookmarkHeadingLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Name')
-        });
+        // let bookmarkHeadingLabel: HTMLElement = createElement('div', {
+        //     className: 'e-de-ff-dlg-heading-small',
+        //     innerHTML: localValue.getConstant('Name')
+        // });
         this.bookmarkTextInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
         let fillInEnableDiv: HTMLElement = createElement('div');
         let fillInEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
@@ -153,35 +171,38 @@ export class TextFormFieldDialog {
 
         dialogDiv.appendChild(firstDiv);
         firstDiv.appendChild(typeDiv);
-        typeDiv.appendChild(typeLabel);
+        //typeDiv.appendChild(typeLabel);
         typeDiv.appendChild(typeDropDownList);
         this.typeDropDown.appendTo(typeDropDownList);
         firstDiv.appendChild(this.defaultTextDiv);
-        this.defaultTextDiv.appendChild(this.defaultTextLabel);
+        //this.defaultTextDiv.appendChild(this.defaultTextLabel);
         this.defaultTextDiv.appendChild(this.defaultTextInput);
 
         dialogDiv.appendChild(secondDiv);
         secondDiv.appendChild(maxLengthDiv);
-        maxLengthDiv.appendChild(maxLengthLabel);
+        //maxLengthDiv.appendChild(maxLengthLabel);
         maxLengthDiv.appendChild(maxLength);
         this.maxLengthNumber.appendTo(maxLength);
         secondDiv.appendChild(textFromatDiv);
-        textFromatDiv.appendChild(this.textFormatLabel);
+        //textFromatDiv.appendChild(this.textFormatLabel);
         textFromatDiv.appendChild(textFormatList);
         this.textFormatDropDown.appendTo(textFormatList);
 
         dialogDiv.appendChild(fileSettingsLabel);
         dialogDiv.appendChild(thirdDiv);
         thirdDiv.appendChild(toolTipTotalDiv);
-        toolTipTotalDiv.appendChild(toolTipHeadingLabel);
+        //toolTipTotalDiv.appendChild(toolTipHeadingLabel);
         toolTipTotalDiv.appendChild(this.tooltipTextInput);
         thirdDiv.appendChild(bookmarkTotalDiv);
-        bookmarkTotalDiv.appendChild(bookmarkHeadingLabel);
+        //bookmarkTotalDiv.appendChild(bookmarkHeadingLabel);
         bookmarkTotalDiv.appendChild(this.bookmarkTextInput);
 
         dialogDiv.appendChild(fillInEnableDiv);
         fillInEnableDiv.appendChild(fillInEnableEle);
         this.fillInEnable.appendTo(fillInEnableEle);
+        this.defaultTextLabel = new TextBox({placeholder: localValue.getConstant('Default text'), floatLabelType: 'Always'}, this.defaultTextInput);
+        new TextBox({placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always'}, this.tooltipTextInput);
+        new TextBox({placeholder: localValue.getConstant('Name'), floatLabelType: 'Always'}, this.bookmarkTextInput);
     }
     /**
      * @private
@@ -193,7 +214,7 @@ export class TextFormFieldDialog {
         if (isNullOrUndefined(this.target)) {
             this.initTextDialog(this.localObj, this.documentHelper.owner.enableRtl);
         }
-        this.loadTextDialog();
+        this.loadTextDialog(this.localObj);
         this.documentHelper.dialog.header = this.localObj.getConstant('Text Form Field');
         this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
         this.documentHelper.dialog.height = 'auto';
@@ -221,27 +242,37 @@ export class TextFormFieldDialog {
             this.textFormatDropDown.value = '';
         }
         if (args.value === 'Regular text') {
-            this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
-            this.textFormatLabel.innerHTML = this.localObj.getConstant('Text format');
-            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
+            this.textFormatDropDown.fields = { text: 'Name', value: 'Value' }; 
+            this.defaultTextLabel.placeholder = this.localObj.getConstant('Default text');
+            this.textFormatDropDown.placeholder = this.localObj.getConstant('Text format');
+            this.textFormatDropDown.dataSource =    [
+                { Value: "Uppercase", Name: this.localObj.getConstant("Uppercase") },
+                { Value: "Lowercase", Name: this.localObj.getConstant("Lowercase") },
+                { Value: "FirstCapital", Name: this.localObj.getConstant("FirstCapital") },
+                { Value: "Titlecase", Name: this.localObj.getConstant("Titlecase") }
+            ];
         } else if (args.value === 'Number') {
-            this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default number');
-            this.textFormatLabel.innerHTML = this.localObj.getConstant('Number format');
+            this.textFormatDropDown.fields = { text: null , value: null }; 
+            this.defaultTextLabel.placeholder = this.localObj.getConstant('Default number');
+            this.textFormatDropDown.placeholder = this.localObj.getConstant('Number format');
             this.textFormatDropDown.dataSource = ['0', '0.00', '#,##0', '#,##0.00', '$#,##0.00;($#,##0.00)', '0%'];
         } else if (args.value === 'Date') {
-            this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default date');
-            this.textFormatLabel.innerHTML = this.localObj.getConstant('Date format');
+            this.textFormatDropDown.fields = { text: null , value: null }; 
+            this.defaultTextLabel.placeholder = this.localObj.getConstant('Default date');
+            this.textFormatDropDown.placeholder = this.localObj.getConstant('Date format');
             this.textFormatDropDown.dataSource = ['M/d/yyyy', 'dddd, MMMM d, yyyy', 'MMMM d, yyyy', 'M/d/yy', 'yyyy-MM-dd', 'd-MMM-yy',
                 'M.d.yyyy', 'MMM. d, yy', 'd MMMM yyyy', 'MMMM yy', 'MMM-yy', 'M/d/yyyy h:mm am/pm', 'M/d/yyyy h:mm:ss am/pm', 'h:mm am/pm', 'h:mm:ss am/pm',
                 'HH:mm', 'HH:mm:ss'];
         }
+        this.defaultTextLabel.dataBind();
+        this.textFormatDropDown.dataBind();
     }
 
     /**
      * @private
      * @returns {void}
      */
-    public loadTextDialog(): void {
+    public loadTextDialog(local?: L10n): void {
         let inline: ElementBox = this.owner.selection.getCurrentFormField();
         if (inline instanceof FieldElementBox) {
             this.fieldBegin = inline;
@@ -250,7 +281,7 @@ export class TextFormFieldDialog {
                 this.maxLengthNumber.value = data.maxLength;
             } else {
                 this.maxLengthNumber.value = 0;
-                this.maxLengthNumber.element.value = 'Unlimited';
+                this.maxLengthNumber.element.value = local ? local.getConstant('Unlimited') : 'Unlimited';
             }
             if (data.type === 'Date') {
                 this.typeDropDown.value = 'Date';

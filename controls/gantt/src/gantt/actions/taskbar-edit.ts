@@ -507,7 +507,7 @@ export class TaskbarEdit extends DateProcessor {
             const args: IActionBeginEventArgs = {
                 cancel: false,
                 requestType: 'taskbarediting',
-                taskBarEditAction: this.taskBarEditAction,
+		taskBarEditAction: this.taskBarEditAction,
                 data: this.taskBarEditRecord
             };
             if(this.segmentIndex !== -1) {
@@ -1516,7 +1516,7 @@ export class TaskbarEdit extends DateProcessor {
                 this.taskBarEditedAction(e);
                 this.isMouseDragged = false;
             } else {
-                this.parent.isOnEdit = false;
+				this.parent.isOnEdit = false;
                 this.cancelTaskbarEditActionInMouseLeave();
             }
         }

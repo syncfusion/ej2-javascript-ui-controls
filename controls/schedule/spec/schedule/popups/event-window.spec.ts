@@ -2,13 +2,13 @@
 /**
  * Schedule event window spec
  */
-import { Browser, EmitType, closest, remove } from '@syncfusion/ej2-base';
+import { Browser, EmitType, closest, remove, createElement } from '@syncfusion/ej2-base';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { DateTimePicker, DatePicker } from '@syncfusion/ej2-calendars';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { Schedule, Week, ScheduleModel } from '../../../src/schedule/index';
+import { Schedule, Week, ScheduleModel, EventRenderedArgs } from '../../../src/schedule/index';
 import { RecurrenceEditor, RecurrenceEditorModel } from '../../../src/recurrence-editor/index';
 import { EJ2Instance, PopupOpenEventArgs, ActionEventArgs } from '../../../src/schedule/base/interface';
 import * as util from '../util.spec';
@@ -2485,6 +2485,224 @@ describe('Schedule event window initial load', () => {
             const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
             expect((startTZDropDown as HTMLInputElement).value).toEqual('Rarotonga');
             saveButton.click();
+        });
+    });
+
+    describe('EJ2-56895-Editor window check box actions', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2017, 10, 3)
+            };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('To Check all day and timezone check box actions', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const timezoneElement: HTMLElement = dialogElement.querySelector('.' + cls.TIME_ZONE_CLASS + ' input');
+            timezoneElement.click();
+            expect(((timezoneElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(true);
+            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TIME_ZONE_DIV_CLASS + '.e-enable')).toBeTruthy();
+            timezoneElement.click();
+            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TIME_ZONE_DIV_CLASS + '.e-enable')).toBeFalsy();
+            const allDayElement: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_ALL_DAY_CLASS + ' input');
+            allDayElement.click();
+            expect(dialogElement.querySelector('.e-time-zone-container.e-disable')).toBeTruthy();
+            allDayElement.click();
+            expect(dialogElement.querySelector('.e-time-zone-container.e-disable')).toBeFalsy();
+            const closeButton: HTMLElement = dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement;
+            closeButton.click();
+        });
+    });
+
+    describe('EJ2CORE-491-Edit block appointments using editor window', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2022, 1, 6),
+                showQuickInfo: false,
+                eventRendered: function (args: EventRenderedArgs) {
+                    if (args.type === 'blockEvent') {
+                        args.element.onclick = onBlockClick;
+                    }
+                },
+                popupOpen: function (args) {
+                    if (args.type === 'Editor') {
+                        if (!args.element.querySelector('.custom-field-row')) {
+                            const row: HTMLElement = createElement('div', { className: 'custom-field-row' });
+                            const formElement: HTMLElement = args.element.querySelector('.e-schedule-form');
+                            formElement.firstChild.insertBefore(row, args.element.querySelector('.e-title-location-row'));
+                            const container: HTMLElement = createElement('div', { className: 'custom-field-container' });
+                            const inputEle: HTMLElement = createElement('input', {
+                                id: 'IsBlock', className: 'e-field e-is-block', attrs: { name: 'IsBlock' }
+                            });
+                            container.appendChild(inputEle);
+                            row.appendChild(container);
+                            const blockObj: CheckBox = new CheckBox({ label: 'is Block' });
+                            blockObj.appendTo(inputEle);
+                            inputEle.setAttribute('name', 'IsBlock');
+                        }
+                    }
+                },
+            };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+
+            function onBlockClick(args: Event) {
+                const totalCount: Record<string, any>[] = schObj.getBlockEvents();
+                let currentId: number;
+                const target: HTMLElement = args.target as HTMLElement;
+                if (target.classList.contains('e-block-appointment')) {
+                    currentId = parseInt(target.getAttribute('data-id').split('_')[1]);
+                } else {
+                    currentId = parseInt(target.offsetParent.getAttribute('data-id').split('_')[1]);
+                }
+                const currentBlockData: Record<string, any>[] = [];
+                for (let i: number = 0; i < totalCount.length; i++) {
+                    if (totalCount[i].Id === currentId) {
+                        currentBlockData.push(totalCount[i]);
+                    }
+                }
+                schObj.openEditor(currentBlockData[0], 'Save');
+            }
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Adding a block appointment', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const blockData: Record<string, any> = schObj.blockData[0];
+                expect(blockData.Subject).toEqual('Blocked range');
+                expect(blockData.IsBlock).toBeTruthy();
+                expect(blockData.RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=2;');
+                expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(2);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.e-is-block') as EJ2Instance).ej2_instances[0].checked = true;
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Blocked range';
+            (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0].value = 'daily';
+            (dialogElement.querySelector('.e-end-on-element') as EJ2Instance).ej2_instances[0].value = 'count';
+            (dialogElement.querySelector('.e-recurrence-count') as EJ2Instance).ej2_instances[0].value = 2;
+            (dialogElement.querySelector('.e-event-save') as HTMLButtonElement).click();
+        });
+        it('editing a block appointment', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const blockData: Record<string, any> = schObj.blockData[0];
+                expect(blockData.Subject).toEqual('Blocked range edited');
+                expect(blockData.IsBlock).toBeTruthy();
+                expect(blockData.RecurrenceRule).toEqual(null);
+                expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(1);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-block-appointment') as HTMLElement, 'click');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Blocked range edited';
+            (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0].value = 'none';
+            (dialogElement.querySelector('.e-event-save') as HTMLButtonElement).click();
+        });
+    });
+
+    describe('EJ2-58120-openEditor method return incorrect end date testing', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2021, 0, 13)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('open editor method manually testing end time', () => {
+            const cellData: Record<string, any> = {
+                startTime: new Date(2021, 0, 13),
+                endTime: new Date(2021, 0, 15),
+                isAllDay: true,
+            };
+            const dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
+            expect(dialogElement.classList.contains('e-popup-open')).toEqual(false);
+            expect(dialogElement.classList.contains('e-popup-close')).toEqual(true);
+            schObj.openEditor(cellData, 'Add');
+            expect(dialogElement.classList.contains('e-popup-open')).toEqual(true);
+            expect(dialogElement.classList.contains('e-popup-close')).toEqual(false);
+            const startDate: DateTimePicker = (<HTMLElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS) as EJ2Instance).
+                ej2_instances[0] as DateTimePicker;
+            const endDate: DateTimePicker = (<HTMLElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS) as EJ2Instance).
+                ej2_instances[0] as DateTimePicker;
+            expect(startDate.value.getTime()).toEqual(new Date(2021, 0, 13).getTime());
+            expect(endDate.value.getTime()).toEqual(new Date(2021, 0, 14).getTime());
+            schObj.closeEditor();
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(true);
+        });
+    });
+
+    describe('EJ2-58120-openEditor method return incorrect end date testing for editor template', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const template: string = '<table class="custom-event-editor" width="100%" cellpadding="5"><tbody>' +
+                '<tr><td class="e-textlabel">Subject:</td><td colspan="4"><input id="Subject" class="e-field" type="text" value="" ' +
+                'name="Subject" style="width: 100%"/></td></tr><tr><td class="e-textlabel">Description:</td><td colspan="4">' +
+                '<textarea id="Description" class="e-field" name="Description" rows="3" cols="50" style="width:100%; ' +
+                'height:60px!important;resize:vertical"></textarea></td></tr><tr><td class="e-textlabel">StartTime:</td><td ' +
+                'colspan="2"><input id="StartTime" class="e-field" type="text" name="StartTime"/></td><td class="e-textlabel">EndTime:' +
+                '</td><td colspan="2"><input id="EndTime" class="e-field" type="text" name="EndTime"/></td></tr><tr><td colspan="3">' +
+                '<div class="form-check"><label class="form-check-label e-textlabel" for="AllDay">All Day</label><input type="checkbox"' +
+                'class="form-check-input e-field" name="IsAllDay" id="AllDay"></div></td></tr></tbody></table>';
+            const scriptEle: HTMLScriptElement = document.createElement('script');
+            scriptEle.type = 'text/x-template';
+            scriptEle.id = 'eventEditor';
+            scriptEle.appendChild(document.createTextNode(template));
+            document.getElementsByTagName('head')[0].appendChild(scriptEle);
+            const model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2021, 0, 13),
+                popupOpen: (args: PopupOpenEventArgs) => {
+                    if (schObj.editorTemplate && args.type === 'Editor') {
+                        const startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
+                        if (startElement && !startElement.classList.contains('e-datepicker')) {
+                            new DatePicker({ value: new Date(startElement.value) || new Date() }, startElement);
+                        }
+                        const endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
+                        if (endElement && !endElement.classList.contains('e-datepicker')) {
+                            new DatePicker({ value: new Date(endElement.value) || new Date() }, endElement);
+                        }
+                    }
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('eventEditor'));
+        });
+
+        it('open editor method manually testing end time in editor template', () => {
+            const cellData: Record<string, any> = {
+                startTime: new Date(2021, 0, 13),
+                endTime: new Date(2021, 0, 15),
+                isAllDay: true,
+            };
+            const dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
+            expect(dialogElement.classList.contains('e-popup-open')).toEqual(false);
+            expect(dialogElement.classList.contains('e-popup-close')).toEqual(true);
+            schObj.openEditor(cellData, 'Add');
+            expect(dialogElement.classList.contains('e-popup-open')).toEqual(true);
+            expect(dialogElement.classList.contains('e-popup-close')).toEqual(false);
+            const startDate: DateTimePicker = (dialogElement.querySelector('#StartTime') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const endDate: DateTimePicker = (dialogElement.querySelector('#EndTime') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            expect(startDate.value.getTime()).toEqual(new Date(2021, 0, 13).getTime());
+            expect(endDate.value.getTime()).toEqual(new Date(2021, 0, 14).getTime());
+            schObj.closeEditor();
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(true);
         });
     });
 

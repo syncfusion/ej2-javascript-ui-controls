@@ -187,6 +187,7 @@ export function phaseDefine(
         annotations: [cloneObject(shape.phases[phaseIndex].header.annotation)],
         maxWidth: maxWidth,
         id: object.id + shape.phases[phaseIndex].id + '_header',
+        addInfo:shape.phases[phaseIndex].addInfo,
         offsetX: object.offsetX, offsetY: object.offsetY,
         style: shape.phases[phaseIndex].style,
         rowIndex: rowValue, columnIndex: colValue,
@@ -231,6 +232,7 @@ export function laneCollection(
             width: gridCell.minWidth, height: gridCell.minHeight,
             offsetX: object.offsetX, offsetY: object.offsetY,
             style: shape.lanes[laneIndex].style,
+            addInfo:shape.lanes[laneIndex].addInfo,
             constraints: NodeConstraints.Default | NodeConstraints.ReadOnly | NodeConstraints.AllowDrop,
             container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
         };

@@ -7,43 +7,43 @@
       .e-toolbar-items.e-hscroll.e-rtl {
 
         .e-nav-left-arrow::before {
-          content: '\e7c2';
+          content: '\e748';
         }
 
         .e-nav-right-arrow::before {
-          content: '\e7c1';
+          content: '\e765';
         }
       }
 
       .e-scroll-nav {
 
         .e-nav-left-arrow::before {
-          content: '\e7c1';
+          content: '\e765';
         }
 
         .e-nav-right-arrow::before {
-          content: '\e7c2';
+          content: '\e748';
         }
       }
 
       .e-close-icon::before {
-        content: '\e74f';
+        content: '\e7e7';
         position: relative;
       }
 
       .e-popup-up-icon::before {
-        content: '\e7c4';
+        content: '\e776';
 
         @media screen and (max-width: 480px) {
-          content: '\e7ad';
+          content: '\e770';
         }
       }
 
       .e-popup-down-icon::before {
-        content: '\e7c3';
+        content: '\e729';
 
         @media screen and (max-width: 480px) {
-          content: '\e7ad';
+          content: '\e770';
         }
       }
     }
@@ -53,11 +53,11 @@
       @media screen and (max-width: 480px) {
 
         .e-popup-up-icon::before {
-          content: '\e810';
+          content: '\e776';
         }
 
         .e-popup-down-icon::before {
-          content: '\e811';
+          content: '\e729';
         }
       }
     }
@@ -69,11 +69,11 @@
         .e-scroll-nav {
 
           .e-nav-up-arrow::before {
-            content: '\e7c4';
+            content: '\e776';
           }
 
           .e-nav-down-arrow::before {
-            content: '\e7c3';
+            content: '\e729';
           }
         }
 
@@ -84,7 +84,7 @@
           }
 
           &::after {
-            content: '\e7c4';
+            content: '\e776';
           }
         }
 
@@ -95,7 +95,7 @@
           }
 
           &::after {
-            content: '\e7c3';
+            content: '\e729';
           }
         }
       }
@@ -111,7 +111,7 @@
             }
 
             &::after {
-              content: '\e7c4';
+              content: '\e776';
             }
           }
 
@@ -122,7 +122,7 @@
             }
 
             &::after {
-              content: '\e7c3';
+              content: '\e729';
             }
           }
         }
@@ -133,8 +133,9 @@
   .e-tab-clone-element {
 
     .e-close-icon::before {
-      content: '\e74f';
+      content: '\e7e7';
       position: relative;
     }
   }
 }
+  

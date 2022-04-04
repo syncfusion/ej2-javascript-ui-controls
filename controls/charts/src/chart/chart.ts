@@ -1182,7 +1182,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
      * Triggers before the shared tooltip for series is rendered.
-     * This applicable for blazor only.
      *
      * @event sharedTooltipRender
      */
@@ -1513,11 +1512,17 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /** @private */
     public clickCount: number = 0;
     /** @private */
+    public maxPointCount: number = 0;
+    /** @private */
     public singleClickTimer: number = 0;
     /** @private */
     public chartAreaType: string = 'Cartesian';
     /** @private */
     public isRtlEnabled: boolean = false;
+    /** @private */
+    public scaleX: number = 1;
+    /** @private */
+    public scaleY: number = 1;
     /**
      * `markerModule` is used to manipulate and add marker to the series.
      *
@@ -1770,7 +1775,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         removeElement('chartmeasuretext');
         this.removeSelection();
         
-        if (this.markerRender && !this.stockChart) {
+        if (this.markerRender) {
             this.markerRender.mergeXvalues(this.visibleSeries);
         }
     }
@@ -1902,9 +1907,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.dataLabelCollections = [];
         const elementId: string = this.element.id;
         if (this.series.length) {
-            this.seriesElements = (this.series[0].type === 'Scatter' || this.series[0].type === 'Bubble') ?
-                this.svgRenderer.createGroup({ id: elementId + 'SeriesCollection' }) :
-                this.renderer.createGroup({ id: elementId + 'SeriesCollection' });
+            this.seriesElements = this.svgRenderer.createGroup({ id: elementId + 'SeriesCollection' });
         }
         if (this.indicators.length) {
             this.indicatorElements = this.renderer.createGroup({ id: elementId + 'IndicatorCollection' });
@@ -1933,7 +1936,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             const tooltipDiv: Element = redrawElement(this.redraw, elementId + '_Secondary_Element') ||
                 this.createElement('div');
             tooltipDiv.id = elementId + '_Secondary_Element';
-            tooltipDiv['style'] = 'position: relative';
+            (tooltipDiv as HTMLElement).style.cssText = 'position: relative';
             appendChildElement(false, this.element, tooltipDiv, this.redraw);
         }
         // For canvas
@@ -1946,7 +1949,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 width: this.availableSize.width,
                 height: this.availableSize.height
             });
-            svg['style'] = 'position: absolute; pointer-events: none';
+            (svg as SVGElement).style.cssText = 'position: absolute; pointer-events: none';
             tooltipdiv.appendChild(svg);
         }
         // For userInteraction
@@ -2035,7 +2038,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             svgElement = !svgElement ? this.svgRenderer.createSvg({ id: this.element.id + '_series_svg',
                 width: this.availableSize.width, height: this.availableSize.height }) : svgElement;
             divElement = !divElement ? this.createElement('div', { id: this.element.id + '_series' }) : divElement;
-            divElement['style'] = 'position: absolute';
+            (divElement as HTMLElement).style.cssText = 'position: absolute';
             const mainElement: HTMLElement = document.getElementById(this.element.id + '_Secondary_Element');
             divElement.appendChild(svgElement);
             mainElement.appendChild(divElement);
@@ -2138,6 +2141,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public processData(render: boolean = true): void {
         this.visibleSeriesCount = 0;
         let check: boolean = true;
+        let prevPointCount: number = 0;
         for (const series of this.visibleSeries) {
             if (!series.visible && !this.legendSettings.visible) {
                 this.visibleSeriesCount++;
@@ -2157,6 +2161,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (render && (!this.visibleSeries.length || this.visibleSeriesCount === this.visibleSeries.length && check)) {
             this.refreshBound();
             this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+        }
+
+        if (!this.stockChart && this.visibleSeries.length > 0) {
+            for (const series of this.visibleSeries) {
+                this.maxPointCount = Math.max(prevPointCount, series.points.length);
+                prevPointCount = series.points.length;
+            }
         }
     }
 
@@ -2800,8 +2811,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (getElement(this.svgId)) {
             const svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
             const rect: ClientRect = this.element.getBoundingClientRect();
-            this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-            this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+            this.mouseY = ((pageY - rect.top) - Math.max(svgRect.top - rect.top, 0) / this.scaleX);
+            this.mouseX = ((pageX - rect.left) - Math.max(svgRect.left - rect.left, 0) / this.scaleY);
         }
     }
 

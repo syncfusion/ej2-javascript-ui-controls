@@ -50,7 +50,12 @@
       flex-shrink: 0;
 
       .e-breadcrumb-text {
-        padding: $breadcrumb-padding;
+        @if $skin-name == 'FluentUI' {
+          padding: 4px;
+        }
+        @else {
+          padding: $breadcrumb-padding;
+        }
 
         @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
           &:focus {
@@ -83,15 +88,42 @@
       a.e-breadcrumb-text {
         cursor: pointer;
         text-decoration: none;
+        @if $skin-name == 'FluentUI' {
+          border: 1px solid transparent;
+        }
 
         @if $breadcrumb-skin == 'bootstrap5' {
           text-decoration: underline;
         }
 
-        &:hover,
-        &:focus,
+        &:hover {
+          @if $skin-name == 'FluentUI' {
+            background-color: $content-bg-color-hover;
+            color: $content-text-color-alt3;
+          }
+          @else {
+            text-decoration: underline;
+          }
+        }
+
+        &:focus {
+          @if $skin-name == 'FluentUI' {
+            border: 1px solid $border-alt;
+            color: $content-text-color-alt1;
+          }
+          @else {
+            text-decoration: underline;
+          }
+        }
+
         &:active {
-          text-decoration: underline;
+          @if $skin-name == 'FluentUI' {
+            background-color: $content-bg-color-alt4;
+            color: $content-text-color-alt3;
+          }
+          @else {
+            text-decoration: underline;
+          }
         }
 
         @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'tailwind' {
@@ -309,7 +341,7 @@
       .e-breadcrumb-icon {
         display: flex;
         flex-grow: 1;
-        justify-content: flex-end;
+        justify-content: end;
      }
    }
 
@@ -358,7 +390,12 @@
     .e-breadcrumb-item {
 
       .e-breadcrumb-text {
-        padding: $breadcrumb-bigger-padding;
+        @if $skin-name == 'FluentUI' {
+          padding: 8px;
+        }
+        @else {
+          padding: $breadcrumb-bigger-padding;
+        }
 
         @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'tailwind' {
           &:focus {

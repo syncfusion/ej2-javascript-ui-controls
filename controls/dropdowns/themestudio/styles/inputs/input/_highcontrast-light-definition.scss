@@ -226,7 +226,8 @@ $input-child-bigger-margin-top: $zero-value !default;
 $float-input-child-bigger-margin-top: $zero-value !default;
 $input-child-bigger-margin-right:  $zero-value !default;
 $input-disable-group-border-width: $one-value !default;
-$input-readonly-bg-color: none !default;;
+$input-readonly-bg-color: none !default;
+$float-label-rtl-value: -7px !default;
 
 @mixin input-sizing {
   box-sizing: border-box;

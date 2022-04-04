@@ -7,6 +7,7 @@ import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
 import { LayerModel, Rect, UndoRedo, PointModel } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
+import { IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams, UndoRedo);
@@ -2243,5 +2244,162 @@ describe('Bezier annotation bounds Issue', () => {
         expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 232 || Math.floor(diagram.connectors[0].wrapper.children[3].bounds.x) === 227).toBe(true);
         expect(Math.floor(diagram.connectors[0].wrapper.children[3].bounds.y) === 420 || Math.floor(diagram.connectors[0].wrapper.children[3].bounds.y) === 425).toBe(true);
         done();
+    });
+})
+
+describe('Multi-Connector drawing issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+
+        diagram = new Diagram({
+            width: '1000px', height: '500px',
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Draw the connector and click right click event', (done: Function) => {
+        let drawingshape: NodeModel | ConnectorModel;
+        drawingshape = {
+            type: 'Straight'
+        }
+        diagram.drawingObject = drawingshape;
+        diagram.tool |= DiagramTools.ContinuousDraw;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 150, 150);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250, 400);
+        mouseEvents.rightClickEvent(diagramCanvas, 250, 400);
+        expect(Object.keys(diagram.nameTable).length).toBe(1);
+        done();
+    });
+})
+
+describe('Selection not update properly for group issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 100,
+                offsetY: 100,
+            }, {
+                id: 'node2', width: 100, height: 100, offsetX: 300,
+                offsetY: 300
+            },
+
+            { id: 'group', children: ['node1', 'node2'] },
+
+        ];
+        diagram = new Diagram({
+            width: '1000px', height: '500px', nodes: nodes
+
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Drag the group node to negative axis and check selection', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 200, 200);
+        mouseEvents.mouseMoveEvent(diagramCanvas, -300, -300);
+        mouseEvents.mouseUpEvent(diagramCanvas, -300, -300);
+        mouseEvents.clickEvent(diagramCanvas, -100, -100);
+        mouseEvents.clickEvent(diagramCanvas, -300, -300);
+        expect(diagram.selectedItems.nodes.length).toBe(1);
+        done();
+    });
+})
+
+describe('Property Change Event Args - Issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+
+        let connector: ConnectorModel = {
+            id: 'connector1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 300, y: 300 }, annotations: [{ content: 'Connector' }]
+        };
+        diagram = new Diagram({
+            width: '1000px', height: '500px', connectors: [connector]
+
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Drag the connector target end and check event argument', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+            let newValue = args.newValue as ConnectorModel;
+            let oldValue = args.oldValue as ConnectorModel;
+            if (oldValue.targetPoint) {
+                expect(oldValue.targetPoint.x).toBe(300);
+                expect(oldValue.targetPoint.y).toBe(300);
+                expect(newValue.targetPoint.x).toBe(300);
+                expect(newValue.targetPoint.y === 320 || newValue.targetPoint.y === 330 ).toBe(true);
+                done();
+            }
+        };
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let resizeOptions: HTMLElement = document.getElementById('connectorTargetThumb');
+        let bounds: any = resizeOptions.getBoundingClientRect();
+        let x: number = bounds.x;
+        let y: number = bounds.y;
+        mouseEvents.mouseDownEvent(diagramCanvas, x, y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 30);
+        mouseEvents.mouseUpEvent(diagramCanvas, x, y + 30);
+
     });
 })

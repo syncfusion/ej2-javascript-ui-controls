@@ -8,7 +8,7 @@ import { WList } from '../list/list';
 import { Query } from '@syncfusion/ej2-data';
 import { WAbstractList } from '../list/abstract-list';
 import { WCharacterFormat, WParagraphFormat } from '../index';
-import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
+import { ColorPicker, ColorPickerEventArgs, TextBox } from '@syncfusion/ej2-inputs';
 import { DropDownButton, ItemModel, MenuEventArgs as DropDownButtonMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { DocumentHelper } from '../viewer';
@@ -78,56 +78,63 @@ export class StyleDialog {
     public initStyleDialog(localValue: L10n, isRtl?: boolean): void {
         let instance: StyleDialog = this;
         this.localObj = localValue;
-        let id: string = this.documentHelper.owner.containerId + '_style';
-        this.target = createElement('div', { id: id, className: 'e-de-style-dialog' });
+        this.target = createElement('div', { className: 'e-de-style-dialog' });
         let container: HTMLElement = createElement('div');
 
-        let properties: HTMLElement = createElement('div', { className: 'e-de-style-properties', innerHTML: localValue.getConstant('Properties') });
+        let properties: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localValue.getConstant('Properties') });
         container.appendChild(properties);
-        let styleNameTypeDiv: HTMLElement = createElement('div', { styles: 'display:flex', className: 'e-de-style-nametype-div' });
+        let styleNameTypeDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
         container.appendChild(styleNameTypeDiv);
-        let nameWholeDiv: HTMLElement = createElement('div', { className: 'e-de-style-left-div' });
+        let nameWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
         styleNameTypeDiv.appendChild(nameWholeDiv);
-        let name: HTMLElement = createElement('div', { className: 'e-de-style-name', innerHTML: localValue.getConstant('Name') + ':' });
-        nameWholeDiv.appendChild(name);
+        // let name: HTMLElement = createElement('div', { className: 'e-de-style-name', innerHTML: localValue.getConstant('Name') + ':' });
+        // nameWholeDiv.appendChild(name);
 
-        let nameValue: HTMLInputElement = createElement('input', { id: this.documentHelper.owner.containerId + '_style_name', styles: 'width:210px;', className: 'e-input e-de-style-dlg-name-input' }) as HTMLInputElement;
+        let nameValue: HTMLInputElement = createElement('input', { className: 'e-input e-de-style-dlg-name-input' }) as HTMLInputElement;
         nameValue.addEventListener('keyup', this.updateOkButton);
         nameValue.addEventListener('input', this.updateOkButton);
         nameValue.addEventListener('blur', this.updateNextStyle);
         nameWholeDiv.appendChild(nameValue);
-        let styleTypeWholeDiv: HTMLElement = createElement('div');
+        new TextBox({placeholder: localValue.getConstant('Name') + ':', floatLabelType: 'Always' }, nameValue);
+        let styleTypeWholeDiv: HTMLElement = createElement('div', {className : 'e-de-subcontainer-right'});
         styleNameTypeDiv.appendChild(styleTypeWholeDiv);
 
-        let styleType: HTMLElement = createElement('div', { className: 'e-de-style-styletype', innerHTML: localValue.getConstant('Style type') + ':' });
-        styleTypeWholeDiv.appendChild(styleType);
-        let styleTypeDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-type-div' });
-        let styleTypeValue: HTMLSelectElement = createElement('select', { id: 'e-de-style-style-type' }) as HTMLSelectElement;
+        // let styleType: HTMLElement = createElement('div', { className: 'e-de-style-styletype', innerHTML:  });
+        // styleTypeWholeDiv.appendChild(styleType);
+        let styleTypeDivElement: HTMLElement = createElement('div');
+        let styleTypeValue: HTMLSelectElement = createElement('select') as HTMLSelectElement;
 
         styleTypeValue.innerHTML = '<option value="Paragraph">' + localValue.getConstant('Paragraph') + '</option><option value="Character">' + localValue.getConstant('Character') + '</option><option value="Linked Style">' + localValue.getConstant('Linked Style') + '</option>';
         styleTypeDivElement.appendChild(styleTypeValue);
-        this.styleType = new DropDownList({ change: this.styleTypeChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
+        this.styleType = new DropDownList({
+            change: this.styleTypeChange,
+            popupHeight: '253px', enableRtl: isRtl,
+            placeholder: localValue.getConstant('Style type') + ':', floatLabelType: 'Always'
+        });
         this.styleType.appendTo(styleTypeValue);
         styleTypeWholeDiv.appendChild(styleTypeDivElement);
 
-        let styleBasedParaDiv: HTMLElement = createElement('div', { styles: 'display:flex', className: 'e-de-style-based-para-div' });
+        let styleBasedParaDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
         container.appendChild(styleBasedParaDiv);
-        let styleBasedOnWholeDiv: HTMLElement = createElement('div', { className: 'e-de-style-left-div' });
+        let styleBasedOnWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
         styleBasedParaDiv.appendChild(styleBasedOnWholeDiv);
 
-        let styleBasedOn: HTMLElement = createElement('div', { className: 'e-de-style-style-based-on', innerHTML: localValue.getConstant('Style based on') + ':' });
-        styleBasedOnWholeDiv.appendChild(styleBasedOn);
+        //let styleBasedOn: HTMLElement = createElement('div', { className: 'e-de-style-style-based-on', innerHTML:  });
+        //styleBasedOnWholeDiv.appendChild(styleBasedOn);
         let styleBasedOnDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-based-on-div' });
 
-        let styleBasedOnValue: HTMLInputElement = createElement('input', { id: 'e-de-style-style-based-on-value' }) as HTMLInputElement;
+        let styleBasedOnValue: HTMLInputElement = createElement('input') as HTMLInputElement;
         //styleBasedOnValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
         styleBasedOnDivElement.appendChild(styleBasedOnValue);
 
-        this.styleBasedOn = new DropDownList({ dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
+        this.styleBasedOn = new DropDownList({
+            dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', enableRtl: isRtl,
+            placeholder: localValue.getConstant('Style based on') + ':', floatLabelType: 'Always'
+        });
         this.styleBasedOn.appendTo(styleBasedOnValue);
         styleBasedOnWholeDiv.appendChild(styleBasedOnDivElement);
 
-        let styleParagraphWholeDiv: HTMLElement = createElement('div');
+        let styleParagraphWholeDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
         styleBasedParaDiv.appendChild(styleParagraphWholeDiv);
         if (isRtl) {
             nameWholeDiv.classList.add('e-de-rtl');
@@ -135,19 +142,22 @@ export class StyleDialog {
             styleParagraphWholeDiv.classList.add('e-de-rtl');
         }
 
-        let styleParagraph: HTMLElement = createElement('div', { className: 'e-de-style-style-paragraph', innerHTML: localValue.getConstant('Style for following paragraph') + ':' });
-        styleParagraphWholeDiv.appendChild(styleParagraph);
-        let styleParagraphDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-paragraph-div' });
+        //let styleParagraph: HTMLElement = createElement('div', { className: 'e-de-style-style-paragraph', innerHTML: });
+        //styleParagraphWholeDiv.appendChild(styleParagraph);
+        let styleParagraphDivElement: HTMLElement = createElement('div');
 
-        let styleParagraphValue: HTMLInputElement = createElement('input', { id: 'e-de-style-style-paragraph-value' }) as HTMLInputElement;
+        let styleParagraphValue: HTMLInputElement = createElement('input') as HTMLInputElement;
 
         //styleParagraphValue.innerHTML = '<option>Normal</option><option>Heading 1</option><option>Heading 2</option><option>Heading 3</option><option>Heading 4</option><option>Heading 5</option><option>Heading 6</option>';
         styleParagraphDivElement.appendChild(styleParagraphValue);
 
-        this.styleParagraph = new DropDownList({ dataSource: [], select: this.styleParagraphChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
+        this.styleParagraph = new DropDownList({
+            dataSource: [], select: this.styleParagraphChange, popupHeight: '253px', enableRtl: isRtl,
+            placeholder: localValue.getConstant('Style for following paragraph') + ':', floatLabelType: 'Always'
+        });
         this.styleParagraph.appendTo(styleParagraphValue);
         styleParagraphWholeDiv.appendChild(styleParagraphDivElement);
-        let formatting: HTMLElement = createElement('div', { className: 'e-de-style-formatting', innerHTML: localValue.getConstant('Formatting') });
+        let formatting: HTMLElement = createElement('div', { className: 'e-de-para-dlg-heading', innerHTML: localValue.getConstant('Formatting') });
         container.appendChild(formatting);
         let optionsDiv: HTMLElement = createElement('div', { className: 'e-de-style-options-div' });
         container.appendChild(optionsDiv);
@@ -626,6 +636,9 @@ export class StyleDialog {
         if (!this.target) {
             this.initStyleDialog(localObj, this.documentHelper.owner.enableRtl);
         }
+        if (!this.isEdit) {
+            this.styleType.value = 'Paragraph';
+        }
         if (isNullOrUndefined(header)) {
             header = localObj.getConstant('Create New Style');
         }
@@ -776,7 +789,8 @@ export class StyleDialog {
         this.fontFamily.value = this.characterFormat.fontFamily;
         this.fontSize.value = this.characterFormat.fontSize;
         let color: string = this.characterFormat.fontColor;
-        this.fontColor.value = color === '#00000000' ? '#000000' : color;
+        // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
+        this.fontColor.value = (color === 'empty' || color === '#00000000') ? '#000000' : color;
         this.fontButtonClicked();
     }
 

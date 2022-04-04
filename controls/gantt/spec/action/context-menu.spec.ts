@@ -211,14 +211,6 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             expect(ganttObj.currentViewData.length).toBe(42);
         });
-        it('Add record - Milestone', () => {
-            let e: ContextMenuClickEventArgs = {
-                item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
-                element: null,
-            };
-            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData.length).toBe(43);
-        });
         // it('Add record - Above', () => {
         //      let e: ContextMenuClickEventArgs = {
         //          item: { id: ganttObj.element.id + '_contextMenu_Above' },
@@ -251,7 +243,45 @@ describe('Context-', () => {
         //      expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Final Delivery</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">2/1/2017</td></tr></tbody></table>');
         //      done();
         //  });
-         it('Task Information', () => {       
+    });
+      describe('Content menu -', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(ganttModel, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });
+        it('Add record - Milestone', () => {
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData.length).toBe(43);
+        });
+    });
+     describe('Content menu -', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(ganttModel, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });
+        it('Task Information', () => {       
              ganttObj.contextMenuClick = function (args: ContextMenuClickEventArgs) {
                  expect(args.item.text).toEqual('Task Information');
              }

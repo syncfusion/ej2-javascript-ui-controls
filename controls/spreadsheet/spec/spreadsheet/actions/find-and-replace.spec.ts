@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
+import { Spreadsheet } from '../../../src';
 
 describe('Find & Replace ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -47,7 +48,8 @@ describe('Find & Replace ->', () => {
     describe('UI Interaction ->', () => {
 
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ index: 11, cells:
+                [{ index: 6, value: 'Total Amount:' }, { formula: '=G12' }] }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
@@ -79,14 +81,11 @@ describe('Find & Replace ->', () => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('E7:E7');
                 helper.click('.e-findtool-dlg .e-findRib-prev');
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('B7:B7');
-                helper.click('.e-findtool-dlg .e-findRib-close');
-                expect(helper.getElementFromSpreadsheet('.e-findtool-dlg')).toBeNull();
                 done();
             });
         });
 
         it('Find in dialog', (done: Function) => {
-            helper.click('#' + helper.id + '_findbtn');
             setTimeout(() => {
                 helper.click('.e-findtool-dlg .e-findRib-more');
                 setTimeout(() => {
@@ -119,7 +118,6 @@ describe('Find & Replace ->', () => {
                                 helper.invoke('selectRange', ['D11']); // Remove this when above case is fixed
                                 helper.click('.e-find-dlg .e-btn-findPrevious');
                                 expect(helper.getInstance().sheets[0].selectedRange).toBe('H3:H3');
-
                                 const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
                                 replaceTxtBox.value = 'Test';
                                 helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
@@ -133,6 +131,7 @@ describe('Find & Replace ->', () => {
                                     // Replace all
                                     helper.click('.e-find-dlg .e-btn-replaceAll');
                                     setTimeout(() => {
+                                        expect(helper.getElementFromSpreadsheet('.e-findtool-dlg')).toBeNull();
                                         expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe('Test');
                                         expect(helper.invoke('getCell', [10, 3]).textContent).toBe('Test');
                                         expect(helper.getInstance().sheets[0].rows[10].cells[5].value).toBe('Test0');
@@ -239,6 +238,28 @@ describe('Find & Replace ->', () => {
                     expect(findEditor.nextElementSibling.textContent).toBe('3 of 5');
                     helper.getElement('#' + helper.id + ' .e-findtool-dlg .e-findRib-close').click();
                     setTimeout((): void => {
+                        done();
+                    });
+                });
+            });
+        });
+    });
+    describe('CR-Issues ->', () => {
+        describe('EJ2-57069 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Editing state cell value is updated while selecting the find next button', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.startEdit();
+                setTimeout((): void => {
+                    spreadsheet.find(
+                        { value: '10', sheetIndex: 0, findOpt: 'next', mode: 'Sheet', isCSen: false, isEMatch: false, searchBy: 'By Row' });
+                    setTimeout((): void => {
+                        expect((spreadsheet.getCell(0,0) as any).innerText).toBe('Item Name');
                         done();
                     });
                 });

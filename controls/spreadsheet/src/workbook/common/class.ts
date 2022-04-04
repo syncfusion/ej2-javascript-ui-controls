@@ -285,12 +285,20 @@ export class DefineName extends ChildProperty<DefineName> {
  */
 export class ProtectSettings extends ChildProperty<ProtectSettings> {
     /**
-     * specifies to allow selection in spreadsheet.
+     * Specifies to allow selection in spreadsheet.
      *
      * @default false
      */
     @Property(false)
     public selectCells: boolean;
+
+    /**
+     * Specifies to allow selection only for unlocked cells in spreadsheet.
+     *
+     * @default false
+     */
+    @Property(false)
+    public selectUnLockedCells: boolean;
 
     /**
      * specifies to allow formating in cells.
@@ -301,7 +309,7 @@ export class ProtectSettings extends ChildProperty<ProtectSettings> {
     public formatCells: boolean;
 
     /**
-     * specifies to allow format rows in spreadsheet.
+     * Specifies to allow format rows in spreadsheet.
      *
      * @default false
      */

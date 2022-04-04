@@ -56,7 +56,7 @@ export class PagerDropDown {
         this.pagerDropDownDiv = createElement('div', { className: 'e-pagesizes' });
         const dropDownDiv: Element = createElement('div', { className: 'e-pagerdropdown' });
         const defaultTextDiv: Element = createElement('div', { className: 'e-pagerconstant' });
-        const input: HTMLElement = createElement('input', { attrs: { type: 'text', tabindex: '1' } });
+        const input: HTMLElement = createElement('input', { attrs: { type: 'text', tabindex: '-1' } });
         this.pagerCons = createElement('span', {
             className: 'e-constant', innerHTML:
                 this.pagerModule.getLocalizedLabel('pagerDropDown')
@@ -97,6 +97,7 @@ export class PagerDropDown {
     private onChange(e: ChangeEventArgs): void {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
             this.pagerModule.pageSize = this.pagerModule.totalRecordsCount;
+            this.pagerModule.isAllPage = true;
             this.refresh();
             e.value = this.pagerModule.pageSize;
             if (document.getElementsByClassName('e-popup-open e-alldrop').length) {
@@ -104,12 +105,14 @@ export class PagerDropDown {
             }
         } else {
             this.pagerModule.pageSize = parseInt(this.dropDownListObject.value as string, 10);
+            this.pagerModule.isAllPage = false;
             if (this.pagerCons.innerHTML !== this.pagerModule.getLocalizedLabel('pagerDropDown')) {
                 this.refresh();
             }
         }
         this.pagerModule.dataBind();
-        this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value as string, 10) });
+        this.pagerModule.trigger('dropDownChanged', { pageSize: this.pagerModule.isAllPage ? this.pagerModule.totalRecordsCount :
+            parseInt(this.dropDownListObject.value as string, 10) });
     }
 
     public refresh(): void {
@@ -139,7 +142,7 @@ export class PagerDropDown {
 
     public setDropDownValue(prop: string, value: string | number | Object | boolean): void {
         if (this.dropDownListObject) {
-            this.dropDownListObject[prop] = value;
+            this.dropDownListObject[prop] = this.pagerModule.isAllPage ? this.pagerModule.getLocalizedLabel('All') : value;
         }
     }
     public addEventListener(): void {

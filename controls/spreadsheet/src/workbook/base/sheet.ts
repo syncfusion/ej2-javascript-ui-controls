@@ -4,7 +4,7 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection, extend } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
@@ -595,21 +595,21 @@ export function moveSheet(context: Workbook, position: number, sheetIndexes?: nu
     const needRefresh: boolean = !!sheetIndexes;
     sheetIndexes = sheetIndexes || [context.activeSheetIndex];
     position = getNextPrevVisibleSheetIndex(context.sheets, position, context.activeSheetIndex > position);
-    const args: { position: number, sheetIndexes: number[], action: string, cancel: boolean } = {
-        action: 'moveSheet', position: position,
-        sheetIndexes: sheetIndexes, cancel: false
+    const args: { action: string, eventArgs: { position: number, sheetIndexes: number[], cancel: boolean } } = {
+        action: 'moveSheet', eventArgs: { position: position,
+        sheetIndexes: sheetIndexes, cancel: false }
     };
     if (action) {
         context.trigger('actionBegin', args);
     }
-    if (!args.cancel) {
+    if (!args.eventArgs.cancel) {
         sheetIndexes.forEach((sIdx: number, idx: number) => {
             context.sheets.splice(position + idx, 0, context.sheets.splice(sIdx + (position > sIdx ? -1 * idx : 0), 1)[0]);
         });
         context.setProperties({ activeSheetIndex: position > sheetIndexes[0] ? position - (sheetIndexes.length - 1) : position }, true);
         context.notify(moveOrDuplicateSheet, { refresh: needRefresh });
         if (action) {
-            delete args.cancel;
+            delete args.eventArgs.cancel;
             context.trigger('actionComplete', args);
         }
     }
@@ -624,13 +624,13 @@ export function moveSheet(context: Workbook, position: number, sheetIndexes?: nu
  */
 export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: boolean): void {
     sheetIndex = isUndefined(sheetIndex) ? context.activeSheetIndex : sheetIndex;
-    const args: { sheetIndex: number, action: string, cancel: boolean } = {
-        action: 'duplicateSheet', sheetIndex: sheetIndex, cancel: false
+    const args: { action: string, eventArgs: { sheetIndex: number, cancel: boolean } } = {
+        action: 'duplicateSheet', eventArgs: { sheetIndex: sheetIndex, cancel: false }
     };
     if (action) {
         context.trigger('actionBegin', args);
     }
-    if (!args.cancel) {
+    if (!args.eventArgs.cancel) {
         const originalSheet: SheetModel = getSheet(context, sheetIndex);
         const sheet: SheetModel = extend({}, (originalSheet as { properties: Object }).properties ?
             (originalSheet as { properties: Object }).properties : originalSheet, true);
@@ -649,13 +649,14 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
                 break;
             }
         }
+        context.notify(duplicateSheetFilterHandler, {sheetIndex: sheetIndex, newSheetIndex: sheetIndex + 1});
         context.createSheet(sheetIndex + 1, [sheet]);
         context.notify(
             workbookFormulaOperation, { action: 'addSheet', sheetName: 'Sheet' + sheet.id, visibleName: sheet.name, sheetId: sheet.id });
         context.setProperties({ activeSheetIndex: sheetIndex + 1 }, true);
         context.notify(moveOrDuplicateSheet, { refresh: true, isDuplicate: true });
         if (action) {
-            delete args.cancel;
+            delete args.eventArgs.cancel;
             context.trigger('actionComplete', args);
         }
     }

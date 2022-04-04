@@ -1265,6 +1265,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
+                } else {
+                    return compile(template);
                 }
             } catch (e) {
                 return compile(template);
@@ -3536,7 +3538,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private renderNodeTemplate(data: { [key: string]: Object }, textEle: Element, dataId: string) : void {
         
         let tempArr: Element[]  = this.nodeTemplateFn(data, this, 'nodeTemplate' + dataId, this.element.id + 'nodeTemplate',
-                                                          this.isStringTemplate, undefined, textEle);
+                                                          this.isStringTemplate, undefined, textEle, this.root);
             if (tempArr) {
                 tempArr = Array.prototype.slice.call(tempArr);
                 append(tempArr, textEle);

@@ -131,6 +131,16 @@ describe('accumulation and Doughnut Control Checking', () => {
         expect(text.textContent).toBe('Syncfusion accumulation Title');
         expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '22.75').toEqual(true);
     });
+         
+    it('checking chart title with different radius', () => {
+        accumulation.title = 'Empty Point as average';
+        accumulation.dataBind();
+        text = getElement(id + '_title');
+        expect(text.textContent).toBe('Empty Point as average');
+       if (parseInt(accumulation.series[0].radius) >= 80) {
+        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '22.75').toEqual(true);
+       }
+    });
 
      it('Checking with  subtitle', () => {
         accumulation.subTitle = 'accumulation SubTitle';
@@ -148,6 +158,16 @@ describe('accumulation and Doughnut Control Checking', () => {
         expect(text.textContent.indexOf('...') > -1).toBe(true);
     });
 
+    it('checking chart title with different radius', () => {
+        accumulation.title = 'Empty Point as average';
+        accumulation.dataBind();
+        text = getElement(id + '_title');
+        expect(text.textContent).toBe('Empty Point as average');
+       if(parseInt(accumulation.series[0].radius) >= 80){
+        expect(text.getAttribute('y') === '25' || text.getAttribute('y') === '22.75').toEqual(true);
+       }
+    });
+
     it('Checking with subtitle Overflow is Wrap', () => {
         accumulation.subTitleStyle.textOverflow = 'Wrap',
         accumulation.title = 'Syncfusion accumulation Title';
@@ -156,6 +176,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         text = getElement(id + '_subTitle');
         expect(text.childNodes.length == 2).toBe(true);
     });
+
     it('Checking the title font size', () => {
         accumulation.title = 'accumulation Title';
         accumulation.titleStyle.size = '24px';
@@ -358,6 +379,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         accumulation.loaded = loaded;
         accumulation.refresh();
     });
+  
    /* it('center aligned div checking tooltip', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
             accumulation.loaded = null;

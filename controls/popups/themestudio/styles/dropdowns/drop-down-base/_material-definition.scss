@@ -10,6 +10,7 @@ $ddl-list-border-color: $grey-300 !default;
 $ddl-list-gradient-color: $grey-white !default;
 $ddl-list-bg-color: $grey-white !default;
 $ddl-list-header-bg-color: $grey-50 !default;
+$ddl-list-tap-color: transparent !default;
 $ddl-list-header-border-color: $grey-black !default;
 $ddl-nodata-font-color: $grey-black !default;
 $ddl-list-default-font-color: rgba($grey-light-font, .87) !default;
@@ -42,6 +43,7 @@ $ddl-list-rtl-padding-left: 16px !default;
 $ddl-bigger-list-header-font-size: 14px !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: $grey-300 !default;
+$ddl-group-list-item-text-intent: 0 !default;
 
 // Small Size
 

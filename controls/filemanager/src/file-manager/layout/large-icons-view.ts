@@ -33,8 +33,9 @@ export class LargeIconsView {
     private keyConfigs: { [key: string]: string };
     private isInteraction: boolean = true;
     private itemList: HTMLElement[];
+    // specifies the current view items in large icon
     // eslint-disable-next-line
-    private items: Object[];
+    public items: Object[];
     private clickObj: Touch;
     private perRow: number;
     private startItem: Element;

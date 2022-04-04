@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, dragSelfReferenceData, multiTaskbarData, resources, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 interface EJ2Instance extends HTMLElement {
@@ -784,9 +784,8 @@ describe('Gantt taskbar editing', () => {
             setTimeout(done, 2000);
         });
     });
-  describe('CR issue', () => {
+   describe('CR issue', () => {
         let ganttObj: Gantt;
-
         beforeAll((done: Function) => {
             ganttObj = createGantt({
                 dataSource: [
@@ -843,6 +842,7 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
     });
+    
     describe('Multitaskbar issue', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
@@ -923,4 +923,45 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(save, 'click');
         });
     });
+    describe('Taskbar Expand/Collapse', () => {
+        let ganttObj: Gantt
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData,
+                 taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('when allow editing is false',() => {
+            let taskbarElement: HTMLElement = ganttObj.element.getElementsByClassName('e-gantt-parent-taskbar-inner-div e-gantt-parent-taskbar e-row-expand')[0] as HTMLElement;
+            triggerMouseEvent(taskbarElement, 'mousedown');
+            triggerMouseEvent(taskbarElement, 'mouseup');
+            setTimeout(() => {
+                expect(ganttObj.currentViewData[0].expanded).toBe(true);
+            }, 100);
+        });
+    }); 
 });

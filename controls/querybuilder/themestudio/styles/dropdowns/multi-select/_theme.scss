@@ -6,7 +6,7 @@
   background-color: $ddl-sel-chip-bg-color;
 }
 
-.e-multi-select-wrapper .e-chips.e-chip-selected:hover {
+.e-multiselect:not(.e-disabled) .e-multi-select-wrapper .e-chips.e-chip-selected:hover {
   background-color: $ddl-sel-hover-chip-bg-color;
 }
 
@@ -36,7 +36,7 @@
   height: $ddl-chip-height;
 }
 
-.e-multi-select-wrapper .e-chips:hover {
+.e-multiselect:not(.e-disabled) .e-multi-select-wrapper .e-chips:hover {
   background-color: $ddl-chip-hover-bg-color;
 }
 
@@ -51,7 +51,7 @@
 }
 
 .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'bootstrap5' {
+  @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'FluentUI' {
     font-size: $ddl-bigger-chip-close-font;
   }
 }
@@ -80,10 +80,12 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active {
-  border-bottom: $ddl-popup-active-border-width solid transparent;
-  border-left: $ddl-popup-active-border-width solid $ddl-popup-active-focus-bg-color;
-  border-right: $ddl-popup-active-border-width solid $ddl-popup-active-focus-bg-color;
-  border-top: $ddl-popup-active-border-width solid $ddl-popup-active-border-color;
+  @if $ddl-multiselect-skin-name != 'tailwind' {
+    border-bottom: $ddl-popup-active-border-width solid transparent;
+    border-left: $ddl-popup-active-border-width solid $ddl-popup-active-focus-bg-color;
+    border-right: $ddl-popup-active-border-width solid $ddl-popup-active-focus-bg-color;
+    border-top: $ddl-popup-active-border-width solid $ddl-popup-active-border-color;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active {
@@ -92,10 +94,21 @@
   color: $ddl-multi-list-default-font-color;
 }
 
+
+#{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-dropdownbase .e-list-item.e-active,
+#{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-dropdownbase .e-list-item.e-active.e-hover {
+  @if $ddl-multiselect-skin-name == 'tailwind' {
+    font-weight: normal;
+  }
+}
+
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active {
   background-color: transparent;
   border-color: transparent;
   color: $ddl-multi-list-default-font-color;
+  @if $skin-name == 'FluentUI' {
+    color: $ddl-list-header-font-color;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-list-item.e-active.e-item-focus {
@@ -107,6 +120,9 @@
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-active.e-item-focus {
   @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'bootstrap5' {
     color: $ddl-multi-list-default-font-color;
+  }
+  @if $skin-name == 'FluentUI' {
+    color: $ddl-list-header-font-color;
   }
 }
 
@@ -125,32 +141,40 @@
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active:first-child {
-  border-bottom: $ddl-popup-active-border-width solid transparent;
-  border-top: $ddl-popup-active-border-width solid transparent;
+  @if $ddl-multiselect-skin-name != 'tailwind' {
+    border-bottom: $ddl-popup-active-border-width solid transparent;
+    border-top: $ddl-popup-active-border-width solid transparent;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active:last-child {
-  border-bottom: $ddl-popup-active-border-width solid transparent;
+  @if $ddl-multiselect-skin-name != 'tailwind' {
+    border-bottom: $ddl-popup-active-border-width solid transparent;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus + li.e-active {
-  @if $ddl-multiselect-skin-name != 'highcontrast' {
+  @if $ddl-multiselect-skin-name != 'highcontrast' and $ddl-multiselect-skin-name != 'tailwind' {
     border-top: $ddl-popup-active-border-width solid transparent;
   }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item.e-active.e-item-focus {
   background-color: $ddl-popup-active-focus-bg-color;
-  border: $ddl-popup-active-focus-border-width solid $ddl-popup-active-focus-border-color;
   box-shadow: $ddl-popup-active-focus-shadow-item;
   color: $ddl-popup-active-focus-font-color;
+  @if $ddl-multiselect-skin-name != 'tailwind' {
+    border: $ddl-popup-active-focus-border-width solid $ddl-popup-active-focus-border-color;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-list-group-item.e-active.e-item-focus {
   background-color: $ddl-popup-active-focus-bg-color;
-  border: $ddl-popup-active-focus-border-width solid $ddl-popup-active-focus-border-color;
   box-shadow: $ddl-popup-active-focus-shadow-item;
   color: $ddl-popup-active-focus-font-color;
+  @if $ddl-multiselect-skin-name != 'tailwind' {
+    border: $ddl-popup-active-focus-border-width solid $ddl-popup-active-focus-border-color;
+  }
 }
 
 #{&}.e-popup.e-multi-select-list-wrapper .e-list-item {
@@ -244,8 +268,17 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   color: $ddl-close-icon-color;
 }
 
+.e-multiselect:not(.e-disabled) .e-multi-select-wrapper .e-chips-close.e-close-hooker:hover {
+  @if $ddl-multiselect-skin-name == 'tailwind' {
+    color: $ddl-close-icon-hover-color;
+  }
+}
+
 // Mouse Small
 .e-small .e-multi-select-wrapper .e-chips {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' {
+    border-radius: $ddl-chip-mobile-radius;
+  }
   height: $ddl-small-chip-height;
 }
 
@@ -254,7 +287,7 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
 }
 
 .e-small .e-multi-select-wrapper .e-chips .e-chips-close::before {
-  @if $ddl-multiselect-skin-name == 'bootstrap4' {
+  @if $ddl-multiselect-skin-name == 'bootstrap4' or $ddl-multiselect-skin-name == 'FluentUI' {
     left: $ddl-chip-close-small-left;
     top: $ddl-chip-close-small-top;
   }
@@ -386,6 +419,11 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   @if $ddl-multiselect-skin-name == 'material' {
     color: $outline-multiselect-disabled-font-color;
   }
+}
+
+.e-multiselect.e-disabled .e-multi-select-wrapper .e-delim-values {
+  -webkit-text-fill-color: $multiselect-disable-font-color;
+  color: $multiselect-disable-font-color;
 }
 
 .e-multiselect.e-outline.e-disabled .e-multi-select-wrapper .e-chips {

@@ -3842,7 +3842,7 @@ describe('Schedule Timeline Month view', () => {
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
             const tdElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-            expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+            expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
@@ -3860,7 +3860,7 @@ describe('Schedule Timeline Month view', () => {
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 const tdElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-                expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+                expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 2;
@@ -4107,6 +4107,90 @@ describe('Schedule Timeline Month view', () => {
                 }
             };
             schObj = util.createSchedule(model, []);
+        });
+    });
+
+    describe('EJ2-56141-Timeline month view header rows cells misalignment issue', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const headTemplate: string = '<span>${type}</span>';
+            const options: ScheduleModel = {
+                height: '600px', width: '100%',
+                views: [{ option: 'TimelineMonth', interval: 12 }],
+                headerRows: [
+                    { option: 'Month', template: headTemplate },
+                    { option: 'Week', template: headTemplate },
+                    { option: 'Date' }
+                ],
+                selectedDate: new Date(2021, 0, 1)
+            };
+            schObj = util.createSchedule(options, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('check cell misalignment', () => {
+            const dateHeaders: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells.e-date-header');
+            const workCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(dateHeaders.length).toEqual(365);
+            expect(workCells.length).toEqual(365);
+            expect((dateHeaders[dateHeaders.length - 1] as HTMLElement).offsetLeft).toEqual(
+                (workCells[workCells.length - 1] as HTMLElement).offsetLeft);
+        });
+    });
+
+    describe('EJ2-57740 - Checking the scroll position maintenance in Timeline month view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2020, 4, 20),
+                views: [{ option: 'TimelineMonth' }],
+                group: {
+                    byGroupID: false,
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerColor: '#ffaa00' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('After the initial rendering', () => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            const resourceWrap: HTMLElement = schObj.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+            expect(contentWrap.scrollTop).toEqual(0);
+            expect(contentWrap.scrollLeft).toEqual(1330);
+            expect(resourceWrap.scrollTop).toEqual(0);
+        });
+        it('Change the scroll position', (done: DoneFn) => {
+            schObj.dataBound = () => done();
+            const contentWrap: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            util.triggerScrollEvent(contentWrap, 120, 140);
+            schObj.showWeekend = false;
+            schObj.dataBind();
+        });
+        it('Ensure the changed position', () => {
+            const contentArea: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            const resourceArea: HTMLElement = schObj.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+            expect(contentArea.scrollTop).toEqual(120);
+            expect(contentArea.scrollLeft).toEqual(140);
+            expect(resourceArea.scrollTop).toEqual(120);
         });
     });
 

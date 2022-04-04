@@ -1,5 +1,5 @@
-import { Component, ModuleDeclaration, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
-import { createElement, compile as templateCompiler } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, L10n, EmitType, Browser, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { createElement, compile as templateCompiler, EventHandler, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Property, Event, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { PagerModel } from './pager-model';
@@ -8,11 +8,19 @@ import { NumericContainer } from './numeric-container';
 import { PagerMessage } from './pager-message';
 import { ExternalMessage } from './external-message';
 import { appendChildren } from '../grid/base/util';
+import * as events from '../grid/base/constant';
 
 /** @hidden */
 export interface IRender {
     render(): void;
     refresh(): void;
+}
+
+/**
+ * @hidden
+ */
+export interface keyPressHandlerKeyboardEventArgs extends KeyboardEvent {
+    cancel?: boolean;
 }
 
 /**
@@ -38,8 +46,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     public hasParent: boolean = false;
     /*** @hidden */
     public previousPageNo: number;
+    /** @hidden */
+    public isAllPage: boolean;
     private defaultConstants: Object;
     private pageRefresh: string = 'pager-refresh';
+    private parent: object;
+    private firstPagerFocus: boolean = false;
 
     //Module declarations
     /*** @hidden */
@@ -192,10 +204,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      *
      * @param {PagerModel} options - specifies the options
      * @param {string} element - specifies the element
+     * @param {string} parent - specifies the pager parent
      * @hidden
      */
-    constructor(options?: PagerModel, element?: string | HTMLElement) {
+    constructor(options?: PagerModel, element?: string | HTMLElement, parent?: object) {
         super(options, <HTMLElement | string>element);
+        this.parent = parent;
     }
 
     /**
@@ -264,6 +278,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      * @returns {void}
      */
     protected render(): void {
+        this.element.setAttribute('data-role', 'pager');
+        this.element.setAttribute('aria-label', 'Pager Container');
+        this.element.setAttribute('tabindex', '-1');
+        if (!this.hasParent) {
+            this.element.setAttribute('tabindex', '0');
+        }
         if (this.template) {
             if (this.isReactTemplate()) {
                 this.on(this.pageRefresh, this.pagerTemplate, this);
@@ -291,6 +311,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             this.refresh();
             this.trigger('created', { 'currentPage': this.currentPage, 'totalRecordsCount': this.totalRecordsCount });
         }
+        this.wireEvents();
+        this.addListener();
     }
 
     /**
@@ -311,12 +333,15 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      * @returns {void}
      */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         if (this.isReactTemplate()) {
             this.off(this.pageRefresh, this.pagerTemplate);
             if (!this.hasParent) {
                 this.destroyTemplate(['template']);
             }
         }
+        this.removeListener();
+        this.unwireEvents();
         super.destroy();
         this.containerModule.destroy();
         this.pagerMessageModule.destroy();
@@ -422,6 +447,380 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
 
+    private wireEvents(): void {
+        if (!this.hasParent) {
+            EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
+            EventHandler.add(document.body, 'keydown', this.keyDownHandler, this);
+        }
+        EventHandler.add(this.element, 'focusin', this.onFocusIn, this);
+        EventHandler.add(this.element, 'focusout', this.onFocusOut, this);
+    }
+
+    private unwireEvents(): void {
+        if (!this.hasParent) {
+            EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
+            EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
+        }
+        EventHandler.remove(this.element, 'focusin', this.onFocusIn);
+        EventHandler.remove(this.element, 'focusout', this.onFocusOut);
+    }
+
+    private onFocusIn(e: FocusEvent): void {
+        const focusedTabIndexElement: Element = this.getFocusedTabindexElement();
+        if (isNullOrUndefined(focusedTabIndexElement)) {
+            const target: Element = e.target as Element;
+            const dropDownPage: Element = this.getDropDownPage();
+            if (!this.hasParent) {
+                this.element.tabIndex = -1;
+            }
+            if (target === this.element && !this.hasParent) {
+                const focusablePagerElements: Element[] = this.getFocusablePagerElements(this.element, []);
+                this.addFocus(focusablePagerElements[0], true);
+                return;
+            }
+            if (target === this.element) {
+                this.element.tabIndex = 0;
+                return;
+            }
+            if (target !== dropDownPage && !target.classList.contains('e-disable')) {
+                this.addFocus(target, true);
+            }
+        }
+    }
+
+    private onFocusOut(e: FocusEvent): void {
+        const focusedElement: Element = this.getFocusedElement();
+        const dropDownPage: Element = this.getDropDownPage();
+        if (!isNullOrUndefined(focusedElement)) {
+            this.removeFocus(focusedElement, true);
+        }
+        if (this.pageSizes && dropDownPage && dropDownPage.classList.contains('e-input-focus')) {
+            this.removeFocus(dropDownPage, true);
+        }
+        this.setTabIndexForFocusLastElement();
+        if (!this.hasParent) {
+            this.element.tabIndex = 0;
+        }
+        if (this.hasParent) {
+            this.element.tabIndex = -1;
+        }
+    }
+
+    private keyDownHandler(e: KeyboardEventArgs): void {
+        if (e.altKey) {
+            if (e.keyCode === 74) {
+                const focusablePagerElements: Element[] = this.getFocusablePagerElements(this.element, []);
+                if (focusablePagerElements.length > 0) {
+                    (focusablePagerElements[0] as HTMLElement).focus();
+                }
+            }
+        }
+    }
+
+    private keyPressHandler(e: keyPressHandlerKeyboardEventArgs): void {
+        const presskey: keyPressHandlerKeyboardEventArgs = <keyPressHandlerKeyboardEventArgs>extend(e, { cancel: false });
+        this.notify(events.keyPressed, presskey);
+        if (presskey.cancel === true) {
+            e.stopImmediatePropagation();
+        }
+    }
+
+    private addListener(): void {
+        if (this.isDestroyed) { return; }
+        if (!this.hasParent) {
+            this.on(events.keyPressed, this.onKeyPress, this);
+        }
+    }
+
+    private removeListener(): void {
+        if (this.isDestroyed) { return; }
+        if (!this.hasParent) {
+            this.off(events.keyPressed, this.onKeyPress);
+        }
+    }
+
+    private onKeyPress(e: KeyboardEventArgs): void {
+        if (!this.hasParent) {
+            if (this.checkPagerHasFocus()) {
+                this.changePagerFocus(e);
+            } else {
+                e.preventDefault();
+                this.setPagerFocus();
+            }
+        }
+    }
+
+    /**
+     * @returns {boolean} - Return the true value if pager has focus
+     * @hidden */
+    public checkPagerHasFocus(): boolean {
+        return this.getFocusedTabindexElement() ? true : false;
+    }
+
+    /**
+     * @returns {void}
+     * @hidden */
+    public setPagerContainerFocus(): void {
+        (this.element as HTMLElement).focus();
+    }
+
+    /**
+     * @returns {void}
+     * @hidden */
+    public setPagerFocus(): void {
+        const focusablePagerElements: Element[] = this.getFocusablePagerElements(this.element, []);
+        if (focusablePagerElements.length > 0) {
+            (focusablePagerElements[0] as HTMLElement).focus();
+        }
+    }
+
+    private setPagerFocusForActiveElement(): void {
+        const currentActivePage: Element = this.getActiveElement();
+        if (currentActivePage) {
+            (currentActivePage as HTMLElement).focus();
+        }
+    }
+
+    private setTabIndexForFocusLastElement(): void {
+        const focusablePagerElements: Element[] = this.getFocusablePagerElements(this.element, []);
+        const dropDownPage: Element = this.getDropDownPage();
+        if (this.pageSizes && dropDownPage && !isNullOrUndefined((dropDownPage as HTMLElement).offsetParent)) {
+            (dropDownPage as HTMLElement).tabIndex = 0;
+        } else if (focusablePagerElements.length > 0) {
+            (focusablePagerElements[focusablePagerElements.length - 1] as HTMLElement).tabIndex = 0;
+        }
+    }
+
+    /**
+     * @param {KeyboardEventArgs} e - Keyboard Event Args
+     * @returns {void}
+     * @hidden */
+    public changePagerFocus(e: KeyboardEventArgs): void {
+        if (e.shiftKey && e.keyCode === 9) {
+            this.changeFocusByShiftTab(e);
+        } else if (e.keyCode === 9) {
+            this.changeFocusByTab(e);
+        } else if (e.keyCode === 13 || e.keyCode === 32) {
+            this.navigateToPageByEnterOrSpace(e);
+        } else if (e.keyCode === 37 || e.keyCode === 39 || e.keyCode === 35 || e.keyCode === 36) {
+            this.navigateToPageByKey(e);
+        }
+    }
+
+    private getFocusedTabindexElement(): Element {
+        let focusedTabIndexElement: Element;
+        const tabindexElements: NodeListOf<Element> = this.element.querySelectorAll('[tabindex]:not([tabindex="-1"])');
+        for ( let i: number = 0; i < tabindexElements.length; i++) {
+            const element: Element = tabindexElements[i];
+            if (element && (element.classList.contains('e-focused') || element.classList.contains('e-input-focus'))) {
+                focusedTabIndexElement = element;
+                break;
+            }
+        }
+        return focusedTabIndexElement;
+    }
+
+    private changeFocusByTab(e: KeyboardEventArgs): void {
+        const currentItemPagerFocus: Element = this.getFocusedTabindexElement();
+        const focusablePagerElements: Element[] = this.getFocusablePagerElements(this.element, []);
+        const dropDownPage: Element = this.getDropDownPage();
+        if (focusablePagerElements.length > 0) {
+            if (this.pageSizes && dropDownPage && currentItemPagerFocus === focusablePagerElements[focusablePagerElements.length - 1]) {
+                (dropDownPage as HTMLElement).tabIndex = 0;
+            } else {
+                for (let i: number = 0; i < focusablePagerElements.length; i++) {
+                    if (currentItemPagerFocus === focusablePagerElements[i]) {
+                        const incrementNumber: number = i + 1;
+                        if (incrementNumber < focusablePagerElements.length) {
+                            e.preventDefault();
+                            (focusablePagerElements[incrementNumber] as HTMLElement).focus();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private changeFocusByShiftTab(e: KeyboardEventArgs): void {
+        const currentItemPagerFocus: Element = this.getFocusedTabindexElement();
+        const focusablePagerElements: Element[] = this.getFocusablePagerElements(this.element, []);
+        const dropDownPage: Element = this.getDropDownPage();
+        if (this.pageSizes && dropDownPage && dropDownPage.classList.contains('e-input-focus')) {
+            (dropDownPage as HTMLElement).tabIndex = -1;
+            this.addFocus(focusablePagerElements[focusablePagerElements.length - 1], true);
+        } else if (focusablePagerElements.length > 0) {
+            for (let i: number = 0; i < focusablePagerElements.length; i++) {
+                if (currentItemPagerFocus === focusablePagerElements[i]) {
+                    const decrementNumber: number = i - 1;
+                    if (decrementNumber >= 0) {
+                        e.preventDefault();
+                        (focusablePagerElements[decrementNumber] as HTMLElement).focus();
+                    } else if (this.hasParent) {
+                        const rows: Element[] = (this.parent as {getRows(): Element[]}).getRows();
+                        const lastRow: Element = rows[rows.length - 1];
+                        const lastCell: Element = lastRow.lastChild as Element;
+                        e.preventDefault();
+                        (lastCell as HTMLElement).focus();
+                        this.firstPagerFocus = true;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * @returns {void}
+     * @hidden */
+    public checkFirstPagerFocus(): boolean {
+        if (this.firstPagerFocus) {
+            this.firstPagerFocus = false;
+            return true;
+        }
+        return false;
+    }
+
+    private navigateToPageByEnterOrSpace(e: KeyboardEventArgs): void {
+        const currentItemPagerFocus: Element = this.getFocusedElement();
+        if (currentItemPagerFocus) {
+            this.goToPage(parseInt(currentItemPagerFocus.getAttribute('index'), 10));
+            const currentActivePage: Element = this.getActiveElement();
+            const selectedClass: string = this.getClass(currentItemPagerFocus);
+            const classElement: Element = this.getElementByClass(selectedClass);
+            if ((selectedClass === 'e-first' || selectedClass === 'e-prev' || selectedClass === 'e-next'
+                || selectedClass === 'e-last' || selectedClass === 'e-pp' || selectedClass === 'e-np')
+                && classElement && !classElement.classList.contains('e-disable')) {
+                (classElement as HTMLElement).focus();
+            } else if (this.checkFocusInAdaptiveMode(currentItemPagerFocus)) {
+                this.changeFocusInAdaptiveMode(currentItemPagerFocus);
+            }
+            else {
+                if (currentActivePage) {
+                    (currentActivePage as HTMLElement).focus();
+                }
+            }
+        }
+    }
+
+    private navigateToPageByKey(e: KeyboardEventArgs): void {
+        const actionClass: string = e.keyCode === 37 ? '.e-prev' : e.keyCode === 39 ? '.e-next'
+            : e.keyCode === 35 ? '.e-last' : e.keyCode === 36 ? '.e-first' : '';
+        const pagingItem: Element = this.element.querySelector(actionClass);
+        const currentItemPagerFocus: Element = this.getFocusedElement();
+        if (!isNullOrUndefined(pagingItem) && pagingItem.hasAttribute('index')
+            && !isNaN(parseInt(pagingItem.getAttribute('index'), 10))) {
+            this.goToPage(parseInt(pagingItem.getAttribute('index'), 10));
+            const currentActivePage: Element = this.getActiveElement();
+            if (this.checkFocusInAdaptiveMode(currentItemPagerFocus)) {
+                this.changeFocusInAdaptiveMode(currentItemPagerFocus);
+            } else {
+                if (currentActivePage) {
+                    (currentActivePage as HTMLElement).focus();
+                }
+            }
+        }
+    }
+
+    private checkFocusInAdaptiveMode(element: Element): boolean {
+        const selectedClass: string = this.getClass(element);
+        return selectedClass === 'e-mfirst' || selectedClass === 'e-mprev' || selectedClass === 'e-mnext'
+        || selectedClass === 'e-mlast' ? true : false;
+    }
+
+    private changeFocusInAdaptiveMode(element: Element): void {
+        const selectedClass: string = this.getClass(element);
+        const classElement: Element = this.getElementByClass(selectedClass);
+        if (classElement && classElement.classList.contains('e-disable')) {
+            if (selectedClass === 'e-mnext' || selectedClass === 'e-mlast') {
+                const mPrev: Element = this.element.querySelector('.e-mprev');
+                (mPrev as HTMLElement).focus();
+            } else {
+                this.setPagerFocus();
+            }
+        }
+    }
+
+    private removeTabindexLastElements(): void {
+        const tabIndexElements: NodeListOf<Element> = this.element.querySelectorAll('[tabindex]:not([tabindex="-1"])');
+        if (tabIndexElements.length > 1) {
+            for ( let i: number = 1; i < tabIndexElements.length; i++) {
+                const element: Element = tabIndexElements[i];
+                if (element) {
+                    (element as HTMLElement).tabIndex = -1;
+                }
+            }
+        }
+    }
+
+    private getActiveElement(): Element {
+        return this.element.querySelector('.e-active');
+    }
+
+    private getDropDownPage(): Element {
+        const dropDownPageHolder: Element = this.element.querySelector('.e-pagerdropdown');
+        let dropDownPage: Element;
+        if (dropDownPageHolder) {
+            dropDownPage = dropDownPageHolder.children[0];
+        }
+        return dropDownPage;
+    }
+
+    private getFocusedElement(): Element {
+        return this.element.querySelector('.e-focused');
+    }
+
+    private getClass(element: Element): string {
+        let currentClass: string;
+        const classList: string[] = ['e-mfirst', 'e-mprev', 'e-first', 'e-prev', 'e-pp',
+            'e-np', 'e-next', 'e-last', 'e-mnext', 'e-mlast'];
+        for ( let i: number = 0; i < classList.length; i++) {
+            if (element && element.classList.contains(classList[i])) {
+                currentClass = classList[i];
+                return currentClass;
+            }
+        }
+        return currentClass;
+    }
+
+    private getElementByClass(className: string): Element {
+        return this.element.querySelector('.' + className);
+    }
+
+    private getFocusablePagerElements(element: Element, previousElements: Element[]): Element[] {
+        const target: Element = element;
+        const targetChildrens: HTMLCollection = target.children;
+        let pagerElements: Element[] = previousElements;
+        for (let i: number = 0; i < targetChildrens.length; i++) {
+            const element: Element = targetChildrens[i];
+            if (element.children.length > 0 && !element.classList.contains('e-pagesizes')) {
+                pagerElements = this.getFocusablePagerElements(element, pagerElements);
+            } else {
+                const tabindexElement: Element = targetChildrens[i];
+                if (tabindexElement.hasAttribute('tabindex') && !element.classList.contains('e-disable')
+                    && (element as HTMLElement).style.display !== 'none'
+                    && !isNullOrUndefined((element as HTMLElement).offsetParent)){
+                    pagerElements.push(tabindexElement);
+                }
+            }
+        }
+        return pagerElements;
+    }
+
+    private addFocus(element: Element, addFocusClass: boolean): void {
+        if (addFocusClass) {
+            addClass([element], ['e-focused', 'e-focus']);
+        }
+        (element as HTMLElement).tabIndex = 0;
+    }
+
+    private removeFocus(element: Element, removeFocusClass: boolean): void {
+        if (removeFocusClass) {
+            removeClass([element], ['e-focused', 'e-focus']);
+        }
+        (element as HTMLElement).tabIndex = -1;
+    }
+
     /**
      * Gets the localized label by locale keyword.
      *
@@ -515,7 +914,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      * @hidden
      */
     public updateTotalPages(): void {
-        this.totalPages = (this.totalRecordsCount % this.pageSize === 0) ? (this.totalRecordsCount / this.pageSize) :
+        this.totalPages = this.isAllPage ? 1 : (this.totalRecordsCount % this.pageSize === 0) ? (this.totalRecordsCount / this.pageSize) :
             (parseInt((this.totalRecordsCount / this.pageSize).toString(), 10) + 1);
     }
 
@@ -562,7 +961,16 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             }
         } else {
             this.updateRTL();
+            const focusedTabIndexElement: Element = this.getFocusedTabindexElement();
             this.containerModule.refresh();
+            this.removeTabindexLastElements();
+            if (focusedTabIndexElement && focusedTabIndexElement.classList.contains('e-disable')) {
+                if (this.checkFocusInAdaptiveMode(focusedTabIndexElement)) {
+                    this.changeFocusInAdaptiveMode(focusedTabIndexElement);
+                } else {
+                    this.setPagerFocusForActiveElement();
+                }
+            }
             if (this.enablePagerMessage) {
                 this.pagerMessageModule.refresh();
             }
@@ -572,6 +980,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             if (this.enableExternalMessage && this.externalMessageModule) {
                 this.externalMessageModule.refresh();
             }
+            this.setTabIndexForFocusLastElement();
         }
     }
 

@@ -19,7 +19,7 @@ import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-pa
 import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler, UserHandleModel, ISelectionChangeEventArgs, ScrollSettingsModel, SnapSettingsModel, LayoutModel, BpmnSequenceFlows, SnapConstraints, SelectorConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
-import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
+import {  ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo, LineRouting);
 
@@ -179,11 +179,12 @@ describe('Diagram Control', () => {
                     id: 'node1', offsetX: 600, offsetY: 250,
                     shape: {
                         type: 'SwimLane', orientation: 'Horizontal',
-                        phases: [{ header: { annotation: {content: 'phase1'}  as Annotation }, style: { fill: 'blue', opacity: .5 }, offset: 300 },
+                        phases: [{ header: { annotation: {content: 'phase1'}  as Annotation },addInfo:{name:'phase1 info'}, style: { fill: 'blue', opacity: .5 }, offset: 300 },
                         { headers: { content: 'phase1' }, style: { fill: 'blue', opacity: .5 }, width: 300 }],
                         lanes: [
                             {
                                 id: 'lane1',
+                                addInfo:{name:'lane1 info'},
                                 children: [{
                                     id: 'node111',
                                     width: 50, height: 50,
@@ -241,7 +242,33 @@ describe('Diagram Control', () => {
             expect((diagram.nameTable['node1'].shape as SwimLaneModel).phases.length === 1).toBe(true);
             done();
         });
-
+        it('Checking addInfo in lanes at initial rendering',(done:Function)=>{
+            let shape = diagram.nodes[0].shape as SwimLaneModel;
+            console.log('addInfo for lanes')
+            expect(shape.lanes[0].addInfo!==null).toBe(true);
+            done();
+        });
+        it('Changing addInfo value in lanes at runtime',(done:Function)=>{
+            let shape = diagram.nodes[0].shape as SwimLaneModel;
+            shape.lanes[0].addInfo={name:"lane1 info changed"}
+            console.log('addInfo for lanes changed')
+            expect(shape.lanes[0].addInfo).toEqual({name:'lane1 info changed'});
+            done();
+        });
+    
+        it('Checking addInfo in phases at initial rendering',(done:Function)=>{
+            let shape = diagram.nodes[0].shape as SwimLaneModel;
+            console.log('addInfo for phases')
+            expect(shape.phases[0].addInfo!==null).toBe(true);
+            done();
+        });
+        it('Changing addInfo value in phases at runtime',(done:Function)=>{
+            let shape = diagram.nodes[0].shape as SwimLaneModel;
+            shape.phases[0].addInfo={name:"phase1 info changed"}
+            console.log('addInfo for phases changed')
+            expect(shape.phases[0].addInfo).toEqual({name:'phase1 info changed'});
+            done();
+        });
 
 
 
@@ -8574,8 +8601,84 @@ describe('Swimlane - Enable Line Routing', () => {
                expect(diagram.nodes.length === 48).toBe(true);
                done();
            });
-   
-       });
+
+        });
+
+        describe('Check Header Property  ', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let isHeaderPresent: boolean;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'diagramSwimlane1' });
+                document.body.appendChild(ele);
+                let nodes: NodeModel[] = [
+                    {
+                        id: 'swimlane',
+                        shape: {
+                            type: 'SwimLane',
+                            header: {
+                                annotation: { content: 'ONLI' },
+                                height: 50,
+                            },
+                            lanes: [
+                                {
+                                    id: 'stackCanvas1',
+                                    header: {
+                                        annotation: { content: 'CUSTOMER' }, height: 50,
+                                    },
+                                    width: 140,
+                                    children: [
+                                        {
+                                            id: 'Order',
+                                            annotations: [
+                                                {
+                                                    content: 'ORDER',
+                                                    style: { fontSize: 11 }
+                                                }
+                                            ],
+                                            margin: { left: 60, top: 60 },
+                                            height: 40, width: 100
+                                        }
+                                    ],
+                                },
+                            ],
+                            phases: [
+                                {
+                                    id: 'phase1', offset: 200,
+                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                                    header: { annotation: { content: 'Phase' } }
+                                },
+                            ],
+                            phaseSize: 20,
+                        },
+                        offsetX: 350, offsetY: 290,
+                        height: 360, width: 650
+                    },
+                ];
+                diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes,selectionChange:selectionChangee });
+                diagram.appendTo('#diagramSwimlane1');
+            });
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+
+            function selectionChangee(args: ISelectionChangeEventArgs){
+                if (args.state === 'Changed' && args.type === 'Addition') {
+                    if ((args.newValue[0].shape as any).header.length > 0) {
+                        isHeaderPresent = true;
+                    }
+
+                }
+            }
+            it('At Selection Change Event', (done: Function) => {
+                diagram.select([diagram.nameTable['swimlanestackCanvas10']]);
+                expect(isHeaderPresent).toBe(true);
+                done();
+            });
+
+        });
+
     });
     describe('Infinite loop ', () => {
         let diagram: Diagram;
@@ -11276,3 +11379,4 @@ describe('Swimlane Save and Load', () => {
     });
 
 });
+

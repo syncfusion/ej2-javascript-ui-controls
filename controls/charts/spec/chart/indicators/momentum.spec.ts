@@ -437,7 +437,7 @@ describe('Chart', () => {
                 let path: Element = group.childNodes[0] as HTMLElement;
                 let text1: Element = group.childNodes[1] as HTMLElement;
                 let text2: Element = group.childNodes[2] as HTMLElement;
-                expect(path.getAttribute('fill') == 'rgba(0, 8, 22, 0.75)').toBe(true);
+                expect(path.getAttribute('fill') == '#000816').toBe(true);
                 expect((<Element>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
                 expect(text1.textContent.replace(/\u200E/g, '') == 'FebgoldHigh : 6.3Low : 1.3Open : 4.8Close : 2.5UpperLine : 100').toBe(true);
                 // - solve this- expect(text2.textContent == 'UpperLine : 100').toBe(true);

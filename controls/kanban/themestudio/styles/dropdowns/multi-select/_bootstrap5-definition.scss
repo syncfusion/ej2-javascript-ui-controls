@@ -8,7 +8,7 @@ $ddl-bigger-search-wrapper-width: calc(100% - 38px) !default;
 $ddl-bigger-small-search-wrapper-width: calc(100% - 32px) !default;
 $ddl-small-search-wrapper-width: calc(100% - 30px) !default;
 $ddl-popup-shadow-value: $shadow-lg !default;
-$ddl-remains-padding-left: 0 !default;
+$ddl-remains-padding-left: 8px !default;
 $ddl-chip-margin: 3px !default;
 $ddl-chip-margin-bigger: 3px !default;
 $ddl-chip-radius: 4px !default;
@@ -93,12 +93,16 @@ $ddl-bigger-check-right-margin: 12px !default;
 $ddl-selectall-font-size: 14px !default;
 $ddl-bigger-selectall-font-size: $text-base !default;
 $ddl-close-icon-left: 40px !default;
+$ddl-close-down-icon-left: 40px !default;
 $ddl-check-icon-top: 0 !default;
 $ddl-bigger-check-right: 16px !default;
 $ddl-delim-text-padding-right: 6px !default;
 $ddl-list-rtl-padding-right: 15px !default;
 $ddl-close-rtl-icon-left: 19px !default;
-$ddl-chip-close-rtl-left: -7px !default;
+$ddl-chip-close-rtl-small-left: 20px !default;
+$ddl-chip-close-rtl-bigger-left: 32px !default;
+$ddl-chip-close-rtl-small-bigger-left: 25px !default;
+$ddl-chip-close-rtl-left: 25px !default;
 $ddl-multiselect-group-list-item-rtl-padding-right: 25px !default;
 $ddl-bigger-multiselect-group-list-item-rtl-padding-right: 25px !default;
 $ddl-multiselect-group-list-group-item-padding-left: 16px !default;
@@ -111,6 +115,7 @@ $ddl-multiselect-filled-float-input-min-height: 28px !default;
 $ddl-multiselect-filled-input-min-height: 39px !default;
 $ddl-multiselect-filled-float-input-chip-clear-icon-size: 12px !default;
 $ddl-multiselect-filled-chip-clear-icon-size: 14px !default;
+$multiselect-disable-font-color: $content-text-color-alt1 !default;
 // Small size
 $ddl-select-all-height-small: 26px !default;
 $ddl-small-chip-height: 20px !default;
@@ -173,7 +178,7 @@ $ddl-multi-list-default-font-color: $content-text-color !default;
 $ddl-multi-list-hover-bg-color: $content-bg-color-hover !default;
 $ddl-delim-font-color: $content-text-color !default;
 $ddl-close-icon-color: $content-text-color !default;
-
+$ddl-close-down-icon-left: 35px !default;
 
 @include export-module('multiselect-bootstrap5') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
@@ -182,7 +187,7 @@ $ddl-close-icon-color: $content-text-color !default;
   }
 
   .e-multiselect .e-input-group-icon.e-ddl-icon {
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 2px 2px 0;
     border-right-width: 0;
   }
 

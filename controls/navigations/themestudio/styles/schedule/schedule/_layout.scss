@@ -70,7 +70,7 @@
           &.e-tbtn-txt {
             .e-icons.e-icon-right.e-btn-icon.e-icon-down-arrow {
               font-size: $schedule-tbar-down-arrow-font-size;
-              @if ($schedule-skin != 'bootstrap5') {
+              @if ($schedule-skin != 'bootstrap5' and $schedule-skin != 'FluentUI') {
                 padding-top: $schedule-tbar-down-arrow-padding-top;
               }
             }
@@ -303,7 +303,9 @@
       }
 
       .e-resource-tree.e-treeview .e-text-content {
-        padding: 0 0 0 12px;
+        @if ($schedule-skin != 'FluentUI') {
+          padding: 0 0 0 12px;
+        }
       }
     }
 
@@ -769,6 +771,10 @@
           font-size: $schedule-header-date-nrml-font-size;
           @if ($schedule-skin == 'bootstrap4') {
             line-height: 21px;
+          }
+
+          @if ($schedule-skin == 'FluentUI') {
+            padding-top: $schedule-header-cells-padding;
           }
 
           @if ($schedule-skin == 'tailwind' or $schedule-skin == 'bootstrap5') {
@@ -1775,6 +1781,15 @@
           &:hover {
             text-decoration: underline;
           }
+        }
+      }
+
+      &.e-virtual-mask .e-work-cells {
+        background-color: $schedule-disable-dates-color;
+        box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
+
+        &:hover {
+          background-color: $schedule-disable-dates-color;
         }
       }
 
@@ -2795,12 +2810,10 @@
             }
 
             &.e-tbtn-txt {
-              .e-icons {
-                padding: $schedule-tbar-btn-icn-bgr-padding;
-              }
-
               .e-icons.e-icon-right {
-                padding: $schedule-tbar-btn-icn-right-bgr-padding;
+                @if ($schedule-skin != 'FluentUI') {
+                  padding: $schedule-tbar-btn-icn-right-bgr-padding;
+                }
                 @if ($schedule-skin == 'tailwind' or $schedule-skin == 'bootstrap5') {
                   font-size: 22px;
                 }
@@ -2835,12 +2848,20 @@
 
     .e-vertical-view {
       .e-header-cells {
+        @if ($schedule-skin == 'FluentUI' or $schedule-skin == 'bootstrap5') {
+          height: $schedule-timezone-enable-bgr-height;
+          padding: $schedule-tbar-btn-bgr-padding;
+        }
+
         .e-header-day {
           font-size: $schedule-header-day-bgr-font-size;
         }
 
         .e-header-date {
           font-size: $schedule-header-date-bgr-font-size;
+          @if ($schedule-skin == 'FluentUI') {
+            padding-top: $schedule-more-popup-close-margin-top;
+          }
         }
       }
 
@@ -3750,7 +3771,13 @@
       .e-resource-icon {
         color: $schedule-popup-content-icon-color;
         font-size: 18px;
-        padding-right: 13px;
+        @if ($schedule-skin == 'FluentUI' or $schedule-skin == 'tailwind') {
+          padding-right: 12px;
+        }
+
+        @else {
+          padding-right: 13px;
+        }
 
         @if ($schedule-skin == 'highcontrast' or $schedule-skin == 'fabric') {
           padding-top: 4px;
@@ -3787,11 +3814,6 @@
 
       @if ($schedule-skin == 'material') {
         padding-right: 4px;
-      }
-
-      @if ($schedule-skin == 'tailwind' or $schedule-skin == 'bootstrap5') {
-        background-color: $schedule-work-cells-bg-color;
-        border-radius: 0 0 6px 6px;
       }
 
       .e-event-edit {
@@ -4019,7 +4041,14 @@
 
       .e-cell-popup .e-date-time-icon,
       .e-event-popup .e-date-time-icon {
-        padding-right: 10px;
+
+        @if ($schedule-skin == 'FluentUI') {
+          padding-right: 16px;
+        }
+
+        @else {
+          padding-right: 10px;
+        }
       }
 
       .e-cell-popup .e-popup-header .e-header-icon-wrapper .e-close .e-close-icon {
@@ -4075,6 +4104,12 @@
       }
     }
 
+    @if ($schedule-skin == 'FluentUI') {
+      .e-event-popup .e-popup-header .e-subject-wrap {
+        padding: $schedule-big-event-popup-subject-padding;
+      }
+    }
+
     .e-event-popup .e-popup-header .e-header-icon-wrapper {
       .e-close-icon,
       .e-edit-icon,
@@ -4113,6 +4148,11 @@
   }
 
   .e-bigger .e-agenda-view {
+    @if ($schedule-skin == 'FluentUI' or $schedule-skin == 'tailwind') {
+      .e-appointment {
+        padding: $schedule-agenda-big-appointment-padding;
+      }
+    }
     @if ($schedule-skin == 'bootstrap4' or $schedule-skin == 'tailwind' or $schedule-skin == 'bootstrap5') {
       .e-subject {
         font-size: 16px;
@@ -4267,6 +4307,7 @@
   }
 
   .e-more-event-content {
+    color: $schedule-primary-content-font-color;
     height: calc(100% - 35px);
     max-height: 150px;
     overflow-y: auto;

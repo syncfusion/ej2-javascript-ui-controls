@@ -116,6 +116,7 @@ $calendar-other-month-date-hover-bg: $calendar-other-month-date !default;
 
 // table related styles
 $calendar-table-padding: 0 12px 12px 12px !default;
+$calendar-rtl-text-indent: 4px !default;
 
 //font icons
 $calendar-prev-icon: '\e910' !default;
@@ -128,7 +129,7 @@ $calendar-spanicon-font-weight-style: normal !default;
 //pending
 $calendar-icon-font-size-style: 14px !default;
 $calendar-bigger-icon-font-size: 16px !default;
-
+$calendar-week-number-font-weight: 500 !default;
 
 // td styles 
 
@@ -139,14 +140,17 @@ $calendar-active-hover-font-color: $primary-font !default;
 $calendar-active-today-font-color: $primary-font !default;
 $calendar-active-today-hover-font-color: $primary-font !default;
 $calendar-active-bg-color: $primary !default;
-$calendar-active-bg-border-color: 1px solid $primary !default;
+$calendar-active-bg-box-shadow: inset 1px 0 $primary, inset 0 1px $primary, inset -1px 0 $primary, inset 0 -1px $primary !default;
+$calendar-active-bg-border-color: none !default;
 $calendar-active-hover-bg-color: darken($primary, 7.5%) !default;
 $calendar-hover-color: darken($gray-100, 2%) !default;
 $calendar-text-color: $gray-900 !default;
 $calendar-hover-text: $calendar-text-color !default;
 $calendar-focus-bg-color: darken($gray-100, 2%) !default;
 $calendar-focused-today-bg-style: darken($gray-100, 2%) !default;
-$calendar-focused-today-border-style:  1px solid $primary !default;
+$calendar-focused-today-box-shadow: inset 1px 0 $primary, inset 0 1px $primary, inset -1px 0 $primary, inset 0 -1px $primary !default;
+$calendar-focused-today-border-style: none !default;
+$calendar-focus-box-shadow: none !default;
 $calendar-focus-border-color: none !default;
 $calendar-hover-border-color: none !default;
 $calendar-disable-font-color: $gray-500 !default;
@@ -167,8 +171,8 @@ $calendar-border-radius: 4px !default;
 //today date
 $calendar-today-bg-style: $white !default;
 $calendar-today-bg-hover-color: darken($gray-100, 2%) !default;
-$calendar-today-border-color: 1px solid $primary !default;
-$calendar-selected-box-shadow: none !default;
+$calendar-today-box-shadow: inset 1px 0 $primary, inset 0 1px $primary, inset -1px 0 $primary, inset 0 -1px $primary !default;
+$calendar-today-border-color: none !default;
 $calendar-selected-border-color: none !default;
 //pending
 $calendar-today-color: $gray-900 !default;

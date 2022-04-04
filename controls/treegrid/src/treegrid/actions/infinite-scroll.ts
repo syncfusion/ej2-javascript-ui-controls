@@ -1,11 +1,11 @@
 import { TreeGrid } from '../base/treegrid';
-import { Grid, InfiniteScroll as GridInfiniteScroll, ActionEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, InfiniteScroll as GridInfiniteScroll, ActionEventArgs, NotifyArgs } from '@syncfusion/ej2-grids';
 import { InfiniteScrollArgs, Column, Row, RowRenderer, ServiceLocator, resetRowIndex } from '@syncfusion/ej2-grids';
 import { getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
-import { ITreeData } from '../base';
+import { ITreeData, RowCollapsedEventArgs } from '../base';
 import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
-import { findChildrenRecords } from '../utils';
+import { findChildrenRecords, getExpandStatus } from '../utils';
 
 /**
  * TreeGrid Infinite Scroll module will handle Infinite Scrolling.
@@ -47,6 +47,7 @@ export class InfiniteScroll {
         this.parent.grid.on('infinite-edit-handler', this.infiniteEditHandler, this);
         this.parent.grid.on('infinite-crud-cancel', this.createRows, this);
         this.parent.grid.on('content-ready', this.contentready, this);
+        this.parent.on(events.localPagedExpandCollapse, this.collapseExpandInfinitechilds, this);
     }
     /**
      * @hidden
@@ -60,6 +61,7 @@ export class InfiniteScroll {
         this.parent.off(events.pagingActions, this.infinitePageAction);
         this.parent.grid.off('infinite-crud-cancel', this.createRows);
         this.parent.grid.off('content-ready', this.contentready);
+        this.parent.off(events.localPagedExpandCollapse, this.collapseExpandInfinitechilds);
     }
 
     /**
@@ -111,6 +113,20 @@ export class InfiniteScroll {
         }
     }
 
+    private collapseExpandInfinitechilds(row: { action: string, row: HTMLTableRowElement,
+        record: ITreeData, args: RowCollapsedEventArgs }): void {
+        row.record.expanded = row.action === 'collapse' ? false : true;
+        const ret: Object = {
+            result: this.parent.flatData,
+            row: row.row,
+            action: row.action,
+            record: row.record,
+            count: this.parent.flatData.length
+        };
+        const requestType: string = getValue('isCollapseAll', this.parent) ? 'collapseAll' : 'refresh';
+        getValue('grid.renderModule', this.parent).dataManagerSuccess(ret, <NotifyArgs>{ requestType: requestType });
+    }
+
     /**
      * Handles the page query for Data operations and CRUD actions.
      *
@@ -123,7 +139,10 @@ export class InfiniteScroll {
     private infinitePageAction(pageingDetails: { result: ITreeData[], count: number, actionArgs: Object }): void {
         const dm: DataManager = new DataManager(pageingDetails.result);
         const expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
-        const visualData: ITreeData[] = dm.executeLocal(new Query().where(expanded));
+        const infiniteParents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
+        const visualData: ITreeData[] = infiniteParents.filter((e: ITreeData) => {
+            return getExpandStatus(this.parent, e, infiniteParents);
+        });
         const actionArgs: ActionEventArgs = getValue('actionArgs', pageingDetails.actionArgs);
         const actions: string[] = getValue('actions', this.parent.grid.infiniteScrollModule);
         const initial: boolean = actions.some((value: string): boolean => { return value === actionArgs.requestType; });
@@ -138,10 +157,10 @@ export class InfiniteScroll {
             if (isCache && this.parent.infiniteScrollSettings.initialBlocks > this.parent.infiniteScrollSettings.maxBlocks) {
                 this.parent.infiniteScrollSettings.initialBlocks = this.parent.infiniteScrollSettings.maxBlocks;
             }
-            const size: number = initialRender ?
+            let size: number = initialRender ?
                 this.parent.pageSettings.pageSize * this.parent.infiniteScrollSettings.initialBlocks :
                 this.parent.pageSettings.pageSize;
-            const current: number = this.parent.grid.pageSettings.currentPage;
+            let current: number = this.parent.grid.pageSettings.currentPage;
             if (!isNullOrUndefined(actionArgs)) {
                 const lastIndex: number = getValue('lastIndex', this.parent.grid.infiniteScrollModule);
                 const firstIndex: number = getValue('firstIndex', this.parent.grid.infiniteScrollModule);
@@ -154,6 +173,10 @@ export class InfiniteScroll {
                     query = query.skip(firstIndex);
                     query = query.take(this.parent.infiniteScrollSettings.initialBlocks * this.parent.pageSettings.pageSize);
                 } else {
+                    if ((pageingDetails.actionArgs['action'] === 'expand' || pageingDetails.actionArgs['action'] === 'collapse') && this.parent.grid.pageSettings.currentPage !== 1) {
+                        current = 1;
+                        size = this.parent.pageSettings.pageSize * this.parent.grid.pageSettings.currentPage;
+                    }
                     query = query.page(current, size);
                 }
             } else {

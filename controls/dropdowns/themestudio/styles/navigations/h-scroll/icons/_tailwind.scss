@@ -7,42 +7,42 @@
       &.e-scroll-device {
 
         .e-nav-right-arrow::before {
-          content: '\e70f';
+          content: '\e765';
         }
 
         .e-nav-left-arrow::before {
-          content: '\e7b7';
+          content: '\e748';
         }
 
       }
 
       .e-nav-left-arrow::before {
-        content: '\e7b7';
+        content: '\e748';
         }
 
       .e-nav-right-arrow::before {
-        content: '\e70f';
+        content: '\e765';
         }
     }
 
     &.e-scroll-device {
 
       .e-nav-right-arrow::before {
-        content: '\e7b7';
+        content: '\e748';
       }
 
       .e-nav-left-arrow::before {
-        content: '\e70f';
+        content: '\e765';
       }
     }
 
     .e-nav-left-arrow::before {
-      content: '\e70f';
+      content: '\e765';
       line-height: normal;
     }
 
     .e-nav-right-arrow::before {
-      content: '\e7b7';
+      content: '\e748';
       line-height: normal;
     }
   }

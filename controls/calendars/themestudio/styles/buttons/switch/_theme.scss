@@ -132,6 +132,9 @@
           @if $skin-name == 'bootstrap4' {
             background-color: $switch-inner-on-font-color;
           }
+          @else if $skin-name == 'FluentUI' {
+            background-color: $switch-handle-on-disabled-bg-color;
+          }
           @else {
             background-color: $switch-handle-disabled-bg-color;
           }
@@ -220,7 +223,7 @@
       &.e-focus {
 
         & .e-switch-on {
-          @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background-color: $switch-on-hover-bg-color;
           }
           @else {
@@ -229,7 +232,7 @@
         }
 
         & .e-switch-off {
-          @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
             background-color: $switch-off-bg-color;
           }
           @else {
@@ -240,6 +243,7 @@
         & .e-switch-inner.e-switch-active {
           background-color: $switch-inner-focus-bg-color;
           border-color: $switch-focus-border-color-active;
+          color: $switch-inner-on-font-color;
           outline: $switch-focused-outline-active;
         }
       }

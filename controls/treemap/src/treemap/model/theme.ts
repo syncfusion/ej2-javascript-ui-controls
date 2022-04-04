@@ -151,6 +151,40 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             labelFontFamily: 'Helvetica Neue'  
         };
         break;
+    case 'fluent':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#201F1E',
+            subTitleFontColor: '#201F1E',
+            tooltipFillColor: '#FFFFFF',
+            tooltipFontColor: '#323130',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            legendTitleColor: '#201F1E',
+            legendTextColor: '#201F1E',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            legendFontSize: '12px',
+            labelFontFamily: 'Segoe UI'  
+        };
+        break;
+    case 'fluentdark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#F3F2F1',
+            subTitleFontColor: '#F3F2F1',
+            tooltipFillColor: '#252423',
+            tooltipFontColor: '#F3F2F1',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            legendTitleColor: '#F3F2F1',
+            legendTextColor: '#F3F2F1',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            legendFontSize: '12px',
+            labelFontFamily: 'Segoe UI'  
+        };
+        break;
 	default:
         style = {
             backgroundColor: '#FFFFFF',

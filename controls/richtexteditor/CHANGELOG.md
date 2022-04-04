@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
-- `#I347512` - The issue with "ColorPicker of Table quick toolbar got reset whenever quick toolbar rendered" has been resolved.
+- `#I369216` - Now, pasting the note pad with link contents is pasted properly without moving the cursor to the previous line.
+
+- `#F171703` - Now, pasting the content in the Rich Text Editor after pressing the `shift + enter` key works properly.
 
 ## 19.4.38 (2021-12-17)
 

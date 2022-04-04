@@ -3,29 +3,17 @@
     .e-split-bar {
       &.e-split-bar-horizontal {
         .e-resize-handler::before {
-          content: '\e855';
+          content: '\e7e3';
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
-        }
-
-        .e-resize-handler {
-          &.e-template-resize-handler::before {
-            content: '';
-          }
         }
       }
 
       &.e-split-bar-vertical {
         & .e-resize-handler::before {
-          content: '\e858';
+          content: '\e7fd';
           font-family: 'e-icons';
           font-size: $splitbar-icon-size;
-        }
-
-        .e-resize-handler {
-          &.e-template-resize-handler::before {
-            content: '';
-          }
         }
       }
     }

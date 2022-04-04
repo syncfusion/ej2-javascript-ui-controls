@@ -3,8 +3,8 @@ import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
-import { PointData, ChartLocation, withInBounds } from '../../common/utils/helper';
-import { Rect, Size, measureText, TooltipPlacement } from '@syncfusion/ej2-svg-base';
+import { PointData, ChartLocation } from '../../common/utils/helper';
+import { Rect, Size } from '@syncfusion/ej2-svg-base';
 import {  stopTimer, AccPointData, removeElement } from '../../common/utils/helper';
 import { ChartData } from '../../chart/utils/get-data';
 import { Tooltip } from '../../chart/user-interaction/tooltip';
@@ -124,10 +124,6 @@ export class BaseTooltip extends ChartData {
                 continue;
             }
             series = item.series as Series;
-            if (!series.marker.visible && item.series.type !== 'Scatter' && item.series.type !== 'Bubble') {
-                this.previousPoints.shift();
-                len -= 1;
-            }
         }
     }
 
@@ -161,7 +157,7 @@ export class BaseTooltip extends ChartData {
     // tslint:disable-next-line:max-func-body-length
     public createTooltip(
         chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
-        point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect, extraPoints: PointData[] = null,
+        point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect, crosshairEnabled: boolean = false, extraPoints: PointData[] = null,
         templatePoint: Points | AccPoints = null, customTemplate?: string
     ): void {
         const series: Series = <Series>this.currentPoints[0].series;
@@ -169,47 +165,6 @@ export class BaseTooltip extends ChartData {
         if (!module || location === null) { // For the tooltip enable is false.
             return;
         }
-        let isNegative: boolean = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
-        let inverted: boolean = this.chart.requireInvertedAxis && series.isRectSeries;
-        let position: TooltipPlacement = null;
-        if (this.text.length <= 1) {
-            let contentSize: Size; let headerSize: Size;
-            let tooltipTemplate: string = !customTemplate ? this.template : customTemplate;
-            if (tooltipTemplate && chart.getModuleName() === 'chart' && tooltipTemplate[0] !== '#' && typeof tooltipTemplate === 'string') {
-                const templateDiv: HTMLDivElement = document.createElement('div');
-                templateDiv.id = 'testing_template'; templateDiv.className = 'ejSVGTooltip';
-                templateDiv.style.pointerEvents = 'none';
-                templateDiv.style.position ='absolute';
-                templateDiv.style.zIndex = '1';
-                document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(templateDiv);
-                const template: string =
-                    ((tooltipTemplate as any).replaceAll('${x}', point.x as string) as any).replaceAll('${y}', point.y as string);
-                templateDiv.innerHTML = template;
-                contentSize = new Size(
-                    (templateDiv.firstElementChild as HTMLElement).offsetWidth,
-                    (templateDiv.firstElementChild as HTMLElement).offsetHeight);
-                headerSize = new Size(0, 0);
-                templateDiv.remove();
-            } else {
-                contentSize = measureText(this.text[0], chart.tooltip.textStyle);
-                headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
-                    new Size(0, 0);
-            }
-            // marker size + arrowpadding + 2 * padding + markerpadding
-            const markerSize: number = 10 + 12 + (2 * 10) + 5;
-            contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);
-            const heightPadding: number = 12 + (2 * 10) + (headerSize.height > 0 ? (2 * 10) : 0);
-            contentSize.height = contentSize.height + headerSize.height + heightPadding;
-            position = this.getCurrentPosition(isNegative, inverted);
-            position = this.getPositionBySize(contentSize, new Rect(0, 0, bounds.width, bounds.height), location, position);
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
-        // else if (tooltipPosition !== 'None' && this.text.length <= 1) {
-        //     position = tooltipPosition as TooltipPlacement;
-        //     isNegative = (position === 'Left') || (position === 'Bottom');
-        //     inverted = (position === 'Left') || (position === 'Right');
-        // }
 
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(
@@ -222,6 +177,7 @@ export class BaseTooltip extends ChartData {
                     enableAnimation: chart.tooltip.enableAnimation,
                     location: location,
                     shared: chart.tooltip.shared,
+                    crosshair: crosshairEnabled,
                     shapes: shapes,
                     clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                     areaBounds: bounds,
@@ -231,17 +187,17 @@ export class BaseTooltip extends ChartData {
                     theme: chart.theme,
                     offset: offset,
                     textStyle: chart.tooltip.textStyle,
-                    isNegative: isNegative,
-                    inverted: inverted,
-                    arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
+                    isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
+                    inverted: this.chart.requireInvertedAxis && series.isRectSeries,
+                    arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 7,
                     availableSize: chart.availableSize,
                     duration: this.chart.tooltip.duration,
                     isCanvas: this.chart.enableCanvas,
                     isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                     blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                     controlInstance: this.chart,
-                    tooltipPlacement: position,
                     enableRTL: chart.enableRtl,
+                    controlName: 'Chart',
                     tooltipRender: () => {
                         module.removeHighlight();
                         module.highlightPoints();
@@ -264,85 +220,17 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.shapes = shapes;
                 this.svgTooltip.data = templatePoint;
                 this.svgTooltip.template = this.template;
+                this.svgTooltip.controlName = 'Chart';
+                this.svgTooltip.crosshair = crosshairEnabled;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
-                this.svgTooltip.isNegative = isNegative;
-                this.svgTooltip.inverted = inverted;
+                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
-                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
-                this.svgTooltip.tooltipPlacement = position;
+                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 7;
                 this.svgTooltip.dataBind();
             }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.chart as any).isReact) { (this.chart as any).renderReactTemplates(); }
-    }
-
-    private getPositionBySize(textSize: Size, bounds: Rect, arrowLocation: ChartLocation, position: TooltipPlacement): TooltipPlacement {
-        const isTop: boolean = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        const isBottom: boolean = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        const isRight: boolean = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        const isLeft: boolean = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
-        let tooltipPos: TooltipPlacement;
-        if (isTop || isBottom || isRight || isLeft) {
-            if (position === 'Top') {
-                tooltipPos = isTop ? 'Top' : (isBottom ? 'Bottom' : (isRight ? 'Right' : 'Left'));
-            } else if (position === 'Bottom') {
-                tooltipPos = isBottom ? 'Bottom' : (isTop ? 'Top' : (isRight ? 'Right' : 'Left'));
-            } else if (position === 'Right') {
-                tooltipPos = isRight ? 'Right' : (isLeft ? 'Left' : (isTop ? 'Top' : 'Bottom'));
-            } else {
-                tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
-            }
-        } else {
-            const size: number[] = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x),
-                (arrowLocation.y - bounds.y), ((bounds.y + bounds.height) - arrowLocation.y)];
-            const index: number = size.indexOf(Math.max.apply(this, size));
-            position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
-            return position;
-        }
-        return tooltipPos;
-    }
-
-    private isTooltipFitPosition(position: TooltipPlacement, bounds: Rect, location: ChartLocation, size: Size): boolean {
-        const start: ChartLocation = new ChartLocation(0, 0);
-        const end: ChartLocation = new ChartLocation(0, 0);
-        switch (position) {
-        case 'Top':
-            start.x = location.x - (size.width / 2);
-            start.y = location.y - size.height;
-            end.x = location.x + (size.width / 2);
-            end.y = location.y;
-            break;
-        case 'Bottom':
-            start.x = location.x - (size.width / 2);
-            start.y = location.y;
-            end.x = location.x + (size.width / 2);
-            end.y = location.y + size.height;
-            break;
-        case 'Right':
-            start.x = location.x;
-            start.y = location.y - (size.height / 2);
-            end.x = location.x + size.width;
-            end.y = location.y + (size.height / 2);
-            break;
-        case 'Left':
-            start.x = location.x - size.width;
-            start.y = location.y - (size.height / 2);
-            end.x = location.x;
-            end.y = location.y + (size.height / 2);
-            break;
-        }
-        return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
-    }
-
-    private getCurrentPosition(isNegative: boolean, inverted: boolean): TooltipPlacement {
-        let position: TooltipPlacement;
-        if (inverted) {
-            position = isNegative ? 'Left' : 'Right';
-        } else {
-            position = isNegative ? 'Bottom' : 'Top';
-        }
-        return position;
     }
 
     private findPalette() : string[] {
@@ -380,7 +268,7 @@ export class BaseTooltip extends ChartData {
             this.valueY = null;
             this.currentPoints = [];
             this.removeHighlight();
-            this.removeHighlightedMarker(data);
+            this.removeHighlightedMarker(data, true);
             this.svgTooltip = null;
             this.control.trigger('animationComplete', {});
         }
@@ -389,13 +277,13 @@ export class BaseTooltip extends ChartData {
     /*
     * @hidden
     */
-    public removeHighlightedMarker(data: PointData[]): void {
+    public removeHighlightedMarker(data: PointData[], fadeOut: boolean): void {
         if (this.chart.markerRender) {
             for (const item of data) {
                 removeElement(this.element.id + '_Series_' + item.series.index +
                 '_Point_' + item.point.index + '_Trackball');
+                this.chart.markerRender.removeHighlightedMarker(item.series, item.point, fadeOut);
             }
-            this.chart.markerRender.removeHighlightedMarker();
         }
         this.previousPoints = [];
     }

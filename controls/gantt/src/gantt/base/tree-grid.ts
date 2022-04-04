@@ -70,6 +70,8 @@ export class GanttTreeGrid {
     public renderTreeGrid(): void {
         this.composeProperties();
         this.bindEvents();
+        const root: string = 'root';
+        this.parent.treeGrid[root] = this.parent[root] ? this.parent[root] : this.parent;
         this.parent.treeGrid.appendTo(this.treeGridElement);
         this.wireEvents();
     }
@@ -135,7 +137,7 @@ export class GanttTreeGrid {
         const scrollWidth: number = this.getScrollbarWidth();
         const isMobile: boolean = /Android|Mac|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (scrollWidth !== 0) {
-            content.style.cssText += 'width: calc(100% + ' + scrollWidth + 'px);';
+            content.style.cssText += 'width: calc(100% + ' + (scrollWidth + 1) + 'px);';
         } else {
             content.classList.add('e-gantt-scroll-padding');
         }
@@ -316,8 +318,8 @@ export class GanttTreeGrid {
         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args)) && this.parent.addDeleteRecord) {
             if (this.parent.selectedRowIndex != -1) {
                 this.parent.selectRow(this.parent.selectedRowIndex);
-				if (this.parent.selectedRowIndex > this.parent.currentViewData.length - 1) {
-                    this.parent.selectedRowIndex = -1;
+                if (this.parent.selectedRowIndex > this.parent.currentViewData.length - 1) {
+                    this.parent.selectedRowIndex = -1
                 }
             } else {
                 this.parent.selectRow(0);

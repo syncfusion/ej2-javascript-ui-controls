@@ -188,13 +188,13 @@ export class Splitter extends Component<HTMLElement> {
     private onMouseUpHandler: EventListenerOrEventListenerObject;
     private onTouchMoveHandler: EventListenerOrEventListenerObject;
     private onTouchEndHandler: EventListenerOrEventListenerObject;
-    private allPanes: HTMLElement[] = [];
-    private paneOrder: number[] = [];
-    private separatorOrder: number[] = [];
+    private allPanes: HTMLElement[];
+    private paneOrder: number[];
+    private separatorOrder: number[];
     private currentSeparator: HTMLElement;
-    private allBars: HTMLElement[] = [];
-    private previousCoordinates: Coordinates = {};
-    private currentCoordinates: Coordinates = {};
+    private allBars: HTMLElement[];
+    private previousCoordinates: Coordinates;
+    private currentCoordinates: Coordinates;
     private totalWidth: number;
     private totalPercent: number;
     private order: number;
@@ -202,12 +202,12 @@ export class Splitter extends Component<HTMLElement> {
     private nextPane: HTMLElement;
     private prevPaneIndex: number;
     private previousPaneHeightWidth: string;
-    private updatePrePaneInPercentage: boolean = false;
-    private updateNextPaneInPercentage: boolean = false;
+    private updatePrePaneInPercentage: boolean;
+    private updateNextPaneInPercentage: boolean;
     private prePaneDimenson: number;
     private nextPaneDimension: number;
-    private panesDimensions: number[] = [];
-    private border: number = 0;
+    private panesDimensions: number[];
+    private border: number;
     private wrapper: HTMLElement;
     private wrapperParent: HTMLElement;
     private sizeFlag: boolean;
@@ -218,9 +218,8 @@ export class Splitter extends Component<HTMLElement> {
     private nextPaneIndex: number;
     // eslint-disable-next-line
     private nextPaneHeightWidth: any;
-    private validDataAttributes: string[] = ['data-size', 'data-min', 'data-max', 'data-collapsible',
-        'data-resizable', 'data-content', 'data-collapsed'];
-    private validElementAttributes: string[] = ['data-orientation', 'data-width', 'data-height'];
+    private validDataAttributes: string[];
+    private validElementAttributes: string[];
     private arrow: string;
     private currentBarIndex: number;
     private prevBar: HTMLElement;
@@ -228,10 +227,10 @@ export class Splitter extends Component<HTMLElement> {
     private splitInstance: PaneDetails;
     private leftArrow: string;
     private rightArrow: string;
-    private iconsDelay: number = 300;
-    private templateElement: HTMLElement[] = [];
-    private collapseFlag: boolean = false;
-    private expandFlag: boolean = true;
+    private iconsDelay: number;
+    private templateElement: HTMLElement[];
+    private collapseFlag: boolean;
+    private expandFlag: boolean;
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
@@ -544,7 +543,28 @@ export class Splitter extends Component<HTMLElement> {
         this.allPanes[index].classList.add(STATIC_PANE);
     }
 
+    protected initializeValues(): void {
+        this.allPanes = [];
+        this.paneOrder = [];
+        this.separatorOrder = [];
+        this.allBars = [];
+        this.previousCoordinates = {};
+        this.currentCoordinates = {};
+        this.updatePrePaneInPercentage = false;
+        this.updateNextPaneInPercentage = false;
+        this.panesDimensions = [];
+        this.border = 0;
+        this.validDataAttributes = ['data-size', 'data-min', 'data-max', 'data-collapsible',
+            'data-resizable', 'data-content', 'data-collapsed'];
+        this.validElementAttributes = ['data-orientation', 'data-width', 'data-height'];
+        this.iconsDelay = 300;
+        this.templateElement = [];
+        this.collapseFlag = false;
+        this.expandFlag = true;
+    }
+
     protected preRender(): void {
+        this.initializeValues();
         this.onReportWindowSize = this.reportWindowSize.bind(this);
         this.onMouseMoveHandler = this.onMouseMove.bind(this);
         this.onMouseUpHandler = this.onMouseUp.bind(this);
@@ -1920,7 +1940,7 @@ export class Splitter extends Component<HTMLElement> {
 
     private getSeparatorPosition(e: MouseEvent | TouchEvent | PointerEvent): number {
         this.updateCursorPosition(e, 'current');
-        const rectBound: number = (this.orientation === 'Horizontal') ? this.element.getBoundingClientRect().left :
+        const rectBound: number = (this.orientation === 'Horizontal') ? this.element.getBoundingClientRect().left + window.scrollX :
             this.element.getBoundingClientRect().top +  window.scrollY;
         const offSet: number = (this.orientation === 'Horizontal') ? this.element.offsetWidth : this.element.offsetHeight;
         return this.calcDragPosition(rectBound, offSet);

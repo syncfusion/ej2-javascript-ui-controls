@@ -1,9 +1,9 @@
 import { Browser, EventHandler, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet, FormulaBarEdit, ScrollEventArgs, isFormulaBarEdit, colWidthChanged, mouseDown, getUpdateUsingRaf } from '../index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
-import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, updateScroll, selectionStatus } from '../common/index';
-import { virtualContentLoaded } from '../common/index';
-import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
+import { IOffset, onContentScroll, deInitProperties, setScrollEvent, updateScroll, selectionStatus } from '../common/index';
+import { virtualContentLoaded, updateScrollValue } from '../common/index';
+import { SheetModel, getRowHeight, getColumnWidth, getCellAddress, skipHiddenIdx } from '../../workbook/index';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 
 /**
@@ -37,6 +37,9 @@ export class Scroll {
     }
 
     private onContentScroll(e: ScrollEventArgs): void {
+        if (!this.parent) {
+            return;
+        }
         const target: HTMLElement = this.parent.getMainContent().parentElement;
         const scrollLeft: number = e.scrollLeft; const top: number = e.scrollTop || target.scrollTop;
         const left: number = scrollLeft && this.parent.enableRtl ? this.initScrollValue - scrollLeft : scrollLeft;
@@ -60,14 +63,14 @@ export class Scroll {
             scrollArgs = {
                 cur: this.offset.left, prev: { idx: this.leftIndex, size: prevSize }, increase: scrollRight, preventScroll: e.preventScroll
             };
-            this.updateTopLeftCell(scrollRight);
+            this.updateTopLeftCell(scrollRight, true);
             this.parent.notify(onHorizontalScroll, scrollArgs);
             if (!this.parent.scrollSettings.enableVirtualization && scrollRight && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualCols();
             }
             this.leftIndex = scrollArgs.prev.idx; this.prevScroll.scrollLeft = left;
         }
-        if (this.prevScroll.scrollTop !== top) {
+        if (Math.round(this.prevScroll.scrollTop) !== Math.round(top)) {
             if (e.skipRowVirualScroll) {
                 this.prevScroll.scrollTop = 0; this.offset.top = { idx: 0, size: 0 };
             }
@@ -99,6 +102,17 @@ export class Scroll {
         this.isKeyScroll = true;
     }
 
+    private updateScrollValue(args: { scrollLeft?: number, scrollTop?: number }): void {
+        if (args.scrollLeft !== undefined) {
+            this.prevScroll.scrollLeft = args.scrollLeft + (this.prevScroll.scrollLeft - this.offset.left.size);
+            this.offset.left.size = args.scrollLeft;
+        }
+        if (args.scrollTop !== undefined) {
+            this.prevScroll.scrollTop = args.scrollTop + (this.prevScroll.scrollTop - this.offset.top.size);
+            this.offset.top.size = args.scrollTop;
+        }
+    }
+
     private updateNonVirtualRows(): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const threshold: number =  this.parent.getThreshold('row');
@@ -123,13 +137,20 @@ export class Scroll {
         }
     }
 
-    private updateTopLeftCell(increase: boolean): void {
+    private updateTopLeftCell(increase: boolean, isLeft?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let top: number = this.offset.top.idx; let left: number = this.offset.left.idx;
         if (!increase) {
-            top = skipHiddenIdx(sheet, top, true); left = skipHiddenIdx(sheet, left, true, 'columns');
+            const frozenRow: number = this.parent.frozenRowCount(sheet);
+            top = skipHiddenIdx(sheet, top + frozenRow, true) - frozenRow;
+            const frozenCol: number = this.parent.frozenColCount(sheet);
+            left = skipHiddenIdx(sheet, left + frozenCol, true, 'columns') - frozenCol;
         }
-        this.parent.updateTopLeftCell(top, left);
+        if (isLeft) {
+            this.parent.updateTopLeftCell(null, left, 'row');
+        } else {
+            this.parent.updateTopLeftCell(top, null, 'col');
+        }
     }
 
     private getRowOffset(scrollTop: number, scrollDown: boolean): IOffset {
@@ -143,16 +164,17 @@ export class Scroll {
             if (scrollDown) {
                 temp += getRowHeight(sheet, i - 1 + frozenRow, true);
                 if (Math.abs(Math.round(temp) - scrollTop) <= 1) { // <=1 -> For other resolution scrollTop value slightly various with row height
-                    return { idx: i, size: temp };
+                    return { idx: skipHiddenIdx(sheet, i + frozenRow, true) - frozenRow, size: temp };
                 }
                 if (Math.round(temp) > scrollTop) {
                     return { idx: i - 1, size: temp - getRowHeight(sheet, i - 1 + frozenRow, true) };
                 }
                 i++;
             } else {
-                if (temp === 0) { return { idx: 0, size: 0 }; }
                 temp -= getRowHeight(sheet, i + frozenRow, true);
-                if (temp < 0) { temp = 0; }
+                if (temp <= 0) {
+                    return { idx: 0, size: 0 };
+                }
                 if (Math.abs(Math.round(temp) - scrollTop) <= 1) {
                     return { idx: i, size: temp };
                 }
@@ -162,7 +184,7 @@ export class Scroll {
                         return { idx: i, size: temp - getRowHeight(sheet, i + frozenRow, true) < 0 ? 0 :
                             temp - getRowHeight(sheet, i + frozenRow, true) };
                     } else {
-                        return { idx: skipHiddenIdx(sheet, i + 1, true), size: temp };
+                        return { idx: skipHiddenIdx(sheet, i + 1 + frozenRow, true) - frozenRow, size: temp };
                     }
                 }
                 i--;
@@ -174,32 +196,34 @@ export class Scroll {
     private getColOffset(scrollLeft: number, increase: boolean, skipHidden: boolean): IOffset {
         let temp: number = this.offset.left.size;
         const sheet: SheetModel = this.parent.getActiveSheet();
-        let i: number = increase ? this.offset.left.idx + 1 : this.offset.left.idx - 1;
+        let i: number = increase ? this.offset.left.idx + 1 : (this.offset.left.idx ? this.offset.left.idx - 1 : 0);
         const frozenCol: number = this.parent.frozenColCount(sheet);
         const count: number = this.parent.scrollSettings.isFinite ? sheet.colCount : Infinity;
-        scrollLeft = Math.round(scrollLeft);
         while (i < count) {
             if (increase) {
                 temp += getColumnWidth(sheet, i - 1 + frozenCol, skipHidden, true);
-                if (Math.round(temp) === scrollLeft) {
-                    return { idx: i, size: temp };
+                if (Math.abs(Math.round(temp) - scrollLeft) <= 1) {
+                    return { idx: skipHiddenIdx(sheet, i + frozenCol, true, 'columns') - frozenCol, size: temp };
                 }
                 if (Math.round(temp) > scrollLeft) {
                     return { idx: i - 1, size: temp - getColumnWidth(sheet, i - 1 + frozenCol, skipHidden, true) };
                 }
                 i++;
             } else {
-                if (temp === 0) { return { idx: 0, size: 0 }; }
                 temp -= getColumnWidth(sheet, i + frozenCol, skipHidden, true);
-                if (Math.round(temp) === scrollLeft) {
+                if (temp <= 0) {
+                    return { idx: 0, size: 0 };
+                }
+                if (Math.abs(Math.round(temp) - scrollLeft) <= 1) {
                     return { idx: i, size: temp };
                 }
                 if (Math.round(temp) < scrollLeft) {
                     temp += getColumnWidth(sheet, i + frozenCol, skipHidden, true);
                     if (Math.round(temp) > scrollLeft) {
-                        return { idx: i, size: temp - getColumnWidth(sheet, i + frozenCol, skipHidden, true) };
+                        temp = temp - getColumnWidth(sheet, i + frozenCol, skipHidden, true);
+                        return { idx: i, size: temp < 0 ? 0 : temp};
                     } else {
-                        return { idx: i + 1, size: temp };
+                        return { idx: skipHiddenIdx(sheet, i + 1 + frozenCol, true, 'columns') - frozenCol, size: temp };
                     }
                 }
                 i--;
@@ -336,6 +360,7 @@ export class Scroll {
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
         this.parent.on(setScrollEvent, this.setScrollEvent, this);
         this.parent.on(mouseDown, this.setClientX, this);
+        this.parent.on(updateScrollValue, this.updateScrollValue, this);
         if (!this.parent.scrollSettings.enableVirtualization) {
             this.parent.on(virtualContentLoaded, this.updateNonVirualScrollWidth, this);
             this.parent.on(colWidthChanged, this.updateNonVirualScrollWidth, this);
@@ -355,6 +380,7 @@ export class Scroll {
         this.parent.off(spreadsheetDestroyed, this.destroy);
         this.parent.off(setScrollEvent, this.setScrollEvent);
         this.parent.off(mouseDown, this.setClientX);
+        this.parent.off(updateScrollValue, this.updateScrollValue);
         if (!this.parent.scrollSettings.enableVirtualization) {
             this.parent.off(virtualContentLoaded, this.updateNonVirualScrollWidth);
             this.parent.off(colWidthChanged, this.updateNonVirualScrollWidth);

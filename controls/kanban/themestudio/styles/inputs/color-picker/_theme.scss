@@ -125,7 +125,7 @@
           background-color: $btn-focus-bgcolor;
           border-color: $btn-focus-border-color;
           box-shadow: $btn-active-box-shadow;
-          color: $cpicker-split-btn-icon-color;
+          color: $btn-active-color;
         }
       }
 
@@ -140,6 +140,18 @@
           background-color: $btn-active-bgcolor;
           box-shadow: $btn-active-box-shadow;
           color: $btn-active-color;
+        }
+      }
+
+      &:disabled,
+      &.e-disabled {
+        background-color: transparent;
+        box-shadow: none;
+        @if $skin-name != 'tailwind' {
+          color: $btn-disabled-bgcolor;
+        }
+        @if $skin-name == 'tailwind' {
+          border-color: $btn-disabled-border-color;
         }
       }
     }

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-filemanager",
-	"version": "18.6.2",
+	"version": "18.7.1",
 	"description": "Essential JS 2 FileManager Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -17,8 +17,7 @@
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-popups": "*",
-		"@syncfusion/ej2-splitbuttons": "*",
-		"selenium-webdriver": "^4.0.0-alpha.1"
+		"@syncfusion/ej2-splitbuttons": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

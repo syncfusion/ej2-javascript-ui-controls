@@ -204,7 +204,9 @@ export class YearEvent extends TimelineEvent {
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
         const wrapperCollection: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
         const resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
-            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] : this.parent.resourceBase.lastResourceLevel;
+            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
+            this.parent.activeViewOptions.allowVirtualScrolling ? this.parent.resourceBase.renderedResources :
+                this.parent.resourceBase.lastResourceLevel;
         const months: number[] = this.getMonths();
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             for (let month: number = 0; month < months.length; month++) {
@@ -233,6 +235,7 @@ export class YearEvent extends TimelineEvent {
         const rowIndex: number = this.parent.activeViewOptions.orientation === 'Vertical' ? index : month;
         const td: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${rowIndex + 1}) td`) as HTMLElement;
         this.cellHeight = td.offsetHeight;
+        this.groupOrder = resource.groupOrder;
         for (let a: number = 0; a < eventDatas.length; a++) {
             const data: Record<string, any> = eventDatas[a];
             let overlapIndex: number;
@@ -460,7 +463,9 @@ export class YearEvent extends TimelineEvent {
                     appointmentsList.push(app);
                 }
             } else {
-                if (((util.resetTime(appStart).getTime() <= dateStart) && (util.resetTime(appEnd).getTime() >= dateStart)) ||
+                const timeCondition: boolean = app[this.fields.isAllDay] ? util.resetTime(appEnd).getTime() > dateStart :
+                    util.resetTime(appEnd).getTime() >= dateStart;
+                if (((util.resetTime(appStart).getTime() <= dateStart) && (timeCondition)) ||
                     (util.resetTime(appStart).getTime() >= dateStart) && (util.resetTime(appEnd).getTime() <= dateEnd)) {
                     appointmentsList.push(app);
                 }

@@ -79,18 +79,16 @@ export class TableOptionsDialog {
         this.target = createElement('div', {
             id: this.documentHelper.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-table-options-dlg-div'
-        });
+        const innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
         const innerDivLabel: HTMLElement = createElement('Label', {
-            id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
+            id: this.target.id + '_innerDivLabel', className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Default cell margins')
         });
         innerDiv.appendChild(innerDivLabel);
-        CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue);
-        const div: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px; position: relative;' });
+        CellOptionsDialog.getCellMarginDialogElements(this, innerDiv, localValue, false);
+        const div: HTMLDivElement = <HTMLDivElement>createElement('div');
         const cellSpaceLabel: HTMLElement = createElement('Label', {
-            className: 'e-de-cell-dia-options-label',
+            className: 'e-de-para-dlg-heading',
             id: this.target.id + '_cellSpaceLabel'
         });
         cellSpaceLabel.innerHTML = localValue.getConstant('Default cell spacing');

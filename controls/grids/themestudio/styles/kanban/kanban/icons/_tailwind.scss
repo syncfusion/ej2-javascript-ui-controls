@@ -1,47 +1,47 @@
-@include export-module('kanban-tailwind-icons') {
+@include export-module('kanban-bootstrap-icons') {
   .e-kanban {
     .e-column-expand::before {
-      content: '\e70f';
+      content: '\e765';
     }
 
     .e-column-collapse::before {
-      content: '\e707';
+      content: '\e748';
     }
 
     .e-swimlane-row-expand::before {
-      content: '\e706';
+      content: '\e729';
     }
 
     .e-swimlane-row-collapse::before {
-      content: '\e707';
+      content: '\e748';
     }
 
     .e-show-add-icon::before {
-      content: '\e78a';
+      content: '\e805';
     }
 
     .e-swimlane-header-toolbar {
       & .e-icon-menu::before {
-        content: '\e75c';
+        content: '\e799';
       }
     }
 
     &.e-rtl {
       .e-column-collapse::before {
-        content: '\e70f';
+        content: '\e765';
       }
 
       .e-column-expand::before {
-        content: '\e707';
+        content: '\e748';
       }
 
       .e-swimlane-row-collapse::before {
-        content: '\e70f';
+        content: '\e765';
       }
     }
   }
 
   .e-mobile-popup-wrapper .e-close-icon::before {
-    content: '\e771';
+    content: '\e7e7';
   }
 }

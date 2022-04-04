@@ -278,6 +278,35 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.querySelector('#second').style.width).not.toEqual('754px');
             expect(gridLayOut.element.querySelector('#fifth').style.width).not.toEqual('501px');
         });
+
+        it('Nested panel refresh after the window resize', () => {
+            gridLayOut = new DashboardLayout({
+                cellSpacing: [10, 10],
+                columns: 20,
+                allowResizing: true,
+                panels: [
+                    { id: 'first', sizeX: 20, sizeY: 10, row: 0, col: 0, content: '<div id="nested_dashboard"></div>' },
+                    { id: 'second', sizeX: 15, sizeY: 2, row: 0, col: 1 }
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+
+            let NestedDashboard: DashboardLayout = new DashboardLayout({
+                cellSpacing: [10, 10],
+                columns: 6,
+                allowResizing: true,
+                panels: [ { id: 'Panel1', sizeX: 4, sizeY: 2, row: 0, col: 0 } ]
+            });
+            NestedDashboard.appendTo('#nested_dashboard');
+            (document.querySelectorAll('#container')[0] as HTMLElement).style.width = '800px';
+            window.dispatchEvent(new Event('resize'));
+            gridLayOut.refresh();
+            expect(document.getElementById('container').style.width).not.toEqual('1264px');
+            expect(gridLayOut.element.querySelector('#first').style.width).not.toEqual('248px');
+            expect(gridLayOut.element.querySelector('#second').style.width).not.toEqual('1264px');
+            document.getElementById('container').style.width = '1264px';
+        });
+
         it('updatePanel public method test case', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,

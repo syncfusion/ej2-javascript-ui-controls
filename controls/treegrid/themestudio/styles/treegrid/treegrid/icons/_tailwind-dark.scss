@@ -2,24 +2,24 @@
   .e-treegrid {
     .e-treegridexpand::before,
     .e-treegridcollapse::before {
-      content: '\e707';
+      content: '\e75c';
     }
 
     .e-toolbar-item {
       .e-expand::before {
-        content: '\e762';
+        content: '\e7c9';
       }
 
       .e-collapse::before {
-        content:  '\e750';
+        content: '\e80f';
       }
 
       .e-indent::before {
-        content: '\e7ac';
+        content: '\e810';
       }
 
       .e-outdent::before {
-        content: '\e735';
+        content: '\e72a';
       }
     }
   }

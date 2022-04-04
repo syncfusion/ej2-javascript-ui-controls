@@ -17,8 +17,8 @@ export class AddUserDialog {
     }
 
     public initUserDialog(localValue: L10n, isRtl?: boolean): void {
-        const id: string = this.documentHelper.owner.containerId + '_addUser';
-        this.target = createElement('div', { id: id, className: 'e-de-user-dlg' });
+        //const id: string = this.documentHelper.owner.containerId + '_addUser';
+        this.target = createElement('div', { className: 'e-de-user-dlg' });
         const headerValue: string = localValue.getConstant('Enter User');
         const dlgFields: HTMLElement = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
         this.target.appendChild(dlgFields);
@@ -26,21 +26,21 @@ export class AddUserDialog {
         const commonDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-common' });
         this.target.appendChild(commonDiv);
 
-        const adduserDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-list', styles: 'display:inline-flex' });
+        const adduserDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-list'});
         commonDiv.appendChild(adduserDiv);
         if (isRtl) {
             adduserDiv.classList.add('e-de-rtl');
         }
 
-        const textBoxDiv: HTMLElement = createElement('div', { className: 'e-de-user-dlg-textboxdiv' });
-        adduserDiv.appendChild(textBoxDiv);
-        this.textBoxInput = createElement('input', { className: 'e-input e-de-user-dlg-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } }) as HTMLInputElement;
+        // const textBoxDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-container' });
+        // adduserDiv.appendChild(textBoxDiv);
+        this.textBoxInput = createElement('input', { className: 'e-input e-de-user-dlg-textbox-input', attrs: { autofocus: 'true' } }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
-        textBoxDiv.appendChild(this.textBoxInput);
+        adduserDiv.appendChild(this.textBoxInput);
         this.textBoxInput.addEventListener('keyup', this.onKeyUpOnDisplayBox);
 
         const addButtonElement: HTMLElement = createElement('button', {
-            innerHTML: localValue.getConstant('Add'), id: 'add',
+            innerHTML: localValue.getConstant('Add'),
             attrs: { type: 'button' }
         });
         adduserDiv.appendChild(addButtonElement);
@@ -53,7 +53,7 @@ export class AddUserDialog {
         commonDiv.appendChild(userCollectionDiv);
         const userDiv: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Users'), className: 'e-de-user-dlg-user' });
         userCollectionDiv.appendChild(userDiv);
-        const listviewDiv: HTMLElement = createElement('div', { id: 'user_listView' });
+        const listviewDiv: HTMLElement = createElement('div');
         userCollectionDiv.appendChild(listviewDiv);
 
         this.userList = new ListView({

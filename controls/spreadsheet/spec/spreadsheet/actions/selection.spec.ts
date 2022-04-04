@@ -317,5 +317,116 @@ describe('Selection ->', () => {
                 });
             });
         });
+        describe('SF-367017 ->', () => {
+            let spreadsheet: Spreadsheet; let selectAll: HTMLElement; let rowHdr: HTMLElement; let colHdr: HTMLElement;
+            let content: HTMLElement; let selection: HTMLElement; let cell: HTMLElement; let offset: DOMRect;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ frozenColumns: 3, frozenRows: 3 }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('CTRL selection in freeze pane', (done: Function) => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                selectAll = helper.invoke('getSelectAllContent');
+                expect(selectAll.querySelector('.e-active-cell')).not.toBeNull();
+                helper.getElement().focus();
+                cell = helper.invoke('getCell', [4, 4]);
+                offset = cell.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, cell, true);
+                helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 1 }, document, cell, true);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1 E5:E5');
+                    expect(selectAll.querySelector('.e-active-cell')).toBeNull();
+                    selection = selectAll.querySelector('.e-selection');
+                    expect(selection).not.toBeNull();
+                    expect(selection.classList.contains('e-multi-range')).toBeTruthy();
+                    content = helper.invoke('getMainContent');
+                    selection = content.querySelector('.e-selection');
+                    expect(selection.classList.contains('e-hide')).toBeFalsy();
+                    expect(selection.classList.contains('e-multi-range')).toBeFalsy();
+                    cell = helper.invoke('getCell', [5, 0]);
+                    offset = cell.getBoundingClientRect() as DOMRect;
+                    helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, cell, true);
+                    helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 1 }, document, cell, true);
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1 E5:E5 A6:A6');
+                        rowHdr = helper.invoke('getRowHeaderContent');
+                        selection = rowHdr.querySelector('.e-selection');
+                        expect(selection).not.toBeNull();
+                        expect(selection.classList.contains('e-multi-range')).toBeTruthy();
+                        expect(selectAll.querySelector('.e-multi-range')).not.toBeNull();
+                        expect(rowHdr.querySelector('.e-active-cell')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+            it('Column and row ctrl selection', (done: Function) => {
+                cell = helper.invoke('getColHeaderTable').rows[0].cells[0];
+                offset = cell.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, cell, true);
+                helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 1 }, document, cell, true);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1 E5:E5 A6:A6 D1:D100');
+                    expect(rowHdr.querySelector('.e-active-cell')).toBeNull();
+                    colHdr = helper.invoke('getColumnHeaderContent');
+                    expect(colHdr.querySelector('.e-active-cell')).not.toBeNull();
+                    selection = colHdr.querySelector('.e-selection');
+                    expect(selection).not.toBeNull();
+                    expect(selection.classList.contains('e-multi-range')).toBeTruthy();
+                    selection = content.querySelector('.e-selection:last-child');
+                    expect(selection).not.toBeNull();
+                    expect(selection.classList.contains('e-multi-range')).toBeTruthy();
+                    expect(rowHdr.querySelector('.e-multi-range')).not.toBeNull();
+                    cell = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+                    offset = cell.getBoundingClientRect() as DOMRect;
+                    helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, cell, true);
+                    helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 1 }, document, cell, true);
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1 E5:E5 A6:A6 D1:D100 A4:CV4');
+                        expect(colHdr.querySelector('.e-active-cell')).toBeNull();
+                        expect(rowHdr.querySelector('.e-active-cell')).not.toBeNull();
+                        const selectionCol: NodeListOf<HTMLElement> = rowHdr.querySelectorAll('.e-selection');
+                        expect(selectionCol.length).toBe(2);
+                        selection = selectionCol[1];
+                        expect(content.querySelectorAll('.e-multi-range').length).toBe(2);
+                        selection = content.querySelector('.e-selection:last-child');
+                        expect(selection).not.toBeNull();
+                        expect(selection.classList.contains('e-multi-range')).toBeTruthy();
+                        done();
+                    });
+                });
+            });
+            it('Refreshing selection using selectRange method and removing multi range selection', (done: Function) => {
+                helper.invoke('selectRange', [spreadsheet.sheets[0].selectedRange]);
+                setTimeout((): void => {
+                    expect(rowHdr.querySelector('.e-active-cell')).not.toBeNull();
+                    selection = selectAll.querySelector('.e-selection');
+                    expect(selection).not.toBeNull();
+                    expect(selection.classList.contains('e-multi-range')).toBeTruthy();
+                    selection = colHdr.querySelector('.e-selection');
+                    expect(selection).not.toBeNull();
+                    expect(selection.classList.contains('e-multi-range')).toBeTruthy();
+                    expect(rowHdr.querySelectorAll('.e-multi-range').length).toBe(2);
+                    expect(content.querySelectorAll('.e-multi-range').length).toBe(2);
+                    cell = helper.invoke('getCell', [6, 4]);
+                    offset = cell.getBoundingClientRect() as DOMRect;
+                    helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, cell);
+                    helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 1 }, document, cell);
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].activeCell).toBe('E7');
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('E7:E7');
+                        expect(rowHdr.querySelector('.e-active-cell')).toBeNull();
+                        expect(selectAll.querySelectorAll('.e-multi-range').length).toBe(0);
+                        expect(colHdr.querySelectorAll('.e-multi-range').length).toBe(0);
+                        expect(rowHdr.querySelectorAll('.e-multi-range').length).toBe(0);
+                        expect(content.querySelectorAll('.e-multi-range').length).toBe(0);
+                        expect(content.querySelector('.e-selection').classList.contains('e-hide')).toBeTruthy();
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

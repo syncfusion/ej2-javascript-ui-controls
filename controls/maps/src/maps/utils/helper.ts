@@ -1352,7 +1352,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: any, markerID: string, data: any,
                                markerIndex: number, markerTemplate: HTMLElement, location: Point, transPoint: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
-    templateFn = getTemplateFunction(eventArgs.template);
+    templateFn = getTemplateFunction(eventArgs.template, maps);
     if (templateFn && (templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false).length)) {
         const templateElement: HTMLCollection = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         const markerElement: HTMLElement = <HTMLElement>convertElement(
@@ -1393,8 +1393,10 @@ export function maintainSelection(elementId: string[], elementClass: Element, el
     if (elementId) {
         for (let index: number = 0; index < elementId.length; index++) {
             if (element.getAttribute('id') === elementId[index]) {
-                if (isNullOrUndefined(getElement(elementClass.id)) || index === 0) {
-                    document.body.appendChild(elementClass);
+                if (index === 0 || element.tagName === 'g') {
+                    if (!isNullOrUndefined(elementClass) && !isNullOrUndefined(elementClass.id)) {
+                        document.body.appendChild(elementClass);
+                    }
                     if (element.id.indexOf('_MarkerIndex_') > -1 && element.childElementCount > 0) {
                         element.children[0].setAttribute('class', className);
                     }
@@ -2344,6 +2346,21 @@ export function getElementByID(id: string): Element {
     return document.getElementById(id);
 }
 /**
+ * Function to get clientElement from id.
+ *
+ * @param {string} id - Specifies the id
+ * @returns {Element} - Returns the element
+ * @private
+ */
+export function getClientElement(id: string): ClientRect {
+    const element: HTMLElement = document.getElementById(id);
+    if (!isNullOrUndefined(element)) {
+        return element.getClientRects()[0];
+    } else {
+        return null;
+    }
+}
+/**
  * To apply internalization
  *
  * @param {Maps} maps - Specifies the instance of the maps
@@ -2364,7 +2381,7 @@ export function Internalize(maps: Maps, value: number): string {
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getTemplateFunction(template: string): any {
+export function getTemplateFunction(template: string, maps: Maps): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2372,6 +2389,8 @@ export function getTemplateFunction(template: string): any {
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+        } else if ((maps as any).isVue || (maps as any).isVue3) {
+            templateFn = templateComplier(template);
         }
     } catch (e) {
         templateFn = templateComplier(template);
@@ -2793,6 +2812,7 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
         'left:' + left.toString() + 'px;' +
         'color: #000000; ' +
         'background:' + '#FFFFFF' + ';' +
+        'z-index: 2;' +
         'position:absolute;border:1px solid #707070;font-size:' + fontSize + ';border-radius:2px;';
     if (!tooltip) {
         tooltip = createElement('div', {
@@ -2995,6 +3015,8 @@ export function changeBorderWidth(element: Element, index: number, scale: number
                     } else {
                         currentStroke = (isNullOrUndefined(borderWidth) ? 0 : borderWidth);
                     }
+                } else {
+                    currentStroke = (isNullOrUndefined(borderWidth) ? 0 : borderWidth);
                 }
             } else {
                 currentStroke = (isNullOrUndefined(borderWidth) ? 0 : borderWidth);

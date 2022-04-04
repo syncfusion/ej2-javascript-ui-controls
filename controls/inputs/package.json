@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-inputs",
-	"version": "19.4.38",
+	"version": "18.44.0",
 	"description": "A package of Essential JS 2 input components such as Textbox, Color-picker, Masked-textbox, Numeric-textbox, Slider, Upload, and Form-validator that is used to get input from the users.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",

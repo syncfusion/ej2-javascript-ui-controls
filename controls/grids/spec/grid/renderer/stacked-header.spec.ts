@@ -203,4 +203,46 @@ describe('Stacked header render module', () => {
         });
     });
 
+    describe('EJ2-55362 - Borderline is not applied properly on the stacked column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, minWidth: 10,},
+                        { headerText: 'Orders',
+                            columns: [
+                                { headerText: 'Order Details',
+                                    columns: [
+                                      { field: 'CustomerID', headerText: 'Customer Id', width: 130, textAlign: 'Right',minWidth: 10 },
+                                      { field: 'OrderDate', headerText: 'Order Date', format: 'yMd', width: 130, textAlign: 'Right', minWidth: 10 },
+                                      { field: 'Freight', headerText: 'Freight ($)', width: 120, format: 'C1', textAlign: 'Right', minWidth: 10,},
+                                      { field: 'ShippedDate', headerText: 'Shipped Date', format: 'yMd', textAlign: 'Right', width: 150, minWidth: 10 },
+                                      { field: 'ShipCity', headerText: 'Ship City', width: 120, minWidth: 10 },
+                                    ]
+                                  },
+                                  { headerText: 'Ship Details',
+                                    columns: [
+                                      { field: 'ShipCountry', headerText: 'Ship Country', width: 150, minWidth: 10 }
+                                    ]
+                                  }
+                            ]
+                        }
+                    ]
+                }, done);
+        });
+        it('Check stacked first cell border classname ', () => {
+            let trs: any = gridObj.getHeaderContent().querySelectorAll('tr');
+            expect(trs[1].children[0].classList.contains('e-firstcell')).toBeTruthy();
+            expect(trs[2].children[5].classList.contains('e-laststackcell')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+
 });

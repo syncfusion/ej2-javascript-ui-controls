@@ -139,6 +139,14 @@ export interface FieldOptionsModel {
      */
     dataType?: string;
 
+    /**
+     * Allows you to either expand or collapse all the headers that are displayed in the pivot table.
+     * By default, all the headers are collapsed in the pivot table.
+     * > It is applicable only for Relational data.
+     * @default false    
+     */
+    expandAll?: boolean;
+
 }
 
 /**
@@ -627,6 +635,7 @@ export interface DataSourceSettingsModel {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      * @default []
      */
     rows?: FieldOptionsModel[];
@@ -652,6 +661,7 @@ export interface DataSourceSettingsModel {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      * @default []
      */
     columns?: FieldOptionsModel[];
@@ -675,6 +685,7 @@ export interface DataSourceSettingsModel {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      * @default []
      */
     values?: FieldOptionsModel[];
@@ -695,6 +706,7 @@ export interface DataSourceSettingsModel {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      * @default []
      */
     filters?: FieldOptionsModel[];
@@ -720,6 +732,7 @@ export interface DataSourceSettingsModel {
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
+     * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
      * @default []
      */
     fieldMapping?: FieldOptionsModel[];

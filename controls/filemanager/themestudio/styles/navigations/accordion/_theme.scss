@@ -6,7 +6,7 @@
     background: $acrdn-default-bg-color;
     border: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
 
-    @if ($acrdn-skin == 'bootstrap4' or $acrdn-skin == 'bootstrap5') {
+    @if ($acrdn-skin == 'bootstrap4' or $acrdn-skin == 'bootstrap5' or $acrdn-skin == 'FluentUI') {
       border-radius: $acrdn-border-radius;
     }
 
@@ -162,6 +162,16 @@
             background: $acrdn-header-focus-bg;
           }
         }
+
+        @if $acrdn-skin == 'FluentUI' {
+          &:hover {
+            background: $acrdn-header-hover-bg;
+          }
+
+          &:active {
+            background: $acrdn-header-active-bg;
+          }
+        }
       }
 
       .e-acrdn-panel.e-nested {
@@ -276,6 +286,9 @@
           }
           @else {
             background: $acrdn-header-focus-bg;
+            @if $acrdn-skin == 'FluentUI' {
+              border: 1px solid $acrdn-selected-header-font-color;
+            }
           }
           @if $acrdn-skin == 'highcontrast' {
             background: $acrdn-item-header-focus-bg-color;

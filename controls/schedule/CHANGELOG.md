@@ -2,7 +2,76 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
+
+### Schedule
+
+#### New Features
+
+- `#I305258`, `#FB20522`, `#FB20233` - Provided virtual scrolling support for timeline year view with vertical orientation.
+
+#### Bug Fixes
+
+- `#I368002, #I369932` - A issue with cell height not updated property based on appointment rendering while row auto height enabled has been fixed.
+- `#I368806` - An issue with an incorrect end date in the editor when using `openEditor` method has been fixed.
+- `#I367110` - An issue with more indicator count value is wrong in month view has been fixed.
+- `#I370378` - An issue with the wrong count of occurrences rendered when clear and set up until date value again has been fixed.
+- `#F172905` - An issue with scroll position not maintained for timeline year and timeline month views has been fixed.
+
+## 19.4.50 (2022-02-08)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I362813` - An issue with appointment start and end time changes on each schedule layout resize action while using `timezone` property has been fixed.
+- `#I363018` - An issue with event template content is empty after performing CRUD action with resource has been fixed.
+
+## 19.4.47 (2022-01-25)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I361305` - A performance issue while loading more events in the Timeline views has been fixed.
+- `#I361135` - An issue with improper argument data received in the `eventRendered` event in each view has been fixed.
+- `#I363266` - An issue with the more popup window has truncated at bottom of the schedule in month view has been fixed.
+
+## 19.4.43 (2022-01-18)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F171650` - An issue with localized text is not applied for the week numbers tooltip in year view has been fixed.
+
+## 19.4.42 (2022-01-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I360126` - Timeline views appointment misalignment issue while work cells width reduced has been fixed.
+
+## 19.4.41 (2022-01-04)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I357890` - An issue with work cells misalignment in the timeline month view has been fixed.
+- `#FB31401` - An issue with today button navigating issue only in the `MonthAgenda` view issue has been fixed.
+- `#FB30967` - An issue while drag and drop an event with `eventDragArea` has been fixed.
+
+## 19.4.40 (2021-12-28)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I353817` - An issue with all-day region scrolling issue only in the Mac device has been fixed.
+
+## 19.4.38 (2021-12-17)
 
 ### Schedule
 
@@ -11,11 +80,11 @@
 - `#I256450`, `#I256493`, `#I341525` - Provides support for flexible month view that starts from the beginning of the week the displayed date falls in. Also, users can set the number of weeks to be displayed in the Month view.
 - `#FB9963`, `#I331086` - Provided an option to customize the header names when the Scheduler is exported to Excel.
 - `#I276542`, `#F169844` - Provided support to set the minimum event duration for appointments to make the event subject easier to read.
+- `#I335888`, `#F167194`, `#F167235`, `#F169012`, `#F169593`, `#F169647` - Provides accessibility support for timeline year views to select multiple cells for actions.
 
 #### Bug Fixes
 
-- `#T357194` - An issue while slower the performance of the schedule, while drag and drop the event with `eventTemplate` has been fixed.
-- `#T353817` - An issue with all-day region scrolling issue only in the Mac device has been fixed.
+- `#I357194` - An issue while slower the performance of the schedule, while drag and drop the event with `eventTemplate` has been fixed.
 
 ## 19.3.55 (2021-11-23)
 

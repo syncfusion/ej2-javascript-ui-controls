@@ -7,6 +7,19 @@
       border-color: $qrybldr-brdr-color;
     }
 
+    & .e-group-header .e-dropdown-btn.e-add-btn,
+    .e-deletegroup {
+      @if $skin-name == 'bootstrap5' {
+        background-color: $qrybldr-btngroup-bgcolor;
+        box-shadow: none;
+        color: $qrybldr-icon-color;
+      }
+      @else if $skin-name == 'FluentUI' {
+        background-color: $qrybldr-btngroup-bgcolor;
+        border: 0 solid $qrybldr-btngroup-bgcolor;
+      }
+    }
+
     &.e-rtl .e-btn-group.e-rtl {
 
       & .e-qb-toggle.e-btn.e-small {
@@ -101,6 +114,10 @@
       @if $skin-name == 'highcontrast' {
         border-left: 1px solid;
       }
+      @else if $skin-name == 'FluentUI' {
+        background-color: $qrybldr-btngroup-bgcolor;
+        border: 0 solid $qrybldr-btngroup-bgcolor;
+      }
     }
 
     & .e-group-header .e-btn-group .e-qb-toggle.e-active-toggle:last-of-type {
@@ -113,6 +130,14 @@
       background-color: $groupfill-color;
       @if $skin-name == 'bootstrap4' {
         background-color: $qrybldr-btngroup-bgcolor;
+      }
+      @else if $skin-name == 'bootstrap5' {
+        background-color: $qrybldr-btngroup-bgcolor;
+        color: $qrybldr-icon-color;
+      }
+      @else if $skin-name == 'FluentUI' {
+        background-color: $qrybldr-btngroup-bgcolor;
+        border: 0 solid $qrybldr-btngroup-bgcolor;
       }
 
       &.e-readonly {

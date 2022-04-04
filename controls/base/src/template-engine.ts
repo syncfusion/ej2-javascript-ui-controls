@@ -38,8 +38,8 @@ export interface ITemplateEngine {
 export function compile(templateString: string, helper?: Object, ignorePrefix?:boolean): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     const compiler: Function = engineObj.compile(templateString, helper, ignorePrefix);
     // eslint-disable-next-line
-    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number, element?: any): NodeList => {
-        const result: object = compiler(data, component, propName, element);
+    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number, element?: any, root?: any): NodeList => {
+        const result: object = compiler(data, component, propName, element, root);
         const blazorTemplateId: string = 'BlazorTemplateId';
         if (isBlazor() && !isStringTemplate) {
             const randomId: string = getRandomId();

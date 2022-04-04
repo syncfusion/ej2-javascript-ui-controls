@@ -72,6 +72,7 @@ export class Resize implements IAction {
     public autoFitColumns(fName?: string | string[]): void {
         const columnName: string[] = (fName === undefined || fName === null || fName.length <= 0) ?
             this.parent.getColumns().map((x: Column) => x.field) : (typeof fName === 'string') ? [fName] : fName;
+        this.parent.isAutoFitColumns = true;
         this.findColumn(columnName);
     }
 
@@ -274,11 +275,11 @@ export class Resize implements IAction {
         myTableDiv.style.cssText = 'display: inline-block;visibility:hidden;position:absolute';
         const mySubDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
         mySubDiv.className = tag;
-        const myTable: HTMLTableElement = this.parent.createElement('table') as HTMLTableElement;
+        const myTable: HTMLTableElement = this.parent.createElement('table', { attrs: { role: 'grid' } }) as HTMLTableElement;
         myTable.className = table.className;
         myTable.classList.add('e-resizetable');
         myTable.style.cssText = 'table-layout: auto;width: auto';
-        const myTr: HTMLTableRowElement = this.parent.createElement('tr') as HTMLTableRowElement;
+        const myTr: HTMLTableRowElement = this.parent.createElement('tr', { attrs: { role: 'row' } }) as HTMLTableRowElement;
         for (let i: number = 0; i < text.length; i++) {
             const tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
             tr.className = table.querySelector('tr').className;

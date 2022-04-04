@@ -43,6 +43,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private rowIndex: number;
     private rowObjectIndex: number;
     private isFirstChildRow: boolean = false;
+    private isScrollDown: boolean = false;
+    private isScrollUp: boolean = false;
     private uid1: string;
     private uid2: string;
     private uid3: string;
@@ -499,6 +501,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private render(trIdx: number, rows: Row<Column>[], hasLastChildRow: boolean, aggregates: Row<Column>[]): void {
         const tr: HTMLElement = this.parent.getContent().querySelectorAll('tr')[trIdx];
+        const scrollEle: Element = this.parent.getContent().firstElementChild;
+        const rowHeight: number = this.parent.getRowHeight();
         if (tr && aggregates.length) {
             for (let i: number = aggregates.length - 1; i >= 0; i--) {
                 tr.insertAdjacentElement('afterend', this.rowRenderer.render(aggregates[i], this.parent.getColumns()));
@@ -508,9 +512,17 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             for (let i: number = rows.length - 1; i >= 0; i--) {
                 if (this.confirmRowRendering(rows[i])) {
                     tr.insertAdjacentElement('afterend', this.rowRenderer.render(rows[i], this.parent.getColumns()));
+                    if (this.isScrollDown) {
+                        scrollEle.scrollTop = scrollEle.scrollTop - rowHeight;
+                    }
+                    if (this.isScrollUp) {
+                        scrollEle.scrollTop = scrollEle.scrollTop + rowHeight;
+                    }
                 }
             }
         }
+        this.isScrollDown = false;
+        this.isScrollUp = false;
     }
 
     /**
@@ -822,6 +834,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 keys: query.keys, skip: this.childCount, take: this.pageSize, isScroll: true
             };
             if (this.cacheMode && (this.childCount - this.pageSize) >= (this.pageSize * this.cacheBlockSize)) {
+                this.isScrollDown = true;
                 const child: Row<Column>[] = this.getChildRowsByParentIndex(capRowObjIdx);
                 const currenBlock: number = Math.ceil((child.indexOf(rows[idx]) / this.pageSize)) - 1;
                 const removeBlock: number = (currenBlock - (this.cacheBlockSize - 1)) + 1;
@@ -949,6 +962,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             rowIndex: capRowEleIndex, makeRequest: false, groupInfo: parentCapRow, fields: key.fields,
             keys: key.keys, skip: this.childCount, take: this.pageSize, isScroll: true, scrollUp: true
         };
+        this.isScrollUp = true;
         this.captionRowExpand(args);
     }
 

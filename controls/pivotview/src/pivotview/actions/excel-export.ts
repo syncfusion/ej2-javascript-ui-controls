@@ -7,7 +7,7 @@ import { IPageSettings } from '../../base/engine';
 import { OlapEngine } from '../../base/olap/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotExportUtil } from '../../base/export-util';
-import { ExcelExportProperties, ExcelFooter, ExcelHeader } from '@syncfusion/ej2-grids';
+import { ExcelExportProperties, ExcelFooter, ExcelHeader, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelStyle } from '@syncfusion/ej2-grids';
 
 /**
  * @hidden
@@ -84,9 +84,6 @@ export class ExcelExport {
         let clonedValues: IPivotValues;
         let currentPivotValues: IPivotValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
         let customFileName: string = isFileNameSet ? exportProperties.fileName : 'default.xlsx';
-        if (isHeaderSet) {
-            this.addHeaderAndFooter(exportProperties.header, '', 'header', exportProperties.header.headerRows);
-        }
         if (this.parent.exportAllPages && this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
             let pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings, true);
@@ -98,7 +95,7 @@ export class ExcelExport {
             clonedValues = currentPivotValues;
         }
         let args: BeforeExportEventArgs = {
-            fileName: customFileName, header: '', footer: '', dataCollections: [clonedValues]
+            fileName: customFileName, header: '', footer: '', dataCollections: [clonedValues], excelExportProperties: exportProperties
         };
         let fileName: string; let header: string;
         let footer: string; let dataCollections: IPivotValues[];
@@ -125,6 +122,13 @@ export class ExcelExport {
                     for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
                         if (pivotValues[rCnt][cCnt]) {
                             let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
+                            let field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&
+                                this.parent.dataType === 'olap' && pivotCell.rowOrdinal &&
+                                (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal]) ?
+                                (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal].measureName :
+                                pivotCell.actualText as string;
+                            let styles: ExcelStyle = (pivotCell.axis == 'row') ? { hAlign: 'Left', bold: true, wrapText: true } : { numberFormat: formatList[field], bold: false, wrapText: true };
+                            let headerStyle: ExcelStyle = { bold: true, vAlign: 'Center', wrapText: true, indent: cCnt === 0 ? pivotCell.level * 10 : 0 };
                             if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                 let cellValue: string | number = pivotCell.axis === 'value' ? pivotCell.value : pivotCell.formattedText;
                                 let isgetValuesHeader: boolean = ((this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row')
@@ -142,32 +146,20 @@ export class ExcelExport {
                                         index: cCnt + 1, value: cellValue,
                                         colSpan: pivotCell.colSpan, rowSpan: (pivotCell.rowSpan === -1 ? 1 : pivotCell.rowSpan),
                                     });
+                                    let lastCell: any = cells[cells.length - 1];
                                     if (pivotCell.axis === 'value') {
                                         if (isNaN(pivotCell.value) || pivotCell.formattedText === '' ||
                                             pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
-                                            cells[cells.length - 1].value = type === 'Excel' ? null : '';
+                                            lastCell.value = type === 'Excel' ? null : '';
                                         }
-                                        let field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&
-                                            this.parent.dataType === 'olap' && pivotCell.rowOrdinal &&
-                                            (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal]) ?
-                                            (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal].measureName :
-                                            pivotCell.actualText as string;
-                                        cells[cells.length - 1].style = !isNullOrUndefined(cells[cells.length - 1].value) ? { numberFormat: formatList[field], bold: false, wrapText: true } : { bold: false, wrapText: true };
-                                        if (pivotCell.style) {
-                                            cells[cells.length - 1].style.backColor = pivotCell.style.backgroundColor;
-                                            cells[cells.length - 1].style.fontColor = pivotCell.style.color;
-                                            cells[cells.length - 1].style.fontName = pivotCell.style.fontFamily;
-                                            cells[cells.length - 1].style.fontSize = Number(pivotCell.style.fontSize.split('px')[0]);
-                                        }
+                                        lastCell.style = !isNullOrUndefined(lastCell.value) ? styles : { bold: false, wrapText: true };
                                     } else {
-                                        cells[cells.length - 1].style = {
-                                            bold: true, vAlign: 'Center', wrapText: true, indent: cCnt === 0 ? pivotCell.level * 10 : 0
-                                        };
+                                        lastCell.style = headerStyle;
                                         if (pivotCell.axis === 'row' && cCnt === 0) {
-                                            cells[cells.length - 1].style.hAlign = 'Left';
+                                            lastCell.style = styles;
                                             if (this.parent.dataType === 'olap') {
                                                 let indent: number = this.parent.renderModule.indentCollection[rCnt];
-                                                cells[cells.length - 1].style.indent = indent * 2;
+                                                lastCell.style.indent = indent * 2;
                                                 maxLevel = maxLevel > indent ? maxLevel : indent;
                                             } else {
                                                 let levelName: string = pivotCell.valueSort ? pivotCell.valueSort.levelName.toString() : '';
@@ -176,18 +168,54 @@ export class ExcelExport {
                                                 let levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
                                                     (memberPos ? memberPos - 1 : memberPos);
                                                 let level: number = levelPosition ? (levelPosition - 1) : 0;
-                                                cells[cells.length - 1].style.indent = level * 2;
+                                                lastCell.style.indent = level * 2;
                                                 maxLevel = level > maxLevel ? level : maxLevel;
                                             }
                                         }
                                     }
-                                    cells[cells.length - 1].style.borders = { color: '#000000', lineStyle: 'Thin' };
+                                    if (pivotCell.style || lastCell.style.backColor || lastCell.style.backgroundColor || lastCell.style.fontColor || lastCell.style.fontName || lastCell.style.fontSize) {
+                                        lastCell.style.backColor = lastCell.style.backgroundColor ? lastCell.style.backgroundColor : pivotCell.style.backgroundColor;
+                                        lastCell.style.fontColor = lastCell.style.fontColor ? lastCell.style.fontColor : pivotCell.style.color;
+                                        lastCell.style.fontName = lastCell.style.fontName ? lastCell.style.fontName : pivotCell.style.fontFamily;
+                                        lastCell.style.fontSize = lastCell.style.fontSize ? Number(lastCell.style.fontSize) : Number(pivotCell.style.fontSize.split('px')[0]);
+                                    }
+                                    lastCell.style.borders = { color: '#000000', lineStyle: 'Thin' };
+                                    let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;
+                                    let excelQueryCellInfoArgs: ExcelQueryCellInfoEventArgs;
+                                    if (pivotCell.axis === 'column') {
+                                        excelHeaderQueryCellInfoArgs = {
+                                            style: headerStyle,
+                                            cell: pivotCell,
+                                        };
+                                        this.parent.trigger(events.excelHeaderQueryCellInfo, excelHeaderQueryCellInfoArgs);
+                                    }
+                                    else {
+                                        excelQueryCellInfoArgs = {
+                                            style: styles,
+                                            cell: pivotCell,
+                                            column: undefined,
+                                            data: pivotValues,
+                                            value: cellValue
+                                        };
+                                        this.parent.trigger(events.excelQueryCellInfo, excelQueryCellInfoArgs);
+                                    }
+                                    lastCell.value = (pivotCell.axis == 'column') ? (excelHeaderQueryCellInfoArgs.cell as any).formattedText : excelQueryCellInfoArgs.value;
+                                    lastCell.style = (pivotCell.axis == 'column') ? excelHeaderQueryCellInfoArgs.style : excelQueryCellInfoArgs.style;
                                 }
                             }
                             cCnt = cCnt + (pivotCell.colSpan ? (pivotCell.colSpan - 1) : 0);
                         } else {
+                            let pivotCell: IAxisSet = { formattedText: "" };
+                            let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;
+                            if (pivotCell) {
+                                excelHeaderQueryCellInfoArgs = {
+                                    style: undefined,
+                                    cell: pivotCell,
+                                };
+                                this.parent.trigger(events.excelHeaderQueryCellInfo, excelHeaderQueryCellInfoArgs);
+                            }
                             cells.push({
-                                index: cCnt + 1, value: '', colSpan: 1, rowSpan: 1,
+                                index: cCnt + 1, colSpan: 1, rowSpan: 1, value: pivotCell.formattedText, style: excelHeaderQueryCellInfoArgs.style
                             });
                         }
                     }

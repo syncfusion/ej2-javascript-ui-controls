@@ -3726,6 +3726,59 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('F12 key for inline editing', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { width: '100%', height: '500px', currentView: 'Week', allowInline: true, selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('allow inline appointment creation', (done: Function) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(14);
+                expect((eventElementList[1].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing');
+                expect(eventElementList[1].getAttribute('aria-grabbed')).toEqual('true');
+                done();
+            };
+            keyModule.keyActionHandler({ action: 'home' });
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeFalsy();
+            keyModule.keyActionHandler({
+                action: 'fTwelve', target: schObj.element.querySelector('.e-work-cells'),
+                preventDefault: (): void => { /** Null */ }
+            });
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Testing';
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('allow inline edit action', (done: Function) => {
+            schObj.dataBound = () => {
+                const eventElement: Element = schObj.element.querySelector('[data-id="Appointment_4"]');
+                expect(eventElement).toBeTruthy();
+                expect((eventElement.querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing - edited');
+                done();
+            };
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeFalsy();
+            keyModule.keyActionHandler({
+                action: 'fTwelve', target: schObj.element.querySelector('.e-appointment'),
+                preventDefault: (): void => { /** Null */ }
+            });
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Testing - edited';
+            keyModule.keyActionHandler({ action: 'enter', target: inputElement });
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

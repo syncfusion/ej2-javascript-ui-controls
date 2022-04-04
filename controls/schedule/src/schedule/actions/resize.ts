@@ -65,9 +65,9 @@ export class Resize extends ActionBase {
                 bottom: resizeTarget.classList.contains(cls.BOTTOM_RESIZE_HANDLER)
             };
             this.actionObj.groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : 0;
-            const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
-            this.actionObj.cellWidth = workCell.offsetWidth;
-            this.actionObj.cellHeight = workCell.offsetHeight;
+            const workCell: ClientRect = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS).getBoundingClientRect();
+            this.actionObj.cellWidth = workCell.width;
+            this.actionObj.cellHeight = workCell.height;
             const hRows: string[] = this.parent.activeViewOptions.headerRows.map((row: Record<string, any>) => row.option as string);
             if (this.parent.activeView.isTimelineView() && hRows.length > 0 && ['Date', 'Hour'].indexOf(hRows.slice(-1)[0]) < 0) {
                 const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
@@ -76,8 +76,9 @@ export class Resize extends ActionBase {
                 for (const td of tdCollections) {
                     noOfDays += parseInt(td.getAttribute('colspan'), 10);
                 }
-                this.actionObj.cellWidth = tr.offsetWidth / noOfDays;
-                this.actionObj.cellHeight = tr.offsetHeight;
+                const trRect: ClientRect = tr.getBoundingClientRect();
+                this.actionObj.cellWidth = trRect.width / noOfDays;
+                this.actionObj.cellHeight = trRect.height;
             }
             const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
             this.actionObj.X = pages.pageX;
@@ -327,12 +328,12 @@ export class Resize extends ActionBase {
         const eventEnd: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.endTime]).getTime());
         let resizeTime: Date;
         let isDateHeader: boolean = false;
+        let headerName: string = this.parent.currentView;
         const isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1;
         const isTimelineMonth: boolean = this.parent.currentView === 'TimelineMonth';
         const isWithoutScale: boolean = isTimelineMonth || isTimeViews && !this.parent.activeViewOptions.timeScale.enable;
         if (this.parent.activeView.isTimelineView()) {
             const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
-            let headerName: string = this.parent.currentView;
             if (this.parent.activeViewOptions.headerRows.length > 0) {
                 const rows: string[] = this.parent.activeViewOptions.headerRows.map((row: Record<string, any>) => row.option as string);
                 headerName = rows.slice(-1)[0];
@@ -344,6 +345,11 @@ export class Resize extends ActionBase {
             let cellIndex: number = 0;
             const tdCollections: HTMLElement[] = [].slice.call(tr.children);
             let isLastCell: boolean = false;
+            const pixelsPerMinute: number = this.actionObj.cellWidth / (this.parent.activeViewOptions.timeScale.interval /
+                this.parent.activeViewOptions.timeScale.slotCount);
+            let offset: number = parseFloat(this.parent.enableRtl ? this.actionObj.clone.style.right :
+                this.actionObj.clone.style.left);
+            offset = Math.round(offset / pixelsPerMinute) * pixelsPerMinute;
             if (['Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1) {
                 let noOfDays: number = 0;
                 for (const td of tdCollections) {
@@ -351,27 +357,27 @@ export class Resize extends ActionBase {
                 }
                 let offsetValue: number = this.parent.enableRtl ? parseInt(this.actionObj.clone.style.right, 10) :
                     parseInt(this.actionObj.clone.style.left, 10);
+                offsetValue = Math.round(offsetValue / this.actionObj.cellWidth) * this.actionObj.cellWidth;
                 if (!isLeft) {
-                    offsetValue += (this.actionObj.clone.offsetWidth - this.actionObj.cellWidth);
+                    offsetValue += (this.actionObj.clone.getBoundingClientRect().width - this.actionObj.cellWidth);
                 }
-                cellIndex = Math.floor(offsetValue / Math.floor((<HTMLElement>tr).offsetWidth / noOfDays));
+                cellIndex = Math.floor(offsetValue / Math.floor(tr.getBoundingClientRect().width / noOfDays));
                 isDateHeader = isTimeViews && headerName === 'Date';
-                cellIndex = isLeft ? cellIndex : (isTimelineMonth || isDateHeader) ? cellIndex + 1 : cellIndex;
+                cellIndex = isLeft ? cellIndex : isTimelineMonth ? cellIndex + 1 : cellIndex;
                 isLastCell = cellIndex === tdCollections.length;
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
                 const cellWidth: number = this.actionObj.cellWidth;
-                cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
-                    Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
-                        this.actionObj.cellWidth);
+                cellIndex = isLeft ? Math.floor(offset / this.actionObj.cellWidth) :
+                    Math.ceil((offset + (this.actionObj.clone.getBoundingClientRect().width - cellWidth)) / this.actionObj.cellWidth);
                 if (this.parent.enableRtl) {
                     let cellOffsetWidth: number = 0;
                     if (headerName === 'TimelineMonth' || (!this.parent.activeViewOptions.timeScale.enable &&
                         !isTimelineMonth)) {
                         cellOffsetWidth = this.actionObj.cellWidth;
                     }
-                    const offsetWidth: number = (Math.floor(parseInt(this.actionObj.clone.style.right, 10) / this.actionObj.cellWidth) *
-                        this.actionObj.cellWidth) + (isLeft ? 0 : this.actionObj.clone.offsetWidth - cellOffsetWidth);
+                    const offsetWidth: number = (Math.floor(offset / this.actionObj.cellWidth) *
+                        this.actionObj.cellWidth) + (isLeft ? 0 : this.actionObj.clone.getBoundingClientRect().width - cellOffsetWidth);
                     cellIndex = Math.floor(offsetWidth / this.actionObj.cellWidth);
                 }
                 isLastCell = cellIndex === tdCollections.length;
@@ -387,13 +393,11 @@ export class Resize extends ActionBase {
                 !this.parent.activeViewOptions.timeScale.enable) {
                 resizeTime = new Date(resizeDate.setHours(resizeTime.getHours(), resizeTime.getMinutes(), resizeTime.getSeconds()));
             } else {
-                let offsetValue: number = this.parent.enableRtl ? parseFloat(this.actionObj.clone.style.right) :
-                    parseFloat(this.actionObj.clone.style.left);
                 if (!isLeft) {
-                    offsetValue += this.actionObj.clone.offsetWidth;
+                    offset += this.actionObj.clone.getBoundingClientRect().width;
                 }
                 let spanMinutes: number = Math.ceil((this.actionObj.slotInterval / this.actionObj.cellWidth) *
-                    (offsetValue - Math.floor(offsetValue / this.actionObj.cellWidth) * this.actionObj.cellWidth));
+                    (offset - Math.floor(offset / this.actionObj.cellWidth) * this.actionObj.cellWidth));
                 spanMinutes = (isLastCell || (!isLeft && spanMinutes === 0)) ? this.actionObj.slotInterval : spanMinutes;
                 resizeTime = new Date(resizeDate.getTime());
                 resizeTime.setMinutes(resizeTime.getMinutes() + spanMinutes);
@@ -401,9 +405,10 @@ export class Resize extends ActionBase {
             }
         } else {
             const cloneIndex: number = (closest(this.actionObj.clone, 'td') as HTMLTableCellElement).cellIndex;
-            const originalWidth: number = Math.ceil((isLeft ? this.actionObj.element.offsetWidth : 0) / this.actionObj.cellWidth) *
-                this.actionObj.cellWidth;
-            const noOfDays: number = Math.ceil((this.actionObj.clone.offsetWidth - originalWidth) / this.actionObj.cellWidth);
+            const originalWidth: number = Math.ceil((isLeft ? this.actionObj.element.getBoundingClientRect().width : 0) /
+                this.actionObj.cellWidth) * this.actionObj.cellWidth;
+            const noOfDays: number = Math.ceil((this.actionObj.clone.getBoundingClientRect().width - originalWidth) /
+                this.actionObj.cellWidth);
             const tr: HTMLTableRowElement = closest(this.actionObj.clone, 'tr') as HTMLTableRowElement;
             let dayIndex: number = isLeft ? cloneIndex - noOfDays : cloneIndex + noOfDays - 1;
             dayIndex = this.getIndex(dayIndex);
@@ -421,8 +426,8 @@ export class Resize extends ActionBase {
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         } else {
             const isTimeScaleViews: boolean = isTimeViews && this.parent.activeViewOptions.timeScale.enable;
-            let resizeEnd: Date = ((!isTimeScaleViews || isDateHeader) && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
-                util.addDays(resizeTime, 1) : resizeTime;
+            let resizeEnd: Date = ((!isTimeScaleViews || isDateHeader || isTimeViews && ['Week', 'Month', 'Year'].indexOf(headerName) > -1)
+                && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ? util.addDays(resizeTime, 1) : resizeTime;
             if (isWithoutScale && (resizeEnd.getTime() - eventStart.getTime()) <= 0) {
                 resizeEnd = util.addDays(util.resetTime(eventStart), 1);
             }
@@ -461,40 +466,41 @@ export class Resize extends ActionBase {
         const slotInterval: number = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
         const pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);
         const targetWidth: number = isTimelineView ?
-            (this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth :
-            this.parent.currentView === 'Month' ? this.actionObj.element.offsetWidth :
-                Math.ceil(this.actionObj.element.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
+            (this.actionObj.element.getBoundingClientRect().width / this.actionObj.cellWidth) * this.actionObj.cellWidth :
+            this.parent.currentView === 'Month' ? this.actionObj.element.getBoundingClientRect().width :
+                Math.ceil(this.actionObj.element.getBoundingClientRect().width / this.actionObj.cellWidth) * this.actionObj.cellWidth;
         let offsetWidth: number = targetWidth + (Math.ceil(pageWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth);
+        const left: number = (this.parent.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) : this.actionObj.clone.offsetLeft;
         if (isTimeViews) {
-            offsetWidth = targetWidth + (isLeft ? (Math.ceil(pageWidth / slotInterval) * slotInterval) :
-                (Math.floor(pageWidth / slotInterval) * slotInterval));
+            offsetWidth = targetWidth + (Math.ceil(pageWidth / slotInterval) * slotInterval);
+            offsetWidth = (Math.round((left + offsetWidth) / slotInterval) * slotInterval) - left;
             this.actionObj.event[this.parent.eventFields.isAllDay] = false;
         }
         let width: number = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
-            this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? offsetWidth : offsetWidth;
+            this.actionObj.clone.getBoundingClientRect().width : (offsetWidth < this.actionObj.cellWidth) ? offsetWidth : offsetWidth;
         if (this.parent.enableRtl) {
             let rightValue: number = isTimelineView ? parseInt(this.actionObj.element.style.right, 10) :
                 -(offsetWidth - this.actionObj.cellWidth);
             rightValue = isTimelineView ? rightValue : isLeft ? 0 : rightValue > 0 ? 0 : rightValue;
             if (isTimelineView && !isLeft) {
-                rightValue = Math.ceil((this.actionObj.element.offsetLeft + (this.actionObj.element.offsetWidth +
+                rightValue = Math.ceil((this.actionObj.element.offsetLeft + (this.actionObj.element.getBoundingClientRect().width +
                     (this.actionObj.pageX - this.actionObj.X))) / slotInterval) * slotInterval;
                 rightValue = rightValue < 0 ? Math.abs(rightValue) : -rightValue;
             }
             rightValue = rightValue >= this.scrollArgs.width ? this.scrollArgs.width - this.actionObj.cellWidth : rightValue;
             styles.right = formatUnit(rightValue);
-            width = width + rightValue > this.scrollArgs.width ? this.actionObj.clone.offsetWidth : width;
+            width = width + rightValue > this.scrollArgs.width ? this.actionObj.clone.getBoundingClientRect().width : width;
         } else {
             let offsetLeft: number = isLeft ? this.actionObj.element.offsetLeft - (this.actionObj.X - this.actionObj.pageX) :
                 this.parent.enableRtl ? this.actionObj.element.offsetLeft : 0;
             if (isTimelineView) {
                 offsetLeft = isLeft ? offsetLeft : parseInt(this.actionObj.clone.style.left, 10);
                 if (this.parent.enableRtl) {
-                    offsetLeft = !isLeft ? (this.actionObj.pageX < this.actionObj.X - this.actionObj.clone.offsetWidth) ?
-                        parseInt(this.actionObj.clone.style.right, 10) : offsetLeft : offsetLeft;
+                    offsetLeft = !isLeft ? (this.actionObj.pageX < this.actionObj.X - this.actionObj.clone.getBoundingClientRect().width)
+                        ? parseInt(this.actionObj.clone.style.right, 10) : offsetLeft : offsetLeft;
                 } else {
-                    offsetLeft = isLeft ? (this.actionObj.pageX > this.actionObj.X + this.actionObj.clone.offsetWidth &&
-                        this.actionObj.clone.offsetWidth === this.actionObj.cellWidth) ?
+                    offsetLeft = isLeft ? (this.actionObj.pageX > this.actionObj.X + this.actionObj.clone.getBoundingClientRect().width &&
+                        this.actionObj.clone.getBoundingClientRect().width === this.actionObj.cellWidth) ?
                         parseInt(this.actionObj.clone.style.left, 10) : offsetLeft : offsetLeft;
                 }
             }
@@ -504,9 +510,10 @@ export class Resize extends ActionBase {
                 Math.ceil(Math.abs(offsetLeft) / this.actionObj.cellWidth) * this.actionObj.cellWidth;
             if (offsetLeft < 0) {
                 offsetLeft = 0;
-                width = this.actionObj.clone.offsetWidth;
+                width = this.actionObj.clone.getBoundingClientRect().width;
             }
-            const cloneWidth: number = Math.ceil(this.actionObj.clone.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
+            const cloneWidth: number = Math.ceil(this.actionObj.clone.getBoundingClientRect().width / this.actionObj.cellWidth) *
+                this.actionObj.cellWidth;
             if (isLeft) {
                 styles.left = formatUnit(isTimelineView ? offsetLeft : isLeft ? leftValue < 0 ? -offsetLeft :
                     (Math.ceil((targetWidth - cloneWidth) / this.actionObj.cellWidth) * this.actionObj.cellWidth) : offsetLeft);

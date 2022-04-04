@@ -93,13 +93,13 @@ describe('Schedule CRUD', () => {
                 Subject: 'Testing',
                 StartTime: new Date(2018, 1, 11, 9, 0),
                 EndTime: new Date(2018, 1, 11, 10, 0),
-                IsAllDay: false,
+                IsAllDay: false
             }
         ];
         beforeAll((done: DoneFn) => {
-            const customFn = function () {
-                let startDate = (document.querySelector('#StartTime') as any).ej2_instances[0].value;
-                let endDate = (document.querySelector('#EndTime') as any).ej2_instances[0].value;
+            const customFn: () => boolean = () => {
+                const startDate: Date = (document.querySelector('#StartTime') as any).ej2_instances[0].value;
+                const endDate: Date = (document.querySelector('#EndTime') as any).ej2_instances[0].value;
                 return endDate > startDate;
             };
             const schOptions: ScheduleModel = {
@@ -166,7 +166,7 @@ describe('Schedule CRUD', () => {
                 Subject: 'Testing',
                 StartTime: new Date(2018, 1, 11, 9, 0),
                 EndTime: new Date(2018, 1, 11, 10, 0),
-                IsAllDay: false,
+                IsAllDay: false
             }
         ];
         beforeAll((done: DoneFn) => {
@@ -194,7 +194,7 @@ describe('Schedule CRUD', () => {
                 EndTime: '2018-02-11T04:00:00.000Z',
                 IsAllDay: false
             };
-            schObj.actionBegin = function (args) { return args.cancel = false; };
+            schObj.actionBegin = (args: ActionEventArgs) => { return args.cancel = false; };
             schObj.saveEvent(data);
         });
     });
@@ -1222,7 +1222,7 @@ describe('Schedule CRUD', () => {
                 const dataObj: Record<string, any>[] = schObj.eventsProcessed;
                 expect(dataObj[0].Id).toEqual(11);
                 expect(dataObj[0].Subject).toEqual('Edit following events');
-                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171029T100000Z;');
+                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
                 done();
             };
             const data: Record<string, any> = extend({}, schObj.eventsProcessed[0], null, true) as Record<string, any>;
@@ -1257,7 +1257,7 @@ describe('Schedule CRUD', () => {
                 expect(eventObj[3].FollowingID).toEqual(11);
                 expect(dataObj[1].Id).toEqual(13);
                 expect(dataObj[1].Subject).toEqual('Edit future edited occurence');
-                expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171029T100000Z;');
+                expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
                 done();
             };
             const data: Record<string, any> = extend({}, schObj.eventsProcessed[1], null, true) as Record<string, any>;

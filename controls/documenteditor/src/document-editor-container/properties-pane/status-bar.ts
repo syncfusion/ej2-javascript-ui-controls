@@ -48,17 +48,20 @@ export class StatusBar {
         this.pageNumberInput = createElement('input', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text', attrs: { type: 'text' }, className: 'e-de-pagenumber-input' }) as HTMLInputElement;
         this.editablePageNumber = createElement('div', { styles: 'display: inline-flex', className: 'e-input e-de-pagenumber-text' });
         this.editablePageNumber.appendChild(this.pageNumberInput);
+        let pageNumberOfLabelStyle = "";
         if (isRtl) {
             label.style.marginLeft = '6px';
             this.editablePageNumber.style.marginLeft = '6px';
+            pageNumberOfLabelStyle = 'padding-left:5px';
         } else {
             label.style.marginRight = '6px';
             this.editablePageNumber.style.marginRight = '6px';
+            pageNumberOfLabelStyle = 'padding-right:5px';
         }
         this.updatePageNumber();
         div.appendChild(this.editablePageNumber);
         this.editablePageNumber.setAttribute('title', this.localObj.getConstant('Current Page Number'));
-        const label1: HTMLElement = createElement('span', { styles: 'width:20px' });
+        const label1: HTMLElement = createElement('span', { styles: pageNumberOfLabelStyle });
         label1.textContent = ' ' + this.localObj.getConstant('of') + ' ';
         div.appendChild(label1);
         this.pageCount = createElement('span');
@@ -84,7 +87,7 @@ export class StatusBar {
             className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.statusBarDiv.appendChild(zoomBtn);
-        zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
+        zoomBtn.setAttribute('title', this.localObj.getConstant('ZoomLevelTooltip'));
         const items: ItemModel[] = [
             {
                 text: '200%'
@@ -180,13 +183,7 @@ export class StatusBar {
     private setSpellCheckValue(text: string): void {
         this.spellCheckButton.content = this.localObj.getConstant('Spelling');
         if (text.match(this.localObj.getConstant('Spell Check'))) {
-            this.documentEditor.spellChecker.enableSpellCheck = (this.documentEditor.spellChecker.enableSpellCheck) ? false : true;
-            setTimeout(() => {
-                if (this.documentEditor.enableSpellCheck && this.documentEditor.spellChecker.enableSpellCheck) {
-                    this.documentEditor.documentHelper.triggerElementsOnLoading = true;
-                    this.documentEditor.documentHelper.triggerSpellCheck = true;
-                }
-            }, 50);
+            this.documentEditor.spellChecker.enableSpellCheck = (this.documentEditor.spellChecker.enableSpellCheck) ? false : true;            
             this.documentEditor.documentHelper.triggerSpellCheck = false;
             this.documentEditor.documentHelper.triggerElementsOnLoading = false;
         } else if (text.match(this.localObj.getConstant('Underline errors'))) {

@@ -643,7 +643,11 @@ export type ChartTheme =
     /**  Render a chart with Bootstrap5 theme. */
     'Bootstrap5' |
     /**  Render a chart with Bootstrap5Dark theme. */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark' |
+    /**  Render a chart with Fluent theme. */
+    'Fluent' |
+    /**  Render a chart with FluentDark theme. */
+    'FluentDark';
 
 /**
  *  Specifies the order of the strip line. `Over` | `Behind`.

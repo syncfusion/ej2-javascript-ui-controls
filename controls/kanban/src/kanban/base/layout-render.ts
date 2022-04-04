@@ -555,6 +555,13 @@ export class LayoutRender extends MobileLayout {
         }
     }
 
+    private addFrozenSwimlaneDataKey(currentElem: HTMLElement): void {
+        const frozenKey: string = currentElem.getAttribute('data-key');
+        if (!isNullOrUndefined(frozenKey)) {
+            this.frozenSwimlaneRow.setAttribute('data-key', frozenKey);
+        }
+    }
+
     public frozenRows(e?: Event): void {
         let firstSwimlane: HTMLElement =  this.parent.element.querySelector('.' + cls.SWIMLANE_ROW_CLASS) as HTMLElement;
         const header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
@@ -565,6 +572,7 @@ export class LayoutRender extends MobileLayout {
             this.frozenSwimlaneRow.appendChild(frozenRow);
             this.parent.element.insertBefore(this.frozenSwimlaneRow, this.parent.element.firstElementChild);
             frozenRow.appendChild(firstSwimlane.querySelector('.' + cls.SWIMLANE_HEADER_CLASS).cloneNode(true));
+            this.addFrozenSwimlaneDataKey(firstSwimlane);
             setStyleAttribute(this.frozenSwimlaneRow, { height: formatUnit(firstSwimlane.getBoundingClientRect().height), 
                 width: formatUnit(content.querySelector('.e-swimlane').getBoundingClientRect().width),
                 top: formatUnit(header.getBoundingClientRect().height.toString())
@@ -594,6 +602,7 @@ export class LayoutRender extends MobileLayout {
                 if (frozenRowsElement) {
                     remove(frozenRowsElement.querySelector('.' + cls.SWIMLANE_HEADER_CLASS));
                     frozenRowsElement.appendChild(nextSwim.querySelector('.' + cls.SWIMLANE_HEADER_CLASS).cloneNode(true));
+                    this.addFrozenSwimlaneDataKey(nextSwim);
                 }
                 ++this.frozenOrder;
             }
@@ -601,6 +610,7 @@ export class LayoutRender extends MobileLayout {
                 if (frozenRowsElement) {
                     remove(frozenRowsElement.querySelector('.' + cls.SWIMLANE_HEADER_CLASS));
                     frozenRowsElement.appendChild(prevSwim.querySelector('.' + cls.SWIMLANE_HEADER_CLASS).cloneNode(true));
+                    this.addFrozenSwimlaneDataKey(prevSwim);
                 }
                 --this.frozenOrder;
             }

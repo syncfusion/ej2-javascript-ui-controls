@@ -12,7 +12,10 @@ export class TextProperties {
     public element: HTMLElement;
     private container: DocumentEditorContainer;
     private text: Text;
-    private paragraph: Paragraph;
+    /** 
+     * @private
+     */
+    public paragraph: Paragraph;
     private isInitial: boolean = true;
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -73,7 +76,7 @@ export class TextProperties {
         this.documentEditor.resize();
     }
     private initializeTextProperties(id: string, isTableProperties: boolean, isRtl?: boolean): void {
-        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-prop-pane' });
+        this.element = createElement('div', { className: 'e-de-prop-pane e-de-scrollbar-hide' });
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
         this.paragraph.updateStyleNames();

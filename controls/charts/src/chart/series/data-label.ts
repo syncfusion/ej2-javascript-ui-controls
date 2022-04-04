@@ -250,7 +250,8 @@ export class DataLabel {
                                     }
                                 }
                                 // Checking the font color
-                                rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
+                                let backgroundColor: string = this.fontBackground === 'transparent' ? (this.chart.theme.indexOf('Dark') > -1 ? 'black' : 'white') : this.fontBackground;
+                                rgbValue = convertHexToColor(colorNameToHex(backgroundColor));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
                                 xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
@@ -358,7 +359,8 @@ export class DataLabel {
         }
         childElement.style.left = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.x) + rect.x - clipWidth) + 'px';
         childElement.style.top = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.y) + rect.y + clipHeight) + 'px';
-        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(this.fontBackground));
+        let backgroundColor: string = this.fontBackground === 'transparent' ? (this.chart.theme.indexOf('Dark') > -1 ? 'black' : 'white') : this.fontBackground;
+        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
         const vAxis: Axis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
         const hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
         childElement.style.color = dataLabel.font.color ||

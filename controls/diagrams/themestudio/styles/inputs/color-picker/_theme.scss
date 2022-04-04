@@ -147,7 +147,7 @@
       &.e-disabled {
         background-color: transparent;
         box-shadow: none;
-        @if $skin-name != 'tailwind' {
+        @if $skin-name != 'tailwind' and $skin-name != 'FluentUI' {
           color: $btn-disabled-bgcolor;
         }
         @if $skin-name == 'tailwind' {

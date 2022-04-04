@@ -2,22 +2,22 @@
  * Open properties.
  */
 import { Spreadsheet } from '../base/index';
-import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook } from '../../workbook/index';
+import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
 import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
-import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize } from '../common/index';
-import { BeforeImageRefreshData, BeforeChartEventArgs, beginAction, completeAction, clearChartBorder, focusBorder } from '../common/index';
+import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData } from '../common/index';
+import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
 import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition } from '@syncfusion/ej2-charts';
 import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs } from '@syncfusion/ej2-charts';
 import { Legend, StackingBarSeries, SeriesModel, LineSeries, StackingLineSeries, AxisModel, ScatterSeries } from '@syncfusion/ej2-charts';
 import { AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
-import { L10n, isNullOrUndefined, getComponent, closest, detach } from '@syncfusion/ej2-base';
+import { L10n, isNullOrUndefined, getComponent, closest, detach, isUndefined } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
 import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
-import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol } from '../../workbook/index';
+import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol, beginAction } from '../../workbook/index';
 
 Chart.Inject(ColumnSeries, LineSeries, BarSeries, AreaSeries, StackingColumnSeries, StackingLineSeries, StackingBarSeries, ScatterSeries);
 Chart.Inject(StackingAreaSeries, Category, Legend, Tooltip, DataLabel);
@@ -55,6 +55,7 @@ export class SpreadsheetChart {
         this.parent.on(chartRangeSelection, this.chartRangeHandler, this);
         this.parent.on(chartDesignTab, this.chartDesignTabHandler, this);
         this.parent.on(addChartEle, this.updateChartElement, this);
+        this.parent.on(undoRedoForChartDesign, this.undoRedoForChartDesign, this);
     }
 
     private insertChartHandler(args: { action: string, id: string, isChart?: boolean }): void {
@@ -116,7 +117,7 @@ export class SpreadsheetChart {
         if (args.isChart) {
             this.parent.notify(setChart, { chart: chart });
         } else {
-            this.parent.notify(chartDesignTab, { chartType: chartType });
+            this.parent.notify(chartDesignTab, { chartType: chartType, triggerEvent: true });
         }
     }
 
@@ -158,7 +159,7 @@ export class SpreadsheetChart {
                         formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
                         value = parseInt(formatObj.formattedText.toString(), 10);
                     } else {
-                        value = formatObj.formattedText.toString(); parseFloat('');
+                        value = formatObj.formattedText && formatObj.formattedText.toString();
                     }
                 }
             } else {
@@ -185,7 +186,8 @@ export class SpreadsheetChart {
     }
 
     private refreshChartCellObj(args: BeforeImageRefreshData): void {
-        const sheet: SheetModel = this.parent.sheets[this.parent.activeSheetIndex];
+        const sheetIndex: number = isUndefined(args.sheetIdx) ? this.parent.activeSheetIndex : args.sheetIdx;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const prevCellObj: CellModel = getCell(args.prevRowIdx, args.prevColIdx, sheet);
         const currCellObj: CellModel = getCell(args.currentRowIdx, args.currentColIdx, sheet);
         const prevCellChart: object[] = prevCellObj ? prevCellObj.chart : [];
@@ -194,10 +196,7 @@ export class SpreadsheetChart {
         const prevCellChartLen: number = (prevCellChart && prevCellChart.length) ? prevCellChart.length : 0;
         if (prevCellObj && prevCellObj.chart) {
             for (let i: number = 0; i < prevCellChartLen; i++) {
-                const overlayEle: HTMLElement =
-                    document.getElementsByClassName('e-datavisualization-chart e-ss-overlay-active')[0] as HTMLElement;
-                const chartEleClassName: HTMLElement = document.getElementById((prevCellChart[i] as ChartModel).id);
-                if (closest(chartEleClassName, '.' + overlayEle.classList[1]) === overlayEle) {
+                if ((prevCellChart[i] as ChartModel).id === args.id.split('_overlay')[0]) {
                     prevChartObj = prevCellChart[i];
                     prevChartObj.height = args.currentHeight;
                     prevChartObj.width = args.currentWidth;
@@ -231,7 +230,7 @@ export class SpreadsheetChart {
                     currentWidth: args.currentWidth, prevHeight: args.prevHeight, prevWidth: args.prevWidth,
                     prevRowIdx: args.prevRowIdx, prevColIdx: args.prevColIdx, prevTop: args.prevTop, prevLeft: args.prevLeft,
                     currentTop: args.currentTop, currentLeft: args.currentLeft, currentHeight: args.currentHeight,
-                    id: args.id, sheetIdx: this.parent.activeSheetIndex
+                    id: args.id, sheetIdx: sheetIndex
                 };
                 this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'chartRefresh' });
             }
@@ -324,7 +323,7 @@ export class SpreadsheetChart {
                         isRightAlign: false, cell: cell
                     };
                     this.parent.notify(getFormattedCellObject, forArgs);
-                    value = forArgs.formattedText.toString();
+                    value = forArgs.formattedText ? forArgs.formattedText.toString() : '';
                 } else {
                     value = cell ? (!isNullOrUndefined(cell.value) ? cell.value : '') : '';
                 }
@@ -568,15 +567,17 @@ export class SpreadsheetChart {
 
     private initiateChartHandler(argsOpt: {
         option: ChartModel, chartCount?: number, isRefresh?: boolean, isInitCell?: boolean,
-        isUndoRedo?: boolean, dataSheetIdx?: number, range?: string, isPaste?: boolean
+        triggerEvent?: boolean, dataSheetIdx?: number, range?: string, isPaste?: boolean
     }): SeriesModel[] | AccumulationSeriesModel[] {
         const chart: ChartModel = argsOpt.option;
         let isRangeSelect: boolean = true;
         isRangeSelect = isNullOrUndefined(argsOpt.isInitCell) ? true : !argsOpt.isInitCell;
-        argsOpt.isUndoRedo = isNullOrUndefined(argsOpt.isUndoRedo) ? true : argsOpt.isUndoRedo;
+        argsOpt.triggerEvent = isNullOrUndefined(argsOpt.triggerEvent) ? true : argsOpt.triggerEvent;
         let seriesModel: SeriesModel[];
         argsOpt.isRefresh = isNullOrUndefined(argsOpt.isRefresh) ? false : argsOpt.isRefresh;
-        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIdx: number = (chart.range && chart.range.indexOf('!') > 0) ?
+            getSheetIndex(this.parent as Workbook, chart.range.split('!')[0]) : this.parent.activeSheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         let range: string = chart.range ? (chart.range.indexOf('!') > 0) ?
             chart.range.split('!')[1] : chart.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
@@ -587,8 +588,6 @@ export class SpreadsheetChart {
         if (!this.parent.allowChart && sheet.isProtected) {
             return seriesModel;
         }
-        const sheetIdx: number = (chart.range && chart.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent as Workbook, chart.range.split('!')[0]) : this.parent.activeSheetIndex;
         const args: {
             sheetIndex: number, reqType: string, type: string, shapeType: string, action: string,
             options: ChartModel, range: string, operation: string
@@ -649,7 +648,7 @@ export class SpreadsheetChart {
         if (argsOpt.isRefresh) {
             return chartOptions.series;
         }
-        if (argsOpt.isUndoRedo) {
+        if (argsOpt.triggerEvent) {
             eventArgs = {
                 type: chart.type, theme: chart.theme, isSeriesInRows: chart.isSeriesInRows, range: chart.range, id: chart.id,
                 height: chart.height, width: chart.width, posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
@@ -665,9 +664,7 @@ export class SpreadsheetChart {
             chart.width = eventArgs.width;
         }
         const id: string = chart.id + '_overlay';
-        const sheetIndex: number = argsOpt.isPaste ? this.parent.getActiveSheet().index :
-            (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
-                getSheetIndex(this.parent as Workbook, argsOpt.option.range.split('!')[0]) : this.parent.activeSheetIndex;
+        const sheetIndex: number = argsOpt.isPaste ? this.parent.getActiveSheet().index : this.parent.activeSheetIndex;
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
         const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, sheetIndex);
@@ -744,7 +741,7 @@ export class SpreadsheetChart {
             this.chart.appendTo(chartContent);
         }
         element.appendChild(chartContent);
-        if (argsOpt.isUndoRedo) {
+        if (argsOpt.triggerEvent) {
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
         }
         return seriesModel;
@@ -761,13 +758,13 @@ export class SpreadsheetChart {
             args.id = args.id.includes('overlay') ? args.id : args.id + '_overlay';
             chartElements = document.getElementById(args.id);
         }
-        if (isNullOrUndefined(args.id) || isNullOrUndefined(chartElements)) {
+        if (isNullOrUndefined(args.id)) {
             return;
         } else {
             args.id = args.id.includes('overlay') ? args.id : args.id + '_overlay';
         }
         let rowIdx: number; let colIdx: number;
-        let prevCellChart: object[];
+        let prevCellChart: ChartModel[];
         let isRemoveEle: boolean = false;
         let chartObj: ChartModel;
         for (let i: number = 0, chartCollLen: number = this.parent.chartColl.length; i < chartCollLen; i++) {
@@ -818,9 +815,7 @@ export class SpreadsheetChart {
         }
         const chartLength: number = prevCellChart ? prevCellChart.length : null;
         for (let i: number = 0; i < chartLength; i++) {
-            const overlayEle: HTMLElement = document.getElementById(args.id);
-            const chartEleClassName: HTMLElement = document.getElementById((prevCellChart[i] as ChartModel).id);
-            if (closest(chartEleClassName, '.' + overlayEle.classList[1]) === overlayEle) {
+            if (args.id === prevCellChart[i].id + '_overlay') {
                 prevCellChart.splice(i, 1);
             }
         }
@@ -952,7 +947,7 @@ export class SpreadsheetChart {
     }
 
     private updateChartElement(value: string, chartComp: Chart | AccumulationChart, currCellObj: CellModel,
-                               chartCollId: number, title: string, isAccumulationChart?: boolean): void {
+                               chartCollId: number, title: string, isAccumulationChart?: boolean, address?: string, triggerEvent?: boolean): void {
         if (isAccumulationChart &&
             ['PHAxes', 'PVAxes', 'PHAxisTitle', 'PVAxisTitle', 'GLMajorHorizontal',
                 'GLMajorVertical', 'GLMinorHorizontal', 'GLMinorVertical'].indexOf(value) > -1) { return; }
@@ -1046,11 +1041,84 @@ export class SpreadsheetChart {
             break;
         }
         this.updateChartModel(value, chartComp, currCellObj, chartCollId, isAccumulationChart);
+        if (triggerEvent) {
+            const eventArgs = { addChartEle: value, id: chartComp.element.id + '_overlay', title: title, address: address };
+            this.parent.notify(completeAction, { action: 'chartDesign', eventArgs: eventArgs });
+        }
+    }
+
+    private undoRedoForChartDesign(args: { addChartEle: string, switchRowColumn: boolean, chartTheme: ChartTheme, chartType: ChartType, beforeActionData: BeforeActionData, address: string, id: string, title: string, isUndo: boolean }): void {
+        const overlayElem: HTMLElement = document.getElementById(args.id);
+        if (!overlayElem) {
+            return;
+        }
+        const chartElem: HTMLElement = this.getChartElement(overlayElem);
+        let chartComp: Chart = getComponent(chartElem, 'chart');
+        if (isNullOrUndefined(chartComp)) {
+            chartComp = getComponent(chartElem, 'accumulationchart');
+        }
+        const addressInfo: { indices: number[], sheetIndex: number } = this.parent.getAddressInfo(args.address);
+        const cell: CellModel = getCell(addressInfo.indices[0], addressInfo.indices[1], getSheet(this.parent, addressInfo.sheetIndex));
+        const chartCollectionId: number = this.getChartCollectionId(chartElem.id);
+        let chart: ChartModel;
+        let property: string = args.addChartEle;
+        let title: string = args.title;
+        for (let i: number = 0; i < args.beforeActionData.cellDetails[0].chart.length; i++) {
+            if (chartElem.id === args.beforeActionData.cellDetails[0].chart[i].id) {
+                chart = args.beforeActionData.cellDetails[0].chart[i];
+                break;
+            }
+        }
+        if (args.switchRowColumn) {
+            this.switchRowColumn(chartCollectionId, chartElem.id, chartComp, cell);
+        } else if (args.chartTheme) {
+            this.switchChartTheme(chartCollectionId, chartElem.id, args.isUndo ? chart.theme : args.chartTheme, chartComp, cell);
+        } else if (args.chartType) {
+            this.switchChartType(chartCollectionId, chartElem.id, args.isUndo ? chart.type : args.chartType, chartComp, cell);
+        } else if (args.addChartEle) {
+            if (args.isUndo) {
+                let position: string;
+                switch (property) {
+                    case 'DLNone':
+                    case 'DLCenter':
+                    case 'DLInsideend':
+                    case 'DLInsidebase':
+                    case 'DLOutsideend':
+                        position = chart.dataLabelSettings && chart.dataLabelSettings.position;
+                        property = position === 'Middle' ? 'DLCenter' : position === 'Top' ? 'DLInsideend' : position === 'Bottom' ?
+                            'DLInsidebase' : position === 'Outer' ? 'DLOutsideend' : 'DLNone';
+                        break;
+                    case 'LegendNone':
+                    case 'LegendsRight':
+                    case 'LegendsLeft':
+                    case 'LegendsBottom':
+                    case 'LegendsTop':
+                        if (chart.legendSettings && !chart.legendSettings.visible) {
+                            position = 'LegendNone';
+                        } else {
+                            position = chart.legendSettings && chart.legendSettings.position;
+                            property = position === 'Right' ? 'LegendsRight' : position === 'Left' ? 'LegendsLeft' : position ===
+                                'Bottom' ? 'LegendsBottom' : position === 'Top' ? 'LegendsTop' : 'LegendsBottom';
+                        }
+                        break;
+                    case 'PVAxisTitle':
+                        title = chart.primaryYAxis && chart.primaryYAxis.title;
+                        break;
+                    case 'PHAxisTitle':
+                        title = chart.primaryXAxis && chart.primaryXAxis.title;
+                        break;
+                    case 'ChartTitleNone':
+                    case 'ChartTitleAbove':
+                        title = chart.title;
+                        break;
+                }
+            }
+            this.updateChartElement(property, chartComp, cell, chartCollectionId, title, null, args.address);
+        }
     }
 
     private chartDesignTabHandler(
-        args: { switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string }): void {
-        const title: string = '';
+        args: { switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string, id?:string, title?:string, triggerEvent?: boolean }): void {
         let isAccumulationChart: boolean = false;
         const sheet: SheetModel = this.parent.sheets[this.parent.activeSheetIndex];
         const switchRowColumn: boolean = args.switchRowColumn;
@@ -1059,10 +1127,11 @@ export class SpreadsheetChart {
         const addChartEle: string = args.addChartEle;
         let chartComp: Chart | AccumulationChart = null;
         let chartCollId: number;
-        const overlayElem: HTMLElement = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active') as HTMLElement;
+        const overlayElem: HTMLElement = args.id ? document.getElementById(args.id) : document.querySelector('.e-datavisualization-chart.e-ss-overlay-active') as HTMLElement;
         if (!overlayElem) {
             return;
         }
+        const opensTitleDialog: boolean = addChartEle === 'ChartTitleAbove' || addChartEle === 'PHAxisTitle' || addChartEle === 'PVAxisTitle';
         let chartTop: { clientY: number, isImage?: boolean, target?: Element };
         let chartleft: { clientX: number, isImage?: boolean, target?: Element };
         if (sheet.frozenRows || sheet.frozenColumns) {
@@ -1081,16 +1150,17 @@ export class SpreadsheetChart {
         this.parent.notify(getRowIdxFromClientY, chartTop);
         this.parent.notify(getColIdxFromClientX, chartleft);
         const currCellObj: CellModel = getCell(chartTop.clientY, chartleft.clientX, sheet);
-        let chartObj: HTMLElement = overlayElem.querySelector('.e-chart');
-        if (isNullOrUndefined(chartObj)) {
-            chartObj = overlayElem.querySelector('.e-accumulationchart');
-        }
-        const chartId: string = chartObj.getAttribute('id');
-        for (let idx: number = 0, chartCollLen: number = this.parent.chartColl.length; idx < chartCollLen; idx++) {
-            if (chartId === this.parent.chartColl[idx].id) {
-                chartCollId = idx;
+        const address: string = sheet.name + '!' + getCellAddress(chartTop.clientY, chartleft.clientX);
+        if (args.triggerEvent) {
+            const eventArgs = { switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartTheme: args.chartTheme, addChartEle: args.addChartEle, id: overlayElem.id, address: address, cancel: false };
+            this.parent.notify(beginAction, { action: 'chartDesign', eventArgs: eventArgs });
+            if (eventArgs.cancel) {
+                return;
             }
         }
+        const chartObj: HTMLElement = this.getChartElement(overlayElem);
+        const chartId: string = chartObj.getAttribute('id');
+        chartCollId = this.getChartCollectionId(chartId);
         if (chartObj) {
             chartComp = getComponent(chartObj, 'chart');
             if (isNullOrUndefined(chartComp)) {
@@ -1099,73 +1169,107 @@ export class SpreadsheetChart {
             }
         }
         if (switchRowColumn && !isAccumulationChart) {
-            this.parent.chartColl[chartCollId].isSeriesInRows =
-                isNullOrUndefined(this.parent.chartColl[chartCollId].isSeriesInRows) ?
-                    true : !this.parent.chartColl[chartCollId].isSeriesInRows;
-            for (let idx: number = 0, chartCount: number = currCellObj.chart.length; idx < chartCount; idx++) {
-                if (currCellObj.chart[idx].id === chartId) {
-                    currCellObj.chart[idx].isSeriesInRows =
-                        isNullOrUndefined(currCellObj.chart[idx].isSeriesInRows) ? true : !currCellObj.chart[idx].isSeriesInRows;
-                }
-            }
-            const chartSeries: SeriesModel[] =
-                this.initiateChartHandler({ option: this.parent.chartColl[chartCollId], isRefresh: true }) as SeriesModel[];
-            chartComp.series = chartSeries;
+            this.switchRowColumn(chartCollId, chartId, chartComp, currCellObj);
         }
         if (chartType) {
-            const type: ChartType = this.parent.chartColl[chartCollId].type;
-            this.parent.chartColl[chartCollId].type = chartType;
-            for (let idx: number = 0, chartCount: number = currCellObj.chart.length; idx < chartCount; idx++) {
-                if (currCellObj.chart[idx].id === chartId) {
-                    currCellObj.chart[idx].type = chartType;
-                }
-            }
-            if (chartType !== 'Pie' && chartType !== 'Doughnut') {
-                if (type === 'Pie' || type === 'Doughnut') {
-                    this.changeCharType(chartCollId);
-                } else {
-                    const chartSeries: SeriesModel[] = chartComp.series as SeriesModel[];
-                    for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
-                        chartSeries[idx].type = chartType as ChartSeriesType;
-                    }
-                    chartComp.series = chartSeries;
-                    chartComp.refresh();
-                }
-            } else {
-                if (type === 'Pie' || type === 'Doughnut') {
-                    const chartSeries: AccumulationSeriesModel[] = chartComp.series as AccumulationSeriesModel[];
-                    for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
-                        chartSeries[idx].innerRadius = chartType === 'Pie' ? '0%' : '40%';
-                    }
-                    chartComp.series = chartSeries;
-                    chartComp.refresh();
-                } else {
-                    this.changeCharType(chartCollId);
-                }
-            }
+            this.switchChartType(chartCollId, chartId, chartType, chartComp, currCellObj);
         }
         if (chartTheme) {
-            this.parent.chartColl[chartCollId].theme = chartTheme;
-            for (let idx: number = 0, chartCount: number = currCellObj.chart.length; idx < chartCount; idx++) {
-                if (currCellObj.chart[idx].id === chartId) {
-                    currCellObj.chart[idx].theme = chartTheme;
-                }
-            }
-            chartComp.theme = chartTheme;
-            chartComp.refresh();
+            this.switchChartTheme(chartCollId, chartId, chartTheme, chartComp, currCellObj);
         }
         if (addChartEle) {
-            if (addChartEle === 'ChartTitleAbove' || addChartEle === 'PHAxisTitle' || addChartEle === 'PVAxisTitle') {
+            if (opensTitleDialog && !args.title) {
                 if (this.parent.element.getElementsByClassName('e-title-dlg').length > 0) {
                     return;
                 }
                 else {
-                    this.titleDlgHandler(addChartEle, chartComp as Chart, currCellObj, chartCollId, isAccumulationChart);
+                    this.titleDlgHandler(addChartEle, chartComp as Chart, currCellObj, chartCollId, isAccumulationChart, address, args.triggerEvent);
                 }
             } else {
-                this.updateChartElement(addChartEle, chartComp, currCellObj, chartCollId, title, isAccumulationChart);
+                this.updateChartElement(addChartEle, chartComp, currCellObj, chartCollId, args.title, isAccumulationChart);
             }
         }
+        if (args.triggerEvent && !opensTitleDialog) {
+            const eventArgs = { switchRowColumn: args.switchRowColumn, chartType: args.chartType, chartTheme: args.chartTheme, addChartEle: args.addChartEle, id: overlayElem.id, address: address };
+            this.parent.notify(completeAction, { action: 'chartDesign', eventArgs: eventArgs });
+        }
+    }
+
+    private switchRowColumn(chartCollId: number, chartId: string, chartComp: Chart | AccumulationChart, cell: CellModel): void {
+        this.parent.chartColl[chartCollId].isSeriesInRows =
+            isNullOrUndefined(this.parent.chartColl[chartCollId].isSeriesInRows) ?
+                true : !this.parent.chartColl[chartCollId].isSeriesInRows;
+        for (let idx: number = 0, chartCount: number = cell.chart.length; idx < chartCount; idx++) {
+            if (cell.chart[idx].id === chartId) {
+                cell.chart[idx].isSeriesInRows =
+                    isNullOrUndefined(cell.chart[idx].isSeriesInRows) ? true : !cell.chart[idx].isSeriesInRows;
+            }
+        }
+        const chartSeries: SeriesModel[] =
+            this.initiateChartHandler({ option: this.parent.chartColl[chartCollId], isRefresh: true }) as SeriesModel[];
+        chartComp.series = chartSeries;
+    }
+
+    private switchChartTheme(chartCollId: number, chartId: string, theme: ChartTheme, chartComp: Chart | AccumulationChart, cell: CellModel): void {
+        this.parent.chartColl[chartCollId].theme = theme;
+        for (let idx: number = 0, chartCount: number = cell.chart.length; idx < chartCount; idx++) {
+            if (cell.chart[idx].id === chartId) {
+                cell.chart[idx].theme = theme;
+            }
+        }
+        chartComp.theme = theme;
+        chartComp.refresh();
+    }
+
+    private switchChartType(chartCollId: number, chartId: string, chartType: ChartType, chartComp: Chart | AccumulationChart, cell: CellModel): void {
+        const type: ChartType = this.parent.chartColl[chartCollId].type;
+        this.parent.chartColl[chartCollId].type = chartType;
+        for (let idx: number = 0, chartCount: number = cell.chart.length; idx < chartCount; idx++) {
+            if (cell.chart[idx].id === chartId) {
+                cell.chart[idx].type = chartType;
+            }
+        }
+        if (chartType !== 'Pie' && chartType !== 'Doughnut') {
+            if (type === 'Pie' || type === 'Doughnut') {
+                this.changeCharType(chartCollId);
+            } else {
+                const chartSeries: SeriesModel[] = chartComp.series as SeriesModel[];
+                for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
+                    chartSeries[idx].type = chartType as ChartSeriesType;
+                }
+                chartComp.series = chartSeries;
+                chartComp.refresh();
+            }
+        } else {
+            if (type === 'Pie' || type === 'Doughnut') {
+                const chartSeries: AccumulationSeriesModel[] = chartComp.series as AccumulationSeriesModel[];
+                for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
+                    chartSeries[idx].innerRadius = chartType === 'Pie' ? '0%' : '40%';
+                }
+                chartComp.series = chartSeries;
+                chartComp.refresh();
+            } else {
+                this.changeCharType(chartCollId);
+            }
+        }
+    }
+
+    private getChartElement(overlayElem: Element): HTMLElement {
+        let chartObj: HTMLElement = overlayElem.querySelector('.e-chart');
+        if (isNullOrUndefined(chartObj)) {
+            chartObj = overlayElem.querySelector('.e-accumulationchart');
+        }
+        return chartObj;
+    }
+
+    private getChartCollectionId(id: string): number {
+        let chartCollectionId: number;
+        for (let i: number = 0, len: number = this.parent.chartColl.length; i < len; i++) {
+            if (id === this.parent.chartColl[i].id) {
+                chartCollectionId = i;
+            }
+        }
+        return chartCollectionId;
     }
 
     private changeCharType(chartCollId: number): void {
@@ -1173,7 +1277,7 @@ export class SpreadsheetChart {
         let chartParEle: Element = closest(chartEle, '.e-datavisualization-chart');
         chartParEle.remove();
         this.parent.notify(initiateChart, {
-            option: this.parent.chartColl[chartCollId], isInitCell: false, isUndoRedo: true,
+            option: this.parent.chartColl[chartCollId], isInitCell: false, triggerEvent: false,
             isPaste: false
         });
         chartEle = document.getElementById(this.parent.chartColl[chartCollId].id);
@@ -1184,7 +1288,7 @@ export class SpreadsheetChart {
     }
 
     private titleDlgHandler(addChartEle: string, chartComp: Chart, currCellObj: CellModel,
-                            chartCollId: number, isAccumulationChart?: boolean): void {
+                            chartCollId: number, isAccumulationChart?: boolean, address?: string, triggerEvent?: boolean): void {
         let title: string = '';
         if (isAccumulationChart && (addChartEle === 'PHAxisTitle' || addChartEle === 'PVAxisTitle')) {
             return;
@@ -1212,7 +1316,7 @@ export class SpreadsheetChart {
                         getElementsByClassName('e-title-dlg-content')[0] as HTMLElement;
                     title = dlgCont.getElementsByTagName('input')[0].value;
                     dialogInst.hide();
-                    this.updateChartElement(addChartEle, chartComp, currCellObj, chartCollId, title);
+                    this.updateChartElement(addChartEle, chartComp, currCellObj, chartCollId, title, null, address, triggerEvent);
                 }
             }]
         });
@@ -1257,6 +1361,7 @@ export class SpreadsheetChart {
             this.parent.off(chartRangeSelection, this.chartRangeHandler);
             this.parent.off(chartDesignTab, this.chartDesignTabHandler);
             this.parent.off(addChartEle, this.updateChartElement);
+            this.parent.off(undoRedoForChartDesign, this.undoRedoForChartDesign);
         }
     }
 

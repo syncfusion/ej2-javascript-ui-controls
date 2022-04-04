@@ -17,13 +17,15 @@ import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { createGrid, destroy } from '../base/specutil.spec';
-import { data, employeeData, filterData } from '../base/datasource.spec';
+import { data, employeeData, filterData, normalData, foreigndata } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { RowDD } from '../../../src/grid/actions/row-reorder';
+import { ForeignKey } from '../../../src/grid/actions/foreign-key';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Freeze, VirtualScroll);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Freeze, VirtualScroll, RowDD, ForeignKey);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -3212,6 +3214,119 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionComplete = null;
+        });
+    });
+
+    describe('EJ2-57848 - Inline editing does not work with Drag and drop and frozen columns', () => {
+        let grid: Grid;
+        let actionComplete: () => void;
+        let actionBegin: () => void;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: filterData.slice(0,5),
+            		allowRowDragAndDrop: true,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Top' },
+                    frozenColumns: 2,
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                            validationRules: { required: true, number: true }, width: 140
+                        },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID',
+                            validationRules: { required: true }, width: 140
+                        },
+                        {
+                            field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                            width: 140, format: 'C2', validationRules: { required: true }
+                        },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit',
+                            width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' },
+                        },
+                        {
+                            field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                            edit: { params: { popupHeight: '300px' } }
+                        }],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Edit start', (done: Function) => {
+            actionComplete = (args?: any): void => {               
+                if (args.requestType === 'beginEdit') {
+                    done();
+                }
+            };
+            grid.actionBegin = actionComplete;
+            grid.selectRow(0, true);
+            (<any>grid.toolbarModule).toolbarClickHandler({ item: { id: grid.element.id + '_edit' } });
+        });
+
+        it('Edit complete', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect((grid.getCurrentViewRecords()[0] as any).CustomerID).toBe('updated');
+                    done();
+                }
+            };
+            grid.actionComplete = actionComplete;
+            (select('#' + grid.element.id + 'CustomerID', grid.element)  as any).value = 'updated';
+            (<any>grid.toolbarModule).toolbarClickHandler({ item: { id: grid.element.id + '_update' } });
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = actionComplete = null;
+        });
+    });
+    
+    describe('foreignKey column virtualization with inline edit support', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowFiltering: true,
+                    filterSettings:{type:'Menu'},
+                    enableVirtualization: true,
+                    height: "200",
+                    columns: [
+                        { field: 'CustomerID',  headerText: 'Customer ID', width: 120, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry', dataSource: foreigndata },
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, isPrimaryKey: true },
+                        { field: 'Freight',  headerText: 'Freight', width: 120},
+                        { field: 'ShipCountry',  headerText: 'Ship Country', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('edit check', (done: Function) => {
+            actionComplete = (args?: any): void => {               
+                if (args.requestType === 'beginEdit') {
+                    done();
+                }
+            };
+            gridObj.actionBegin = actionComplete;
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+            done();
+        });
+
+        it('dropdown input check', (done: Function) => {
+            var elem = document.getElementById(gridObj.element.id + 'CustomerID_hidden');
+            expect(elem.querySelector('option').innerText).toBe('France');
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
         });
     });
 });

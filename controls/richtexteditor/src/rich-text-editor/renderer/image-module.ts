@@ -328,6 +328,7 @@ export class Image {
     private calcPos(elem: HTMLElement): OffsetPosition {
         const ignoreOffset: string[] = ['TD', 'TH', 'TABLE', 'A'];
         let parentOffset: OffsetPosition = { top: 0, left: 0 };
+        let elementOffset: OffsetPosition;
         const doc: Document = elem.ownerDocument;
         let offsetParent: Node = ((elem.offsetParent && (elem.offsetParent.classList.contains('e-img-caption') ||
                 ignoreOffset.indexOf(elem.offsetParent.tagName) > -1)) ?
@@ -341,10 +342,18 @@ export class Image {
             // eslint-disable-next-line
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
-        return {
-            top: elem.offsetTop,
-            left: elem.offsetLeft
-        };
+        if (elem.offsetParent && (elem.offsetParent.classList.contains('e-img-caption'))) {
+            elementOffset = elem.getBoundingClientRect();
+            return {
+                top: elementOffset.top - parentOffset.top,
+                left: elementOffset.left - parentOffset.left
+            };
+        } else {
+            return {
+                top: elem.offsetTop,
+                left: elem.offsetLeft
+            };
+        }
     }
     private setAspectRatio(img: HTMLImageElement, expectedX: number, expectedY: number, e: ResizeArgs): void {
         if (isNullOrUndefined(img.width)) {
@@ -354,7 +363,7 @@ export class Image {
             parseInt(img.style.width, 10) : img.width;
         const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
         if (width > height) {
-            img.style.minWidth = '20px';
+            img.style.minWidth = this.parent.insertImageSettings.minWidth === 0 ? '20px' : formatUnit(this.parent.insertImageSettings.minWidth);
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
                     const percentageValue = this.pixToPerc(
@@ -473,7 +482,8 @@ export class Image {
     }
     private resizeImgDupPos(e: HTMLImageElement): void {
         this.imgDupPos = {
-            width: (e.style.width !== '') ? this.imgEle.style.width : e.width + 'px',
+            width: (e.style.width !== '' && (this.parent.insertImageSettings &&
+                !this.parent.insertImageSettings.resizeByPercent)) ? this.imgEle.style.width : e.width + 'px',
             height: (e.style.height !== '') ? this.imgEle.style.height : e.height + 'px'
         };
     }
@@ -645,24 +655,29 @@ export class Image {
                 const src: string = (this.deletedImg[i] as HTMLImageElement).src;
                 this.imageRemovePost(src as string);
             }
-            if (range.startContainer.nodeType === 3) {
-                if (originalEvent.code === 'Backspace') {
-                    if ((range.startContainer as HTMLElement).previousElementSibling && range.startOffset === 0 &&
-                        (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPTION) &&
-                        (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
-                        detach((range.startContainer as HTMLElement).previousElementSibling);
+            if (this.parent.editorMode !== 'Markdown') {
+                if (range.startContainer.nodeType === 3) {
+                    if (originalEvent.code === 'Backspace') {
+                        if ((range.startContainer as HTMLElement).previousElementSibling && range.startOffset === 0 &&
+                            (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPTION) &&
+                            (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
+                            detach((range.startContainer as HTMLElement).previousElementSibling);
+                        }
+                    } else {
+                        if ((range.startContainer as HTMLElement).nextElementSibling &&
+                            range.endContainer.textContent.length === range.endOffset &&
+                            (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPTION) &&
+                            (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
+                            detach((range.startContainer as HTMLElement).nextElementSibling);
+                        }
                     }
-                } else {
-                    if ((range.startContainer as HTMLElement).nextElementSibling &&
-                        range.endContainer.textContent.length === range.endOffset &&
-                        (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPTION) &&
-                        (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
-                        detach((range.startContainer as HTMLElement).nextElementSibling);
-                    }
+                } else if ((range.startContainer.nodeType === 1 &&
+                    (range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE))) {
+                    detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE));
+                } else if (range.startContainer.nodeType === 1 &&
+                    (range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK)) {
+                    detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK));
                 }
-            } else if ((range.startContainer.nodeType === 1 &&
-                (range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE))) {
-                detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE));
             }
             break;
         case 'insert-image':
@@ -829,6 +844,8 @@ export class Image {
         if (this.parent.quickToolbarModule.imageQTBar) {
             if (e.isNotify) {
                 setTimeout(() => {
+                    this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+                    this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                     this.quickToolObj.imageQTBar.showPopup(args.pageX, pageY, target as Element);
                 }, 400);
             } else {
@@ -1861,7 +1878,8 @@ export class Image {
         if (activePopupElement) {
             activePopupElement.classList.add(classes.CLS_HIDE);
         }
-        if (e.dataTransfer.files.length > 0) { //For external image drag and drop
+        const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
+        if (e.dataTransfer.files.length > 0 && imgElement === null) { //For external image drag and drop
             if (e.dataTransfer.files.length > 1) {
                 return;
             }
@@ -1882,7 +1900,6 @@ export class Image {
             }
         } else { //For internal image drag and drop
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-            const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
             if (imgElement && imgElement.tagName === 'IMG') {
                 if (imgElement.nextElementSibling) {
                     if (imgElement.nextElementSibling.classList.contains(classes.CLS_IMG_INNER)) {

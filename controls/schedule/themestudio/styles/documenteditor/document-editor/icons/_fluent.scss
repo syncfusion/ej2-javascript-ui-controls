@@ -2,23 +2,23 @@
   .e-documenteditor {
     .e-close::before {
       color: $icon-color;
-      content: '\e74f';
+      content: '\e7e7';
       font-family: 'e-icons';
       font-size: 14px;
     }
 
     .e-de-op-search-icon::before {
-      content: '\e7a8';
+      content: '\e754';
       font-family: 'e-icons';
     }
 
     .e-arrow-up::before {
-      content: '\e81a';
+      content: '\e87a';
       font-family: 'e-icons';
     }
 
     .e-arrow-down::before {
-      content: '\e81b';
+      content: '\e70d';
       font-family: 'e-icons';
     }
 
@@ -27,101 +27,101 @@
     }
 
     .e-de-op-close-icon::before {
-      content: '\e74f';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
 
     .e-de-op-search-close-icon::before {
       color: $icon-color;
-      content: '\e74f';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
 
     .e-de-new-cmt::before {
-      content: '\e7ba';
+      content: '\e805';
       font-family: 'e-icons';
     }
 
     .e-de-menu-icon::before {
-      content: '\e7ad';
+      content: '\e770';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-mark-icon::before {
-      color: $icon-color;
-      content: '\e809';
+      content: '\e733';
       font-family: 'e-icons';
       font-size: 13px;
     }
 
     .e-de-cmt-post::before {
-      content: '\e740';
+      content: '\e71d';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-rply-icon::before {
-      color: $icon-color;
       content: '\e85e';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-cancel::before {
-      content: '\e74f';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-delete::before {
-      content: '\e75b';
+      content: '\e820';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-reopen::before {
-      content: '\e889';
+      content: '\e782';
       font-family: 'e-icons';
     }
 
     .e-de-nav-up::before {
-      content: '\e810';
+      content: '\e7dd';
       font-family: 'e-icons';
     }
 
     .e-de-nav-right-arrow::before {
-      content: '\e7c2';
+      content: '\e748';
       font-family: 'e-icons';
     }
 
     .e-de-nav-left-arrow::before {
-      content: '\e7c1';
+      content: '\e765';
       font-family: 'e-icons';
     }
 
     .e-de-save-icon::before {
-      content: '\e7b9';
+      content: '\e774';
       font-family: 'e-icons';
     }
 
     .e-de-cancel-icon::before {
-      content: '\e74f';
+      content: '\e7e7';
       font-family: 'e-icons';
     }
   }
 
   .e-de-ctn-title-print::before {
-    content: '\e7bd';
+    content: '\e75d';
   }
 
   .e-de-acceptchange::before {
-    content: '\e891';
+    color: $icon-color;
+    content: '\e7a8';
     font-family: 'e-icons';
   }
 
   .e-de-rejectchange::before {
-    content: '\e890';
+    color: $icon-color;
+    content: '\e815';
     font-family: 'e-icons';
   }
 
   .e-de-ctn-title-download::before {
-    content: '\e7bb';
+    content: '\e7a1';
   }
 
   .e-de-table-properties-alignment:hover {
@@ -142,39 +142,39 @@
 
   .e-de-table-left-alignment::before {
     color: $icon-color;
-    content: '\e78d';
+    content: '\e7f6';
     font-size: $de-table-alignment-font-size;
   }
 
   .e-de-table-center-alignment::before {
     color: $icon-color;
-    content: '\e793';
+    content: '\e7f1';
     font-size: $de-table-alignment-font-size;
   }
 
   .e-de-table-right-alignment::before {
     color: $icon-color;
-    content: '\e794';
+    content: '\e703';
     font-size: $de-table-alignment-font-size;
   }
 
   .e-de-tablecell-top-alignment::before {
     color: $icon-color;
-    content: '\e796';
+    content: '\e775';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
   }
 
   .e-de-tablecell-center-alignment::before {
     color: $icon-color;
-    content: '\e799';
+    content: '\e7e5';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
   }
 
   .e-de-tablecell-bottom-alignment::before {
     color: $icon-color;
-    content: '\e797';
+    content: '\e7d9';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
   }
@@ -225,14 +225,14 @@
 
   .e-de-table-border-none-setting::before {
     color: $icon-color;
-    content: '\e791';
+    content: '\e7eb';
     font-size: $de-border-none-setting-font-size;
     position: absolute;
   }
 
   .e-de-table-border-box-setting::before {
     color: $icon-color;
-    content: '\e792';
+    content: '\e834';
     font-size: $de-border-setting-font-size;
     left: 2px;
     position: absolute;
@@ -241,7 +241,7 @@
 
   .e-de-table-border-all-setting::before {
     color: $icon-color;
-    content: '\e795';
+    content: '\e7e8';
     font-family: 'e-icons';
     font-size: $de-border-setting-font-size;
     left: 2px;
@@ -251,7 +251,7 @@
 
   .e-de-table-border-custom-setting::before {
     color: $icon-color;
-    content: '\e79a';
+    content: '\e7d5';
     font-size: $de-border-setting-font-size;
     left: 2px;
     position: absolute;
@@ -260,7 +260,7 @@
 
   .e-de-table-border-toptop-alignment::before {
     color: $icon-color;
-    content: '\e72e';
+    content: '\e7e0';
     font-family: 'e-icons';
     font-size: 16px;
     left: 4px;
@@ -270,7 +270,7 @@
 
   .e-de-table-border-topcenter-alignment::before {
     color: $icon-color;
-    content: '\e72f';
+    content: '\e83b';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -279,7 +279,7 @@
 
   .e-de-table-border-topbottom-alignment::before {
     color: $icon-color;
-    content: '\e730';
+    content: '\e766';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -288,7 +288,7 @@
 
   .e-de-table-border-diagionalup-alignment::before {
     color: $icon-color;
-    content: '\e81f';
+    content: '\e79d';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -297,7 +297,7 @@
 
   .e-de-table-border-diagionaldown-alignment::before {
     color: $icon-color;
-    content: '\e81e';
+    content: '\e784';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -306,7 +306,7 @@
 
   .e-de-table-border-bottomleft-alignment::before {
     color: $icon-color;
-    content: '\e81c';
+    content: '\e806';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -315,7 +315,7 @@
 
   .e-de-table-border-bottomcenter-alignment::before {
     color: $icon-color;
-    content: '\e81d';
+    content: '\e792';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -324,7 +324,7 @@
 
   .e-de-table-border-bottomright-alignment::before {
     color: $icon-color;
-    content: '\e820';
+    content: '\e7ab';
     font-size: 16px;
     left: 4px;
     position: absolute;
@@ -332,95 +332,95 @@
   }
 
   .e-menu-item .e-de-cmt-add::before {
-    content: '\e884';
+    content: '\e82c';
   }
 
   .e-menu-item .e-de-cut::before {
-    content: '\e7b2';
+    content: '\e7fb';
   }
 
   .e-menu-item .e-de-spellcheck::before {
-    content: '\e877';
+    content: '\e7f0';
   }
 
   .e-menu-item .e-de-copy::before {
-    content: '\e7b3';
+    content: '\e77c';
   }
 
   .e-menu-item .e-de-paste::before {
-    content: '\e7b4';
+    content: '\e70b';
   }
 
   .e-menu-item .e-de-continue-numbering::before {
-    content: '\e821';
+    content: '\e718';
   }
 
   .e-menu-item .e-de-restart-at::before {
-    content: '\e7ec';
+    content: '\e715';
   }
 
   .e-menu-item .e-de-insertlink::before {
-    content: '\e7b8';
+    content: '\e757';
   }
 
   .e-menu-item .e-de-open-hyperlink::before {
-    content: '\e7eb';
+    content: '\e797';
   }
 
   .e-menu-item .e-de-copy-hyperlink::before {
-    content: '\e775';
+    content: '\e745';
   }
 
   .e-menu-item .e-de-open-properties::before {
-    content: '\e754';
+    content: '\e77e';
   }
 
   .e-menu-item .e-de-edit-hyperlink::before {
-    content: '\e7ed';
+    content: '\e722';
   }
 
   .e-menu-item .e-de-remove-hyperlink::before {
-    content: '\e7ee';
+    content: '\e80c';
   }
 
   .e-menu-item .e-de-fonts::before {
-    content: '\e826';
+    content: '\e76f';
   }
 
   .e-menu-item .e-de-paragraph::before {
-    content: '\e703';
+    content: '\e7b8';
   }
 
   .e-menu-item .e-de-table::before {
-    content: '\e72b';
+    content: '\e7d1';
   }
 
   .e-menu-item .e-de-insertabove::before {
-    content: '\e762';
+    content: '\e836';
   }
 
   .e-menu-item .e-de-insertbelow::before {
-    content: '\e765';
+    content: '\e801';
   }
 
   .e-menu-item .e-de-insertleft::before {
-    content: '\e766';
+    content: '\e78b';
   }
 
   .e-menu-item .e-de-insertright::before {
-    content: '\e767';
+    content: '\e70e';
   }
 
   .e-menu-item .e-de-delete-table::before {
-    content: '\e733';
+    content: '\e811';
   }
 
   .e-menu-item .e-de-deleterow::before {
-    content: '\e768';
+    content: '\e7f2';
   }
 
   .e-menu-item .e-de-deletecolumn::before {
-    content: '\e769';
+    content: '\e714';
   }
 
   // .e-de-tablecell-top-alignment {
@@ -436,173 +436,173 @@
   // }
 
   .e-de-bold::before {
-    content: '\e7a5';
+    content: '\e737';
     font-family: 'e-icons';
   }
 
   .e-de-italic::before {
-    content: '\e7a6';
+    content: '\e75a';
     font-family: 'e-icons';
   }
 
   .e-de-underline::before {
-    content: '\e7a7';
+    content: '\e82f';
     font-family: 'e-icons';
   }
 
   .e-de-indent::before {
-    content: '\e753';
+    content: '\e72a';
     font-family: 'e-icons';
   }
 
   .e-de-outdent::before {
-    content: '\e751';
+    content: '\e810';
     font-family: 'e-icons';
   }
 
   .e-de-align-left::before {
-    content: '\e703';
+    content: '\e7b8';
     font-family: 'e-icons';
   }
 
   .e-de-align-center::before {
-    content: '\e704';
+    content: '\e813';
     font-family: 'e-icons';
   }
 
   .e-de-align-right::before {
-    content: '\e705';
+    content: '\e719';
     font-family: 'e-icons';
   }
 
   .e-de-justify::before {
-    content: '\e706';
+    content: '\e721';
     font-family: 'e-icons';
   }
 
   .e-de-single-spacing::before {
-    content: '\e73b';
+    content: '\e771';
     font-family: 'e-icons';
   }
 
   .e-de-double-spacing::before {
-    content: '\e739';
+    content: '\e7c4';
     font-family: 'e-icons';
   }
 
   .e-de-one-point-five-spacing::before {
-    content: '\e73a';
+    content: '\e725';
     font-family: 'e-icons';
   }
 
   .e-de-before-spacing::before {
-    content: '\e869';
+    content: '\e7b5';
     font-family: 'e-icons';
   }
 
   .e-de-after-spacing::before {
-    content: '\e86a';
+    content: '\e767';
     font-family: 'e-icons';
   }
 
   .e-de-icon-bullet-list-dot::before {
-    content: '\e727';
+    content: '\e747';
     font-family: 'e-icons';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-icon-bullet-list-circle::before {
-    content: '\e726';
+    content: '\e7d0';
     font-family: 'e-icons';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-icon-bullet-list-square::before {
-    content: '\e73e';
+    content: '\e7be';
     font-family: 'e-icons';
     font-size: 8px;
     line-height: 28px;
   }
 
   .e-de-icon-bullet-list-tick::before {
-    content: '\e88c';
+    content: '\e7fc';
     font-family: 'e-icons';
     font-size: 12px;
   }
 
   .e-de-icon-bullet-list-flower::before {
-    content: '\e7fb';
+    content: '\e79b';
     font-family: 'e-icons';
     font-size: 12px;
   }
 
   .e-de-icon-bullet-list-arrow::before {
-    content: '\e882';
+    content: '\e763';
     font-family: 'e-icons';
     font-size: 12px;
   }
 
   .e-de-icon-bullet-list-none::before {
-    content: '\e779';
+    content: '\e7f3';
     font-family: 'e-icons';
     font-size: 24px;
   }
 
   .e-de-icon-autofit::before {
-    content: '\e763';
+    content: '\e74a';
     font-family: 'e-icons';
   }
 
   .e-de-icon-fixed-columnwidth::before {
-    content: '\e764';
+    content: '\e785';
     font-family: 'e-icons';
   }
 
   .e-de-icon-auto-fitwindow::before {
-    content: '\e783';
+    content: '\e759';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-text::before {
-    content: '\e805';
+    content: '\e70f';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-source::before {
-    content: '\e817';
+    content: '\e842';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-merge::before {
-    content: '\e87a';
+    content: '\e752';
     font-family: 'e-icons';
   }
 
   .e-btn-icon .e-de-paste::before,
   .e-icon-btn .e-de-paste::before {
-    content: '\e7b4';
+    content: '\e70b';
     font-family: 'e-icons';
   }
 
   .e-item .e-de-paste-column::before {
-    content: '\e87c';
+    content: '\e885';
   }
 
   .e-item .e-de-paste-row::before {
-    content: '\e874';
+    content: '\e884';
   }
 
   .e-item .e-de-paste-overwrite-cells::before {
-    content: '\e87d';
+    content: '\e886';
   }
 
   .e-item .e-de-paste-nested-table::before {
-    content: '\e87b';
+    content: '\e883';
   }
 
   .e-item .e-de-paste-merge-table::before {
-    content: '\e87e';
+    content: '\e882';
   }
 }

@@ -266,5 +266,60 @@ describe('Conditional formatting ->', () => {
                 });
             });
         });
+
+        describe('F171297 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    {
+                        sheets: [{
+                            rows: [{ cells: [{ value: '444' }, { formula: '=SUM(A1,A2)' }, { formula: '=SUM(B1,B2)' }, { formula: '=SUM(C1,C2)' }] },
+                            { cells: [{ value: '555' }, { formula: '=A2+A3' }, { formula: '=B2+B3' }, { formula: '=C2+C3' }] },
+                            { cells: [{ value: '666' }, { value: '777' }, { value: '2109' }, { value: '4329' }] }
+                            ],
+                            conditionalFormats: [
+                                { range: 'A1:A3', value: '444,', type: 'GreaterThan', cFColor: 'RedFT' },
+                                { type: 'GYRColorScale', range: 'B1:B3', cFColor: 'RedFT', value: '' },
+                                { type: 'LightBlueDataBar', range: 'C1:C3', cFColor: 'RedFT', value: '' },
+                                { type: 'ThreeArrows', range: 'D1:D3', cFColor: 'RedFT', value: '' }
+                            ]
+                        },
+                        ]
+                    }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Importing excel having CF with formulas throws script error', (done: Function) => {
+                expect(helper.invoke('getCell', [1, 0]).classList).toContain('e-redft');
+                expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toContain('rgb(99, 190, 123)');
+                expect(helper.invoke('getCell', [0, 2]).querySelector('.e-databar')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-3arrows-3')).not.toBeNull();
+                done();
+            });
+        });
+        describe('SF-364570 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: [] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Conditional formatting is not working after vol 4 release', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dataSourceChanged = (): void => {
+                    spreadsheet.conditionalFormat({ type: 'GWRColorScale', range: 'D3:H5' });
+                    expect(helper.invoke('getCell', [2, 3]).style.backgroundColor).toBe('rgb(244, 250, 246)');
+                    setTimeout((): void => {
+                        expect(helper.invoke('getCell', [2, 3]).style.backgroundColor).toBe('rgb(244, 250, 246)');
+                        expect(helper.invoke('getCell', [2, 5]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+                        expect(helper.invoke('getCell', [3, 6]).style.backgroundColor).toBe('rgb(249, 145, 146)');
+                        expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('rgb(161, 216, 175)');
+                        done();
+                    });
+                };
+                spreadsheet.sheets[0].ranges = [{ dataSource: defaultData }];
+                spreadsheet.dataBind();
+            });
+        });
     });
 });

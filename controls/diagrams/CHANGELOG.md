@@ -2,12 +2,39 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
 
 ### Diagram
 
 #### Bug Fixes
 
+- `#32965` - Now, old and new value of property change event values are updated properly while drag the connector target end.
+- `F172843` - Bring to front is now working properly for the multiple selection.
+- `SF-369300` - Now, Expand and collapse work properly for layouts.
+- `SF-370061` - Now, exportDiagram exports image url properly when mode is set to Data.
+- `SF-368435` - The exception will no longer thrown while dragging the selected object.
+- `SF-362356` - Now, Diagram can be zoomed or scrolled smoothly.
+
+## 19.4.54 (2022-03-01)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F170870` - The undefined exception will no longer thrown while drag and drop the node over another node.
+- `SF-364881` - Selection is now work properly for group node on negative axis.
+- `SF-366628` - Node annotation is now update properly while edit in the canvas mode.
+- `SF-364084` - Now, Lane Header can be simply obtained from selection change event.
+- `SF-366851` - Node Linear gradient is now exported properly while export the diagram.
+
+## 19.4.53 (2022-02-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `SF-360354` - Position change event is now fired properly while drag and drop the node using touch.
+- `SF-365716` - Drawing tool now draw connector properly while right click on the diagram.
 - `SF-364857` - Now, Command/Meta key will work properly on Mac.
 
 ## 19.4.52 (2022-02-15)
@@ -19,6 +46,7 @@
 - `SF-361654` - Connector is now rendered properly in the symbol palette while try to render as straight line.
 - `SF-360571` - Provide separate tooltip support for the group children node.
 - `SF-359118` - Now, the Scroll Bar works properly when Viewport is in Negative coordinates.
+- `SF-362880` - Save and load now works properly for Swimlane after undo and redo.
 
 ## 19.4.50 (2022-02-08)
 

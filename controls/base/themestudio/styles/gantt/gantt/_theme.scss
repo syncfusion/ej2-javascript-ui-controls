@@ -166,12 +166,14 @@
       .e-gantt-parent-progressbar-inner-div {
         background-color: $gantt-parent-progress-bar;
         border: $gantt-parent-progress-bar-border;
+        border-radius: $gantt-parent-progress-bar-border-radius;
         //margin-left: $gantt-child-progress-margin-left;
       }
 
       .e-gantt-child-progressbar-inner-div {
         background-color: $gantt-child-progress-bar;
         border: $gantt-child-progress-bar-border;
+        border-radius: $gantt-child-progress-bar-border-radious;
         //margin-left: $gantt-child-progress-margin-left;
       }
 
@@ -248,11 +250,6 @@
 
         .e-progressbar-handler {
           background: $progress-handler-background;
-          border-color: $progress-handler-outline;
-        }
-
-        .e-progressbar-handler-element {
-          border-bottom-color: $progress-handler-outline;
         }
 
         .e-progressbar-handler-after {

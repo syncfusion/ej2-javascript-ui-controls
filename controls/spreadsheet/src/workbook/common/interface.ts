@@ -1,6 +1,7 @@
-import { CellStyleModel, DefineNameModel, HyperlinkModel } from './class-model';
-import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType } from './index';
-import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
+import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel } from './class-model';
+import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
+import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
+import { CFColor } from '../index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
 export interface SaveOptions {
@@ -45,9 +46,7 @@ export interface FindOptions {
 }
 /**@hidden */
 export interface  ReplaceAllEventArgs {
-    replaceValue: string;
     addressCollection: string[];
-    compareValue: string;
     cancel?: boolean;
 }
 /**
@@ -117,6 +116,8 @@ export interface CellFormatArgs {
     manualUpdate?: boolean;
     onActionUpdate?: boolean;
     first?: string;
+    checkHeight?: boolean;
+    outsideViewport?: boolean;
 }
 
 /** @hidden */
@@ -234,7 +235,9 @@ export interface BeforeSortEventArgs extends SortEventArgs {
 export interface BeforeHyperlinkArgs {
     hyperlink?: string | HyperlinkModel;
 
-    cell?: string;
+    address?: string;
+
+    displayText?: string;
 
     target?: string;
 
@@ -247,7 +250,9 @@ export interface BeforeHyperlinkArgs {
 export interface AfterHyperlinkArgs {
     hyperlink?: string | HyperlinkModel;
 
-    cell?: string;
+    address?: string;
+
+    displayText?: string;
 }
 
 /**
@@ -307,6 +312,8 @@ export interface InsertDeleteModelArgs {
     definedNames?: DefineNameModel[];
     isUndoRedo?: boolean;
     refreshSheet?: boolean;
+    conditionalFormats?:ConditionalFormatModel[];
+    prevAction?:string;
 }
 
 /**
@@ -321,6 +328,8 @@ export interface CellInfoEventArgs {
     rowIndex: number;
     /** Defines the column index of the cell. */
     colIndex: number;
+    /** Defines the row element. */
+    row?: HTMLElement;
 }
 
 /** @hidden */
@@ -339,7 +348,7 @@ export interface MergeArgs {
     insertModel?: ModelType;
     preventRefresh?: boolean;
     refreshRibbon?: boolean;
-    sheet?: SheetModel;
+    sheetIndex?: number;
 }
 
 /**
@@ -378,6 +387,34 @@ export interface InsertDeleteEventArgs {
     isMethod?: boolean;
     isUndoRedo?: boolean;
     refreshSheet?: boolean;
+    cancel?: boolean;
+}
+
+/**
+ * Action begin event options.
+ *
+ * @hidden
+ */
+export interface ActionEventArgs {
+    eventArgs: object;
+    action: string;
+    isUndo?: boolean;
+    isRedo?: boolean;
+    preventAction?: boolean
+}
+
+/**
+ * CFormattingEventArgs
+ *
+ * @hidden
+ */
+ export interface CFormattingEventArgs {
+    range?: string;
+    type?: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
+    cFColor?: CFColor;
+    value?: string;
+    sheetIdx?: number;
+    cancel: boolean;
 }
 
 /**
@@ -406,4 +443,43 @@ export interface DefinedNameEventArgs {
 /** @hidden */
 export interface ExtendedRowModel extends RowModel {
     isFiltered?: boolean;
+}
+
+/**
+ * Before cell update event properties
+ */
+export interface BeforeCellUpdateArgs {
+    cell: CellModel;
+    rowIndex: number;
+    colIndex: number;
+    sheet: string;
+    cancel: boolean;
+}
+
+/** @hidden */
+export interface CellUpdateArgs {
+    cell: CellModel;
+    rowIdx: number;
+    colIdx: number;
+    preventEvt?: boolean;
+    pvtExtend?: boolean;
+    valChange?: boolean;
+    uiRefresh?: boolean;
+    td?: HTMLElement;
+    lastCell?: boolean;
+    checkCf?: boolean;
+    checkWrap?: boolean;
+    eventOnly?: boolean;
+    requestType?: string;
+    cellDelete?: boolean;
+}
+
+/** @hidden */
+export interface checkCellValid {
+    value?: string;
+    range?: number[];
+    isCell?: boolean;
+    sheetIdx?: number;
+    td?: HTMLElement;
+    isValid?: boolean;
 }

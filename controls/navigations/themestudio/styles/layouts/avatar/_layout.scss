@@ -50,6 +50,9 @@
 
     &.e-avatar-large {
       font-size: $avatar-large-font-size;
+      @if ($skin-name == 'bootstrap5') {
+        border-radius: $avatar-large-border-radius;
+      }
       @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
         height: 48px;
         line-height: $avatar-base-large-line-height;
@@ -59,6 +62,9 @@
 
     &.e-avatar-xlarge {
       font-size: $avatar-xlarge-font-size;
+      @if ($skin-name == 'bootstrap5') {
+        border-radius: $avatar-large-border-radius;
+      }
       @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark'or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
         height: 56px;
         line-height: $avatar-base-xlarge-line-height;

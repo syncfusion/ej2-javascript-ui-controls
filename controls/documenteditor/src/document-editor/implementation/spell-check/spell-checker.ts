@@ -29,6 +29,10 @@ export class SpellChecker {
     /**
      * @private
      */
+    public uniqueWordsCollection: Dictionary<string, boolean>;
+    /**
+     * @private
+     */
     public ignoreAllItems: string[];
     /**
      * @private
@@ -170,6 +174,7 @@ export class SpellChecker {
     public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
         this.errorWordCollection = new Dictionary<string, ElementBox[]>();
+        this.uniqueWordsCollection = new Dictionary<string, boolean>();
         this.errorSuggestions = new Dictionary<string, string[]>();
         this.ignoreAllItems = [];
         this.uniqueSpelledWords = {};
@@ -403,7 +408,7 @@ export class SpellChecker {
      * @private
      */
     public removeErrorsFromCollection(contextItem: ContextElementInfo): void {
-        if (this.errorWordCollection.containsKey(contextItem.text)) {
+        if (!isNullOrUndefined(contextItem.text) && this.errorWordCollection.containsKey(contextItem.text)) {
             const textElement: ElementBox[] = this.errorWordCollection.get(contextItem.text);
             if (textElement.indexOf(contextItem.element) >= 0) {
                 textElement.splice(0, 1);
@@ -608,7 +613,37 @@ export class SpellChecker {
                 this.errorSuggestions.add(text, suggestions);
             }
             this.errorWordCollection.add(text, [elementToCompare]);
+            if (!this.uniqueWordsCollection.containsKey(text)) {
+                this.uniqueWordsCollection.add(text, true);
+            }
         }
+    }
+    private addCorrectWordCollection(text: string): void {
+        text = this.manageSpecialCharacters(text, undefined, true);
+        if (!this.uniqueWordsCollection.containsKey(text)) {
+            this.uniqueWordsCollection.add(text, false);
+        }
+    }
+    /**
+     * @private
+     */
+    public isInUniqueWords(text: string): boolean {
+        text = text.replace(/[\s]+/g, '');
+        return this.uniqueWordsCollection.containsKey(text);
+    }
+    /**
+     * @private
+     */
+    public isErrorWord(text: string): boolean {
+        text = text.replace(/[\s]+/g, '');
+        return this.uniqueWordsCollection.get(text);
+    }
+    /**
+     * @private
+     */
+    public isCorrectWord(text: string): boolean {
+        text = text.replace(/[\s]+/g, '');
+        return !this.uniqueWordsCollection.get(text);
     }
 
     private compareErrorTextElement(errorElement: ErrorTextElementBox, errorCollection: ElementBox[]): boolean {
@@ -675,6 +710,7 @@ export class SpellChecker {
             this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;
         } else {
+            this.addCorrectWordCollection(elementBox.text);
             elementBox.isSpellChecked = true;
         }
     }
@@ -861,8 +897,11 @@ export class SpellChecker {
 
             this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
             this.handleMatchedResults(matchResults.textResults, elementBox, underlineY, iteration, jsonObject.Suggestions, isLastItem);
-        } else if (isLastItem) {
-            elementBox.isSpellChecked = true;
+        } else {
+            this.addCorrectWordCollection(currentText);
+            if (isLastItem) {
+                elementBox.isSpellChecked = true;
+            }
         }
         this.updateUniqueWords([{ Text: currentText, HasSpellError: jsonObject.HasSpellingError }]);
     }
@@ -1240,6 +1279,7 @@ export class SpellChecker {
         this.errorWordCollection = undefined;
         this.ignoreAllItems = undefined;
         this.errorSuggestions = undefined;
+        this.uniqueWordsCollection = undefined;
         this.uniqueSpelledWords = {};
         this.textSearchResults = undefined;
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {

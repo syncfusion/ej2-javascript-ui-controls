@@ -56,7 +56,7 @@ export class BulletTooltip {
             'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
             fill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
         // adding css prop to the div
-        tooltipDiv.setAttribute('style', style);
+        tooltipDiv.style.cssText = style;
         if (targetClass === this.control.svgObject.id + '_Caption') {
             str = target.textContent === this.control.title ? '' : this.control.title;
         } else if (targetClass === this.control.svgObject.id + '_SubTitle') {
@@ -107,7 +107,7 @@ export class BulletTooltip {
             if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
                 tooltipdiv = <HTMLDivElement>this.control.createElement('div');
                 tooltipdiv.id = 'tooltipDiv' + this.control.element.id;
-                tooltipdiv.setAttribute('style', style);
+                tooltipdiv.style.cssText = style;
                 document.getElementById(this.control.element.id + '_Secondary_Element').appendChild(tooltipdiv);
             }
             let argsData: IBulletchartTooltipEventArgs = {
@@ -160,7 +160,7 @@ export class BulletTooltip {
                 yPos = e.clientY;
             }
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
-                tooltipdiv.setAttribute('style', 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;');
+                tooltipdiv.style.cssText = 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;';
             } else {
                 const divStyle: string = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
                     '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
@@ -168,7 +168,7 @@ export class BulletTooltip {
                     tooltipdiv.style.color + '; border:' + borderWidth + 'px Solid' + ' ' + borderColor + ';' +
                     'padding-bottom: 7px;' + 'font-style:' + BulletChartTheme.tooltipLabelFont.fontStyle +
                     '; padding-left: 10px; font-family: Segoe UI; padding-right: 10px; padding-top: 7px';
-                tooltipdiv.setAttribute('style', divStyle);
+                tooltipdiv.style.cssText = divStyle;
                 if ((targetClass === this.control.svgObject.id + '_FeatureMeasure') ||
                     (targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
                     document.getElementById(targetId).setAttribute('opacity', '0.6');
@@ -187,6 +187,8 @@ export class BulletTooltip {
             try {
                 if (document.querySelectorAll(this.control.tooltip.template).length) {
                     this.templateFn = templateComplier(document.querySelector(this.control.tooltip.template).innerHTML.trim());
+                } else {
+                    this.templateFn = templateComplier(this.control.tooltip.template);
                 }
             } catch (e) {
                 this.templateFn = templateComplier(this.control.tooltip.template);

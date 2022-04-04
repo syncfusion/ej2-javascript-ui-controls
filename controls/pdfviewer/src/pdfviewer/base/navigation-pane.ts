@@ -471,7 +471,7 @@ export class NavigationPane {
                             }
                         }
                     };
-                } else if (uploadedFile.name.split('.xfdf').length > 1 && uploadedFileType.includes('xfdf')) {
+                } else if (uploadedFile.name.split('.xfdf').length > 1 && (uploadedFileType.includes('xfdf') || args.target.accept.includes('xfdf'))) {
                     const reader: FileReader = new FileReader();
                     reader.readAsDataURL(uploadedFile);
                     // eslint-disable-next-line

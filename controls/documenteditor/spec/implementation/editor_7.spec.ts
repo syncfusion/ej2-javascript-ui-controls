@@ -1362,6 +1362,15 @@ describe('Track changes Validation For FormField', () => {
         let count: number =  container.revisions.changes[0].range.length;
         expect(count).toBe(6);
     });
+    it('form field deletion validation',()=>{
+        console.log('form field deletion validation');
+        container.openBlank();
+        container.editor.insertFormField('Text');
+        expect(container.documentHelper.formFields.length).toBe(1);
+        container.editor.onBackSpace();
+        container.editor.onBackSpace();
+        expect(container.documentHelper.formFields.length).toBe(0);
+    });
     // it('form fields BackSpace Validation For revision content  ', function () {
     //     console.log('form fields BackSpace Validation For revision content  ');
     //     container.openBlank();

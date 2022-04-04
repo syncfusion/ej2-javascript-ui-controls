@@ -464,6 +464,9 @@ export class TreeViewRenderer implements IAction {
         return buttonElement;
     }
     private nodeStateChange(args: NodeCheckEventArgs): void {
+        if (!args.isInteracted) {
+            return;
+        }
         let node: HTMLElement = closest(args.node, '.' + cls.TEXT_CONTENT_CLASS) as HTMLElement;
         if (!isNullOrUndefined(node)) {
             let li: HTMLElement = closest(node, 'li') as HTMLElement;
@@ -494,7 +497,7 @@ export class TreeViewRenderer implements IAction {
                         this.updateReportSettings(addNode, observedArgs);
                         this.updateNodeStateChange(id, args, selectedNode);
                     } else {
-                        this.updateCheckState(selectedNode);
+                        this.updateCheckState(selectedNode, args.action);
                     }
                 });
             } else {
@@ -519,7 +522,7 @@ export class TreeViewRenderer implements IAction {
                         }
                         this.updateNodeStateChange(id, args, selectedNode);
                     } else {
-                        this.updateCheckState(selectedNode);
+                        this.updateCheckState(selectedNode, args.action);
                     }
                 });
             }
@@ -564,7 +567,7 @@ export class TreeViewRenderer implements IAction {
                     this.parent.dataSourceSettings.values.splice(dropPosition, 0, newField) :
                     this.parent.dataSourceSettings.values.push(newField);
                 if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
-                    !(this.parent.olapEngineModule).isMeasureAvail) {
+                    !(this.parent.olapEngineModule).isMeasureAvail && !(this.parent.dataSourceSettings.values.length > 1)) {
                     let measureField: IFieldOptions = {
                         name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
                     };
@@ -576,18 +579,16 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private updateCheckState(selectedNode: { [key: string]: Object }): void {   /* eslint-disable-line */
+    private updateCheckState(selectedNode: { [key: string]: Object }, action: string): void {   /* eslint-disable-line */
         let chkState: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-checkbox-wrapper');
         let innerText: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-list-text');
         let checkClass: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-frame');
         for (let i: number = 0; i < chkState.length; i++) {
             if (selectedNode.caption === innerText[i].textContent) {
-                if (chkState[i].getAttribute('aria-checked') === 'false') {
-                    chkState[i].setAttribute('aria-checked', 'false');
-                    checkClass[i].classList.add(cls.NODE_CHECK_CLASS);
+                if (action === 'check') {
+                    this.fieldTable.uncheckAll([selectedNode['id'] as string]);
                 } else {
-                    chkState[i].setAttribute('aria-checked', 'true');
-                    checkClass[i].classList.remove(cls.NODE_CHECK_CLASS);
+                    this.fieldTable.checkAll([selectedNode['id'] as string]);
                 }
             }
         }
@@ -636,6 +637,9 @@ export class TreeViewRenderer implements IAction {
     }
 
     private addNode(args: NodeCheckEventArgs): void {
+        if (!args.isInteracted) {
+            return;
+        }
         /* eslint-disable */
         let fieldList: { [key: string]: Object } = this.parent.pivotFieldList;
         let selectedNode: { [key: string]: Object } = fieldList[args.data[0].id.toString()] as { [key: string]: Object };
@@ -643,16 +647,17 @@ export class TreeViewRenderer implements IAction {
         let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(selectedNode.id.toString(), this.parent);
         let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
         if (args.action === 'check') {
+            let axis: string[] = ['filters', 'columns', 'rows', 'values'];
             let eventdrop: FieldDropEventArgs = {
                 fieldName: fieldInfo.fieldName, dropField: fieldInfo.fieldItem,
                 dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
-                dropAxis: 'rows', draggedAxis: 'fieldlist', cancel: false
+                dropAxis: axis[this.parent.dialogRenderer.adaptiveElement.selectedItem], draggedAxis: 'fieldlist', cancel: false
             };
             control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
                 if (!observedArgs.cancel) {
                     this.selectedNodes.push(selectedNode.id.toString());
                 } else {
-                    this.updateCheckState(selectedNode);
+                    this.updateCheckState(selectedNode, args.action);
                 }
             });
         } else {
@@ -671,7 +676,7 @@ export class TreeViewRenderer implements IAction {
                         }
                     }
                 } else {
-                    this.updateCheckState(selectedNode);
+                    this.updateCheckState(selectedNode, args.action);
                 }
             });
         }

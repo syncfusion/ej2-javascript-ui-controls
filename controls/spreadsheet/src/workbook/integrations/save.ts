@@ -1,9 +1,10 @@
-import { Workbook } from '../base/index';
+import { Workbook, CellModel } from '../base/index';
 import { executeTaskAsync } from '../common/worker';
 import { pdfLayoutSettings, SaveOptions } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
 import { SaveCompleteEventArgs } from '../common/index';
+import { checkUniqueRange } from '../../workbook/index';
 import { detach } from '@syncfusion/ej2-base';
 
 /**
@@ -107,7 +108,7 @@ export class WorkbookSave extends SaveWorker {
             'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
             'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo', 'dialogBeforeOpen',
-            'dataSourceChanged', 'beforeConditionalFormat']);
+            'dataSourceChanged', 'beforeConditionalFormat', 'beforeCellUpdate']);
         const basicSettings: { [key: string]: Object } = JSON.parse(jsonStr);
         const sheetCount: number = this.parent.sheets.length;
         if (sheetCount) { basicSettings.sheets = []; }
@@ -267,10 +268,29 @@ export class WorkbookSave extends SaveWorker {
      * @returns {string} - Get stringified workbook object.
      */
     private getStringifyObject(value: object, skipProp: string[] = []): string {
+        const workbook: Workbook = this.parent;
         return JSON.stringify(value, (key: string, value: { [key: string]: object }) => {
             if (skipProp.indexOf(key) > -1) {
                 return undefined;
             } else {
+                if (value && value.cells) {
+                    for (let i: number = 0, len: number = (value.cells as CellModel[]).length; i < len; i++) {
+                        const cell: CellModel = value.cells[i];
+                        const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = {
+                            cellIdx: [Number(key), i], isUnique: false, uniqueRange: ''
+                        };
+                    this.parent.notify(checkUniqueRange, args);
+                        if (cell) {
+                            if ((cell.formula && (cell.formula.indexOf('=UNIQUE(') > -1)) || args.isUnique) {
+                                delete cell.value;
+                                continue;
+                            }
+                            if (!cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
+                                cell.value = workbook.computeExpression(cell.formula) as string;
+                            }
+                        }
+                    }
+                }
                 // eslint-disable-next-line no-prototype-builtins
                 if (value && typeof value === 'object' && value.hasOwnProperty('properties')) {
                     return value.properties;

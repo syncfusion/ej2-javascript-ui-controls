@@ -20,7 +20,7 @@ export class ChartRows extends DateProcessor {
     public milestoneHeight: number = 0;
     private milesStoneRadius: number = 0;
     private baselineTop: number = 0;
-    public baselineHeight: number = 3;
+    public baselineHeight: number = 8;
     private baselineColor: string;
     private parentTaskbarTemplateFunction: Function;
     private leftTaskLabelTemplateFunction: Function;
@@ -122,7 +122,7 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     private getIndicatorNode(indicator: IIndicator): NodeList {
-        const templateString: string = '<label class="' + cls.label + ' ' + cls.taskIndicatorDiv + '"  style="line-height:'
+        const templateString: string = '<label class="' + cls.label + ' ' + cls.taskIndicatorDiv + '" role="LabelIndicator" style="line-height:'
             + (this.parent.rowHeight) + 'px;' +
             'left:' + this.getIndicatorleft(indicator.date) + 'px;"><i class="' + indicator.iconClass + '"></i> </label>';
         return this.createDivElement(templateString);
@@ -155,7 +155,7 @@ export class ChartRows extends DateProcessor {
         if (this.childTaskbarTemplateFunction) {
             childTaskbarNode = this.childTaskbarTemplateFunction(
                 extend({ index: i }, data), this.parent, 'TaskbarTemplate',
-                this.getTemplateID('TaskbarTemplate'), false, undefined, rootElement[0]);
+                this.getTemplateID('TaskbarTemplate'), false, undefined, rootElement[0], this.parent.treeGrid['root']);
         } else {
             let labelString: string = '';
             let taskLabel: string = '';
@@ -196,12 +196,12 @@ export class ChartRows extends DateProcessor {
                         (this.taskBarHeight - 1) + 'px; text-align: left;' +
                         'display:' + 'inline-block;' +
                         'width:' + (data.ganttProperties.width - 10) + 'px; height:' +
-                         this.taskBarHeight + 'px;">' + labelString + '</span>';
+                        this.taskBarHeight + 'px;">' + labelString + '</span>';
                 } else {
                     taskLabel = '<span class="' + cls.taskLabel + '" style="line-height:' +
-                        (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.viewType === 'ResourceView' ? 'left;' : ';') +
-                        'display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : ';') +
-                        'width:' + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                        (this.taskBarHeight - 1) + 'px;' + (this.parent.viewType === 'ResourceView' ? 'text-align: left;' : '') +
+                        + (this.parent.viewType === 'ResourceView' ? 'display:inline-flex;' : '') +
+                         + (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : '') + 'px; height:' +
                          this.taskBarHeight + 'px;">' + labelString + '</span>';
                 }
             }
@@ -632,7 +632,7 @@ export class ChartRows extends DateProcessor {
         if (this.milestoneTemplateFunction) {
             milestoneNode = this.milestoneTemplateFunction(
                 extend({ index: i }, data), this.parent, 'MilestoneTemplate',
-                this.getTemplateID('MilestoneTemplate'), false, undefined, rootElement[0]);
+                this.getTemplateID('MilestoneTemplate'), false, undefined, rootElement[0], this.parent.treeGrid['root']);
         } else {
             const template: string = '<div class="' + cls.traceMilestone + '" style="position:absolute;">' +
                 '<div class="' + cls.milestoneTop + ' ' + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
@@ -656,7 +656,7 @@ export class ChartRows extends DateProcessor {
      */
     private getTaskBaselineNode(): NodeList {
         const data: IGanttData = this.templateData;
-        const template: string = '<div class="' + cls.baselineBar + ' ' + '" style="margin-top:' + this.baselineTop +
+        const template: string = '<div class="' + cls.baselineBar + ' ' + '" role="BaselineBar" style="margin-top:' + this.baselineTop +
             'px;left:' + data.ganttProperties.baselineLeft + 'px;' +
             'width:' + data.ganttProperties.baselineWidth + 'px;height:' +
             this.baselineHeight + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + '"></div>';
@@ -671,9 +671,10 @@ export class ChartRows extends DateProcessor {
      */
     private getMilestoneBaselineNode(): NodeList {
         const data: IGanttData = this.templateData;
+        let baselineMilestoneHeight = this.parent.renderBaseline ? 5 : 2;
         const template: string = '<div class="' + cls.baselineMilestoneContainer + ' ' + '" style="' +
             'left:' + (data.ganttProperties.baselineLeft - this.milesStoneRadius) + 'px;' +
-            'margin-top:' + (-Math.floor(this.parent.rowHeight - this.milestoneMarginTop) + 2) +
+            'margin-top:' + (-Math.floor(this.parent.rowHeight - this.milestoneMarginTop) + baselineMilestoneHeight) +
             'px">' + '<div class="' + cls.baselineMilestoneDiv + '">' + '<div class="' + cls.baselineMilestoneDiv +
             ' ' + cls.baselineMilestoneTop + '"  ' +
             'style="top:' + (- this.milestoneHeight) + 'px;border-right:' + this.milesStoneRadius +
@@ -702,12 +703,14 @@ export class ChartRows extends DateProcessor {
      */
     private getLeftLabelNode(i: number): NodeList {
         const leftLabelNode: NodeList = this.leftLabelContainer();
-        (<HTMLElement>leftLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('left'));
+        if(this.generateTaskLabelAriaLabel('left') !== "") {
+            (<HTMLElement>leftLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('left'));
+        }
         let leftLabelTemplateNode: NodeList = null;
         if (this.leftTaskLabelTemplateFunction) {
             leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(
                 extend({ index: i }, this.templateData), this.parent, 'LeftLabelTemplate',
-                this.getTemplateID('LeftLabelTemplate'), false, undefined, leftLabelNode[0]);
+                this.getTemplateID('LeftLabelTemplate'), false, undefined, leftLabelNode[0],this.parent.treeGrid['root']);
         } else {
             const field: string = this.parent.labelSettings.leftLabel;
             let labelString: string = this.getTaskLabel(field);
@@ -717,14 +720,18 @@ export class ChartRows extends DateProcessor {
             }
         }
         if (leftLabelTemplateNode && leftLabelTemplateNode.length > 0) {
+            if (leftLabelTemplateNode[0]['data'] === 'null') {
+                leftLabelTemplateNode[0]['data'] = '';
+            }
             leftLabelNode[0].appendChild([].slice.call(leftLabelTemplateNode)[0]);
         }
         return leftLabelNode;
     }
     private getLableText(labelString: string, labelDiv: string): NodeList {
+        let leftLabelHeight = this.parent.renderBaseline ? ((this.parent.rowHeight - this.taskBarHeight) / 2) : this.taskBarMarginTop;
         const templateString: HTMLElement = createElement('div', {
             className: labelDiv, styles: 'height:' + (this.taskBarHeight) + 'px;' +
-                'margin-top:' + this.taskBarMarginTop + 'px;'
+                'margin-top:' + leftLabelHeight + 'px;'
         });
         const spanElem: HTMLElement = createElement('span', { className: cls.label });
         const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
@@ -743,12 +750,14 @@ export class ChartRows extends DateProcessor {
      */
     private getRightLabelNode(i: number): NodeList {
         const rightLabelNode: NodeList = this.rightLabelContainer();
-        (<HTMLElement>rightLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('right'));
+        if(this.generateTaskLabelAriaLabel('right') !== "") {
+            (<HTMLElement>rightLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('right'));
+        }
         let rightLabelTemplateNode: NodeList = null;
         if (this.rightTaskLabelTemplateFunction) {
             rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(
                 extend({ index: i }, this.templateData), this.parent, 'RightLabelTemplate',
-                this.getTemplateID('RightLabelTemplate'), false, undefined, rightLabelNode[0]);
+                this.getTemplateID('RightLabelTemplate'), false, undefined, rightLabelNode[0], this.parent.treeGrid['root']);
         } else {
             const field: string = this.parent.labelSettings.rightLabel;
             let labelString: string = this.getTaskLabel(field);
@@ -758,6 +767,9 @@ export class ChartRows extends DateProcessor {
             }
         }
         if (rightLabelTemplateNode && rightLabelTemplateNode.length > 0) {
+            if (rightLabelTemplateNode[0]['data'] === 'null') {
+                rightLabelTemplateNode[0]['data'] = '';
+            }
             rightLabelNode[0].appendChild([].slice.call(rightLabelTemplateNode)[0]);
         }
         return rightLabelNode;
@@ -815,7 +827,7 @@ export class ChartRows extends DateProcessor {
         if (this.parentTaskbarTemplateFunction) {
             parentTaskbarNode = this.parentTaskbarTemplateFunction(
                 extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate',
-                this.getTemplateID('ParentTaskbarTemplate'), false, undefined, rootElement[0]);
+                this.getTemplateID('ParentTaskbarTemplate'), false, undefined, rootElement[0], this.parent.treeGrid['root']);
         } else {
             let labelString: string = ''; let labelDiv: NodeList;
             const tHeight: number = this.taskBarHeight / 5;
@@ -855,8 +867,10 @@ export class ChartRows extends DateProcessor {
                 } else {
                     labelDiv = this.createDivElement('<span class="' +
                     cls.taskLabel + '" style="line-height:' +
-                    (this.taskBarHeight - 1) + 'px; display:' + (this.parent.viewType === 'ResourceView' ? 'inline-flex;' : ';') + 'width:' +
-                    (this.parent.viewType === 'ResourceView' ? (data.ganttProperties.width - 10) : ';') + 'px; height:' +
+                    (this.taskBarHeight - 1) + 'px;' + (this.parent.viewType === 'ResourceView' ? 'display:inline-flex;' : '') +
+                    (this.parent.viewType === 'ResourceView' ? 'width:' + (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                    (this.taskBarHeight - 1) + 'px;' + (this.parent.viewType === 'ResourceView' ? 'display: inline-flex;' : '') + 
+                    (this.parent.viewType === 'ResourceView' ? 'width:' + (data.ganttProperties.width - 10) : '') + 'px; height:' +
                     this.taskBarHeight + 'px;">' + labelString + '</span>');
                 }
                 progressBarInnerDiv[0].appendChild([].slice.call(labelDiv)[0]);
@@ -886,10 +900,10 @@ export class ChartRows extends DateProcessor {
         const className: string = (this.parent.gridLines === 'Horizontal' || this.parent.gridLines === 'Both') ?
             'e-chart-row-border' : '';
         table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + '"' +
-            'style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
-            this.parent.rowHeight + 'px;">' +
+        'role="ChartRow" style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
+        this.parent.rowHeight + 'px;">' +
             '<td class="' + cls.chartRowCell + ' ' + className
-            + '" style="width:' + this.parent.timelineModule.totalTimelineWidth + 'px;"></td></tr>';
+            + '" role="ChartCell" style="width:' + this.parent.timelineModule.totalTimelineWidth + 'px;"></td></tr>';
         return table.childNodes;
     }
 
@@ -931,9 +945,17 @@ export class ChartRows extends DateProcessor {
 
     private isTemplate(template: string): boolean {
         let result: boolean = false;
+        for (let i: number = 0; i < this.parent.ganttColumns.length; i++) {
+            if (template === this.parent.ganttColumns[i].field) {
+                result = true;
+                break;
+            }
+        }
         if (typeof template !== 'string' || template.indexOf('#') === 0 || template.indexOf('<') > -1
-        || template.indexOf('$') > -1) {
+        || template.indexOf('$') > -1 || !result) {
             result = true;
+        } else {
+            result = false
         }
         return result;
     }
@@ -949,8 +971,8 @@ export class ChartRows extends DateProcessor {
 
     private leftLabelContainer(): NodeList {
         const template: string = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? cls.leftLabelTempContainer :
-            cls.leftLabelContainer) + ' ' + '" tabindex="-1" style="height:' +
-            (this.parent.rowHeight - 1) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
+        cls.leftLabelContainer) + ' ' + '" tabindex="-1" role="LeftLabel" style="height:' +
+        (this.parent.rowHeight - 2) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
         return this.createDivElement(template);
     }
 
@@ -962,7 +984,7 @@ export class ChartRows extends DateProcessor {
         const template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
-            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
+            ' tabindex="-1" role="TaskBar" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
             ('width:' + this.milestoneHeight + 'px;height:' +
                     this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
                         (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
@@ -974,29 +996,29 @@ export class ChartRows extends DateProcessor {
 
     private rightLabelContainer(): NodeList {
         const template: string = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? cls.rightLabelTempContainer :
-            cls.rightLabelContainer) + '" ' + ' tabindex="-1" style="left:' + this.getRightLabelLeft(this.templateData) + 'px;height:'
-            + (this.parent.rowHeight - 1) + 'px;"></div>';
+            cls.rightLabelContainer) + '" ' + ' tabindex="-1" role="RightLabel" style="left:' + this.getRightLabelLeft(this.templateData) + 'px; height:'
+            + (this.parent.rowHeight - 2) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarLeftResizer(): NodeList {
         const lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
         const template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
-            ' style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
+            ' role="LeftResizer" style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarRightResizer(): NodeList {
         const rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
         const template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
-            ' style="left:' + (this.templateData.ganttProperties.width + rResizerLeft) + 'px;' +
+            ' role="RightResizer" style="left:' + (this.templateData.ganttProperties.width + rResizerLeft) + 'px;' +
             'height:' + (this.taskBarHeight) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarProgressResizer(): NodeList {
         const template: string = '<div class="' + cls.childProgressResizer + '"' +
-            ' style="left:' + (this.templateData.ganttProperties.progressWidth - 6) + 'px;margin-top:' +
+            ' role="ProgressResizer" style="left:' + (this.templateData.ganttProperties.progressWidth - 6) + 'px;margin-top:' +
             (this.taskBarHeight - 4) + 'px;"><div class="' + cls.progressBarHandler + '"' +
             '><div class="' + cls.progressHandlerElement + '"></div>' +
             '<div class="' + cls.progressBarHandlerAfter + '"></div></div>';
@@ -1192,10 +1214,13 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     private initChartHelperPrivateVariable(): void {
+        let taskbarHeightValue = this.parent.renderBaseline ? 0.45 : 0.62;
+        let taskBarMarginTopValue = this.parent.renderBaseline ? 4 : 2;
+        let milestoneHeightValue = this.parent.renderBaseline ? 1.13 : 0.82;
         this.baselineColor = !isNullOrUndefined(this.parent.baselineColor) &&
             this.parent.baselineColor !== '' ? this.parent.baselineColor : null;
         this.taskBarHeight = isNullOrUndefined(this.parent.taskbarHeight) || this.parent.taskbarHeight >= this.parent.rowHeight ?
-            Math.floor(this.parent.rowHeight * 0.62) : this.parent.taskbarHeight; // 0.62 -- Standard Ratio.
+            Math.floor(this.parent.rowHeight * taskbarHeightValue) : this.parent.taskbarHeight; // 0.62 -- Standard Ratio.
         if (this.parent.renderBaseline) {
             let height: number;
             if ((this.taskBarHeight + this.baselineHeight) <= this.parent.rowHeight) {
@@ -1205,11 +1230,11 @@ export class ChartRows extends DateProcessor {
             }
             this.taskBarHeight = height;
         }
-        this.milestoneHeight = Math.floor(this.taskBarHeight * 0.82); // 0.82 -- Standard Ratio.
-        this.taskBarMarginTop = Math.floor((this.parent.rowHeight - this.taskBarHeight) / 2);
+        this.milestoneHeight = Math.floor(this.taskBarHeight * milestoneHeightValue); // 0.82 -- Standard Ratio.
+        this.taskBarMarginTop = Math.floor((this.parent.rowHeight - this.taskBarHeight) / taskBarMarginTopValue);
         this.milestoneMarginTop = Math.floor((this.parent.rowHeight - this.milestoneHeight) / 2);
         this.milesStoneRadius = Math.floor((this.milestoneHeight) / 2);
-        this.baselineTop = -(Math.floor((this.parent.rowHeight - (this.taskBarHeight + this.taskBarMarginTop))) - 1);
+        this.baselineTop = -(Math.floor((this.parent.rowHeight - (this.taskBarHeight + this.taskBarMarginTop))) - 4);
         this.connectorPointWidth = this.parent.isAdaptive ? Math.round(this.taskBarHeight / 2) : 8;
         this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - (this.connectorPointWidth / 2));
     }
@@ -1399,6 +1424,7 @@ export class ChartRows extends DateProcessor {
             const indicators: IIndicator[] = this.templateData.ganttProperties.indicators;
             for (let indicatorIndex: number = 0; indicatorIndex < indicators.length; indicatorIndex++) {
                 taskIndicatorNode = this.getIndicatorNode(indicators[indicatorIndex]);
+                (<HTMLElement>taskIndicatorNode[0]).setAttribute('aria-label',indicators[indicatorIndex].name);
                 if (indicators[indicatorIndex].name.indexOf('$') > -1 || indicators[indicatorIndex].name.indexOf('#') > -1) {
                     taskIndicatorTextFunction = this.templateCompiler(indicators[indicatorIndex].name);
                     taskIndicatorTextNode = taskIndicatorTextFunction(

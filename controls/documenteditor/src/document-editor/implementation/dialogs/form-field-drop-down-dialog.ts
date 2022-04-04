@@ -4,6 +4,7 @@ import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper } from '../viewer';
 import { FieldElementBox, ElementBox, DropDownFormField } from '../viewer/page';
 import { ListView } from '@syncfusion/ej2-lists';
+import { TextBox } from '@syncfusion/ej2-inputs';
 
 /**
  * Form field drop-down dialog is used to modify the value in drop-down form field.
@@ -48,10 +49,7 @@ export class DropDownFormFieldDialog {
         this.target = createElement('div');
         let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         let firstDiv: HTMLElement = createElement('div', { className: 'e-de-drp-dwn-frst-div' });
-        let drpDownItemsLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Dropdown items')
-        });
+
         this.drpDownItemsInput = createElement('input', {
             className: 'e-input e-bookmark-textbox-input',
             id: 'fielditems_text_box'
@@ -109,21 +107,14 @@ export class DropDownFormFieldDialog {
         this.moveDownButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-down' });
         moveDownButtonEle.addEventListener('click', this.moveDownItem.bind(this));
         let fileSettingsLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading',
+            className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Field settings')
         });
-        let thirdDiv: HTMLElement = createElement('div', { className: 'e-de-div-seperate-dlg' });
-        let toolTipDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
-        let bookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
-        let toolTipLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Tooltip')
-        });
+        let thirdDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        let toolTipDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        let bookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
         this.tooltipInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-        let bookmarkLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Name')
-        });
+
         this.bookmarkInput = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
         let dropDownEnableDiv: HTMLElement = createElement('div');
         let dropDownEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
@@ -141,7 +132,6 @@ export class DropDownFormFieldDialog {
 
         this.target.appendChild(dialogDiv);
         dialogDiv.appendChild(firstDiv);
-        firstDiv.appendChild(drpDownItemsLabel);
         firstDiv.appendChild(this.drpDownItemsInput);
         dialogDiv.appendChild(itemsDrpItemsLabel);
 
@@ -176,16 +166,16 @@ export class DropDownFormFieldDialog {
         dialogDiv.appendChild(fileSettingsLabel);
         dialogDiv.appendChild(thirdDiv);
         thirdDiv.appendChild(toolTipDiv);
-        toolTipDiv.appendChild(toolTipLabel);
         toolTipDiv.appendChild(this.tooltipInput);
         thirdDiv.appendChild(bookmarkDiv);
-        bookmarkDiv.appendChild(bookmarkLabel);
         bookmarkDiv.appendChild(this.bookmarkInput);
 
         dialogDiv.appendChild(dropDownEnableDiv);
         dropDownEnableDiv.appendChild(dropDownEnableEle);
         this.dropDownEnable.appendTo(dropDownEnableEle);
-
+        new TextBox({ placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always' }, this.tooltipInput);
+        new TextBox({ placeholder: localValue.getConstant('Name'), floatLabelType: 'Always' }, this.bookmarkInput)
+        new TextBox({ placeholder: localValue.getConstant('Dropdown items'), floatLabelType: 'Always' }, this.drpDownItemsInput)
     }
     /**
      * @private

@@ -44,11 +44,11 @@ export function getRangePalette(theme: string): string[] {
             palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
                 '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
             break;
-        case 'fluentui':
+        case 'fluent':
             palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
                 '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
             break;
-        case 'fluentuidark':
+        case 'fluentdark':
             palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
                 '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
             break;
@@ -213,7 +213,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontWeight: '500'
         };
         break;
-    case 'fluentui':
+    case 'fluent':
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#201F1E',
@@ -235,7 +235,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontWeight: '600'
         };
         break;
-    case 'fluentuidark':
+    case 'fluentdark':
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#F3F2F1',

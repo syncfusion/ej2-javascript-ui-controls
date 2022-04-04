@@ -577,22 +577,7 @@ export class MoveTool extends ToolBase {
     // eslint-disable-next-line
     public mouseUp(args: any): void {
         if (this.commandHandler && args.source) {
-            // eslint-disable-next-line max-len
-            if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
-                if (this.commandHandler.selectedItems.annotations[0].annotName === args.source.annotName) {
-                    this.commandHandler.viewerBase.isAnnotationMouseMove = true;
-                }
-            } else {
-                this.commandHandler.viewerBase.isAnnotationMouseMove = false;
-            }
-            // eslint-disable-next-line max-len
-            if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
-                if (this.commandHandler.selectedItems.formFields[0].name === args.source.name) {
-                    this.commandHandler.viewerBase.isFormFieldMouseMove = true;
-                }
-            } else {
-                this.commandHandler.viewerBase.isFormFieldMouseMove = false;
-            }
+            this.checkisAnnotationMove(args);
             const currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([(args.source as PdfAnnotationBaseModel).id], currentSelctor);
@@ -645,7 +630,13 @@ export class MoveTool extends ToolBase {
                 this.commandHandler.annotation.stickyNotesAnnotationModule.updateStickyNotes(args.source, null);
             }
         }
-        super.mouseUp(args);
+        let shapeAnnotationType : any = this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0 ? this.commandHandler.selectedItems.annotations[0].shapeAnnotationType : null;
+        if (shapeAnnotationType && shapeAnnotationType !== 'Image' && shapeAnnotationType !== 'SignatureImage') {
+            super.mouseUp(args);
+        }
+        else if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
+            super.mouseUp(args);
+        }
     }
 
     private calculateMouseXDiff(): number {
@@ -708,9 +699,10 @@ export class MoveTool extends ToolBase {
             let diffX: number = this.calculateMouseActionXDiff(args);
             let diffY: number = this.calculateMouseActionYDiff(args);
             const selectedItem: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
+            let cobject: any;
             if (!this.helper) {
                 // eslint-disable-next-line
-                let cobject: any = this.commandHandler.selectedItems.annotations.length > 0 ? cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel: cloneObject(this.commandHandler.selectedItems.formFields[0]) as PdfFormFieldBaseModel;
+                cobject= this.commandHandler.selectedItems.annotations.length > 0 ? cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel: cloneObject(this.commandHandler.selectedItems.formFields[0]) as PdfFormFieldBaseModel;
                 if (cobject.wrapper) {
                     diffX = requiredX - cobject.wrapper.offsetX;
                     diffY = requiredY - cobject.wrapper.offsetY;
@@ -748,7 +740,8 @@ export class MoveTool extends ToolBase {
                 if (cobject.enableShapeLabel === true) {
                     cobject.labelContent = '';
                 }
-                if (!isStamp) {
+                let shapeAnnotationType: any = cobject.shapeAnnotationType;
+                if (!isStamp && shapeAnnotationType !== 'Image' && shapeAnnotationType !== 'SignatureImage' ) {
                     this.helper = cobject = this.commandHandler.add(cobject as PdfAnnotationBase);
                 } else {
                     cobject = this.helper = args.source;
@@ -767,8 +760,20 @@ export class MoveTool extends ToolBase {
             }
             // eslint-disable-next-line max-len
             if (this.commandHandler.checkBoundaryConstraints(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, this.helper.wrapper.bounds, isStamp, isSkip)) {
+                let shapeAnnotationType : any = this.helper.shapeAnnotationType;
+                if (this.helper && (shapeAnnotationType === 'Image' || shapeAnnotationType === 'SignatureImage')) {
+                this.checkisAnnotationMove(args);
+                // eslint-disable-next-line max-len
+                const currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
+                this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                this.commandHandler.select([(args.source as PdfAnnotationBaseModel).id], currentSelctor);
                 // eslint-disable-next-line max-len
                 this.commandHandler.dragSelectedObjects(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, currentSelctor, this.helper);
+                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelctor);
+                }
+                else{
+                    this.commandHandler.dragSelectedObjects(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, currentSelctor, this.helper); 
+                }
                 this.prevNode = this.helper;
                 this.prevPosition = this.currentPosition;
             } else {
@@ -803,6 +808,25 @@ export class MoveTool extends ToolBase {
         super.endAction();
         this.currentTarget = null;
         this.prevPosition = null;
+    }
+
+    private checkisAnnotationMove(args: any): void{
+          // eslint-disable-next-line max-len
+          if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
+            if (this.commandHandler.selectedItems.annotations[0].annotName === args.source.annotName) {
+                this.commandHandler.viewerBase.isAnnotationMouseMove = true;
+            }
+        } else {
+            this.commandHandler.viewerBase.isAnnotationMouseMove = false;
+        }
+        // eslint-disable-next-line max-len
+        if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
+            if (this.commandHandler.selectedItems.formFields[0].name === args.source.name) {
+                this.commandHandler.viewerBase.isFormFieldMouseMove = true;
+            }
+        } else {
+            this.commandHandler.viewerBase.isFormFieldMouseMove = false;
+        }
     }
 }
 
@@ -1244,7 +1268,7 @@ export class ResizeTool extends ToolBase {
             // eslint-disable-next-line max-len
             const deltaValues: Rect = this.updateSize(this.prevSource, this.currentPosition, this.initialPosition, this.corner, this.initialBounds, null, true);
             this.blocked = this.scaleObjects(
-                deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.initialPosition, this.prevSource);
+                deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.initialPosition, this.prevSource,args.info.ctrlKey);
             if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations &&
                 this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'Stamp') {
                 if (this.commandHandler.stampSettings.minHeight || this.commandHandler.stampSettings.minWidth) {
@@ -1388,6 +1412,7 @@ export class ResizeTool extends ToolBase {
             changes = rotatePoint(-this.currentElement.wrapper.rotateAngle, undefined, undefined, changes);
         }
         changes = this.getChanges(changes);
+        this.commandHandler.renderSelector(this.prevPageId, this.prevSource.annotationSelectorSettings);
         if (!this.helper) {
             // eslint-disable-next-line
             let cobject: any = this.commandHandler.selectedItems.annotations.length > 0 ? cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel: cloneObject(this.commandHandler.selectedItems.formFields[0]) as PdfFormFieldBaseModel;
@@ -1431,7 +1456,7 @@ export class ResizeTool extends ToolBase {
         }
         const deltaValues: Rect = this.updateSize(this.helper, this.startPosition, this.currentPosition, this.corner, this.initialBounds);
         // eslint-disable-next-line max-len
-        this.blocked = !(this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.startPosition, this.currentPosition, this.helper));
+        this.blocked = !(this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.startPosition, this.currentPosition, this.helper,args.info.ctrlKey));
         this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
@@ -1499,11 +1524,12 @@ export class ResizeTool extends ToolBase {
      * @param {PointModel} startPoint - Specified the start point of the annotation.
      * @param {PointModel} endPoint - Specified the end point of the annotation.
      * @param {SelectorModel | PdfAnnotationBaseModel} source - Specified the annotation object.
+     * @param {boolean} isCtrlKeyPressed - becomes true when ctrl Key is pressed.
      * @returns {boolean} - Returns true or false.
      */
     private scaleObjects(
         deltaWidth: number, deltaHeight: number, corner: string, startPoint: PointModel, endPoint: PointModel,
-        source?: SelectorModel | PdfAnnotationBaseModel)
+        source?: SelectorModel | PdfAnnotationBaseModel,isCtrlKeyPressed?: boolean)
         : boolean {
         // eslint-disable-next-line
         let annotationSettings: any = this.commandHandler.annotationModule? this.commandHandler.annotationModule.findAnnotationSettings(source): {};
@@ -1538,6 +1564,7 @@ export class ResizeTool extends ToolBase {
             }
         } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'HandWrittenSignature' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage')) {
             if (!(deltaHeight === 1 && deltaWidth === 1)) {
+             if(isCtrlKeyPressed){
                 if (width >= annotationMaxWidth && height < annotationMaxHeight) {
                     deltaHeight = Math.max(deltaHeight, deltaWidth);
                 }
@@ -1547,7 +1574,12 @@ export class ResizeTool extends ToolBase {
                 if (width < annotationMaxWidth && height < annotationMaxHeight) {
                     deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
                 }
+             }
             }
+             if(!isCtrlKeyPressed){
+                deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
+              }
+            
         } else {
             if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Perimeter' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Radius'
                 || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {

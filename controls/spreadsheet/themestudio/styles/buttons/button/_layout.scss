@@ -132,6 +132,9 @@
         font-size: $btn-small-font-size;
         line-height: $btn-small-text-line-height;
         padding: $btn-small-padding;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+          border-radius: 2px;
+        }
 
         & .e-btn-icon {
           font-size: $btn-small-icon-font-size;
@@ -190,6 +193,9 @@
           line-height: 1;
           padding: 0;
           width: $btn-round-small-width;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+            border-radius: 50%;
+          }
 
           & .e-btn-icon {
             font-size: $btn-small-round-font-size;
@@ -225,6 +231,9 @@
     font-size: $btn-small-font-size;
     line-height: $btn-small-text-line-height;
     padding: $btn-small-padding;
+    @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+      border-radius: 2px;
+    }
 
     & .e-btn-icon {
       font-size: $btn-small-icon-font-size;
@@ -283,6 +292,9 @@
       line-height: 1;
       padding: 0;
       width: $btn-round-small-width;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+        border-radius: 50%;
+      }
 
       & .e-btn-icon {
         font-size: $btn-small-round-font-size;
@@ -401,7 +413,7 @@
     line-height: $btn-bigger-text-line-height;
     padding: $btn-bigger-padding;
     @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-      border-radius: 6px;
+      border-radius: 4px;
     }
 
     & .e-btn-icon {
@@ -488,6 +500,9 @@
       font-size: $btn-bigger-small-font-size;
       line-height: $btn-bigger-small-text-line-height;
       padding: $btn-bigger-small-padding;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+        border-radius: 2px;
+      }
 
       & .e-btn-icon {
         font-size: $btn-bigger-small-icon-font-size;
@@ -546,6 +561,9 @@
         line-height: 1;
         padding: 0;
         width: $btn-round-bigger-small-width;
+        @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
+          border-radius: 50%;
+        }
 
         & .e-btn-icon {
           font-size: $btn-bigger-small-round-font-size;

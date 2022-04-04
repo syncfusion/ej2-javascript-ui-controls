@@ -24,7 +24,12 @@ export class Render {
 
     private initializeLayout(viewName: View): void {
         if (this.parent.activeView) {
-            this.parent.resetTemplates();
+            const templates: string[] = [
+                'cellTemplate', 'eventTemplate', 'tooltipTemplate', 'majorSlotTemplate', 'minorSlotTemplate',
+                'headerTooltipTemplate', 'dateHeaderTemplate', 'dayHeaderTemplate', 'mothHeaderTemplate',
+                'headerIndentTemplate', 'resourceHeaderTemplate', 'cellHeaderTemplate'
+            ];
+            this.parent.resetTemplates(templates);
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }
@@ -92,7 +97,8 @@ export class Render {
             this.parent.virtualScrollModule.destroy();
             this.parent.virtualScrollModule = null;
         }
-        if (this.parent.currentView.indexOf('Timeline') !== -1 && this.parent.currentView.indexOf('Year') === -1
+        if (this.parent.currentView.indexOf('Timeline') !== -1 && (this.parent.currentView.indexOf('Year') === -1 ||
+            (this.parent.currentView === 'TimelineYear' && this.parent.activeViewOptions.orientation === 'Vertical'))
             && this.parent.activeViewOptions.allowVirtualScrolling
             && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.parent.virtualScrollModule = new VirtualScroll(this.parent);

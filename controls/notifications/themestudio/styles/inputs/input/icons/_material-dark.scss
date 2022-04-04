@@ -1,0 +1,49 @@
+@include export-module('input-material-icons') {
+  .e-float-input,
+  .e-float-input.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e932';
+      font-family: 'e-icons';
+    }
+  }
+
+  .e-input-group,
+  .e-input-group.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e932';
+      font-family: 'e-icons';
+    }
+  }
+
+  .e-filled.e-float-input,
+  .e-filled.e-float-input.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e208';
+      font-family: 'e-icons';
+    }
+  }
+
+  .e-filled.e-input-group,
+  .e-filled.e-input-group.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e208';
+      font-family: 'e-icons';
+    }
+  }
+
+  .e-outline.e-float-input,
+  .e-outline.e-float-input.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e208';
+      font-family: 'e-icons';
+    }
+  }
+
+  .e-outline.e-input-group,
+  .e-outline.e-input-group.e-control-wrapper {
+    .e-clear-icon::before {
+      content: '\e208';
+      font-family: 'e-icons';
+    }
+  }
+}

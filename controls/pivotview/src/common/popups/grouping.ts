@@ -184,7 +184,7 @@ export class Grouping implements IAction {
         if (this.isUpdate) {
             this.parent.setProperties({ dataSourceSettings: { groupSettings: groupFields } }, true);
             this.parent.updateGroupingReport(groupFields, (type === 'date' ? 'Date' : type === 'custom' ? 'Custom' : 'Number'));
-            this.parent.notify(events.initialLoad, {});
+            this.parent.initEngine();
         }
     }
 

@@ -745,7 +745,6 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * Triggers before the shared tooltip for series is rendered.
-     * This applicable for blazor only.
      *
      * @event sharedTooltipRender
      */

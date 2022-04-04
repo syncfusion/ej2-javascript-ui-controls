@@ -1516,22 +1516,6 @@ describe('ColorPicker', () => {
             expect(ele.children[0].classList.contains('e-palette')).toBeTruthy();
             expect(ele.children[0].children[0].getAttribute('role')).toBe('presentation');
         });
-        it('EJ2-53998- Value not updated properly if opacity is set to false ', () => {
-            colorPicker = new ColorPicker({ mode: 'Palette', showButtons: false, enableOpacity: false, value: '#ffffffff'}, '#color-picker');
-            expect(colorPicker.value).toEqual('#ffffff');
-            colorPicker.splitBtn.toggle();
-            target = colorPicker.container.querySelectorAll('.e-row')[0].children[1] as HTMLElement;
-            target.click();
-            expect(colorPicker.value).toEqual('#f44336');
-            colorPicker = new ColorPicker({ mode: 'Picker', showButtons: false, value: '#7B1FA2ff', enableOpacity: false }, '#color-picker');
-            colorPicker.splitBtn.toggle();
-            expect(colorPicker.value).toBe('#7b1fa2');
-            target = colorPicker.container.querySelector('.e-hsv-container') as HTMLElement;
-            setStyles(colorPicker.container);
-            triggerMouseEvent(target, 'mousedown', 70, 50);
-            expect(colorPicker.value).toBe('#eabaff');
-            triggerMouseEvent(target, 'mouseup');
-        });
     });
 
     it('memory leak', () => {

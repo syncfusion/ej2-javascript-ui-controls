@@ -382,16 +382,6 @@ export class SfdtExport {
         if (widget instanceof ParagraphWidget) {
             if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.blockContentControl(widget);
-                if (!isNullOrUndefined(this.nextBlock)) {
-                    if (widget.contentControlProperties === this.nextBlock.contentControlProperties) {
-                        this.isBlockClosed = false;
-                        return this.blocks = block.blocks;
-                    } else {
-                        this.isBlockClosed = true;
-                    }
-                } else {
-                    this.isBlockClosed = true;
-                }
                 if (!isNullOrUndefined(block) && this.isBlockClosed) {
                     blocks.push(block);
                     this.blocks = [];
@@ -408,7 +398,6 @@ export class SfdtExport {
                 let block: any = this.tableContentControl(tableWidget);
                 if (!isNullOrUndefined(block) && this.isBlockClosed) {
                     blocks.push(block);
-                    this.blocks = [];
                 }
                 return this.nextBlock;
             }
@@ -618,7 +607,11 @@ export class SfdtExport {
                 continue;
             }
             if (element instanceof FootnoteElementBox) {
-                inlines.push(this.writeInlinesFootNote(paragraph, element, line, inlines));
+                if (element.footnoteType === 'Endnote') {
+                    inlines.push(this.writeInlinesEndNote(paragraph, element, line, inlines));
+                } else {
+                    inlines.push(this.writeInlinesFootNote(paragraph, element, line, inlines));
+                }
                 continue;
             }
             if ((element instanceof ContentControl && !isNullOrUndefined(element.contentControlProperties) && element.contentControlProperties.type !== 'BuildingBlockGallery') || this.startContent || this.blockContent) {
@@ -1206,6 +1199,33 @@ export class SfdtExport {
         inline.customMarker = element.customMarker;
         return inline;
     }
+    private writeInlinesEndNote(paragraph: any, element: any, line: any, inlines: any): any {
+        let inline: any = {};
+        inline.footnoteType = element.footnoteType;
+        inline.characterFormat = {};
+        inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
+        inline.blocks = [];
+        let body: BodyWidget = element.bodyWidget as BodyWidget;
+        let isFirst: boolean = true;
+        do {
+            for (let i: number = 0; i < body.childWidgets.length; i++) {
+                if ((body.childWidgets[i] as BlockWidget).getPreviousSplitWidgets().length > 0) {
+                    continue;
+                }
+                this.writeBlock(body.childWidgets[i] as BlockWidget, 0, inline.blocks);
+            }
+            if (isFirst) {
+                isFirst = false;
+                body = ((line as LineWidget).children[(element as ElementBox).indexInOwner] as FootnoteElementBox).bodyWidget.nextRenderedWidget as BodyWidget;
+            } else {
+                body = body.nextRenderedWidget as BodyWidget;
+            }
+        } while (body && (body.firstChild as BlockWidget).index !== 0);
+        inline.symbolCode = element.symbolCode;
+        inline.symbolFontName = element.symbolFontName;
+        inline.customMarker = element.customMarker;
+        return inline;
+    }
     private writeInlinesContentControl(element: ElementBox, lineWidget: LineWidget, inlines: any, i: number): any {
         if (element instanceof ContentControl) {
             if (element.contentControlWidgetType === 'Block') {
@@ -1326,6 +1346,8 @@ export class SfdtExport {
         paragraphFormat.textAlignment = isInline ? format.textAlignment : format.getValue('textAlignment');
         paragraphFormat.beforeSpacing = isInline ? format.beforeSpacing : format.getValue('beforeSpacing');
         paragraphFormat.afterSpacing = isInline ? format.afterSpacing : format.getValue('afterSpacing');
+        paragraphFormat.spaceBeforeAuto = isInline ? format.spaceBeforeAuto : format.getValue('spaceBeforeAuto');
+        paragraphFormat.spaceAfterAuto = isInline ? format.spaceAfterAuto : format.getValue('spaceAfterAuto');
         paragraphFormat.lineSpacing = isInline ? format.lineSpacing : format.getValue('lineSpacing');
         paragraphFormat.lineSpacingType = isInline ? format.lineSpacingType : format.getValue('lineSpacingType');
         paragraphFormat.styleName = !isNullOrUndefined(format.baseStyle) ? format.baseStyle.name : undefined;
@@ -1393,8 +1415,19 @@ export class SfdtExport {
         return (next instanceof BlockWidget && next.containerWidget.index === tableWidget.containerWidget.index) ? next : undefined;
     }
     private writeRow(rowWidget: TableRowWidget, rows: any): boolean {
+        let next: TableRowWidget = rowWidget;
+        do {
+            rowWidget = next;
+            next = this.writeRowInternal(next, rows);
+            if (rowWidget === next) {
+                return true;
+            }
+        } while (next instanceof TableRowWidget)
+        return false;
+    }
+    private writeRowInternal(rowWidget: TableRowWidget, rows: any): TableRowWidget {
         if (!(rowWidget instanceof TableRowWidget)) {
-            return false;
+            return rowWidget;
         }
         let row: any = this.createRow(rowWidget);
         rows.push(row);
@@ -1405,7 +1438,7 @@ export class SfdtExport {
                     && (isNullOrUndefined(this.startColumnIndex) || widget.columnIndex >= this.startColumnIndex)
                     && (isNullOrUndefined(this.endColumnIndex) || widget.columnIndex < this.endColumnIndex)) {
                     if (this.writeCell(widget, row.cells)) {
-                        return true;
+                        return rowWidget;
                     }
                 }
             }
@@ -1420,7 +1453,7 @@ export class SfdtExport {
                 next = undefined;
             }
         } while (next instanceof TableRowWidget && next.index === rowWidget.index);
-        return this.writeRow(next, rows);
+        return next;
     }
     private writeCell(cellWidget: TableCellWidget, cells: any): boolean {
         let cell: any = this.createCell(cellWidget);

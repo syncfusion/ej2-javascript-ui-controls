@@ -1615,23 +1615,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      */
     private calculateDimensions(): void {
-        let settingsHeight: string;
-        if (typeof(this.height) !== 'number' && (this.height as any).indexOf('%') !== -1 && (this.element.parentElement &&
-            !this.element.parentElement.style.height || (this.element.parentElement.style.height as any).indexOf('%') !== -1)) {
-            let ganttHeight: number;
-            if ((this.element.parentElement.style.height as any).indexOf('%') == -1) {
-                ganttHeight = Number((this.height as any).split("%")[0]);
-            } else {
-                ganttHeight = Number((this.element.parentElement.style.height as any).split("%")[0]);
-            }
-            ganttHeight = (ganttHeight * window.innerHeight) / 100;
-            if (this.height === '100%') {
-                ganttHeight = ganttHeight - 16;
-            }
-            settingsHeight = this.validateDimentionValue(ganttHeight);
-            } else {
-                settingsHeight = this.validateDimentionValue(this.height);
-            }
+        let settingsHeight: string = this.validateDimentionValue(this.height);
         let settingsWidth: string = this.validateDimentionValue(this.width);
         if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
             settingsWidth = this.width;
@@ -1773,37 +1757,6 @@ export class Gantt extends Component<HTMLElement>
      */
     public windowResize(): void {
         if (!isNullOrUndefined(this.element)) {
-            let settingsHeight: string;
-            if ((this.height as any).indexOf('%') !== -1) {
-               let ganttHeight: number = Number((this.height as any).split("%")[0]);
-               if (this.element.parentElement && (this.element.parentElement.style.height)) {
-                    let containerHeight: number;
-                    if (this.element.parentElement.style.height.indexOf('%') == -1) {
-                        containerHeight = Number(this.element.parentElement.style.height.split("px")[0]);
-                        ganttHeight = (ganttHeight * containerHeight) / 100;
-                    } else {
-                        containerHeight = Number(this.element.parentElement.style.height.split("%")[0]);
-                        ganttHeight = (window.innerHeight * containerHeight) / 100;
-                    }
-               } else {
-                   ganttHeight = Number((this.height as any).split("%")[0]);
-                   ganttHeight = (ganttHeight * window.innerHeight) / 100;
-               }
-               if (this.height === '100%') {
-                    ganttHeight = ganttHeight - 16;
-               }
-               let toolbarHeight: number = 0;
-               if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
-                   toolbarHeight = this.toolbarModule.element.offsetHeight;
-               }
-               let contentHeight: number = ganttHeight - this.ganttChartModule.chartTimelineContainer.offsetHeight - toolbarHeight;
-               settingsHeight = this.validateDimentionValue(ganttHeight);
-               this.element.style.height = settingsHeight;
-               this.element.querySelectorAll('.e-content')[0]['style'].height = contentHeight + 'px';
-               this.element.querySelectorAll('.e-content')[2]['style'].height = contentHeight + 'px';
-            } else {
-                settingsHeight = this.validateDimentionValue(this.height);
-            }
             this.updateContentHeight();
             this.ganttChartModule.updateWidthAndHeight(); // Updating chart scroll conatiner height for row mismatch
             this.treeGridModule.ensureScrollBar();
@@ -2140,6 +2093,17 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public treeDataBound(args: object): void {
+        this.element.getElementsByClassName('e-chart-root-container')[0]['style'].height = '100%';
+        let gridHeight: string = this.element.getElementsByClassName('e-gridcontent')[0]['style'].height;
+        let timelineContainer: number = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
+        gridHeight = 'calc(100% - ' + timelineContainer + 'px)';
+        // eslint-disable-next-line
+        this.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+        if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
+            this.splitterElement.style.height = 'calc(100% - ' + this.toolbarModule.element.offsetHeight + 'px)';
+        } else {
+            this.splitterElement.style.height = '100%';
+        }
         if (this.isLoad) {
             this.updateCurrentViewData();
             if (!this.enableVirtualization) {
@@ -2158,8 +2122,7 @@ export class Gantt extends Component<HTMLElement>
                     removeClass(this.treeGrid.element.querySelectorAll('.e-headercell'), cls.timelineSingleHeaderOuterDiv);
                     removeClass(this.treeGrid.element.querySelectorAll('.e-columnheader'), cls.timelineSingleHeaderOuterDiv);
                 }
-                this.treeGrid.height = this.ganttHeight - toolbarHeight -
-                    (this.treeGrid.grid.getHeaderContent() as HTMLElement).offsetHeight;
+                this.treeGrid.height = '100%';
                 this.notify('tree-grid-created', {});
                 this.createGanttPopUpElement();
                 this.hideSpinner();
@@ -2668,7 +2631,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public updateGridLineContainerHeight(): void {
         if (this.chartVerticalLineContainer) {
-            this.chartVerticalLineContainer.style.height = formatUnit(this.getContentHeight());
+            this.chartVerticalLineContainer.style.height = formatUnit(this.contentHeight);
         }
     }
 

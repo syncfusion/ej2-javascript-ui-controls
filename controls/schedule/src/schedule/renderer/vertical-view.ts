@@ -397,7 +397,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             clsList.push(cls.VIRTUAL_SCROLL_CLASS);
         }
-        if (this.parent.eventSettings.ignoreWhitespace) {
+        if (this.parent.rowAutoHeight && this.parent.eventSettings.ignoreWhitespace) {
             clsList.push(cls.IGNORE_WHITESPACE);
         }
         this.renderPanel(type);

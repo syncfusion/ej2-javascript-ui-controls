@@ -34,7 +34,7 @@
           }
         }
 
-        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5-dark' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $sheet-skin == 'material-dark' or $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'FluentUI' {
           & .e-toolbar-item {
             border-right-color: $spreadsheet-border-color;
 
@@ -167,7 +167,7 @@
             }
           }
 
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
           color: $btn-flat-hover-color;
 
           & .e-icons,
@@ -204,7 +204,7 @@
         }
       }
 
-      @if $skin-name == 'bootstrap5' {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
         &.e-active,
         &:focus {
           color: $btn-flat-active-color;

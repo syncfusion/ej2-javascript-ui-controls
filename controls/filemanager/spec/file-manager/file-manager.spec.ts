@@ -12,6 +12,43 @@ import { FailureEventArgs } from '../../src';
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
 describe('FileManager control', () => {
+    describe('DOM element class based rendering', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+            Browser.userAgent = Chromebrowser;
+            feObj = undefined;
+            ele = createElement('div', { className: 'file-manager-control' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+        });
+        it('id testing for rendering without id', (done: Function) => {
+            feObj = new FileManager({
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo(document.querySelector('.file-manager-control') as HTMLElement);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                expect(document.getElementsByClassName('file-manager-control')[0].id != null).toEqual(true);
+                done();
+            }, 500);
+        });
+    });
     describe('DOM element', () => {
 
         let feObj: FileManager;

@@ -61,7 +61,7 @@ export class Paragraph {
         const element: string = this.documentEditor.element.id + '_font_properties';
         const paragraphDiv: HTMLElement = this.createDivElement(element + '_paragraph', wholeDiv, '');
         classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
-        const label: HTMLElement = createElement('label', { styles: 'width:26px;', className: 'e-de-ctnr-prop-label' });
+        const label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.innerHTML = this.localObj.getConstant('Paragraph');
         paragraphDiv.appendChild(label);
         const styleDiv: HTMLElement = this.createDivElement(element + '_styleDiv', paragraphDiv);
@@ -224,49 +224,49 @@ export class Paragraph {
     }
     private updateSelectedBulletListType(listText: string): void {
         switch (listText) {
-        case String.fromCharCode(61623):
-            this.dotBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61551) + String.fromCharCode(32):
-            this.circleBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61607):
-            this.squareBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61558):
-            this.flowerBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61656):
-            this.arrowBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61692):
-            this.tickBullet.classList.add('de-list-item-selected');
-            break;
-        default:
-            this.noneBulletTag.classList.add('de-list-item-selected');
-            break;
+            case String.fromCharCode(61623):
+                this.dotBullet.classList.add('de-list-item-selected');
+                break;
+            case String.fromCharCode(61551) + String.fromCharCode(32):
+                this.circleBullet.classList.add('de-list-item-selected');
+                break;
+            case String.fromCharCode(61607):
+                this.squareBullet.classList.add('de-list-item-selected');
+                break;
+            case String.fromCharCode(61558):
+                this.flowerBullet.classList.add('de-list-item-selected');
+                break;
+            case String.fromCharCode(61656):
+                this.arrowBullet.classList.add('de-list-item-selected');
+                break;
+            case String.fromCharCode(61692):
+                this.tickBullet.classList.add('de-list-item-selected');
+                break;
+            default:
+                this.noneBulletTag.classList.add('de-list-item-selected');
+                break;
         }
     }
     private updateSelectedNumberedListType(listText: string): void {
         switch (listText) {
-        case '1.':
-            this.numberList.classList.add('de-list-item-selected');
-            break;
-        case 'I.':
-            this.upRoman.classList.add('de-list-item-selected');
-            break;
-        case 'A.':
-            this.upLetter.classList.add('de-list-item-selected');
-            break;
-        case 'a.':
-            this.lowLetter.classList.add('de-list-item-selected');
-            break;
-        case 'i.':
-            this.lowRoman.classList.add('de-list-item-selected');
-            break;
-        default:
-            this.noneNumberTag.classList.add('de-list-item-selected');
-            break;
+            case '1.':
+                this.numberList.classList.add('de-list-item-selected');
+                break;
+            case 'I.':
+                this.upRoman.classList.add('de-list-item-selected');
+                break;
+            case 'A.':
+                this.upLetter.classList.add('de-list-item-selected');
+                break;
+            case 'a.':
+                this.lowLetter.classList.add('de-list-item-selected');
+                break;
+            case 'i.':
+                this.lowRoman.classList.add('de-list-item-selected');
+                break;
+            default:
+                this.noneNumberTag.classList.add('de-list-item-selected');
+                break;
         }
     }
     private removeSelectedList(): void {
@@ -287,23 +287,26 @@ export class Paragraph {
         this.tickBullet.classList.remove(className);
 
     }
-    private applyLastAppliedNumbering(): void {
+    /** 
+     * @private
+     */
+    public applyLastAppliedNumbering(): void {
         switch (this.appliedNumberingStyle) {
-        case 'arabic': this.numberedNumberDotClick(); break;
-        case 'lowletter': this.numberedLowLetterClick(); break;
-        case 'upletter': this.numberedUpLetterClick(); break;
-        case 'lowroman': this.numberedLowRomanClick(); break;
-        case 'uproman': this.numberedUpRomanClick(); break;
+            case 'arabic': this.numberedNumberDotClick(); break;
+            case 'lowletter': this.numberedLowLetterClick(); break;
+            case 'upletter': this.numberedUpLetterClick(); break;
+            case 'lowroman': this.numberedLowRomanClick(); break;
+            case 'uproman': this.numberedUpRomanClick(); break;
         }
     }
     private applyLastAppliedBullet(): void {
         switch (this.appliedBulletStyle) {
-        case 'dot': this.bulletDotClick(); break;
-        case 'circle': this.bulletCircleClick(); break;
-        case 'square': this.bulletSquareClick(); break;
-        case 'arrow': this.bulletArrowClick(); break;
-        case 'tick': this.bulletTickClick(); break;
-        case 'flower': this.bulletFlowerClick(); break;
+            case 'dot': this.bulletDotClick(); break;
+            case 'circle': this.bulletCircleClick(); break;
+            case 'square': this.bulletSquareClick(); break;
+            case 'arrow': this.bulletArrowClick(); break;
+            case 'tick': this.bulletTickClick(); break;
+            case 'flower': this.bulletFlowerClick(); break;
         }
     }
     private createBulletListDropButton(iconcss: string, button: HTMLElement): void {
@@ -313,19 +316,19 @@ export class Paragraph {
             className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
         });
         div.appendChild(ulTag);
-        this.noneBulletTag = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-none e-icons e-de-ctnr-list');
+        this.noneBulletTag = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-none e-icons e-de-ctnr-list', true);
         this.noneBulletTag.addEventListener('click', this.numberedNoneClick.bind(this));
-        this.dotBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-dot e-icons e-de-ctnr-list');
+        this.dotBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-dot e-icons e-de-ctnr-list', false);
         this.dotBullet.addEventListener('click', this.bulletDotClick.bind(this));
-        this.circleBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-circle e-icons e-de-ctnr-list');
+        this.circleBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-circle e-icons e-de-ctnr-list', false);
         this.circleBullet.addEventListener('click', this.bulletCircleClick.bind(this));
-        this.squareBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-square e-icons e-de-ctnr-list');
+        this.squareBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-square e-icons e-de-ctnr-list', false);
         this.squareBullet.addEventListener('click', this.bulletSquareClick.bind(this));
-        this.flowerBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-flower e-icons e-de-ctnr-list');
+        this.flowerBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-flower e-icons e-de-ctnr-list', false);
         this.flowerBullet.addEventListener('click', this.bulletFlowerClick.bind(this));
-        this.arrowBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-arrow e-icons e-de-ctnr-list');
+        this.arrowBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-arrow e-icons e-de-ctnr-list', false);
         this.arrowBullet.addEventListener('click', this.bulletArrowClick.bind(this));
-        this.tickBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-tick e-icons e-de-ctnr-list');
+        this.tickBullet = this.createBulletListTag(ulTag, 'e-de-ctnr-bullet-tick e-icons e-de-ctnr-list', false);
         this.tickBullet.addEventListener('click', this.bulletTickClick.bind(this));
         const menuOptions: SplitButtonModel = {
             target: div,
@@ -357,7 +360,7 @@ export class Paragraph {
         innerHTML += '</span></div><div>' + text3 + '<span class="e-de-list-line"> </span></div >';
         const liInnerDiv: HTMLElement = createElement('div', {
             className: 'e-de-list-header-presetmenu',
-            id: 'ui-zlist0', innerHTML: innerHTML
+            innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
         return liTag;
@@ -368,25 +371,29 @@ export class Paragraph {
             className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
         });
         ulTag.appendChild(liTag);
-        const innerHTML: string = '<div><span class="e-de-bullets">None</span></div>';
+        const innerHTML: string = '<div><span class="e-de-bullets">' + this.localObj.getConstant('None') + '</span></div>';
         const liInnerDiv: HTMLElement = createElement('div', {
             className: 'e-de-list-header-presetmenu', styles: 'position:relative;left:11px;top:13px',
-            id: 'ui-zlist0', innerHTML: innerHTML
+            innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
-    private createBulletListTag(ulTag: HTMLElement, iconCss: string): HTMLElement {
+    private createBulletListTag(ulTag: HTMLElement, iconCss: string, isNone: boolean): HTMLElement {
         const liTag: HTMLElement = createElement('li', {
             styles: 'display:block;',
             className: 'e-de-floating-menuitem e-de-floating-bullet-menuitem-md e-de-list-items  e-de-list-item-size'
         });
         ulTag.appendChild(liTag);
-        const liInnerDiv: HTMLElement = createElement('div', { className: 'e-de-bullet-list-header-presetmenu', id: 'ui-zlist0' });
-        const spanDiv: HTMLElement = createElement('div');
+        const liInnerDiv: HTMLElement = createElement('div', { className: 'e-de-bullet-list-header-presetmenu' });
+        const spanDiv: HTMLElement = createElement('div', { styles: isNone ? 'font-size:8px;text-align: center;top: 8px;line-height:normal' : '' });
         liInnerDiv.appendChild(spanDiv);
-        const span: HTMLElement = createElement('span', { className: iconCss });
+        const span: HTMLSpanElement = createElement('span', { className: !isNone ? iconCss : '' });
         spanDiv.appendChild(span);
+        if (isNone) {
+            liInnerDiv.style.display = 'inline-table';
+            span.textContent = this.localObj.getConstant('None');
+        }
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
@@ -445,12 +452,12 @@ export class Paragraph {
         if (!isNullOrUndefined(styleObj.characterFormat.baselineAlignment) && styleObj.characterFormat.baselineAlignment !== 'Normal') {
             let vAlign: string = '';
             switch (styleObj.characterFormat.baselineAlignment) {
-            case 'Superscript':
-                vAlign = 'super';
-                break;
-            case 'Subscript':
-                vAlign = 'sub';
-                break;
+                case 'Superscript':
+                    vAlign = 'super';
+                    break;
+                case 'Subscript':
+                    vAlign = 'sub';
+                    break;
             }
             if (vAlign.length > 1) {
                 domStyle += 'vertical-align:' + vAlign + ';';
@@ -529,18 +536,18 @@ export class Paragraph {
         }
         const text: string = args.item.text;
         switch (text) {
-        case this.localObj.getConstant('Single'):
-            this.documentEditor.selection.paragraphFormat.lineSpacing = 1;
-            break;
-        case '1.15':
-            this.documentEditor.selection.paragraphFormat.lineSpacing = 1.15;
-            break;
-        case '1.5':
-            this.documentEditor.selection.paragraphFormat.lineSpacing = 1.5;
-            break;
-        case this.localObj.getConstant('Double'):
-            this.documentEditor.selection.paragraphFormat.lineSpacing = 2;
-            break;
+            case this.localObj.getConstant('Single'):
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 1;
+                break;
+            case '1.15':
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 1.15;
+                break;
+            case '1.5':
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 1.5;
+                break;
+            case this.localObj.getConstant('Double'):
+                this.documentEditor.selection.paragraphFormat.lineSpacing = 2;
+                break;
         }
         setTimeout((): void => {
             this.documentEditor.focusIn();
@@ -570,8 +577,7 @@ export class Paragraph {
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            if (this.localObj.getConstant('Heading 1') === args.itemData.StyleName)
-            {
+            if (this.localObj.getConstant('Heading 1') === args.itemData.StyleName) {
                 args.itemData.StyleName = 'Heading 1';
             } else if (this.localObj.getConstant('Heading 2') === args.itemData.StyleName) {
                 args.itemData.StyleName = 'Heading 2';
@@ -648,7 +654,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedNumberingStyle = 'arabic';
-            this.documentEditor.editor.applyNumbering('%1.', 'Arabic');
+            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'Arabic');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -660,7 +666,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedNumberingStyle = 'uproman';
-            this.documentEditor.editor.applyNumbering('%1.', 'UpRoman');
+            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'UpRoman');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -672,7 +678,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedNumberingStyle = 'upletter';
-            this.documentEditor.editor.applyNumbering('%1.', 'UpLetter');
+            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'UpLetter');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -684,7 +690,7 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedNumberingStyle = 'lowletter';
-            this.documentEditor.editor.applyNumbering('%1.', 'LowLetter');
+            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'LowLetter');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -696,11 +702,16 @@ export class Paragraph {
         }
         if (this.documentEditor.editor) {
             this.appliedNumberingStyle = 'lowroman';
-            this.documentEditor.editor.applyNumbering('%1.', 'LowRoman');
+            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'LowRoman');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
         }
+    }
+    private getLevelFormatNumber(): string {
+        let numberFormat: string = '%';
+        numberFormat = numberFormat + (((this.documentEditor.selection.paragraphFormat.listLevelNumber <= 0) ? 0 : this.documentEditor.selection.paragraphFormat.listLevelNumber) + 1) + '.';
+        return numberFormat;
     }
     private bulletDotClick(): void {
         if (this.isRetrieving) {
@@ -780,7 +791,8 @@ export class Paragraph {
             //#region paragraph format
             const style: string = this.documentEditor.selection.paragraphFormat.styleName;
             if (style) {
-                this.style.value = style;
+                let localeValue: string = this.localObj.getConstant(style);
+                this.style.value = (isNullOrUndefined(localeValue) || localeValue == '') ? style : localeValue;
                 this.style.dataBind();
             } else {
                 this.style.value = null;

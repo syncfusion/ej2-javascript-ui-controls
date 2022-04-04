@@ -11,6 +11,7 @@ $splitpane-font-family: $font-family !default;
 $splitpane-font-color: rgba($grey-light-font, .87) !default;
 $splitbar-border-color: $grey-300 !default;
 $splitbar-hover-border-color: $accent !default;
+$resize-icon-hover-color: $splitbar-hover-border-color !default;
 $splitbar-icon-color: rgba($grey-light-font, .54) !default;
 $splitbar-icon-size: 14px !default;
 $collapse-icon-bg-color: $grey-white !default;

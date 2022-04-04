@@ -5,8 +5,9 @@
   #{if(&, '&', '*')}.e-control-wrapper.e-time-wrapper {
 
     #{if(&, '&', '*')} .e-time-icon.e-icons::before {
-      content: '\e730';
+      content: '\e705';
     }
 
   }
 }
+

@@ -3,7 +3,7 @@ import { RadioButton, ChangeArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper, ElementBox } from '../viewer';
 import { FieldElementBox, CheckBoxFormField } from '../viewer/page';
-import { NumericTextBox } from '@syncfusion/ej2-inputs';
+import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 
 /**
  * Form field checkbox dialog is used to modify the value in checkbox form field.
@@ -15,8 +15,8 @@ export class CheckBoxFormFieldDialog {
     private exactButton: RadioButton;
     private notCheckedButton: RadioButton;
     private checkedButton: RadioButton;
-    private bookmarkInputText: HTMLElement;
-    private tooltipInputText: HTMLElement;
+    private bookmarkInputText: HTMLInputElement;
+    private tooltipInputText: HTMLInputElement;
     private checBoxEnableElement: CheckBox;
     private exactlyNumber: NumericTextBox;
     private exactNumberDiv: HTMLElement;
@@ -47,9 +47,10 @@ export class CheckBoxFormFieldDialog {
         this.target = createElement('div');
         let dialogDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         let headingLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading',
+            className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Check box size')
         });
+        let sizeParentDiv: HTMLElement = createElement('div', {className: 'e-de-container-row'}) as HTMLDivElement;
         let autoDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
         let exactDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-scnd-div' }) as HTMLDivElement;
         let autoEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div' });
@@ -69,9 +70,10 @@ export class CheckBoxFormFieldDialog {
             enableRtl: isRtl
         });
         let defaultValueLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading',
+            className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Default value')
         });
+        let defaultcheckDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
         let notcheckDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
         let checkDiv: HTMLElement = createElement('div', { className: 'e-de-ff-radio-div' }) as HTMLDivElement;
         let notcheckEle: HTMLElement = createElement('input', { className: 'e-de-rtl-btn-div' });
@@ -84,21 +86,15 @@ export class CheckBoxFormFieldDialog {
             change: this.changeBidirect, checked: true
         });
         let fieldSettingsLabel: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading',
+            className: 'e-de-para-dlg-heading',
             innerHTML: localValue.getConstant('Field settings')
         });
-        let settingsTotalDiv: HTMLElement = createElement('div', { className: 'e-de-div-seperate-dlg' });
-        let totalToolTipDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
-        let totalBookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
-        let toolTipLabelHeading: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Tooltip')
-        });
+        let settingsTotalDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        let totalToolTipDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        let totalBookmarkDiv: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+
         this.tooltipInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
-        let bookmarkLabelHeading: HTMLElement = createElement('div', {
-            className: 'e-de-ff-dlg-heading-small',
-            innerHTML: localValue.getConstant('Name')
-        });
+
         this.bookmarkInputText = createElement('input', { className: 'e-input e-bookmark-textbox-input' }) as HTMLInputElement;
         let checkBoxEnableDiv: HTMLElement = createElement('div');
         let checBoxEnableEle: HTMLInputElement = createElement('input', { attrs: { type: 'checkbox' } }) as HTMLInputElement;
@@ -120,18 +116,20 @@ export class CheckBoxFormFieldDialog {
         this.target.appendChild(dialogDiv);
 
         dialogDiv.appendChild(defaultValueLabel);
-        dialogDiv.appendChild(notcheckDiv);
+        dialogDiv.appendChild(defaultcheckDiv);
+        defaultcheckDiv.appendChild(notcheckDiv);
         notcheckDiv.appendChild(notcheckEle);
         this.notCheckedButton.appendTo(notcheckEle);
-        dialogDiv.appendChild(checkDiv);
+        defaultcheckDiv.appendChild(checkDiv);
         checkDiv.appendChild(checkEle);
         this.checkedButton.appendTo(checkEle);
 
         dialogDiv.appendChild(headingLabel);
-        dialogDiv.appendChild(autoDiv);
+        dialogDiv.appendChild(sizeParentDiv);
+        sizeParentDiv.appendChild(autoDiv);
         autoDiv.appendChild(autoEle);
         this.autoButton.appendTo(autoEle);
-        dialogDiv.appendChild(exactDiv);
+        sizeParentDiv.appendChild(exactDiv);
         exactDiv.appendChild(exactEle);
         this.exactButton.appendTo(exactEle);
         exactDiv.appendChild(this.exactNumberDiv);
@@ -145,16 +143,16 @@ export class CheckBoxFormFieldDialog {
         settingsTotalDiv.appendChild(totalToolTipDiv);
         settingsTotalDiv.appendChild(totalBookmarkDiv);
 
-        totalToolTipDiv.appendChild(toolTipLabelHeading);
         totalToolTipDiv.appendChild(this.tooltipInputText);
 
-        totalBookmarkDiv.appendChild(bookmarkLabelHeading);
         totalBookmarkDiv.appendChild(this.bookmarkInputText);
 
         dialogDiv.appendChild(checkBoxEnableDiv);
         checkBoxEnableDiv.appendChild(checBoxEnableEle);
         this.checBoxEnableElement.appendTo(checBoxEnableEle);
-
+        
+        new TextBox({placeholder: localValue.getConstant('Tooltip'), floatLabelType: 'Always'}, this.tooltipInputText);
+        new TextBox({placeholder: localValue.getConstant('Name'), floatLabelType: 'Always'}, this.bookmarkInputText);
     }
     /**
      * @private

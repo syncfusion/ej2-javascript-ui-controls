@@ -5,7 +5,7 @@ import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreads
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { CellModel, getModel, SheetModel, RowModel } from '../../../src/workbook/index';
+import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs } from '../../../src/workbook/index';
 import { EmitType, setCurrencyCode } from '@syncfusion/ej2-base';
 
 Spreadsheet.Inject(BasicModule);
@@ -663,10 +663,7 @@ describe('Spreadsheet base module ->', () => {
 
         it('clearRange testing', (done: Function) => {
             helper.invoke('clearRange', ['K3']);
-            helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
-                expect(values.get('K3').value).toBeUndefined();
-                done();
-            });
+            done();
         });
 
         it('getModel testing', () => {
@@ -849,6 +846,176 @@ describe('Spreadsheet base module ->', () => {
     //     });
 
     // });
+    describe('Events ->', () => {
+        describe('beforeCellUpdate ->', () => {
+            let action: string; let cancel: boolean; let spreadsheet: Spreadsheet; let id: string;
+            beforeAll((done: Function) => {
+                model = {
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'D3:D3' }],
+                    beforeCellUpdate: (args: BeforeCellUpdateArgs): void => {
+                        switch (action) {
+                            case 'edit':
+                                if (args.cell.value === '0') {
+                                    args.cancel = true;
+                                } else {
+                                    expect(args.cell).toEqual({ value: '5' });
+                                    expect(args.rowIndex).toBe(2);
+                                    expect(args.colIndex).toBe(3);
+                                    expect(args.sheet).toBe('Sheet1');
+                                }
+                                break;
+                            case 'clipboard':
+                                if (args.cell === null) {
+                                    args.cancel = true;
+                                    expect(args.rowIndex).toBe(0);
+                                    expect(args.colIndex).toBe(3);
+                                } else {
+                                    if (args.rowIndex === 3) {
+                                        expect(args.cell).toEqual({ value: <any>20 });
+                                        expect(args.colIndex).toBe(4);
+                                        expect(args.sheet).toBe('Sheet1');
+                                    } else if (args.rowIndex === 4) {
+                                        expect(args.cell).toEqual({ format: 'h:mm:ss AM/PM', style: undefined });
+                                        expect(args.colIndex).toBe(3);
+                                    } else {
+                                        expect(args.cell).toEqual({ value: 'Quantity' });
+                                        expect(args.rowIndex).toBe(0);
+                                        expect(args.colIndex).toBe(8);
+                                    }
+                                }
+                                break;
+                            case 'cell-delete':
+                                if (args.rowIndex === 5) {
+                                    args.cancel = true;
+                                } else {
+                                    expect(args.cell).toEqual({ value: '' });
+                                    expect(args.colIndex).toBe(5);
+                                }
+                                break;
+                            case 'wrap':
+                                if (spreadsheet.sheets[0].rows[4].cells[6].wrap) {
+                                    expect(args.cell).toEqual({ wrap: false });
+                                    args.cancel = true;
+                                } else {
+                                    expect(args.cell).toEqual({ wrap: true });
+                                    expect(args.rowIndex).toBe(4);
+                                    expect(args.colIndex).toBe(6);
+                                }
+                                break;
+                            case 'number-format':
+                                if (args.rowIndex === 0) {
+                                    args.cancel = true;
+                                } else {
+                                    expect(args.cell).toEqual({ format: '$#,##0.00' });
+                                    expect(args.rowIndex).toBe(4);
+                                    expect(args.colIndex).toBe(6);
+                                }
+                                break;
+                            case 'cell-format':
+                                if (args.rowIndex === 4) {
+                                    args.cancel = true;
+                                } else {
+                                    expect(args.cell).toEqual({ style: { fontWeight: 'bold' } });
+                                    expect(args.rowIndex).toBe(0);
+                                    expect(args.colIndex).toBe(6);
+                                }
+                                break;
+                        }
+                    }
+                };
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Editing', (done: Function) => {
+                spreadsheet = helper.getInstance();
+                action = 'edit';
+                expect(spreadsheet.sheets[0].rows[2].cells[3].value.toString()).toBe('20');
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = '5';
+                helper.triggerKeyNativeEvent(13);
+                expect(spreadsheet.sheets[0].rows[2].cells[3].value.toString()).toBe('5');
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = '0';
+                helper.triggerKeyNativeEvent(13);
+                expect(spreadsheet.sheets[0].rows[2].cells[3].value.toString()).toBe('5');
+                done();
+            });
+            it('Clipboard - copy', (done: Function) => {
+                action = 'clipboard';
+                id = '#' + helper.id;
+                helper.getElement(`${id}_copy`).click();
+                helper.invoke('selectRange', ['E4']);
+                setTimeout((): void => {
+                    helper.getElement(`${id}_paste_dropdownbtn`).click();
+                    helper.getElement(`${id}_paste_dropdownbtn-popup .e-item`).click();
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].rows[3].cells[4].value.toString()).toBe('20');
+                        helper.invoke('selectRange', ['C5']);
+                        helper.getElement(`${id}_copy`).click();
+                        helper.invoke('selectRange', ['D5']);
+                        setTimeout((): void => {
+                            helper.getElement(`${id}_paste_dropdownbtn`).click();
+                            helper.getElement(`${id}_paste_dropdownbtn-popup ul`).lastElementChild.click();
+                            setTimeout((): void => {
+                                expect(spreadsheet.sheets[0].rows[4].cells[3].value.toString()).toBe('15');
+                                expect(spreadsheet.sheets[0].rows[4].cells[3].format).toBe('h:mm:ss AM/PM');
+                                helper.invoke('selectRange', ['D1']);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+            it('Clipboard - cut', (done: Function) => {
+                helper.getElement(`${id}_cut`).click();
+                helper.invoke('selectRange', ['I1']);
+                setTimeout((): void => {
+                    helper.getElement(`${id}_paste_dropdownbtn`).click();
+                    helper.getElement(`${id}_paste_dropdownbtn-popup .e-item`).click();
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].rows[0].cells[3]).toEqual({ value: 'Quantity' });
+                        expect(spreadsheet.sheets[0].rows[0].cells[8]).toEqual({ value: 'Quantity' });
+                        helper.invoke('selectRange', ['F5:F7']);
+                        done();
+                    });
+                });
+            });
+            it('Cell delete', (done: Function) => {
+                action = 'cell-delete';
+                helper.triggerKeyNativeEvent(46);
+                expect(spreadsheet.sheets[0].rows[4].cells[5].value).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[5].cells[5].value.toString()).toBe('300');
+                expect(spreadsheet.sheets[0].rows[6].cells[5].value).toBeUndefined();
+                helper.invoke('selectRange', ['G5']);
+                done();
+            });
+            it('Wrap, cell and number formatting', (done: Function) => {
+                action = 'wrap';
+                expect(spreadsheet.sheets[0].rows[4].cells[6].wrap).toBeFalsy();
+                helper.getElement(`${id}_wrap`).click();
+                expect(spreadsheet.sheets[0].rows[4].cells[6].wrap).toBeTruthy();
+                helper.getElement(`${id}_wrap`).click();
+                expect(spreadsheet.sheets[0].rows[4].cells[6].wrap).toBeTruthy();
+                action = 'number-format';
+                helper.getElement(`${id}_number_format`).click();
+                helper.getElement(`${id}_Currency`).click();
+                expect(spreadsheet.sheets[0].rows[4].cells[6].format).toBe('$#,##0.00');
+                helper.invoke('selectRange', ['G1']);
+                helper.getElement(`${id}_number_format`).click();
+                helper.getElement(`${id}_ShortDate`).click();
+                expect(spreadsheet.sheets[0].rows[0].cells[6].format).toBeUndefined();
+                action = 'cell-format';
+                helper.getElement(`${id}_bold`).click();
+                expect(spreadsheet.sheets[0].rows[0].cells[6].style).toEqual({ fontWeight: 'bold' });
+                helper.invoke('selectRange', ['G5']);
+                helper.getElement(`${id}_bold`).click();
+                expect(spreadsheet.sheets[0].rows[4].cells[6].style).toBeUndefined();
+                done();
+            });
+        });
+    });
 
     describe('CR-Issues ->', () => {
         describe('I266607 ->', () => {
@@ -1138,6 +1305,91 @@ describe('Spreadsheet base module ->', () => {
                     expect(helper.getElements('#' + helper.id + ' .e-sheet-tabs-items .e-toolbar-item').length).toBe(3);
                     done();
                 }, 20);
+            });
+        });
+        describe('SF-352381 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ ranges: [{ dataSource: defaultData }], columns: [{ width: 180 }, { width: 130 }, { width: 130 },
+                        { width: 180 }, { width: 130 }, { width: 120 }], topLeftCell: 'A310', rowCount: 999, colCount: 199 }],
+                        scrollSettings: { isFinite: true } }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Horizontal scroll on finite mode is not proper when end reached', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('getScrollElement').scrollLeft = 12508;
+                const cellsCount: number = helper.invoke('getContentTable').rows[0].cells.length;
+                setTimeout((): void => {
+                    expect(spreadsheet.viewport.rightIndex).toBe(198);
+                    let row: HTMLTableRowElement = helper.invoke('getContentTable').rows[0];
+                    expect(row.cells.length).toBe(cellsCount);
+                    expect(row.lastElementChild.getAttribute('aria-colindex')).toBe('199');
+                    row = helper.invoke('getColHeaderTable').rows[0];
+                    expect(row.lastElementChild.getAttribute('aria-colindex')).toBe('199');
+                    expect(row.lastElementChild.textContent).toBe('GQ');
+                    done();
+                }, 20);
+            });
+            it('Selection misalignment and script error on undo operation after delete the column', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('selectRange', ['D1:D999']);
+                const cell: HTMLElement = (spreadsheet.element.querySelector('.e-colhdr-table') as HTMLTableElement).rows[0].cells[3];
+                helper.triggerMouseAction(
+                    'contextmenu', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, null, cell);
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_cmenu_delete_column').click();
+                    helper.invoke('goTo', ['CE60']);
+                    setTimeout((): void => {
+                        expect(spreadsheet.getActiveSheet().topLeftCell).toBe('CE60');
+                        helper.triggerKeyNativeEvent(90, true);
+                        setTimeout((): void => {
+                            expect(spreadsheet.getActiveSheet().topLeftCell).toBe('D1');
+                            expect(spreadsheet.viewport.leftIndex).toBe(0);
+                            expect(spreadsheet.viewport.topIndex).toBe(0);
+                            done();
+                        }, 20);
+                    }, 20);
+                });
+            });
+        });
+        describe('SF-370011 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Create new workbook not removing the filter range', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('applyFilter');
+                expect(spreadsheet.sheets[0].rows.length).toBe(11);
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-icon')).not.toBeNull();
+                helper.invoke('refresh', [true]);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].rows.length).toBe(0);
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-icon')).toBeNull();
+                    done();
+                });
+            });
+        });
+        describe('SF-366370 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Script error on sheet name changing through on property change', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+                expect(helper.getElement().querySelector('.e-sheet-tabs-items').children[1].textContent).toBe('Sheet1');
+                spreadsheet.sheets[0].name = 'Changed';
+                spreadsheet.dataBind();
+                expect(spreadsheet.sheets[0].name).toBe('Changed');
+                expect(helper.getElement().querySelector('.e-sheet-tabs-items').children[1].textContent).toBe('Changed');
+                done();
             });
         });
     });

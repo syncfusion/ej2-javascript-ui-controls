@@ -2596,5 +2596,42 @@ describe('MultiSelect', () => {
             }
         });
     });
-
+    describe('EJ2-56142', () => {
+        let mulObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: { [key: string]: Object }[] =  [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' },
+            { Id: 'Game6', Game: 'Golf' },
+            { Id: 'Game7', Game: 'Hockey' },
+            { Id: 'Game8', Game: 'Rugby' },
+            { Id: 'Game9', Game: 'Snooker' },
+            { Id: 'Game10', Game: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('The Multiselect component popup does not open while changing popupHeight dynamically in beforeOpen', () => {
+            mulObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Id' },
+                beforeOpen: function(){
+                    mulObj.popupHeight = '20px';
+                }
+            });
+            mulObj.appendTo(element);
+            mulObj.showPopup();
+            expect((<any>mulObj).isPopupOpen()).toBe(true);
+            expect(document.body.contains((<any>mulObj).popupObj.element)).toBe(true);
+        });
+    });
 });

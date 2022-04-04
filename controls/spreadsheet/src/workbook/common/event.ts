@@ -16,6 +16,8 @@ export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';
 /** @hidden */
+export const beginAction: string = 'actionBegin';
+/** @hidden */
 export const sortImport: string = 'sortImport';
 /** @hidden */
 export const ribbonFind: string = 'ribbonFind';
@@ -74,8 +76,6 @@ export const reApplyFormula: string = 'reApplyFormula';
 /** @hidden */
 export const clearFormulaDependentCells: string = 'clearFormulaDependentCells';
 /** @hidden */
-export const getFormulaInfoTable: string = 'getFormulaInfoTable';
-/** @hidden */
 export const formulaInValidation: string = 'formulaInValidation';
 /** @hidden */
 export const beforeSort: string = 'beforeSort';
@@ -124,7 +124,7 @@ export const deleteModel: string = 'deleteModel';
 /** @hidden */
 export const isValidation: string = 'isValidation';
 /** @hidden */
-export const setValidation: string = 'setValidation';
+export const cellValidation: string = 'cellValidation';
 /** @hidden */
 export const addHighlight: string = 'addHighlight';
 /** @hidden */
@@ -146,8 +146,6 @@ export const replaceAllHandler: string = 'replaceAll';
 export const showDialog: string = 'ShowDialog';
 /** @hidden */
 export const findKeyUp: string = 'findKeyUp';
-/** @hidden */
-export const removeValidation: string = 'removeValidation';
 /** @hidden */
 export const removeHighlight: string = 'removeHighlight';
 /** @hidden */
@@ -197,8 +195,6 @@ export const initiateClearCFRule: string = 'initiateClearCFRule';
 /** @hidden */
 export const cFRender: string = 'cFRender';
 /** @hidden */
-export const cFDelete: string = 'cFDelete';
-/** @hidden */
 export const clear: string = 'clear';
 /** @hidden */
 export const clearCF: string = 'clearCF';
@@ -228,8 +224,6 @@ export const focusChartBorder: string = 'focusChartBorder';
 export const saveError: string = 'saveError';
 /** @hidden */
 export const validationHighlight: string = 'validationHighlight';
-/** @hidden */
-export const dataRefresh: string = 'dataRefresh';
 /** @hidden */
 export const updateFilter: string = 'updateFilter';
 /** @hidden */
@@ -265,6 +259,10 @@ export const selectionComplete: string = 'selectionComplete';
 /** @hidden */
 export const refreshInsertDelete: string = 'refreshInsertDelete';
 /** @hidden */
+export const getUpdatedFormulaOnInsertDelete: string = 'getUpdatedFormulaOnInsertDelete';
+/** @hidden */
 export const checkConditionalFormat: string = 'checkConditionalFormat';
 /** @hidden */
-export const checkHiddenRows: string = 'checkHiddenRows';
+export const beforeCellUpdate: string = 'beforeCellUpdate';
+/** @hidden */
+export const duplicateSheetFilterHandler: string = 'duplicateSheetFilterHandler';

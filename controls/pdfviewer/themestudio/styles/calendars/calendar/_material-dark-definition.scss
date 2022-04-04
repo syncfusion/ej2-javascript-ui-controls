@@ -8,6 +8,7 @@ $calendar-bg-color: $grey-dark !default;
 $calendar-active-font-color: $accent-font !default;
 $calendar-active-bg-color: $accent !default;
 $calendar-active-bg-border-color: 1px solid $accent !default;
+$calendar-active-bg-box-shadow: none !default;
 $calendar-hover-color: rgba($grey-white, .1) !default;
 $calendar-header-font-color: $grey-dark-font !default;
 $calendar-header-icon-color: rgba($grey-dark-font, .7) !default;
@@ -94,6 +95,7 @@ $calendar-yeardecade-padding: 10px !default;
 $calendar-focused-date-bg-style: rgba($grey-white, .1) !default;
 $calendar-focused-today-bg-style: rgba($grey-white, .1) !default;
 $calendar-focused-today-border-style: 1px solid $accent !default;
+$calendar-focused-today-box-shadow: none !default;
 $calendar-yeardecade-header-padding: 10px 10px 0 10px !default;
 $calendar-week-header-bg-style: none !default;
 $calendar-today-bg-style: none !default;
@@ -125,6 +127,8 @@ $calendar-today-focus-color: $calendar-active-bg-color !default;
 $calendar-bigger-month-view-padding: 2px !default;
 $calendar-bigger-week-header-font-size: 14px !default;
 $calendar-today-border-color: 1px solid $accent !default;
+$calendar-today-box-shadow: none !default;
+$calendar-focus-box-shadow: none !default;
 $calendar-focus-border-color: none !default;
 $calendar-hover-border-color: none !default;
 $calendar-normal-month-view-width: $calendar-normal-month-view-height !default;
@@ -150,6 +154,8 @@ $calendar-bigger-icon-padding: 15px !default;
 $calendar-bigger-icon-margin: 0 !default;
 $calendar-selected-box-shadow: inset 0 0 0 2px rgba($grey-800, .7) !default;
 $calendar-selected-border-color: none !default;
+$calendar-week-number-font-weight: 500 !default;
+
 //enddefault
 //today
 $calendar-footer-container-padding: 0 10px 10px 10px !default;
@@ -162,6 +168,9 @@ $calendar-today-disabled-border-style: transparent !default;
 $calendar-today-disabled-box-shadow: none !default;
 $calendar-today-disabled-color: rgba($grey-white, .3) !default;
 //endtoday
+
+//table related styles
+$calendar-rtl-text-indent: 4px !default;
 
 // small size
 $calendar-small-icon-size: 28px !default;

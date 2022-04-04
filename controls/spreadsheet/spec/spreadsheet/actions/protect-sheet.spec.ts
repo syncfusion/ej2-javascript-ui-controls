@@ -2,6 +2,7 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { Spreadsheet, dialog as dlg, DialogBeforeOpenEventArgs, BeforeSelectEventArgs, getRangeIndexes, getCell, CellModel } from '../../../src/index';
 import { SheetModel } from '../../../src/index';
+import { ListView, SelectedCollection } from '@syncfusion/ej2-lists';
 import { Dialog, Overlay } from '../../../src/spreadsheet/services/index';
 
 describe('Protect sheet ->', () => {
@@ -304,6 +305,113 @@ describe('Protect sheet ->', () => {
                     expect(spreadsheet.sheets[0].rows[2].cells[3].value).toBe('LOCKED');
                     expect(spreadsheet.sheets[0].rows[2].cells[3].isLocked).toBeFalsy();
                     (helper.getInstance().serviceLocator.getService('shape') as Overlay).destroy();// Need to remove once destory of overlay service handled in image.
+                    done();
+                });
+            });
+        });
+        describe('EJ2-56489 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ isProtected: true }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('To disable some toolbar items for protect sheet and customize the edit alert dialog content', (done: Function) => {
+                helper.getElement().focus();                
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const id: string = '#' + helper.id;
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                    if (args.dialogName == "EditAlertDialog") {
+                        args.content = "Custom Alert";
+                    }
+                };
+                const overlayClass: string = "e-overlay";
+                expect((helper.getElement(id + '_undo') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_redo') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_cut') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_copy') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_bold') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_italic') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_line-through') as any).parentElement.classList).toContain(overlayClass);;
+                expect((helper.getElement(id + '_underline') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_font_color_picker') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id+ '_fill_color_picker') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_borders') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_text_align') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_vertical_align') as any).parentElement.classList).toContain("e-overlay");
+                expect((helper.getElement(id + '_wrap') as any).parentElement.classList).toContain(overlayClass);
+                (helper.getElement(id).getElementsByClassName('e-toolbar-item')[2] as any).click();
+                expect((helper.getElement(id + '_hyperlink') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_image') as any).parentElement.classList).toContain(overlayClass);
+                expect((helper.getElement(id + '_chart-btn') as any).parentElement.classList).toContain(overlayClass);
+                (helper.getElement(id).getElementsByClassName('e-toolbar-item')[3] as any).click();
+                expect((helper.getElement(id + '_insert_function') as any).parentElement.classList).toContain(overlayClass);
+                (helper.getElement(id).getElementsByClassName('e-toolbar-item')[4] as any).click();
+                expect((helper.getElement(id + '_datavalidation') as any).parentElement.classList).toContain(overlayClass);
+                helper.triggerKeyEvent('keydown', 46, null, null, null, helper.invoke('getCell', [0, 0]));
+                setTimeout((): void => {
+                    expect((helper.getElement(id + ' .e-editAlert-dlg' + ' .e-dlg-content') as any).innerText).toBe("Custom Alert");
+                    done();
+                });
+            });
+        });
+        describe('EJ2-56133 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Check first two checkboxs in protect sheet dialog is selected initally', (done: Function) => {
+                helper.getElement().focus();
+                let listView: ListView;            
+                (helper.getElement('#' + helper.id).getElementsByClassName('e-toolbar-item')[4] as any).click();
+                (helper.getElement('#' + helper.id + '_protect') as any).click();
+                setTimeout((): void => {
+                    listView = helper.getElements('.e-listview')[0].ej2_instances[0];
+                    setTimeout((): void => {
+                        const selectedItems: SelectedCollection = listView.getSelectedItems() as SelectedCollection;
+                        expect(selectedItems.text.indexOf('Select Locked cells')).toBeGreaterThan(-1);
+                        expect(selectedItems.text.indexOf('Select Unlocked Cells')).toBeGreaterThan(-1);
+                        done();
+                    });
+                },1000);
+            });
+            it('If Select Cells option is selected then Select Unlocked Cells option need to be selected automatically', (done: Function) => {
+                helper.getElement().focus();                
+                (helper.getElement('#' + helper.id).getElementsByClassName('e-toolbar-item')[4] as any).click();
+                (helper.getElement('#' + helper.id + '_protect') as any).click();
+                debugger;
+                let lisView: ListView;
+                setTimeout((): void => {
+                    lisView = helper.getElements('.e-listview')[0].ej2_instances[0];
+                     lisView.selectItem({ id: '1'});
+                    setTimeout((): void => {
+                        const selectedItems: SelectedCollection = lisView.getSelectedItems() as SelectedCollection;
+                        expect(selectedItems.text.indexOf('Select Unlocked Cells')).toBeGreaterThan(-1);
+                        done();
+                    });
+                },1000);
+            });
+            it('If Select Unlocked Cells option is unselected then Select locked Cells option need to be unselected ', (done: Function) => {
+                helper.getElement().focus();                
+                (helper.getElement('#' + helper.id).getElementsByClassName('e-toolbar-item')[4] as any).click();
+                (helper.getElement('#' + helper.id + '_protect') as any).click();
+                let lisView: ListView;
+                setTimeout((): void => {
+                    lisView = helper.getElements('.e-listview')[0].ej2_instances[0];
+                    lisView.uncheckItem({id: '6'});
+                    setTimeout((): void => {
+                        const selectedItems: SelectedCollection = lisView.getSelectedItems() as SelectedCollection;
+                        expect(selectedItems.text.indexOf('Select Unlocked Cells')).toEqual(-1);
+                        done();
+                    });
+                },1000);
+            });
+            it('Selection need to hide while select both locked and unlocked cells options ', (done: Function) => {
+                helper.getElement().focus();                
+                setTimeout((): void => {
+                    expect(helper.getElements('.e-protected')[0]).toBeUndefined();
                     done();
                 });
             });

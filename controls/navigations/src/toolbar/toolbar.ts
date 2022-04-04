@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { addClass, removeClass, isVisible, closest, attributes, detach, classList, KeyboardEvents } from '@syncfusion/ej2-base';
 import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
@@ -455,6 +455,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.popObj = null;
         this.tbarAlign = null;
+        this.tbarItemsCol = [];
         this.remove(this.element, 'e-toolpop');
         if (this.cssClass) {
             removeClass([this.element], this.cssClass.split(' '));
@@ -1860,6 +1861,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     innerItems[0].parentNode.insertBefore(innerEle, innerItems[index]);
                 }
                 this.items.splice(index, 0, item);
+                if (item.template) {
+                    this.tbarEle.splice(this.tbarEle.length - 1, 1);
+                }
                 this.tbarEle.splice(index, 0, innerEle);
                 index++;
                 this.offsetWid = itemsDiv.offsetWidth;
@@ -1942,6 +1946,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     if (!isNOU(tempStr)) {
                         this.tempId.push(val);
                     }
+                } else {
+                    templateFn = templateCompiler(val);
                 }
             } catch (e) {
                 templateFn = templateCompiler(val);

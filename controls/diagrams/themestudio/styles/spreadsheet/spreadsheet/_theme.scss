@@ -167,7 +167,7 @@
             }
           }
 
-        @if $skin-name == 'bootstrap5' {
+        @if $skin-name == 'bootstrap5' or $skin-name == 'fluent' {
           color: $btn-flat-hover-color;
 
           & .e-icons,
@@ -204,7 +204,7 @@
         }
       }
 
-      @if $skin-name == 'bootstrap5' {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'fluent' {
         &.e-active,
         &:focus {
           color: $btn-flat-active-color;

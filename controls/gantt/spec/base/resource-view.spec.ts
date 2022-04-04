@@ -659,6 +659,15 @@ describe('Self reference data', () => {
         let deleteRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
         triggerMouseEvent(deleteRecord, 'click');
     });
+    it('Adding New task', () => {
+        let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        triggerMouseEvent(resourceCheckbox1, 'click')
+        triggerMouseEvent(resourceCheckbox2, 'click')
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(16);
+    });
   });
   describe("CR issues", () => {
     let ganttObj: Gantt;

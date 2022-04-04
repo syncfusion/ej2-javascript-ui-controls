@@ -1,6 +1,6 @@
 import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';
-import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';
+import { createElement, addClass, removeClass, setStyleAttribute as setAttr, getUniqueID } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';
 import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';
@@ -12,7 +12,7 @@ import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../model
 import { Toolbar } from '../actions/toolbar';
 import { DetailsView } from '../layout/details-view';
 import { LargeIconsView } from '../layout/large-icons-view';
-import { Uploader, UploadingEventArgs, SelectedEventArgs, FileInfo } from '@syncfusion/ej2-inputs';
+import { Uploader, UploadingEventArgs, SelectedEventArgs, FileInfo, CancelEventArgs } from '@syncfusion/ej2-inputs';
 import { UploadSettingsModel } from '../models/upload-settings-model';
 import { UploadSettings } from '../models/upload-settings';
 import * as events from './constant';
@@ -120,7 +120,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public isMobile: boolean;
     public isBigger: boolean;
     public isFile: boolean = false;
-    public sortBy: string = 'name';
     // eslint-disable-next-line
     public actionRecords: Object[];
     // eslint-disable-next-line
@@ -134,6 +133,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public currentItemText: string;
     public renameText: string;
     public isFiltered: boolean = false;
+    // Specifies whether the sort by option is clicked or not.
+    public isSortByClicked: boolean = false;
     public enablePaste: boolean = false;
     public splitterObj: Splitter;
     public persistData: boolean = false;
@@ -280,6 +281,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      *  maxWidth: '650px',
      *  minWidth: '240px',
      *  visible: true,
+     *  sortOrder: 'None'
      * }
      */
     @Complex<NavigationPaneSettingsModel>({}, NavigationPaneSettings)
@@ -365,6 +367,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Property('Ascending')
     public sortOrder: SortOrder;
+
+    /**
+     * Specifies the field name being used as the sorting criteria to sort the files of the file manager component.
+     *
+     * @default 'name'
+     */
+    @Property('name')
+    public sortBy: string;
 
     /**
      * Specifies the group of items aligned horizontally in the toolbar.
@@ -616,6 +626,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     protected preRender(): void {
+        if (isNOU(this.element.id) || this.element.id === '') {
+            this.element.setAttribute('id', getUniqueID('filemanager'));
+        }
         this.ensurePath();
         this.feParent = [];
         this.feFiles = [];
@@ -909,6 +922,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             enableRtl: this.enableRtl,
             uploading: this.onUploading.bind(this),
             removing: this.onRemoving.bind(this),
+            canceling: this.onCancel.bind(this),
             clearing: this.onClearing.bind(this),
             selected: this.onSelected.bind(this),
             success: this.onUploadSuccess.bind(this),
@@ -1021,6 +1035,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (this.uploadObj.getFilesData().length === 1) {
             this.uploadDialogObj.hide();
         }
+    }
+
+    /* istanbul ignore next */
+    private onCancel(args: CancelEventArgs): void {
+        const data: string = JSON.stringify(getValue(this.pathId[this.pathId.length - 1], this.feParent));
+        args.customFormData = [{ 'path': this.path }, { 'action': 'remove' }, { 'data': data }];
     }
 
     /* istanbul ignore next */
@@ -1295,6 +1315,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             case 'sortOrder':
                 refresh(this);
                 this.notify(events.sortByChange, {});
+                break;
+            case 'sortBy':
+                refresh(this);
+                this.notify(events.sortByChange, {});
+                if (this.view === 'Details') {
+                    this.notify(events.sortColumn, {});
+                }
                 break;
             case 'popupTarget':
                 if (this.uploadDialogObj) {

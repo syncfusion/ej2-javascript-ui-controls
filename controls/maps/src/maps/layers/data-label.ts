@@ -265,7 +265,7 @@ export class DataLabel {
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                 let labelElement: HTMLElement;
                 if (eventargs.template !== '') {
-                    templateFn = getTemplateFunction(eventargs.template);
+                    templateFn = getTemplateFunction(eventargs.template, this.maps);
                     const templateElement: Element = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
                         datasrcObj : shapeData['properties'], this.maps, eventargs.template, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
                     templateElement.innerHTML =  !templateFn ? eventargs.template : '';

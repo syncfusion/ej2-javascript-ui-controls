@@ -18,12 +18,12 @@
         padding-left: 12px;
         padding-right: 12px;
       }
-      @else if $skin-name == 'FluentUI' or $theme-name == 'FluentUI' {
-        padding: 0 19px;
+      @else if $skin-name == 'FluentUI' {
+        padding: 3px 7px;
       }
       @else {
         padding-left: 10px;
-        padding-right: 4px;
+        padding-right: 10px;
       }
 
       &:focus {
@@ -59,7 +59,12 @@
       .e-btn-icon {
         font-size: $drop-down-btn-icon-font-size;
         margin-left: 0;
-        padding-right: 8px;
+        @if $skin-name == 'FluentUI' {
+          padding-right: 4px;
+        }
+        @else {
+          padding-right: 8px;
+        }
         width: auto;
       }
 
@@ -82,11 +87,11 @@
       border-bottom-left-radius: 0;
       border-top-left-radius: 0;
       margin-left: $split-btn-sec-btn-margin-left;
-      @if $skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' {
         padding-left: $split-btn-icon-btn-padding;
         padding-right: $split-btn-icon-btn-padding;
       }
-      @else if $skin-name == 'FluentUI' or $theme-name == 'FluentUI' {
+      @else if $skin-name == 'FluentUI' {
         padding: 4px;
       }
       @else {
@@ -166,7 +171,7 @@
         border-top-left-radius: 0;
         border-top-right-radius: $split-btn-border-radius;
         margin-left: $split-btn-sec-btn-margin-left;
-        @if $skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
           padding-left: $split-btn-icon-btn-padding;
           padding-right: $split-btn-icon-btn-padding;
         }
@@ -181,7 +186,12 @@
 
         .e-btn-icon {
           margin-right: 0;
-          padding-left: 8px;
+          @if $skin-name == 'FluentUI' {
+            padding-left: 4px;
+          }
+          @else {
+            padding-left: 8px;
+          }
           padding-right: 0;
         }
 
@@ -224,7 +234,7 @@
         border-bottom-left-radius: 0;
         border-top-right-radius: $split-btn-border-radius;
         line-height: 1;
-        @if $skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4'or $skin-name == 'tailwind' {
           padding-bottom: $split-btn-icon-btn-padding;
           padding-right: $split-btn-icon-btn-padding;
         }
@@ -276,7 +286,7 @@
   .e-bigger .e-split-btn-wrapper,
   .e-bigger.e-split-btn-wrapper {
     .e-split-btn {
-      @if $skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4'or $skin-name == 'FluentUI' {
         padding-left: $split-btn-icon-btn-padding-bigger;
         padding-right: $split-btn-icon-btn-padding-bigger;
       }
@@ -297,7 +307,12 @@
       .e-btn-icon {
         font-size: $drop-down-btn-icon-font-size-bigger;
         margin-left: 0;
-        padding-right: 10px;
+        @if $skin-name == 'FluentUI' {
+          padding-right: 8px;
+        }
+        @else {
+          padding-right: 10px;
+        }
         width: auto;
       }
 
@@ -346,7 +361,12 @@
         }
 
         .e-btn-icon {
-          padding-left: 10px;
+          @if $skin-name == 'FluentUI' {
+            padding-left: 8px;
+          }
+          @else {
+            padding-left: 10px;
+          }
           padding-right: 0;
         }
 
@@ -367,7 +387,7 @@
 
     &.e-vertical {
       .e-split-btn {
-        @if $skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'tailwind' {
           padding-bottom: $split-btn-icon-btn-padding-bigger;
           padding-right: $split-btn-icon-btn-padding-bigger;
         }

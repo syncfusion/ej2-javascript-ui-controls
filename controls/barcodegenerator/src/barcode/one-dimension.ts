@@ -302,16 +302,25 @@ export abstract class OneDimension extends BarcodeBase {
                                 let checkVAl: boolean = (textOptions.string === this.value.substr(0, 6)) ? true : false;
                                 textOptions.string = checkVAl ? this.value.substr(0, 1) : textOptions.string.substr(0, 5);
                                 let xPosition: number = checkVAl ? options[0].x / 2 : options[options.length - 1].x + textOptions.stringSize;
+                                let yPosition: number = 0;
                                 if (checkVAl) {
                                     let tempPosition: number = textOptions.x;
                                     textOptions.x = xPosition;
+                                    yPosition = textOptions.y;
                                     this.drawText(canvas as HTMLCanvasElement, textOptions);
                                     textOptions.x = tempPosition;
+                                    if (!this.isSvgMode) {
+                                        textOptions.y = yPosition;
+                                    }
                                     textOptions.string = this.value.substr(1, 5);
                                     this.updateOverlappedTextPosition((endValue - startValue), textOptions, textSize, startValue, textProperty, endValue);
                                 } else {
                                     this.updateOverlappedTextPosition((endValue - startValue), textOptions, textSize, startValue, textProperty, endValue);
+                                    yPosition = textOptions.y;
                                     this.drawText(canvas as HTMLCanvasElement, textOptions);
+                                    if (!this.isSvgMode) {
+                                        textOptions.y = yPosition;
+                                    }
                                     textOptions.string = this.value.substr(11, 12);
                                     textOptions.x = xPosition;
                                 }

@@ -1,0 +1,22 @@
+/*! Carousel component bootstrap5 theme definitions and variables */
+
+// COLORS VARIABLES
+$carousel-navigator-btn-bg: transparent !default;
+$carousel-navigator-btn-bg-hover: rgba($primary-text-color, .4) !default;
+$carousel-navigator-icon-color: $primary-text-color !default;
+$carousel-indicator-bar-bg: $primary-text-color !default;
+$carousel-indicator-bar-border: 1px solid rgba($primary-text-color, .4) !default;
+$carousel-indicator-bar-bg-active: $primary !default;
+$carousel-indicator-border-color-focus: $black !default;
+
+// ANIMATION VARIABLES
+$carousel-animation-duration: .6s !default;
+$carousel-animation-timing-function: ease-in-out !default;
+
+// DIMENSION VARIABLES
+$carousel-navigator-btn-border-radius-hover: 50% !default;
+$carousel-indicator-padding: 4px !default;
+$carousel-indicator-height: 48px !default;
+$carousel-indicator-bar-border-radius: 2px !default;
+$carousel-indicator-bar-height: 5px !default;
+$carousel-indicator-bar-width: 20px !default;

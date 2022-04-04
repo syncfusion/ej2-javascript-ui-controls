@@ -121,7 +121,7 @@
           .e-icon-expandable,
           .e-icon-collapsible {
             padding-left: 24px;
-            padding-top: 10;
+            padding-top: 10px;
           }
         }
 
@@ -533,7 +533,9 @@
 
     .e-list-item {
       list-style: none;
-      padding: 2px 0;
+      @if $skin-name != 'tailwind' {
+        padding: 2px 0;
+      }
 
       .e-ul {
         margin: 2px 0 -2px;
@@ -630,8 +632,11 @@
 
       .e-input-group {
         height: $treeview-input-height;
-        @if($skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+        @if($skin-name == 'FluentUI') {
           margin-top: 3px;
+        }
+        @else if($skin-name == 'tailwind') {
+          margin-bottom: 3px;
         }
         @else if($skin-name == 'bootstrap5') {
           margin-bottom: 2px;

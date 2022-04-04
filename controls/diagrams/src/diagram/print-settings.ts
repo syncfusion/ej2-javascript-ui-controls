@@ -54,6 +54,13 @@ export class PrintAndExport {
         const buffers: string[] = [];
         let margin: MarginModel = options.margin || {};
         const region: DiagramRegions = options && options.region ? options.region : 'Content';
+        if (isBlazor) {
+            if ((options as any).Mode === 0) {
+                options.mode = 'Download';
+            } else {
+                options.mode = 'Data'
+            }
+        }
         const mode: string = options && options.mode ? options.mode : 'Download';
         const bounds: Rect = this.getDiagramBounds(region, options);
         if (options.bounds) {

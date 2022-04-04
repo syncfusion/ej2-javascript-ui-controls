@@ -187,7 +187,7 @@ export class TableCommand {
                     const tdElement: Element = createElement('td');
                     tdElement.appendChild(createElement('br'));
                     newRow.appendChild(tdElement);
-                    tdElement.setAttribute('style', allCells[(isHeaderSelect && isBelow) ? (minVal + 1) : minVal][i].getAttribute('style'));
+                    tdElement.setAttribute('style', allCells[(isHeaderSelect && isBelow) ? allCells[(minVal + 1)] ? (minVal + 1) : minVal : minVal][i].getAttribute('style'));
                 }
             }
             // eslint-disable-next-line
@@ -578,7 +578,8 @@ export class TableCommand {
         if (min < (max = Math.min(max, eleArray.length - 1))) {
             for (rowValue = min; rowValue <= max; rowValue++) {
                 // eslint-disable-next-line
-                if (!(min < rowValue && eleArray[rowValue][0] === eleArray[rowValue - 1][0]) && 1 < (index = Math.min(parseInt(eleArray[rowValue][0].getAttribute('rowspan'), 10) || 1, max - min + 1)) && eleArray[rowValue][0] === eleArray[rowValue + 1][0]) {
+                if (!(min < rowValue && eleArray[rowValue][0] === eleArray[rowValue - 1][0]) && eleArray[rowValue][0] &&
+                1 < (index = Math.min(parseInt(eleArray[rowValue][0].getAttribute('rowspan'), 10) || 1, max - min + 1)) && eleArray[rowValue][0] === eleArray[rowValue + 1][0]) {
                     for (count = index - 1, colIndex = 1; colIndex < eleArray[0].length; colIndex++) {
                         if (eleArray[rowValue][colIndex] !== eleArray[rowValue][colIndex - 1]) {
                             for (rowMin = rowValue; rowMin < rowValue + index; rowMin++) {
@@ -623,10 +624,10 @@ export class TableCommand {
 
     private mergeCellContent(): void {
         const selectedCells: NodeListOf<HTMLElement> = this.curTable.querySelectorAll('.e-cell-select');
-        let innerHtml: string = selectedCells[0].innerHTML;
-        for (let i: number = 1; i < selectedCells.length - 1; i++) {
+        let innerHtml: string = selectedCells[0].innerHTML === '<br>' ? '' : selectedCells[0].innerHTML;
+        for (let i: number = 1; i < selectedCells.length; i++) {
             if ('<br>' !== selectedCells[i].innerHTML) {
-                innerHtml = innerHtml + selectedCells[i].innerHTML;
+                innerHtml = innerHtml ? innerHtml + '<br>' + selectedCells[i].innerHTML : innerHtml + selectedCells[i].innerHTML;
             }
         }
         selectedCells[0].innerHTML = innerHtml;

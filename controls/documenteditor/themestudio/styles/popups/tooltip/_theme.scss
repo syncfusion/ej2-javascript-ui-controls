@@ -3,7 +3,7 @@
   .e-tooltip-wrap {
     border-radius: $tooltip-border-radius;
 
-    @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5') {
+    @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
       filter: $tooltip-drop-shadow;
       opacity: $tooltip-opacity;
     }
@@ -11,6 +11,9 @@
     &.e-popup {
       background-color: $tooltip-content-bg-color;
       border: $border-size $border-type $tooltip-content-border-color;
+      @if ($skin-name == 'FluentUI') {
+        box-shadow: $tooltip-drop-shadow;
+      }
     }
 
     /*! tooltip arrow */
@@ -65,13 +68,23 @@
         line-height: 1;
         text-transform: none;
       }
+
+      &.e-tip-bottom,
+      &.e-tip-top {
+        right: $tooltip-arrow-icon-font-size;
+      }
+
+      &.e-tip-right,
+      &.e-tip-left {
+        bottom: $tooltip-arrow-icon-font-size;
+      }
     }
 
     /*! tooltip sticky mode close icon */
     .e-tooltip-close {
       background-color: $tooltip-icon-bg-normal;
       border-color: $tooltip-icon-border-color;
-      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+      @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
         border-radius: 9px;
       }
       @else {
@@ -84,7 +97,7 @@
         height: 16px;
         width: 16px;
       }
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
         border: $tooltip-close-icon-border;
       }
     }

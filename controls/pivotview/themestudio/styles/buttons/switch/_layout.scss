@@ -8,6 +8,17 @@
     position: relative;
     user-select: none;
     width: $switch-wrapper-width;
+    @if $skin-name == 'FluentUI' {
+      border: 1px solid transparent;
+    }
+
+    &:focus,
+    &.e-focus {
+      @if $skin-name == 'FluentUI' {
+        border: 1px solid $switch-inner-focus-border;
+      }
+    }
+
     @at-root {
       & .e-switch {
         // sass-lint:disable no-vendor-prefixes

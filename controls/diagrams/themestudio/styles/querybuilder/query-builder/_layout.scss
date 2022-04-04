@@ -72,6 +72,9 @@
         & .e-group-action .e-btn {
           margin-left: $qrybldr-group-container-margin-left;
           margin-right: $group-action-margin;
+          @if $skin-name == 'tailwind' {
+            font-size: 20px;
+          }
             }
         }
 
@@ -309,12 +312,7 @@
           border-top-left-radius: 0;
           border-top-right-radius: 0;
           border-top-style: $qrybldr-rule-list-border-style;
-          @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
-            border-top-width: 1px;
-          }
-          @else {
-            border-top-width: 2px;
-          }
+          border-top-width: 2px;
           margin-top: 0;
         }
 
@@ -554,6 +552,9 @@
 
     & .e-group-action .e-btn {
       margin-left: $bigger-group-action-margin;
+      @if $skin-name == 'tailwind' {
+        font-size: 28px;
+      }
       }
 
     & .e-rule-list>:first-child::before {

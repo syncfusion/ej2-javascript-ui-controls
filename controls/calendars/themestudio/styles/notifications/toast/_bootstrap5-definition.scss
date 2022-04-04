@@ -42,6 +42,7 @@ $toast-title-font-weight: $font-weight-medium !default;
 //Layout Variables End
 
 //Theme Variables Start
+$toast-border: 1px solid $border-light !default;
 $toast-box-shadow: $shadow !default;
 $toast-hover-box-shadow: $shadow !default;
 $toast-progress-color: $primary !default;
@@ -57,6 +58,7 @@ $toast-content-color: $content-text-color-alt1 !default;
 $toast-success-bg-color: $success-light !default;
 $toast-success-color: $success-bg-color !default;
 $toast-success-title-color: $success-bg-color !default;
+$toast-success-title-border-color: $success-border-color !default;
 $toast-success-icon-color: $success-bg-color !default;
 $toast-success-content-color: $success-bg-color !default;
 $toast-success-hover-bg-color: $success-light !default;
@@ -66,6 +68,7 @@ $toast-success-hover-box-shadow: $shadow !default;
 $toast-info-bg-color: $info-light !default;
 $toast-info-color: $info-dark !default;
 $toast-info-title-color: $info-dark !default;
+$toast-info-title-border-color: $info-dark !default;
 $toast-info-icon-color: $info-dark !default;
 $toast-info-content-color: $info-dark !default;
 $toast-info-hover-bg-color: $info-light !default;
@@ -75,6 +78,7 @@ $toast-info-hover-box-shadow: $shadow !default;
 $toast-warning-bg-color: $warning-light !default;
 $toast-warning-color: $warning-dark !default;
 $toast-warning-title-color: $warning-dark !default;
+$toast-warning-title-border-color: $warning-dark !default;
 $toast-warning-icon-color: $warning-dark !default;
 $toast-warning-content-color: $warning-dark !default;
 $toast-warning-hover-bg-color: $warning-light !default;
@@ -84,6 +88,7 @@ $toast-warning-hover-box-shadow: $shadow !default;
 $toast-danger-bg-color: $danger-light !default;
 $toast-danger-color: $danger-bg-color !default;
 $toast-danger-title-color: $danger-bg-color !default;
+$toast-danger-title-border-color: $border-error !default;
 $toast-danger-icon-color: $danger-bg-color !default;
 $toast-danger-content-color: $danger-bg-color !default;
 $toast-danger-hover-bg-color: $danger-light !default;
@@ -95,6 +100,7 @@ $toast-close-icon: '\e7e7' !default;
 $toast-success-icon: '\e727' !default;
 $toast-error-icon: '\e878' !default;
 $toast-info-icon: '\e800' !default;
+$toast-warning-icon: '\e88b' !default;
 //Theme Variables End
 
 

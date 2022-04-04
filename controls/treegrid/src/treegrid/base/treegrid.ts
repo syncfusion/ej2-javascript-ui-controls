@@ -5,7 +5,7 @@ import { Column, ColumnModel } from '../models/column';
 import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row, CellRenderer, Cell } from '@syncfusion/ej2-grids';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
 import {RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid } from '@syncfusion/ej2-grids';
-import { ActionEventArgs } from'@syncfusion/ej2-grids';
+import { ActionEventArgs, TextAlign } from'@syncfusion/ej2-grids';
 import { DetailDataBoundEventArgs, ClipMode, ColumnChooser}  from '@syncfusion/ej2-grids';
 import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';
 import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';
@@ -75,6 +75,7 @@ import { isHidden, getExpandStatus } from '../utils';
 import { editAction } from '../actions/crud-actions';
 import { InfiniteScrollSettings } from '../models/infinite-scroll-settings';
 import { InfiniteScrollSettingsModel } from '../models/infinite-scroll-settings-model';
+import { TreeActionEventArgs } from '..';
 
 
 
@@ -118,6 +119,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * The `sortModule` is used to manipulate sorting in TreeGrid.
      */
     public sortModule: Sort;
+    private action: string;
+    private selectedRecords: Object[];
+    private selectedRows: Object[];
     private loggerModule: TreeLogger;
     private isSelfReference: boolean;
     private columnModel: Column[];
@@ -126,6 +130,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private isExpandRefresh: boolean;
     private gridSettings: GridModel;
     private isEditCollapse: boolean;
+    private treeColumnTextAlign: TextAlign;
+    private treeColumnField: string;
     /** @hidden */
     public initialRender: boolean;
     /** @hidden */
@@ -1359,7 +1365,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public sortByColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
-        this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        if (this.sortModule) {
+            this.sortModule.sortColumn(columnName, direction, isMultiSort);
+        }
     }
 
     /**
@@ -1381,7 +1389,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     public removeSortColumn(field: string): void {
-        this.sortModule.removeSortColumn(field);
+        if (this.sortModule) {
+            this.sortModule.removeSortColumn(field);
+        }
     }
 
 
@@ -1665,6 +1675,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 args: [this]
             });
         }
+        if (!isNullOrUndefined(this.toolbar) && (this.toolbar['includes']('Indent') || this.toolbar['includes']('Outdent'))) {
+            TreeGrid.Inject(RowDD);
+            modules.push({
+                member: 'rowDragAndDrop',
+                args: [this]
+            });
+        }
         if (this.editSettings.allowAdding || this.editSettings.allowDeleting || this.editSettings.allowEditing) {
             modules.push({
                 member: 'edit',
@@ -1745,6 +1762,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             (<{ isReact?: boolean }>this.grid).isReact = true;
             (<{ portals?: object[] }>this.grid).portals = [];
         }
+        if ((<{ isVue?: boolean }>this).isVue) {
+            (<{ isVue?: boolean }>this.grid).isVue = true;
+        }
         createSpinner({ target: this.element }, this.createElement);
         this.log(['mapping_fields_missing']);
         this.renderModule = new Render(this);
@@ -1781,6 +1801,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             return modules;
         };
+        const root: string = 'root';
+        this.grid[root] = this[root] ? this[root] : this;
         this.grid.appendTo(gridContainer as HTMLElement);
         this.wireEvents();
         this.renderComplete();
@@ -1920,6 +1942,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         };
         this.grid.rowDeselected = (args: RowDeselectEventArgs): void => {
             this.selectedRowIndex = this.grid.selectedRowIndex;
+            if (!isNullOrUndefined(args.data)) {
+                this.notify(events.rowDeselected, args);
+            }
             this.trigger(events.rowDeselected, args);
         };
         this.grid.resizeStop = (args: ResizeArgs): void => {
@@ -2016,6 +2041,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                         }
                         break;
                     }
+                }
+            }
+            const action: string = 'action';
+            if (this.enableVirtualization && this.selectionSettings.persistSelection && (this.dataResults[action] === 'expand' || this.dataResults[action] === 'collapse')) {
+                const refreshPersistSelection: string = 'refreshPersistSelection';
+                this.grid.selectionModule[refreshPersistSelection]();
+                if (this.grid.selectionSettings.type === 'Single') {
+                    const updateRowSelection: string = 'updateRowSelection';
+                    const index: number = this.getCurrentViewRecords().indexOf(this.grid.selectionModule['data']);
+                    this.grid.selectionModule[updateRowSelection](this.getRows()[index], index);
                 }
             }
             this.trigger(events.dataBound, args);
@@ -2237,14 +2272,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     this.grid.query = this.grid.query instanceof Query ? this.grid.query : new Query();
                 }
             }
-            const callBackPromise: Deferred = new Deferred();
-            this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
-                if (!actionArgs.cancel) {
-                    this.notify(events.beginEdit, actionArgs);
-                }
-                callBackPromise.resolve(actionArgs);
-            });
-            return callBackPromise;
+            if (this.action !== 'indenting' && this.action !== 'outdenting') {
+                const callBackPromise: Deferred = new Deferred();
+                this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+                    if (!actionArgs.cancel) {
+                        this.notify(events.beginEdit, actionArgs);
+                    }
+                    callBackPromise.resolve(actionArgs);
+                });
+                return callBackPromise;
+            }
         };
         this.grid.actionComplete = (args: ActionEventArgs) => {
             this.notify('actioncomplete', args);
@@ -2263,7 +2300,18 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (args.requestType === 'save' && this.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
                 this.grid.refresh();
             }
-            this.trigger(events.actionComplete, args);
+            if (this.action === 'indenting' || this.action === 'outdenting') {
+                this.action = this.action === 'indenting' ? 'indented' : 'outdented';
+                const actionArgs: TreeActionEventArgs = {
+                    requestType: this.action,
+                    data: this.selectedRecords,
+                    row: this.selectedRows
+                };
+                this.trigger(events.actionComplete, actionArgs);
+                this.action = ''; this.selectedRecords = this.selectedRows = [];
+            } else {
+                this.trigger(events.actionComplete, args);
+            }
         };
     }
 
@@ -2461,7 +2509,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 case ToolbarItem.RowIndent:
                     tooltipText = this.l10n.getConstant('RowIndent');
                     items.push(<ItemModel>{
-                        text: tooltipText, tooltipText: tooltipText,
+                        text: tooltipText, tooltipText: tooltipText, disabled: true,
                         prefixIcon: 'e-indent', id: this.element.id + '_gridcontrol_indent'
                     });
                     break;
@@ -2469,7 +2517,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 case ToolbarItem.RowOutdent:
                     tooltipText = this.l10n.getConstant('RowOutdent');
                     items.push(<ItemModel>{
-                        text: tooltipText, tooltipText: tooltipText,
+                        text: tooltipText, tooltipText: tooltipText, disabled: true,
                         prefixIcon: 'e-outdent', id: this.element.id + '_gridcontrol_outdent'
                     });
                     break;
@@ -2507,7 +2555,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     } else if (prop === 'columns' && !isNullOrUndefined(column[i][prop])) {
                         gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[], false, index);
                         treeGridColumn[prop] = column[i][prop];
-                    } else {
+                    } else if (!(treeColumn) || prop !== 'sortComparer') {
                         gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                     }
                 }
@@ -2516,6 +2564,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.columnModel.push(new Column(treeGridColumn));
             }
             gridColumnCollection.push(gridColumn);
+            if (!isNullOrUndefined(this.columnModel[this.treeColumnIndex]) && this.enableRtl) {
+                if (gridColumn.field === this.columnModel[this.treeColumnIndex].field) {
+                    if (isNullOrUndefined(this.treeColumnTextAlign)) {
+                        this.treeColumnTextAlign = this.columnModel[this.treeColumnIndex].textAlign;
+                        this.treeColumnField = this.columnModel[this.treeColumnIndex].field;
+                    }
+                    gridColumn.textAlign = 'Right';
+                }
+            }
         }
         return gridColumnCollection;
     }
@@ -2655,7 +2712,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             case 'allowPdfExport':
                 this.grid.allowPdfExport = this.allowPdfExport; break;
             case 'enableRtl':
-                this.grid.enableRtl = this.enableRtl; break;
+                if (!isNullOrUndefined(this.treeColumnField)) {
+                    this.updateTreeColumnTextAlign();
+                }
+                this.grid.enableRtl = this.enableRtl;
+                break;
             case 'allowReordering':
                 this.grid.allowReordering = this.allowReordering; break;
             case 'allowResizing':
@@ -2684,6 +2745,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.grid.refresh();
             }
         }
+    }
+
+    private updateTreeColumnTextAlign(): void {
+        const gridColumn: GridColumn = this.grid.getColumnByField(this.treeColumnField);
+        gridColumn.textAlign = this.enableRtl ? 'Right' : this.treeColumnTextAlign;
+        this.grid.refreshColumns();
     }
 
     /**
@@ -3038,6 +3105,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         rowData.parentUniqueID = record.parentUniqueID;
         rowData.expanded = record.expanded;
         this.grid.setRowData(key, rowData);
+        const table: Element = this.getContentTable();
+        const sHeight: number = table.scrollHeight;
+        const clientHeight: number = this.getContent().clientHeight;
+        this.lastRowBorder(this.getRows()[record.index], sHeight <= clientHeight);
     }
 
     /**
@@ -3250,7 +3321,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     gridColumn[prop] = gridColumns[i][prop];
                 }
                 this.columnModel.push(new Column(gridColumn));
-                if (field === this.columnModel[i].field && (!isNullOrUndefined(temp) && temp !== '')) {
+                if (field === this.columnModel[i].field && this.columnModel[i].type !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
                     this.columnModel[i].template = temp;
                 }
             }
@@ -3272,7 +3343,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      * @hidden
      */
-     private refreshReactColumnTemplateByUid(columnUid: string): void {
+    private refreshReactColumnTemplateByUid(columnUid: string): void {
         if ((<{ isReact?: boolean }>this).isReact) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).clearTemplate(['columnTemplate'], undefined, () => {
@@ -3625,7 +3696,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 return e.hasChildRecords;
             });
         } else if (isNullOrUndefined(record)) {
-            record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
+            if (this.detailTemplate) {
+                record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('aria-rowindex')];
+            } else {
+                record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
+            }
         }
         return record;
     }
@@ -3824,7 +3899,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.isExpandAll = true;
         this.isCollapseAll = true;
-        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)) {
+        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization || this.enableInfiniteScrolling) && !isRemoteData(this)) {
             this.flatData.filter((e: ITreeData) => {
                 if (e.hasChildRecords) {
                     e.expanded = action === 'collapse' ? false : true;
@@ -3878,7 +3953,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNullOrUndefined(row)) {
             row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
         }
-        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)
+        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization || this.enableInfiniteScrolling) && !isRemoteData(this)
           && !isCountRequired(this)) {
             this.notify(events.localPagedExpandCollapse, {action: action, row: row, record: record});
         } else {
@@ -3941,7 +4016,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 let totalRows: HTMLTableRowElement[] = this.getRows();
                 const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
                 totalRows = [].slice.call(rows);
-                for (let i: number = totalRows.length - 1; i > 0; i--) {
+                for (let i: number = totalRows.length - 1; i >= 0; i--) {
                     if (!isHidden(totalRows[i])) {
                         const table: Element = this.getContentTable();
                         const sHeight: number = table.scrollHeight;
@@ -4101,7 +4176,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 freezeRightRows[i].style.display = displayAction;
             }
             this.notify('childRowExpand', { row: rows[i] });
-            if (!isNullOrUndefined(childRecords[i].childRecords) && (action !== 'expand' ||
+            if ((!isNullOrUndefined(childRecords[i].childRecords) && childRecords[i].childRecords.length > 0) && (action !== 'expand' ||
         isNullOrUndefined(childRecords[i].expanded) || childRecords[i].expanded)) {
                 this.expandCollapse(action, rows[i], childRecords[i], true);
                 if (this.frozenColumns <= this.treeColumnIndex && !isNullOrUndefined(movableRows)) {
@@ -4205,6 +4280,29 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 if (cRow.length && childRecord.expanded) {
                     this.collapseRemoteChild({ record: childRecord, rows: cRow }, true);
                 }
+            }
+        }
+    }
+
+    /**
+     * Updates the rows and cells
+     *
+     * @param {Object[]} records - Updates the given records
+     * @param {HTMLTableRowElement[]} rows - Updates the given rows
+     * @param {number} index -  Updates the given cell index
+     * @returns {void}
+     */
+    private updateRowAndCellElements(records: Object[], rows: HTMLTableRowElement[], index: number): void {
+        for (let i: number = 0; i < records.length; i++) {
+            this.renderModule.cellRender({
+                data: records[i], cell: rows[i].cells[index] ,
+                column: this.grid.getColumns()[this.treeColumnIndex],
+                requestType: 'rowDragAndDrop'
+            });
+            if (this['action'] === 'indenting' || this['action'] === 'outdenting') {
+                this.renderModule.RowModifier({
+                    data: records[i], row: rows[i]
+                });
             }
         }
     }

@@ -9,12 +9,12 @@ $cell-color: $black !default;
 $cell-border-color: $spreadsheet-gridline !default;
 $hdr-cell-border-color: $border-light !default;
 $dlg-error-color: $danger !default;
-$agg-clr: $flyout-bg-color;
+$agg-clr: $icon-color;
 $header-cell-bg-color: $content-bg-color-alt1 !default;
 $header-cell-color: $content-text-color-alt2 !default;
 $spreadsheet-border-color: $border-light !default;
 $spreadsheet-border: $spreadsheet-border-width solid $spreadsheet-border-color !default;
-$select-all-bg-color: $content-bg-color !default;
+$select-all-bg-color: $content-bg-color-alt3 !default;
 //enddefault
 //selection
 $selection-bg-color: rgba($primary, .12) !default;
@@ -35,14 +35,14 @@ $sheet-tab-bg-color: $content-bg-color-alt1 !default;
 $sheet-tab-active-bg-color: $content-bg-color-alt1 !default;
 $sheet-tab-color: $content-text-color-alt1 !default;
 $sheet-tab-hover-bg-color: $hdr-selection-bg-color !default;
-$sheet-tab-indicator-color: $primary !default;
+$sheet-tab-indicator-color: none !default;
 $sheet-tab-btn-icon-color: $flyout-text-color;
-$tab-text-color: $primary;
-$select-icon-color: $primary !default;
+$tab-text-color: $content-text-color;
+$select-icon-color: $icon-color !default;
 //End Tab
 //Formula bar
 $formula-bar-font-size: $text-sm !default;
-$bigger-formula-bar-font-size: 15px !default;
+$bigger-formula-bar-font-size: 16px !default;
 $name-box-width: 92px !default;
 $namebox-icon-size: 18px !default;
 $formula-textarea-width: calc(100% - 146px) !default;
@@ -89,12 +89,12 @@ $hyper-doc-border-color:  $border-light !default;
 //End Hyperlink
 //Filtering
 $filter-icon-margin-bottom: 0 !default;
-$filter-icon-bigger-margin-bottom: 12px !default;
+$filter-icon-bigger-margin-bottom: 7px !default;
 //End Filtering
 //Find And Replace
 $find-tool-dlg-width: 348px !default;
 $find-tool-dlg-height: 42px !default;
-$find-dlg-width: 468px !default;
+$find-dlg-width: 443px !default;
 $bigger-find-tool-dlg-width: 419px !default;
 $bigger-find-tool-dlg-height: 50px !default;
 $bigger-find-goto-dlg-height: 256px !default;
@@ -103,7 +103,7 @@ $find-popup-border-color: $border-light !default;
 //End Find And Replace
 //Protect Sheet
 $protect-dlg-height: 470px !default;
-$protect-dlg-width: 287px !default;
+$protect-dlg-width: 348px !default;
 //End Protect Sheet
 //Conditional Formatting
 $ele-color: $content-bg-color-alt3;

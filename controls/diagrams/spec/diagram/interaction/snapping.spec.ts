@@ -1,4 +1,4 @@
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement} from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
@@ -1906,6 +1906,13 @@ describe('SnapSettings', () => {
             expect(diagram.selectedItems.nodes[0].offsetX === 490 && diagram.selectedItems.nodes[0].offsetY === 195).toBe(true);
             done();
         });
-        
+        it('Snapline color change to yellow',(done : Function)=>{
+            diagram.snapSettings.snapLineColor ="yellow";
+            diagram.dataBind();
+            let snapLineColor  = diagram.snapSettings.snapLineColor ;
+            console.log('Snap Color is '+ snapLineColor )
+            expect(snapLineColor ).toEqual('yellow');
+            done();
+        });
     });
 });

@@ -184,6 +184,21 @@ describe('Spinner Control', () => {
             expect(materialObj.classList.contains('e-spin-bootstrap5')).toEqual(true);
             expect((<HTMLElement>materialObj.childNodes[0]).classList.contains('e-path-circle')).toEqual(true);
         });
+        it('Ensure fluent theme element structure and class testing', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'),
+                    width:50,
+                    label:"Loading...",
+                    type: 'Fluent'
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spinner-pane')).toEqual(true);
+            let innerObject = (<HTMLElement>(container.querySelector('.e-spinner-pane')as HTMLElement).childNodes[0]);
+            expect(innerObject.classList.contains('e-spinner-inner')).toEqual(true);
+            let materialObj = (<HTMLElement>innerObject.childNodes[0]);
+            expect(materialObj.classList.contains('e-spin-fluent')).toEqual(true);
+        });
         it('Spinner width testing for material', () => {
             let spinObject = createSpinner({ 
                 target: document.getElementById('spinner-01'),

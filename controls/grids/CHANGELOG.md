@@ -2,7 +2,126 @@
 
 ## [Unreleased]
 
-## 19.4.56 (2022-03-15)
+## 20.1.47 (2022-04-04)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I368223` - Filtering on the date column with a null value in the array issue has been fixed.
+- `#F171832` - Pdf grid header text colour is not updated properly in `pdfHeaderQueryCellInfo` event issue has been fixed.
+
+#### New Features
+
+- `#I347226`, `#I345255` - Provided Aria accessibility with keyboard support for pager component.
+
+## 19.4.55 (2022-03-08)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I367001` - Inline editing is not working properly when `RowDragandDrop` with frozen columns is fixed.
+- `#I368530` - Aggregates not shown when using `expandAll` and `collapseAll` in grouping issue has been fixed.
+- `#I368787` - `Autofill` removing decimal values in number type columns issue has been fixed.
+
+## 19.4.54 (2022-03-01)
+
+### Grid
+
+#### Bug Fixes
+
+- `#F172908` - Script error is thrown when column has `sortComparer` set is fixed.
+- `#I367180` - `RowDragandDrop` not working when page size set to `All` has been fixed.
+- `#I365069` - column menu `popup` not closed after filtering using enter key is fixed.
+
+## 19.4.53 (2022-02-22)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I364948` - column menu position issue when open last column is fixed.
+- `#I363675` - Need to set id and aria label for Grid checkboxes accessibility.
+- `#I366853` - Column menu icon is not showing in bigger tailwind theme.
+- `#I357480` - Need to include `strikeThrough` style for excel export issue has been fixed.
+
+## 19.4.52 (2022-02-15)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I359192` - Ellipsis is not showing for the cells in the Firefox browser has been fixed.
+- `#I363178` - Filter dialog position mismatches when disable `ColumnMenu` for particular column is fixed.
+- `#I357482` - Not able to set the pager dropdown value as All on initialization issue has been fixed.
+- `#F172084` - `rowSelected` event arguments row data is incorrect while select rows with `Ctrl`, issue has been fixed.
+- `#F171933` - Row hover is not shown after the row drag and drop action is fixed.
+- `#F171832` - Wrong grid cell value in `pdfHeaderQueryCellInfo` event issue has been fixed.
+- `#F171308` - Lint error while passing null value in `filterByColumn` method is fixed.
+- `#I365287` - Script error thrown when refresh the grid with column template and details rows is fixed.
+- `#F172138` - Script error while enabling sticky header with `react-i18next` has been fixed.
+
+## 19.4.47 (2022-01-25)
+
+### Grid
+
+#### Bug Fixes
+
+- `#SF-361888` - Gird rows are hide when called `groupCollapseAll` without grouping is fixed.
+- `#SF-362860` - Last column header cell border issue has been fixed.
+- `#SF-357202` - Wrong operator while filtering with Excel filter search box is fixed.
+- `#SF-362140` - Script error while selecting the row with `virtualization` issue has been fixed.
+- `#FB-31236` -  Multi-column sorting missing sort number indicators issue has been fixed.
+- `#FB-31556` - Row Height misalignment when show/hide the template column with frozen Grid is fixed.
+- `#F171116` - Border is not apply properly in the Excel exporting has been fixed.
+
+## 19.4.43 (2022-01-18)
+
+### Grid
+
+#### Bug Fixes
+
+- `#SF-359831` - Script error thrown in frozen grid while hiding the column through column chooser with aggregates issue has been fixed.
+- `#SF-359248` - Script error thrown if frozen grid have empty records with `PersistSelection` feature issue has been fixed.
+- `#F171949` - Script error while filtering with `UrlAdaptor` is resolved.
+
+## 19.4.42 (2022-01-11)
+
+### Grid
+
+#### Bug Fixes
+
+- `#SF-361124` - Script error when filtering with excel filter in other components issue has been fixed.
+- `#SF-354931` - While locking the column with enable frozen right feature, the frozen column is not moving issue has been fixed.
+- `#SF-356095` - Scroll position issue while `updateRow` method with infinite scroll has been fixed.
+- `#SF-358560` - Scroll is prevented with `LazyLoadGrouping` cache mode issue has been fixed.
+- `#SF-358281` - `ActionBegin` event paging arguments cancel is not properly getting cancelled is fixed.
+- `#F171308` - Filter query is not generate properly when filter the null value in `OdataAdaptor` and `OdataV4Adaptor` is resolved.
+
+## 19.4.41 (2022-01-04)
+
+### Grid
+
+#### Bug Fixes
+
+- `#SF-313743` - Created event is not triggered when changing the locale is fixed.
+- `#SF-354968` - Column dataSource is changed after dropdown editing a `foreignkey` column is fixed.
+- `#F170844` - Borderline is not applied properly in stacked column has been fixed.
+
+## 19.4.40 (2021-12-28)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I345910` - Sticky header not working when group drop area  is hidden has been fixed.
+- `#I357254` - Outline is displayed in excel export has been fixed.
+- `#FB30729` - Filter dialog position issue when enable virtual scrolling is fixed.
+- `#I356122` - `actionComplete` event is trigger after row reorder is performed has been fixed.
+- `#I359292` - Script error thrown while clear filtering with disabled column menu is fixed.
+
+## 19.4.38 (2021-12-17)
 
 ### Grid
 

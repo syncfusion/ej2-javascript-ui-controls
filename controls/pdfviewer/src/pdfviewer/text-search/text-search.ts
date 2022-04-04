@@ -424,7 +424,7 @@ export class TextSearch {
             const matches: number[] = [];
             let matchIndex: number = -queryLength;
             let newIndex: number = -queryLength;
-            while (matchIndex !== 0) {
+            while (matchIndex !== 0 || matchIndex === 0) {
                 if (searchText === '' || searchText === ' ' || !searchText) {
                     break;
                 }
@@ -473,6 +473,7 @@ export class TextSearch {
                         this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                         this.searchedPages = [this.searchPageIndex];
                     }
+                    // eslint-disable-next-line max-len
                     else if (this.isPrevSearch && this.searchMatches && this.searchMatches.length > 0 && this.searchMatches[this.searchPageIndex].length > 0 && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex - 1 === this.searchPageIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();

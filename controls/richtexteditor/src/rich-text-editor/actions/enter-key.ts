@@ -1,4 +1,4 @@
-import { isNullOrUndefined as isNOU, KeyboardEventArgs, detach } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, KeyboardEventArgs, detach, Browser } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { IRichTextEditor, ActionBeginEventArgs } from '../base/interface';
 import { NotifyArgs } from '../base/interface';
@@ -131,6 +131,7 @@ export class EnterKeyAction {
                             } else if (this.range.startOffset === 0 && this.range.endOffset === 0) {
                                 isFocusedFirst = true;
                             }
+                            this.removeBRElement(nearBlockNode);
                             if (((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
                                 !(!isNOU(this.range.startContainer.previousSibling) &&
                                 (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
@@ -240,9 +241,10 @@ export class EnterKeyAction {
                             else {
                                 currentParent = this.startNode as HTMLElement;
                             }
+                            this.removeBRElement(currentParent);
                             let isEmptyBrInserted: boolean = false;
                             let currentParentLastChild: Node = currentParent.lastChild; 
-                            while (!isNOU(currentParentLastChild) && !(currentParentLastChild.nodeName === '#text')) {
+                            while (!isNOU(currentParentLastChild) && !(currentParentLastChild.nodeName === '#text' || currentParentLastChild.nodeName === 'BR')) {
                                 currentParentLastChild = currentParentLastChild.lastChild;
                             }
                             const isLastNodeLength = this.range.startContainer === currentParentLastChild ?
@@ -251,10 +253,16 @@ export class EnterKeyAction {
                                 this.parent.formatter.editorManager.domNode.isBlockNode(currentParent) &&
                                 this.range.startOffset === this.range.endOffset &&
                                 this.range.startOffset === isLastNodeLength) {
-                                const outerBRElem: HTMLElement = this.parent.createElement('br');
-                                this.parent.formatter.editorManager.domNode.insertAfter(outerBRElem, currentParent);
+                                const focusBRElem: HTMLElement = this.parent.createElement('br');
+                                if (currentParentLastChild.nodeName === 'BR' && currentParent.textContent.length === 0) {
+                                    this.parent.formatter.editorManager.domNode.insertAfter(focusBRElem, (currentParentLastChild as Element));
+                                } else {
+                                    const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
+                                    this.parent.formatter.editorManager.domNode.insertAfter(focusBRElem, (this.range.startContainer as Element));
+                                    this.parent.formatter.editorManager.domNode.insertAfter(lineBreakBRElem, (this.range.startContainer as Element));
+                                }
                                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                    this.parent.contentModule.getDocument(), outerBRElem, 0);
+                                    this.parent.contentModule.getDocument(), focusBRElem, 0);
                             } else if (!isNOU(currentParent) && currentParent !== this.parent.inputElement && currentParent.nodeName !== 'BR') {
                                 if (currentParent.textContent.trim().length === 0 || (currentParent.textContent.trim().length === 1 &&
                                     currentParent.textContent.charCodeAt(0) === 8203)) {
@@ -294,6 +302,14 @@ export class EnterKeyAction {
                     }
                 });
             }
+        }
+    }
+    
+    private removeBRElement(currentElement: Node): void {
+        if (Browser.userAgent.indexOf('Firefox') != -1 &&
+        this.range.endOffset === currentElement.textContent.length &&
+        currentElement.lastChild.nodeName === 'BR') {
+            detach(currentElement.lastChild);
         }
     }
 

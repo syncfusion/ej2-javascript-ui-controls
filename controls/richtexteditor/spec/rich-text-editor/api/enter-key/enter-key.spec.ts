@@ -1,7 +1,7 @@
 /**
  * Enter Key spec
  */
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { RichTextEditor} from './../../../../src/index';
 import { renderRTE, destroy } from './../../render.spec';
 import { NodeSelection } from './../../../../src/selection/index';
@@ -20,6 +20,37 @@ let keyboardEventArgs = {
     action: 'enter',
     type: 'keydown'
 };
+
+describe('EJ2-57587 - Many BR are inserted after enter key after the shift + enter is pressed', () => {
+    let defaultUserAgent= navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode">Content 1<br></p>`
+        });
+        done();
+    });
+
+    it('Many BR are inserted after enter key after the shift + enter is pressed', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0], 9, 9);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelectorAll('p')[1].querySelectorAll('br').length === 1).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+        Browser.userAgent =defaultUserAgent;
+    });
+});
 
 describe('Enter key support - Default Value -', () => {
     let rteObj: RichTextEditor;
@@ -103,6 +134,42 @@ describe('Enter key support - Source code - ', () => {
         sourceTrgEle.click();
         expect(rteObj.inputElement.innerHTML).toBe('<p>RTE P configured</p>');
         expect((rteObj.element.querySelector('.e-rte-srctextarea') as any).value === '<p>RTE P configured</p>').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('List revert with BR configured - ', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value: 'RTE BR configured',
+            enterKey: 'BR',
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            }
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+
+    it('Default value when `BR` is configured with OL', function (): void {
+        const orderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[0];
+        orderListEle.click();
+        orderListEle.click();
+        expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured');
+    });
+
+    it('Default value when `BR` is configured with UL', function (): void {
+        const unorderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[1];
+        unorderListEle.click();
+        unorderListEle.click();
+        expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured');
     });
 
     afterAll(() => {
@@ -701,7 +768,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, nodetext.textContent.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<p>RTE Content</p><br>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>RTE Content<br><br></p>');
     });
 
     it('Press enter by selecting few chars of the p tag', function (): void {
@@ -712,7 +779,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setSelectionText(
             document, nodetext, nodetext, 7, nodetext.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<p>RTE Con</p><br>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p>RTE Con<br><br></p>');
     });
 
     it('Press enter by selecting all the three lines', function (): void {
@@ -885,7 +952,7 @@ describe('Enter key support - After Heading ', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, startNode, startNode.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<h1>Heading</h1><br>');
+        expect(rteObj.inputElement.innerHTML).toBe('<h1>Heading<br><br></h1>');
     });
 
     afterAll(() => {
@@ -1158,7 +1225,7 @@ describe('Table Enter Key Testing', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, startNode.childNodes[0], 11);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.querySelector('.focusNode').nextElementSibling.tagName === 'BR').toBe(true);
+        expect(rteObj.inputElement.querySelector('.focusNode').lastElementChild.tagName === 'BR').toBe(true);
     });
 
     afterAll(() => {

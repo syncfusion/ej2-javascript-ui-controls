@@ -3,6 +3,7 @@ import { Toolbar } from '../../src/document-editor-container/tool-bar/tool-bar';
 import { createElement } from '@syncfusion/ej2-base';
 import { ContextMenu } from '../../src/document-editor/implementation/context-menu';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { LineWidget, ParagraphWidget } from '../../src';
 /**
  * Document Editor container
  */
@@ -158,5 +159,655 @@ describe('Document Editor container initialization without element id', () => {
         for (let j: number = 0; j < elements.length; j++) {
             expect(elements[j].getElementsByClassName('e-de-copy').length).toBe(1);
         }
+    });
+});
+
+let numberList: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 0,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Test"
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 1,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Test1"
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 1,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Test2"
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 0,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Tmsd"
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0,
+                "endnoteNumberFormat": "LowerCaseRoman",
+                "footNoteNumberFormat": "Arabic",
+                "restartIndexForFootnotes": "DoNotRestart",
+                "restartIndexForEndnotes": "DoNotRestart",
+                "columns": {
+                    "column": [
+                        {
+                            "width": 468.0,
+                            "space": 36.0
+                        }
+                    ],
+                    "numberOfColumns": 1,
+                    "equalWidth": true
+                }
+            }
+        }
+    ],
+    "fontSubstitutionTable": {
+        "DengXian": "等线",
+        "DengXian Light": "等线 Light"
+    },
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "lists": [
+        {
+            "listId": 0,
+            "abstractListId": 0
+        }
+    ],
+    "abstractLists": [
+        {
+            "abstractListId": 0,
+            "levels": [
+                {
+                    "startAt": 1,
+                    "restartLevel": 0,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%1.",
+                    "paragraphFormat": {
+                        "leftIndent": 36.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 1,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%2.1",
+                    "paragraphFormat": {
+                        "leftIndent": 72.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 2,
+                    "listLevelPattern": "LowRoman",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%3.",
+                    "paragraphFormat": {
+                        "leftIndent": 108.0,
+                        "firstLineIndent": -9.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 3,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%4.",
+                    "paragraphFormat": {
+                        "leftIndent": 144.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 4,
+                    "listLevelPattern": "LowLetter",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%5.",
+                    "paragraphFormat": {
+                        "leftIndent": 180.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 5,
+                    "listLevelPattern": "LowRoman",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%6.",
+                    "paragraphFormat": {
+                        "leftIndent": 216.0,
+                        "firstLineIndent": -9.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 6,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%7.",
+                    "paragraphFormat": {
+                        "leftIndent": 252.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 7,
+                    "listLevelPattern": "LowLetter",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%8.",
+                    "paragraphFormat": {
+                        "leftIndent": 288.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 8,
+                    "listLevelPattern": "LowRoman",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%9.",
+                    "paragraphFormat": {
+                        "leftIndent": 324.0,
+                        "firstLineIndent": -9.0
+                    }
+                }
+            ]
+        }
+    ],
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal"
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font"
+        },
+        {
+            "type": "Paragraph",
+            "name": "List Paragraph",
+            "basedOn": "Normal",
+            "next": "List Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 36.0,
+                "contextualSpacing": true
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true,
+    "footnotes": {
+        "separator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0003"
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0004"
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    },
+    "endnotes": {
+        "separator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0003"
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0004"
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    },
+    "compatibilityMode": "Word2013"
+};
+let listAlignmentDoc: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "leftIndent": 18.0,
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 0,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Test1"
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "leftIndent": 18.0,
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 1,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Test11"
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "leftIndent": 18.0,
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 1,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Test22"
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "leftIndent": 18.0,
+                        "styleName": "List Paragraph",
+                        "listFormat": {
+                            "listLevelNumber": 0,
+                            "listId": 0
+                        }
+                    },
+                    "inlines": [
+                        {
+                            "text": "Test2"
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0,
+                "endnoteNumberFormat": "LowerCaseRoman",
+                "footNoteNumberFormat": "Arabic",
+                "restartIndexForFootnotes": "DoNotRestart",
+                "restartIndexForEndnotes": "DoNotRestart",
+                "columns": {
+                    "column": [
+                        {
+                            "width": 468.0,
+                            "space": 36.0
+                        }
+                    ],
+                    "numberOfColumns": 1,
+                    "equalWidth": true
+                }
+            }
+        }
+    ],
+    "fontSubstitutionTable": {
+        "DengXian": "等线",
+        "DengXian Light": "等线 Light"
+    },
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "lists": [
+        {
+            "listId": 0,
+            "abstractListId": 0
+        }
+    ],
+    "abstractLists": [
+        {
+            "abstractListId": 0,
+            "levels": [
+                {
+                    "startAt": 1,
+                    "restartLevel": 0,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%1.",
+                    "paragraphFormat": {
+                        "leftIndent": 36.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 1,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%2.1",
+                    "paragraphFormat": {
+                        "leftIndent": 72.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 2,
+                    "listLevelPattern": "LowRoman",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%3.",
+                    "paragraphFormat": {
+                        "leftIndent": 108.0,
+                        "firstLineIndent": -9.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 3,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%4.",
+                    "paragraphFormat": {
+                        "leftIndent": 144.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 4,
+                    "listLevelPattern": "LowLetter",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%5.",
+                    "paragraphFormat": {
+                        "leftIndent": 180.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 5,
+                    "listLevelPattern": "LowRoman",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%6.",
+                    "paragraphFormat": {
+                        "leftIndent": 216.0,
+                        "firstLineIndent": -9.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 6,
+                    "listLevelPattern": "Arabic",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%7.",
+                    "paragraphFormat": {
+                        "leftIndent": 252.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 7,
+                    "listLevelPattern": "LowLetter",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%8.",
+                    "paragraphFormat": {
+                        "leftIndent": 288.0,
+                        "firstLineIndent": -18.0
+                    }
+                },
+                {
+                    "startAt": 1,
+                    "restartLevel": 8,
+                    "listLevelPattern": "LowRoman",
+                    "followCharacter": "Tab",
+                    "numberFormat": "%9.",
+                    "paragraphFormat": {
+                        "leftIndent": 324.0,
+                        "firstLineIndent": -9.0
+                    }
+                }
+            ]
+        }
+    ],
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal"
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font"
+        },
+        {
+            "type": "Paragraph",
+            "name": "List Paragraph",
+            "basedOn": "Normal",
+            "next": "List Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 36.0,
+                "contextualSpacing": true
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true,
+    "footnotes": {
+        "separator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0003"
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0004"
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    },
+    "endnotes": {
+        "separator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0003"
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "inlines": [
+                    {
+                        "text": "\u0004"
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    },
+    "compatibilityMode": "Word2013"
+};
+describe('Apply Numbered List', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ showPropertiesPane: true, enableComment: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        container.destroy();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        expect(() => { container.destroy(); }).not.toThrowError();
+        document.body.innerHTML = '';
+        element = undefined;
+        container = undefined;
+    });
+    it('Apply Numbered List' , ()=> {
+        container.documentEditor.open(JSON.stringify(numberList));
+        container.documentEditor.selection.select('0;1;2','0;1;2');
+        container.tableProperties.tableTextProperties.paragraph.appliedNumberingStyle = 'lowletter';
+        container.tableProperties.tableTextProperties.paragraph.applyLastAppliedNumbering();
+        expect(container.documentEditor.documentHelper.lists[0].abstractList.levels[1].numberFormat).toBe('%2.');
+    });
+    it('List Alignment issues', () => {
+        container.documentEditor.open(JSON.stringify(listAlignmentDoc));
+        let para: ParagraphWidget = container.documentEditor.documentHelper.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget;
+        let line: LineWidget = para.childWidgets[0] as LineWidget;
+        const elementWidth: number = line.children[0].width + line.children[1].width;
+        container.documentEditor.selection.select('0;1;3', '0;1;3');
+        container.tableProperties.tableTextProperties.paragraph.appliedNumberingStyle = 'lowletter';
+        container.tableProperties.tableTextProperties.paragraph.applyLastAppliedNumbering();
+        expect(elementWidth).toBe(line.children[0].width + line.children[1].width);
     });
 });

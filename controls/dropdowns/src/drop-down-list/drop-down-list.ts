@@ -2571,7 +2571,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected checkCustomValue(): void {
         this.itemData = this.getDataByValue(this.value);
         const dataItem: { [key: string]: string } = this.getItemData();
-        this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
+        this.setProperties({ 'text': dataItem.text, 'value': dataItem.value });
     }
     private updateInputFields(): void {
         if (this.getModuleName() === 'dropdownlist') {
@@ -2628,6 +2628,19 @@ export class DropDownList extends DropDownBase implements IInput {
                         if (this.liCollections && this.liCollections.length === 100 &&
                             this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                             this.setSelectionData(newProp.text, oldProp.text, 'text');
+                        } else if (newProp.text && this.dataSource instanceof DataManager) {
+                            const listLength: number = this.getItems().length;
+                            const checkField: string = isNullOrUndefined(this.fields.text) ? this.fields.value : this.fields.text;
+                            this.typedString = '';
+                            this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', newProp.text)))
+                                .then((e: Object) => {
+                                    if ((e as ResultData).result.length > 0) {
+                                        this.addItem((e as ResultData).result, listLength);
+                                        this.updateValues();
+                                    } else {
+                                        this.setOldText(oldProp.text);
+                                    }
+                                });
                         } else {
                             this.setOldText(oldProp.text);
                         }
@@ -2651,6 +2664,19 @@ export class DropDownList extends DropDownBase implements IInput {
                         if (this.liCollections && this.liCollections.length === 100 &&
                             this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                             this.setSelectionData(newProp.value, oldProp.value, 'value');
+                        } else if (newProp.value && this.dataSource instanceof DataManager) {
+                            const listLength: number = this.getItems().length;
+                            const checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+                            this.typedString = '';
+                            this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', newProp.value)))
+                                .then((e: Object) => {
+                                    if ((e as ResultData).result.length > 0) {
+                                        this.addItem((e as ResultData).result, listLength);
+                                        this.updateValues();
+                                    } else {
+                                        this.setOldValue(oldProp.value);
+                                    }
+                                });
                         } else {
                             this.setOldValue(oldProp.value);
                         }

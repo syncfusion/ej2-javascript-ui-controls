@@ -95,7 +95,11 @@ export type SparklineTheme =
     /**  Render a sparkline with Bootstrap5 theme. */
     'Bootstrap5' |
     /**  Render a sparkline with Bootstrap5Dark theme. */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark' |
+    /**  Render a sparkline with Fluent theme. */
+    'Fluent' |
+    /**  Render a sparkline with FluentDark theme. */
+    'FluentDark';
 
 /**
  * Defines edge data label placement for datalabel, if exceeds the sparkline area horizontally.

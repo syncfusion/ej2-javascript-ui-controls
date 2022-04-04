@@ -74,7 +74,7 @@ export class DetailRow {
                     childGrid: gObj.childGrid, detailElement: target, isExpanded: isExpanded });
             } else if (gObj.getDetailTemplate() || gObj.childGrid) {
                 const rowId: string = getUid('grid-row');
-                const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId} });
+                const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId, role: 'row'} });
                 const detailCell: Element = this.parent.createElement('td', { className: 'e-detailcell' });
                 let colSpan: number = this.parent.getVisibleColumns().length;
                 if (this.parent.allowRowDragAndDrop) {
@@ -103,7 +103,8 @@ export class DetailRow {
                         gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
                         this.parent.renderTemplates();
                     } else {
-                        appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                        appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID,
+                            undefined, undefined, undefined, this.parent['root']));
                     }
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));

@@ -158,7 +158,7 @@ describe('Insert bookmark inside header', () => {
     it('insert bookmark inside header', () => {
 console.log('insert bookmark inside header');
         editor.enableHeaderAndFooter = true;
-        editor.selection.enableHeadersFootersRegion(editor.documentHelper.pages[0].headerWidget);
+        editor.selection.enableHeadersFootersRegion(editor.documentHelper.pages[0].headerWidget, editor.documentHelper.pages[0]);
         editor.editor.insertText('Hello');
         editor.selection.selectAll();
         editor.editor.insertBookmark('sample');

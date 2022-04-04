@@ -36,6 +36,7 @@ export class FontDialog {
     private fontFamily: string = undefined;
     private fontColor: string = undefined;
     private allCaps: boolean = undefined;
+    private isListDialog: boolean = false;
     /**
      * @private
      */
@@ -110,17 +111,18 @@ export class FontDialog {
         let subScriptElement: HTMLInputElement;
         let doubleStrikeThroughElement: HTMLInputElement;
         let allCapsElement: HTMLInputElement;
+        let fontEffectSubDiv1: HTMLElement;
         const id: string = this.documentHelper.owner.containerId;
-        this.target = createElement('div', { id: id + '_insertFontDialog', className: 'e-de-font-dlg' });
+        this.target = createElement('div', { className: 'e-de-font-dlg' });
         const fontDiv: HTMLElement = this.getFontDiv(locale, isRtl);
         this.target.appendChild(fontDiv);
         const sizeDiv: HTMLElement = this.getFontSizeDiv(locale, isRtl);
         this.target.appendChild(sizeDiv);
-        const colorDiv: HTMLElement = createElement('div', { id: id + '_fontColor', className: 'e-de-font-clr-div' });
-        this.fontColorDiv = createElement('div', { id: id + '_fontColorDiv', className: 'e-de-font-dlg-display' });
+        const colorDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        this.fontColorDiv = createElement('div', { className: 'e-de-font-dlg-display' });
         const fontColorLabel: HTMLElement = createElement('label', {
             className: 'e-de-font-dlg-header-font-color e-de-font-color-margin',
-            innerHTML: locale.getConstant('Font color'), styles: 'width:63px'
+            innerHTML: locale.getConstant('Font color')
         });
         if (isRtl) {
             fontColorLabel.classList.add('e-de-rtl');
@@ -130,32 +132,46 @@ export class FontDialog {
         this.fontColorDiv.appendChild(fontColorElement);
         colorDiv.appendChild(this.fontColorDiv);
         this.target.appendChild(colorDiv);
-        const fontEffectsDiv: HTMLElement = createElement('div', { id: id + '_fontEffectsDiv' });
-        const fontEffectSubDiv1: HTMLElement = createElement('div', {
-            className: 'e-de-font-color-label e-de-font-dlg-display',
-            id: this.target.id + '_fontEffectsSubDiv1'
-        });
-        effectLabel = createElement('label', {
-            className: 'e-de-font-dlg-header-effects',
-            innerHTML: locale.getConstant('Effects'), styles: 'width:58px'
+        const fontEffectsDiv: HTMLElement = createElement('div');        
+        fontEffectSubDiv1 = createElement('div');
+        effectLabel = createElement('div', {
+            className: 'e-de-para-dlg-heading',
+            innerHTML: locale.getConstant('Effects'),
         });
         fontEffectSubDiv1.appendChild(effectLabel);
-        strikeThroughElement = this.createInputElement('checkbox', this.target.id + '_strikeThrough', '') as HTMLInputElement;
-        fontEffectSubDiv1.appendChild(strikeThroughElement);
-        superScriptElement = this.createInputElement('checkbox', this.target.id + '_superScript', '') as HTMLInputElement;
-        fontEffectSubDiv1.appendChild(superScriptElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv1);
-        const fontEffectSubDiv2: HTMLElement = createElement('div', { className: 'e-de-font-checkbox', id: id + '_fontEffectsSubDiv2' });
-        subScriptElement = this.createInputElement('checkbox', this.target.id + '_subScript', '') as HTMLInputElement;
-        fontEffectSubDiv2.appendChild(subScriptElement);
-        doubleStrikeThroughElement = this.createInputElement('checkbox', this.target.id + '_doubleStrikeThrough', '') as HTMLInputElement;
-        fontEffectSubDiv2.appendChild(doubleStrikeThroughElement);
-        fontEffectsDiv.appendChild(fontEffectSubDiv2);
-        const fontEffectSubDiv3: HTMLElement = createElement('div', { className: 'e-de-font-checkbox-transform-label e-de-font-checkbox-transform', id: id + '_fontEffectsSubDiv3' });
-        allCapsElement = this.createInputElement('checkbox', this.target.id + '_allCaps', '') as HTMLInputElement;
-        fontEffectSubDiv3.appendChild(allCapsElement);
-        fontEffectsDiv.appendChild(fontEffectSubDiv3);
         this.target.appendChild(fontEffectsDiv);
+
+        const effectsProperties: HTMLElement = createElement('div', { className: 'e-de-container-row'});
+        const fontEffectSubDiv2: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        
+        strikeThroughElement = this.createInputElement('checkbox', this.target.id + '_strikeThrough', '') as HTMLInputElement;
+        fontEffectSubDiv2.appendChild(strikeThroughElement);
+
+        let checkBoxDiv: HTMLElement = createElement('div', { className: 'e-de-font-checkbox' });
+        subScriptElement = this.createInputElement('checkbox', this.target.id + '_subScript', '') as HTMLInputElement;
+        checkBoxDiv.appendChild(subScriptElement)
+        fontEffectSubDiv2.appendChild(checkBoxDiv);
+
+        checkBoxDiv = createElement('div', { className: 'e-de-font-checkbox' });
+        allCapsElement = this.createInputElement('checkbox', this.target.id + '_allCaps', '') as HTMLInputElement;
+        checkBoxDiv.appendChild(allCapsElement)
+        fontEffectSubDiv2.appendChild(checkBoxDiv);
+
+        effectsProperties.appendChild(fontEffectSubDiv2);
+
+        const fontEffectSubDiv3: HTMLElement = createElement('div', { className: 'e-de-subcontainer-right' });
+        
+        superScriptElement = this.createInputElement('checkbox', this.target.id + '_superScript', '') as HTMLInputElement;
+        fontEffectSubDiv3.appendChild(superScriptElement);
+        
+        checkBoxDiv = createElement('div', { className: 'e-de-font-checkbox' });
+        doubleStrikeThroughElement = this.createInputElement('checkbox', this.target.id + '_doubleStrikeThrough', '') as HTMLInputElement;
+        checkBoxDiv.appendChild(doubleStrikeThroughElement)
+        fontEffectSubDiv3.appendChild(checkBoxDiv);
+
+        effectsProperties.appendChild(fontEffectSubDiv3);
+        this.target.appendChild(effectsProperties);
         this.colorPicker = new ColorPicker({
             change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale
         });
@@ -169,7 +185,6 @@ export class FontDialog {
         this.strikethroughBox.appendTo(strikeThroughElement);
         this.doublestrikethrough = new CheckBox({
             change: this.doubleStrikeUpdate,
-            cssClass: 'e-de-font-content-checkbox-label',
             label: locale.getConstant('Double strikethrough'),
             enableRtl: isRtl
         });
@@ -197,82 +212,69 @@ export class FontDialog {
         if (isRtl) {
             fontEffectSubDiv2.classList.add('e-de-rtl');
             fontEffectSubDiv3.classList.add('e-de-rtl');
-            this.doublestrikethrough.cssClass = 'e-de-font-content-checkbox-label-rtl';
+            fontEffectSubDiv1.classList.remove('e-de-font-content-checkbox-label');
         }
     }
     private getFontSizeDiv(locale: L10n, isRtl?: boolean): HTMLElement {
         let fontSize: HTMLSelectElement;
         let sizeDiv: HTMLElement;
         const id: string = this.documentHelper.owner.containerId;
-        sizeDiv = createElement('div', { id: id + '_fontSizeAndUnderlineDiv', className: 'e-de-font-dlg-padding e-de-font-dlg-display' });
-        const sizeSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSizeAndUnderlineSubDiv1' });
-        const sizeLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: locale.getConstant('Size') });
-        const styles: string = 'font-family:Roboto;font-size:14px;opacity:0.8;';
-        fontSize = createElement('select', { id: this.target.id + '_fontSize', styles: styles }) as HTMLSelectElement;
+        sizeDiv = createElement('div', { className: 'e-de-container-row' });
+        const sizeSubDiv1: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left'});
+        const sizeLabel : string = locale.getConstant('Size');
+        fontSize = createElement('select', { id: this.target.id + '_fontSize'}) as HTMLSelectElement;
         fontSize.innerHTML = '<option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>' +
             '<option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>26</option>' +
             '<option>28</option><option>36</option><option>48</option><option>72</option><option>96</option>';
-        sizeSubDiv1.appendChild(sizeLabel);
         sizeSubDiv1.appendChild(fontSize);
         sizeDiv.appendChild(sizeSubDiv1);
         const sizeSubDiv2: HTMLElement = createElement('div', {
-            className: 'e-de-font-dlg-cb-right',
-            id: id + '_fontSizeAndUnderlineSubDiv2'
+            className: 'e-de-subcontainer-right',
         });
         if (isRtl) {
             sizeSubDiv2.classList.add('e-de-rtl');
         }
         const html: string = locale.getConstant('Underline style');
-        const underlineLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: html });
         let underlineElement: HTMLSelectElement;
-        underlineElement = createElement('select', { id: this.target.id + '_underLine', styles: styles }) as HTMLSelectElement;
+        underlineElement = createElement('select', { id: this.target.id + '_underLine' }) as HTMLSelectElement;
         underlineElement.innerHTML = '<option value="None">' + locale.getConstant('None') + '</option><option value="Single">________</option>';
-        sizeSubDiv2.appendChild(underlineLabel);
         sizeSubDiv2.appendChild(underlineElement);
         sizeDiv.appendChild(sizeSubDiv2);
-        this.fontSizeText = new ComboBox({ change: this.fontSizeUpdate, popupHeight: '170px', width: '170px', enableRtl: isRtl });
-        this.fontSizeText.showClearButton = false;
+        this.fontSizeText = new ComboBox({ change: this.fontSizeUpdate, allowCustom: true, showClearButton:false, enableRtl: isRtl, floatLabelType: 'Always', placeholder: sizeLabel });
         this.fontSizeText.appendTo(fontSize);
-        this.underlineDrop = new DropDownList({ change: this.underlineUpdate, popupHeight: '100px', width: '170px', enableRtl: isRtl });
+        this.underlineDrop = new DropDownList({ change: this.underlineUpdate, enableRtl: isRtl, floatLabelType : 'Always', placeholder: html });
         this.underlineDrop.appendTo(underlineElement);
         return sizeDiv;
     }
     private getFontDiv(locale: L10n, isRtl?: boolean): HTMLElement {
         const id: string = this.documentHelper.owner.containerId;
-        const fontDiv: HTMLElement = createElement('div', { id: id + '_fontDiv', className: 'e-de-font-dlg-display' });
-        const fontSubDiv1: HTMLElement = createElement('div', { id: id + '_fontSubDiv1' });
-        const fontNameLabel: HTMLElement = createElement('label', {
-            className: 'e-de-font-dlg-header',
-            innerHTML: locale.getConstant('Font')
-        });
+        const fontDiv: HTMLElement = createElement('div', { className: 'e-de-container-row' });
+        const fontSubDiv1: HTMLElement = createElement('div', { className: 'e-de-subcontainer-left' });
+        const fontLabel : string = locale.getConstant('Font');
         const fontNameValues: HTMLSelectElement = createElement('select', { id: this.target.id + '_fontName' }) as HTMLSelectElement;
         const fontValues: string[] = this.documentHelper.owner.documentEditorSettings.fontFamilies;
         for (let i: number = 0; i < fontValues.length; i++) {
             fontNameValues.innerHTML += '<option>' + fontValues[i] + '</option>';
         }
-        fontSubDiv1.appendChild(fontNameLabel);
         fontSubDiv1.appendChild(fontNameValues);
         fontDiv.appendChild(fontSubDiv1);
         let fontSubDiv2: HTMLElement;
-        let fontStyleLabel: HTMLElement;
         let fontStyleValues: HTMLSelectElement;
-        fontSubDiv2 = createElement('div', { className: 'e-de-font-dlg-cb-right', id: id + '_fontSubDiv2', styles: 'float:right;' });
+        fontSubDiv2 = createElement('div', { className: 'e-de-subcontainer-right' });
         if (isRtl) {
             fontSubDiv2.classList.add('e-de-rtl');
         }
-        fontStyleLabel = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: locale.getConstant('Font style') });
-        const fontStyle: string = 'font-family:Roboto;font-size:14px;opacity:0.8;';
-        fontStyleValues = createElement('select', { id: this.target.id + '_fontStyle', styles: fontStyle }) as HTMLSelectElement;
+        const fontStyleLabel : string = locale.getConstant('Font style');
+        fontStyleValues = createElement('select', { id: this.target.id + '_fontStyle' }) as HTMLSelectElement;
         fontStyleValues.innerHTML = '<option value="Regular">' +
             locale.getConstant('Regular') + '</option><option value="Bold">' + locale.getConstant('Bold') + '</option><option value="Italic">' +
             locale.getConstant('Italic') + '</option><option value="BoldItalic">' + locale.getConstant('Bold') + locale.getConstant('Italic') + '</option>';
-        fontSubDiv2.appendChild(fontStyleLabel);
         fontSubDiv2.appendChild(fontStyleValues);
         fontDiv.appendChild(fontSubDiv2);
-        this.fontNameList = new ComboBox({ change: this.fontFamilyUpdate, popupHeight: '200px', width: '170px', enableRtl: isRtl });
+        this.fontNameList = new ComboBox({ change: this.fontFamilyUpdate, enableRtl: isRtl, floatLabelType: 'Always', placeholder: fontLabel});
         this.fontNameList.showClearButton = false;
         this.fontNameList.appendTo(fontNameValues);
-        this.fontStyleText = new DropDownList({ change: this.fontStyleUpdate, popupHeight: '170px', width: '170px', enableRtl: isRtl });
+        this.fontStyleText = new DropDownList({ change: this.fontStyleUpdate, enableRtl: isRtl, floatLabelType: 'Always', placeholder: fontStyleLabel });
         this.fontStyleText.appendTo(fontStyleValues);
         return fontDiv;
     }
@@ -280,10 +282,11 @@ export class FontDialog {
      * @param characterFormat
      * @private
      */
-    public showFontDialog(characterFormat?: WCharacterFormat): void {
+    public showFontDialog(characterFormat?: WCharacterFormat, isListDialog?: boolean): void {
         if (characterFormat) {
             this.characterFormat = characterFormat;
         }
+        this.isListDialog = isListDialog;
         const locale: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         locale.setLocale(this.documentHelper.owner.locale);
         if (!this.target) {
@@ -333,19 +336,13 @@ export class FontDialog {
             this.fontStyleText.value = this.fontSizeText.value;
             this.fontStyleText.index = 3;
         }
-        if (!isNullOrUndefined(characterFormat.fontSize)) {
-            for (let i: number = 0; i <= 15; i++) {
-                const items: Element[] = this.fontSizeText.getItems();
-                if (characterFormat.fontSize.toString() === items[i].innerHTML) {
-                    this.fontSizeText.value = characterFormat.fontSize;
-                    this.fontSizeText.index = i;
-                    break;
-                }
-            }
+        if (!isNullOrUndefined(characterFormat.fontSize)) {           
+            this.fontSizeText.value = characterFormat.fontSize;
         }
         if (!isNullOrUndefined(characterFormat.fontColor)) {
             let fontColor: string = characterFormat.fontColor;
-            if (fontColor === '#00000000') {
+            // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
+            if (fontColor === 'empty' || fontColor === '#00000000') {
                 fontColor = '#000000';
             }
             this.colorPicker.value = fontColor;
@@ -441,7 +438,11 @@ export class FontDialog {
         if (!this.characterFormat) {
             this.onCharacterFormat(this.documentHelper.selection, format);
         } else {
-            this.documentHelper.owner.styleDialogModule.updateCharacterFormat();
+            if(this.isListDialog) {
+                 this.documentHelper.owner.listDialogModule.updateCharacterFormat(format);
+            } else {
+                this.documentHelper.owner.styleDialogModule.updateCharacterFormat();
+            }
         }
         this.documentHelper.hideDialog();
     };

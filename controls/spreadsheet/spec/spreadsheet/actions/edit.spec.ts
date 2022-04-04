@@ -64,7 +64,17 @@ describe('Editing ->', () => {
                                 }, evt.element.children[0] as HTMLButtonElement);
                                 break;
                         }
+                    } else {
+                        if (evt.rowIndex === undefined && evt.colIndex === 0) {
+                            expect(evt.address).toBe('A');
+                            expect(evt.cell).toBeNull();
+                        }
+                        if (evt.colIndex === undefined && evt.rowIndex === 2) {
+                            expect(evt.address).toBe('3');
+                            expect(evt.cell).toBeNull();
+                        }
                     }
+                    expect(evt.element.parentElement).not.toBeUndefined();
                 }
             }, done);
         });
@@ -360,9 +370,15 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I267737, I267730, FB21561 ->', () => {
+        describe('I267737, I267730, FB21561, EJ2-56562 ->', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({}, done);
+                helper.initializeSpreadsheet({
+                    actionBegin: (args) => {
+                        if (args.action === 'cellDelete') {
+                            args.args.eventArgs.cancel = true;
+                        }
+                    }
+                }, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
@@ -392,6 +408,15 @@ describe('Editing ->', () => {
                 helper.invoke('selectRange', ['B1']);
                 expect(helper.getElementFromSpreadsheet('#' + helper.id + '_number_format').textContent).toBe('Percentage');
                 done();
+            });
+
+            it('Cancelling cell delete in action begin event', (done: Function) => {
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('0.25');
+                    expect(helper.invoke('getCell', [0, 1]).textContent).toBe('25%');
+                    done();
+                });
             });
         });
         describe('I301868, I301863 ->', () => {
@@ -471,6 +496,22 @@ describe('Editing ->', () => {
                         expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('edited');
                         done();
                     });
+                });
+            });
+        });
+        describe('EJ2-58213 -> Filtering not applied properly after deleting A1 cell and script error thrown while open filer dialog', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Delete', (done: Function) => {
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].usedRange.rowIndex).toBe(10);
+                    expect(helper.getInstance().sheets[0].usedRange.colIndex).toBe(7);
+                    done();
                 });
             });
         });

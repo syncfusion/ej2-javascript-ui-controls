@@ -1,0 +1,30 @@
+@include export-module('carousel-fabric-icons') {
+  .e-carousel {
+
+    .e-previous-icon::before {
+      content: '\e654';
+    }
+
+    .e-next-icon::before {
+      content: '\e219';
+    }
+
+    .e-play-icon::before {
+      content: '\e327';
+    }
+
+    .e-pause-icon::before {
+      content: '\e325';
+    }
+
+    &.e-rtl {
+      .e-previous-icon::before {
+        content: '\e219';
+      }
+
+      .e-next-icon::before {
+        content: '\e654';
+      }
+    }
+  }
+}

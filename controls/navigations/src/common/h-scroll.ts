@@ -401,7 +401,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 classList(arrowIcon, [CLS_NAVLEFTARROW], [CLS_NAVRIGHTARROW]);
             }
-        } else {
+        } else if (addDisable && removeDisable) {
             addDisable.classList.add(CLS_DISABLE);
             addDisable.setAttribute('aria-disabled' , 'true');
             addDisable.removeAttribute('tabindex');

@@ -2797,3 +2797,88 @@ describe('EJ2-55035 - Row selected automatically when `persistSelection` enabled
         gridObj = actionComplete = null;
     });
 });
+
+
+describe('EJ2-55947 - Script error while clear filtering with disabled column menu ', ()=>{
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                showColumnMenu: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', showColumnMenu: false, isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('Filter the single records ', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('OrderID', 'equal', 10248);
+    });
+    it('Check the Script error while clear filtering ', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.clearFiltering();
+    });
+     
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+
+describe('EJ2-56011 - Filter null value in OData adaptor', () => {
+    let gridObj: Grid;
+    let remoteData: DataManager = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+        adaptor: new ODataV4Adaptor
+    });
+    let promise: Promise<Object>;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: remoteData,
+                allowPaging: true,
+                allowFiltering: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', width: 120 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                ],
+            }, done);
+    });
+    it('null value filter using filterbyColumn Method', (done: Function) => {
+        actionComplete = () => {
+           (promise  as any) = gridObj.getFilteredRecords();
+            done();
+        };
+        gridObj.filterModule.filterByColumn('ShipCountry', 'equal', null);
+        gridObj.actionComplete = actionComplete;
+    });
+    it('checking with getFiltered records and filter columns length', (done: Function) => {
+       promise.then((e)=>{
+        expect((e as any).result.length).toBe(0);
+        expect(gridObj.filterSettings.columns.length).toBe(1);
+        done();
+    });           
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+}); 

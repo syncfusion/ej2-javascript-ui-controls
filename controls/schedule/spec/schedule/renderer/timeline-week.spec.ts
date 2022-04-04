@@ -4012,7 +4012,7 @@ describe('Schedule Timeline Week view', () => {
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
             const tdElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-            expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+            expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
@@ -4030,7 +4030,7 @@ describe('Schedule Timeline Week view', () => {
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 const tdElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-                expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+                expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 2;
@@ -4210,6 +4210,70 @@ describe('Schedule Timeline Week view', () => {
             expect(firstEvent.style.width).toEqual('5px');
             const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
             expect(secondEvent.style.width).toEqual('75px');
+        });
+    });
+
+    describe('EJ2-57866-Cell height is wrong while row auto height is set to true', () => {
+        let schObj: Schedule;
+        const appointments: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'App 1',
+            StartTime: new Date(2021, 7, 2, 9),
+            EndTime: new Date(2021, 7, 2, 11),
+            RoomId: 1
+        }, {
+            Id: 2,
+            Subject: 'App 2',
+            StartTime: new Date(2021, 7, 2, 9),
+            EndTime: new Date(2021, 7, 2, 9, 30),
+            RoomId: 1
+        }, {
+            Id: 3,
+            Subject: 'App 3',
+            StartTime: new Date(2021, 7, 2, 9),
+            EndTime: new Date(2021, 7, 2, 9, 30),
+            RoomId: 1
+        }, {
+            Id: 4,
+            Subject: 'App 4',
+            StartTime: new Date(2021, 7, 2, 10, 30),
+            EndTime: new Date(2021, 7, 2, 11),
+            RoomId: 1
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2021, 7, 2),
+                rowAutoHeight: true,
+                views: ['TimelineWeek'],
+                group: { resources: ['MeetingRoom'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room Type', name: 'MeetingRoom', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Room A', id: 1, color: '#98AFC7' },
+                        { text: 'Room B', id: 2, color: '#99c68e' },
+                        { text: 'Room C', id: 3, color: '#C2B280' },
+                        { text: 'Room D', id: 4, color: '#3090C7' },
+                        { text: 'Room E', id: 5, color: '#95b9' },
+                        { text: 'Room F', id: 6, color: '#95b9c7' },
+                        { text: 'Room G', id: 7, color: '#deb887' },
+                        { text: 'Room H', id: 8, color: '#3090C7' },
+                        { text: 'Room I', id: 9, color: '#98AFC7' },
+                        { text: 'Room J', id: 10, color: '#778899' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the cell height', () => {
+            const cell: HTMLElement = schObj.element.querySelector('.' + cls.WORK_CELLS_CLASS);
+            const apps: NodeListOf<Element> = schObj.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS);
+            expect(cell.style.height).toEqual('139px');
+            expect(apps.length).toEqual(4);
         });
     });
 

@@ -72,7 +72,7 @@ export class DataEditing {
         if (pointData.series.dragSettings.enable && pointData.point && (data.insideRegion || !pointData.series.isRectSeries)) {
             this.getCursorStyle(pointData);
         } else {
-            chart.svgObject.setAttribute('style', 'cursor: null');
+            (chart.svgObject as SVGElement).style.cursor = 'null';
         }
         if (chart.isPointMouseDown) {
             series = chart.series[this.seriesIndex];
@@ -88,11 +88,11 @@ export class DataEditing {
     private getCursorStyle(pointData: PointData): void {
         const chart: Chart = this.chart;
         if (pointData.series.type === 'Bar' && chart.isTransposed) {
-            chart.svgObject.setAttribute('style', 'cursor:ns-resize');
+            (chart.svgObject as SVGElement).style.cursor = 'ns-resize';
         } else if (chart.isTransposed || pointData.series.type === 'Bar') {
-            chart.svgObject.setAttribute('style', 'cursor:ew-resize');
+            (chart.svgObject as SVGElement).style.cursor = 'ew-resize';
         } else {
-            chart.svgObject.setAttribute('style', 'cursor:ns-resize');
+            (chart.svgObject as SVGElement).style.cursor = 'ns-resize';
         }
     }
     /**

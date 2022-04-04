@@ -85,7 +85,7 @@
       font-size: $listview-touch-header-font-size;
     }
 
-    .e-but-back {
+    .e-back-button {
       @if ($skin-name == 'bootstrap4') {
         margin-top: -3px;
         padding-right: 12px;
@@ -122,8 +122,12 @@
         @if ($skin-name == 'bootstrap4') {
           margin: 0 12px 0 0;
         }
-        @if ($skin-name == 'tailwind') {
+        @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI') {
           margin: $listview-touch-checkbox-left-margin;
+        }
+        @if ($skin-name == 'FluentUI') {
+          border: 0;
+          padding: 0;
         }
       }
 
@@ -158,7 +162,7 @@
           margin-left: 12px;
         }
 
-        & .e-but-back {
+        & .e-back-button {
           margin-left: 12px;
           margin-right: 0;
         }
@@ -342,6 +346,9 @@
         @else {
           margin-top: $listview-icon-back-margin;
         }
+        @if ($skin-name == 'FluentUI') {
+          margin-right: $listview-icon-back-margin-right;
+        }
       }
 
       & .e-list-header .e-headertemplate-text.nested-header {
@@ -372,7 +379,7 @@
         top: 45px;
       }
 
-      & .e-but-back {
+      & .e-back-button {
         cursor: pointer;
         @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI') {
           margin-right: $listview-back-padding-right;
@@ -407,6 +414,10 @@
         @else {
           font-weight: 600;
           padding: $listview-item-padding;
+        }
+
+        .e-list-text {
+          cursor: default;
         }
       }
 
@@ -501,8 +512,12 @@
         position: relative;
       }
 
-      & .e-list-header .e-text {
+      & .e-list-header.e-list-navigation .e-text {
         cursor: pointer;
+      }
+
+      & .e-list-header .e-text {
+        cursor: default;
         text-indent: 0;
       }
 
@@ -515,7 +530,7 @@
         direction: rtl;
 
         @if ($skin-name == 'FluentUI') {
-          & .e-but-back {
+          & .e-back-button {
             margin-left: 12px;
             margin-right: 0;
           }
@@ -548,7 +563,7 @@
           cursor: pointer;
         }
 
-        & .e-but-back {
+        & .e-back-button {
           transform: rotate(180deg);
           @if ($skin-name == 'tailwind') {
             margin-left: 8px;

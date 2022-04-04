@@ -4,7 +4,7 @@
 import { select, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
 import { InPlaceEditor, BeginEditEventArgs, ActionBeginEventArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
-import { renderEditor, destroy, ieUA } from './../render.spec';
+import { renderEditor, destroy, ieUA, triggerKeyBoardEvent } from './../render.spec';
 import { DataManager, WebApiAdaptor, Query } from '@syncfusion/ej2-data';
 import { MultiSelect, Rte, AutoComplete, ComboBox } from '../../src/inplace-editor/modules/index';
 
@@ -51,6 +51,31 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 done()
             },200);
         })
+    });
+
+    describe('Textarea enter key testing', () => {
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let editorObj: InPlaceEditor;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('multiline textbox testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                model: { multiline: true},
+            });
+            ele = editorObj.element;
+            expect(editorObj.submitOnEnter).toEqual(true);
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            triggerKeyBoardEvent(select('input', ele) as HTMLElement, 13);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+        });
     });
 
     describe('EJ2-34914: IE11 - In-place Editor - Type as MultiSelect with open event testing.', () => {

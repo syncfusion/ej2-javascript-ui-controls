@@ -860,7 +860,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         } else {
             saturatedColor = this.getLabelBackground(point);
         }
-        saturatedColor = (saturatedColor === 'transparent') ? window.getComputedStyle(document.body, null).backgroundColor : saturatedColor;
+        saturatedColor = (saturatedColor === 'transparent') ? (this.accumulation.theme.indexOf('Dark') > -1 ? 'black' : 'white') : saturatedColor;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';

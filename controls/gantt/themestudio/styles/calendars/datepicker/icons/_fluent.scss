@@ -10,7 +10,7 @@
     outline: none;
 
     #{if(&, '&', '*')}::before {
-      content: '\e721';
+      content: '\e75e';
       font-family: 'e-icons';
   }
 
@@ -29,7 +29,7 @@
     min-width: $datepicker-bigger-icon-container-min-width;
 
     #{if(&, '&', '*')}::before {
-      content: '\e721';
+      content: '\e75e';
       font-family: 'e-icons';
   }
 

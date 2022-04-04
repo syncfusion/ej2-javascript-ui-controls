@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
-import { IRowRenderer, ICellRenderer, CellRenderArgs, skipHiddenIdx } from '../common/index';
+import { IRowRenderer, ICellRenderer, CellRenderArgs } from '../common/index';
 import { getRowHeight, SheetModel, getCell, isHiddenRow, isHiddenCol } from '../../workbook/base/index';
 import { attributes } from '@syncfusion/ej2-base';
-import { getCellAddress } from '../../workbook/common/index';
+import { getCellAddress, getCellIndexes, skipHiddenIdx } from '../../workbook/common/index';
 
 /**
  * Sheet module is used for creating row element
@@ -20,7 +20,7 @@ export class RowRenderer implements IRowRenderer {
         this.cellRenderer = parent.serviceLocator.getService<ICellRenderer>('cell');
     }
 
-    public render(index?: number, isRowHeader?: boolean, skipHidden?: boolean): Element {
+    public render(index?: number, isRowHeader?: boolean, preventHiddenCls?: boolean): Element {
         const row: HTMLElement = this.element.cloneNode() as HTMLElement;
         if (index === undefined) {
             row.classList.add('e-header-row');
@@ -34,7 +34,7 @@ export class RowRenderer implements IRowRenderer {
         if (rowHeight < 20 ) {
             row.style.lineHeight =  rowHeight > 0 ? (rowHeight - 1) + 'px' : '0px';
         }
-        if (isRowHeader && !skipHidden) {
+        if (isRowHeader && !preventHiddenCls) {
             if ( rowHeight < 20 ) {
                 row.style.lineHeight = rowHeight >= 4 ? (rowHeight - 4) + 'px' :
                     rowHeight > 0 ? (rowHeight - 1) + 'px' : '0px';
@@ -52,22 +52,38 @@ export class RowRenderer implements IRowRenderer {
         return row;
     }
 
-    public refresh(index: number, pRow: Element, hRow?: Element, header?: boolean): Element {
-        let row: Element; const sheet: SheetModel = this.parent.getActiveSheet();
+    public refresh(index: number, pRow: Element, hRow?: Element, header?: boolean, preventHiddenCls?: boolean): Element {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        let row: Element;
         if (header) {
-            row = this.render(index, true, true);
-            row.appendChild(this.cellRenderer.renderRowHeader(index));
+            row = this.render(index, header, preventHiddenCls);
+            this.cellRenderer.renderRowHeader(index, row);
         } else {
-            row = this.render(index);
-            const len: number = this.parent.viewport.rightIndex;
-            for (let i: number = this.parent.viewport.leftIndex; i <= len; i++) {
-                if (isHiddenCol(sheet, i)) { continue; }
-                row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet),
-                    address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow,
-                    first: index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ?
-                        'Row' : '' }));
+            let i: number; let len: number;
+            const updateCells: Function = (): void => {
+                while (i <= len) {
+                    if (!isHiddenCol(sheet, i)) {
+                        this.cellRenderer.render(<CellRenderArgs>{ colIdx: i, rowIdx: index, cell:
+                            getCell(index, i, sheet), address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow,
+                            isHeightCheckNeeded: true, pRow: pRow, first: index === this.parent.viewport.topIndex &&
+                            skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ? 'Row' : '' });
+                    }
+                    i++;
+                }
+            };
+            const frozenCol: number = this.parent.frozenColCount(sheet);
+            if (frozenCol) {
+                row = hRow;
+                i = getCellIndexes(sheet.topLeftCell)[0];
+                len = frozenCol - 1;
+                updateCells();
             }
+            row = this.render(index, header, preventHiddenCls);
+            i = this.parent.viewport.leftIndex + frozenCol;
+            len = this.parent.viewport.rightIndex;
+            updateCells();
         }
         return row;
     }
 }
+ 

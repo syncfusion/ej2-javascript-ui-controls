@@ -296,7 +296,7 @@ export class Edit {
         const promise: string = 'promise';
         const prom: Deferred = args[promise];
         delete args[promise];
-        if (this.parent.enableVirtualization && !isNullOrUndefined(this.prevAriaRowIndex)) {
+        if (this.parent.enableVirtualization && !isNullOrUndefined(this.prevAriaRowIndex) && this.prevAriaRowIndex !== '-1') {
             args.row.setAttribute('aria-rowindex', this.prevAriaRowIndex);
             this.prevAriaRowIndex = undefined;
         }

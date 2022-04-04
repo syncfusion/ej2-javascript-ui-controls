@@ -442,6 +442,18 @@ export class Selection implements IAction {
         this.selectRowIndex(endIndex);
     }
 
+    private selectedDataUpdate(selectedData?: Object[], foreignKeyData?: Object[], selectedRows?: Element[], rowIndexes?: number[]): void {
+        for (let i: number = 0, len: number = rowIndexes.length; i < len; i++) {
+            const currentRow: Element = this.parent.getDataRows()[rowIndexes[i]];
+            const rowObj: Row<Column> = this.getRowObj(currentRow);
+            if (rowObj) {
+                selectedData.push(rowObj.data);
+                selectedRows.push(currentRow);
+                foreignKeyData.push(rowObj.foreignKeyData);
+            }
+        }
+    }
+
     /**
      * Selects a collection of rows by index.
      *
@@ -461,15 +473,7 @@ export class Selection implements IAction {
         if (!this.isRowType() || this.isEditing()) {
             return;
         }
-        for (let i: number = 0, len: number = rowIndexes.length; i < len; i++) {
-            const currentRow: Element = this.parent.getDataRows()[rowIndexes[i]];
-            const rowObj: Row<Column> = this.getRowObj(currentRow);
-            if (rowObj) {
-                selectedData.push(rowObj.data);
-                selectedRows.push(currentRow);
-                foreignKeyData.push(rowObj.foreignKeyData);
-            }
-        }
+        this.selectedDataUpdate(selectedData, foreignKeyData, selectedRows, rowIndexes);
         this.activeTarget();
         let args: Object = {
             cancel: false,
@@ -528,6 +532,9 @@ export class Selection implements IAction {
         const can: string = 'cancel';
         const target: Element = this.target;
         this.isMultiSelection = true;
+        const selectedRows: Element[] = [];
+        const foreignKeyData: Object[] = [];
+        const selectedData: Object[] = [];
         const indexes: number[] = gObj.getSelectedRowIndexes().concat(rowIndexes);
         const selectedRow: Element = !this.isSingleSel() ? gObj.getRowByIndex(rowIndexes[0]) :
             gObj.getRowByIndex(rowIndexes[rowIndexes.length - 1]);
@@ -540,6 +547,9 @@ export class Selection implements IAction {
         }
         let args: Object;
         const checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
+        if (this.isMultiCtrlRequest && !checkboxColumn.length) {
+            this.selectedDataUpdate(selectedData, foreignKeyData, selectedRows, indexes);
+        }
         for (const rowIndex of rowIndexes) {
             const rowObj: Row<Column> = this.getRowObj(rowIndex);
             const isUnSelected: boolean = this.selectedRowIndexes.indexOf(rowIndex) > -1;
@@ -576,10 +586,10 @@ export class Selection implements IAction {
                 this.activeTarget();
                 args = {
                     cancel: false,
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
-                    prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                    data: selectedData.length ? selectedData : rowObj.data, rowIndex: rowIndex, row: selectedRows.length ? selectedRows :
+                    selectedRow, target: this.actualTarget, prevRow: gObj.getRows()[this.prevRowIndex],
+                    previousRowIndex: this.prevRowIndex, isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                    foreignKeyData: foreignKeyData.length ? foreignKeyData : rowObj.foreignKeyData, isInteracted: this.isInteracted,
                     isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
                 };
                 args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
@@ -596,10 +606,10 @@ export class Selection implements IAction {
             }
             if (!isUnSelected) {
                 args = {
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
-                    prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
-                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
+                    data: selectedData.length ? selectedData : rowObj.data, rowIndex: rowIndex, row: selectedRows.length ? selectedRows :
+                    selectedRow, target: this.actualTarget, prevRow: gObj.getRows()[this.prevRowIndex],
+                    previousRowIndex: this.prevRowIndex, foreignKeyData:  foreignKeyData.length ? foreignKeyData : rowObj.foreignKeyData,
+                    isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
                 };
                 args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
                 this.onActionComplete(args, events.rowSelected);
@@ -1254,6 +1264,9 @@ export class Selection implements IAction {
                 col.getFreezeTableName() === literals.frozenRight ? gObj.getFrozenRightRowsObject() : []
             ]
         );
+        if (gObj.groupSettings.columns.length > 0) {
+            rowObj = gObj.getRowObjectFromUID(this.target.parentElement.getAttribute('data-uid'));
+        }
         const foreignKeyData: Object[] = [];
         for (const cellIndex of cellIndexes) {
             for (let i: number = 0, len: number = this.selectedRowCellIndexes.length; i < len; i++) {
@@ -1267,7 +1280,12 @@ export class Selection implements IAction {
             }
             const idx: number = col.getFreezeTableName() === 'movable' ? cellIndex.cellIndex - left
                 : col.getFreezeTableName() === literals.frozenRight ? cellIndex.cellIndex - (left + movable) : cellIndex.cellIndex;
-            foreignKeyData.push(rowObj.cells[idx].foreignKeyData);
+            if (gObj.groupSettings.columns.length > 0) {
+                foreignKeyData.push(rowObj.cells[idx + gObj.groupSettings.columns.length].foreignKeyData);
+            }
+            else {
+                foreignKeyData.push(rowObj.cells[idx].foreignKeyData);
+            }
             const args: Object = {
                 cancel: false, data: selectedData, cellIndex: cellIndexes[0],
                 isShiftPressed: this.isMultiShiftRequest,
@@ -1981,7 +1999,7 @@ export class Selection implements IAction {
             const col: Column = this.parent.getColumnByIndex(cIdx);
             if (this.parent.editModule && cell) {
                 if (col.type === 'number') {
-                    this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.value, 10));
+                    this.parent.editModule.updateCell(rIdx, col.field, parseFloat(args.value));
                 } else {
                     this.parent.editModule.updateCell(rIdx, col.field, args.value);
                 }
@@ -2608,7 +2626,7 @@ export class Selection implements IAction {
                     checkState = true;
                 } else {
                     checkState = false;
-                    if (this.checkedTarget !== chkBox && this.parent.isCheckBoxSelection) {
+                    if (this.checkedTarget !== chkBox && this.parent.isCheckBoxSelection && chkBox) {
                         removeAddCboxClasses(chkBox.nextElementSibling as HTMLElement, checkState);
                     }
                 }

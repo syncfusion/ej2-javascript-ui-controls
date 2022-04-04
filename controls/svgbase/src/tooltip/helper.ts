@@ -50,16 +50,21 @@ export function measureText(text: string, font: TextStyleModel): Size {
 }
 
 /** @private */
+export function withInAreaBounds(x: number, y: number, areaBounds: Rect, width: number = 0, height: number = 0): boolean {
+    return (x >= areaBounds.x - width && x <= areaBounds.x + areaBounds.width + width && y >= areaBounds.y - height
+        && y <= areaBounds.y + areaBounds.height + height);
+}
+
+/** @private */
 export function findDirection(
     rX: number, rY: number, rect: Rect, arrowLocation: TooltipLocation, arrowPadding: number,
-    top: boolean, bottom: boolean, left: boolean, tipX: number, tipY: number, tipRadius?: number
+    top: boolean, bottom: boolean, left: boolean, tipX: number, tipY: number, controlName: string = ''
 ): string {
     let direction: string = '';
     const startX: number = rect.x;
     const startY: number = rect.y;
     const width: number = rect.x + rect.width;
     const height: number = rect.y + rect.height;
-    tipRadius = tipRadius ? tipRadius : 0;
 
     if (top) {
         direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
@@ -69,14 +74,24 @@ export function findDirection(
         direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' '
             + (height) + ' ' + (width - rX) + ' ' + (height));
         if (arrowPadding !== 0) {
-            direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (height));
-            direction = direction.concat(' L' + ' ' + (tipX + tipRadius) + ' ' + (height + arrowPadding - tipRadius));
-            direction += ' Q' + ' ' + (tipX) + ' ' + (height + arrowPadding) + ' ' + (tipX - tipRadius) +
-                ' ' + (height + arrowPadding - tipRadius);
+            if (controlName === 'RangeNavigator') {
+				if ((arrowLocation.x - arrowPadding) > width / 2) {
+					direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding) + ' ' + (height));
+                    direction = direction.concat(' L' + ' ' + (tipX + arrowPadding) + ' ' + (height + arrowPadding) 
+                        + ' L' + ' ' + (arrowLocation.x) + ' ' + height);
+				} else {
+					direction = direction.concat(' L' + ' ' + (arrowLocation.x) + ' ' + (height));
+                    direction = direction.concat(' L' + ' ' + (tipX - arrowPadding) + ' ' + (height + arrowPadding) 
+                        + ' L' + ' ' + (arrowLocation.x - arrowPadding) + ' ' + height);
+				}
+			} else {
+				direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding) + ' ' + (height));
+				direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (height + arrowPadding) 
+                    + ' L' + ' ' + (arrowLocation.x - arrowPadding) + ' ' + height);
+			}
         }
-        if ((arrowLocation.x - arrowPadding / 2) > startX) {
-            direction = direction.concat(' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + height +
-                ' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
+        if ((arrowLocation.x - arrowPadding) > startX) {
+            direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
                 + height + ' ' + (startX) + ' ' + (height - rY) + ' z');
         } else {
             if (arrowPadding === 0) {
@@ -89,11 +104,11 @@ export function findDirection(
 
     } else if (bottom) {
         direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + (startY) + ' ' + (startX + rX) + ' ' + (startY) + ' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + (startY));
-        direction = direction.concat(' L' + ' ' + (tipX - tipRadius) + ' ' + (arrowLocation.y + tipRadius));
-        direction += ' Q' + ' ' + (tipX) + ' ' + (arrowLocation.y) + ' ' + (tipX + tipRadius) + ' ' + (arrowLocation.y + tipRadius);
-        direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (startY) + ' L' + ' '
-            + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' ' + (startY) + ' ' + (width) + ' ' + (startY + rY));
+            + (startY) + ' ' + (startX + rX) + ' ' + (startY) + ' L' + ' ' + (arrowLocation.x - arrowPadding) + ' ' + (startY));
+        direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (arrowLocation.y));
+        direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding) + ' ' + (startY));
+        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY)
+            + ' Q ' + (width) + ' ' + (startY) + ' ' + (width) + ' ' + (startY + rY));
         direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + (width) + ' '
             + (height) + ' ' + (width - rX) + ' ' + (height) +
             ' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + (startX) + ' '
@@ -101,23 +116,31 @@ export function findDirection(
     } else if (left) {
         direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
             + (startY) + ' ' + (startX + rX) + ' ' + (startY));
+        
         direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' '
-            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding / 2));
-        direction = direction.concat(' L' + ' ' + (width + arrowPadding - tipRadius) + ' ' + (tipY - tipRadius));
-        direction += ' Q ' + (width + arrowPadding) + ' ' + (tipY) + ' ' + (width + arrowPadding - tipRadius) + ' ' + (tipY + tipRadius);
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding / 2) +
-            ' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));
+            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding));
+        
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY - arrowPadding)) :
+         direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY));
+        
+        direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y)) :
+         direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding));
+        
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));
+        
         direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + startX + ' '
             + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
     } else {
         direction = direction.concat('M' + ' ' + (startX + rX) + ' ' + (startY) + ' Q ' + (startX) + ' '
-            + (startY) + ' ' + (startX) + ' ' + (startY + rY) + ' L' + ' ' + (startX) + ' ' + (arrowLocation.y - arrowPadding / 2));
+            + (startY) + ' ' + (startX) + ' ' + (startY + rY) + ' L' + ' ' + (startX) + ' ' + (arrowLocation.y - arrowPadding));
 
-        direction = direction.concat(' L' + ' ' + (startX - arrowPadding + tipRadius) + ' ' + (tipY - tipRadius));
-        direction += ' Q ' + (startX - arrowPadding) + ' ' + (tipY) + ' ' + (startX - arrowPadding + tipRadius) + ' ' + (tipY + tipRadius);
-
-        direction = direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding / 2) +
-            ' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
+            direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY - arrowPadding)) :
+             direction.concat(' L' + ' ' + (startX - arrowPadding) + ' ' + (tipY));
+            
+            direction = (controlName === 'RangeNavigator') ? direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y)) :
+             direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding));
+            
+            direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
             + (height) + ' ' + (startX + rX) + ' ' + (height));
 
         direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (height) + ' Q ' + width + ' '
@@ -130,7 +153,6 @@ export function findDirection(
 }
 
 /** @private */
-
 export class Size {
 
     public height: number;
@@ -141,6 +163,7 @@ export class Size {
         this.height = height;
     }
 }
+
 /** @private */
 export class Rect {
 

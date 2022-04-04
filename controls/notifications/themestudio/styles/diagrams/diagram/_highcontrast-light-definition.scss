@@ -1,0 +1,103 @@
+@import 'definition.scss';
+
+$hc-theme-primary: rgb(0, 120, 215);
+$hc-theme-dark-font: #fff;
+$hc-theme-dark: rgb(0, 90, 158);
+$hc-neutral-tertiary: rgb(166, 166, 166);
+$hc-grey-dark-font: #fff;
+$hc-neutral-light: rgb(234, 234, 234);
+$hc-theme-light: rgb(199, 224, 244);
+$hc-theme-secondary: #2b88d8;
+$hc-neutral-secondary-alt: #767676;
+
+$diagram-endpoint-handle-color: $hc-theme-primary;
+$diagram-endpoint-handle-connected-border: $hc-theme-primary;
+$diagram-endpoint-handle-connected-color: $hc-theme-dark-font;
+
+$diagram-resize-handle-color: $hc-theme-primary;
+$diagram-resize-handle-stroke: $hc-theme-dark-font;
+$diagram-border-stroke: $hc-theme-dark;
+
+$palette-background-color: #fff;
+
+$diagram-resize-handle-disable-color: $hc-neutral-tertiary;
+$diagram-resize-handle-disable-stroke: $hc-grey-dark-font;
+$diagram-border-stroke-disabled: $hc-neutral-tertiary;
+
+$diagram-rotate-handle-color: #000;
+
+$diagram-bezier-handle-color: $hc-theme-dark;
+$diagram-bezier-line-color: $hc-theme-dark;
+
+$diagram-highlighter-stroke: $hc-theme-dark;
+$diagram-selected-region-stroke: $hc-theme-primary;
+$diagram-pivot-line-stroke: $hc-theme-primary;
+
+$diagram-helper-stroke: $hc-theme-dark;
+
+$diagram-text-edit-selection-color: $hc-theme-dark-font;
+$diagram-text-edit-selection-background: $hc-theme-primary;
+
+$diagram-symbolpalette-hover: #685708;
+$diagram-symbolpalette-shape-radius: 4px;
+$diagram-symbolpalette-selected: $hc-theme-light;
+
+$diagram-tooltip: none;
+
+$diagram-ruler-color: $hc-neutral-tertiary;
+$diagram-ruler-font-size: 10px;
+$diagram-ruler-marker-stroke: $hc-theme-primary;
+$diagram-ruler-marker-background-color: $hc-grey-dark-font;
+$diagram-ruler-label-fill:  $hc-neutral-tertiary;
+$diagram-ruler-tick-stroke: $hc-neutral-secondary-alt;
+
+$diagram-background-color: #fff;
+
+$diagram-editbox-background: #fff;
+$diagram-editbox-fontcolor: #000;
+$diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
+$diagram-border-strokes: $hc-theme-dark;
+$diagram-lane-border-strokes: #0078ff;
+
+.e-icons {
+  font-family: 'e-icons';
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-transform: none;
+}
+
+@include export-module('diagram-highcontrast-icons') {
+  .e-diagram-menu {
+    .e-bringforward::before { content: '\e5a1'; }
+    .e-bringfront::before { content: '\e5a2'; }
+    .e-sendback::before { content: '\e5a3'; }
+    .e-sendbackward::before { content: '\e5a4'; }
+    .e-delete::before { content: '\eb00'; }
+    .e-ungroup::before { content: '\e5a6'; }
+    .e-group::before { content: '\e5a7'; }
+    .e-undo::before { content: '\e341'; }
+    .e-cut::before { content: '\e33b'; }
+    .e-save::before { content: '\e954'; }
+    .e-paste::before { content: '\e355'; }
+    .e-copy::before { content: '\e33d'; }
+    .e-redo::before { content: '\e354'; }
+    .e-zoomin::before { content: '\e349'; }
+    .e-italic::before { content: '\e35a'; }
+    .e-close::before { content: '\e7fc'; }
+    .e-pan::before { content: '\ebf3'; }
+    .e-bold::before { content: '\eb77'; }
+    .e-underline::before { content: '\e343'; }
+    .e-zoomout::before { content: '\e351'; }
+    .e-export::before { content: '\e70f'; }
+    .e-print::before { content: '\e34b'; }
+    .e-order::before { content: '\e4a4'; }
+  }
+
+  .e-symbolpalette {
+    .e-clear-searchtext::before { content: '\e7fc'; }
+  }
+}

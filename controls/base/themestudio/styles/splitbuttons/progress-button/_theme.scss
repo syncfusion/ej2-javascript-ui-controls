@@ -25,7 +25,9 @@
 
     #{if(&, '&', '*')}.e-primary,
     #{if(&, '&', '*')}.e-primary.e-outline:hover,
-    #{if(&, '&', '*')}.e-primary.e-outline:focus {
+    #{if(&, '&', '*')}.e-primary.e-outline:focus,
+    #{if(&, '&', '*')}.e-primary.e-flat:hover,
+    #{if(&, '&', '*')}.e-primary.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
         fill: $btn-primary-color;
         stroke: $btn-primary-color;
@@ -45,7 +47,7 @@
           stroke: $btn-flat-primary-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
@@ -67,7 +69,9 @@
 
     #{if(&, '&', '*')}.e-success,
     #{if(&, '&', '*')}.e-success.e-outline:hover,
-    #{if(&, '&', '*')}.e-success.e-outline:focus {
+    #{if(&, '&', '*')}.e-success.e-outline:focus,
+    #{if(&, '&', '*')}.e-success.e-flat:hover,
+    #{if(&, '&', '*')}.e-success.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
         fill: $btn-success-color;
         stroke: $btn-success-color;
@@ -87,7 +91,7 @@
           stroke: $btn-flat-success-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
@@ -109,7 +113,9 @@
 
     &.e-info,
     &.e-info.e-outline:hover,
-    &.e-info.e-outline:focus {
+    &.e-info.e-outline:focus,
+    &.e-info.e-flat:hover,
+    &.e-info.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
         fill: $btn-info-color;
         stroke: $btn-info-color;
@@ -129,7 +135,7 @@
           stroke: $btn-flat-info-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
@@ -151,7 +157,9 @@
 
     &.e-warning,
     &.e-warning.e-outline:hover,
-    &.e-warning.e-outline:focus {
+    &.e-warning.e-outline:focus,
+    &.e-warning.e-flat:hover,
+    &.e-warning.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
         fill: $btn-warning-color;
         stroke: $btn-warning-color;
@@ -171,7 +179,7 @@
           stroke: $btn-flat-warning-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
@@ -193,7 +201,9 @@
 
     &.e-danger,
     &.e-danger.e-outline:hover,
-    &.e-danger.e-outline:focus {
+    &.e-danger.e-outline:focus,
+    &.e-danger.e-flat:hover,
+    &.e-danger.e-flat:focus {
       .e-spinner-pane .e-spinner-inner svg {
         fill: $btn-danger-color;
         stroke: $btn-danger-color;
@@ -213,7 +223,7 @@
           stroke: $btn-flat-danger-color;
 
           .e-path-circle {
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' {
               stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
             }
             @else {
@@ -233,7 +243,8 @@
        }
     }
 
-    &.e-outline {
+    &.e-outline,
+    &.e-flat {
       &.e-primary {
         .e-spinner-pane .e-spinner-inner svg {
           fill: $btn-primary-bgcolor;
@@ -407,5 +418,39 @@
         background-color: fade-out($btn-danger-bgcolor, .8);
         }
       }
+  }
+
+  #{if(&, '&', '*')}.e-flat:not(:focus) {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
+      &.e-primary {
+        .e-progress {
+          background-color: fade-out($btn-primary-bgcolor, .8);
+        }
+      }
+
+      &.e-success {
+        .e-progress {
+          background-color: fade-out($btn-success-bgcolor, .8);
+          }
+        }
+
+      &.e-info {
+        .e-progress {
+          background-color: fade-out($btn-info-bgcolor, .8);
+          }
+        }
+
+      &.e-warning {
+        .e-progress {
+          background-color: fade-out($btn-warning-bgcolor, .8);
+          }
+        }
+
+      &.e-danger {
+        .e-progress {
+          background-color: fade-out($btn-danger-bgcolor, .8);
+          }
+        }
+    }
   }
 }

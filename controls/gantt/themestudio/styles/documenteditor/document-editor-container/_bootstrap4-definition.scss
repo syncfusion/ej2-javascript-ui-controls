@@ -20,8 +20,8 @@ $de-spellcheck-tlbr-width: 91px !default;
 $de-spellcheck-tlbr-width-big: 111px !default;
 $de-spellcheck-tlbr-height: 34px !default;
 $de-spellcheck-tlbr-margin-left: 7.5px !default;
-$de-zoom-tlbr-margin-left: calc(100% - 380px) !default;
-$de-zoom-tlbr-margin-left-big: calc(100% - 410px) !default;
+$de-zoom-tlbr-margin-left: calc(100% - 340px) !default;
+$de-zoom-tlbr-margin-left-big: calc(100% - 370px) !default;
 $e-de-statusbar-separator-color: #495057;
 // Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 115px) !default;
@@ -68,6 +68,7 @@ $de-text-pane-width-big: 272px;
 $de-left-btn-width: 37.75px;
 $de-left-btn-width-big: 149px / 4;
 $de-right-btn-width: 75px / 2;
+$de-border-btn-width-big: 42px;
 $de-img-span-top-big: 14px;
 $de-bullet-icon-font-size: 12px;
 $de-bullet-icon-line-height: 32px;

@@ -77,10 +77,10 @@ export class Marker {
                     eventArgs = markerShapeChoose(eventArgs, data);
                     const lng: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : !isNullOrUndefined(data['longitude']) ?
-                            parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : 0;
+                            parseFloat(data['longitude']) : !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : null;
                     const lat: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
-                            parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : 0;
+                            parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : null;
                     const offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         const markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -130,7 +130,7 @@ export class Marker {
                             (this.maps as any).renderReactTemplates();
                         }
                     }
-                    if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+                    if (markerTemplateEle.childElementCount === (markerDataLength - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
                         if (this.maps.checkInitialRender) {
                             if (currentLayer.markerClusterSettings.allowClustering) {
@@ -372,7 +372,7 @@ export class Marker {
                 if ((target.indexOf('_cluster_') > -1)) {
                     let isClusterSame: boolean = false;
                     const clusterElement: HTMLElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
-                    const indexes: number[] = clusterElement.innerHTML.split(',').map(Number);
+                    const indexes: number[] = layer.markerClusterSettings.shape === 'Balloon' ? clusterElement.children[0].innerHTML.split(',').map(Number) : clusterElement.innerHTML.split(',').map(Number);
                     collection = [];
                     for (const i of indexes) {
                         collection.push({ data: marker.dataSource[i], index: i });

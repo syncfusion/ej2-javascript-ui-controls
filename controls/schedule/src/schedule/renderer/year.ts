@@ -35,6 +35,9 @@ export class Year extends ViewBase implements IRenderer {
         const viewTypeClass: string = this.parent.activeViewOptions.orientation === 'Horizontal' ? 'e-horizontal' : 'e-vertical';
         addClass([this.element], [this.viewClass, viewTypeClass, className]);
         this.renderPanel(className);
+        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+            addClass([this.element], [cls.VIRTUAL_SCROLL_CLASS]);
+        }
         const calendarTable: HTMLElement = this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement;
         this.element.appendChild(calendarTable);
         this.element.querySelector('table').setAttribute('role', 'presentation');
@@ -116,7 +119,7 @@ export class Year extends ViewBase implements IRenderer {
                 const weekNumber: string = this.parent.getWeekNumberContent(weekDates);
                 const td: HTMLElement = createElement('td', {
                     className: 'e-week-number',
-                    attrs: { 'role': 'gridcell', 'title': 'Week ' + weekNumber },
+                    attrs: { 'role': 'gridcell', 'title': this.parent.localeObj.getConstant('week') + ' ' + weekNumber },
                     innerHTML: weekNumber
                 });
                 tr.appendChild(td);
@@ -259,6 +262,7 @@ export class Year extends ViewBase implements IRenderer {
     public onContentScroll(e: Event): void {
         const target: HTMLElement = e.target as HTMLElement;
         const headerWrapper: HTMLElement = this.getDatesHeaderElement();
+        this.parent.notify(event.virtualScroll, e);
         if (headerWrapper) {
             (<HTMLElement>headerWrapper.firstElementChild).scrollLeft = target.scrollLeft;
         }
@@ -267,6 +271,10 @@ export class Year extends ViewBase implements IRenderer {
         if (scrollTopElement) {
             scrollTopElement.scrollTop = target.scrollTop;
         }
+        if (!this.parent.isAdaptive) {
+            this.parent.uiStateValues.top = (e.target as HTMLElement).scrollTop;
+        }
+        this.parent.uiStateValues.left = (e.target as HTMLElement).scrollLeft;
         this.setPersistence();
     }
 
@@ -296,6 +304,17 @@ export class Year extends ViewBase implements IRenderer {
         if (leftPanelElement) {
             const isYScroll: boolean = contentWrapper.scrollWidth > contentWrapper.clientWidth;
             leftPanelElement.style.height = formatUnit(height - (isYScroll ? 17 : 0));
+        }
+        if (!args.isPreventScrollUpdate) {
+            if (this.parent.uiStateValues.isInitial) {
+                this.parent.uiStateValues.isInitial = false;
+            } else {
+                if (leftPanelElement) {
+                    leftPanelElement.scrollTop = this.parent.uiStateValues.top;
+                }
+                contentWrapper.scrollTop = this.parent.uiStateValues.top;
+                contentWrapper.scrollLeft = this.parent.uiStateValues.left;
+            }
         }
         this.retainScrollPosition();
     }

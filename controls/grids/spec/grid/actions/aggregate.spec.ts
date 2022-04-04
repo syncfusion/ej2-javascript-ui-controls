@@ -1623,4 +1623,55 @@ describe('Aggregates Functionality testing', () => {
         });
     });
 
+    describe('EJ2-57936 - Aggregates not shown when group expanded after collapsing using `groupCollapseAll` method', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ],
+                    allowGrouping: true,
+                    groupSettings: { columns: ['ShipCountry'], showGroupedColumn: true },
+                    aggregates: [
+                        {
+                            columns: [
+                                {
+                                    type: 'Sum',
+                                    field: 'Freight',
+                                    groupFooterTemplate: 'Total units: ${Sum}',
+                                },
+                                {
+                                    type: 'Max',
+                                    field: 'Freight',
+                                    groupCaptionTemplate: 'Maximum: ${Max}',
+                                },
+                            ],
+                        },
+                    ],
+                },done);
+        });
+        it('collapseAll method', () => {
+            let rows: any = grid.getRowsObject().filter((row: any) => row.isAggregateRow);
+            expect(rows[0].visible).toBeTruthy();
+            grid.groupModule.collapseAll();
+            expect(rows[0].visible).toBeFalsy();
+            expect(rows.length).not.toBe(0);
+        });
+        it('checking the summary row', () => {
+            let expandElem = grid.getContent().querySelectorAll('.e-recordpluscollapse');
+            grid.groupModule.expandCollapseRows(expandElem[0]);
+            expect((grid.getContentTable().querySelector('.e-summaryrow') as HTMLElement).style.display).toBe('');
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
 });

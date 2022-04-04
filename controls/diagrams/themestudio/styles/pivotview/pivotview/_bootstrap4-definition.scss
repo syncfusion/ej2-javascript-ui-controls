@@ -61,7 +61,7 @@ $pivotgrid-button-icon-color: rgba(255, 255, 255, .8) !default;
 $pivotgrid-button-active-icon-color: $pivotgrid-button-icon-color !default;
 $pivotgrid-icon-hover-color: $white !default;
 $pivotgrid-icon-focus-color: $pivotgrid-icon-hover-color !default;
-$pivotgrid-button-inner-padding: 5px !default;
+$pivotgrid-button-inner-padding: 4px !default;
 $pivotgrid-bigger-button-inner-padding: 7px !default;
 $pivotgrid-excel-member-filter-height: 170px !default;
 $pivotgrid-excel-filter-height: 234px !default;
@@ -100,6 +100,7 @@ $pivotgrid-bg-color: #5a6268;
 $pivotgrid-border-color: #545b62;
 $pivotgrid-active-border-color: #4e555b;
 $pivotgrid-box-shadow-color: rgba(108, 117, 125, .5);
+$pivot-toolbar-icon-hover-color: $pivotgrid-icon-hover-color !default;
 
 
 /*! component's common definitions and variables */

@@ -888,7 +888,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.titleSize = { height: null, width: null };
         }
         const height: number = (this.enablePeriodSelector ? this.toolbarHeight : 0) + this.titleSize.height;
-        tooltipDiv.setAttribute('style', 'position: relative; height:' + height + 'px');
+        (tooltipDiv as HTMLElement).style.cssText = 'position: relative; height:' + height + 'px';
         appendChildElement(false, this.element, tooltipDiv, false);
     }
 
@@ -910,7 +910,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     }
 
     public findCurrentData(totalData: Object, xName: string): Object {
-        let tempData: Object;
+        let tempData: Object = (!this.enablePeriodSelector && !this.enableSelector) ? totalData : undefined;
         if (totalData && this.startValue && this.endValue) {
             tempData = (totalData as Object[])
                 .filter((data: Object) => {

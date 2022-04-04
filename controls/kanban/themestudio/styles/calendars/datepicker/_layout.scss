@@ -56,18 +56,18 @@
       padding: 10px 10px 10px 15px;
 
       #{if(&, '&', '*')} .e-model-year {
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 32px;
+        font-size: $model-year-font-size;
+        font-weight: $model-year-font-weight;
+        line-height: $model-year-line-height;
         margin: 0;
     }
 }
 
     #{if(&, '&', '*')} .e-model-month,
     #{if(&, '&', '*')} .e-model-day {
-      font-size: 20px;
-      font-weight: 500;
-      line-height: 32px;
+      font-size: $model-month-font-size;
+      font-weight: $model-month-font-weight;
+      line-height: $model-month-line-height;
       margin: 0;
     }
 }

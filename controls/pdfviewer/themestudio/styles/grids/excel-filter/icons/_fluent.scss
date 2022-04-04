@@ -2,40 +2,40 @@
   /*! component icons */
 
   .e-icon-check::before {
-    content: '\e7b9';
+    content: '\e774';
   }
 
   #{&}.e-excelfilter {
     .e-icon-filter::before {
-      content: '\e7d8';
+      content: '\e7f7';
     }
 
     .e-excl-filter-icon::before {
-      content: '\e7d8';
+      content: '\e7f7';
     }
 
     .e-excl-filter-icon.e-filtered::before {
-      content: '\e7d9';
+      content: '\e72c';
     }
 
     .e-search-icon::before {
-      content: '\e7a8';
+      content: '\e754';
     }
 
     .e-ccsearch-icon::before {
-      content: '\e7a8';
+      content: '\e754';
     }
 
     .e-chkcancel-icon::before {
-      content: '\e74f';
+      content: '\e7e7';
     }
 
     .e-sortascending::before {
-      content: '\e818';
+      content: '\e7a3';
     }
 
     .e-sortdescending::before {
-      content: '\e819';
+      content: '\e7b6';
     }
   }
 }

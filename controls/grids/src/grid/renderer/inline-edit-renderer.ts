@@ -38,7 +38,7 @@ export class InlineEditRender {
         } else {
             tbody = isVirtualFrozen ? this.parent.getMovableContentTbody() : this.parent.getContentTable().querySelector( literals.tbody);
         }
-        args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
+        args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow', attrs: { role: 'row' } });
         if (tbody.querySelector('.e-emptyrow')) {
             const emptyRow: Element = tbody.querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
@@ -274,7 +274,7 @@ export class InlineEditRender {
     private renderMovable(ele: Element, mEle: Element): void {
         mEle.querySelector('tr').innerHTML = '';
         const cols: Column[] = this.parent.getColumns();
-        let k: number = 0;
+        let k: number = this.parent.isRowDragable() ? 1 : 0;
         for (let i: number = 0; i < cols.length; i++, k++) {
             if (cols[i].getFreezeTableName() === 'movable') {
                 mEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[k]));
@@ -306,10 +306,10 @@ export class InlineEditRender {
             td.appendChild(form);
             return td;
         }
-        const table: Element = this.parent.createElement('table', { className: 'e-table e-inline-edit', attrs: { cellspacing: '0.25' } });
+        const table: Element = this.parent.createElement('table', { className: 'e-table e-inline-edit', attrs: { cellspacing: '0.25', role: 'grid' } });
         table.appendChild(gObj.getContentTable().querySelector(literals.colGroup).cloneNode(true));
-        const tbody: Element = this.parent.createElement( literals.tbody);
-        const tr: Element = this.parent.createElement('tr');
+        const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
+        const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
         let i: number = 0;
         if (isDetail) {
             tr.insertBefore(this.parent.createElement('td', { className: 'e-detailrowcollapse' }), tr.firstChild);

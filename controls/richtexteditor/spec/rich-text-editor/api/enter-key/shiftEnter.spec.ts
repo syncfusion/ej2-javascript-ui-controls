@@ -20,6 +20,29 @@ let keyboardEventArgs = {
     type: 'keydown'
 };
 
+describe('Shift Enter key support - When `BR` is configured', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = true;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px'
+        });
+        done();
+    });
+
+    it('Press shift enter when RTE content is empty', function (): void {
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, nodetext, nodetext, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br><br></p>');
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('Shift Enter key support - When `P` is configured', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = true;

@@ -149,7 +149,7 @@ export class WordExport {
     private pictureNamespace: string = 'http://schemas.openxmlformats.org/drawingml/2006/picture';
     private aNamespace: string = 'http://schemas.openxmlformats.org/drawingml/2006/main';
     private a14Namespace: string = 'http://schemas.microsoft.com/office/drawing/2010/main';
-    // private SVG_namespace: string = 'http://schemas.microsoft.com/office/drawing/2016/SVG/main';
+    private svgNamespace: string = 'http://schemas.microsoft.com/office/drawing/2016/SVG/main';
     private rNamespace: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
     private rpNamespace: string = 'http://schemas.openxmlformats.org/package/2006/relationships';
     private vNamespace: string = 'urn:schemas-microsoft-com:vml';
@@ -301,10 +301,12 @@ export class WordExport {
     private mVerticalMerge: Dictionary<number, number>;
     private mGridSpans: Dictionary<number, number>;
     private mDocumentImages: Dictionary<string, any>;
+    private mSvgImages: Dictionary<string, any>;
     private mCustomXML: Dictionary<string, any>;
     private mDocumentCharts: Dictionary<string, any>;
     private mExternalLinkImages: Dictionary<string, string>;
     private mHeaderFooterImages: Dictionary<string, Dictionary<string, any>>;
+    private mHeaderFooterSvgImages: Dictionary<string, Dictionary<string, any>>;
     private mArchive: ZipArchive;
     private mArchiveExcel: ZipArchive;
     private mBookmarks: string[] = undefined;
@@ -347,6 +349,13 @@ export class WordExport {
         return this.mDocumentImages;
     }
     // Gets the collection of images present in the document body
+    private get svgImages(): Dictionary<string, any> {
+        if (this.mSvgImages === undefined) {
+            this.mSvgImages = new Dictionary<string, any>();
+        }
+        return this.mSvgImages;
+    }
+    // Gets the collection of images present in the document body
     private get externalImages(): Dictionary<string, string> {
         if (this.mExternalLinkImages === undefined) {
             this.mExternalLinkImages = new Dictionary<string, string>();
@@ -359,6 +368,13 @@ export class WordExport {
             this.mHeaderFooterImages = new Dictionary<string, Dictionary<string, any>>();
         }
         return this.mHeaderFooterImages;
+    }
+    // Gets the collections of images present in the HeaderFooters
+    private get headerFooterSvgImages(): Dictionary<string, Dictionary<string, any>> {
+        if (this.mHeaderFooterSvgImages === undefined) {
+            this.mHeaderFooterSvgImages = new Dictionary<string, Dictionary<string, any>>();
+        }
+        return this.mHeaderFooterSvgImages;
     }
     // Gets the collection of charts present in the document body
     private get documentCharts(): Dictionary<string, any> {
@@ -620,6 +636,10 @@ export class WordExport {
             this.mDocumentImages.destroy();
             this.mDocumentImages = undefined;
         }
+        if (this.mSvgImages) {
+            this.mSvgImages.destroy();
+            this.mSvgImages = undefined;
+        }
         if (this.mExternalLinkImages) {
             this.mExternalLinkImages.destroy();
             this.mExternalLinkImages = undefined;
@@ -627,6 +647,10 @@ export class WordExport {
         if (this.mHeaderFooterImages) {
             this.mHeaderFooterImages.destroy();
             this.mHeaderFooterImages = undefined;
+        }
+        if (this.mHeaderFooterSvgImages) {
+            this.mHeaderFooterSvgImages.destroy();
+            this.mHeaderFooterSvgImages = undefined;
         }
         if (this.mDocumentCharts) {
             this.mDocumentCharts.destroy();
@@ -3538,10 +3562,14 @@ export class WordExport {
     // Serialize the graphics element for pictures.
     private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
         let id: string = '';
+        let format: string;
         if (picture.isMetaFile && !isNullOrUndefined(picture.metaFileImageString)) {
-            picture.imageString = picture.metaFileImageString;
+            format = HelperMethods.formatClippedString(picture.metaFileImageString).extension;
+            if (format !== '.svg') {
+                picture.imageString = picture.metaFileImageString;
+            }
         }
-        id = this.updateShapeId(picture);
+        id = this.updateShapeId(picture, false);
         // picture.ShapeId = this.getNextDocPrID();
         // Processing picture
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
@@ -3590,7 +3618,9 @@ export class WordExport {
                 writer.writeAttributeString(undefined, 'link', this.rNamespace, id);
             }
         }
-
+        if (format === '.svg') {
+            this.serializeBlipExtensions(writer, picture);
+        }
         //End Element Blip
         writer.writeEndElement();
         if (picture.iscrop) {
@@ -3647,8 +3677,19 @@ export class WordExport {
         writer.writeEndElement();
         writer.writeEndElement();
     }
+    private serializeBlipExtensions(writer: XmlWriter, picture: any): void {
+        writer.writeStartElement('a', 'extLst', this.aNamespace);
+        writer.writeStartElement('a', "ext", this.aNamespace);
+        writer.writeAttributeString(undefined, 'uri', undefined, '{96DAC541-7B7A-43D3-8B79-37D633B846F1}');
+        writer.writeStartElement("asvg", "svgBlip", this.svgNamespace);
+        let id = this.updateShapeId(picture, true);
+        writer.writeAttributeString("r", "embed", undefined, id);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+    }
     /// Update the shape id.
-    private updateShapeId(picture: any): string {
+    private updateShapeId(picture: any, isSvgData: boolean): string {
         let id: string = '';
 
         let tOwner: any = this.paragraph;
@@ -3656,11 +3697,11 @@ export class WordExport {
         // Adding picture byte data to the corresponding picture collection 
         // depending on its owner subdocument
         if (this.headerFooter) {
-            id = this.updateHFImageRels(this.headerFooter, picture);
+            id = this.updateHFImageRels(this.headerFooter, picture, isSvgData);
         } else {
             if (id === '') {
                 if (tOwner.hasOwnProperty('sectionFormat') || tOwner.hasOwnProperty('inlines')) {
-                    id = this.addImageRelation(this.documentImages, picture);
+                    id = this.addImageRelation(!isSvgData? this.documentImages: this.svgImages, picture);
 
                     // if (owner is WFootnote)
                     // {
@@ -3696,7 +3737,7 @@ export class WordExport {
         return relationId;
     }
     // Update the HeaderFooter image relations.
-    private updateHFImageRels(hf: any, image: any): string {
+    private updateHFImageRels(hf: any, image: any, isSvgImage: boolean): string {
         let id: string = '';
         // UpdateImages(image);
 
@@ -3709,13 +3750,24 @@ export class WordExport {
                 if (hfColl.get(hfKeys[j]) === hf) {
                     headerId = hfKeys[j];
                     let headerImages: Dictionary<string, any>;
-                    if (this.headerFooterImages.containsKey(headerId)) {
-                        headerImages = this.headerFooterImages.get(headerId);
-                        id = this.addImageRelation(headerImages, image);
+                    if (isSvgImage) {
+                        if (this.headerFooterSvgImages.containsKey(headerId)) {
+                            headerImages = this.headerFooterSvgImages.get(headerId);
+                            id = this.addImageRelation(headerImages, image);
+                        } else {
+                            headerImages = new Dictionary<string, any>();
+                            id = this.addImageRelation(headerImages, image);
+                            this.headerFooterSvgImages.add(headerId, headerImages);
+                        }
                     } else {
-                        headerImages = new Dictionary<string, any>();
-                        id = this.addImageRelation(headerImages, image);
-                        this.headerFooterImages.add(headerId, headerImages);
+                        if (this.headerFooterImages.containsKey(headerId)) {
+                            headerImages = this.headerFooterImages.get(headerId);
+                            id = this.addImageRelation(headerImages, image);
+                        } else {
+                            headerImages = new Dictionary<string, any>();
+                            id = this.addImageRelation(headerImages, image);
+                            this.headerFooterImages.add(headerId, headerImages);
+                        }
                     }
                 }
             }
@@ -5171,6 +5223,12 @@ export class WordExport {
         if (!isNullOrUndefined(paragraphFormat.beforeSpacing)) {
             writer.writeAttributeString(undefined, 'before', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.beforeSpacing * this.twentiethOfPoint).toString());
         }
+        
+        if(!isNullOrUndefined(paragraphFormat.spaceBeforeAuto)) {
+            let value : string = (paragraphFormat.spaceBeforeAuto) ? "1" : "0";
+            writer.writeAttributeString(undefined, 'beforeAutospacing', this.wNamespace, value);
+        }
+
         //TODO:ISSUEFIX(paragraphFormat.beforeSpacing * this.twentiethOfPoint).toString());
 
         // if (paragraphFormat.HasValue(WParagraphFormat.SpacingBeforeAutoKey))
@@ -5185,10 +5243,15 @@ export class WordExport {
         //     }
         // }
 
-
         if (!isNullOrUndefined(paragraphFormat.afterSpacing)) {
             writer.writeAttributeString(undefined, 'after', this.wNamespace, this.roundToTwoDecimal(paragraphFormat.afterSpacing * this.twentiethOfPoint).toString());
         }
+        
+        if(!isNullOrUndefined(paragraphFormat.spaceAfterAuto)) {
+            let value : string = (paragraphFormat.spaceAfterAuto) ? "1" : "0";
+            writer.writeAttributeString(undefined, 'afterAutospacing', this.wNamespace, value);
+        }
+
         //TODO:ISSUEFIX(paragraphFormat.afterSpacing * this.twentiethOfPoint).toString());
 
 
@@ -5826,7 +5889,18 @@ export class WordExport {
             writer.writeAttributeString('w', 'formatting', this.wNamespace, '1');
         }
         if (this.protectionType && this.protectionType !== 'NoProtection') {
-            let editMode: string = this.protectionType === 'ReadOnly' ? 'readOnly' : 'forms';
+            let editMode: string;
+            switch (this.protectionType) {
+                case 'ReadOnly':
+                    editMode = 'readOnly';
+                    break;
+                case 'FormFieldsOnly':
+                    editMode = 'forms';
+                    break;
+                case 'CommentsOnly':
+                    editMode = 'comments';
+                    break;
+            }
             writer.writeAttributeString('w', 'edit', this.wNamespace, editMode);
         }
         writer.writeAttributeString('w', 'cryptProviderType', this.wNamespace, 'rsaAES');
@@ -6042,7 +6116,10 @@ export class WordExport {
 
             let writer: XmlWriter = new XmlWriter();
             writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
-            this.serializeImagesRelations(this.headerFooterImages.get(hfId), writer);
+            this.serializeImagesRelations(this.headerFooterImages.get(hfId), writer, false);
+            if (this.headerFooterSvgImages.containsKey(hfId)) {
+                this.serializeSvgImageRelation(this.headerFooterSvgImages.get(hfId), writer);
+            }
             // if (hasHFHyperlinks)
             //     SerializeHyperlinkRelations(stream, HeaderFooterHyperlinks[hfId]);
             // if (hasHFAlternateChunks)
@@ -6138,12 +6215,13 @@ export class WordExport {
 
         // SerializeIncludePictureUrlRelations(docRelstream, InclPicFieldUrl);
         // //// Creating relationships for every hyperlink and image containing in the document
-        this.serializeImagesRelations(this.documentImages, writer);
+        this.serializeImagesRelations(this.documentImages, writer, false);
+        this.serializeSvgImageRelation(this.svgImages,writer);
         // serialize custom xml
         this.serializeCustomXMLMapping(this.mCustomXML, writer);
         // serialize chart relations
         this.serializeChartDocumentRelations(this.documentCharts, writer);
-        // SerializeSvgImageRelation();
+
         //this.serializeExternalLinkImages(writer);
 
         // if (HasHyperlink && HyperlinkTargets.length > 0) {
@@ -6181,14 +6259,14 @@ export class WordExport {
         this.mArchive.addItem(zipArchiveItem);
     }
     // Serializes the image relations
-    private serializeImagesRelations(images: Dictionary<string, any>, writer: XmlWriter): void {
+    private serializeImagesRelations(images: Dictionary<string, any>, writer: XmlWriter, isSvg: boolean): void {
         if (images.length > 0) {
             let imagePath: string = '';
             let base64ImageString: string;
             let keys: string[] = images.keys;
             for (let i: number = 0; i < keys.length; i++) {
                 let mImage: any = images.get(keys[i]);
-                base64ImageString = mImage.imageString;
+                base64ImageString = !isSvg ? mImage.imageString : mImage.metaFileImageString;
 
                 if (isNullOrUndefined(base64ImageString)) {
                     imagePath = this.imagePath + '/0.jpeg';
@@ -6219,6 +6297,9 @@ export class WordExport {
         }
     }
 
+    private serializeSvgImageRelation(svgImages: Dictionary<string, any>, writer: XmlWriter): void {
+        this.serializeImagesRelations(svgImages, writer, true);
+    }
     /**
      * @private
      */

@@ -2,8 +2,10 @@
 /**
  * Schedule Week view spec
  */
+import { createElement, L10n } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Year, TimelineYear } from '../../../src/schedule/index';
 import * as util from '../util.spec';
+import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Year, TimelineYear);
@@ -392,6 +394,90 @@ describe('Schedule year view', () => {
             expect(eventPopup).toBeTruthy();
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
             (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
+        });
+    });
+
+    describe('EJ2CORE-692 - Year view week number title test case', () => {
+        let schObj: Schedule;
+        L10n.load({
+            'vi': {
+                'schedule': {
+                    'week': 'Tuần'
+                }
+            }
+        });
+        beforeEach((): void => {
+            schObj = undefined;
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
+        });
+        afterEach((): void => {
+            util.destroy(schObj);
+        });
+
+        it('vietnamese test case', () => {
+            util.loadCultureFiles('vi');
+            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), locale: 'vi', views: ['Year'], showWeekNumber: true }, '#Schedule');
+            const weekNoElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-year-view .e-week-number');
+            expect(weekNoElements[0].getAttribute('title')).toEqual('Tuần 1');
+            expect(weekNoElements[5].getAttribute('title')).toEqual('Tuần 6');
+        });
+    });
+
+    describe('EJ2-57740 - Checking the scroll position maintenance in Timeline year view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2020, 4, 20),
+                views: [{ option: 'TimelineYear' }],
+                group: {
+                    byGroupID: false,
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerColor: '#ffaa00' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('After the initial rendering', () => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            const monthWrap: HTMLElement = schObj.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER);
+            expect(contentWrap.scrollTop).toEqual(0);
+            expect(contentWrap.scrollLeft).toEqual(0);
+            expect(monthWrap.scrollTop).toEqual(0);
+        });
+
+        it('Change the scroll position', (done: DoneFn) => {
+            schObj.dataBound = () => done();
+            const contentWrap: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            util.triggerScrollEvent(contentWrap, 120, 140);            
+            schObj.showWeekend = false;
+            schObj.dataBind();
+        });
+        it('Ensure the changed position', () => {
+            const contentArea: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            const monthArea: HTMLElement = schObj.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER);
+            expect(contentArea.scrollTop).toEqual(120);
+            expect(contentArea.scrollLeft).toEqual(140);
+            expect(monthArea.scrollTop).toEqual(120);
         });
     });
 

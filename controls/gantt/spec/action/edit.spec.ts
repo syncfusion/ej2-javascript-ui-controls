@@ -210,6 +210,16 @@ describe('Gantt Edit support', () => {
             ganttObj.editModule.addRecord(data[0],'Below',2);
             expect(ganttObj.flatData.length).toBe(15);
             expect(ganttObj.dataSource[0].subtasks[1].TaskName).toBe('New Task');
+        });       
+
+        it('Add record above to child record', () => {
+            ganttObj.allowUnscheduledTasks = false;
+            ganttObj.dataBind();
+            let data: object[] = [{ TaskID: 21, TaskName: 'Child Added Above', Notes: 'Notes 6',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
+            ganttObj.editModule.addRecord(data[0],'Above',2);
+            expect(ganttObj.flatData.length).toBe(16);
+            expect(ganttObj.dataSource[0].subtasks[0].TaskName).toBe('Child Added Above');
         });
 
         it('Add record below to parent record', () => {
@@ -218,14 +228,14 @@ describe('Gantt Edit support', () => {
             let data: object[] = [{ TaskID: 16, TaskName: 'New Task', Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Below',1);
-            expect(ganttObj.flatData.length).toBe(16);
+            expect(ganttObj.flatData.length).toBe(17);
         });
 
         it('Add record with already exiting taskid', () => {
             let data: object[] = [{ TaskID: 16, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0]);
-            expect(ganttObj.flatData.length).toBe(17);
+            expect(ganttObj.flatData.length).toBe(18);
         });
 
         it('Add record with selected row', () => {
@@ -235,7 +245,7 @@ describe('Gantt Edit support', () => {
             let data: object[] = [{ TaskID: 18, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0]);
-            expect(ganttObj.flatData.length).toBe(18);
+            expect(ganttObj.flatData.length).toBe(19);
         });
 
         it('Add record with selected cell', () => {
@@ -245,7 +255,7 @@ describe('Gantt Edit support', () => {
             let data: object[] = [{ TaskID: 19, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0]);
-            expect(ganttObj.flatData.length).toBe(19);
+            expect(ganttObj.flatData.length).toBe(20);
         });
 
         it('Add record with selection module false value', () => {
@@ -254,7 +264,7 @@ describe('Gantt Edit support', () => {
             let data: object[] = [{ TaskID: 20, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Below');
-            expect(ganttObj.flatData.length).toBe(20);
+            expect(ganttObj.flatData.length).toBe(21);
         });
 
         it('Add record with Editing module false value', () => {
@@ -263,7 +273,7 @@ describe('Gantt Edit support', () => {
             let data: object[] = [{ TaskID: 20, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Below');
-            expect(ganttObj.flatData.length).toBe(20);
+            expect(ganttObj.flatData.length).toBe(21);
         });
 
         it('Add record without Editing module', () => {
@@ -272,14 +282,14 @@ describe('Gantt Edit support', () => {
             let data: object[] = [{ TaskID: 20, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Below');
-            expect(ganttObj.flatData.length).toBe(20);
+            expect(ganttObj.flatData.length).toBe(21);
         });
 
         it('Search record without Filter module', () => {
             ganttObj.filterModule.destroy();
             ganttObj.dataBind();
             ganttObj.search("child");
-            expect(ganttObj.flatData.length).toBe(20);
+            expect(ganttObj.flatData.length).toBe(21);
         });
 
         it('Changing height', () => {

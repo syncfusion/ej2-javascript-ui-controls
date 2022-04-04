@@ -2,10 +2,10 @@
 import { Chart } from '../chart';
 import { AnimationOptions, Animation, Browser, createElement } from '@syncfusion/ej2-base';
 import {
-    textElement, getValueXByPoint, stopTimer,
+    textElement, getValueXByPoint, stopTimer, findCrosshairDirection,
     getValueYByPoint, ChartLocation, withInBounds, removeElement
 } from '../../common/utils/helper';
-import { PathOption, Rect, Size, TextOption, findDirection, measureText, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { PathOption, Rect, Size, TextOption, measureText, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../axis/axis';
 import { CrosshairSettingsModel } from '../chart-model';
 
@@ -68,6 +68,8 @@ export class Crosshair {
 
     private mouseMoveHandler(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
+        chart.mouseX = chart.mouseX / chart.scaleX;
+        chart.mouseY = chart.mouseY / chart.scaleY;
         if (event.type === 'touchmove' && (Browser.isIos || Browser.isIos7) && chart.startMove && event.preventDefault) {
             event.preventDefault();
         }
@@ -225,7 +227,7 @@ export class Crosshair {
                 'position: absolute';
             const crosshairline: HTMLElement = document.getElementById(options.id);
             const crosshairtooltip: HTMLElement = document.getElementById(this.elementID + '_crosshair_axis');
-            crosshairline.setAttribute('style', style);
+            crosshairline.style.cssText = style;
             crossGroup.style.opacity = '1';
             if (crosshairtooltip) {
                 crosshairtooltip.style.opacity = '1';
@@ -278,14 +280,30 @@ export class Crosshair {
                             null, null, null, null, null, chart.enableCanvas
                         );
                     }
-                    direction = findDirection(
-                        this.rx, this.ry, rect, this.arrowLocation, 10,
+                    direction = findCrosshairDirection(
+                        this.rx, this.ry, rect, this.arrowLocation, 9,
                         this.isTop, this.isBottom, this.isLeft, this.valueX, this.valueY
                     );
                     pathElement.setAttribute('d', direction);
                     textElem.textContent = text;
                     textElem.setAttribute('x', (rect.x + padding).toString());
                     textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / 4).toString());
+                    if (this.chart.theme === 'Fluent' || this.chart.theme === "FluentDark") {
+                        
+                        const shadowId: string = this.chart.element.id + '_shadow';
+                        pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+                        let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
+                        shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
+                        shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+            
+                        const defElement: Element = this.chart.renderer.createDefs();
+                        defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
+                        axisGroup.appendChild(defElement);
+            
+                        defElement.innerHTML = shadow;
+                        pathElement.setAttribute('stroke', '#cccccc');
+                        pathElement.setAttribute('stroke-width', '0.5');
+                    }
                 } else {
                     removeElement(this.elementID + '_axis_tooltip_' + k);
                     removeElement(this.elementID + '_axis_tooltip_text_' + k);
@@ -325,7 +343,7 @@ export class Crosshair {
 
     private tooltipLocation(text: string, axis: Axis, bounds: Rect, axisRect: Rect): Rect {
 
-        const padding: number = 5; const arrowPadding: number = 10;
+        const padding: number = 5; const arrowPadding: number = 9;
         let tooltipRect: Rect;
         const boundsX: number = bounds.x;
         const boundsY: number = bounds.y;
@@ -355,10 +373,10 @@ export class Crosshair {
                 tooltipRect.x -= ((tooltipRect.x + tooltipRect.width) - (boundsX + bounds.width));
             }
             if (this.arrowLocation.x + arrowPadding / 2 > tooltipRect.x + tooltipRect.width - this.rx) {
-                this.arrowLocation.x = tooltipRect.x + tooltipRect.width - this.rx - arrowPadding / 2;
+                this.arrowLocation.x = tooltipRect.x + tooltipRect.width - this.rx - arrowPadding;
             }
-            if (this.arrowLocation.x - arrowPadding / 2 < tooltipRect.x + this.rx) {
-                this.arrowLocation.x = tooltipRect.x + this.rx + arrowPadding / 2;
+            if (this.arrowLocation.x - arrowPadding < tooltipRect.x + this.rx) {
+                this.arrowLocation.x = tooltipRect.x + this.rx + arrowPadding;
             }
         } else {
             scrollBarHeight = scrollBarHeight * (isOpposed ? 1 : -1);

@@ -227,6 +227,7 @@ $input-border-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-b
 $input-error-border-shadow:  inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-error-color, .6) !default;
 $input-success-border-shadow:   inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-success-color, .6) !default;
 $input-warning-border-shadow:   inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-warning-color, .6) !default;
+$float-label-rtl-value: -7px !default;
 
 @mixin input-sizing {
   box-sizing: border-box;

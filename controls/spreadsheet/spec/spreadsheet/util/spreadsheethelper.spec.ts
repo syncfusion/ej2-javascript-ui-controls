@@ -75,14 +75,14 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     public triggerKeyNativeEvent(keyCode: number, isCtrl: boolean = false, isShift: boolean = false,
-        element?: HTMLElement, type: string = 'keydown'): void {
+        element?: HTMLElement, type: string = 'keydown', isAltKey: boolean = false): void {
             if (!element) {
                 element = this.getElement();
             }
             let eventArg: Event = new Event(type);
             eventArg['keyCode'] = keyCode;
             eventArg['which'] = keyCode;
-            eventArg['altKey'] = false;
+            eventArg['altKey'] = isAltKey;
             eventArg['shiftKey'] = isShift;
             eventArg['ctrlKey'] = isCtrl;
             element.dispatchEvent(eventArg);
@@ -107,7 +107,7 @@ export class SpreadsheetHelper extends TestHelper {
             EventHandler.trigger(element, type, eventArg);
     }
 
-    public triggerMouseAction(type: string, coords?: { x: number, y: number },
+    public triggerMouseAction(type: string, coords?: { x: number, y: number, offsetX?: number, offsetY?: number },
         element?: HTMLElement | Document, target?: HTMLElement, isCtrl?: boolean, isDispatch?: boolean): void {
         if (!element) {
             element = this.getElement();
@@ -116,7 +116,7 @@ export class SpreadsheetHelper extends TestHelper {
             coords = { x: 0, y: 0 };
         }
         let eventArg: Object = this.copyObject(this.getEventObject('MouseEvents', type, isCtrl, isDispatch, coords.x, coords.y, target), {});
-        this.setMouseCoordinates(eventArg, coords.x, coords.y, target);
+        this.setMouseCoordinates(eventArg, coords.x, coords.y, target, coords.offsetX, coords.offsetY);
         eventArg['view'] = window;
         eventArg['bubbles'] = true;
         eventArg['cancelable'] =  true;
@@ -134,11 +134,17 @@ export class SpreadsheetHelper extends TestHelper {
         return destination;
     }
 
-    private setMouseCoordinates(eventarg: any, x: number, y: number, target: Element): Object {
+    private setMouseCoordinates(eventarg: any, x: number, y: number, target: Element, offsetX?: number, offsetY?: number): Object {
         eventarg.pageX = x;
         eventarg.pageY = y;
         eventarg.clientX = x;
         eventarg.clientY = y;
+        if (offsetX) {
+            eventarg.offsetX = offsetX;
+        }
+        if (offsetY) {
+            eventarg.offsetY = offsetY;
+        }
         eventarg.target = target;
         return eventarg;
     }
@@ -187,5 +193,30 @@ export class SpreadsheetHelper extends TestHelper {
 
     public setAnimationToNone(selector: string): void {
         (document.querySelector(selector) as any).ej2_instances[0].animationSettings.effect = 'None';
+    }
+
+    public openAndClickCMenuItem(rowIdx: number, colIdx: number, children: number[], isRowHdr?: boolean, isColHdr?: boolean, checkFn?: Function): void {
+        let td: HTMLElement;
+        let item: HTMLElement;
+        const cMenu: HTMLElement = this.getElement('.e-spreadsheet-contextmenu');
+        if (isRowHdr) {
+            td = this.invoke('getRowHeaderTable').rows[rowIdx].cells[colIdx];
+        } else if(isColHdr) {
+            td = this.invoke('getColHeaderTable').rows[rowIdx].cells[colIdx];
+        } else {
+            td = this.invoke('getCell', [rowIdx, colIdx]);
+        }
+        this.triggerMouseAction('contextmenu', { x: td.getBoundingClientRect().left + 1, y: td.getBoundingClientRect().top + 1 }, null, td);
+        children.forEach((childIdx: number, idx: number) => {
+            if (children.length - 1 === idx) {
+                if (checkFn) {
+                    checkFn();
+                }
+                (cMenu.querySelector('ul:nth-child(' + (idx + 1) + ') li:nth-child(' + childIdx + ')') as HTMLElement).click();
+            } else {
+                item = cMenu.querySelector('ul:nth-child(' + (idx + 1) + ') li:nth-child(' + childIdx + ')');
+                this.triggerMouseAction('mouseover', { x: item.getBoundingClientRect().left + 10, y: item.getBoundingClientRect().top + 10 }, cMenu, item);
+            }
+        });
     }
 }

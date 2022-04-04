@@ -3034,6 +3034,11 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(false)
     public isMultiline: boolean;
+    /**
+     * Get the pageIndex of the form field. Default value is -1.
+     */
+    @Property(-1)
+    public pageIndex: number;
 }
 /**
  * The `ContextMenuSettings` is used to show the context menu of PDF document.
@@ -4032,7 +4037,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
     // eslint-disable-next-line max-len
-    @Property({ name: '', id: '', type: '', isReadOnly: false, isSelected: false, isChecked: false, value: '', signatureType: [''], fontName: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '', options: [], signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
+    @Property({ name: '', id: '', type: '', isReadOnly: false, isSelected: false, isChecked: false, value: '', signatureType: [''], fontName: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '', pageIndex: -1, options: [], signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
     public formFieldCollections: FormFieldModel[];
 
     /**
@@ -6009,6 +6014,44 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Focus a form field in a document by its field name or the field object.
+     *
+     * @returns void
+     */
+     public focusFormField(field: any): void {
+        if (typeof(field) === "string") {
+            let fieldCollections: any = this.retrieveFormFields();
+            for (let i: number = 0; i < fieldCollections.length; i++) {
+                if(fieldCollections[i].name === field) {
+                    field = fieldCollections[i];
+                }
+            }
+        }
+        if (field) {
+            this.viewerBase.isFocusField = true;
+            this.viewerBase.focusField = field;
+            let currentField: any = document.getElementById(field.id);
+            if (this.formDesignerModule) {
+                this.navigationModule.goToPage(field.pageIndex + 1);
+            } else {
+                let pageIndex: number = parseFloat(field.id.split('_')[1]);
+                this.navigationModule.goToPage(pageIndex + 1);
+            }
+            if (currentField) {
+                if ((field.type === "SignatureField" || field.type === "InitialField") && this.formDesignerModule) {
+                    let y: number = field.bounds.y;
+                    let height: number = this.viewerBase.getPageHeight(field.pageIndex);
+                    this.bookmark.goToBookmark(field.pageIndex, height - y);
+                } else {
+                    currentField.focus();
+                }
+                this.viewerBase.isFocusField = false;
+                this.viewerBase.focusField = [];
+            }
+        }
+    }
+
+    /**
      * Update the form field values from externally.
      *
      * @param fieldValue
@@ -6018,16 +6061,33 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public updateFormFieldsValue(fieldValue: any): void {
         // eslint-disable-next-line
         let target: any = document.getElementById(fieldValue.id);
+        let isformDesignerModuleListBox: boolean = false;
         target= target? target: document.getElementById(fieldValue.id+'_content_html_element').children[0].children[0];
         if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
             target.value = fieldValue.value;
-        } else if (fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
+        } else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
             if (fieldValue.type === 'CheckBox') {
                 target.style.appearance = 'auto';
             }
-            target.checked = fieldValue.value;
-        } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox') {
-            target.options[target.selectedIndex].text = fieldValue.value;
+            if (this.formDesignerModule) {
+                if (fieldValue.type === 'RadioButton') {
+                    let radioButtonOption: any = {isSelected: fieldValue.isSelected};
+                    this.formDesignerModule.updateFormField(fieldValue, radioButtonOption);
+                } else {
+                    let checkBoxOption: any = {isChecked: fieldValue.isChecked};
+                    this.formDesignerModule.updateFormField(fieldValue, checkBoxOption);
+                }
+            } else {
+                target.checked = fieldValue.value;
+            }
+        } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
+            if (this.formDesignerModule) {
+                isformDesignerModuleListBox = true;
+                let dropDownListOption: any = { options: fieldValue.value };
+                this.formDesignerModule.updateFormField(fieldValue, dropDownListOption);
+            } else {
+                target.options[target.selectedIndex].text = fieldValue.value;
+            }
         }
         if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
             if (fieldValue.signatureType) {
@@ -6044,7 +6104,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
             this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
         } else {
-            this.formFieldsModule.updateDataInSession(target);
+            if (!isformDesignerModuleListBox) {
+                this.formFieldsModule.updateDataInSession(target);
+            }
         }
     }
 
@@ -6339,8 +6401,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             else
                 this.viewerBase.isInitialField = false;
             let target: any = document.getElementById(field.id);
+            if(target.style.visibility === "hidden"){
+                target.disabled = true;
+            }
             target = target ? target : (document.getElementById(field.id + '_content_html_element') ? document.getElementById(field.id + '_content_html_element').children[0].children[0] : null);
-            if (!this.signatureFieldSettings.isReadOnly && !eventArgs.cancel && target && !target.disabled && (target as any).classList.contains('e-pdfviewer-signatureformfields') && isLeftClick) {
+            if (!this.signatureFieldSettings.isReadOnly && !eventArgs.cancel && target && !target.disabled && (target as any).classList.contains('e-pdfviewer-signatureformfields') && (isLeftClick || isNullOrUndefined(isLeftClick))) {
                 this.viewerBase.signatureModule.showSignatureDialog(true);
             }
         }
@@ -6410,13 +6475,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireFormFieldPropertiesChangeEvent(name: string, field: IFormField, pageIndex: number, isValueChanged: boolean, isFontFamilyChanged: boolean,
         isFontSizeChanged: boolean, isFontStyleChanged: boolean, isColorChanged: boolean, isBackgroundColorChanged: boolean, isBorderColorChanged: boolean, 
         isBorderWidthChanged: boolean, isAlignmentChanged: boolean, isReadOnlyChanged: boolean, isVisibilityChanged: boolean, isMaxLengthChanged: boolean, 
-        isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, oldValue?: any, newValue?: any): void {
+        isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, oldValue?: any, newValue?: any, isNamechanged?: any): void {
         const eventArgs: FormFieldPropertiesChangeArgs = {
             name: name, field: field, pageIndex: pageIndex, isValueChanged: isValueChanged, isFontFamilyChanged: isFontFamilyChanged, isFontSizeChanged: isFontSizeChanged,
             isFontStyleChanged: isFontStyleChanged, isColorChanged: isColorChanged, isBackgroundColorChanged: isBackgroundColorChanged, isBorderColorChanged: isBorderColorChanged, 
             isBorderWidthChanged: isBorderWidthChanged, isAlignmentChanged: isAlignmentChanged, isReadOnlyChanged: isReadOnlyChanged, isVisibilityChanged: isVisibilityChanged, 
             isMaxLengthChanged: isMaxLengthChanged, isRequiredChanged: isRequiredChanged, isPrintChanged: isPrintChanged,
-            isToolTipChanged: isToolTipChanged, oldValue: oldValue, newValue: newValue
+            isToolTipChanged: isToolTipChanged, oldValue: oldValue, newValue: newValue, isNameChanged: !isNullOrUndefined(isNamechanged) ? isNamechanged: false
         };
         this.trigger('formFieldPropertiesChange', eventArgs);
     }
@@ -7301,7 +7366,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.annotation) {
             this.annotation.renderAnnotations(index, null, null, null, canvas);
-        } else {
+        } else if(this.formDesignerModule){
             this.formDesignerModule.updateCanvas(index, canvas);
         }
     }

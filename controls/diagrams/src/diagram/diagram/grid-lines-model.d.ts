@@ -128,4 +128,11 @@ export interface SnapSettingsModel {
      */
     snapObjectDistance?: number;
 
+    /**
+     * Defines the color of snapping lines
+     * 
+     * @default '#07EDE1'
+     */
+    snapLineColor?: string;
+
 }

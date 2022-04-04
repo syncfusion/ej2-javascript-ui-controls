@@ -110,10 +110,19 @@ export class ColumnMenu implements IAction {
         this.openColumnMenu({ target: this.parent.getColumnHeaderByField(field).querySelector('.e-columnmenu') });
     }
 
+    private afterFilterColumnMenuClose(): void {
+        if (this.columnMenu) {
+            this.columnMenu.items = this.getItems();
+            this.columnMenu.dataBind();
+            this.columnMenu.close();
+        }
+    }
+
     private openColumnMenu(e: { target: Element | EventTarget, preventDefault?: Function }): void {
         let pos: OffsetPosition = { top: 0, left: 0 };
         this.element.style.cssText = 'display:block;visibility:hidden';
         const elePos: ClientRect = this.element.getBoundingClientRect();
+        const gClient: ClientRect = this.parent.element.getBoundingClientRect();
         this.element.style.cssText = 'display:none;visibility:visible';
         this.headerCell = this.getHeaderCell(e);
         if (Browser.isDevice) {
@@ -125,6 +134,9 @@ export class ColumnMenu implements IAction {
             } else {
                 pos = calculatePosition(this.headerCell, 'right', 'bottom');
                 pos.left -= elePos.width;
+                if ((pos.left + elePos.width + 1) >= gClient.right) {
+                    pos.left -= 35;
+                }
             }
         }
         this.columnMenu.open(pos.top, pos.left);
@@ -155,6 +167,7 @@ export class ColumnMenu implements IAction {
             this.parent.on(events.filterDialogCreated, this.filterPosition, this);
         }
         this.parent.on(events.click, this.columnMenuHandlerClick, this);
+        this.parent.on(events.afterFilterColumnMenuClose, this.afterFilterColumnMenuClose, this);
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
@@ -172,6 +185,7 @@ export class ColumnMenu implements IAction {
             this.parent.off(events.filterDialogCreated, this.filterPosition);
         }
         this.parent.off(events.click, this.columnMenuHandlerClick);
+        this.parent.on(events.afterFilterColumnMenuClose, this.afterFilterColumnMenuClose);
         this.parent.off(events.keyPressed, this.keyPressHandler);
         this.parent.off(events.destroy, this.destroy);
     }

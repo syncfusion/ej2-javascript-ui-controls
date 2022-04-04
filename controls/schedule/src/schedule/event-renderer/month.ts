@@ -17,6 +17,7 @@ export class MonthEvent extends EventBase {
     public fields: EventFieldsMapping;
     public dateRender: Date[];
     public renderedEvents: Record<string, any>[] = [];
+    public eventsRendered: Record<string, any>[] = [];
     public eventHeight: number;
     private monthHeaderHeight: number = 0;
     public workCells: HTMLElement[];
@@ -47,7 +48,7 @@ export class MonthEvent extends EventBase {
         if (appElement.length > 0) {
             appElement = (this.parent.currentView === 'Month') ? appElement : [appElement[0]];
             for (const wrap of appElement) {
-                if (!wrap.classList.contains('e-more-indicator') && wrap.parentElement && wrap.parentElement.parentNode) {
+                if (wrap.parentElement && wrap.parentElement.parentNode) {
                     remove(wrap.parentElement);
                 }
             }
@@ -142,6 +143,7 @@ export class MonthEvent extends EventBase {
 
     public renderEventsHandler(dateRender: Date[], workDays: number[], resData?: TdData): void {
         this.renderedEvents = [];
+        this.eventsRendered = [];
         let eventsList: Record<string, any>[];
         let blockList: Record<string, any>[];
         let resIndex: number = 0;
@@ -168,7 +170,8 @@ export class MonthEvent extends EventBase {
                 setStyleAttribute(cell, { 'height': height + 'px' });
             });
         }
-        const cellDetail: ClientRect = this.workCells.slice(-1)[0].getBoundingClientRect();
+        const cellDetail: ClientRect = this.workCells[this.parent.activeView.isTimelineView() ?
+            0 : this.workCells.length - 1].getBoundingClientRect();
         this.cellWidth = cellDetail.width;
         this.cellHeight = cellDetail.height;
         this.dateRender = dateRender;
@@ -396,7 +399,8 @@ export class MonthEvent extends EventBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = scheduleId + viewName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            const eventTemplate: string = 'eventTemplate' + (this.parent.activeViewOptions.group.resources.length > 0 ? '_' + resIndex : '');
+            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, eventTemplate, templateId, false);
         } else {
             const eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
             const appointmentSubject: HTMLElement = createElement('div', {
@@ -491,17 +495,17 @@ export class MonthEvent extends EventBase {
         }
         const overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
-        let appHeight: number = this.eventHeight;
         this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
         const diffInDays: number = (event.data as Record<string, any>).count as number;
         if (startTime.getTime() <= endTime.getTime()) {
             const appWidth: number = (diffInDays * this.cellWidth) - 5;
             const cellTd: Element = this.workCells[day];
-            const appTop: number = (overlapCount * (appHeight + EVENT_GAP));
+            const appTop: number = (overlapCount * (this.eventHeight + EVENT_GAP));
             const height: number =
-                this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
+                this.monthHeaderHeight + ((overlapCount + 1) * (this.eventHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             const enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || enableAppRender) {
+                this.eventsRendered.push(extend({}, event, null, true) as Record<string, any>);
                 let appointmentElement: HTMLElement;
                 if (this.inlineValue) {
                     appointmentElement = this.parent.inlineModule.createInlineAppointmentElement();
@@ -515,28 +519,36 @@ export class MonthEvent extends EventBase {
                 if (this.parent.rowAutoHeight) {
                     const firstChild: HTMLElement = cellTd.parentElement.firstElementChild as HTMLElement;
                     this.updateCellHeight(firstChild, height);
+                } else if (cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS)) {
+                    this.renderMoreIndicators(diffInDays, day);
                 }
             } else {
-                for (let i: number = 0; i < diffInDays; i++) {
-                    const cellTd: HTMLElement = this.workCells[day + i];
-                    if (cellTd && isNullOrUndefined(cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS))) {
-                        const startDate: Date = new Date(this.dateRender[day + i].getTime());
-                        const endDate: Date = util.addDays(this.dateRender[day + i], 1);
-                        const groupIndex: string = cellTd.getAttribute('data-group-index');
-                        const filterEvents: Record<string, any>[] = this.getFilteredEvents(startDate, endDate, groupIndex);
-                        const appArea: number = this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight;
-                        appHeight = this.withIndicator ? appArea : appHeight;
-                        const renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
-                        const count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
-                        const moreIndicatorElement: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
-                        if (!isNullOrUndefined(groupIndex)) {
-                            moreIndicatorElement.setAttribute('data-group-index', groupIndex);
-                        }
-                        moreIndicatorElement.style.top = appArea + 'px';
-                        moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
-                        this.renderElement(cellTd, moreIndicatorElement);
-                        EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
+                this.renderMoreIndicators(diffInDays, day);
+            }
+        }
+    }
+
+    private renderMoreIndicators(diffInDays: number, day: number): void {
+        for (let i: number = 0; i < diffInDays; i++) {
+            if (this.workCells[day + i]) {
+                const startDate: Date = new Date(this.dateRender[day + i].getTime());
+                const endDate: Date = util.addDays(this.dateRender[day + i], 1);
+                const groupIndex: string = this.workCells[day + i].getAttribute('data-group-index');
+                const filterEvents: Record<string, any>[] = this.getFilteredEvents(startDate, endDate, groupIndex);
+                const renderedAppCount: number = this.getOverlapEvents(startDate, this.eventsRendered).length;
+                const count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
+                const indicator: HTMLElement = this.workCells[day + i].querySelector('.' + cls.MORE_INDICATOR_CLASS);
+                if (indicator) {
+                    indicator.innerHTML = this.getMoreIndicatorText(count);
+                } else {
+                    const moreIndicatorElement: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
+                    if (!isNullOrUndefined(groupIndex)) {
+                        moreIndicatorElement.setAttribute('data-group-index', groupIndex);
                     }
+                    moreIndicatorElement.style.top = (this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight) + 'px';
+                    moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
+                    this.renderElement(this.workCells[day + i], moreIndicatorElement);
+                    EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
                 }
             }
         }
@@ -659,7 +671,7 @@ export class MonthEvent extends EventBase {
     public getMoreIndicatorElement(count: number, startDate: Date, endDate: Date): HTMLElement {
         const moreIndicatorElement: HTMLElement = createElement('div', {
             className: cls.MORE_INDICATOR_CLASS,
-            innerHTML: '+' + this.parent.globalize.formatNumber(count) + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more')),
+            innerHTML: this.getMoreIndicatorText(count),
             attrs: {
                 'tabindex': '0',
                 'data-start-date': startDate.getTime().toString(),
@@ -668,6 +680,10 @@ export class MonthEvent extends EventBase {
             }
         });
         return moreIndicatorElement;
+    }
+
+    private getMoreIndicatorText(count: number): string {
+        return '+' + this.parent.globalize.formatNumber(count) + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
     }
 
     public removeHeightProperty(selector: string): void {

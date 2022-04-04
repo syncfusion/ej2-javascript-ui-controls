@@ -115,6 +115,7 @@ export class InfiniteScroll implements IAction {
         this.parent.on(events.editReset, this.resetInfiniteEdit, this);
         this.parent.on(events.virtualScrollEditSuccess, this.infiniteEditSuccess, this);
         this.parent.on(events.refreshVirtualCache, this.refreshInfiniteCache, this);
+        this.parent.on(events.refreshInfiniteEditrowindex, this.refreshInfiniteEditrowindex, this);
         this.parent.on(events.infiniteEditHandler, this.infiniteEditHandler, this);
         this.parent.on(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
         this.parent.on(events.modelChanged, this.modelChanged, this);
@@ -155,6 +156,7 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.editReset, this.resetInfiniteEdit);
         this.parent.off(events.virtualScrollEditSuccess, this.infiniteEditSuccess);
         this.parent.off(events.refreshVirtualCache, this.refreshInfiniteCache);
+        this.parent.on(events.refreshInfiniteEditrowindex, this.refreshInfiniteEditrowindex);
         this.parent.off(events.infiniteEditHandler, this.infiniteEditHandler);
         this.parent.off(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin);
         this.parent.off(events.modelChanged, this.modelChanged);
@@ -586,6 +588,10 @@ export class InfiniteScroll implements IAction {
         this.getEditedRowObject().data = args.data;
     }
 
+    private refreshInfiniteEditrowindex(args: { index: number }): void {
+        this.editRowIndex = args.index;
+    }
+
     private getEditedRowObject(): Row<Column> {
         const rowObjects: Row<Column>[] = this.parent.getRowsObject();
         let editedrow: Row<Column>;
@@ -821,7 +827,7 @@ export class InfiniteScroll implements IAction {
             gObj.pageSettings.currentPage = page;
             const cols: Column[] = gObj.getColumns();
             remove(gObj.getContent().querySelector('tbody'));
-            gObj.getContent().querySelector('table').appendChild(gObj.createElement('tbody'));
+            gObj.getContent().querySelector('table').appendChild(gObj.createElement('tbody', { attrs: { 'role': 'rowgroup' } }));
             let focusRows: Row<Column>[] = [];
             for (let i: number = (page === 1 || this.maxPage === page) ? 0 : -1, k = 0;
                 k < gObj.infiniteScrollSettings.maxBlocks; this.maxPage === page ? i-- : i++, k++) {

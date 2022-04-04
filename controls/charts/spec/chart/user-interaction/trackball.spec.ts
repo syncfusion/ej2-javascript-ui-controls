@@ -17,7 +17,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, ITooltipRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, ITooltipRenderEventArgs, ISharedTooltipRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DateTime, Category);
 Chart.Inject(Crosshair, Tooltip, DataEditing);
 
@@ -122,7 +122,7 @@ describe('Chart Trackball', () => {
 
                 // Track ball elements are appended into svg instead of series group element.
                 let trackSymbol: NodeListOf<Element> = document.querySelectorAll('.EJ2-Trackball');
-                expect(trackSymbol.length === 8).toBe(true);
+                expect(trackSymbol.length === 0).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -188,9 +188,6 @@ describe('Chart Trackball', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(tooltip.offsetLeft > x).toBe(true);
-                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
-                // let translateX: string[] = transform[1].split(',');
-                // expect(parseFloat(translateX[0]) > x).toBe(true);
                 let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
                 expect(group.childNodes[1].childNodes.length == 13).toBe(true);
                 done();
@@ -280,11 +277,7 @@ describe('Chart Trackball', () => {
                 trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
-                let value = tooltip.offsetLeft + elem.offsetLeft - 0.5;
-                expect(value === 100.5 || value === 95.5).toBe(true);
-                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
-                // let translateX: string[] = transform[1].split(',');
-                // expect(parseFloat(translateX[0]) + elem.offsetLeft === x).toBe(true);
+                expect(tooltip.offsetLeft + elem.offsetLeft < x).toBe(true);
                 tooltip = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 done();
@@ -318,7 +311,7 @@ describe('Chart Trackball', () => {
 
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
-                expect(tooltip.offsetTop < y + series.points[7].regions[0].height).toBe(true);
+                expect(tooltip.offsetTop > y + series.points[7].regions[0].height).toBe(true);
 
                 target = document.getElementById('container_Series_0_Point_1');
                 series = <Series>chartObj.series[0];
@@ -474,7 +467,7 @@ describe('Chart Trackball', () => {
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.tooltipRender = (args: ITooltipRenderEventArgs) => {
+            chartObj.sharedTooltipRender = (args: ISharedTooltipRenderEventArgs) => {
                 args.headerText = 'TrackBallTooltip';
             };
             chartObj.refresh();

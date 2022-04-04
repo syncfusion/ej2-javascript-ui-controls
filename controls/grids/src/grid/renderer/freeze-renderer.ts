@@ -326,7 +326,7 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
 
     protected refreshTbody(tbody: Element): void {
         if (tbody.childElementCount < 1) {
-            tbody.appendChild(this.parent.createElement('tr').appendChild(this.parent.createElement('td')));
+            tbody.appendChild(this.parent.createElement('tr', { attrs: { role: 'row' } }).appendChild(this.parent.createElement('td')));
         }
     }
 

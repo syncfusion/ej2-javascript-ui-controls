@@ -1219,8 +1219,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         } else {
             if (this.element.classList.contains(responsive)) {
                 removeClass([this.element], [responsive]);
-                for (let i: number = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
-                    const ele: HTMLElement = <HTMLElement>this.element.querySelectorAll('.e-panel')[i];
+                const internalPanels : any =  this.element.querySelectorAll(((this.element.id) ? '#' + this.element.id + ' > ' : '') + '.e-panel');
+                for (let i: number = 0; i < internalPanels.length; i++) {
+                    const ele: HTMLElement = internalPanels[i];
                     const cellInstance: PanelModel = this.getCellInstance(ele.id);
                     const row: number = parseInt(ele.getAttribute('data-row'), 10);
                     const col: number = parseInt(ele.getAttribute('data-col'), 10);

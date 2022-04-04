@@ -48,6 +48,14 @@ export class InsertHtml {
             nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).children[0], (range.startContainer as HTMLElement).children[0], 0, 0);
             range = nodeSelection.getRange(docElement);
         }
+        if (range.startContainer.nodeName === 'BR' && range.startOffset === 0 && range.startOffset === range.endOffset &&
+        range.startContainer === range.endContainer) {
+            const currentIndex: number = Array.prototype.slice.call(range.startContainer.parentElement.children).indexOf(range.startContainer as HTMLElement);
+            nodeSelection.setSelectionText(docElement,
+            (range.startContainer as HTMLElement).parentElement, (range.startContainer as HTMLElement).parentElement,
+            currentIndex + 1, currentIndex + 1);
+            range = nodeSelection.getRange(docElement);
+        }
         const isCursor: boolean = range.startOffset === range.endOffset && range.startOffset === 0 &&
         range.startContainer === range.endContainer;
         const isCollapsed: boolean = range.collapsed;
@@ -212,7 +220,7 @@ export class InsertHtml {
             } else {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
                 const nearestAnchor: Node = closest(range.startContainer.parentElement, 'a');
-                if (range.startContainer.nodeType === 3 && nearestAnchor) {
+                if (range.startContainer.nodeType === 3 && nearestAnchor && closest(nearestAnchor, 'span')) {
                     const immediateBlockNode: Node = this.getImmediateBlockNode(range.startContainer, editNode);
                     if ((immediateBlockNode as HTMLElement).querySelectorAll('br').length > 0) {
                         detach((immediateBlockNode as HTMLElement).querySelector('br'));
@@ -292,8 +300,9 @@ export class InsertHtml {
 
     private static getNodeCollection (range: Range, nodeSelection: NodeSelection, node: Node): Node[] {
         let nodes: Node[] = [];
-        if (range.startOffset === range.endOffset && range.startContainer === range.endContainer
-            && (range.startContainer.nodeName === 'TD' || (range.startContainer.nodeType !== 3 &&
+        if (range.startOffset === range.endOffset && range.startContainer === range.endContainer &&
+            range.startContainer.nodeName != 'BR' &&
+            (range.startContainer.nodeName === 'TD' || (range.startContainer.nodeType !== 3 &&
             (node as HTMLElement).classList && (node as HTMLElement).classList.contains('pasteContent')))) {
             nodes.push(range.startContainer.childNodes[range.endOffset]);
         } else {
@@ -347,7 +356,7 @@ export class InsertHtml {
                 let currentNode: Node = nodes[nodes.length-1];
                 let splitedElm: Node;
                 if ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR') && !isNOU(currentNode.parentElement) &&
-                currentNode.parentElement.textContent.trim().length === 0 && !(node as HTMLElement).classList.contains('pasteContent')) {
+                currentNode.parentElement.textContent.trim().length === 0) {
                     splitedElm = currentNode;
                 } else {
                     splitedElm = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);

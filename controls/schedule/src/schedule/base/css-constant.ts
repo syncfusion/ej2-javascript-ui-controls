@@ -44,6 +44,12 @@ export const DATE_HEADER_CONTAINER_CLASS: string = 'e-date-header-container';
 /** @private */
 export const HEADER_CELLS_CLASS: string = 'e-header-cells';
 /** @private */
+export const HEADER_WEEK_CELLS_CLASS: string = 'e-header-week-cell';
+/** @private */
+export const HEADER_MONTH_CELLS_CLASS: string = 'e-header-month-cell';
+/** @private */
+export const HEADER_YEAR_CELLS_CLASS: string = 'e-header-year-cell';
+/** @private */
 export const WORKDAY_CLASS: string = 'e-work-days';
 /** @private */
 export const OTHERMONTH_CLASS: string = 'e-other-month';

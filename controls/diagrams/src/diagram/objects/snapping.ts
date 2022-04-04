@@ -63,6 +63,11 @@ export class Snapping {
         }
         return selectedObject.wrapper;
     };
+    
+    public setSnapLineColor():string
+    {
+        return this.diagram.snapSettings.snapLineColor;
+    }
     /**
      * Snap to object
      *
@@ -599,8 +604,8 @@ export class Snapping {
             y: (end.y + transform.ty) * transform.scale
         };
         const line1: LineAttributes = {
-            stroke: '#07EDE1', strokeWidth: 1, startPoint: { x: start.x, y: start.y },
-            endPoint: { x: end.x, y: end.y }, fill: '#07EDE1', dashArray: '', width: 1,
+            stroke:this.setSnapLineColor(), strokeWidth: 1, startPoint: { x: start.x, y: start.y },
+            endPoint: { x: end.x, y: end.y }, fill:this.setSnapLineColor(), dashArray: '', width: 1,
             x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
             pivotY: 0, visible: true, opacity: 1, id: randomId()
         };
@@ -905,8 +910,8 @@ export class Snapping {
             line1 = {
                 startPoint: { x: start.x - 8, y: start.y - 1 },
                 endPoint: { x: start.x + 8, y: start.y - 1 },
-                stroke: '#07EDE1',
-                strokeWidth: 1, fill: '#07EDE1', dashArray: '', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
+                stroke: this.setSnapLineColor(),
+                strokeWidth: 1, fill: this.setSnapLineColor(), dashArray: '', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
                 pivotY: 0, visible: true, opacity: 1, id: randomId()
             };
             element.data = d;
@@ -925,8 +930,8 @@ export class Snapping {
             line1 = {
                 startPoint: { x: end.x - 8, y: end.y + 1 },
                 endPoint: { x: end.x + 8, y: end.y + 1 },
-                stroke: '#07EDE1',
-                strokeWidth: 1, fill: '#07EDE1', dashArray: '', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
+                stroke:this.setSnapLineColor(),
+                strokeWidth: 1, fill: this.setSnapLineColor(), dashArray: '', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
                 pivotY: 0, visible: true, opacity: 1, id: this.getAdornerLayerSvg().id + 'spacing'
             };
             this.line.push(line1);
@@ -951,8 +956,8 @@ export class Snapping {
                 visible: true, opacity: 1, id: randomId(),
                 startPoint: { x: start.x - 1, y: start.y - 8 },
                 endPoint: { x: start.x - 1, y: start.y + 8 },
-                stroke: '#07EDE1',
-                strokeWidth: 1, fill: '#07EDE1', dashArray: '0', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
+                stroke: this.setSnapLineColor(),
+                strokeWidth: 1, fill: this.setSnapLineColor(), dashArray: '0', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
                 pivotY: 0
             };
             this.line.push(line1);
@@ -962,15 +967,15 @@ export class Snapping {
                 pivotY: 0, visible: true, opacity: 1, id: randomId(),
                 startPoint: { x: end.x + 1, y: end.y - 8 },
                 endPoint: { x: end.x + 1, y: end.y + 8 },
-                stroke: '#07EDE1',
-                strokeWidth: 1, fill: '#07EDE1', dashArray: '0'
+                stroke: this.setSnapLineColor(),
+                strokeWidth: 1, fill: this.setSnapLineColor(), dashArray: '0'
             };
             this.line.push(line1);
             this.diagram.diagramRenderer.drawLine(snapLine, this.line.pop());
         }
         line1 = {
             startPoint: { x: start.x, y: start.y },
-            endPoint: { x: end.x, y: end.y }, stroke: '#07EDE1', strokeWidth: 1, fill: '#07EDE1',
+            endPoint: { x: end.x, y: end.y }, stroke: this.setSnapLineColor(), strokeWidth: 1, fill:this.setSnapLineColor(),
             dashArray: '0', width: 1, x: 0, y: 0, height: 0, angle: 0, pivotX: 0,
             pivotY: 0, visible: true, opacity: 1, id: randomId()
         };

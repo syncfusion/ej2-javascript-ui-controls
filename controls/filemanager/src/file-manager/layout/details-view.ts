@@ -1302,6 +1302,7 @@ export class DetailsView {
         case 'f2':
         case 'moveDown':
         case 'moveUp':
+        case 'ctrlD':
             e.preventDefault();
             break;
         default:

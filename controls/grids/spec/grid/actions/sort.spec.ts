@@ -815,4 +815,46 @@ describe('Sorting module => ', () => {
         });
     });
 
+    describe('EJ2-56094 - Multi-column sorting: missing sort number indicators => ', () => {
+        let gridObj: Grid;
+        let cols: any;
+        let actionComplete: (e?: Object) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    sortSettings: {
+                        columns: [
+                           { field: 'CustomerID', direction: 'Ascending' },
+                           { field: 'ShipCity', direction: 'Ascending' },
+                           { field: 'ShipCountry', direction: 'Descending' }
+                        ]
+                    },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship Cit', width: 150 },
+                        { field: 'ShipCountry', headerText: 'Ship Counrty', width: 150 },
+                        { field: 'Verified', width: 120, textAlign: 'Right' }]
+                }, done);
+        });
+        it('remove one column dynamically', (done: Function) => {
+            actionComplete = (args: Object): void => {
+                expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(2);
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.sortModule as any).clickHandler({
+                target: gridObj.element.querySelectorAll('.e-headercell')[3],
+                ctrlKey: false
+            });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = cols = null;
+        });
+    });
+
 });

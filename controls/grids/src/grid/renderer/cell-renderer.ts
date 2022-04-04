@@ -28,7 +28,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         this.formatter = locator.getService<IValueFormatter>('valueFormatter');
         this.parent = parent;
         this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { role: 'gridcell', tabindex: '-1' } });
-        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox' } });
+        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox', 'aria-label': 'checkbox' } });
     }
     /**
      * Function to return the wrapper for the TD content
@@ -76,7 +76,7 @@ export class CellRenderer implements ICellRenderer<Column> {
                 this.parent.renderTemplates();
             } else {
                 result = cell.column.getColumnTemplate()(
-                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], undefined, undefined, this.parent['root']);
             }
             if (!isReactCompiler) {
                 appendChildren(node, result);
@@ -215,6 +215,7 @@ export class CellRenderer implements ICellRenderer<Column> {
                 value = false;
             }
             const checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
+            this.rowChkBox.id = 'checkbox-' + cell.rowID;
             checkWrap.insertBefore(this.rowChkBox.cloneNode(), checkWrap.firstChild);
             node.appendChild(checkWrap);
         }

@@ -1,6 +1,6 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs, PivotActionInfo } from '../base/interface';
@@ -383,10 +383,10 @@ export class Toolbar {
     }
 
     private actionClick(args: ClickEventArgs): void {
-        let actionName: string = (args.item.id == "PivotViewnew") ? events.addNewReport : (args.item.id == "PivotViewsave") ? events.saveCurrentReport : (args.item.id == "PivotViewsaveas") ? events.saveAsCurrentReport
-            : (args.item.id == "PivotViewrename") ? events.renameCurrentReport : (args.item.id == "PivotViewremove") ? events.removeCurrentReport : (args.item.id == "PivotViewload") ? events.loadReports
-                : (args.item.id == "PivotViewformatting") ? events.openConditionalFormatting : (args.item.id == "PivotViewnumberFormatting") ? events.openNumberFormatting
-                    : (args.item.id == "PivotViewmdxQuery") ? events.MdxQuery : (args.item.id == "PivotViewfieldlist") ? events.showFieldList : '';
+        let actionName: string = (args.item.id == this.parent.element.id + 'new') ? events.addNewReport : (args.item.id == this.parent.element.id + 'save') ? events.saveCurrentReport : (args.item.id == this.parent.element.id + 'saveas') ? events.saveAsCurrentReport
+            : (args.item.id == this.parent.element.id + 'rename') ? events.renameCurrentReport : (args.item.id == this.parent.element.id + 'remove') ? events.removeCurrentReport : (args.item.id == this.parent.element.id + 'load') ? events.loadReports
+                : (args.item.id == this.parent.element.id + 'formatting') ? events.openConditionalFormatting : (args.item.id == this.parent.element.id + 'numberFormatting') ? events.openNumberFormatting
+                    : (args.item.id == this.parent.element.id + 'mdxQuery') ? events.MdxQuery : (args.item.id == this.parent.element.id + 'fieldlist') ? events.showFieldList : '';
         this.parent.actionObj.actionName = actionName;
         if (this.parent.actionBeginMethod()) {
             return;
@@ -427,7 +427,7 @@ export class Toolbar {
                     break;
                 case (this.parent.element.id + 'fieldlist'):
                     if (this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.dialogRenderer) {
-                        this.parent.pivotFieldListModule.dialogRenderer.fieldListDialog.show();
+                        this.parent.pivotFieldListModule.dialogRenderer.onShowFieldList();
                     }
                     break;
                 case (this.parent.element.id + 'formatting'):
@@ -998,6 +998,26 @@ export class Toolbar {
                         id: this.parent.element.id + 'grandtotalcolumn',
                         iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
+                    {
+                        separator: true
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('grandTotalPosition'),
+                        id: this.parent.element.id + 'grandtotalpositions',
+                        iconCss: cls.PIVOT_DISABLE_ICON + ' ' + cls.ICON,
+                        items: [
+                            {
+                                text: this.parent.localeObj.getConstant('top'),
+                                id: this.parent.element.id + 'top-position',
+                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                            },
+                            {
+                                text: this.parent.localeObj.getConstant('bottom'),
+                                id: this.parent.element.id + 'bottom-position',
+                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                            },
+                        ]
+                    }
                 ]
             }];
             this.grandTotalMenu = new Menu(
@@ -1094,6 +1114,9 @@ export class Toolbar {
                 label: this.parent.localeObj.getConstant('multipleAxes'),
                 cssClass: 'e-multipleAxes',
                 checked: this.parent.chartSettings.enableMultipleAxis,
+                change: (args: StateChange) => {
+                    document.getElementById(this.parent.element.id + '_' + 'multipleAxes').click();
+                },
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale
             });
@@ -1120,6 +1143,9 @@ export class Toolbar {
                 label: this.parent.localeObj.getConstant('showLegend'),
                 checked: this.getLableState(this.parent.chartSettings.chartSeries.type),
                 cssClass: 'e-showLegend',
+                change: (args: StateChange) => {
+                    document.getElementById(this.parent.element.id + '_' + 'showLegend').click();
+                },
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale
             });
@@ -1179,26 +1205,38 @@ export class Toolbar {
         }
     }
     private updateGrandtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
-        if (!select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
+        if (!(args.parentItem.id == this.parent.element.id + 'grandtotalpositions')) {
+            if (!select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+                select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
+            }
+            if (!select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+                select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
+            }
+            if (!select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+                select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
+            }
+            if (!select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+                select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
+            }
+            if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
+                select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
+            } else if (this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
+                select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
+            } else if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
+                select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
+            } else if (!this.parent.dataSourceSettings.showGrandTotals || (!this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals)) {
+                select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
+            }
         }
-        if (!select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
-        }
-        if (!select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
-        }
-        if (!select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
-            select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
-        }
-        if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
-            select('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
-            select('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
-            select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (!this.parent.dataSourceSettings.showGrandTotals || (!this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals)) {
-            select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
+        else {
+            select('#' + this.parent.element.id + 'top-position' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
+            if (this.parent.dataSourceSettings.grandTotalsPosition == 'Top') {
+                select('#' + this.parent.element.id + 'top-position' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
+            }
+            select('#' + this.parent.element.id + 'bottom-position' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
+            if (this.parent.dataSourceSettings.grandTotalsPosition == 'Bottom') {
+                select('#' + this.parent.element.id + 'bottom-position' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
+            }
         }
     }
     /* eslint-enable max-len */
@@ -1220,14 +1258,14 @@ export class Toolbar {
     private menuItemClick(args: ClickEventArgs): void {
         let exportArgs: BeforeExportEventArgs = {};
         let type: string;
-        let actionName: string = (args.item.id == "PivotViewgrid") ? events.tableView : (args.item.id == "PivotView_Column") ? events.chartView : (args.item.id == "PivotView_Bar") ? events.chartView : (args.item.id == "PivotView_Line") ? events.chartView
-            : (args.item.id == "PivotView_Area") ? events.chartView : (args.item.id == "PivotView_Scatter") ? events.chartView : (args.item.id == "PivotView_Polar") ? events.chartView : (args.item.id == "PivotView_ChartMoreOption") ? events.chartView
-                : (args.item.id == "PivotView_multipleAxes") ? events.multipleAxis : (args.item.id == "PivotView_showLegend") ? events.showLegend : (args.item.id == "PivotViewpdf") ? events.pdfExport : (args.item.id == "PivotViewpng") ? events.pngExport
-                    : (args.item.id == "PivotViewexcel") ? events.excelExport : (args.item.id == "PivotViewcsv") ? events.csvExport : (args.item.id == "PivotViewjpeg") ? events.jpegExport : (args.item.id == "PivotViewsvg") ? events.svgExport
-                        : (args.item.id == "PivotViewnotsubtotal") ? events.hideSubTotals : (args.item.id == "PivotViewsubtotalrow") ? events.subTotalsRow : (args.item.id == "PivotViewsubtotalcolumn") ? events.subTotalsColumn
-                            : (args.item.id == "PivotViewsubtotal") ? events.showSubTotals : (args.item.id == "PivotViewnotgrandtotal") ? events.hideGrandTotals : (args.item.id == "PivotViewgrandtotalrow") ? events.grandTotalsRow
-                                : (args.item.id == "PivotViewgrandtotalcolumn") ? events.grandTotalsColumn : (args.item.id == "PivotViewgrandtotal") ? events.showGrandTotals
-                                    : (args.item.id == "PivotViewnumberFormattingMenu") ? events.numberFormattingMenu : (args.item.id == "PivotViewconditionalFormattingMenu") ? events.conditionalFormattingMenu : '';
+        let actionName: string = (args.item.id == this.parent.element.id + 'grid') ? events.tableView : (args.item.id == this.parent.element.id + '_' + "Column") ? events.chartView : (args.item.id == this.parent.element.id + '_' + "Bar") ? events.chartView : (args.item.id == this.parent.element.id + '_' + "Line") ? events.chartView
+            : (args.item.id == this.parent.element.id + '_' + "Area") ? events.chartView : (args.item.id == this.parent.element.id + '_' + "Scatter") ? events.chartView : (args.item.id == this.parent.element.id + '_' + "Polar") ? events.chartView : (args.item.id == this.parent.element.id + '_' + "ChartMoreOption") ? events.chartView
+                : (args.item.id == this.parent.element.id + '_' + "multipleAxes") ? events.multipleAxis : (args.item.id == this.parent.element.id + '_' + "showLegend") ? events.showLegend : (args.item.id == this.parent.element.id + "pdf") ? events.pdfExport : (args.item.id == this.parent.element.id + "png") ? events.pngExport
+                    : (args.item.id == this.parent.element.id + "excel") ? events.excelExport : (args.item.id == this.parent.element.id + "csv") ? events.csvExport : (args.item.id == this.parent.element.id + "jpeg") ? events.jpegExport : (args.item.id == this.parent.element.id + "svg") ? events.svgExport
+                        : (args.item.id == this.parent.element.id + "notsubtotal") ? events.hideSubTotals : (args.item.id == this.parent.element.id + "subtotalrow") ? events.subTotalsRow : (args.item.id == this.parent.element.id + "subtotalcolumn") ? events.subTotalsColumn
+                            : (args.item.id == this.parent.element.id + "subtotal") ? events.showSubTotals : (args.item.id == this.parent.element.id + "notgrandtotal") ? events.hideGrandTotals : (args.item.id == this.parent.element.id + "grandtotalrow") ? events.grandTotalsRow
+                                : (args.item.id == this.parent.element.id + "grandtotalcolumn") ? events.grandTotalsColumn : (args.item.id == this.parent.element.id + "grandtotal") ? events.showGrandTotals
+                                    : (args.item.id == this.parent.element.id + "numberFormattingMenu") ? events.numberFormattingMenu : (args.item.id == this.parent.element.id + "conditionalFormattingMenu") ? events.conditionalFormattingMenu : '';
         this.parent.actionObj.actionName = actionName;
         if (this.parent.actionBeginMethod()) {
             return;
@@ -1390,6 +1428,16 @@ export class Toolbar {
                         true);
                     this.parent.refreshData();
                     break;
+                case (this.parent.element.id + 'top-position'):
+                    this.parent.setProperties(
+                        { dataSourceSettings: { grandTotalsPosition: 'Top' } }, true);
+                    this.parent.refreshData();
+                    break;
+                case (this.parent.element.id + 'bottom-position'):
+                    this.parent.setProperties(
+                        { dataSourceSettings: { grandTotalsPosition: 'Bottom' } }, true);
+                    this.parent.refreshData();
+                    break;
                 case (this.parent.element.id + 'numberFormattingMenu'):
                     if (this.parent.numberFormattingModule) {
                         this.parent.numberFormattingModule.showNumberFormattingDialog();
@@ -1517,7 +1565,7 @@ export class Toolbar {
                 }
                 this.parent.chart.setProperties({ width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()) }, true);   /* eslint-disable-line */
                 if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
-                    this.parent.pivotChartModule.updateView();
+                    this.parent.chart.refresh();
                 } else {
                     this.parent.chartSettings.chartSeries.type = type;
                 }

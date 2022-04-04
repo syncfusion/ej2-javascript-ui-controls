@@ -1,10 +1,10 @@
-import { Workbook, SheetModel, CellModel, getCell, setCell, getData } from '../base/index';
+import { Workbook, SheetModel, CellModel, getCell, setCell, getData, getSheet } from '../base/index';
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
 import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
 import { parseIntValue, SortCollectionModel } from '../common/index';
 import { initiateSort } from '../common/event';
-import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 
 /**
  * The `WorkbookSort` module is used to handle sort action in Spreadsheet.
@@ -54,8 +54,9 @@ export class WorkbookSort {
         eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs>, previousSort: SortCollectionModel }): void {
         const args: BeforeSortEventArgs = eventArgs.args;
         const deferred: Deferred = new Deferred();
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        let range: number[] = getSwapRange(getIndexesFromAddress(args.range));
+        const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(args.range);
+        const sheet: SheetModel = getSheet(this.parent, addressInfo.sheetIndex);
+        let range: number[] = getSwapRange(addressInfo.indices);
         const sortOptions: SortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
         let isSingleCell: boolean = false;
 
@@ -82,9 +83,11 @@ export class WorkbookSort {
             }
         }
         if ((isNullOrUndefined(args.sortOptions) || isNullOrUndefined(args.sortOptions.containsHeader)) && !isSingleCell) {
-            if (!isNullOrUndefined(getCell(range[0], range[1], sheet)) && !isNullOrUndefined(getCell(range[0] + 1, range[1], sheet))) {
-                if (typeof getCell(range[0], range[1], sheet).value === typeof getCell(range[0] + 1, range[1], sheet).value) {
-                    containsHeader = false;
+            const firstCell: CellModel = getCell(range[0], range[1], sheet);
+            const secondCell: CellModel = getCell(range[0] + 1, range[1], sheet);
+            if (firstCell && secondCell) {
+                if (typeof firstCell.value === typeof secondCell.value) {
+                    containsHeader = !this.isSameStyle(firstCell.style, secondCell.style);
                 } else {
                     containsHeader = true;
                 }
@@ -95,6 +98,7 @@ export class WorkbookSort {
         let eCIdx: number;
         const cell: number[] = getCellIndexes(sheet.activeCell);
         const header: string = getColumnHeaderText(cell[1] + 1);
+        delete sortOptions.containsHeader;
         let sortDescriptors: SortDescriptor | SortDescriptor[] = sortOptions.sortDescriptors;
         const address: string = getRangeAddress(range);
         getData(this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null, cell[1]).then((jsonData: { [key: string]: CellModel }[]) => {
@@ -133,7 +137,8 @@ export class WorkbookSort {
                     sRIdx = parseInt(jsonData[index][rowKey] as string, 10) - 1;
                     for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
                         colName = getColumnHeaderText(sCIdx + 1);
-                        cell = data[colName] as CellModel;
+                        cell = extend({}, data[colName] as CellModel, null, true);
+                        this.skipBorderOnSorting(sRIdx, sCIdx, sheet, cell);
                         if (cell && cell.formula) {
                             cell.formula =
                             getUpdatedFormula([sRIdx, sCIdx], [parseInt(data[rowKey] as string, 10) - 1, sCIdx], sheet, cell);
@@ -147,6 +152,29 @@ export class WorkbookSort {
                 deferred.resolve(sortArgs);
             });
         });
+    }
+
+    private skipBorderOnSorting(rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel): void {
+        const prevCell: CellModel = getCell(rowIndex, colIndex, sheet);
+        const borders: string[] = ['borderBottom', 'borderTop', 'borderRight', 'borderLeft', 'border'];
+        if (cell && cell.style) {
+            for (const border of borders) {
+                delete cell.style[border];
+            }
+        }
+        if (prevCell && prevCell.style) {
+            for (const border of borders) {
+                if (prevCell.style[border]) {
+                    if (!cell) {
+                        cell = {};
+                    }
+                    if (!cell.style) {
+                        cell.style = {};
+                    }
+                    cell.style[border] = prevCell.style[border];
+                }
+            }
+        }
     }
 
     private isSameStyle(firstCellStyle: CellStyleModel, secondCellStyle: CellStyleModel): boolean {

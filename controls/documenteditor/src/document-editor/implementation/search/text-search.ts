@@ -256,15 +256,15 @@ export class TextSearch {
         this.isHeader = false; this.isFooter = false;
         this.findInlineText(section, pattern, findOption, isFirstMatch, results, selectionEnd);
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            const headerWidget: HeaderFooterWidget = this.documentHelper.pages[i].headerWidget as HeaderFooterWidget;
-            if (!isNullOrUndefined(headerWidget)) {
+            const headerWidget: HeaderFooterWidget = this.documentHelper.pages[i].headerWidgetIn as HeaderFooterWidget;
+            if (!isNullOrUndefined(headerWidget) && isNullOrUndefined(headerWidget.parentHeaderFooter)) {
                 this.isHeader = true; this.isFooter = false;
                 this.findInlineText(headerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
             }
         }
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            const footerWidget: HeaderFooterWidget = this.documentHelper.pages[i].footerWidget as HeaderFooterWidget;
-            if (!isNullOrUndefined(footerWidget)) {
+            const footerWidget: HeaderFooterWidget = this.documentHelper.pages[i].footerWidgetIn as HeaderFooterWidget;
+            if (!isNullOrUndefined(footerWidget) && isNullOrUndefined(footerWidget.parentHeaderFooter)) {
                 this.isHeader = false; this.isFooter = true;
                 this.findInlineText(footerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
             }

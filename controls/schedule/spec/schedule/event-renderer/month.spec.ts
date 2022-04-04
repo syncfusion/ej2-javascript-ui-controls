@@ -3,9 +3,14 @@
  * Month view appointment rendering spec
  */
 import { closest, Browser, Internationalization } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, TimelineMonth, Agenda, MoreEventsClickArgs, CallbackFunction } from '../../../src/schedule/index';
+import {
+    Schedule, ScheduleModel, Day, Week, WorkWeek, Month, TimelineMonth, Agenda, MoreEventsClickArgs,
+    CallbackFunction, EventRenderedArgs, EJ2Instance
+} from '../../../src/schedule/index';
+import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { triggerMouseEvent } from '../util.spec';
-import { testData } from '../base/datasource.spec';
+import { testData, moreIndicatorData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -311,6 +316,193 @@ describe('Month Event Render Module', () => {
             expect(schObj.eventsData.length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
             schObj.refreshEvents();
+        });
+    });
+
+    describe('EJ2-56503 - Month view event rendered arguments checking', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Normal event',
+            StartTime: new Date(2017, 10, 8, 10),
+            EndTime: new Date(2017, 10, 8, 12)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: ['Month'],
+                height: 'auto', width: '100%',
+                selectedDate: new Date(2017, 10, 6)
+            };
+            schObj = util.createSchedule(model, sampleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking event rendered event args', (done: DoneFn) => {
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                expect((args.data[schObj.eventFields.startTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 10).getTime());
+                expect((args.data[schObj.eventFields.endTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 12).getTime());
+                done();
+            };
+            schObj.refreshEvents();
+        });
+    });
+
+    describe('EJ2-57751 - Month view more indicator count is wrong', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                views: ['Month'],
+                selectedDate: new Date(2021, 1, 15)
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking more indicator count values', () => {
+            const moreIndicators: NodeListOf<Element> = schObj.element.querySelectorAll('.e-more-indicator');
+            expect(moreIndicators.length).toEqual(6);
+            expect(moreIndicators[0].textContent).toEqual('+2 more');
+            expect(moreIndicators[1].textContent).toEqual('+3 more');
+            expect(moreIndicators[2].textContent).toEqual('+3 more');
+            expect(moreIndicators[3].textContent).toEqual('+3 more');
+            expect(moreIndicators[4].textContent).toEqual('+3 more');
+            expect(moreIndicators[5].textContent).toEqual('+2 more');
+        });
+        it('Adding resources', (done: Function) => {
+            schObj.dataBound = () => done();
+            schObj.resources = [{
+                field: 'GroupId', title: 'Owner', name: 'Owners',
+                dataSource: [
+                    { GroupText: 'Group A', GroupId: 1, GroupColor: '#1aaa55' },
+                    { GroupText: 'Group B', GroupId: 2, GroupColor: '#357cd2' }
+                ],
+                textField: 'GroupText', idField: 'GroupId', colorField: 'GroupColor'
+            }];
+            schObj.group = { resources: ['Owners'] };
+            schObj.dataBind();
+        });
+        it('Checking more indicator count in resource case', () => {
+            const moreIndicators: NodeListOf<Element> = schObj.element.querySelectorAll('.e-more-indicator');
+            expect(moreIndicators.length).toEqual(9);
+            expect(moreIndicators[0].textContent).toEqual('+1 more');
+            expect(moreIndicators[1].textContent).toEqual('+1 more');
+            expect(moreIndicators[2].textContent).toEqual('+1 more');
+            expect(moreIndicators[3].textContent).toEqual('+3 more');
+            expect(moreIndicators[4].textContent).toEqual('+4 more');
+            expect(moreIndicators[5].textContent).toEqual('+4 more');
+            expect(moreIndicators[6].textContent).toEqual('+3 more');
+            expect(moreIndicators[7].textContent).toEqual('+3 more');
+            expect(moreIndicators[8].textContent).toEqual('+2 more');
+        });
+        it('Adding new appointment', (done: Function) => {
+            schObj.dataBound = () => done();
+            const data: Record<string, any>[] = [{
+                Id: 8,
+                Subject: 'id 8',
+                StartTime: new Date(2021, 1, 8, 0, 0),
+                EndTime: new Date(2021, 1, 20, 0, 0),
+                IsAllDay: true,
+                GroupId: 2
+            }];
+            schObj.addEvent(data);
+            schObj.dataBind();
+        });
+        it('Checking more indicator count in after CRUD action', () => {
+            const moreIndicators: NodeListOf<Element> = schObj.element.querySelectorAll('.e-more-indicator');
+            expect(moreIndicators.length).toEqual(9);
+            expect(moreIndicators[0].textContent).toEqual('+2 more');
+            expect(moreIndicators[1].textContent).toEqual('+2 more');
+            expect(moreIndicators[2].textContent).toEqual('+2 more');
+            expect(moreIndicators[3].textContent).toEqual('+4 more');
+            expect(moreIndicators[4].textContent).toEqual('+5 more');
+            expect(moreIndicators[5].textContent).toEqual('+5 more');
+            expect(moreIndicators[6].textContent).toEqual('+4 more');
+            expect(moreIndicators[7].textContent).toEqual('+4 more');
+            expect(moreIndicators[8].textContent).toEqual('+2 more');
+        });
+    });
+
+    describe('EJ2-57751 - Month view more indicator count is wrong checking in maximum appointment height mode', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                views: ['Month'],
+                selectedDate: new Date(2021, 1, 15),
+                eventSettings: {
+                    enableMaxHeight: true,
+                    enableIndicator: true
+                }
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Enable enableMaxHeight and enableIndicator properties more indicator count', () => {
+            const moreIndicators: NodeListOf<Element> = schObj.element.querySelectorAll('.e-more-indicator');
+            expect(moreIndicators.length).toEqual(9);
+            expect(moreIndicators[0].textContent).toEqual('+1 more');
+            expect(moreIndicators[1].textContent).toEqual('+1 more');
+            expect(moreIndicators[2].textContent).toEqual('+1 more');
+            expect(moreIndicators[3].textContent).toEqual('+3 more');
+            expect(moreIndicators[4].textContent).toEqual('+4 more');
+            expect(moreIndicators[5].textContent).toEqual('+4 more');
+            expect(moreIndicators[6].textContent).toEqual('+3 more');
+            expect(moreIndicators[7].textContent).toEqual('+3 more');
+            expect(moreIndicators[8].textContent).toEqual('+2 more');
+        });
+    });
+
+    describe('EJ2-58442 - The occurrences are not creating properly if we cleared the until date and set again', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                views: ['Month'],
+                selectedDate: new Date(2022, 2, 6),
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Check the recurrence event occurrences count', async (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData[0].RecurrenceRule).toEqual('FREQ=WEEKLY;BYDAY=MO,TU;INTERVAL=1;UNTIL=20220308T000000Z;');
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+                done();
+            }
+            const workCell: HTMLTableCellElement = schObj.element.querySelector("[data-date='1646611200000']");
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+            const editor: HTMLElement = document.querySelector('.e-schedule-dialog.e-popup-open');
+            util.triggerMouseEvent(editor.querySelector(".e-all-day.e-field") as HTMLElement, 'click');
+            const repeatElement: DropDownList =
+                (editor.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            repeatElement.index = 2; repeatElement.dataBind();
+            const endOnElement: DropDownList =
+                (editor.querySelector('.e-end-on-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            endOnElement.index = 1; endOnElement.dataBind();
+            const recEditor: RecurrenceEditor =
+                (editor.querySelector('.e-recurrenceeditor') as EJ2Instance).ej2_instances[0] as RecurrenceEditor;
+            expect(recEditor.getRecurrenceRule()).toEqual('FREQ=WEEKLY;BYDAY=MO;INTERVAL=1;UNTIL=20220506T090000Z;');
+            util.triggerMouseEvent(editor.querySelector('.e-end-on-date .e-clear-icon'), 'mousedown');
+            async function openUntil(done: DoneFn) {
+                util.triggerMouseEvent(editor.querySelector('.e-end-on-date .e-date-icon'), 'mousedown');
+                done();
+            }
+            await openUntil(done);
+            util.triggerMouseEvent(document.querySelectorAll('.e-calendar .e-cell')[9] as HTMLElement, 'click');
+            util.triggerMouseEvent(editor.querySelector('.e-days [data-index="2"]') as HTMLElement, 'click');
+            expect(recEditor.getRecurrenceRule()).toEqual('FREQ=WEEKLY;BYDAY=MO,TU;INTERVAL=1;UNTIL=20220308T000000Z;');
+            util.triggerMouseEvent(editor.querySelector('.e-event-save') as HTMLElement, 'click');
         });
     });
 

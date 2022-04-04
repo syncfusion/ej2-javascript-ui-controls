@@ -31,6 +31,13 @@ $datepicker-overlay: $overlay-bg-color !default;
 $datepicker-icon-hover-color: $icon-color-hover !default;
 $datepicker-popup-bg-color: $flyout-bg-color !default;
 $datepicker-othermonth-row: none !default;
-$datepicker-modal-header-bg: $flyout-bg-color !default;
-$datepicker-modal-header-color: $flyout-text-color !default;
+$datepicker-modal-header-bg: $secondary-border-color-focus !default;
+$datepicker-modal-header-color: $primary-text-color !default;
+$model-year-font-size: 14px !default;
+$model-year-font-weight: 600 !default;
+$model-year-line-height: 22px !default;
+$model-month-font-size: 18px !default;
+$model-month-font-weight: 600 !default;
+$model-month-line-height: 28px !default;
+
 //enddefault

@@ -407,6 +407,26 @@ describe('closeOnEscape property', () => {
 });
 
 describe('Dialog Control', () => {
+        describe('Show Close Icon initial false and setting to true and then false on button click', () => {
+        let dialog: Dialog;
+        beforeEach((): void => {
+            dialog = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            destroyDialog(dialog);
+        });
+        it('showCloseIcon setting to true and then false on button click', () => {
+            dialog = new Dialog({ showCloseIcon: false, animationSettings: { effect: 'None', duration: 0, delay: 0 }, header: "Dialog", height: "200px", width: "250px", visible: false, content: "Your information is updated successfully" }, '#dialog');
+            dialog.show();
+            dialog.showCloseIcon = true;
+            dialog.dataBind();
+            dialog.showCloseIcon = false;
+            dialog.dataBind();
+            expect(dialog.element.querySelector('.e-dlg-closeicon-btn')).toBe(null);
+        });
+    });
     describe('Dom Dialog element', () => {
         let dialog: Dialog;
         beforeEach((): void => {

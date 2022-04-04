@@ -2259,6 +2259,16 @@ describe('Map marker properties tesing', () => {
                                 }
                                 map.refresh();
                             })
+                            it('Check the legend height', () => {
+                                map.loaded = (args: ILoadedEventArgs) => {
+                                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                                    spec = document.getElementById('container_LayerIndex_0_shapeIndex_64_dataIndex_58')
+                                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                                }
+                                map.legendSettings.title.text = '';
+                                map.refresh();
+                            })
                         });
     it('memory leak', () => {
         profile.sample();

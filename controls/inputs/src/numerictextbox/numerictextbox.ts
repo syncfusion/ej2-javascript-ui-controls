@@ -889,6 +889,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                         }
                         this.element.setSelectionRange(this.element.selectionStart, this.element.selectionStart);
                     }
+                    if (this.element.value[this.element.selectionStart - 1] === decimalSeparator && this.decimals === 0 && this.validateDecimalOnType) {
+                        this.element.value = this.element.value.substring(0, prevPos) +
+                            this.element.value.substring(currentPos, this.element.value.length);
+                    }
                 }
                 this.prevVal = this.element.value;
             }
@@ -1270,6 +1274,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private mouseUpOnSpinner(event: MouseEvent): void {
+        this.prevValue = this.value;
         if (this.isPrevFocused) {
             this.element.focus();
             if (!Browser.isDevice) {

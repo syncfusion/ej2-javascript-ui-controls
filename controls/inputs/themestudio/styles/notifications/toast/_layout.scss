@@ -103,7 +103,7 @@
           &:last-child {
             padding-bottom: 0;
             @if $skin-name == 'bootstrap5' {
-              padding-bottom: 8px;
+              padding-bottom: 16px;
             }
           }
 
@@ -446,9 +446,8 @@
   }
 
   @if $skin-name == 'tailwind' {
-    .e-bigger.e-toast,
-    .e-toast .e-toast {
-      padding: 20px;
+    .e-bigger .e-toast .e-toast {
+      padding: 24px;
     }
 
     .e-bigger .e-toast-container .e-toast .e-toast-message .e-toast-title {

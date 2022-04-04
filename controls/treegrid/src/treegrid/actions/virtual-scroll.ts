@@ -76,7 +76,10 @@ export class VirtualScroll {
             record: row.record,
             count: this.parent.flatData.length
         };
-        this.parent.grid.clearSelection();
+        if (this.parent.enableVirtualization && this.parent.selectionSettings.mode === 'Cell' ||
+        this.parent.selectionSettings.mode === 'Row' && !this.parent.selectionSettings.persistSelection) {
+            this.parent.grid.clearSelection();
+        }
         const requestType: string = getValue('isCollapseAll', this.parent) ? 'collapseAll' : 'refresh';
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret, <NotifyArgs>{ requestType: requestType });
     }
@@ -137,7 +140,7 @@ export class VirtualScroll {
             if ((this.parent.enableCollapseAll || this.parent.expandStateMapping) && !isNullOrUndefined(this.expandCollapseRec)) {
                 if (pageingDetails.count < this.parent.getRows()[0].getBoundingClientRect().height) {
                     startIndex = 0;
-                } else {
+                } else if (!this.parent['isExpandAll']) {
                     startIndex = this.prevstartIndex === -1 ? 0 : this.prevstartIndex;
                 }
             }

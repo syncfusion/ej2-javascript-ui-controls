@@ -1,9 +1,10 @@
 import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';
-import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';
+import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect, getComponent } from '@syncfusion/ej2-base';
 import { attributes, Component, closest, select, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { classList, removeClass } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup } from '@syncfusion/ej2-popups';
+import { SplitButton } from '../split-button/split-button';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, upDownKeyHandler } from './../common/common';
 import { getModel, SplitButtonIconPosition, Item, setBlankIconStyle } from './../common/common';
 import { ItemModel } from './../common/common-model';
@@ -375,11 +376,22 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         this.appendArrowSpan();
         this.setActiveElem([this.element]);
-        if (this.target || !this.createPopupOnClick) {
+        if ((this.target && !this.isColorPicker()) || !this.createPopupOnClick) {
             this.createPopup();
         } else {
             this.isPopupCreated = false;
         }
+    }
+
+    private isColorPicker(): boolean {
+        if (!this.element) {
+            return false;
+        }
+        const prevElem: HTMLElement = this.element.previousSibling as HTMLElement;
+        if (prevElem && prevElem.classList && prevElem.classList.contains('e-split-colorpicker')) {
+            return true;
+        }
+        return false;
     }
 
     private appendArrowSpan(): void {
@@ -436,6 +448,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             attrList.forEach((key: string) => {
                 this.element.removeAttribute(key);
             });
+            this.popupUnWireEvents();
             this.destroyPopup();
             this.isPopupCreated = false;
             if (!this.disabled) {
@@ -505,7 +518,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         if (this.createPopupOnClick) {
             EventHandler.remove(document, 'mousedown touchstart', this.delegateMousedownHandler);
         }
-        if (popupElement) {
+        if (popupElement && popupElement.parentElement) {
             EventHandler.remove(popupElement, 'click', this.clickHandler);
             EventHandler.remove(popupElement, 'keydown', this.keyBoardHandler);
         }
@@ -582,7 +595,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     protected clickHandler(e: MouseEvent | KeyboardEventArgs): void {
         const trgt: HTMLElement = e.target as HTMLElement;
         if (closest(trgt, '[id="' + this.element.id + '"]')) {
-            if (!this.createPopupOnClick || this.target) {
+            if (!this.createPopupOnClick || (this.target && !this.isColorPicker())) {
                 if (this.getPopUpElement().classList.contains('e-popup-close')) {
                     this.openPopUp(e);
                 } else {
@@ -614,8 +627,26 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     private openPopUp(e: MouseEvent | KeyboardEventArgs = null): void {
+        let isReact: boolean = false; const popupElem: HTMLElement = this.getPopUpElement();
         if (!this.target) {
             this.createItems(true);
+        } else {
+            if (this.activeElem.length > 1) {
+                let splitButton: SplitButton = getComponent(this.activeElem[0], 'split-btn');
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((splitButton as any).isReact && popupElem.childNodes.length < 1) {
+                    isReact = true;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (splitButton as any).appendReactElement(this.getTargetElement(), this.getPopUpElement())
+                }
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((this as any).isReact && popupElem.childNodes.length < 1) {
+                    isReact = true;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (this as any).appendReactElement(this.getTargetElement(), this.getPopUpElement())
+                }
+            }
         }
         const ul: HTMLElement = this.getULElement();
         this.popupWireEvents();
@@ -655,7 +686,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 const closeArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
                 this.trigger('close', closeArgs);
                 if (!this.target && ul) { detach(ul); }
-                if (!this.target) {
+                if (!this.target || this.isColorPicker()) {
                     if (this.createPopupOnClick) { this.destroyPopup(); }
                 }
                 if (this.target) {

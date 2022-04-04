@@ -1,6 +1,6 @@
 import { MouseEventArgs, Draggable, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { removeClass } from '@syncfusion/ej2-base';
-import { remove, closest as closestElement, classList, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { remove, closest as closestElement, classList, BlazorDragEventArgs, extend } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';
 import { setRowsInTbody, resetRowIndex } from '../base/util';
@@ -49,8 +49,8 @@ export class RowDD {
             className: 'e-cloneproperties e-draganddrop e-grid e-dragclone',
             styles: 'height:"auto", z-index:2, width:' + gObj.element.offsetWidth
         });
-        const table: Element = this.parent.createElement('table', { styles: 'width:' + gObj.element.offsetWidth });
-        const tbody: Element = this.parent.createElement( literals.tbody);
+        const table: Element = this.parent.createElement('table', { styles: 'width:' + gObj.element.offsetWidth, attrs: { role: 'grid' } });
+        const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
 
         if (document.getElementsByClassName('e-griddragarea').length ||
             (gObj.rowDropSettings.targetID && ((!(target as Element).classList.contains('e-selectionbackground')
@@ -110,6 +110,7 @@ export class RowDD {
 
     private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         const gObj: IGrid = this.parent;
+        document.body.classList.add('e-prevent-select');
         if (document.getElementsByClassName('e-griddragarea').length) {
             return;
         }
@@ -151,7 +152,6 @@ export class RowDD {
         this.isOverflowBorder = true;
         this.hoverState = gObj.enableHover;
         const trElement: HTMLTableRowElement = parentsUntil(target, 'e-grid') ? closestElement(e.target, 'tr') as HTMLTableRowElement : null;
-        gObj.enableHover = false;
         if (!e.target) { return; }
 
         this.processArgs(target);
@@ -238,6 +238,7 @@ export class RowDD {
     }
 
     private dragStop: Function = (e: { target: HTMLTableRowElement, event: MouseEventArgs, helper: Element }) => {
+        document.body.classList.remove('e-prevent-select');
         if (isActionPrevent(this.parent)) {
             this.parent.notify(events.preventBatch, {
                 instance: this, handler: this.processDragStop, arg1: e
@@ -394,9 +395,9 @@ export class RowDD {
                     .concat([].slice.call(tbodyFrC.getElementsByClassName(literals.row)));
             }
         }
-        const tbody: Element = gObj.createElement( literals.tbody);
-        const mtbody: Element = gObj.createElement( literals.tbody);
-        const frTbody: Element = gObj.createElement( literals.tbody);
+        const tbody: Element = gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
+        const mtbody: Element = gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
+        const frTbody: Element = gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
         this.parent.clearSelection();
         const targetRows: {target: Element, mTarget: Element, frTarget: Element} = this.refreshRowTarget(args);
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
@@ -643,6 +644,7 @@ export class RowDD {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.initialEnd, this.initializeDrag, this);
         this.parent.on(events.columnDrop, this.columnDrop, this);
+        this.parent.on(events.rowDragAndDropComplete, this.onActionComplete, this);
         this.onDataBoundFn = this.onDataBound.bind(this);
         this.parent.addEventListener(events.dataBound, this.onDataBoundFn);
         this.parent.on(events.uiUpdate, this.enableAfterRender, this);
@@ -651,6 +653,17 @@ export class RowDD {
 
     private stopTimer(): void {
         window.clearInterval(this.timer);
+    }
+
+     /**
+     * To trigger action complete event.
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
+     * @hidden
+     */
+    public onActionComplete(e: NotifyArgs): void {
+        this.parent.trigger(events.actionComplete, extend(e, { type: events.actionComplete, requestType: 'rowdraganddrop' }));
     }
 
     private initializeDrag(): void {
@@ -662,7 +675,8 @@ export class RowDD {
             dragStart: this.dragStart,
             drag: this.drag,
             dragStop: this.dragStop,
-            isReplaceDragEle: this.isReplaceDragEle
+            isReplaceDragEle: this.isReplaceDragEle,
+            isPreventSelect: false
         });
     }
 
@@ -910,6 +924,7 @@ export class RowDD {
         this.draggable.destroy();
         this.parent.off(events.initialEnd, this.initializeDrag);
         this.parent.off(events.columnDrop, this.columnDrop);
+        this.parent.off(events.rowDragAndDropComplete, this.onActionComplete);
         this.parent.removeEventListener(events.dataBound, this.onDataBoundFn);
         this.parent.off(events.uiUpdate, this.enableAfterRender);
         this.parent.off(events.destroy, this.destroy);

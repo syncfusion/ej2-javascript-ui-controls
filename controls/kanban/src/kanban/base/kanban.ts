@@ -669,6 +669,8 @@ export class Kanban extends Component<HTMLElement> {
             try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
+                } else {
+                    return compile(template);
                 }
             } catch (error) {
                 return compile(template);

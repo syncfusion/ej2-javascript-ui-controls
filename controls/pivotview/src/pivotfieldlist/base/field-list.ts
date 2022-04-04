@@ -68,6 +68,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public clonedFieldList: IFieldListOptions | IOlapFieldListOptions;
     /** @hidden */
+    public clonedFieldListData: IOlapField[];
+    /** @hidden */
     public pivotChange: boolean = false;
 
     public isRequiredUpdate: boolean = true;
@@ -125,6 +127,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private remoteData: string[][] | IDataSet[] = [];
     /** @hidden */
     public actionObj: PivotActionCompleteEventArgs = {};
+    /** @hidden */
+    public destroyEngine: boolean = false;
 
     //Property Declarations
 
@@ -961,7 +965,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     super.refresh();
                     break;
                 case 'dataSourceSettings':
-                    if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+                    if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) && newProp.dataSourceSettings.groupSettings.length === 0) {
                         if (!isNullOrUndefined(this.savedDataSourceSettings)) {
                             PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
                             this.savedDataSourceSettings = undefined;
@@ -1192,6 +1196,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.pivotCommon.control = this;
         if (this.allowDeferLayoutUpdate) {
             this.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+            if (this.dataType === 'olap') {
+                this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
+            }
             this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
         }
     }
@@ -1362,6 +1369,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (pivot.isRequiredUpdate) {
                 if (pivot.allowDeferLayoutUpdate) {
                     pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true) as IDataOptions;
+                    if (this.dataType === 'olap') {
+                        this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
+                    }
                     pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true) as IFieldListOptions;
                 }
                 pivot.updateView(pivot.pivotGridModule);
@@ -1412,6 +1422,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         } else {
             pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties);
         }
+        pivot.lastSortInfo = {};
+        pivot.lastAggregationInfo = {};
+        pivot.lastCalcFieldInfo = {};
+        pivot.lastFilterInfo = {};
         return isOlapDataRefreshed;
     }
     /**
@@ -1444,6 +1458,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.axisFieldModule.render();
             if (!this.isPopupView && this.allowDeferLayoutUpdate) {
                 this.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+                if (this.dataType === 'olap') {
+                    this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
+                }
                 this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
             }
         }
@@ -1554,7 +1571,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public destroy(): void {
         this.unWireEvent();
-        if (this.engineModule) {
+        if (this.engineModule && !this.destroyEngine) {
             this.engineModule.fieldList = {};
             this.engineModule.rMembers = null;
             this.engineModule.cMembers = null;
@@ -1562,7 +1579,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             (this.engineModule as any).indexMatrix = null;
             this.engineModule = {} as PivotEngine;
         }
-        if (this.olapEngineModule) {
+        if (this.olapEngineModule && !this.destroyEngine) {
             this.olapEngineModule.fieldList = {};
             this.olapEngineModule = {} as OlapEngine;
         }
@@ -1626,6 +1643,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         if (this.clonedFieldList) {
             this.clonedFieldList = null;
+        }
+        if (this.clonedFieldListData) {
+            this.clonedFieldListData = null;
         }
         if (this.localeObj) {
             this.localeObj = null;

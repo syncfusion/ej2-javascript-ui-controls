@@ -1,12 +1,12 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction } from '../index';
 import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus } from '../common/index';
-import { editHyperlink, openHyperlink, editAlert } from '../common/index';
+import { editHyperlink, openHyperlink, editAlert, removeHyperlink, } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
-import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink } from '../../workbook/common/event';
+import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -45,6 +45,7 @@ export class SpreadsheetHyperlink {
         this.parent.on(createHyperlinkElement, this.createHyperlinkElementHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(deleteHyperlink, this.removeHyperlink, this);
+        this.parent.on(removeHyperlink, this.removeHyperlinkHandler, this);
     }
 
     private removeEventListener(): void {
@@ -56,6 +57,7 @@ export class SpreadsheetHyperlink {
             this.parent.off(createHyperlinkElement, this.createHyperlinkElementHandler);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(deleteHyperlink, this.removeHyperlink);
+            this.parent.off(removeHyperlink, this.removeHyperlinkHandler);
         }
     }
 
@@ -151,7 +153,8 @@ export class SpreadsheetHyperlink {
     private dlgClickHandler(): void {
         let value: string;
         let address: string;
-        //const spreadsheetInst: Spreadsheet = this.parent;
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let cellAddress: string = sheet.name + '!' + sheet.activeCell;
         const item: HTMLElement = this.parent.element.querySelector('.e-link-dialog').
             getElementsByClassName('e-content')[0].querySelector('.e-item.e-active') as HTMLElement;
         if (item) {
@@ -159,7 +162,7 @@ export class SpreadsheetHyperlink {
                 value = (item.getElementsByClassName('e-cont')[0].querySelector('.e-text') as CellModel).value;
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
                 const args: HyperlinkModel = { address: address };
-                this.parent.insertHyperlink(args, this.parent.getActiveSheet().activeCell, value, false);
+                this.parent.insertHyperlink(args, cellAddress, value, false);
             } else {
                 value = (item.getElementsByClassName('e-cont')[0].querySelector('.e-text') as CellModel).value;
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
@@ -174,7 +177,7 @@ export class SpreadsheetHyperlink {
                     // }
                     address = sheetName + '!' + address.toUpperCase();
                     const args: HyperlinkModel = { address: address };
-                    this.parent.insertHyperlink(args, this.parent.getActiveSheet().activeCell, value, false);
+                    this.parent.insertHyperlink(args, cellAddress, value, false);
                 } else if (dlgContent.querySelector('.e-active')) {
                     const definedName: string = item.getElementsByClassName('e-cont')[2].querySelector('.e-active').textContent;
                     for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
@@ -183,7 +186,7 @@ export class SpreadsheetHyperlink {
                                 address: this.parent.definedNames[idx].name
                             };
                             this.parent.insertHyperlink(
-                                args, this.parent.getActiveSheet().activeCell, value, false);
+                                args, cellAddress, value, false);
                         }
                     }
                 }
@@ -266,11 +269,11 @@ export class SpreadsheetHyperlink {
             const rowIdx: number = parseInt(trgt.parentElement.parentElement.getAttribute('aria-rowindex'), 10) - 1;
             let rangeAddr: string | HyperlinkModel = sheet.rows[rowIdx].cells[colIdx].hyperlink;
             let address: string;
-            const befArgs: BeforeHyperlinkArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell, target: '_blank', cancel: false };
+            const befArgs: BeforeHyperlinkArgs = { hyperlink: rangeAddr, address: sheet.activeCell, target: '_blank', cancel: false };
             this.parent.trigger(beforeHyperlinkClick, befArgs);
             if (befArgs.cancel) { return; }
             rangeAddr = befArgs.hyperlink;
-            const aftArgs: AfterHyperlinkArgs = { hyperlink: rangeAddr, cell: this.parent.getActiveSheet().activeCell };
+            const aftArgs: AfterHyperlinkArgs = { hyperlink: rangeAddr, address: sheet.activeCell };
             if (typeof (rangeAddr) === 'string') { address = rangeAddr; }
             if (typeof (rangeAddr) === 'object') { address = rangeAddr.address; }
             const definedNameCheck: string = address;
@@ -816,6 +819,52 @@ export class SpreadsheetHyperlink {
                         [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]);
                 }
             }
+        }
+    }
+
+    private removeHyperlinkHandler(args: { range: string, preventEventTrigger?: boolean }): void {
+        let range: string = args.range;
+        let rangeArr: string[];
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let sheetIdx: number;
+        if (!args.preventEventTrigger) {
+            const eventArgs: { address: string, cancel: boolean } = { address: range.indexOf('!') === -1 ? sheet.name + '!' + range : range, cancel: false };
+            this.parent.notify(beginAction, { action: 'removeHyperlink', eventArgs: eventArgs });
+            if (eventArgs.cancel) {
+                return;
+            }
+        }
+        if (range && range.indexOf('!') !== -1) {
+            rangeArr = range.split('!');
+            const sheets: SheetModel[] = this.parent.sheets;
+            for (let idx: number = 0; idx < sheets.length; idx++) {
+                if (sheets[idx].name === rangeArr[0]) {
+                    sheetIdx = idx;
+                }
+            }
+            sheet = this.parent.sheets[sheetIdx];
+            range = rangeArr[1];
+        }
+        const rangeIndexes: number[] = range ? getRangeIndexes(range) : getRangeIndexes(sheet.activeCell);
+        for (let rowIdx: number = rangeIndexes[0]; rowIdx <= rangeIndexes[2]; rowIdx++) {
+            for (let colIdx: number = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
+                if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
+                    const prevELem: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+                    const classList: string[] = [];
+                    for (let i: number = 0; i < prevELem.classList.length; i++) {
+                        classList.push(prevELem.classList[i]);
+                    }
+                    this.parent.notify(deleteHyperlink, { sheet: sheet, rowIdx: rowIdx, colIdx: colIdx });
+                    for (let i: number = 0; i < classList.length; i++) {
+                        if (!this.parent.getCell(rowIdx, colIdx).classList.contains(classList[i])) {
+                            this.parent.getCell(rowIdx, colIdx).classList.add(classList[i]);
+                        }
+                    }
+                }
+            }
+        }
+        if (!args.preventEventTrigger) {
+            this.parent.notify(completeAction, { action: 'removeHyperlink', eventArgs: { address: range.indexOf('!') === -1 ? sheet.name + '!' + range : range } });
         }
     }
 }

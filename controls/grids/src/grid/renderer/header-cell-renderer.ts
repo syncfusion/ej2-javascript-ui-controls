@@ -21,7 +21,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
     private hTxtEle: Element = this.parent.createElement('span', { className: 'e-headertext' });
     private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons' });
     private gui: Element = this.parent.createElement('div');
-    private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox' } });
+    private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox', 'aria-label': 'checkbox' } });
     /**
      * Function to return the wrapper for the TH content.
      *
@@ -86,6 +86,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         } else {
             column.editType = 'booleanedit';
             const checkAllWrap: Element = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
+            this.chkAllBox.id = 'checkbox-' + column.uid;
             checkAllWrap.insertBefore(this.chkAllBox.cloneNode(), checkAllWrap.firstChild);
             innerDIV.appendChild(checkAllWrap);
             innerDIV.classList.add('e-headerchkcelldiv');
@@ -149,7 +150,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                 this.parent.renderTemplates();
             } else {
                 result = column.getHeaderTemplate()(
-                    extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+                    extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str], undefined, undefined, this.parent['root']);
                 node.firstElementChild.innerHTML = '';
                 appendChildren(node.firstElementChild, result);
             }

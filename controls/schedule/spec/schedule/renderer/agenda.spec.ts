@@ -4,7 +4,7 @@
  */
 import { closest } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs } from '../../../src/schedule/index';
-import { triggerScrollEvent, createSchedule, destroy } from '../util.spec';
+import { triggerScrollEvent, createSchedule, destroy, triggerMouseEvent } from '../util.spec';
 import { resourceData, generateObject, defaultData, cloneDataSource } from '../base/datasource.spec';
 import * as util from '../../../src/schedule/base/util';
 import * as cls from '../../../src/schedule/base/css-constant';
@@ -156,7 +156,6 @@ describe('Agenda View', () => {
 
     describe('EJ2-54150 Checking with getCurrentViewEvents for the Agenda view', () => {
         let schObj: Schedule;
-        let keyModule: any;
         beforeAll((done: DoneFn) => {
             const schOptions: ScheduleModel = {
                 height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 9, 30),
@@ -1134,6 +1133,39 @@ describe('Agenda View', () => {
         it('Checking event rendered count in agenda view', () => {
             const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElements.length).toEqual(5);
+        });
+    });
+
+    describe('EJ2-55921 Agenda view events edit action checking on readonly set to true', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                readonly: true,
+                views: [{ option: 'Agenda' }],
+                selectedDate: new Date(2022, 10, 1),
+                currentView: 'Agenda'
+            };
+            const data: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Read-only',
+                StartTime: new Date(2022, 10, 1),
+                EndTime: new Date(2022, 10, 1),
+                IsAllDay: true
+            }];
+            schObj = createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking event edit action', () => {
+            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'dblclick');
+            expect(document.querySelector('.e-schedule-dialog.e-popup-open')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-popup-open .e-event-popup')).toBeTruthy();
+            (schObj.element.querySelector('.e-popup-open .e-event-popup .e-close') as HTMLButtonElement).click();
         });
     });
 

@@ -1,0 +1,128 @@
+@include export-module('dashboardlayout-theme') {
+  .e-dashboardlayout.e-control {
+    display: block;
+    position: $grid-layout-position;
+
+    & .e-panel {
+      background: $panel-background;
+      box-shadow: $panel-box-shadow;
+      box-sizing: $panel-box-sizing;
+      position: $panel-position;
+
+      & .e-panel-container {
+        & .e-panel-header {
+          color: $panel-header-color;
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+            background: $panel-header-bg-color;
+            box-sizing: $panel-box-sizing;
+          }
+        }
+      }
+    }
+
+    & .e-panel.e-dragging {
+      &:active {
+        @if ($skin-name == 'tailwind') {
+          background: $content-bg-color;
+          box-shadow: $panel-active-drag-box-shadow;
+        }
+      }
+    }
+
+    & .e-panel {
+      background: $panel-background;
+      box-shadow: $panel-box-shadow;
+      box-sizing: $panel-box-sizing;
+      position: $panel-position;
+
+      &:active {
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+          background: $panel-active-background;
+        }
+      }
+
+      & .e-panel-container {
+        & .e-panel-header {
+          color: $panel-header-color;
+        }
+
+        & .e-resize.e-single {
+          background: none;
+        }
+
+        & .e-resize.e-double {
+          color: $panel-resize-two-dimensional-icon-color;
+          font-size: $panel-resize-two-dimensional-inner-icon-height;
+          height: $panel-resize-two-dimensional-icon-height;
+          width: $panel-resize-two-dimensional-icon-width;
+
+          &.e-south-east-double {
+            bottom: $panel-south-east-icon-bottom;
+            right: $panel-south-east-icon-right;
+          }
+
+          &.e-south-west-double {
+            bottom: $panel-south-west-icon-bottom;
+            left: $panel-south-west-icon-left;
+          }
+
+          &.e-north-west-double {
+            left: $panel-north-west-icon-left;
+            top: $panel-north-west-icon-top;
+          }
+
+          &.e-north-east-double {
+            right: $panel-north-east-icon-right;
+            top: $panel-north-east-icon-top;
+          }
+
+          &.e-north-east-shrink {
+            right: $panel-north-east-icon-right;
+            top: $panel-north-east-icon-top;
+          }
+
+          &.e-north-west-shrink {
+            left: $panel-north-west-icon-left;
+            top: $panel-north-west-icon-top;
+          }
+
+          &.e-south-west-shrink {
+            bottom: $panel-south-west-icon-bottom;
+            left: $panel-south-west-icon-left;
+          }
+
+          &.e-south-east-shrink {
+            bottom: $panel-south-east-icon-bottom;
+            right: $panel-south-east-icon-right;
+          }
+
+          &.e-north-east-expand {
+            right: $panel-north-east-icon-right;
+            top: $panel-north-east-icon-top;
+          }
+
+          &.e-north-west-expand {
+            left: $panel-north-west-icon-left;
+            top: $panel-north-west-icon-top;
+          }
+
+          &.e-south-west-expand {
+            bottom: $panel-south-west-icon-bottom;
+            left: $panel-south-west-icon-left;
+          }
+
+          &.e-south-east-expand {
+            bottom: $panel-south-east-icon-bottom;
+            right: $panel-south-east-icon-right;
+          }
+        }
+      }
+    }
+
+    .e-panel.e-bigger {
+      & .e-panel-header {
+        color: $panel-bigger-header-color;
+      }
+    }
+  }
+}

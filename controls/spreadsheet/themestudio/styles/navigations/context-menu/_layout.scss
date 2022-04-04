@@ -16,6 +16,9 @@
 
         &.e-contextmenu {
           box-shadow: $cmenu-parent-ul-box-shadow;
+          @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+            padding: 4px 0;
+          }
         }
 
         &.e-ul {
@@ -38,6 +41,10 @@
             cursor: auto;
             pointer-events: none;
           }
+        }
+
+        .e-menu-item .e-checkbox-wrapper {
+          width: max-content;
         }
       }
     }
@@ -91,10 +98,13 @@
     box-shadow: $cmenu-parent-ul-box-shadow;
     max-width: $cmenu-bigger-max-width;
     min-width: $cmenu-bigger-min-width;
+    @if $skin-name == 'bootstrap5' {
+      padding: 8px 0;
+    }
 
     & .e-menu-item  {
       @include bigger-li-size;
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
         padding: $cmenu-bigger-li-padding;
       }
 

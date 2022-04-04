@@ -9459,6 +9459,30 @@ describe('DateRangePicker', () => {
             expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
         })
     })
+    describe('EJ2-56196 - Component get freeze if we enter invalid value',function(){
+        let daterangePicker:any;
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(daterangePicker){
+                daterangePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Check the performance issue while entering invalid start or end date',function(){
+            daterangePicker = new DateRangePicker({
+            });
+            daterangePicker.appendTo('#date');
+            daterangePicker.startDate = new Date('1/1/2020');
+            daterangePicker.endDate = new Date('2/2/20201');
+            daterangePicker.dataBind();
+            daterangePicker.show(); 
+            expect((daterangePicker.popupObj) !== null).toBe(true);
+            expect(daterangePicker.inputElement.value === "1/1/2020 - 2/2/20201").toBe(true)
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

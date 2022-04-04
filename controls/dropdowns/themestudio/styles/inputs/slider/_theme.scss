@@ -24,8 +24,14 @@
       }
       @else {
         border-radius: 50%;
-        height: 18px;
-        width: 18px;
+        @if ($skin-name == 'FluentUI') {
+          height: 16px;
+          width: 16px;
+        }
+        @else {
+          height: 18px;
+          width: 18px;
+        }
       }
       box-sizing: border-box;
       cursor: pointer;
@@ -87,7 +93,7 @@
       }
 
       .e-range.e-tab-range {
-        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' {
           background-color: $slider-tab-range-color;
         }
       }
@@ -97,13 +103,13 @@
         @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           border: 1px solid $slider-normal-handle-border-color;
         }
-        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
           border: 2px solid $slider-normal-handle-border-color;
         }
         @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           border: 2px solid $slider-normal-handle-border-color;
         }
-        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'bootstrap5') {
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'bootstrap5' or $skin-name != 'FluentUI') {
           border-color: $slider-normal-handle-border-color;
         }
         // @if $skin-name == 'bootstrap4' {
@@ -211,19 +217,19 @@
 .e-control-wrapper.e-slider-container {
   &:not(.e-disabled):not(.e-read-only):active {
     .e-handle {
-      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
+      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
         border-color: $slider-tab-border-color;
       }
     }
 
     .e-range {
-      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
+      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
         background-color: $slider-tab-range-color;
       }
     }
 
     .e-slider-track {
-      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
+      @if ($skin-name == 'FluentUI' or $skin-name == 'fabric' or $skin-name == 'fabric-dark') {
         background-color: $slider-tab-track-color;
       }
     }

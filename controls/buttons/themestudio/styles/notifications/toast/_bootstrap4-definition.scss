@@ -56,7 +56,7 @@ $toast-content-color: $gray-900 !default;
 
 // Toast Types theme definitions
 
-$toast-border-color: rgba($black, .1) !default;
+$toast-border: 1px solid rgba($black, .1) !default;
 
 $toast-success-bg-color: #d4edda !default;
 $toast-success-color: #155724 !default;
@@ -111,5 +111,6 @@ $toast-close-icon: '\e745' !default;
 $toast-success-icon: '\e7d9' !default;
 $toast-error-icon: '\e761' !default;
 $toast-info-icon: '\e729' !default;
+$toast-warning-icon: '\e92f' !default;
 
 $toast-title-font-weight: bold !default;

@@ -45,7 +45,7 @@
           &.e-swimlane-row {
             .e-swimlane-text,
             .e-item-count {
-              color: $kanban-default-font;
+              color: $kanban-default-font-color;
             }
           }
 
@@ -62,30 +62,16 @@
         }
 
         .e-card {
-          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
-            background: $kanban-bg-color;
+          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5' or $kanban-skin == 'FluentUI') {
+            background: $kanban-card-bg-color;
           }
 
           &.e-selection {
-            background-color: $kanban-card-selection;
-
-            @if $kanban-skin == 'fabric' {
-              border: 1px solid $kanban-column-bg-color;
-            }
-
-            @if $kanban-skin == 'highcontrast' {
-              border: 1px solid $kanban-primary-color;
-            }
-            @if $kanban-skin == 'bootstrap4' or $kanban-skin == 'bootstrap' {
-              border: 1px solid $kanban-dragged-clone-border-color;
-            }
-            @if $kanban-skin == 'bootstrap5' {
-              background-color: $kanban-bg-color;
-            }
+            background-color: $kanban-card-selection-bg-color;
           }
 
           .e-card-header {
-            color: $kanban-default-font;
+            color: $kanban-default-font-color;
           }
 
           .e-card-content {
@@ -124,7 +110,7 @@
 
       .e-swimlane-header {
         .e-swimlane-text {
-          color: $kanban-default-font;
+          color: $kanban-default-font-color;
         }
 
         .e-item-count {
@@ -139,22 +125,21 @@
       textarea {
         background-color: $kanban-text-area-bg-color;
         color: $kanban-text-area-color;
+        min-width: 70%;
 
         @if $kanban-skin == 'fabric' or $kanban-skin == 'fabric-dark' or $kanban-skin == 'bootstrap5' or $kanban-skin == 'highcontrast' or $kanban-skin == 'tailwind' {
           font-weight: 400;
         }
 
         @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
-          border-color: $kanban-focus-color;
+          border-color: $kanban-dialog-text-areas-border-color;
           border-radius: 4px;
           outline: none;
           padding: 4px 8px 4px 12px;
         }
 
         &:focus {
-          @if ($kanban-skin == 'tailwind' or $kanban-skin == 'bootstrap5') {
-            box-shadow: $kanban-text-focus-box-shadow;
-          }
+          box-shadow: $kanban-dialog-text-area-focus-shadow;
         }
       }
     }

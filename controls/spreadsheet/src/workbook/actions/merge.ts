@@ -1,7 +1,7 @@
-import { Workbook, CellModel, getCell, SheetModel, setCell } from '../base/index';
+import { Workbook, CellModel, getCell, SheetModel, setCell, getSheet } from '../base/index';
 import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange } from './../common/index';
 import { insertMerge, activeCellChanged, pasteMerge, getCellIndexes, checkIsFormula } from './../common/index';
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 
 /**
  * The `WorkbookMerge` module is used to merge the range of cells.
@@ -19,6 +19,7 @@ export class WorkbookMerge {
         this.addEventListener();
     }
     private merge(args: MergeArgs): void {
+        args.sheetIndex = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
         if (args.isAction) {
             this.parent.notify('actionBegin', { eventArgs: args, action: 'merge' });
             if (!args.model) { args.model = []; }
@@ -35,14 +36,14 @@ export class WorkbookMerge {
         }
         this.parent.setUsedRange(args.range[2], args.range[3]);
         if (args.isAction) { this.parent.notify('actionComplete', { eventArgs: args, action: 'merge' }); }
-        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
-        if (this.parent.sheets.indexOf(sheet) === this.parent.activeSheetIndex) {
-            this.parent.notify('selectRange', { address: sheet.selectedRange, skipChecking: true });
+        if (args.sheetIndex === this.parent.activeSheetIndex) {
+            this.parent.notify('selectRange', { address: getSheet(this.parent, args.sheetIndex).selectedRange, skipChecking: true });
         }
     }
     private mergeAll(args: MergeArgs): void {
         let rowSpan: number = 0; let cell: CellModel; args.range = args.range as number[]; let colSpan: number;
-        let value: string; const sheet: SheetModel = args.sheet || this.parent.getActiveSheet(); let curCell: CellModel;
+        let value: string; let curCell: CellModel;
+        const sheet: SheetModel = isUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, args.sheetIndex);
         for (let i: number = args.range[0]; i <= args.range[2]; i++) {
             colSpan = 0; if (args.isAction) { args.model.push({ cells: [] }); }
             for (let j: number = args.range[1]; j <= args.range[3]; j++) {
@@ -88,7 +89,7 @@ export class WorkbookMerge {
     }
     private mergeHorizontally(args: MergeArgs): void {
         let mergeCount: number; args.range = args.range as number[]; let cell: CellModel;
-        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
+        const sheet: SheetModel = getSheet(this.parent, args.sheetIndex);
         let newValue: string; let rowIdx: number; let curCell: CellModel;
         for (let i: number = args.range[0]; i <= args.range[2]; i++) {
             mergeCount = 0;
@@ -144,8 +145,8 @@ export class WorkbookMerge {
     }
     private mergeVertically(args: MergeArgs): void {
         let rowSpan: number = 0; args.range = args.range as number[];
-        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet(); let cell: CellModel;
-        let newValue: string; let colIdx: number; let curCell: CellModel;
+        const sheet: SheetModel = getSheet(this.parent, args.sheetIndex);
+        let cell: CellModel; let newValue: string; let colIdx: number; let curCell: CellModel;
         for (let i: number = args.range[1]; i <= args.range[3]; i++) {
             for (let j: number = args.range[0]; j <= args.range[2]; j++) {
                 curCell = getCell(j, i, sheet);
@@ -222,7 +223,7 @@ export class WorkbookMerge {
     }
     private forward(args: MergeArgs): void {
         args.range = args.range as number[];
-        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
+        const sheet: SheetModel = isUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, args.sheetIndex);
         let cell: CellModel = getCell(args.range[0], args.range[1], sheet); let endRowIdx: number; let endColIdx: number;
         let rowIdx: number = endRowIdx = args.range[0]; let colIdx: number = endColIdx = args.range[1];
         if (cell) {
@@ -411,7 +412,7 @@ export class WorkbookMerge {
     private reverse(args: MergeArgs): void {
         args.range = args.range as number[];
         let colnIdx: number = args.range[1];
-        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
+        const sheet: SheetModel = isUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, args.sheetIndex);
         let cell: CellModel = getCell(args.range[0], args.range[1], sheet);
         let rowIdx: number = args.range[0];
         if (cell) {
@@ -509,7 +510,7 @@ export class WorkbookMerge {
     }
     private reverseForward(args: MergeArgs): void {
         args.range = args.range as number[];
-        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
+        const sheet: SheetModel = isUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, args.sheetIndex);
         let rIdx: number = args.range[0]; let cIdx: number = args.range[1];
         let cell: CellModel = getCell(args.range[0], args.range[1], sheet);
         if (cell) {

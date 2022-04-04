@@ -3,8 +3,8 @@ import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheet
 import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
-import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange, RangeModel } from './index';
-import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';
+import { SheetModel, CellModel, ColumnModel, RowModel, getData, RangeModel } from './index';
+import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';
 import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
@@ -22,11 +22,12 @@ import { WorkbookNumberFormat, getFormatFromType } from '../integrations/number-
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet, WorkbookAutoFill } from '../actions/index';
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
-import { setLinkModel, setImage, setChart, updateView, setAutoFill } from '../common/event';
-import { beginAction, completeAction, deleteChart } from '../../spreadsheet/common/event';
-import { WorkbookFindAndReplace } from '../actions/find-and-replace';
+import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell } from '../common/index';
+import { deleteChart } from '../../spreadsheet/common/event';
+import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
+import { checkCellValid } from '../common/interface';
 
 /**
  * Represents the Workbook.
@@ -97,7 +98,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     @Property('100%')
     public height: string | number;
     /**
-     * It allows to enable/disable find & replace with its functionalities.
+     * It allows to enable/disable find and replace with its functionalities.
      *
      * @default true
      */
@@ -501,6 +502,32 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public queryCellInfo: EmitType<CellInfoEventArgs>;
 
+    /**
+     * Triggers before changing any cell properties.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     *  new Spreadsheet({
+     *      beforeCellUpdate: (args: BeforeCellUpdateArgs) => {
+     *      }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     *
+     * @event beforeCellUpdate
+     */
+    @Event()
+    public beforeCellUpdate: EmitType<BeforeCellUpdateArgs>;
+
+    /**
+     * It allows to enable/disable freeze pane functionality in spreadsheet.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowFreezePane: boolean;
+
     /** @hidden */
     public commonCellStyle: CellStyleModel;
 
@@ -513,6 +540,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public serviceLocator: ServiceLocator;
+
+    /**
+     * @hidden
+     */
+    public dataValidationRange: string = '';
 
     /**
      * @hidden
@@ -629,7 +661,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public lockCells(range?: string, isLocked?: boolean): void {
         const sheet: SheetModel = this.getActiveSheet();
         range = range || sheet.selectedRange;
-        this.notify(setLockCells, { range: range, isLocked: isLocked});
+        this.notify(setLockCells, { range: range, isLocked: isLocked, triggerEvent: true });
     }
 
     /**
@@ -753,7 +785,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public hideRow(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
         const sheet: SheetModel = this.getActiveSheet();
-        if (hide && (sheet.frozenRows || sheet.frozenColumns)) { return; }
         for (let i: number = startIndex; i <= endIndex; i++) {
             setRow(sheet, i, { hidden: hide });
         }
@@ -894,7 +925,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             return this.getActiveSheet();
         } else {
             const index: number = typeof sheet === 'string' ? getSheetIndex(this, sheet) : sheet;
-            if (isNullOrUndefined(index) || index >= this.sheets.length) { return null; }
+            if (isNullOrUndefined(index) || index >= this.sheets.length) {
+                return null;
+            }
             return this.sheets[index];
         }
     }
@@ -918,7 +951,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             sheet = this.getActiveSheet(); range = sheet.selectedRange;
         }
-        this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', sheet: sheet, refreshRibbon:
+        this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', sheetIndex: sheetIdx, refreshRibbon:
             range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx });
     }
 
@@ -982,16 +1015,27 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} rowIdx - Specifies the rowIndex.
      * @param {number} colIdx - Specifies the colIndex.
      * @param {SheetModel} sheet - Specifies the active sheet.
+     * @param {boolean} preventRowColUpdate - To prevent updating row and column count.
+     * @param {boolean} forceUpdate - To force updating row and column count.
      * @returns {void} - To setting the used range row and column index.
      */
-    public setUsedRange(rowIdx: number, colIdx: number, sheet: SheetModel = this.getActiveSheet()): void {
+    public setUsedRange(rowIdx: number, colIdx: number, sheet: SheetModel = this.getActiveSheet(), preventRowColUpdate?: boolean, forceUpdate?: boolean ): void {
+        if (forceUpdate) {
+            sheet.usedRange.rowIndex = rowIdx;
+            sheet.usedRange.colIndex = colIdx;
+            return;
+        }
         if (rowIdx > sheet.usedRange.rowIndex) {
             sheet.usedRange.rowIndex = rowIdx;
-            if (sheet === this.getActiveSheet()) { this.notify(updateRowColCount, { index: rowIdx, update: 'row' }); }
+            if (sheet === this.getActiveSheet() && !preventRowColUpdate) {
+                this.notify(updateRowColCount, { index: rowIdx, update: 'row' });
+            }
         }
         if (colIdx > sheet.usedRange.colIndex) {
             sheet.usedRange.colIndex = colIdx;
-            if (sheet === this.getActiveSheet()) { this.notify(updateRowColCount, { index: colIdx, update: 'col' }); }
+            if (sheet === this.getActiveSheet() && !preventRowColUpdate) {
+                this.notify(updateRowColCount, { index: colIdx, update: 'col' });
+            }
         }
     }
 
@@ -1035,7 +1079,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {string | number} - To set the value for row and col.
      */
     public getValueRowCol(
-        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean): string | number {
+        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean, isUnique?: boolean): string | number {
         const args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
             action: 'getSheetInfo', sheetInfo: []
         };
@@ -1065,8 +1109,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     this, `${sheet.name}!A1:${getCellAddress(rowIndex - 1, colIndex - 1)}`, null, null, null, null, formulaCellReference,
                     sheetIndex);
             }
-        } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value)) && cell.formula.indexOf('UNIQUE') === -1) {
-            this.notify('calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex });
+        } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value)) && !isUnique) {
+            this.notify(
+                'calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex,
+                    formulaRefresh: true });
         }
         return cell && cell.value;
     }
@@ -1081,7 +1127,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public setValueRowCol(sheetId: number, value: string | number, rowIndex: number, colIndex: number, formula?: string): void {
         this.notify(
-            events.workbookEditOperation,
+            workbookEditOperation,
             {
                 action: 'updateCellValue', address: [rowIndex - 1, colIndex - 1], value: value,
                 sheetIndex: getSheetIndexFromId(this, sheetId), isValueOnly: true, formula: formula
@@ -1220,7 +1266,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - protect the active sheet.
      */
     public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel, password?: string): void {
-        this.notify(events.protectsheetHandler, { protectSettings: protectSettings, password: password} );
+        this.notify(events.protectsheetHandler, { protectSettings: protectSettings, password: password, sheetIndex: sheet } );
     }
 
     /**
@@ -1256,28 +1302,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     public addDataValidation(rules: ValidationModel, range?: string): void {
-        range = range ? range : this.getActiveSheet().selectedRange;
-        const eventArgs: CellValidationEventArgs = {
-            range: range, type: rules.type, operator: rules.operator, value1: rules.value1,
-            value2: rules.value2, ignoreBlank: rules.ignoreBlank, inCellDropDown: rules.inCellDropDown, cancel: false
-        };
-        this.notify(beginAction, { eventArgs: eventArgs, action: 'validation' });
-        if (!eventArgs.cancel) {
-            range = eventArgs.range;
-            rules.type = eventArgs.type;
-            rules.operator = eventArgs.operator;
-            rules.value1 = eventArgs.value1;
-            rules.value2 = eventArgs.value2;
-            rules.ignoreBlank = eventArgs.ignoreBlank;
-            rules.inCellDropDown = eventArgs.inCellDropDown;
-            this.notify(events.setValidation, { rules: rules, range: range });
-            delete eventArgs.cancel;
-            this.notify(completeAction, { eventArgs: eventArgs, action: 'validation' });
+        if (rules.type === 'List' && rules.value1.length > 256) {
+            rules.value1 = (rules.value1 as string).substring(0, 255);
         }
+        this.notify(events.cellValidation, { rules: rules, range: range || this.getActiveSheet().selectedRange });
     }
 
     public removeDataValidation(range?: string): void {
-        this.notify(events.removeValidation, { range: range });
+        this.notify(events.cellValidation, { range: range, isRemoveValidation: true });
     }
 
     public addInvalidHighlight(range: string): void {
@@ -1286,6 +1318,26 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     public removeInvalidHighlight(range: string): void {
         this.notify(events.removeHighlight, { range: range });
+    }
+
+    /**
+     * To determine whether the cell value in a data validation applied cell is valid or not.
+     *
+     * @param {string} cellAddress - Address of the cell.
+     * @returns {boolean} - It return true if the cell value is valid; otherwise, false.
+     */
+     public isValidCell(cellAddress?: string): boolean {
+        const range: number[] = getCellIndexes(cellAddress);
+        const cell: CellModel = getCell(range[0], range[1], this.getActiveSheet());
+        if (cell && cell.validation) {
+            const value = cell.value ? cell.value : '';
+            const sheetIdx = this.activeSheetIndex;
+            let validEventArgs: checkCellValid = { value, range, sheetIdx, isCell: false, td: null, isValid: true };
+            this.notify(events.isValidation, validEventArgs);
+            return validEventArgs.isValid;
+        } else {
+            return true;
+        }
     }
 
     public conditionalFormat(conditionalFormat: ConditionalFormatModel): void {
@@ -1307,23 +1359,29 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/updateCell/index.md' %}{% endcodeBlock %}
      */
     public updateCell(cell: CellModel, address?: string): void {
-        let sheetIdx: number; const range: number[] = getIndexesFromAddress(address);
+        let range: number[];
+        let sheetIdx: number;
+        if (!address) {
+            address = this.getActiveSheet().activeCell;
+        }
         if (address.includes('!')) {
+            range = getIndexesFromAddress(address);
             sheetIdx = getSheetIndex(this, address.split('!')[0]);
-            if (sheetIdx === undefined) { sheetIdx = this.activeSheetIndex; }
+            if (sheetIdx === undefined) {
+                return;
+            }
         } else {
+            range = getRangeIndexes(address);
             sheetIdx = this.activeSheetIndex;
         }
-        setCell(range[0], range[1], this.sheets[sheetIdx], cell, true);
-        if (cell.value || cell.value === '') {
-            this.notify(
-                events.workbookEditOperation,
-                {
-                    action: 'updateCellValue', address: range, value: cell.value,
-                    sheetIndex: sheetIdx
-                });
+        updateCell(this, this.sheets[sheetIdx], { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
+        if (cell.value || cell.value === '' || <unknown>cell.value === 0) {
+            this.notify(workbookEditOperation, { action: 'updateCellValue', address: range, value: cell.value, sheetIndex: sheetIdx });
         }
-        this.notify(updateView, { indexes: range, sheetIndex: sheetIdx });
+        if (sheetIdx === this.activeSheetIndex) {
+            this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true);
+            this.notify(activeCellChanged, null);
+        }
     }
 
     /**
@@ -1418,10 +1476,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - To clear range.
      */
     public clearRange(address?: string, sheetIndex?: number, valueOnly?: boolean): void {
-        address = address || this.getActiveSheet().selectedRange;
-        sheetIndex = isNullOrUndefined(sheetIndex) ? this.activeSheetIndex : sheetIndex;
-        valueOnly = valueOnly === null || valueOnly === undefined;
-        clearRange(this, getIndexesFromAddress(address), sheetIndex, valueOnly);
+        //** */
     }
 
     /**
@@ -1561,11 +1616,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public freezePanes(row: number = 1, column: number = 1, sheet?: number | string): void {
         const model: SheetModel = this.getSheetModel(sheet);
-        if (model.frozenRows === row && model.frozenColumns === column) { return; }
+        if (!this.allowFreezePane || (model.frozenRows === row && model.frozenColumns === column)) {
+            return;
+        }
         this.setSheetPropertyOnMute(model, 'frozenRows', row);
         this.setSheetPropertyOnMute(model, 'frozenColumns', column);
         this.updateTopLeftCell();
-        if (model.name === this.getActiveSheet().name) { this.notify(events.dataRefresh, null); }
+        if (model.id === this.getActiveSheet().id && this.getModuleName() === 'spreadsheet') {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            (<any>this).renderModule.refreshSheet();
+        }
     }
 
     /**
@@ -1575,8 +1635,21 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * active sheet will be considered.
      * {% codeBlock src='spreadsheet/unfreezePanes/index.md' %}{% endcodeBlock %}
      * @returns {void}
+     * @deprecated This method is deprecated, use `unfreezePanes` method to unfreeze the frozen rows and columns.
      */
     public Unfreeze(sheet?: number | string): void {
+        this.freezePanes(0, 0, sheet);
+    }
+
+    /**
+     * This method is used to unfreeze the frozen rows and columns from spreadsheet.
+     *
+     * @param {number | string} sheet - Specifies the sheet name or index in which the unfreeze operation will perform. By default,
+     * active sheet will be considered.
+     * {% codeBlock src='spreadsheet/unfreezePanes/index.md' %}{% endcodeBlock %}
+     * @returns {void}
+     */
+    public unfreezePanes(sheet?: number | string): void {
         this.freezePanes(0, 0, sheet);
     }
 

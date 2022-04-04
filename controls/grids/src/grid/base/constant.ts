@@ -548,3 +548,7 @@ export const stickyScrollComplete: string = 'sticky-scroll-complete';
 export const captionActionComplete: string = 'infinite-group-collapse';
 /** @hidden */
 export const refreshInfinitePersistSelection: string = 'refresh-infinite-persist-selection';
+/** @hidden */
+export const refreshInfiniteEditrowindex: string = 'refresh-infinite-editrowindex';
+/** @hidden */
+export const afterFilterColumnMenuClose: string = 'after-filter-column-menu-close';

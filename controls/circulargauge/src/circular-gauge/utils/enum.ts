@@ -81,7 +81,11 @@ export type GaugeTheme =
     /**  Render a gauge with Bootstrap5 theme. */
     'Bootstrap5' |
     /**  Render a gauge with Bootstrap5 dark theme. */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark' |
+    /**  Render a gauge with Fluent theme. */
+    'Fluent' |
+    /**  Render a gauge with Fluent dark theme. */
+    'FluentDark';
 
 
 /**

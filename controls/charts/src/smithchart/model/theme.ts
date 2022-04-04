@@ -97,14 +97,14 @@ export function getSeriesColor(theme: SmithchartTheme): string[] {
             palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
                         '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
             break;
-        // case 'Fluent':
-        //     palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
-        //                 '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
-        //     break;
-        // case 'FluentDark':
-        //     palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
-        //                 '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
-        //     break;
+        case 'fluent':
+            palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+                        '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+            break;
+        case 'fluentdark':
+            palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+                        '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+            break;
         default:
             palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
                 '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
@@ -270,50 +270,50 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             tooltipTextOpacity: 1
         };
         break;
-    // case 'fluent':
-    //     style = {
-    //         axisLabel: '#3B3A39',
-    //         axisLine: '#D2D0CE',
-    //         majorGridLine: '#D2D0CE',
-    //         minorGridLine: '#EDEBE9',
-    //         chartTitle: '#201F1E',
-    //         legendLabel: '#323130',
-    //         background: '#FFFFFF',
-    //         areaBorder: ' #D2D0CE',
-    //         tooltipFill: '#FFFFFF',
-    //         dataLabel: '#3B3A39',
-    //         tooltipBoldLabel: '#D1D5DB',
-    //         tooltipLightLabel: '#F9FAFB',
-    //         tooltipHeaderLine: '#6B7280',
-    //         fontFamily: 'Segoe UI',
-    //         fontSize: '14px',
-    //         labelFontFamily: 'Segoe UI',
-    //         tooltipFillOpacity: 1,
-    //         tooltipTextOpacity: 1
-    //     };
-    //     break;
-    // case 'fluentdark':
-    //     style = {
-    //         axisLabel: '#C8C6C4',
-    //         axisLine: '#3B3A39',
-    //         majorGridLine: '#3B3A39',
-    //         minorGridLine: '#292827',
-    //         chartTitle: '#F3F2F1',
-    //         legendLabel: '#D2D0CE',
-    //         background: 'transparent',
-    //         areaBorder: '#3B3A39',
-    //         tooltipFill: '#252423',
-    //         dataLabel: '#C8C6C4',
-    //         tooltipBoldLabel: '#F3F2F1',
-    //         tooltipLightLabel: '#F3F2F1',
-    //         tooltipHeaderLine: '#3B3A39',
-    //         fontFamily: 'Segoe UI',
-    //         fontSize: '14px',
-    //         labelFontFamily: 'Segoe UI',
-    //         tooltipFillOpacity: 1,
-    //         tooltipTextOpacity: 1
-    //     };
-    //     break;
+    case 'fluent':
+        style = {
+            axisLabel: '#3B3A39',
+            axisLine: '#D2D0CE',
+            majorGridLine: '#D2D0CE',
+            minorGridLine: '#EDEBE9',
+            chartTitle: '#201F1E',
+            legendLabel: '#323130',
+            background: '#FFFFFF',
+            areaBorder: ' #D2D0CE',
+            tooltipFill: '#FFFFFF',
+            dataLabel: '#3B3A39',
+            tooltipBoldLabel: '#323130',
+            tooltipLightLabel: '#323130',
+            tooltipHeaderLine: '#D2D0CE',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1
+        };
+        break;
+    case 'fluentdark':
+        style = {
+            axisLabel: '#C8C6C4',
+            axisLine: '#3B3A39',
+            majorGridLine: '#414040',
+            minorGridLine: '#414040',
+            chartTitle: '#F3F2F1',
+            legendLabel: '#D2D0CE',
+            background: 'transparent',
+            areaBorder: '#414040',
+            tooltipFill: '#252423',
+            dataLabel: '#C8C6C4',
+            tooltipBoldLabel: '#F3F2F1',
+            tooltipLightLabel: '#F3F2F1',
+            tooltipHeaderLine: '#3B3A39',
+            fontFamily: 'Segoe UI',
+            fontSize: '14px',
+            labelFontFamily: 'Segoe UI',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1
+        };
+        break;
     default:
         style = {
             axisLabel: '#686868',

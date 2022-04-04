@@ -3442,7 +3442,7 @@ describe('Schedule timeline work week view', () => {
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
             const tdElement: HTMLElement =
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-            expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+            expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
         });
         it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
@@ -3460,7 +3460,7 @@ describe('Schedule timeline work week view', () => {
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 const tdElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
-                expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+                expect(Math.round(parseFloat(colElement.style.width))).toEqual(+tdElement.offsetWidth);
                 done();
             };
             schObj.timeScale.slotCount = 2;

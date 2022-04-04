@@ -185,6 +185,7 @@ export class Tooltip {
      * @returns {void} .
      */
     private updateTooltipPosition(args: TooltipEventArgs): void {
+        args.element.style.visibility = 'visible';
         if (isNullOrUndefined(this.tooltipMouseEvent) || args.target.classList.contains('e-notes-info')) {
             return;
         }
@@ -213,7 +214,6 @@ export class Tooltip {
             tooltipPositionY = tooltipPositionY + 10;
         }
         args.element.style.top = tooltipPositionY + 'px';
-        args.element.style.visibility = 'visible';
     }
     /**
      * Method to get mouse pointor position
@@ -255,9 +255,15 @@ export class Tooltip {
         switch (elementType) {
         case 'milestone':
         {
-            const sDate: string = !isNullOrUndefined(data.startDate) ? '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
+            let milestoneStartDate: Date;
+            if (args.target.className.includes('e-baseline-gantt-milestone') && !isNullOrUndefined(data.baselineStartDate)) {
+                milestoneStartDate = data.baselineStartDate;
+            } else if (!isNullOrUndefined(data.startDate)) {
+                milestoneStartDate = data.startDate;
+            }
+            const sDate: string = !isNullOrUndefined(milestoneStartDate) ? '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                 '<td class = "e-gantt-tooltip-value">' +
-                this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat()) + '</td></tr>' : '';
+                this.parent.getFormatedDate(milestoneStartDate, this.parent.getDateFormat()) + '</td></tr>' : '';
             content = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + sDate + '</tbody></table>';
             break;

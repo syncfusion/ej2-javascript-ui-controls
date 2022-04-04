@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Browser } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, TimelineViews, TimelineYear } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, TimelineViews, TimelineYear, EventRenderedArgs } from '../../../src/schedule/index';
 import { yearDataGenerator, timelineResourceData, defaultData, timelineData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -128,7 +128,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
 
         it('Rendered appointments elements checking', () => {
             const appointments: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
-            expect(appointments.length).toEqual(7);
+            expect(appointments.length).toEqual(8);
             const recurrenceApps: NodeListOf<Element> = schObj.element.querySelectorAll('[data-id="Appointment_18"]');
             expect(recurrenceApps.length).toEqual(2);
         });
@@ -139,13 +139,13 @@ describe('Year and TimelineYear View Event Render Module', () => {
                 expect(appointments.length).toEqual(35);
                 const allDayApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]');
                 expect(allDayApp.offsetWidth).toEqual(100);
-                expect(allDayApp.offsetTop).toEqual(518);
+                expect(allDayApp.offsetTop).toEqual(496);
                 const allDayAppWithNonEqualDates: HTMLElement = schObj.element.querySelector('[data-id="Appointment_9"]');
                 expect(allDayAppWithNonEqualDates.offsetWidth).toEqual(500);
                 expect(allDayAppWithNonEqualDates.offsetTop).toEqual(252);
                 const spannedApp: HTMLElement = schObj.element.querySelector('[data-id="Appointment_6"]');
                 expect(spannedApp.offsetWidth).toEqual(700);
-                expect(spannedApp.offsetTop).toEqual(496);
+                expect(spannedApp.offsetTop).toEqual(474);
                 done();
             };
             schObj.rowAutoHeight = true;
@@ -420,6 +420,34 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('EJ2-56503 - Timeline year view event rendered arguments checking', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Normal event',
+            StartTime: new Date(2017, 10, 8, 10),
+            EndTime: new Date(2017, 10, 8, 12)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: ['TimelineYear'],
+                height: 'auto', width: '100%',
+                selectedDate: new Date(2017, 10, 6)
+            };
+            schObj = util.createSchedule(model, sampleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking event rendered event args', (done: DoneFn) => {
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                expect((args.data[schObj.eventFields.startTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 10).getTime());
+                expect((args.data[schObj.eventFields.endTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 12).getTime());
+                done();
+            };
+            schObj.refreshEvents();
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

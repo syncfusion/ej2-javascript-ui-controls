@@ -160,6 +160,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
     }
     // eslint-disable-next-line
     private onDrag: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
+        if (!e.target) return;
         this.trigger('drag', { event: e.event, element: this.element, target: e.target });
         let newInst: Sortable = this.getSortableInstance(e.target); let target: HTMLElement = this.getSortableElement(e.target, newInst);
         if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && (this.curTarget !== target ||

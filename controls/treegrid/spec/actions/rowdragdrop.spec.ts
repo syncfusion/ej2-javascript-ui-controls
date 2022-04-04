@@ -748,6 +748,91 @@ describe('Treegrid Row Drop as Child', () => {
       destroy(gridObj);
     });
   });
+    
+  describe('Treegrid Indent action params check', () => {
+    let TreeGridObj: TreeGrid;
+    let actionComplete: () => void;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: "subtasks",
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          toolbar: ['Indent', 'Outdent'],
+          columns: [
+            { field: "TaskID", headerText: "Task Id", isPrimaryKey: true, width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },done); 
+      });
+
+    it('Indent', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        if (args.requestType == 'outdented') {
+         expect(args.data[0].level == 1).toBe(true);
+        }
+        done();
+      }
+      actionBegin = (args?: any): void => {
+        if (args.requestType != 'outdenting') {
+          expect(args.requestType == 'indenting').toBe(true);
+      }
+      }
+      TreeGridObj.actionComplete = actionComplete;
+      TreeGridObj.actionBegin = actionBegin;
+      TreeGridObj.selectRow(1);
+      TreeGridObj.selectRow(2);
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_indent' } });
+      TreeGridObj.selectRow(2);
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_outdent' } });
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
+
+  describe('Treegrid Outdent action params check', () => {
+    let TreeGridObj: TreeGrid;
+    let actionComplete: () => void;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: "subtasks",
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          toolbar: ['Indent', 'Outdent'],
+          columns: [
+            { field: "TaskID", headerText: "Task Id", isPrimaryKey: true, width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },done); 
+      });
+
+    it('Outdent', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        expect(args.requestType == 'outdented').toBe(true);
+        done();
+      }
+      actionBegin = (args?: any): void => {
+        expect(args.requestType == 'outdenting').toBe(true);
+        done();
+      }
+      TreeGridObj.actionComplete = actionComplete;
+      TreeGridObj.actionBegin = actionBegin;
+      TreeGridObj.selectRow(1);
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_outdent' } });
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
 
   describe('EJ2-53461- Drag and drop after the initial sort', () => {
     let gridObj: TreeGrid;

@@ -167,7 +167,7 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             containerBorderColor: '#4b5563'
         };
         break;
-    case 'fluentui':
+    case 'fluent':
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#201F1E',
@@ -191,7 +191,7 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             containerBorderColor: '#EDEBE9'
         };
         break;
-    case 'fluentuidark':
+    case 'fluentdark':
         style = {
             backgroundColor: 'rgba(255,255,255, 0.0)',
             titleFontColor: '#F3F2F1',

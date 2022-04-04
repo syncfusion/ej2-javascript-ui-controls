@@ -629,6 +629,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      */
     private setTheme(): void {
         this.themeStyle = getBulletThemeColor(this.theme);
+        if ((this.targetColor === null || this.targetColor === "#191919" || this.valueFill == null) && this.theme.indexOf("Fluent") > -1) {
+            this.valueFill = this.targetColor =  this.theme === "FluentDark" ? "#797775" : "#A19F9D"; 
+        }
     }
 
     private findRange(): void {

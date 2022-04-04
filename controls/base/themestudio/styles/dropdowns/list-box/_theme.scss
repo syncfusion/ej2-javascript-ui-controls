@@ -23,27 +23,27 @@
   .e-bigger.e-listbox-wrapper,
   .e-bigger.e-listbox-container {
     @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-      font-size: $listview-touch-item-font-size;
+      font-size: $listbox-touch-item-font-size;
     }
 
     & .e-list-header,
     & .e-list-group-item {
       @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-        font-size: $listview-touch-header-font-size;
+        font-size: $listbox-touch-header-font-size;
       }
     }
   }
 
   .e-listbox-wrapper,
   .e-listbox-container {
-    font-family: $listview-font-family;
-    font-size: $listview-font-size;
+    font-family: $listbox-font-family;
+    font-size: $listbox-font-size;
     @at-root {
       & .e-list-header {
-        background-color: $listview-header-bg;
-        border-color: $listview-header-border;
-        color: $listview-header-text-color;
-        font-size: $listview-header-font-size;
+        background-color: $listbox-header-bg;
+        border-color: $listbox-header-border;
+        color: $listbox-header-text-color;
+        font-size: $listbox-header-font-size;
       }
 
       &.e-filter-list .e-list-parent {
@@ -52,40 +52,40 @@
 
       & .e-icons {
         @if $skin-name != 'bootstrap5' {
-          color: $listview-icon-color;
+          color: $listbox-icon-color;
         }
       }
 
       & .e-list-item {
-        background-color: $listview-background;
-        border-bottom: $listview-border-bottom solid $listview-border-bottom-color;
-        border-left: $listview-border-left solid $listview-border-left-color;
-        border-right: $listview-border-right solid $listview-border-right-color;
-        border-top: $listview-border-top solid $listview-border-top-color;
-        color: $listview-text-color;
+        background-color: $listbox-background;
+        border-bottom: $listbox-border-bottom solid $listbox-border-bottom-color;
+        border-left: $listbox-border-left solid $listbox-border-left-color;
+        border-right: $listbox-border-right solid $listbox-border-right-color;
+        border-top: $listbox-border-top solid $listbox-border-top-color;
+        color: $listbox-text-color;
       }
 
       & .e-list-item:hover:not(.e-selected):not(.e-disabled),
       & .e-list-item:hover.e-selected.e-checklist:not(.e-disabled) {
-        background-color: $listview-item-hover-bg;
-        border-color: $listview-hover-border-color;
-        color: $listview-text-hover-color;
+        background-color: $listbox-item-hover-bg;
+        border-color: $listbox-hover-border-color;
+        color: $listbox-text-hover-color;
       }
 
       & .e-list-item.e-selected {
-        background-color: $listview-item-active-bg;
-        color: $listview-text-active-color;
+        background-color: $listbox-item-active-bg;
+        color: $listbox-text-active-color;
       }
 
       & .e-list-item.e-selected.e-checklist {
-        background-color: $listview-background;
-        color: $listview-text-color;
+        background-color: $listbox-background;
+        color: $listbox-text-color;
       }
 
       & .e-list-item.e-focused,
       & .e-list-item.e-focused.e-selected.e-checklist {
-        background-color: $listview-item-active-bg;
-        color: $listview-text-active-color;
+        background-color: $listbox-item-active-bg;
+        color: $listbox-text-active-color;
       }
 
       & .e-list-item.e-focused .e-checkbox-wrapper .e-frame.e-check,
@@ -96,16 +96,16 @@
       }
 
       & .e-list-group-item {
-        background-color: $listview-groupheader-bg;
-        border-color: $listview-header-border;
-        color: $listview-groupheader-text-color;
-        font-size: $listview-groupheader-font-size;
+        background-color: $listbox-groupheader-bg;
+        border-color: $listbox-header-border;
+        color: $listbox-groupheader-text-color;
+        font-size: $listbox-groupheader-font-size;
       }
 
       & .e-selectall-parent {
-        background-color: $listview-background;
+        background-color: $listbox-background;
         border-bottom: 1px solid $select-all-border-color;
-        color: $listview-text-color;
+        color: $listbox-text-color;
       }
 
       & .e-sortableclone.e-ripple .e-ripple-element {
@@ -120,30 +120,30 @@
         position: relative;
 
         &:not(.e-list-multi-line) {
-          padding: $listview-template-padding;
+          padding: $listbox-template-padding;
         }
 
         &.e-list-multi-line {
-          padding: $listview-template-multiline-padding;
+          padding: $listbox-template-multiline-padding;
 
           .e-list-item-header {
-            color: $listview-template-multiline-header-color;
+            color: $listbox-template-multiline-header-color;
             display: block;
-            font-size: $listview-template-multiline-header-font-size;
+            font-size: $listbox-template-multiline-header-font-size;
             font-weight: 500;
             margin: 0;
             overflow: hidden;
-            padding: $listview-template-multiline-header-padding;
+            padding: $listbox-template-multiline-header-padding;
             text-overflow: ellipsis;
             white-space: nowrap;
           }
 
           .e-list-content {
-            color: $listview-template-multiline-content-color;
+            color: $listbox-template-multiline-content-color;
             display: block;
-            font-size: $listview-template-multiline-content-font-size;
+            font-size: $listbox-template-multiline-content-font-size;
             margin: 0;
-            padding: $listview-template-multiline-content-padding;
+            padding: $listbox-template-multiline-content-padding;
             word-wrap: break-word;
           }
 
@@ -156,67 +156,67 @@
 
         &.e-list-avatar {
           .e-avatar {
-            height: $listview-template-avatar-size;
-            left: $listview-template-avatar-left;
+            height: $listbox-template-avatar-size;
+            left: $listbox-template-avatar-left;
             position: absolute;
-            top: $listview-template-avatar-top;
-            width: $listview-template-avatar-size;
+            top: $listbox-template-avatar-top;
+            width: $listbox-template-avatar-size;
           }
         }
 
         &.e-list-avatar:not(.e-list-badge) {
-          padding-left: $listview-template-avatar-padding-left;
-          padding-right: $listview-template-avatar-padding-right;
+          padding-left: $listbox-template-avatar-padding-left;
+          padding-right: $listbox-template-avatar-padding-right;
         }
 
         &.e-list-avatar-right:not(.e-list-badge) {
-          padding-left: $listview-template-avatar-rightposition-padding-left;
-          padding-right: $listview-template-avatar-rightposition-padding-right;
+          padding-left: $listbox-template-avatar-rightposition-padding-left;
+          padding-right: $listbox-template-avatar-rightposition-padding-right;
 
           .e-avatar {
-            height: $listview-template-avatar-size;
+            height: $listbox-template-avatar-size;
             position: absolute;
-            right: $listview-template-avatar-rightposition-right;
-            top: $listview-template-avatar-top;
-            width: $listview-template-avatar-size;
+            right: $listbox-template-avatar-rightposition-right;
+            top: $listbox-template-avatar-top;
+            width: $listbox-template-avatar-size;
           }
         }
 
         &.e-list-multi-line.e-list-avatar {
           .e-avatar {
-            top: $listview-template-multiline-avatar-top;
+            top: $listbox-template-multiline-avatar-top;
           }
         }
 
         &.e-list-multi-line.e-list-avatar-right:not(.e-list-badge) {
           .e-avatar {
-            top: $listview-template-multiline-avatar-top;
+            top: $listbox-template-multiline-avatar-top;
           }
         }
 
         &.e-list-badge {
 
           .e-badge {
-            font-size: $listview-template-badge-font-size;
-            height: $listview-template-badge-height;
-            line-height: $listview-template-badge-line-height;
+            font-size: $listbox-template-badge-font-size;
+            height: $listbox-template-badge-height;
+            line-height: $listbox-template-badge-line-height;
             padding: 0;
             position: absolute;
-            right: $listview-template-badge-right;
+            right: $listbox-template-badge-right;
             top: 50%;
             transform: translateY(-50%);
-            width: $listview-template-badge-width;
+            width: $listbox-template-badge-width;
           }
         }
 
         &.e-list-badge.e-list-avatar {
-          padding-left: $listview-template-avatar-badge-padding-left;
-          padding-right: $listview-template-avatar-badge-padding-right;
+          padding-left: $listbox-template-avatar-badge-padding-left;
+          padding-right: $listbox-template-avatar-badge-padding-right;
         }
 
         &.e-list-badge:not(.e-list-avatar) {
-          padding-left: $listview-template-badgewithoutavatar-padding-left;
-          padding-right: $listview-template-badgewithoutavatar-padding-right;
+          padding-left: $listbox-template-badgewithoutavatar-padding-left;
+          padding-right: $listbox-template-badgewithoutavatar-padding-right;
         }
 
         &:not(.e-list-multi-line) {
@@ -224,7 +224,7 @@
             display: block;
             margin: 0;
             overflow: hidden;
-            padding: $listview-template-item-padding;
+            padding: $listbox-template-item-padding;
             text-overflow: ellipsis;
             white-space: nowrap;
           }
@@ -233,19 +233,19 @@
 
       .e-list-item {
         &.e-list-item:hover .e-list-item-header {
-          color: $listview-text-hover-color;
+          color: $listbox-text-hover-color;
         }
 
         &.e-list-item:hover .e-list-content {
-          color: $listview-text-hover-color;
+          color: $listbox-text-hover-color;
         }
 
         &.e-selected .e-list-item-header {
-          color: $listview-text-active-color;
+          color: $listbox-text-active-color;
         }
 
         &.e-selected .e-list-content {
-          color: $listview-text-active-color;
+          color: $listbox-text-active-color;
         }
       }
     }
@@ -256,21 +256,21 @@
         &.e-list-avatar {
           .e-avatar {
             left: inherit;
-            right: $listview-template-avatar-left;
+            right: $listbox-template-avatar-left;
           }
         }
 
         &.e-list-avatar:not(.e-list-badge) {
-          padding-left: $listview-template-avatar-padding-right;
-          padding-right: $listview-template-avatar-padding-left;
+          padding-left: $listbox-template-avatar-padding-right;
+          padding-right: $listbox-template-avatar-padding-left;
         }
 
         &.e-list-avatar-right:not(.e-list-badge) {
-          padding-left: $listview-template-avatar-rightposition-padding-right;
-          padding-right: $listview-template-avatar-rightposition-padding-left;
+          padding-left: $listbox-template-avatar-rightposition-padding-right;
+          padding-right: $listbox-template-avatar-rightposition-padding-left;
 
           .e-avatar {
-            left: $listview-template-avatar-rightposition-right;
+            left: $listbox-template-avatar-rightposition-right;
             right: inherit;
           }
         }
@@ -278,19 +278,19 @@
         &.e-list-badge {
 
           .e-badge {
-            left: $listview-template-badge-right;
+            left: $listbox-template-badge-right;
             right: inherit;
           }
         }
 
         &.e-list-badge.e-list-avatar {
-          padding-left: $listview-template-avatar-badge-padding-right;
-          padding-right: $listview-template-avatar-badge-padding-left;
+          padding-left: $listbox-template-avatar-badge-padding-right;
+          padding-right: $listbox-template-avatar-badge-padding-left;
         }
 
         &.e-list-badge:not(.e-list-avatar) {
-          padding-left: $listview-template-badgewithoutavatar-padding-right;
-          padding-right: $listview-template-badgewithoutavatar-padding-left;
+          padding-left: $listbox-template-badgewithoutavatar-padding-right;
+          padding-right: $listbox-template-badgewithoutavatar-padding-left;
         }
       }
     }

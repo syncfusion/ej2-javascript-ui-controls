@@ -1,8 +1,9 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData, sortData } from '../base/datasource.spec';
+import { sampleData, projectData, sortData, projectData2 } from '../base/datasource.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { ITreeData } from '../../src';
 
 /**
  * Grid base spec 
@@ -353,6 +354,55 @@ describe('Sorting with Sort comparer property functionality checking', () => {
       });
       gridObj.actionComplete = actionComplete;
       gridObj.getHeaderTable().querySelectorAll('.e-sortnumber')[1].dispatchEvent(event);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-57928 - Sorting with Descending order does not work in case of SortComparer with uid property enabled', () => {
+    let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let called: boolean = false;
+  let sortComparer: (reference: string, comparer: string) => number = (reference: string,
+    comparer: string) => {
+    called = true;
+    if (reference < comparer) {
+      return -1;
+    }
+    if (reference > comparer) {
+      return 1;
+    }
+    return 0;
+  };
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          allowSorting: true,
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
+            { field: 'TaskName', headerText: 'Task Name', width: 160, uid:'TaskID', sortComparer:sortComparer },
+            { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+            { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+            { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110},
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110},
+            { field: 'Priority', headerText: 'Priority', width: 110}]
+      }, done);
+  });
+
+    it('Sorting in Descending order with sortComparer property', (done: Function)  => {
+      actionComplete = (args?: any): void => {
+        expect((gridObj.getCurrentViewRecords()[0] as ITreeData).index === 9).toBe(true);
+        gridObj.actionComplete = null;
+        done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.sortByColumn("TaskName", "Descending", false);
+      done();
     });
     afterAll(() => {
       destroy(gridObj);

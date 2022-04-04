@@ -111,7 +111,7 @@ export class NodeStateModified {
                 (this.parent.engineModule as OlapEngine).updateFieldlistData(fieldName);
             }
         }
-        this.parent.dataSourceUpdate.updateDataSource(fieldName, droppedClass, droppedPosition);
+        nodeDropped = this.parent.dataSourceUpdate.updateDataSource(fieldName, droppedClass, droppedPosition);
         return nodeDropped;
     }
 

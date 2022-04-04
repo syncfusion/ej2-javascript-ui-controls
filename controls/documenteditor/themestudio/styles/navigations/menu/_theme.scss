@@ -108,7 +108,7 @@
               color: $submenu-color;
             }
         }
-          @else if $skin-name == 'FluentUI' or $theme-name == 'FluentUI' {
+          @else if $skin-name == 'FluentUI' {
             & .e-caret {
               color: $menu-icon-color;
             }

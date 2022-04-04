@@ -475,7 +475,7 @@ export class ViewBase {
         if (this.isTimelineView()) {
             const colElements: HTMLElement[] = this.getColElements();
             const contentBody: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
-            const colWidth: number = Math.ceil(contentBody.offsetWidth / (colElements.length / 2));
+            const colWidth: number = (contentBody.getBoundingClientRect().width / (colElements.length / 2));
             colElements.forEach((col: HTMLElement) => setStyleAttribute(col, { 'width': formatUnit(colWidth) }));
             if (content.offsetHeight !== content.clientHeight) {
                 const resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
@@ -483,9 +483,11 @@ export class ViewBase {
                     setStyleAttribute(resourceColumn, { 'height': formatUnit(content.clientHeight) });
                 }
             }
-            const headerCellElements: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.HEADER_CELLS_CLASS));
+            const cssClass : string = `.${cls.HEADER_CELLS_CLASS},.${cls.TIME_SLOT_CLASS},.${cls.HEADER_WEEK_CELLS_CLASS},.${cls.HEADER_MONTH_CELLS_CLASS},.${cls.HEADER_YEAR_CELLS_CLASS}`;
+            const headerCellElements: HTMLElement[] = [].slice.call(this.element.querySelectorAll(cssClass));
             headerCellElements.forEach((ele: HTMLElement) => {
-                const headerCellColSpan: number = parseInt(ele.getAttribute('colspan'), 10);
+                const colSpan : string = isNullOrUndefined(ele.getAttribute('colspan')) ? '1' : ele.getAttribute('colspan');
+                const headerCellColSpan: number = parseInt(colSpan, 10);
                 setStyleAttribute(ele, { 'width': formatUnit(colWidth * headerCellColSpan) });
             });
         }

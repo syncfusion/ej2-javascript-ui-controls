@@ -4,11 +4,22 @@
   .e-breadcrumb {
     .e-breadcrumb-collapsed::before,
     .e-breadcrumb-menu::before {
-      content: '\e76f';
+      content: '\e71c';
     }
 
     .e-home::before {
-      content: '\e927';
+      content: '\e87b';
+    }
+
+    .e-home {
+      height: 18px;
+    }
+  }
+
+  .e-bigger .e-breadcrumb,
+  .e-bigger.e-breadcrumb {
+    .e-home {
+      height: 21px;
     }
   }
 }

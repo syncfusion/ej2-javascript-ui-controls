@@ -6,6 +6,7 @@ import { ChildProperty } from './child-property';
 import { Property, NotifyPropertyChanges } from './notify-property-change';
 import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';
 import { createElement, addClass, removeClass, ElementProperties, select } from './dom';
+import {validateLicense} from './validate-lic';
 let componentCount: number = 0;
 let lastPageID: number;
 let lastHistoryLen: number = 0;
@@ -27,6 +28,9 @@ export function enableVersionBasedPersistence(status: boolean): void {
 export abstract class Component<ElementType extends HTMLElement> extends Base<ElementType> {
 
     public element: ElementType;
+    // Root component instance.
+    // eslint-disable-next-line
+    public root: any;
     private randomId: string = uniqueID();
     public ej2StatePersistenceVersion: string;
     /**
@@ -297,6 +301,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.localObserver = new Observer(this);
         // tslint:disable-next-line:no-function-constructor-with-string-args
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
+        validateLicense();
         if (!isUndefined(selector)) {
             this.appendTo();
         }

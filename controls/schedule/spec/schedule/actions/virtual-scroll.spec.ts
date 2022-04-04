@@ -1,4 +1,4 @@
-import { Schedule, TimelineViews, TimelineMonth, ScheduleModel } from '../../../src/schedule/index';
+import { Schedule, TimelineViews, TimelineMonth, TimelineYear, ScheduleModel } from '../../../src/schedule/index';
 import { timelineResourceData } from '../base/datasource.spec';
 import { createSchedule, destroy, triggerScrollEvent, triggerMouseEvent } from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -7,7 +7,7 @@ import { profile, inMB, getMemoryProfile } from '../../common.spec';
  * Schedule virtual scroll module
  */
 
-Schedule.Inject(TimelineViews, TimelineMonth);
+Schedule.Inject(TimelineViews, TimelineMonth, TimelineYear);
 
 describe('Virtual scroll', () => {
     beforeAll(() => {
@@ -29,7 +29,8 @@ describe('Virtual scroll', () => {
                 views: [
                     { option: 'TimelineDay' },
                     { option: 'TimelineWeek', allowVirtualScrolling: true },
-                    { option: 'TimelineMonth', allowVirtualScrolling: true }
+                    { option: 'TimelineMonth', allowVirtualScrolling: true },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical', allowVirtualScrolling: true }
                 ],
                 group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
                 resources: [{
@@ -90,6 +91,85 @@ describe('Virtual scroll', () => {
             destroy(schObj);
         });
 
+        it('TimelineYear - view change', () => {
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-year');
+            viewElement.click();
+            expect(schObj.resourceBase.expandedResources.length).toEqual(19);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(11);
+            const currentView: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-active-view');
+            expect(currentView.classList.contains('e-timeline-year')).toEqual(true);
+        });
+        it('TimelineYear view- checking element after view change', () => {
+            expect(schObj.resourceBase.expandedResources.length).toEqual(19);
+            expect(schObj.resourceBase.lastResourceLevel.length).toEqual(28);
+            expect(schObj.element.querySelector('.e-virtual-track').clientHeight).toEqual(
+                schObj.resourceBase.expandedResources.length * 75);
+            const resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
+            expect(resWrap.querySelector('td').getAttribute('data-group-index')).toEqual('0');
+            expect(resWrap.querySelector('div').classList).toContain('e-resource-expand');
+            expect(resWrap.querySelector('div:nth-child(2)').innerHTML).toContain('Floor 1');
+            expect(resWrap.querySelector('tr:nth-child(2)').children[0].children[1].innerHTML).toEqual('Floor 2');
+        });
+        it('TimelineYear view - checking elements with rowAutoHeight property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(7);
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.rowAutoHeight = true;
+            schObj.dataBind();
+        });
+        it('TimelineYear view - checking elements without rowAutoHeight property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(5);
+                const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(1);
+                done();
+            };
+            schObj.rowAutoHeight = false;
+            schObj.dataBind();
+        });
+        it('Timeline Year View - update content on scroll', () => {
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const resWrap: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
+            triggerScrollEvent(contentArea, 300);
+            expect(contentArea.scrollTop).toEqual(300);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(11);
+            expect(schObj.resourceBase.renderedResources[0].groupIndex).toEqual(13);
+            expect(schObj.resourceBase.renderedResources[0].resourceData.OwnerText).toEqual('Steven');
+            expect(schObj.resourceBase.renderedResources[10].groupIndex).toEqual(23);
+            expect(schObj.resourceBase.renderedResources[10].resourceData.RoomText).toEqual('ROOM 5');
+            const contentTable: HTMLElement = contentArea.querySelector('table') as HTMLElement;
+            expect(contentTable.querySelectorAll('tr').length).toEqual(11);
+            expect(contentTable.querySelector('tbody tr td').getAttribute('data-group-index')).
+                toEqual(resWrap.querySelector('tbody td').getAttribute('data-group-index'));
+            expect(contentTable.style.transform).toEqual(resWrap.style.transform);
+            expect(resWrap.querySelector('tr td').getAttribute('data-group-index')).toEqual('13');
+            expect(resWrap.querySelector('div').innerText).toEqual('Steven');
+            expect(resWrap.querySelector('div').style.marginLeft).toEqual('75px');
+            const lastResource: HTMLElement = resWrap.querySelector('tr:nth-child(11) td');
+            expect(parseInt(lastResource.getAttribute('data-group-index'), 10)).toEqual(
+                schObj.resourceBase.expandedResources[14].groupIndex);
+            expect((lastResource.querySelector('.e-resource-text') as HTMLElement).innerText).toEqual('ROOM 5');
+            expect(schObj.resourceBase.renderedResources[10].groupIndex).toEqual(
+                schObj.resourceBase.expandedResources[14].groupIndex);
+            const eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
+            expect(eventWrap.style.transform).toEqual(contentTable.style.transform);
+            expect(eventWrap.children.length).toEqual(11);
+        });
+        it('TimelineMonth - view change', (done: DoneFn) => {
+            schObj.dataBound = () => done();
+            const viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-month');
+            viewElement.click();
+            expect(schObj.resourceBase.expandedResources.length).toEqual(19);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(13);
+            const currentView: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-active-view');
+            expect(currentView.classList.contains('e-timeline-month')).toEqual(true);
+            schObj.dataBind();
+        });
         it('checking initial resource count', () => {
             const resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             expect(resourceRow.children.length).toEqual(13);

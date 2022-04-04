@@ -688,4 +688,45 @@ describe('EJ2-54456-When enabling mask support, the change event will not be tri
             expect(timepicker.element.selectionEnd).toBe(8);
         });
     });
+    describe('EJ2-56789: change event is not trigger when mask property is enable and manually update the time in input', () => {
+        let timepicker: any;
+        let maskedDateTime: any;
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+            maskedDateTime = new MaskedDateTime();
+            maskedDateTime.destroy();
+        });
+        it('Testing change event trigger', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'timepicker' });
+            document.body.appendChild(inputEle);
+            timepicker = new TimePicker({enableMask: true , format: "hh:mm a", change: function(args) {
+                expect((args.value) == (timepicker.value)).toBe(true);
+            }});
+            timepicker.appendTo('#timepicker');
+            timepicker.focusIn();
+            timepicker.liCollections[0].click();
+            expect(timepicker.inputElement.value === "12:00 AM").toBe(true);
+            timepicker.element.selectionStart= 0;
+            timepicker.element.selectionEnd= 2 
+            timepicker.element.value = '1:00 AM';
+            timepicker.element.selectionStart = 1;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:00 AM');
+            timepicker.inputBlurHandler();
+            timepicker.element.selectionStart = 3;
+            timepicker.element.selectionEnd = 4;
+            timepicker.element.value = '01:2 AM';
+            timepicker.element.selectionStart = 4;
+            timepicker.inputEventHandler();
+            expect(timepicker.element.value).toBe('01:02 AM');
+            timepicker.inputBlurHandler();
+        });
+    });
 });
