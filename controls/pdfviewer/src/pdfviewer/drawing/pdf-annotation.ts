@@ -5,7 +5,7 @@ import { Size } from '@syncfusion/ej2-drawings';
 import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-annotation-model';
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationType, FormFieldAnnotationType } from './enum';
-import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel } from '../index';
+import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel, VisibilityState } from '../index';
 /**
  * The `PdfBounds` is base for annotation bounds.
  *

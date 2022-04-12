@@ -133,9 +133,6 @@
         background-color: $ddl-list-active-bg-color;
         border-color: $ddl-list-active-border-color;
         color: $ddl-list-active-font-color;
-        @if $skin-name == 'FluentUI' {
-          box-shadow: $ddl-list-item-box-shadow;
-        }
        }
 
       #{if(&, '&', '*')} .e-list-item.e-hover {
@@ -150,9 +147,6 @@
 
       #{if(&, '&', '*')} .e-list-item.e-item-focus {
         background-color: $ddl-list-hover-bg-color;
-        @if $skin-name == 'FluentUI' {
-          box-shadow: $ddl-list-item-box-shadow;
-        }
       }
 
       #{if(&, '&', '*')} .e-list-item.e-active:last-child {
@@ -300,7 +294,7 @@
     @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
       color: $ddl-list-header-font-color;
     }
-    @if $skin-name != 'tailwind' {
+    @if $skin-name != 'tailwind' and $skin-name != 'FluentUI' {
       font-size: $ddl-list-font-size;
       padding-right: $ddl-list-padding-right;
     }

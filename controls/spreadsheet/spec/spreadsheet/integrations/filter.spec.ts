@@ -38,7 +38,50 @@ describe('Filter ->', () => {
             });
         });
     });
-
+    describe('UI interaction checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply and remove filter using toolbar', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const firstCell: HTMLElement = helper.invoke('getCell', [0, 0]);
+            const lastCell: HTMLElement = helper.invoke('getCell', [0, spreadsheet.sheets[0].usedRange.colIndex]);
+            expect(firstCell.querySelector('.e-filter-icon')).toBeNull();
+            expect(lastCell.querySelector('.e-filter-icon')).toBeNull();
+            helper.getElement('#' + helper.id + '_sorting').click();
+            helper.getElement('#' + helper.id + '_applyfilter').click();
+            expect(firstCell.querySelector('.e-filter-icon')).not.toBeNull();
+            expect(lastCell.querySelector('.e-filter-icon')).not.toBeNull();
+            expect(spreadsheet.filterModule.filterRange.size).toBe(1);
+            expect(spreadsheet.filterModule.filterRange.get(0).range).toEqual([0, 0, 10, 7]);
+            expect(spreadsheet.filterModule.filterRange.get(0).useFilterRange).toBeFalsy();
+            expect(spreadsheet.filterModule.filterCollection.size).toBe(1);
+            expect(spreadsheet.filterModule.filterCollection.get(0)).toEqual([]);
+            helper.getElement('#' + helper.id + '_sorting').click();
+            helper.getElement('#' + helper.id + '_applyfilter').click();
+            expect(firstCell.querySelector('.e-filter-icon')).toBeNull();
+            expect(lastCell.querySelector('.e-filter-icon')).toBeNull();
+            expect(spreadsheet.filterModule.filterRange.size).toBe(0);
+            expect(spreadsheet.filterModule.filterCollection.size).toBe(0);
+            helper.getElement('#' + helper.id + '_sorting').click();
+            helper.getElement('#' + helper.id + '_applyfilter').click();
+            done();
+        });
+        it('Filter popup open close using key action', (done: Function) => {
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                let filterPopup: HTMLElement = helper.getElement().lastElementChild;
+                expect(filterPopup.classList.contains('e-filter-popup')).toBeTruthy();
+                expect(parseInt(filterPopup.style.left, 10)).toBeGreaterThan(0); // Left collision check
+                helper.triggerKeyNativeEvent(38, false, false, null, 'keydown', true);
+                expect(helper.getElement().querySelector('.e-filter-popup')).toBeNull();
+                done();
+            });
+        });
+    });
     describe('CR-Issues ->', () => {
         describe('I289560, FB22087, FB24231 ->', () => {
             beforeAll((done: Function) => {

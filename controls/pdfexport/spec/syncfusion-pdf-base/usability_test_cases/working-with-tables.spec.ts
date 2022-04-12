@@ -1754,4 +1754,86 @@ describe('Customer reported issues', () => {
         });
         pdfDocument.destroy();
     });
+    it('EJ2_51938_LineBreakIssue', (done) => {
+        let pdfDocument: PdfDocument = new PdfDocument();
+        pdfDocument.pageSettings.size = { height: 842, width: 595 };
+        pdfDocument.pageSettings.orientation = 1;
+        let hfont = new PdfStandardFont(2, 13); // font style for headers
+        // create black brush
+        let brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+        let bounds = new RectangleF(0, 0, 515, 50);
+        let header = new PdfPageTemplateElement(bounds);
+        header.graphics.drawString(
+            'Header Text',
+            hfont,
+            null,
+            brush,
+            0,
+            0,
+            100,
+            50,
+            null
+        );
+        //Add the header at the top.
+        pdfDocument.template.top = header;
+        let page: PdfPage = pdfDocument.pages.add();
+        let grid4: PdfGrid = new PdfGrid();
+        grid4.columns.add(3);
+        grid4.headers.add(2);
+        let grid4Header_0: PdfGridRow = grid4.headers.getHeader(0);
+        grid4Header_0.cells.getCell(0).value = 'Order Details';
+        grid4Header_0.cells.getCell(0).style.font = hfont;
+        grid4Header_0.cells.getCell(0).columnSpan = 3;
+        let grid4Header_1: PdfGridRow = grid4.headers.getHeader(1);
+        grid4Header_1.cells.getCell(0).value = 'Order ID';
+        grid4Header_1.cells.getCell(0).style.font = hfont;
+        grid4Header_1.cells.getCell(1).value = 'Customer ID';
+        grid4Header_1.cells.getCell(1).style.font = hfont;
+        grid4Header_1.cells.getCell(2).value = 'Ship City';
+        grid4Header_1.cells.getCell(2).style.font = hfont;
+        let grid4Row_0: PdfGridRow = grid4.rows.addRow();
+        grid4Row_0.cells.getCell(0).value = '20001';
+        grid4Row_0.cells.getCell(1).value = 'PALFKI';
+        grid4Row_0.cells.getCell(2).value = 'Berlin';
+        let grid4Row_1: PdfGridRow = grid4.rows.addRow();
+        grid4Row_1.cells.getCell(0).value = '20002';
+        grid4Row_1.cells.getCell(1).value = 'OANATR';
+        grid4Row_1.cells.getCell(2).value = 'Madrid';
+        let grid4Row_2: PdfGridRow = grid4.rows.addRow();
+        grid4Row_2.cells.getCell(0).value = '20003';
+        grid4Row_2.cells.getCell(1).value = 'IANTON';
+        grid4Row_2.cells.getCell(2).value = 'Cholchester';
+        let grid4Row_3: PdfGridRow = grid4.rows.addRow();
+        grid4Row_3.cells.getCell(0).value = '20004';
+        grid4Row_3.cells.getCell(1).value = 'UBLONP';
+        grid4Row_3.cells.getCell(2).value = 'Marseille';
+        let grid4Row_4: PdfGridRow = grid4.rows.addRow();
+        grid4Row_4.cells.getCell(0).value = '20005';
+        grid4Row_4.cells.getCell(1).value = 'MBOLID';
+        grid4Row_4.cells.getCell(2).value = 'Tsawassen';
+        let format4: PdfGridLayoutFormat = new PdfGridLayoutFormat();
+        format4.layout = PdfLayoutType.Paginate;
+        format4.break = PdfLayoutBreakType.FitPage;
+        let result: PdfLayoutResult = grid4.draw(
+            page,
+            0,
+            425.5,
+            format4
+        );
+        //Save the document.
+        pdfDocument.save().then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'EJ2_51938_LineBreakIssue.pdf');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+        pdfDocument.destroy();
+    });
 });

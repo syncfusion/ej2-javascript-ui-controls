@@ -13,7 +13,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // eslint-disable-next-line max-len
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, VisibilityState } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -4354,14 +4354,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Get or set the signature field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, signatureDialogSettings: {displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
+    @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
     public signatureFieldSettings: SignatureFieldSettingsModel;
 
     /**
      * Get or set the initial field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ initialIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: {displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
+    @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', initialIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
     public initialFieldSettings: InitialFieldSettingsModel;
 
     /**
@@ -4556,37 +4556,37 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Get or set the text field settings.
      */
-    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false,  visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '' })
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', borderColor: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', maxLength: 0, isRequired: false, isPrint: true, tooltip: '', thickness: 1, isMultiline: false })
     public textFieldSettings: TextFieldSettingsModel;
 
     /**
      * Get or set the password field settings.
      */
-    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false,  visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '' })
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', borderColor: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', maxLength: 0, isRequired: false, isPrint: true, tooltip: '', thickness: 1 })
     public passwordFieldSettings: PasswordFieldSettingsModel;
 
     /**
      * Get or set the check box field settings.
      */
-    @Property({ name: '', isChecked: false, backgroundColor: 'white', isReadOnly: false,  visibility: 'visible', isPrint: false, tooltip: '' })
+    @Property({ name: '', isChecked: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
     public checkBoxFieldSettings: CheckBoxFieldSettingsModel;
 
     /**
      * Get or set the radio button field settings.
      */
-    @Property({ name: '', isSelected: false, backgroundColor: 'white', isReadOnly: false,  visibility: 'visible', isPrint: false, tooltip: '' })
+    @Property({ name: '', isSelected: false, backgroundColor: 'white', isReadOnly: false, visibility: 'visible', isPrint: true, tooltip: '', isRequired: false, thickness: 1, borderColor: 'black' })
     public radioButtonFieldSettings: RadioButtonFieldSettingsModel;
 
     /**
      * Get or set the dropdown field settings.
      */
-    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [] })
+    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', options: [], thickness: 1, borderColor: 'black' })
     public DropdownFieldSettings: DropdownFieldSettingsModel;
 
     /**
      * Get or set the listbox field settings.
      */
-    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [] })
+    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [], thickness: 1, borderColor: 'black' })
     public listBoxFieldSettings: ListBoxFieldSettingsModel;
 
     /**
@@ -6018,7 +6018,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @returns void
      */
-     public focusFormField(field: any): void {
+    public focusFormField(field: any): void {
         if (typeof(field) === "string") {
             let fieldCollections: any = this.retrieveFormFields();
             for (let i: number = 0; i < fieldCollections.length; i++) {
@@ -7923,7 +7923,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             if (formField) {
                 if (this.formDesignerModule && formField && formField.formFieldAnnotationType) {
                     let field: IFormField = {
-                        value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
+                        name: (formField as any).name, id: (formField as any).id, value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
                         color: (formField as PdfFormFieldBaseModel).color, backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor, borderColor: (formField as PdfFormFieldBaseModel).borderColor, 
                         thickness: (formField as PdfFormFieldBaseModel).thickness, alignment: (formField as PdfFormFieldBaseModel).alignment, isReadonly: (formField as any).isReadonly, visibility: (formField as any).visibility,
                         maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip, options: (formField as any).options, 

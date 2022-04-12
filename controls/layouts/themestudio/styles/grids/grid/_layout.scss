@@ -1415,7 +1415,7 @@
       height: auto;
       line-height: $grid-summary-cell-line-height;
       padding: $grid-content-padding $grid-content-right-padding;
-      @if $pager-skin == 'tailwind' {
+      @if $grid-skin == 'tailwind' {
         padding: $grid-group-caption-header-padding $grid-content-right-padding;
       }
       white-space: normal;

@@ -515,6 +515,15 @@ export class CanvasRenderer {
     }
 
     /**
+     * To render a Circular clip path
+     *
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     */
+     public drawCircularClipPath(): Element {
+        return null;
+    }
+
+    /**
      * Clip method to perform clip in canvas mode
      *
      * @param {BaseAttibutes} options The canvas clip of options

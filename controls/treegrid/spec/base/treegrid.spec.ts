@@ -5,12 +5,13 @@ import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventAr
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
-import { isNullOrUndefined, L10n, createElement, EmitType, select } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, createElement, EmitType, select, remove } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Page } from '../../src/treegrid/actions/page';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { Sort } from '../../src/treegrid/actions/sort';
-import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
+import { projectDatas as data } from './datasource.spec';
+import { DataManager, RemoteSaveAdaptor, Query } from '@syncfusion/ej2-data';
 
 /**
  * Grid base spec 
@@ -1829,6 +1830,63 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+
+  describe('ExpandStateMapping not update issue - EJ2-59094', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: [ {
+            taskID: 1,
+            taskName: 'Planning',
+            startDate: new Date('02/03/2017'),
+            endDate: new Date('02/07/2017'),
+            progress: 100,
+            duration: 5,
+            isExpanded: false,
+            priority: 'Normal',
+            approved: false,
+            designation: 'Vice President',
+            employeeID: 1,
+            subtasks: [
+              {
+                taskID: 2,
+                taskName: 'Plan timeline',
+                startDate: new Date('02/03/2017'),
+                endDate: new Date('02/07/2017'),
+                duration: 5,
+                progress: 100,
+                priority: 'Normal',
+                approved: false,
+                designation: 'Chief Executive Officer',
+                employeeID: 2,
+              }
+            ]
+          }],
+          expandStateMapping: 'isExpanded',
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true },
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Player Name', width: 140, textAlign: 'Left' },
+            { field: 'progress', headerText: 'Year', width: 120, textAlign: 'Right' }
+           ]
+        },
+        done
+      );
+    });
+    it('ExpandStateMapping value change testing', () => {
+      expect(gridObj.dataSource[0].isExpanded == false).toBeTruthy();
+      gridObj.expandRow(gridObj.getRows()[0]);
+      expect(gridObj.dataSource[0].isExpanded == true).toBeTruthy();
+      gridObj.collapseRow(gridObj.getRows()[0]);
+      expect(gridObj.dataSource[0].isExpanded == false).toBeTruthy();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   
   it('memory leak', () => {
     profile.sample();
@@ -1839,4 +1897,128 @@ describe('TreeGrid base module', () => {
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 });
+});
+
+describe('EJ2-58631 - Extra line adding when using setRowData method', () => {
+  let gridObj: TreeGrid;
+  let rows: HTMLTableRowElement[];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: 400,
+          toolbar: ['CollapseAll'],
+          collapsed:function(args){
+              var dataId = args.data.taskID;
+              gridObj.setRowData(dataId, args.data);
+          },
+      columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 90 },
+          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
+          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, format: 'yMd' },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
+          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 80 },
+          { field: 'priority', headerText: 'Priority', width: 90 }
+      ]
+      },
+      done
+    );
+  });
+
+  it('checking extra border line', () => {
+    gridObj.collapseAll();
+    rows = gridObj.getRows();
+    expect(rows[0].cells[0].classList.contains('e-lastrowcell')).toBe(false);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', () => {
+
+  type MockAjaxReturn = { promise: Promise<Object>, request: JasmineAjaxRequest };
+  type ResponseType = { result: Object[], count: number | string };
+
+  let mockAjax: Function = (d: { data: { [o: string]: Object | Object[] } | Object[], dm?: DataManager }, query: Query | Function, response?: Object):
+      MockAjaxReturn => {
+      jasmine.Ajax.install();
+      let dataManager = d.dm || new DataManager({
+          url: '/api/Employees',
+      });
+      let prom: Promise<Object> = dataManager.executeQuery(query);
+      let request: JasmineAjaxRequest;
+      let defaults: Object = {
+          'status': 200,
+          'contentType': 'application/json',
+          'responseText': JSON.stringify(d.data)
+      };
+      let responses: Object = {};
+      request = jasmine.Ajax.requests.mostRecent();
+      extend(responses, defaults, response);
+      request.respondWith(responses);
+      return {
+          promise: prom,
+          request: request
+      }
+  };
+
+  let gridObj: TreeGrid;
+  let elem: HTMLElement = createElement('div', { id: 'Grid' });
+  let request: JasmineAjaxRequest;
+  let rows: HTMLTableRowElement[];
+  let dataManager: DataManager;
+  let originalTimeout: number;
+  beforeAll((done: Function) => {
+      let dataBound: EmitType<Object> = () => { done(); };
+      jasmine.Ajax.install();
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+      dataManager = new DataManager({
+          url: 'http://localhost:50499/Home/UrlData',
+          crossDomain: true
+      });
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+          {
+              dataSource: dataManager, dataBound: dataBound,
+              hasChildMapping: 'isParent',
+              idMapping: 'TaskID',
+              parentIdMapping: 'ParentID',
+              treeColumnIndex: 1,
+              columns: [
+                  { field: "TaskID", isPrimaryKey: true, headerText: "Task Id" },
+                  { field: "TaskName", headerText: "Task Name" },
+                  { field: "StartDate", headerText: "Start Date" },
+                  { field: "EndDate", headerText: "End Date" },                    
+                  { field: "Progress", headerText: "Progress" }
+            ]
+          });
+      gridObj.appendTo('#Grid');
+      this.request = jasmine.Ajax.requests.mostRecent();
+      this.request.respondWith({
+          status: 200,
+          responseText: JSON.stringify({ d: data.filter((e: { [x: string]: Object; })=>{ return isNullOrUndefined(e['parentID']);}), __count: 15 })
+      });
+  });
+
+  it('checking script error', () => {
+    let firstdata = { TaskID: 1, Duration: 2, TaskName: 'newChild', Progress: 45 };
+    let lastdata = { TaskID: 3, Duration: 2, TaskName: 'newChild', Progress: 45 };
+    gridObj.setRowData(firstdata.TaskID, firstdata as object)
+    rows = gridObj.getRows();
+    var lenValue = (gridObj.getRows().length) - 1;
+    expect(rows[0].cells[0].classList.contains('e-lastrowcell')).toBe(false);
+    gridObj.setRowData(lastdata.TaskID, lastdata as object)
+    expect(rows[lenValue].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+  });
+
+  afterAll(() => {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+      gridObj.destroy();
+      remove(elem);
+      jasmine.Ajax.uninstall();
+  });
 });

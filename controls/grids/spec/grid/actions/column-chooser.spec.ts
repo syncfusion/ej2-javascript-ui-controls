@@ -852,4 +852,46 @@ describe('Column chooser module', () => {
         });
 
     });
+
+    describe('EJ2-56865 => Table content width didn\'t cover full grid width after hiding column on using frozenColumn', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    width: 'auto',
+                    frozenColumns: 1,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    gridLines: 'Both',
+                    columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', width: '125', textAlign: 'Right', showInColumnChooser: false },
+                    { field: 'FirstName', headerText: 'Name', width: '120', template: '<br /><br /><br /><div>${FirstName}</div><br /><br /><br />' },
+                    { field: 'Title', headerText: 'Title', width: '170' },
+                    { field: 'HireDate', headerText: 'Hire Date', width: '135', format: 'yMd', textAlign: 'Right' },
+                    { field: 'ReportsTo', headerText: 'Reports To', width: '120', textAlign: 'Right' },
+                    ],
+                    height: 500,
+                }, done);
+        });
+
+        it('hide the template column action', () => {
+            gridObj.hideColumns('Name');
+        });
+
+        it('check the width and height of frozen grid', () => {
+            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-movablecontent .e-table')[0].getAttribute('style')).toBe(null);
+            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-frozencontent .e-table')[0].getAttribute('style')).toBe(null);
+            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-movablecontent .e-table .e-row')[0].getAttribute('style')).toBe(null);
+            expect(gridObj.element.querySelectorAll('.e-gridcontent .e-frozencontent .e-table .e-row')[0].getAttribute('style')).toBe('');
+        });
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
+
 });

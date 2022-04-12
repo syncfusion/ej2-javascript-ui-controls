@@ -1,7 +1,7 @@
 {
 	"name": "@syncfusion/ej2-pdf-export",
-	"version": "19.2.55",
-	"description": "Essential Javascript 2 PDF Library",
+	"version": "20.1.47",
+	"description": "Syncfusion TypeScript Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-pdf-export.umd.min.js",
@@ -35,12 +35,9 @@
 	"dependencies": {
 		"@syncfusion/ej2-compression": "*"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
-	},
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

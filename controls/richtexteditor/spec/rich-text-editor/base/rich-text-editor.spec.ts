@@ -194,6 +194,28 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
     });
 });
 
+describe('BLAZ-21232: Rich Text Editor content is removed when pressing the backspace key -', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it(' if the placeHolder is configured', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p>RTE content</p>`,
+            placeholder: 'testing'
+        });
+        let node: any = rteObj.inputElement;
+        setCursorPoint(document, node, 0);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.childElementCount).toBe(2);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-57147: Change width property', () => {
     let rteObj: RichTextEditor;
     it('Changing the width property when RTE is in inline mode', (done: Function) => {
@@ -3963,6 +3985,30 @@ describe("RTE ExecuteCommand public method testing", () => {
         expect(rteObj.inputElement.querySelectorAll('hr').length === 3).toBe(true);
         rteObj.executeCommand("insertHorizontalRule");
         expect(rteObj.inputElement.querySelectorAll('hr').length === 4).toBe(true);
+    });
+});
+
+describe("EJ2-58355 - RTE insert HTML", () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: '<p id="pnode1">Sample</p>' +
+                '<p id="pnode4">Sample</p>' +
+                '<p id="pnode2">Sample</p>' +
+                '<p id="pnode3">Sample</p>' +
+                '<p id="createLink">CreateLinkSample</p>'
+        });
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('check insertHtml with input element', () => {
+        let nodeSelection: NodeSelection = new NodeSelection();
+        let node: HTMLElement = document.getElementById("pnode1");
+        nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
+        rteObj.executeCommand('insertHTML', `<div>inserted</div><p><input type="checkbox" id="lname" name="lname"></p>`);
+        expect(rteObj.inputElement.querySelectorAll('input').length === 1).toBe(true);
     });
 });
 

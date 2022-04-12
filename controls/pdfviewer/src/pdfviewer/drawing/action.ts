@@ -86,7 +86,15 @@ export function findObjectUnderMouse(
         offsetX = (event as PointerEvent).clientX - targetParentRect.left;
         offsetY = (event as PointerEvent).clientY - targetParentRect.top;
         // eslint-disable-next-line
-    } else {
+    }
+    else if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.parentElement && (event.target as HTMLElement).parentElement.parentElement.classList.contains('foreign-object')) {
+        // eslint-disable-next-line
+        const targetParentRect = (event.target as any).offsetParent.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
+        offsetX = event.clientX - targetParentRect.left;
+        offsetY = event.clientY - targetParentRect.top;
+        // eslint-disable-next-line
+    }
+    else {
         offsetX = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);
         offsetY = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
     }

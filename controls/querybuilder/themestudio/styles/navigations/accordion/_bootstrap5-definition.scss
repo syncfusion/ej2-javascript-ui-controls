@@ -37,14 +37,14 @@ $acrdn-rtl-nest-second-bgr-header-padding: 12px 40px 12px 0 !default;
 // Content, Nested content and RTL mode Padding
 $acrdn-nrml-content-padding: 12px !default;
 $acrdn-bgr-content-padding: 16px !default;
-$acrdn-nest-nrml-content-padding: 16px !default;
-$acrdn-nest-bgr-content-padding: 20px !default;
-$acrdn-nest-second-nrml-content-padding: 20px !default;
-$acrdn-nest-second-bgr-content-padding: 24px !default;
-$acrdn-rtl-nest-nrml-content-padding: 16px !default;
-$acrdn-rtl-nest-bgr-content-padding: 20px !default;
-$acrdn-rtl-nest-second-nrml-content-padding: 20px !default;
-$acrdn-rtl-nest-second-bgr-content-padding: 24px !default;
+$acrdn-nest-nrml-content-padding: 16px 16px 16px 26px !default;
+$acrdn-nest-bgr-content-padding: 20px 20px 20px 28px !default;
+$acrdn-nest-second-nrml-content-padding: 20px 20px 20px 38px !default;
+$acrdn-nest-second-bgr-content-padding: 24px 24px 24px 40px !default;
+$acrdn-rtl-nest-nrml-content-padding: 16px 26px 16px 16px !default;
+$acrdn-rtl-nest-bgr-content-padding: 20px 28px 20px 20px !default;
+$acrdn-rtl-nest-second-nrml-content-padding: 20px 38px 20px 20px !default;
+$acrdn-rtl-nest-second-bgr-content-padding: 24px 40px 24px 24px !default;
 
 // dimension definitions
 $acrdn-border-radius: 4px !default;

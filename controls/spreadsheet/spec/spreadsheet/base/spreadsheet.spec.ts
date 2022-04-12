@@ -609,7 +609,7 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('setRowHeight testing', (done: Function) => {
-            helper.invoke('setRowHeight', [100, 2, 1]);
+            helper.invoke('setRowHeight', [100, 2]);
             let tr: HTMLTableRowElement = helper.invoke('getRow', [2]);
             expect(tr.style.height).toBe('100px');
             done();
@@ -720,11 +720,21 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('addCustomFunction', (done: Function) => {
-            (window as any).CustomFuntion = (num: number) => Math.sqrt(num);
+            (window as any).CustomFuntion = (num: string) => {
+                expect(num).toBe(formula === '=SQRT(D2)' ? '10' : '65');
+                return Math.sqrt(Number(num));
+            };
             helper.invoke('addCustomFunction', ["CustomFuntion", "SQRT"]);
-            helper.edit('J5', '=SQRT(D2)');
-            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('3.162278');
-            expect(helper.getInstance().sheets[0].rows[4].cells[9].value).toBe("3.162278");
+            let formula: string = '=SQRT(D2)';
+            helper.edit('J5', formula);
+            const cell: HTMLElement = helper.invoke('getCell', [4, 9]);
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            expect(cell.textContent).toBe('3.162278');
+            expect(sheet.rows[4].cells[9].value).toBe("3.162278");
+            formula = '=SQRT(D2:D5)';
+            helper.edit('J5', formula);
+            expect(cell.textContent).toBe('8.062258');
+            expect(sheet.rows[4].cells[9].value).toBe("8.062258");
             done();
         });
     });

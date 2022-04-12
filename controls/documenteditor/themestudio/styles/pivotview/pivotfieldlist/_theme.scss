@@ -373,9 +373,6 @@
 
               .e-list-text {
                 font-family: $field-list-font-family;
-                @if($skin-name == 'tailwind') {
-                  line-height: 32px;
-                }
               }
             }
           }
@@ -754,9 +751,6 @@
             // sass-lint:disable-all
             .e-list-text {
               font-family: $field-list-font-family;
-              @if($skin-name == 'tailwind') {
-                line-height: 32px;
-              }
             }
 
             .e-drag {
@@ -1637,6 +1631,9 @@
           text-align: left;
           text-overflow: ellipsis;
           word-break: break-all;
+          @if ($field-list-skin == 'tailwind') {
+            text-transform: uppercase;
+          }
 
           @if ($field-list-skin == 'bootstrap4') {
             padding-left: 12px;
@@ -1777,9 +1774,6 @@
 
               .e-list-text {
                 font-family: $field-list-font-family;
-                @if($skin-name == 'tailwind') {
-                  line-height: 32px;
-                }
               }
             }
           }
@@ -2145,9 +2139,6 @@
             // sass-lint:disable-all
             .e-list-text {
               font-family: $field-list-font-family;
-              @if($skin-name == 'tailwind') {
-                line-height: 32px;
-              }
             }
 
             .e-drag {

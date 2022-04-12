@@ -1936,7 +1936,7 @@
   .e-rtl.e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-rtl .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-rtl .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
-    right: $float-label-rtl-value;
+    right: 0;
     transform-origin: right top;
   }
 

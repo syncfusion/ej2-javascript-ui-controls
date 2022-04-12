@@ -5,7 +5,7 @@ import { PdfPage } from './../../pages/pdf-page';
 import { RectangleF, PointF } from './../../drawing/pdf-drawing';
 import { PdfLayoutParams, PdfLayoutFormat, PdfLayoutResult } from './base/element-layouter';
 import { PdfBorders} from './../../structured-elements/grid/styles/pdf-borders';
-import { PdfGridBeginPageLayoutEventArgs, PdfGridEndPageLayoutEventArgs } from './../../structured-elements/grid/layout/grid-layouter';
+import { PdfGridBeginPageLayoutEventArgs, PdfGridEndPageLayoutEventArgs }  from './../../structured-elements/grid/layout/grid-layouter';
 import { BeginPageLayoutEventArgs, EndPageLayoutEventArgs } from './../../structured-elements/grid/layout/grid-layouter';
 /**
  * `PdfLayoutElement` class represents the base class for all elements that can be layout on the pages.
@@ -122,6 +122,7 @@ export abstract class PdfLayoutElement {
             return result;
         }
     }
+   
     /**
      * `Layouts` the specified param.
      * @private

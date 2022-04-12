@@ -13,7 +13,7 @@ import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, Slider, TextBox, NumericTextBox } from "@syncfusion/ej2-inputs";
 import { DropDownList } from "@syncfusion/ej2-dropdowns";
 import { Button, ChangeEventArgs, CheckBox } from "@syncfusion/ej2-buttons";
-import { FontStyle, FormFieldType } from '../base/types';
+import { DisplayMode, FontStyle, FormFieldType, VisibilityState } from '../base/types';
 import { cloneObject } from '../drawing/drawing-util';
 
 /* eslint-disable */
@@ -75,6 +75,7 @@ export class FormDesigner {
     private formFieldListItemCollection: string[] = [];
     private formFieldListItemDataSource: object[] = [];
     private isInitialField: boolean = false;
+    private isSetFormFieldMode: boolean = false;
 
     /**
      * @private
@@ -171,6 +172,7 @@ export class FormDesigner {
             } else {
                 element.template = htmlElement.appendChild(this.createInputElement(formFieldAnnotationType, drawingObject));
             }
+            this.isSetFormFieldMode = false;
             let divElement = document.createElement("div");
             divElement.id = drawingObject.id + '_designer_name';
             divElement.style.fontSize = drawingObject.fontSize ? (drawingObject.fontSize * zoomValue) + 'px' : (10  * zoomValue) + 'px';
@@ -210,7 +212,7 @@ export class FormDesigner {
             );
             this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
             let field: IFormField = {
-                value: drawingObject.value, fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle,
+                name: drawingObject.name, id: drawingObject.id, value: drawingObject.value, fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle,
                 color: drawingObject.color, backgroundColor: drawingObject.backgroundColor, alignment: drawingObject.alignment, isReadonly: drawingObject.isReadonly, visibility: drawingObject.visibility,
                 maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: drawingObject.rotateAngle, tooltip: drawingObject.tooltip,
                 borderColor: drawingObject.borderColor, thickness: drawingObject.thickness, options: drawingObject.options, pageNumber: drawingObject.pageNumber, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected
@@ -989,21 +991,28 @@ export class FormDesigner {
         divElement.style.position = "absolute";
         divElement.style.backgroundColor = "transparent";
         divElement.style.border = "1px solid #303030";
-        if(!isNullOrUndefined(signatureField.value)&& signatureField.value!==''){
+        if (!isNullOrUndefined(signatureField.value) && signatureField.value !== '') {
             divElement.className = 'e-pdfviewer-signatureformfields-signature';
             divElement.style.pointerEvents = 'none';
-        } else{
+        } else {
             divElement.className = 'e-pdfviewer-signatureformfields';
             divElement.style.pointerEvents = '';
         }
         divElement.id = signatureField.id;
-		(divElement as any).disabled = signatureField.isReadonly;
+        (divElement as any).disabled = signatureField.isReadonly;
         element.appendChild(divElement);
+        let signatureFieldSettings: any = this.pdfViewer.signatureFieldSettings;
+        if (!signatureFieldSettings.signatureIndicatorSettings) {
+            signatureFieldSettings.signatureIndicatorSettings = { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' };
+        }
+        if (!signatureFieldSettings.signatureDialogSettings) {
+            signatureFieldSettings.signatureDialogSettings = { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }
+        }
         //check whether the width for sign indicator has default value or not and then set the default width value for initial field.
         let defaultWidth = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width === 19 ? (signatureField.isInitialField ? 30 : 25) : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width;
-        let signatureFieldIndicatorWidth: number = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.width) ? signatureField.signatureIndicatorSettings.width: defaultWidth; 
+        let signatureFieldIndicatorWidth: number = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.width) ? signatureField.signatureIndicatorSettings.width : defaultWidth;
         let defaultHeight = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height === 10 ? 13 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height;
-        let signatureFieldIndicatorHeight: number = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.height) ? signatureField.signatureIndicatorSettings.height: defaultHeight;
+        let signatureFieldIndicatorHeight: number = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.height) ? signatureField.signatureIndicatorSettings.height : defaultHeight;
         let signatureFieldIndicatorBG: string = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor === 'orange' ? '#FFE48559' : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor;
         let signIndicator: string = signatureField.isInitialField ? "Initial" : "Sign";
         const signatureFieldWidth = signatureField.bounds ? signatureField.bounds.width : bounds.width;
@@ -1014,13 +1023,20 @@ export class FormDesigner {
         const width: number = signatureFieldIndicatorWidth > signatureFieldWidth / 2 ? signatureFieldWidth / 2 : signatureFieldIndicatorWidth;
         let fontSize: number = 10;
         if (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.fontSize)
-        // eslint-disable-next-line max-len
-        fontSize =  signatureField.signatureIndicatorSettings.fontSize > height / 2 ? 10 : signatureField.signatureIndicatorSettings.fontSize;
+            // eslint-disable-next-line max-len
+            fontSize = signatureField.signatureIndicatorSettings.fontSize > height / 2 ? 10 : signatureField.signatureIndicatorSettings.fontSize;
         else
-        // eslint-disable-next-line max-len
-        fontSize =  this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize;
+            // eslint-disable-next-line max-len
+            fontSize = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize;
 
         const spanElement: any = createElement("span");
+        let initialFieldSettings: any = this.pdfViewer.initialFieldSettings;
+        if (!initialFieldSettings.initialIndicatorSettings) {
+            initialFieldSettings.initialIndicatorSettings = { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' };
+        }
+        if (!initialFieldSettings.initialDialogSettings) {
+            initialFieldSettings.initialDialogSettings = { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }
+        }
         let fieldText: string = signatureField.signatureIndicatorSettings ? signatureField.signatureIndicatorSettings.text : null;
         if (signatureField.isInitialField) {
             spanElement.id = "initialIcon" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
@@ -1031,27 +1047,21 @@ export class FormDesigner {
         }
         spanElement.style.color = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.color) ? signatureField.signatureIndicatorSettings.color : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color;
         // eslint-disable-next-line
-        spanElement.style.backgroundColor = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.backgroundColor) ? signatureField.signatureIndicatorSettings.backgroundColor: signatureFieldIndicatorBG;
-        spanElement.style.opacity = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.opacity) ? signatureField.signatureIndicatorSettings.opacity: this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity;
+        spanElement.style.backgroundColor = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.backgroundColor) ? signatureField.signatureIndicatorSettings.backgroundColor : signatureFieldIndicatorBG;
+        spanElement.style.opacity = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.opacity) ? signatureField.signatureIndicatorSettings.opacity : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity;
         spanElement.style.position = "absolute";
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
-        spanElement.style.width = width * zoomValue +  + 'px';
-        spanElement.style.height = height * zoomValue +  + 'px';
+        spanElement.style.width = width * zoomValue + + 'px';
+        spanElement.style.height = height * zoomValue + + 'px';
         spanElement.style.textAlign = "center";
         spanElement.style.fontSize = fontSize * zoomValue + 'px';
         spanElement.style.paddingTop = "1px";
         if (!isPrint) {
             element.appendChild(spanElement);
         }
+        this.updateSignInitialFieldProperties(signatureField, signatureField.isInitialField, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
         if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip != "") {
             this.setToolTip(signatureField.tooltip, element);
-        }
-        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.signatureFieldSettings.isReadOnly) {
-            signatureField.isReadonly = true;
-        }
-        // eslint-disable-next-line
-        if (this.pdfViewer.isFormDesignerToolbarVisible && ((signatureField.isInitialField && this.pdfViewer.initialFieldSettings.isRequired) || (!signatureField.isInitialField && this.pdfViewer.signatureFieldSettings.isRequired))) {
-            signatureField.isRequired = true;
         }
         this.updateSignatureFieldProperties(signatureField, element, isPrint);
         return element;
@@ -1066,7 +1076,6 @@ export class FormDesigner {
      * @private
      */
     public createDropDownList(dropdownElement: DiagramHtmlElement, drawingObject: PdfFormFieldBaseModel): HTMLElement {
-        let dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
         const element: HTMLElement = createElement("div");
         element.className = "foreign-object";
         element.style.position = "absolute";
@@ -1080,12 +1089,8 @@ export class FormDesigner {
         select.style.width = "100%";
         select.style.height = "100%";
         select.style.position = "absolute";
-        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.DropdownFieldSettings.isReadOnly) {
-            drawingObject.isReadonly = true;
-        }
-        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.DropdownFieldSettings.isRequired) {
-            drawingObject.isRequired = true;
-        }
+        this.updateDropdownFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
+        let dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
         this.updateDropdownListProperties(drawingObject, select);
         for (let j: number = 0; j < dropDownChildren.length; j++) {
             var option = document.createElement("option");
@@ -1107,7 +1112,6 @@ export class FormDesigner {
      * @private
      */
     public createListBox(listBoxElement: DiagramHtmlElement, drawingObject: PdfFormFieldBaseModel): HTMLElement {
-        let dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
         const element: HTMLElement = createElement("div");
         element.className = "foreign-object";
         element.style.position = "absolute";
@@ -1122,12 +1126,8 @@ export class FormDesigner {
         select.style.height = "100%";
         select.style.position = "absolute";
         select.multiple = true;
-        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.listBoxFieldSettings.isReadOnly) {
-            drawingObject.isReadonly = true;
-        }
-        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.listBoxFieldSettings.isRequired) {
-            drawingObject.isRequired = true;
-        }
+        this.updatelistBoxFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
+        let dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
         this.updateListBoxProperties(drawingObject, select);
         for (let j: number = 0; j < dropDownChildren.length; j++) {
             var option = document.createElement("option");
@@ -1168,23 +1168,13 @@ export class FormDesigner {
         inputElement.id = drawingObject.id;
         inputElement.style.position = "absolute";
         if (formFieldAnnotationType === "Textbox") {
-            if(drawingObject.isMultiline) { 
+            if (drawingObject.isMultiline) {
                 textArea = this.createTextAreaElement(inputElement.id);
-                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.textFieldSettings.isReadOnly) {
-                    drawingObject.isReadonly = true;
-                }
-                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.textFieldSettings.isRequired) {
-                    drawingObject.isRequired = true;
-                }
+                this.updateTextFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
                 this.updateTextboxProperties(drawingObject, textArea);
             } else {
                 inputElement = this.createTextboxElement(inputElement.id);
-                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.textFieldSettings.isReadOnly) {
-                    drawingObject.isReadonly = true;
-                }
-                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.textFieldSettings.isRequired) {
-                    drawingObject.isRequired = true;
-                }
+                this.updateTextFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
                 this.updateTextboxProperties(drawingObject, inputElement);
             }
         } else if (formFieldAnnotationType == "Checkbox") {
@@ -1232,12 +1222,7 @@ export class FormDesigner {
             if (isPrint) {
                 this.updateCheckboxProperties(drawingObject, inputElement);
             } else {
-                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.checkBoxFieldSettings.isReadOnly) {
-                    drawingObject.isReadonly = true;
-                }
-                if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.checkBoxFieldSettings.isRequired) {
-                    drawingObject.isRequired = true;
-                }
+                this.updateCheckBoxFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
                 this.updateCheckboxProperties(drawingObject, checkboxDiv);
             }
             labelElement.appendChild(inputElement);
@@ -1256,12 +1241,7 @@ export class FormDesigner {
             inputElement.style.height = '100%';
             inputElement.addEventListener('click', this.inputElementClick.bind(this));
             inputElement.addEventListener('change', this.getTextboxValue.bind(this));
-            if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.passwordFieldSettings.isReadOnly) {
-                drawingObject.isReadonly = true;
-            }
-            if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.passwordFieldSettings.isRequired) {
-                drawingObject.isRequired = true;
-            }
+            this.updatePasswordFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
             this.updatePasswordFieldProperties(drawingObject, inputElement);
         } else {
             element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
@@ -1302,12 +1282,7 @@ export class FormDesigner {
             });
             inputElement.style.width = bounds.width + "px";
             inputElement.style.height = bounds.height + "px";
-            if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.radioButtonFieldSettings.isReadOnly) {
-                drawingObject.isReadonly = true;
-            }
-            if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.radioButtonFieldSettings.isRequired) {
-                drawingObject.isRequired = true;
-            }
+            this.updateRadioButtonFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
             this.updateRadioButtonProperties(drawingObject, inputElement);
             labelElement.appendChild(inputElement);
             labelElement.appendChild(innerSpan);
@@ -1375,7 +1350,7 @@ export class FormDesigner {
                 }
                 if(this.pdfViewer.annotation){
                     this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValues, this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex);
-                }
+                } 
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
@@ -1523,9 +1498,9 @@ export class FormDesigner {
                     }
                     this.updateFormFieldCollections(this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j]);
                 }
-                if ((undoElement != null || redoElement != null) && this.pdfViewer.annotation) {
-                    this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', undoElement, redoElement);
-                }
+                if ((undoElement != null || redoElement != null) && this.pdfViewer.annotation){
+					this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', undoElement, redoElement);
+				}
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
@@ -1588,7 +1563,9 @@ export class FormDesigner {
         obj.pageIndex = obj.pageNumber - 1;
         obj.font = (options as any).font;
         obj.id = id;
-        this.setFormFieldIndex();
+        if (!isCollection) {
+            this.setFormFieldIndex();
+        }
         switch (formFieldType) {
             case 'Textbox':
                 obj.formFieldAnnotationType = formFieldType;
@@ -1744,28 +1721,35 @@ export class FormDesigner {
         switch (formFieldType) {
             case 'Textbox':
                 this.activateTextboxElement(formFieldType);
+                this.isSetFormFieldMode = true;
                 break;
             case 'Password':
                 let passwordType: FormFieldAnnotationType = 'PasswordField';
                 this.activatePasswordField(passwordType);
+                this.isSetFormFieldMode = true;
                 break;
             case 'CheckBox':
                 let checkboxType: FormFieldAnnotationType = 'Checkbox';
                 this.activateCheckboxElement(checkboxType);
+                this.isSetFormFieldMode = true;
                 break;
             case 'RadioButton':
                 this.activateRadioButtonElement(formFieldType);
+                this.isSetFormFieldMode = true;
                 break;
             case 'DropDown':
                 let dropdownType: FormFieldAnnotationType = 'DropdownList';
                 this.activateDropDownListElement(dropdownType, options);
+                this.isSetFormFieldMode = true;
                 break;
             case 'ListBox':
                 this.activateListboxElement(formFieldType, options);
+                this.isSetFormFieldMode = true;
                 break;
             case 'SignatureField':
             case 'InitialField':
-                this.activateSignatureBoxElement(formFieldType)
+                this.activateSignatureBoxElement(formFieldType);
+                this.isSetFormFieldMode = true;
         }
     }
 
@@ -2050,7 +2034,7 @@ export class FormDesigner {
                     false, false, false, false, false, false, false, false, false, false, false, isToolTipChanged, oldValue, newValue);
             }
         }
-        if (formFieldObject.formFieldAnnotationType === 'Checkbox' && (!isNullOrUndefined((options as CheckBoxFieldSettings).isChecked))||(options as CheckBoxFieldSettings).isChecked) {
+        if (formFieldObject.formFieldAnnotationType === 'Checkbox' && (!isNullOrUndefined((options as CheckBoxFieldSettings).isChecked)) || (options as CheckBoxFieldSettings).isChecked) {
             if (formFieldObject.isChecked !== this.checkboxCheckedState) {
                 isValueChanged = true;
                 oldValue = formFieldObject.isChecked;
@@ -2633,9 +2617,9 @@ export class FormDesigner {
     private activateSignatureBoxElement(formFieldType: FormFieldAnnotationType): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: this.pdfViewer.isInitialFieldToolbarSelection ? 'Initial' + this.setFormFieldIndex() : 'Signature' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', alignment: 'left',
+            name: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection ? 'Initial' + this.setFormFieldIndex() : 'Signature' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', alignment: 'left',
             isReadonly: false, visibility: "visible", isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false },
-            isInitialField: this.pdfViewer.isInitialFieldToolbarSelection
+            isInitialField: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection ? true : false
         };
         this.pdfViewer.tool = "DrawTool";
     }
@@ -4436,7 +4420,7 @@ export class FormDesigner {
         isBorderWidthChanged: boolean, isAlignmentChanged: boolean, isReadOnlyChanged: boolean, isVisibilityChanged: boolean, isMaxLengthChanged: boolean,
         isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, oldValue: any, newValue: any, isNamechanged?: boolean,previousName?:string): void {
         let field: IFormField = {
-            value: (selectedItem as any).value, fontFamily: (selectedItem as any).fontFamily, fontSize: (selectedItem as any).fontSize, fontStyle: (selectedItem as any).fontStyle,
+            name: (selectedItem as any).name, id: (selectedItem as any).id, value: (selectedItem as any).value, fontFamily: (selectedItem as any).fontFamily, fontSize: (selectedItem as any).fontSize, fontStyle: (selectedItem as any).fontStyle,
             color: (selectedItem as any).color, backgroundColor: (selectedItem as any).backgroundColor, alignment: (selectedItem as any).alignment, isReadonly: (selectedItem as any).isReadonly, visibility: (selectedItem as any).visibility,
             maxLength: (selectedItem as any).maxLength, isRequired: (selectedItem as any).isRequired, isPrint: (selectedItem as any).isPrint, rotation: (selectedItem as any).rotateAngle, tooltip: (selectedItem as any).tooltip, options: (selectedItem as any).options,
             isChecked: (selectedItem as any).isChecked, isSelected: (selectedItem as any).isSelected, previousName: previousName, currentName:selectedItem.name
@@ -4638,18 +4622,22 @@ export class FormDesigner {
         // eslint-disable-next-line max-len
         fontStyleContainer.appendChild(this.addClassFontItem('_formField_strikeout', 'e-pv-strikeout-icon', selectedItem.font.isStrikeout));
         fontItemsContainer.appendChild(fontStyleContainer);
+        this.getFontStyle(selectedItem.font);
         appearancePropertiesDiv.appendChild(fontItemsContainer);
 
         const fontColorContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-color-container' });
         let fontAlignContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-font-align' });
         fontAlignContainer.onclick = this.fontAlignClicked.bind(this);
-        fontAlignContainer.appendChild(this.addClassFontItem('_formField_left_align', 'e-pv-left-align-icon', selectedItem.alignment === 'left' ? true : false));
-        fontAlignContainer.appendChild(this.addClassFontItem('_formField_center_align', 'e-pv-center-align-icon', selectedItem.alignment === 'center' ? true : false));
-        fontAlignContainer.appendChild(this.addClassFontItem('_formField_right_align', 'e-pv-right-align-icon', selectedItem.alignment === 'right' ? true : false));
+        let alignment = selectedItem.alignment.toLowerCase();
+        fontAlignContainer.appendChild(this.addClassFontItem('_formField_left_align', 'e-pv-left-align-icon', alignment === 'left' ? true : false));
+        fontAlignContainer.appendChild(this.addClassFontItem('_formField_center_align', 'e-pv-center-align-icon', alignment === 'center' ? true : false));
+        fontAlignContainer.appendChild(this.addClassFontItem('_formField_right_align', 'e-pv-right-align-icon', alignment === 'right' ? true : false));
+        this.getAlignment(alignment);
         fontColorContainer.appendChild(fontAlignContainer);
 
         this.fontColorElement = createElement('div', { className: 'e-pv-formfield-textcolor-icon', id: this.pdfViewer.element.id + 'formField_textColor' });
         this.fontColorPalette = this.createColorPicker(this.fontColorElement.id, selectedItem.color);
+        selectedItem.color !== 'black' ? this.fontColorValue = selectedItem.color : null;
         this.fontColorPalette.change = this.onFontColorChange.bind(this);
         this.fontColorDropDown = this.createDropDownButton(this.fontColorElement, 'e-pv-annotation-textcolor-icon', this.fontColorPalette.element.parentElement);
         fontColorContainer.appendChild(this.fontColorElement);
@@ -4699,7 +4687,7 @@ export class FormDesigner {
         this.setToolTip(this.pdfViewer.localeObj.getConstant('Fill Color'), this.colorDropDown.element);
         backgroundColorContainer.appendChild(this.colorDropDownElement);
         colorContainer.appendChild(backgroundColorContainer);
-        this.updateColorInIcon(this.colorDropDownElement,this.pdfViewer.selectedItems.formFields[0].backgroundColor);
+        this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.selectedItems.formFields[0].backgroundColor);
         let strokeColorContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-stroke-color-style-prop' });
         this.createLabelElement(this.pdfViewer.localeObj.getConstant('Border'), strokeColorContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_strokecolor');
 
@@ -5379,20 +5367,388 @@ export class FormDesigner {
         return 'FormDesigner';
     }
 
-    private updateAnnotationCanvas(canvas: any, pageWidth: number, pageHeight: number, pageNumber: number) : void {
+    private updateAnnotationCanvas(canvas: any, pageWidth: number, pageHeight: number, pageNumber: number): void {
         let ratio: number = this.pdfViewerBase.getZoomRatio();
         canvas.width = pageWidth * ratio;
         canvas.height = pageHeight * ratio;
-        canvas.style.width = pageWidth  + 'px';
+        canvas.style.width = pageWidth + 'px';
         canvas.style.height = pageHeight + 'px';
         canvas.style.position = 'absolute';
         canvas.style.zIndex = '1';
         this.pdfViewerBase.applyElementStyles(canvas, pageNumber);
     }
 
-    private getFontFamily(fontFamily : any) : boolean {
-        let fontFamilyNames : String[] = ['Helvetica', 'Courier', 'TimesRoman', 'Symbol', 'ZapfDingbats'];
+    private getFontFamily(fontFamily: any): boolean {
+        let fontFamilyNames: String[] = ['Helvetica', 'Courier', 'TimesRoman', 'Symbol', 'ZapfDingbats'];
         return fontFamilyNames.indexOf(fontFamily) > -1 ? true : false;
+    }
+
+    private updateTextFieldSettingProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
+        let textFieldSettings: any = this.pdfViewer.textFieldSettings;
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isReadOnly)) {
+            drawingObject.isReadonly = textFieldSettings.isReadOnly;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isRequired)) {
+            drawingObject.isRequired = textFieldSettings.isRequired;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.value) {
+            drawingObject.value = textFieldSettings.value;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.backgroundColor) {
+            drawingObject.backgroundColor = textFieldSettings.backgroundColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.borderColor) {
+            drawingObject.borderColor = textFieldSettings.borderColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.alignment) {
+            drawingObject.alignment = textFieldSettings.alignment;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.color) {
+            drawingObject.color = textFieldSettings.color;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.fontFamily) {
+            drawingObject.fontFamily = textFieldSettings.fontFamily;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.fontSize) {
+            drawingObject.fontSize = textFieldSettings.fontSize;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.fontStyle) {
+            (drawingObject as any).fontStyle = this.getFontStyleName(textFieldSettings.fontStyle, drawingObject);;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.name) {
+            drawingObject.name = textFieldSettings.name;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.tooltip) {
+            drawingObject.tooltip = textFieldSettings.tooltip;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.thickness) {
+            drawingObject.thickness = textFieldSettings.thickness;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.maxLength) {
+            drawingObject.maxLength = textFieldSettings.maxLength;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.visibility) {
+            drawingObject.visibility = textFieldSettings.visibility;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isPrint)) {
+            drawingObject.isPrint = textFieldSettings.isPrint;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isMultiline)) {
+            drawingObject.isMultiline = textFieldSettings.isMultiline;
+        }
+    }
+
+    private updatePasswordFieldSettingProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
+        let passwordFieldSettings: any = this.pdfViewer.passwordFieldSettings;
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(passwordFieldSettings.isReadOnly)) {
+            drawingObject.isReadonly = passwordFieldSettings.isReadOnly;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(passwordFieldSettings.isRequired)) {
+            drawingObject.isRequired = passwordFieldSettings.isRequired;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.value) {
+            drawingObject.value = passwordFieldSettings.value;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.backgroundColor) {
+            drawingObject.backgroundColor = passwordFieldSettings.backgroundColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.borderColor) {
+            drawingObject.borderColor = passwordFieldSettings.borderColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.alignment) {
+            drawingObject.alignment = passwordFieldSettings.alignment;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.color) {
+            drawingObject.color = passwordFieldSettings.color;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.fontFamily) {
+            drawingObject.fontFamily = passwordFieldSettings.fontFamily;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.fontSize) {
+            drawingObject.fontSize = passwordFieldSettings.fontSize;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.fontStyle) {
+            (drawingObject as any).fontStyle = this.getFontStyleName(passwordFieldSettings.fontStyle, drawingObject);
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.name) {
+            drawingObject.name = passwordFieldSettings.name;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.tooltip) {
+            drawingObject.tooltip = passwordFieldSettings.tooltip;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.thickness) {
+            drawingObject.thickness = passwordFieldSettings.thickness;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.maxLength) {
+            drawingObject.maxLength = passwordFieldSettings.maxLength;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.visibility) {
+            drawingObject.visibility = passwordFieldSettings.visibility;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(passwordFieldSettings.isPrint)) {
+            drawingObject.isPrint = passwordFieldSettings.isPrint;
+        }
+    }
+
+    private updateCheckBoxFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
+        let checkBoxFieldSettings: any = this.pdfViewer.checkBoxFieldSettings;
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isReadOnly)) {
+            drawingObject.isReadonly = checkBoxFieldSettings.isReadOnly;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isRequired)) {
+            drawingObject.isRequired = checkBoxFieldSettings.isRequired;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.backgroundColor) {
+            drawingObject.backgroundColor = checkBoxFieldSettings.backgroundColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.borderColor) {
+            drawingObject.borderColor = checkBoxFieldSettings.borderColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.name) {
+            drawingObject.name = checkBoxFieldSettings.name;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.tooltip) {
+            drawingObject.tooltip = checkBoxFieldSettings.tooltip;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.thickness) {
+            drawingObject.thickness = checkBoxFieldSettings.thickness;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.visibility) {
+            drawingObject.visibility = checkBoxFieldSettings.visibility;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isPrint)) {
+            drawingObject.isPrint = checkBoxFieldSettings.isPrint;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isChecked)) {
+            drawingObject.isChecked = checkBoxFieldSettings.isChecked;
+        }
+    }
+
+    private updateRadioButtonFieldSettingProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
+        let radioButtonFieldSettings: any = this.pdfViewer.radioButtonFieldSettings;
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isReadOnly)) {
+            drawingObject.isReadonly = radioButtonFieldSettings.isReadOnly;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isRequired)) {
+            drawingObject.isRequired = radioButtonFieldSettings.isRequired;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.backgroundColor) {
+            drawingObject.backgroundColor = radioButtonFieldSettings.backgroundColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.borderColor) {
+            drawingObject.borderColor = radioButtonFieldSettings.borderColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.name) {
+            drawingObject.name = radioButtonFieldSettings.name;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.tooltip) {
+            drawingObject.tooltip = radioButtonFieldSettings.tooltip;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.thickness) {
+            drawingObject.thickness = radioButtonFieldSettings.thickness;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.visibility) {
+            drawingObject.visibility = radioButtonFieldSettings.visibility;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isPrint)) {
+            drawingObject.isPrint = radioButtonFieldSettings.isPrint;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isSelected)) {
+            drawingObject.isSelected = radioButtonFieldSettings.isSelected;
+        }
+    }
+
+    private updateDropdownFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
+        let dropdownFieldSettings: any = this.pdfViewer.DropdownFieldSettings;
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(dropdownFieldSettings.isReadOnly)) {
+            drawingObject.isReadonly = dropdownFieldSettings.isReadOnly;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(dropdownFieldSettings.isRequired)) {
+            drawingObject.isRequired = dropdownFieldSettings.isRequired;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.backgroundColor) {
+            drawingObject.backgroundColor = dropdownFieldSettings.backgroundColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.borderColor) {
+            drawingObject.borderColor = dropdownFieldSettings.borderColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.alignment) {
+            drawingObject.alignment = dropdownFieldSettings.alignment;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.color) {
+            drawingObject.color = dropdownFieldSettings.color;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.fontFamily) {
+            drawingObject.fontFamily = dropdownFieldSettings.fontFamily;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.fontSize) {
+            drawingObject.fontSize = dropdownFieldSettings.fontSize;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.fontStyle) {
+            (drawingObject as any).fontStyle = this.getFontStyleName(dropdownFieldSettings.fontStyle, drawingObject);;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.name) {
+            drawingObject.name = dropdownFieldSettings.name;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.tooltip) {
+            drawingObject.tooltip = dropdownFieldSettings.tooltip;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.thickness) {
+            drawingObject.thickness = dropdownFieldSettings.thickness;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.visibility) {
+            drawingObject.visibility = dropdownFieldSettings.visibility;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(dropdownFieldSettings.isPrint)) {
+            drawingObject.isPrint = dropdownFieldSettings.isPrint;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.options) {
+            drawingObject.options = dropdownFieldSettings.options;
+        }
+    }
+
+    private updatelistBoxFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
+        let listBoxFieldSettings: any = this.pdfViewer.listBoxFieldSettings;
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(listBoxFieldSettings.isReadOnly)) {
+            drawingObject.isReadonly = listBoxFieldSettings.isReadOnly;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(listBoxFieldSettings.isRequired)) {
+            drawingObject.isRequired = listBoxFieldSettings.isRequired;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.backgroundColor) {
+            drawingObject.backgroundColor = listBoxFieldSettings.backgroundColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.borderColor) {
+            drawingObject.borderColor = listBoxFieldSettings.borderColor;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.alignment) {
+            drawingObject.alignment = listBoxFieldSettings.alignment;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.color) {
+            drawingObject.color = listBoxFieldSettings.color;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.fontFamily) {
+            drawingObject.fontFamily = listBoxFieldSettings.fontFamily;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.fontSize) {
+            drawingObject.fontSize = listBoxFieldSettings.fontSize;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.fontStyle) {
+            (drawingObject as any).fontStyle = this.getFontStyleName(listBoxFieldSettings.fontStyle, drawingObject);;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.name) {
+            drawingObject.name = listBoxFieldSettings.name;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.tooltip) {
+            drawingObject.tooltip = listBoxFieldSettings.tooltip;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.thickness) {
+            drawingObject.thickness = listBoxFieldSettings.thickness;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.visibility) {
+            drawingObject.visibility = listBoxFieldSettings.visibility;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(listBoxFieldSettings.isPrint)) {
+            drawingObject.isPrint = listBoxFieldSettings.isPrint;
+        }
+        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.options) {
+            drawingObject.options = listBoxFieldSettings.options;
+        }
+    }
+
+    private updateSignInitialFieldProperties(signatureField: any, isInitialField: boolean, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
+        let initialFieldSettings: any = this.pdfViewer.initialFieldSettings;
+        let signatureFieldSettings: any = this.pdfViewer.signatureFieldSettings;
+        if (isInitialField) {
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(initialFieldSettings.isReadOnly)) {
+                signatureField.isReadonly = initialFieldSettings.isReadOnly;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(initialFieldSettings.isRequired)) {
+                signatureField.isRequired = initialFieldSettings.isRequired;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && initialFieldSettings.visibility) {
+                signatureField.visibility = initialFieldSettings.visibility;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && initialFieldSettings.tooltip) {
+                signatureField.tooltip = initialFieldSettings.tooltip;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && initialFieldSettings.name) {
+                signatureField.name = initialFieldSettings.name;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(initialFieldSettings.isPrint)) {
+                signatureField.isPrint = initialFieldSettings.isPrint;
+            }
+        }
+        else {
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(signatureFieldSettings.isReadOnly)) {
+                signatureField.isReadonly = signatureFieldSettings.isReadOnly;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(signatureFieldSettings.isRequired)) {
+                signatureField.isRequired = signatureFieldSettings.isRequired;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && signatureFieldSettings.visibility) {
+                signatureField.visibility = signatureFieldSettings.visibility;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && signatureFieldSettings.tooltip) {
+                signatureField.tooltip = signatureFieldSettings.tooltip;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && signatureFieldSettings.name) {
+                signatureField.name = signatureFieldSettings.name;
+            }
+            if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(signatureFieldSettings.isPrint)) {
+                signatureField.isPrint = signatureFieldSettings.isPrint;
+            }
+        }
+    }
+
+    private getFontStyleName(fontStyle: any, drawingObject: PdfFormFieldBaseModel): any {
+        let fontStyleName: any = 'None'
+        if (fontStyle === 1) {
+            drawingObject.font.isBold = true;
+            fontStyleName = 'Bold';
+        }
+        if (fontStyle === 2) {
+            drawingObject.font.isItalic = true;
+            fontStyleName = 'Italic';
+        }
+        if (fontStyle === 8) {
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Strikethrough';
+        }
+        if (fontStyle === 4) {
+            drawingObject.font.isUnderline = true;
+            fontStyleName = 'Underline';
+        }
+        return fontStyleName
+    }
+
+    private getAlignment(alignment: string) {
+        let align: string;
+        if (alignment === 'left') {
+            align = 'left';
+        }
+        else if (alignment === 'right') {
+            align = 'right';
+        }
+        else if (alignment === 'center') {
+            align = 'center'
+        }
+        this.formFieldAlign = align;
+    }
+
+    private getFontStyle(font: any) {
+        if (font.isBold) {
+            this.formFieldBold = 'bold';
+        }
+        if (font.isItalic) {
+            this.formFieldItalic = 'italic';
+        }
+        if (font.isUnderline) {
+            this.formFieldUnderline = 'underline';
+        }
+        if (font.isStrikeout) {
+            this.formFieldStrikeOut = 'line-through';
+        }
     }
 }
 /**
@@ -5476,7 +5832,7 @@ export interface IFormField {
     font?: PdfFontModel;
     signatureBound?: any;
     signatureType?: string;
-    type?:string;
+    type?: string;
     currentName?: string;
     previousName?: string;
 }

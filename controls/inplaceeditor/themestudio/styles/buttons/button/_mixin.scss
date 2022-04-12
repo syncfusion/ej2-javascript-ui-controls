@@ -20,8 +20,10 @@
   background-color: $btn-active-bgcolor;
   border-color: $btn-active-border-color;
   color: $btn-active-color;
-  outline: $btn-active-outline;
-  outline-offset: $btn-active-outline-offset;
+  @if $skin-name != 'FluentUI' {
+    outline: $btn-active-outline;
+    outline-offset: $btn-active-outline-offset;
+  }
   @if $skin-name == 'bootstrap4' {
     $color-rgba: rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
@@ -55,7 +57,9 @@
   background-color: $btn-primary-active-bgcolor;
   border-color: $btn-primary-active-border-color;
   color: $btn-primary-active-color;
-  outline: $btn-active-outline;
+  @if $skin-name != 'FluentUI' {
+    outline: $btn-active-outline;
+  }
   @if $skin-name == 'bootstrap4' {
     $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-primary-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;

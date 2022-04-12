@@ -2,6 +2,292 @@
 
 ## [Unreleased]
 
+## 20.1.48 (2022-04-12)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I374325`, `#I374720` - Resolved the text input issue replacing the selected text.
+- `#I366806` - Resolved the content overlapping issue.
+- `#I360442`, `#I372285` - Resolved the add to dictionary context item localization issue.
+- `#I368653` - Resolved the numbering continuity issue.
+- `#I368442` - Resolved the table of content alignment issue.
+- `#I369908` - Resolved the alignment issue in the header.
+- `#I368287` - Resolved the rendering issue for font family with number in canvas element.
+- `#I368056` - Resolved the newly inserted footnote content style issue.
+- `#I365347` - Resolved the paste content in between a paragraph.
+- `#I366850` - Resolved the script error in DocumentEditorContainer component destroy.
+- `#I368658` - Resolved the script error in pasting the content.
+- `#F171582`, `#F173213` - Resolved the color preservation issue in pasting the highlighted cell from excel.
+- `#F173430` - Resolved the delay in filling a document with large number of form fields.
+- `#I370428` - Resolved the script error in replacing the text.
+- `#I370305` - Resolved the cropped image rendering issue.
+- `#I368292` - Resolved the empty merge field layout issue.
+- `#I369092` - Indentation behaviour for numbered list is updated.
+
+## 20.1.47 (2022-04-04)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I367457` - Resolved the nested table content positioning issue.
+- `#I365347` - Copied content is now pasted properly in between the paragraph.
+- `#I361140` - Resolved the script error in inserting footnote content.
+- `#I366968` - Newly added table row border is now exported properly in server-side word export.
+- `#I366806` - Resolved the content overlapping issue with wrapped shape.
+- `#I363360` - Resolved the new window sample dialog height issue.
+
+#### New Features
+
+- `#I348441` - Added support for adding SVG image in a Word document.
+- `#I348727` - Added support for setting automatic space before and after a paragraph in a Word document.
+- `#I268209` - Added support for restricting documents with comments only protection type.
+- `#I363489` - Improved the performance of the server-side spell check library.
+
+## 19.4.56 (2022-03-15)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-366157`, `#SF-367362` - Table in the end of the page is now rendered properly.
+- `#SF-365958` - Resolved the issue in track change undo/redo.
+- `#SF-366627` - Resolved the script error in the inline form fill mode.
+- `#SF-367474`, `#SF-367493` - Resolved the line breaking issue in keep text only mode pasting.
+- `#SF-366968` - Table border is now exported properly in server-side word export.
+- `#SF-361925` - Resolved the script error in creating consecutive styles.
+- `#SF-366592` - Resolved the number format issue in decreasing the indent.
+
+## 19.4.55 (2022-03-08)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-368151` - Resolved the upper case function in localization.
+- `#SF-367003` - Text is congested after using numbering is resolved.
+- `#SF-366157` - Resolved the multi level list restart numbering issue.
+- `#SF-365713` - Resolved the table layout issue in compatibility mode.
+- `#SF-354038` - Resolved the script error in exporting document with large.
+- `#SF-364803` - Resolved the track changes to empty page.
+- `#F172160` - Resolved the editing the document after inserting table of contents.
+- `#SF-367119` - Resolved the script error while loading a document.
+- `#SF-369375` - Resolved the revision duplication in loading document with track changes.
+- `#SF-365347` - Resolved the copy/paste for match destination formatting.
+- `#SF-366101` - Resolved the font size binding issue in font dialog.
+- `#SF-362395` - Resolved the table delete issue when track changes is enabled.
+- `#SF-359599` - Resolved the empty paragraph track changes not showing in track changes pane.
+- `#SF-361140` - Endnote splitting issue to new page is resolved.
+- `#SF-367119` - Resolved the script error in opening document with shapes.
+
+## 19.4.54 (2022-03-01)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-365347` - Resolved the copy/paste for match destination formatting.
+- `#SF-366101` - Resolved the font size binding issue in font dialog.
+- `#SF-362395` - Resolved the table delete issue when track changes is enabled.
+- `#SF-359599` - Resolved the empty paragraph track changes not showing in track changes pane.
+- `#SF-361140` - Endnote splitting issue to new page is resolved.
+- `#SF-367119` - Resolved the script error in opening document with shapes.
+
+## 19.4.53 (2022-02-22)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#F172362` - Resolved the script error in removing form field
+- `#SF-363487` - Resolved the spell check call triggering issue along with spell check by page.
+- `#SF-365295` - Comment and track changes date time is now compatible with MS Word.
+- `#SF-363790` - Resolved the performance issue in selection when focus moves out for Document editor.
+- `#SF-293910` - Comment operation is are restricted in the read only mode.
+- `#F171981` - Resolved the `beforeFormFieldFill` event triggering issue keyboard navigation.
+- `#SF-363546` - Resolved the script error in deleting the table with the bookmark.
+- `#FB31160` - Resolved the empty lines tracked changes.
+- `#SF-364322`, `#SF-365061` - Resolved the high light colour exporting issue in server-side saving.
+- `#FB32346` - Resolved the script error in deleting the image in spell check enabled mode.
+
+## 19.4.52 (2022-02-15)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-356242`, `#SF-364511` - Resolved the character format and paragraph format in inserting new row and column.
+- `#SF-363021` - Resolved the bullet list copy paste issue.
+- `#SF-363285` - Resolved the bulleted list deletion issue inside table.
+- `#SF-362395` - Resolved the table delete issue when track changes is enabled.
+- `#F171944` - Resolved the document scrolling issue.
+- `#SF-361169` - Resolved the pasting issue in large non-formatted content.
+- `#SF-356384` - Resolved the merged cell rendering issue.
+- `#SF-355425` - Resolved the relayout issue in editing wrapped table editing.
+- `#SF-352941` - Resolved the table border rendering.
+- `#SF-353976` - Resolved the table merged cells rendering issue.
+
+#### New Features
+
+- `#F168557` - Added support for insert new paragraph using \r\n, \r, \n
+- `#SF-358641` - Added API to get/set field information.
+
+## 19.4.50 (2022-02-08)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#F171012` - Character style is now applied properly.
+- `#SF-361141` - Resolved the endnote number format rendering issue.
+- `#SF-359056` - Resolved the hanging issue in loading document with hebrew text.
+- `#SF-352586`, `#F170330` - Resolved the track changes and restrict editing region issues in header/footer.
+- `#SF-364411` - Resolved the image height and width serialization issue in server-side exporting.
+- `#SF-361566` - Resolved the wrapping style issue in header/footer.
+- `#SF-361147` - Resolved the relayout issue in footnote moving to next page.
+- `#SF-361532` - Resolved the strike through applying issue for bulleted list.
+- `#F171673`, `#SF-362944` - Resolved the comments pane opening issue in editing.
+- `#SF-361056`, `#SF-364408` - Resolved the empty revision loading issue track changes pane.
+
+## 19.4.48 (2022-01-31)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-355895` - Resolved the stacked column rendering issue.
+- `#SF-359392` - Resolved the pie chart color rendering issue.
+- `#F171212` - Resolved the section format copy/paste issue.
+- `#SF-359809` - Table formatting is not applied properly.
+- `#SF-359914` - Resolved the nested table height issue.
+- `#SF-362938` - Resolved the spell check shows error for correct word after backspace/delete.
+- `#SF-358997` - Resolved the script error in selection when first page of the document filled with shape with image and wrapping style.
+- `#SF-361108` - Resolved the script error in the copy/paste.
+- `#FB29987` - Resolved the table layouting issue in conversion from HTML to Document.
+- `#SF-362365` - Resolved the modifying level in drop down.
+- `#SF-363485` - Resolved the preferred width type mismatch in server-side SFDT to Docx conversion.
+- `#F171941` - Resolved the insert page break in optimized spell check mode.
+- `#SF-359775` - Column Clustered is not rendered properly.
+- `#SF-359392` - Resolved the default chart color applied to pie chart.
+- `#SF-359223` - Resolved the backspace issue in track changes.
+- `#SF-356022` - Resolved the wrong comma placing in Hebrew language.
+- `#SF-359056` - Resolved document hanging issue opening hebrew document.
+- `#F169863`, `#SF-354348` - Resolved the server-side exporting issue in SFDT to Docx.
+- `#SF-359780` - Resolved the layout issue in word 2013 justification for list applied text.
+- `#SF-356294` - Resolved the extra space adding while copying and pasting text with bookmarks.
+- `#SF-356242` - Resolved the style issue for the newly added rows & columns in the table.
+- `#SF-358936` - Resolved the HTML Element ContentEditable property issue in DocumentEditor.
+- `#SF-357051` - Resolved the element alignment issue due to page break.
+- `#SF-355713` - Resolved the script error in applying restrict editing in DocumentEditorContainer.
+- `#SF-354207` - Resolved the atleast line spacing type line height issue.
+- `#SF-354215` - Resolved the floating elements positioning issue after update form fields.
+- `#SF-357939` - Resolved the footer overlapping issue after pasting large content.
+- `#SF-354644` - Resolved the overlapping issue for image with top and bottom wrapping style in header.
+- `#SF-358814` - Document with applied list format is exported properly.
+- `#F171012` - Resolved the script error in applying the list format to character style applied text.
+- `#SF-358474` - Resolved the header/footer tooltip and toolbar item text wrap issue when localized.
+- `#SF-358523` - Resolved the status bar and font family style issue when localized.
+- `#SF-356958` - Resolved the misalignment after list applying.
+- `#SF-355425` - Resolved the auto fit table with preferred with type 'Point' is now layouted properly.
+- `#SF-359606` - Resolved the default tab width calculation with tab stop.
+- `#SF-355860` - Resolved the tab element layout issue in footer.
+- `#SF-359156` - Resolved the cropped image issue rendering in header/footer.
+- `#SF-354038` - Resolved the performance issue in inserting table more rows.
+- `#SF-354463` - Resolved the crashing issue in splitting rows in rendering table.
+- `#SF-353961` - Resolved the performance issue in editing document with merge field.
+- `#SF-355429` - Resolved selection issue for the shape with in front of text wrapping.
+- `#SF-360442` - Resolved the spell check suggestion replace issue in localized document editor.
+- `#F171032` - Resolved the empty line adding in text exporting.
+- `#F171461` - Resolved the content control preservation issue in exporting.
+- `#I347750` - Resolved the hanging issue when pasting large non-formatted content.
+- `#I349289`, `#I349128` - Resolved the endnote shifting and overlapping issue.
+- `#F171307` - Resolved the track changes issue in editing paragraph inside table.
+- `#SF-356951`, `#F170963`, `#SF-351886`, `#SF-359815`, `#SF-359312` - Resolved the merged cell width rendering issue.
+- `#I347523` - Resolved the invalid SFDT generation after pasting formatted content.
+- `#SF-357703` - Resolved the table row splitting issue.
+
+#### New Features
+
+- `#SF-354038` - Added API to restrict the maximum number of rows in insert table dialog(`DocumentEditorSettings.maximumRows`)
+- `#SF-348990` - Added screen tip support for hyperlink.
+
+## 19.4.47 (2022-01-25)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#FB29987` - Resolved the table layouting issue in conversion from HTML to Document.
+- `#SF-362365` - Resolved the modifying level in drop down.
+- `#SF-363485` - Resolved the preferred width type mismatch in server-side SFDT to Docx conversion.
+- `#F171941` - Resolved the insert page break in optimized spell check mode.
+- `#SF-359775` - Column Clustered is not rendered properly.
+- `#SF-359392` - Resolved the default chart color applied to pie chart.
+- `#SF-359223` - Resolved the backspace issue in track changes.
+- `#SF-356022` - Resolved the wrong comma placing in Hebrew language.
+- `#SF-359056` - Resolved document hanging issue opening hebrew document.
+
+## 19.4.43 (2022-01-18)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#F169863`, `#SF-354348` - Resolved the server-side exporting issue in SFDT to Docx.
+- `#SF-359780` - Resolved the layout issue in word 2013 justification for list applied text.
+- `#SF-356294` - Resolved the extra space adding while copying and pasting text with bookmarks.
+- `#SF-356242` - Resolved the style issue for the newly added rows & columns in the table.
+- `#SF-358936` - Resolved the HTML Element ContentEditable property issue in DocumentEditor.
+- `#SF-357051` - Resolved the element alignment issue due to page break.
+- `#SF-355713` - Resolved the script error in applying restrict editing in DocumentEditorContainer.
+- `#SF-354207` - Resolved the atleast line spacing type line height issue.
+- `#SF-354215` - Resolved the floating elements positioning issue after update form fields.
+- `#SF-357939` - Resolved the footer overlapping issue after pasting large content.
+- `#SF-354644` - Resolved the overlapping issue for image with top and bottom wrapping style in header.
+- `#SF-358814` - Document with applied list format is exported properly.
+- `#F171012` - Resolved the script error in applying the list format to character style applied text.
+- `#SF-358474` - Resolved the header/footer tooltip and toolbar item text wrap issue when localized.
+- `#SF-358523` - Resolved the status bar and font family style issue when localized.
+- `#SF-356958` - Resolved the misalignment after list applying.
+- `#SF-355425` - Resolved the auto fit table with preferred with type 'Point' is now layouted properly.
+- `#SF-359606` - Resolved the default tab width calculation with tab stop.
+- `#SF-355860` - Resolved the tab element layout issue in footer.
+- `#SF-359156` - Resolved the cropped image issue rendering in header/footer.
+- `#SF-354038` - Resolved the performance issue in inserting table more rows.
+
+## 19.4.41 (2022-01-04)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-354463` - Resolved the crashing issue in splitting rows in rendering table.
+- `#SF-353961` - Resolved the performance issue in editing document with merge field.
+- `#SF-355429` - Resolved selection issue for the shape with in front of text wrapping.
+- `#SF-360442` - Resolved the spell check suggestion replace issue in localized document editor.
+- `#F171032` - Resolved the empty line adding in text exporting.
+- `#F171461` - Resolved the content control preservation issue in exporting.
+
+#### New Features
+
+- `#SF-354038` - Added API to restrict the maximum number of rows in insert table dialog(`DocumentEditorSettings.maximumRows`)
+
+## 19.4.40 (2021-12-28)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I347750` - Resolved the hanging issue when pasting large non-formatted content.
+- `#I349289`, `#I349128` - Resolved the endnote shifting and overlapping issue.
+- `#F171307` - Resolved the track changes issue in editing paragraph inside table.
+- `#SF-359156` - Resolved the cropped image issue rendering in header/footer.
+- `#SF-356951`, `#F170963`, `#SF-351886`, #`SF-359815`, `#SF-359312` - Resolved the merged cell width rendering issue.
+- `#I347523` - Resolved the invalid SFDT generation after pasting formatted content.
+- `#SF-357703` - Resolved the table row splitting issue.
+
 ## 19.4.38 (2021-12-17)
 
 ### Document Editor

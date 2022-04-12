@@ -41,6 +41,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private initialCheckedValue: boolean;
     private wrapper: Element;
     private clickTriggered: boolean = false;
+    private validCheck: boolean = true;
 
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
@@ -175,6 +176,12 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
             ariaState = 'true';
             this.element.checked = true;
+            if (this.element.required && this.validCheck) {
+                this.element.checked = false;
+                this.validCheck = false;
+            } else if (this.element.required) {
+                this.validCheck = true;
+            }
         } else if (state === 'uncheck') {
             removeClass([frameSpan], [CHECK, INDETERMINATE]);
             if (rippleSpan) {
@@ -182,6 +189,12 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             }
             ariaState = 'false';
             this.element.checked = false;
+            if (this.element.required && this.validCheck) {
+                this.element.checked = true;
+                this.validCheck = false;
+            } else if (this.element.required) {
+                this.validCheck = true;
+            }
         } else {
             frameSpan.classList.remove(CHECK);
             frameSpan.classList.add(INDETERMINATE);
@@ -597,7 +610,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 }
             }
         }
-        return this.element.checked;
+        return this.validCheck ? this.element.checked : !this.element.checked;
     }
 
     protected updateHtmlAttributeToWrapper(): void {

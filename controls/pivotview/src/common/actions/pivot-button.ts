@@ -837,7 +837,7 @@ export class PivotButton implements IAction {
             !((args.target as HTMLElement).classList.contains(cls.REMOVE_CLASS)) &&
             !((args.target as HTMLElement).classList.contains(cls.DRAG_CLASS)) &&
             (buttonElement && fieldInfo.fieldItem && (fieldInfo.fieldItem.showSortIcon ||
-                isNullOrUndefined(fieldInfo.fieldItem.showSortIcon)))) {
+                isNullOrUndefined(fieldInfo.fieldItem.showSortIcon)) && !fieldInfo.fieldItem.isCalculatedField)) {
             this.parent.actionObj.actionName = events.sortField;
             this.parent.actionObj.fieldInfo = fieldInfo;
             if (this.parent.actionBeginMethod()) {

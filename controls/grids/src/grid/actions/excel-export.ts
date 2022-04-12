@@ -443,6 +443,9 @@ export class ExcelExport {
             this.parent.trigger(events.exportGroupCaption, cArgs);
             cell.value = cArgs.captionText;
             cell.style = this.getCaptionThemeStyle(this.theme);
+            if (!isNullOrUndefined(cArgs.style)) {
+                cell.style = this.mergeOptions(cell.style, cArgs.style);
+            }
             const captionModelGen: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
             const groupCaptionSummaryRows: Row<AggregateColumnModel>[] = captionModelGen.generateRows(item);
             this.fillAggregates(gObj, groupCaptionSummaryRows, (dataSource.level + dataSource.childLevels) - 1, excelRows, this.rowLength);

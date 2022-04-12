@@ -34,15 +34,17 @@ export class SplineSeries extends SplineBase {
         for (const point of points) {
             previous = this.getPreviousIndex(points, point.index - 1, series);
             point.symbolLocations = []; point.regions = [];
-            if (point.visible && withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
-                if (firstPoint !== null) {
-                    direction = this.getSplineDirection(
-                        series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint,
-                        getCoordinate, direction);
-                    startPoint = 'L';
+            if (point.visible) {
+                if (withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
+                    if (firstPoint !== null) {
+                        direction = this.getSplineDirection(
+                            series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint,
+                            getCoordinate, direction);
+                        startPoint = 'L';
+                    }
+                    this.storePointLocation(point, series, isInverted, getCoordinate);
                 }
                 firstPoint = point;
-                this.storePointLocation(point, series, isInverted, getCoordinate);
             } else {
                 startPoint = 'M';
                 firstPoint = null;

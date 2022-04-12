@@ -737,7 +737,7 @@ export class CalculatedField implements IAction {
             let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
             let memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
             let hierarchyDrop: DropDownList = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-            field.formatString = (formatDrop.value === 'Custom' ? customFormat.value : formatDrop.value as string);
+            field.formatString = (formatDrop.value === 'Custom' ? customFormat.value : (formatDrop.value === 'None' ? null : formatDrop.value as string));
             if (memberTypeDrop.value === 'Dimension') {
                 field.hierarchyUniqueName = hierarchyDrop.value as string;
             }
@@ -1353,7 +1353,7 @@ export class CalculatedField implements IAction {
             hierarchyDrop.dataBind();
         }
         if (dialogElement.querySelector('.' + cls.CALC_FORMAT_TYPE_DIV) as HTMLTextAreaElement) {
-            let formatStringData: string[] = ['Standard', 'Currency', 'Percent'];
+            let formatStringData: string[] = ['Standard', 'Currency', 'Percent', 'None'];
             let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
             this.formatType = formatDrop.value = (formatStringData.indexOf(calcInfo.formatString) > -1 ? calcInfo.formatString : 'Custom');
         }
@@ -1382,7 +1382,7 @@ export class CalculatedField implements IAction {
         let fData: { [key: string]: Object }[] = [];
         let fieldData: { [key: string]: Object }[] = [];
         let memberTypeData: string[] = ['Measure', 'Dimension'];
-        let formatStringData: string[] = ['Standard', 'Currency', 'Percent', 'Custom'];
+        let formatStringData: string[] = ['Standard', 'Currency', 'Percent', 'Custom', 'None'];
         for (let type of memberTypeData) {
             mData.push({ value: type, text: this.parent.localeObj.getConstant(type) });
         }
@@ -1601,10 +1601,10 @@ export class CalculatedField implements IAction {
                 args.node.setAttribute('data-membertype', field.fieldType);
                 args.node.setAttribute('data-hierarchy', field.parentHierarchy ? field.parentHierarchy : '');
                 args.node.setAttribute('data-formula', field.formula);
-                let formatStringData: string[] = ['Standard', 'Currency', 'Percent'];
+                let formatStringData: string[] = ['Standard', 'Currency', 'Percent', 'None'];
                 let formatString: string;
                 formatString = (field.formatString ? formatStringData.indexOf(field.formatString) > -1 ?
-                    field.formatString : 'Custom' : '');
+                    field.formatString :'Custom' : 'None');
                 args.node.setAttribute('data-formatString', formatString);
                 args.node.setAttribute('data-customString', (formatString === 'Custom' ? field.formatString : ''));
                 let removeElement: Element = createElement('span', {

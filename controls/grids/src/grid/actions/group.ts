@@ -29,7 +29,8 @@ import { AggregateColumnModel } from '../models/aggregate-model';
 export class Group implements IAction {
     //Internal variables
     private sortRequired: boolean = true;
-    private groupSettings: GroupSettingsModel;
+    /** @hidden */
+    public groupSettings: GroupSettingsModel;
     private element: HTMLElement;
     private colName: string;
     private column: Column;

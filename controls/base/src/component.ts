@@ -301,7 +301,9 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.localObserver = new Observer(this);
         // tslint:disable-next-line:no-function-constructor-with-string-args
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
-        validateLicense();
+        if (typeof window !== "undefined" && typeof document !== "undefined") {
+            validateLicense();   
+        }
         if (!isUndefined(selector)) {
             this.appendTo();
         }

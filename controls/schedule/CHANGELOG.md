@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.48 (2022-04-12)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F173985` - An issue with duplicate cells rendered when the time scale interval set as 1440 has been fixed.
+
 ## 20.1.47 (2022-04-04)
 
 ### Schedule

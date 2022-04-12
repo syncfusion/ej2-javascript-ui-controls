@@ -653,6 +653,7 @@ export class InfiniteScroll implements IAction {
     }
 
     private getVirtualInfiniteData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
+        this.getVirtualInfiniteEditedData();
         data.virtualData = this.virtualInfiniteData;
         data.isAdd = this.isAdd;
         data.isCancel = this.isCancel;
@@ -1063,7 +1064,7 @@ export class InfiniteScroll implements IAction {
                 gObj.focusModule.onClick({ target }, true);
                 gObj.selectRow(this.rowIndex);
             }
-        } else if (this.lastFocusInfo || this.pressedKey === literals.pageDown || this.pressedKey === literals.pageUp) {
+        } else if (this.lastFocusInfo && (this.pressedKey === literals.pageDown || this.pressedKey === literals.pageUp)) {
             const idx: number = cache ? 0 : this.lastFocusInfo.rowIdx;
             if (gObj.getRowByIndex(idx)) {
                 const target: Element = gObj.getCellFromIndex(idx, this.lastFocusInfo.cellIdx);

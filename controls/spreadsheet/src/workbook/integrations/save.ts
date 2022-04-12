@@ -1,6 +1,6 @@
-import { Workbook, CellModel } from '../base/index';
+import { Workbook, CellModel, getCell } from '../base/index';
 import { executeTaskAsync } from '../common/worker';
-import { pdfLayoutSettings, SaveOptions } from '../common/index';
+import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
 import { SaveCompleteEventArgs } from '../common/index';
@@ -111,7 +111,9 @@ export class WorkbookSave extends SaveWorker {
             'dataSourceChanged', 'beforeConditionalFormat', 'beforeCellUpdate']);
         const basicSettings: { [key: string]: Object } = JSON.parse(jsonStr);
         const sheetCount: number = this.parent.sheets.length;
-        if (sheetCount) { basicSettings.sheets = []; }
+        if (sheetCount) {
+            basicSettings.sheets = [];
+        }
         this.saveJSON = basicSettings;
     }
 
@@ -122,14 +124,13 @@ export class WorkbookSave extends SaveWorker {
      * @returns {void} - Process sheets properties.
      */
     private processSheets(): void {
-        let i: number = 0;
-        const sheetCount: number = this.parent.sheets.length;
         const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader'];
         // eslint-disable-next-line
-        if ((this.parent as any).isAngular) { skipProps.push('template'); }
-        while (i < sheetCount) {
-            executeTaskAsync(this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i], skipProps), i]);
-            i++;
+        if ((this.parent as any).isAngular) {
+            skipProps.push('template');
+        }
+        for (let i: number = 0, sheetCount: number = this.parent.sheets.length; i < sheetCount; i++) {
+            executeTaskAsync(this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i], skipProps, i), i]);
         }
     }
 
@@ -263,13 +264,12 @@ export class WorkbookSave extends SaveWorker {
      * Get stringified workbook object.
      *
      * @hidden
-     * @param {object} value - Specifies the value.
+     * @param {object} model - Specifies the workbook or sheet model.
      * @param {string[]} skipProp - specifies the skipprop.
      * @returns {string} - Get stringified workbook object.
      */
-    private getStringifyObject(value: object, skipProp: string[] = []): string {
-        const workbook: Workbook = this.parent;
-        return JSON.stringify(value, (key: string, value: { [key: string]: object }) => {
+    private getStringifyObject(model: object, skipProp: string[] = [], sheetIdx?: number): string {
+        return JSON.stringify(model, (key: string, value: { [key: string]: object }) => {
             if (skipProp.indexOf(key) > -1) {
                 return undefined;
             } else {
@@ -279,14 +279,17 @@ export class WorkbookSave extends SaveWorker {
                         const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = {
                             cellIdx: [Number(key), i], isUnique: false, uniqueRange: ''
                         };
-                    this.parent.notify(checkUniqueRange, args);
+                        this.parent.notify(checkUniqueRange, args);
                         if (cell) {
                             if ((cell.formula && (cell.formula.indexOf('=UNIQUE(') > -1)) || args.isUnique) {
                                 delete cell.value;
                                 continue;
                             }
                             if (!cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
-                                cell.value = workbook.computeExpression(cell.formula) as string;
+                                this.parent.notify(
+                                    workbookFormulaOperation, { action: 'refreshCalculate', value: cell.formula, rowIndex: args.cellIdx[0],
+                                    colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true });
+                                cell.value = getCell(args.cellIdx[0], i, model).value;
                             }
                         }
                     }

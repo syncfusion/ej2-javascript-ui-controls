@@ -4020,4 +4020,36 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
                 jasmine.Ajax.uninstall();
             });
         });
+
+        describe('EJ2-56350 - filtering on grid with Odata for values that contain an apastrophe', () => {
+            let request: JasmineAjaxRequest;
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    url: '/api/Employees',
+                    adaptor: new ODataAdaptor
+                });
+                dataManager.executeQuery(new Query().
+                    where('Guid', 'equal', "ab'cd'ef'gh'ij", true));
+                request = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify({
+                        value: [{
+                            '_id': 5, 'EmployeeID': 1005, 'Guid': 'f89dee73-af9f-4cd4-b330-db93c25ff3c9', 'FirstName': 'Buchanan',
+                            'LastName': 'Steven'
+                        }]
+                    })
+                });
+                done();
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('generated null filter url properly', () => {
+                expect(request.url).
+                    toEqual("/api/Employees/?$filter=tolower(Guid) eq 'ab''cd''ef''gh''ij'");
+            });
+        });
     });

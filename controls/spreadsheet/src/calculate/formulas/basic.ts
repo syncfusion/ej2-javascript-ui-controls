@@ -1,5 +1,5 @@
 import { FormulasErrorsStrings, CommonErrors, IBasicFormula, getSkeletonVal } from '../common/index';
-import { Calculate, getAlphalabel } from '../base/index';
+import { Calculate, getAlphalabel, CalcSheetFamilyItem } from '../base/index';
 import { isNullOrUndefined, getValue, Internationalization } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 
@@ -1032,12 +1032,24 @@ export class BasicFormulas {
                     return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
                 }
                 if (byCol === 'FALSE') {
+                    const calcFamily: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(this.parent.grid);
+                    let token: string = ''; let cellTxt: string;
+                    if (calcFamily.sheetNameToParentObject !== null && calcFamily.sheetNameToParentObject.size > 0) {
+                        token = calcFamily.parentObjectToToken.get(this.parent.grid);
+                        cellTxt = token + actCell;
+                    }
                     for (let i: number = 0; i < tmp.length; i++) {
                         const splitValue: string[] = tmp[i].split('+');
-                        if (i > 0) { actRowIdx++; actColIdx = this.parent.colIndex(actCell); }
-                        for (let i: number = 0; i < splitValue.length; i++) {
-                            this.setValueRefresh(splitValue[i], actRowIdx, actColIdx, actCell);
-                            if (splitValue[i + 1]) {
+                        if (i > 0) {
+                            actRowIdx++;
+                            actColIdx = this.parent.colIndex(actCell);
+                        }
+                        for (let j: number = 0; j < splitValue.length; j++) {
+                            this.setValueRefresh(splitValue[j], actRowIdx, actColIdx, actCell);
+                            if (i > 0 || j > 0) {
+                                this.parent.refresh(token + getAlphalabel(actColIdx) + actRowIdx.toString(), cellTxt);
+                            }
+                            if (splitValue[j + 1]) {
                                 actColIdx++;
                             }
                         }

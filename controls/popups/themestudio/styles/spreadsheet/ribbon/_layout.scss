@@ -179,8 +179,8 @@
             line-height: 35px;
 
             & .e-caret {
-              @if $skin-name == 'FlunetUI' {
-                line-height: 40px;
+              @if $skin-name == 'FluentUI' {
+                line-height: 38px;
               }
               @else {
                 line-height: 35px;
@@ -202,7 +202,7 @@
         line-height: 41px;
 
         & .e-caret {
-          @if $skin-name == 'FlunetUI' {
+          @if $skin-name == 'FluentUI' {
             line-height: 44px;
           }
           @else {

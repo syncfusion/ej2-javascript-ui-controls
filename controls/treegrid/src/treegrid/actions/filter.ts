@@ -159,6 +159,9 @@ export class Filter {
                         this.addParentRecord(parent);
                     }
                 } else {
+                    if (parent['expanded'] === false && this.parent.getVisibleRecords().indexOf(record) === -1 && isNullOrUndefined(this.parent['dataResults']['action'])) {
+                        this.parent.expandRow(this.parent.getRows()[parent['index']], parent);
+                    }
                     this.addParentRecord(parent);
                 }
             }

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 20.1.48 (2022-04-12)
+
+### Maps
+
+#### Bug Fixes
+
+- `#F174008` - `cancel` argument of the `zoom` event will work as expected when the value is set as **true**.
+
 ## 20.1.47 (2022-04-04)
 
 ### Maps

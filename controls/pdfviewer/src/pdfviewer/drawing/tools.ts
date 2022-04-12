@@ -465,7 +465,7 @@ export class SelectTool extends ToolBase {
                     // eslint-disable-next-line max-len
                     if (selectedObject.formFields.length === 0 && this.commandHandler.formDesignerModule && formField && formField.formFieldAnnotationType) {
                         // eslint-disable-next-line
-                        let field: IFormField = { value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
+                        let field: IFormField = { name: (formField as any).name, id: (formField as any).id, value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
                             // eslint-disable-next-line
                             color: (formField as PdfFormFieldBaseModel).color, backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor, alignment: (formField as PdfFormFieldBaseModel).alignment, isReadonly: (formField as any).isReadOnly, visibility: (formField as any).visibility,
                             // eslint-disable-next-line
@@ -473,6 +473,33 @@ export class SelectTool extends ToolBase {
                             // eslint-disable-next-line
                             options: (formField as any).options, isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected };
                         this.commandHandler.fireFormFieldUnselectEvent('formFieldUnselect', field, formField.pageIndex);
+                    }
+                    else if (this.pdfViewerBase.currentTarget && this.pdfViewerBase.currentTarget.id && this.commandHandler.formFields && event.type === 'mousedown') {
+                        for (var i = 0; i < this.commandHandler.formFields.length; i++) {
+                            let formField = this.commandHandler.formFields[i];
+                            if (this.pdfViewerBase.currentTarget && this.pdfViewerBase.currentTarget.id === formField.id) {
+                                // eslint-disable-next-line
+                                let field = {
+                                    value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
+                                    // eslint-disable-next-line
+                                    color: formField.color, backgroundColor: formField.backgroundColor, alignment: formField.alignment, isReadonly: (formField as any).isReadonly, visibility: (formField as any).visibility,
+                                    // eslint-disable-next-line
+                                    maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip,
+                                    // eslint-disable-next-line
+                                    options: (formField as any).options, isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected
+                                };
+                                if (!object) {
+                                    this.commandHandler.fireFocusOutFormField((field as any), (formField as any).pageIndex);
+                                    this.pdfViewerBase.currentTarget = null;
+                                }
+                                else {
+                                    if (this.pdfViewerBase.currentTarget.id != (event.target as any).id && (event.target as any).className != 'e-pv-text-layer') {
+                                        this.commandHandler.fireFocusOutFormField((field as any), (formField as any).pageIndex);
+                                        this.pdfViewerBase.currentTarget = null;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1629,85 +1656,89 @@ export class NodeDrawingTool extends ToolBase {
      * @returns {void}
      */
     public mouseDown(args: MouseEventArgs): void {
-        super.mouseDown(args);
-        this.inAction = true;
-        const node: PdfAnnotationBaseModel = { bounds: { x: 100, y: 300, width: 100, height: 100 }, pageIndex: 0, strokeColor: 'red', thickness: 3 };
-        node.id = randomId();
-        this.sourceObject.pageIndex = node.pageIndex = this.pdfViewerBase.activeElements.activePageID || 0;
-        this.sourceObject.enableShapeLabel = this.commandHandler.enableShapeLabel;
-        this.pdfViewerBase.updateFreeTextProperties(this.sourceObject);
-        this.isFormDesign = false;
-        // eslint-disable-next-line
-        const formFieldElement: any = document.getElementById('FormField_helper_html_element');
-        if (formFieldElement) {
-            formFieldElement.remove();
-        }
-        // eslint-disable-next-line
-        this.commandHandler.drawingObject = this.drawingObject = this.commandHandler.add(this.sourceObject || node as any) as PdfAnnotationBaseModel;
-        if (this.drawingObject.formFieldAnnotationType === 'Textbox' || this.drawingObject.formFieldAnnotationType === 'SignatureField' || this.drawingObject.formFieldAnnotationType === 'InitialField' ||
-        this.drawingObject.formFieldAnnotationType === 'Checkbox' || this.drawingObject.formFieldAnnotationType === 'ListBox' || this.drawingObject.formFieldAnnotationType === 'RadioButton' ||
-        this.drawingObject.formFieldAnnotationType === 'DropdownList' || this.drawingObject.formFieldAnnotationType === 'PasswordField') {
-            this.inAction = false;
+        if (!isNaN(this.pdfViewerBase.activeElements.activePageID) && (event.target as any).className != 'e-pv-page-container') {
+            super.mouseDown(args);
+            this.inAction = true;
+            const node: PdfAnnotationBaseModel = { bounds: { x: 100, y: 300, width: 100, height: 100 }, pageIndex: 0, strokeColor: 'red', thickness: 3 };
+            node.id = randomId();
+            this.sourceObject.pageIndex = node.pageIndex = this.pdfViewerBase.activeElements.activePageID || 0;
+            this.sourceObject.enableShapeLabel = this.commandHandler.enableShapeLabel;
+            this.pdfViewerBase.updateFreeTextProperties(this.sourceObject);
+            this.isFormDesign = false;
             // eslint-disable-next-line
-            (this.drawingObject as any).pageNumber = this.pdfViewerBase.getActivePage(true);
+            const formFieldElement: any = document.getElementById('FormField_helper_html_element');
+            if (formFieldElement) {
+                formFieldElement.remove();
+            }
             // eslint-disable-next-line
-            const bounds: any = this.commandHandler.formDesignerModule.updateFormFieldInitialSize(this.drawingObject.wrapper.children[0], this.drawingObject.formFieldAnnotationType);
-            const pageWidth: number = this.pdfViewerBase.pageContainer.firstElementChild.clientWidth - bounds.width;
-            const pageHeight: number = this.pdfViewerBase.pageContainer.firstElementChild.clientHeight - bounds.height;
-            // eslint-disable-next-line
-            let left: number =  (this.pdfViewerBase.pageContainer.firstElementChild as any).offsetLeft;
-            let offsetX: number;
-            // eslint-disable-next-line
-            if (this.currentPosition.y >= pageHeight && event.target && (event.target as any).parentElement && (event.target as any).parentElement.classList.contains('foreign-object')) {
+            this.commandHandler.drawingObject = this.drawingObject = this.commandHandler.add(this.sourceObject || node as any) as PdfAnnotationBaseModel;
+            if (this.drawingObject.formFieldAnnotationType === 'Textbox' || this.drawingObject.formFieldAnnotationType === 'SignatureField' || this.drawingObject.formFieldAnnotationType === 'InitialField' ||
+                this.drawingObject.formFieldAnnotationType === 'Checkbox' || this.drawingObject.formFieldAnnotationType === 'ListBox' || this.drawingObject.formFieldAnnotationType === 'RadioButton' ||
+                this.drawingObject.formFieldAnnotationType === 'DropdownList' || this.drawingObject.formFieldAnnotationType === 'PasswordField') {
+                this.inAction = false;
                 // eslint-disable-next-line
-                var targetParentRect = (event as any).path[3].getBoundingClientRect();
+                (this.drawingObject as any).pageNumber = this.pdfViewerBase.getActivePage(true);
                 // eslint-disable-next-line
-                offsetX = (event as any).clientX - targetParentRect.left; 
-            } else {
-                offsetX = this.currentPosition.x - left;
+                const bounds: any = this.commandHandler.formDesignerModule.updateFormFieldInitialSize(this.drawingObject.wrapper.children[0], this.drawingObject.formFieldAnnotationType);
+                const pageWidth: number = this.pdfViewerBase.pageContainer.firstElementChild.clientWidth - bounds.width;
+                const pageHeight: number = this.pdfViewerBase.pageContainer.firstElementChild.clientHeight - bounds.height;
+                // eslint-disable-next-line
+                let left: number = (this.pdfViewerBase.pageContainer.firstElementChild as any).offsetLeft;
+                let offsetX: number;
+                // eslint-disable-next-line
+                if (this.currentPosition.y >= pageHeight && event.target && (event.target as any).parentElement && (event.target as any).parentElement.classList.contains('foreign-object')) {
+                    // eslint-disable-next-line
+                    var targetParentRect = (event as any).path[3].getBoundingClientRect();
+                    // eslint-disable-next-line
+                    offsetX = (event as any).clientX - targetParentRect.left;
+                } else {
+                    offsetX = this.currentPosition.x - left;
+                }
+                // eslint-disable-next-line
+                let rect: any;
+                if (this.currentPosition.x >= pageWidth && this.currentPosition.y >= pageHeight) {
+                    // eslint-disable-next-line max-len
+                    rect = { x: pageWidth, y: pageHeight, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
+                } else if (this.currentPosition.x >= pageWidth) {
+                    // eslint-disable-next-line max-len
+                    rect = { x: pageWidth, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
+                } else if (this.currentPosition.y >= pageHeight) {
+                    // eslint-disable-next-line max-len
+                    rect = { x: offsetX, y: pageHeight, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
+                } else {
+                    // eslint-disable-next-line max-len
+                    rect = { x: this.currentPosition.x, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
+                }
+                this.updateNodeDimension(this.drawingObject, rect);
+                this.commandHandler.formFieldCollection.push(this.drawingObject);
+                // eslint-disable-next-line max-len
+                const formField: FormFieldModel = {
+                    id: this.drawingObject.id, name: (this.drawingObject as PdfFormFieldBaseModel).name, value: (this.drawingObject as PdfFormFieldBaseModel).value,
+                    // eslint-disable-next-line max-len
+                    type: this.drawingObject.formFieldAnnotationType as FormFieldType, isReadOnly: this.drawingObject.isReadonly, fontFamily: this.drawingObject.fontFamily,
+                    // eslint-disable-next-line max-len
+                    fontSize: this.drawingObject.fontSize, fontStyle: this.drawingObject.fontStyle as unknown as FontStyle, color: (this.drawingObject as PdfFormFieldBaseModel).color, backgroundColor: (this.drawingObject as PdfFormFieldBaseModel).backgroundColor,
+                    // eslint-disable-next-line max-len
+                    alignment: (this.drawingObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (this.drawingObject as PdfFormFieldBaseModel).visibility, maxLength: (this.drawingObject as PdfFormFieldBaseModel).maxLength, isRequired: (this.drawingObject as PdfFormFieldBaseModel).isRequired,
+                    // eslint-disable-next-line max-len
+                    isPrint: this.drawingObject.isPrint, isSelected: (this.drawingObject as PdfFormFieldBaseModel).isSelected, isChecked: (this.drawingObject as PdfFormFieldBaseModel).isChecked, tooltip: (this.drawingObject as PdfFormFieldBaseModel).tooltip, bounds: this.drawingObject.bounds as IFormFieldBound, thickness: this.drawingObject.thickness, borderColor: (this.drawingObject as PdfFormFieldBaseModel).borderColor,
+                    signatureIndicatorSettings: (this.drawingObject as PdfFormFieldBaseModel).signatureIndicatorSettings
+                };
+                this.commandHandler.formFieldCollections.push(formField);
+                // eslint-disable-next-line max-len
+                this.commandHandler.formDesignerModule.drawHTMLContent(this.drawingObject.formFieldAnnotationType, this.drawingObject.wrapper.children[0] as DiagramHtmlElement, this.drawingObject, this.drawingObject.pageIndex, this.commandHandler);
+                this.commandHandler.select([this.commandHandler.drawingObject.id], this.commandHandler.annotationSelectorSettings);
+                if (this.commandHandler.annotation) {
+                    this.commandHandler.annotation.addAction(this.pdfViewerBase.getActivePage(true), null, this.drawingObject, 'Addition', '', this.drawingObject, this.drawingObject);
+                }
+                this.endAction();
+                this.pdfViewerBase.tool = null;
+                this.pdfViewerBase.action = 'Select';
+                this.drawingObject = null;
+                this.pdfViewerBase.isMouseDown = false;
+                this.pdfViewerBase.pdfViewer.drawingObject = null;
+                this.isFormDesign = true;
             }
-            // eslint-disable-next-line
-            let rect: any;
-            if (this.currentPosition.x >= pageWidth && this.currentPosition.y >= pageHeight) {
-                // eslint-disable-next-line max-len
-                rect = { x: pageWidth, y: pageHeight, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
-            } else if (this.currentPosition.x >= pageWidth) {
-                // eslint-disable-next-line max-len
-                rect = { x: pageWidth, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
-            } else if (this.currentPosition.y >= pageHeight) {
-                // eslint-disable-next-line max-len
-                rect = { x: offsetX, y: pageHeight, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
-            } else {
-                // eslint-disable-next-line max-len
-                rect = { x: this.currentPosition.x, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
-            }
-            this.updateNodeDimension(this.drawingObject, rect);
-            this.commandHandler.formFieldCollection.push(this.drawingObject);
-            // eslint-disable-next-line max-len
-            const formField: FormFieldModel = { id: this.drawingObject.id, name: (this.drawingObject as PdfFormFieldBaseModel).name, value: (this.drawingObject as PdfFormFieldBaseModel).value,
-                // eslint-disable-next-line max-len
-                type: this.drawingObject.formFieldAnnotationType as FormFieldType, isReadOnly: this.drawingObject.isReadonly, fontFamily: this.drawingObject.fontFamily,
-                // eslint-disable-next-line max-len
-                fontSize: this.drawingObject.fontSize, fontStyle: this.drawingObject.fontStyle as unknown as FontStyle, color: (this.drawingObject as PdfFormFieldBaseModel).color, backgroundColor: (this.drawingObject as PdfFormFieldBaseModel).backgroundColor,
-                // eslint-disable-next-line max-len
-                alignment: (this.drawingObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (this.drawingObject as PdfFormFieldBaseModel).visibility, maxLength: (this.drawingObject as PdfFormFieldBaseModel).maxLength, isRequired: (this.drawingObject as PdfFormFieldBaseModel).isRequired,
-                // eslint-disable-next-line max-len
-                isPrint: this.drawingObject.isPrint, isSelected: (this.drawingObject as PdfFormFieldBaseModel).isSelected, isChecked: (this.drawingObject as PdfFormFieldBaseModel).isChecked, tooltip:  (this.drawingObject as PdfFormFieldBaseModel).tooltip, bounds: this.drawingObject.bounds as IFormFieldBound, thickness: this.drawingObject.thickness, borderColor: (this.drawingObject as PdfFormFieldBaseModel).borderColor,
-                signatureIndicatorSettings: (this.drawingObject as PdfFormFieldBaseModel).signatureIndicatorSettings };
-            this.commandHandler.formFieldCollections.push(formField);
-            // eslint-disable-next-line max-len
-            this.commandHandler.formDesignerModule.drawHTMLContent(this.drawingObject.formFieldAnnotationType, this.drawingObject.wrapper.children[0] as DiagramHtmlElement, this.drawingObject, this.drawingObject.pageIndex, this.commandHandler);
-            this.commandHandler.select([this.commandHandler.drawingObject.id], this.commandHandler.annotationSelectorSettings);       
-            if (this.commandHandler.annotation) {
-                this.commandHandler.annotation.addAction(this.pdfViewerBase.getActivePage(true), null, this.drawingObject, 'Addition', '', this.drawingObject, this.drawingObject);
-            }
-            this.endAction();
-            this.pdfViewerBase.tool = null;
-            this.pdfViewerBase.action = 'Select';
-            this.drawingObject = null;
-            this.pdfViewerBase.isMouseDown = false;
-            this.pdfViewerBase.pdfViewer.drawingObject = null;
-            this.isFormDesign = true;
         }
     }
     /**

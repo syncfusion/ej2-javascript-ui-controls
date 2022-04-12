@@ -595,9 +595,11 @@ describe('EJ2-53066 - getCheckedRecords method when collapsing records after fil
 
   it('Column CheckBox after collapsing with Virtualization', (done: Function) => {
     actionComplete = (args?: Object): void => {
-      (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treecheckselect')[0]).click();
-       expect(gridObj.getCheckedRecords().length).toBe(4);
-       done();
+      if (args['action'] === 'filter') {
+          (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treecheckselect')[0]).click();
+           expect(gridObj.getCheckedRecords().length).toBe(4);
+           done();
+      }
     }
     gridObj.grid.actionComplete = actionComplete;
     gridObj.filterByColumn("startDate","equal","2/3/2017");

@@ -2,15 +2,15 @@
 
 ## [Unreleased]
 
-## 20.1.47 (2022-04-04)
+## 20.1.48 (2022-04-12)
 
 ### Excel Export
 
 #### Bug Fixes
 
-- Performance issue caused by duplicate row checking is resolved.
+- Image width and height are proper in Grid to Excel Export.
 
-## 19.2.46 (2021-07-06)
+## 20.1.47 (2022-04-04)
 
 ### Excel Export
 

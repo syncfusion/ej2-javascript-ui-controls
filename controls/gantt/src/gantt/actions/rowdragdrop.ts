@@ -167,10 +167,12 @@ export class RowDD {
             }
         }
         if (!args.cancel) {
-            args.cancel = true;
             args.requestType = 'beforeDrop';
             this.parent.trigger('actionBegin', args);
-            this.dropRows(args, true); // method to update the data collections based on drop action
+            if (!args.cancel) {
+                this.dropRows(args, true); // method to update the data collections based on drop action
+                args.cancel = true;
+            }
         }
     }
     private dropRows(args: RowDropEventArgs, isByMethod?: boolean): void {

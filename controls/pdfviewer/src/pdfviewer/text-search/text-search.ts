@@ -474,15 +474,15 @@ export class TextSearch {
                         this.searchedPages = [this.searchPageIndex];
                     }
                     // eslint-disable-next-line max-len
-                    else if (this.isPrevSearch && this.searchMatches && this.searchMatches.length > 0 && this.searchMatches[this.searchPageIndex].length > 0 && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex - 1 === this.searchPageIndex) {
+                    else if (this.isPrevSearch && this.searchMatches && this.searchMatches.length > 0 && (this.searchMatches[this.searchPageIndex] && this.searchMatches[this.searchPageIndex].length > 0) && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex - 1 === this.searchPageIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
                         this.searchedPages = [this.startIndex];
                     }
-                    this.pdfViewerBase.updateScrollTop(this.searchPageIndex);                  
+                    this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
                 }
-                else if (this.searchMatches && this.searchMatches[this.searchPageIndex].length > 0 && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex === this.searchPageIndex && this.pdfViewerBase.pageCount > 1) {
+                else if (this.searchMatches && (this.searchMatches[this.searchPageIndex] && this.searchMatches[this.searchPageIndex].length > 0) && this.searchedPages.length === this.pdfViewerBase.pageCount && this.startIndex === this.searchPageIndex && this.pdfViewerBase.pageCount > 1) {
                     if (!this.isMessagePopupOpened) {
                         this.onMessageBoxOpen();
                     }
@@ -508,7 +508,7 @@ export class TextSearch {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
-                        this.pdfViewerBase.updateScrollTop(this.startIndex); 
+                        this.pdfViewerBase.updateScrollTop(this.startIndex);
                         // eslint-disable-next-line max-len
                     } else if (this.searchMatches && this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
                         if (this.isPrevSearch) {
@@ -528,7 +528,7 @@ export class TextSearch {
                             this.searchIndex = 0;
                         }
                         this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch);
-                    } else if (this.searchMatches && this.searchMatches[this.searchPageIndex].length > 0 && this.searchedPages.length === this.pdfViewerBase.pageCount){
+                    } else if (this.searchMatches && (this.searchMatches[this.searchPageIndex] && this.searchMatches[this.searchPageIndex].length > 0) && this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
@@ -537,7 +537,7 @@ export class TextSearch {
                         this.searchIndex = 0;
                         this.pdfViewerBase.updateScrollTop(this.startIndex);
                         this.highlightSearchedTexts(this.searchPageIndex, isSinglePageSearch);
-                    } 
+                    }
                 }
             }
         }

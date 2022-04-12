@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.48 (2022-04-12)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `F174051` - Issue with Script error throws while adding group in Query builder header template has been fixed.
+
 ## 19.3.45 (2021-10-12)
 
 ### QueryBuilder

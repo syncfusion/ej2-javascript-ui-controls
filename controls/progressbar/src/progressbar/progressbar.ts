@@ -371,6 +371,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public previousWidth: number;
     /** @private */
+    public previousLabelWidth: number;
+    /** @private */
     public previousEndAngle: number;
     /** @private */
     public previousTotalEnd: number;

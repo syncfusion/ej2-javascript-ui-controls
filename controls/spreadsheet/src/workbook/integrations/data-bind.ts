@@ -52,7 +52,7 @@ export class DataBind {
 
     private updateSheetFromDataSourceHandler(
         args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
-            sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean }): void {
+            sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean, resolveAfterFullDataLoaded?: boolean }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
@@ -184,16 +184,19 @@ export class DataBind {
                         }
                         requestedRange[k] = true;
                         if (requestedRange.indexOf(false) === -1) {
+                            let dataLoading: boolean;
                             if (eRange + sRowIdx < sRowIdx + range.info.count) {
                                 if (!args.rangeSettingCount) { args.rangeSettingCount = []; }
                                 args.rangeSettingCount.push(k);
+                                dataLoading = true;
                                 //if (remoteUrl) {
                                 const unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
-                                    rangeSettingCount?: number[], isFinite?: boolean } = {
+                                    rangeSettingCount?: number[], isFinite?: boolean, resolveAfterFullDataLoaded?: boolean } = {
                                     sheet: args.sheet, indexes: [0, 0, totalRows, totalCols],
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }),
-                                    rangeSettingCount: args.rangeSettingCount, isFinite: args.isFinite
+                                    rangeSettingCount: args.rangeSettingCount, isFinite: args.isFinite,
+                                    resolveAfterFullDataLoaded: args.resolveAfterFullDataLoaded
                                 };
                                 this.updateSheetFromDataSourceHandler(unloadedArgs);
                                 unloadedArgs.promise.then((): void => {
@@ -208,7 +211,12 @@ export class DataBind {
                             } else if (args.formulaCellRef) {
                                 this.notfyFormulaCellRefresh(args.formulaCellRef, args.sheetIndex);
                             }
-                            this.checkResolve(args.indexes);
+                            if (!(dataLoading && args.resolveAfterFullDataLoaded)) {
+                                this.checkResolve(args.indexes);
+                                if (args.resolveAfterFullDataLoaded) {
+                                    this.checkResolve([0, 0, 0, 0]);
+                                }
+                            }
                         }
                     });
                 } else if (k === 0 && requestedRange.indexOf(false) === -1) {

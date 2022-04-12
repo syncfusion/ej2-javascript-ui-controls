@@ -506,7 +506,7 @@ export class Legend extends BaseLegend {
         }
 
         legendRegion = this.legendRegions.filter((region: ILegendRegions) => {
-            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage(null, 1, 2) : 0)),
+            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage((this.chart as Chart).enableCanvas, null, 1, 2) : 0)),
                                  region.rect));
         });
         if (legendRegion.length && (this.chart as Chart).enableCanvas) {

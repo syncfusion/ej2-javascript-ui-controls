@@ -111,7 +111,7 @@ $gantt-active-background: #484848 !default;
 $gantt-active-color: #fff !default;
 $gantt-active-color-opacity: 1 !default;
 $gantt-table-background: $grey-base !default;
-$gantt-baseline-color: #f0ad4e !default;
+$gantt-baseline-color: $brand-warning !default;
 $gantt-child-progress-margin-left: 0.5px !default;
 $gantt-timeline-single-header-outer-div: 45px !default;
 $gantt-chart-timeline-single-header-outer-div: 47px !default;
@@ -161,3 +161,4 @@ $grid-active-container-border: 0 0 0 1px lighten($brand-primary, 10%) inset !def
 $gantt-collapse-progress-width: 0px !important;
 $rangecontainer-border-color: #FC7A05;
 $gantt-range-container-arc-radius: 2px !default;
+$bigger-column-menu-size: 40px !default;

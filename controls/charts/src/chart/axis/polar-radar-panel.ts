@@ -198,10 +198,14 @@ export class PolarRadarPanel extends LineBase {
                     this.drawYAxisLabels(axis, i);
                 }
             }
-            axisElement.appendChild(this.element);
+            if (!this.chart.enableCanvas) {
+                axisElement.appendChild(this.element);
+            }
         }
 
-        axisElement.appendChild(this.element);
+        if (!this.chart.enableCanvas) {
+            axisElement.appendChild(this.element);
+        }
 
         appendChildElement(chart.enableCanvas, chart.svgObject, axisElement, chart.redraw);
 
@@ -230,7 +234,9 @@ export class PolarRadarPanel extends LineBase {
          */
         const element: Element = chart.renderer.drawPath(optionsLine);
         this.setPointerEventNone(element);
-        chart.yAxisElements.appendChild(element);
+        if (!this.chart.enableCanvas) {
+            chart.yAxisElements.appendChild(element);
+        }
     }
 
     public drawYAxisLabels(axis: Axis, index: number): void {
@@ -294,7 +300,9 @@ export class PolarRadarPanel extends LineBase {
                 false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
             );
         }
-        chart.yAxisElements.appendChild(labelElement);
+        if (!this.chart.enableCanvas) {
+            chart.yAxisElements.appendChild(labelElement);
+        }
     }
 
     private drawYAxisGridLine(axis: Axis, index: number): void {
@@ -586,7 +594,9 @@ export class PolarRadarPanel extends LineBase {
                 false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
             );
         }
-        this.element.appendChild(labelElement);
+        if (!this.chart.enableCanvas) {
+            this.element.appendChild(labelElement);
+        }
     }
     /**
      * To get available space to trim.

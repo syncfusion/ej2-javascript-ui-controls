@@ -469,8 +469,14 @@
     }
 
     @if $skin-name == "FluentUI" {
+        .e-de-rp-more-less{
+            .e-label{
+                font-size: 14px !important;
+            }
+        }
       .e-bigger {
-        .e-de-op-more-less {
+        .e-de-op-more-less,
+        .e-de-rp-more-less {
           .e-label {
             font-size: 16px !important;
           }
@@ -2741,13 +2747,12 @@
             float: right;
             position: relative;
             top: $de-rp-close-icon-top;
-            @if $skin-name=='tailwind' {
-                left: 12px;
-            }
+            right: $de-rp-close-icon-right;
         }
         .e-de-restrict-pane {
             height: 100%;
             overflow: auto;
+            overflow-x: hidden;
             width: $de-rp-width;
         }
         .e-de-rp-nav-lbl {
@@ -3137,6 +3142,7 @@
             }
             .e-de-rp-close-icon {
                 float: left;
+                right: $de-rp-close-icon-right-rtl;
             }
             .e-de-cp-option.e-btn.e-icon-btn {
                 float: left;
@@ -3190,6 +3196,12 @@
                 height: 56px;
                 padding: 16px;
                 padding-right: 8px;
+            }
+            .e-de-rp-close-icon {
+                float: right;
+                position: relative;
+                top: $de-rp-close-icon-top-bigger;
+                right: $de-rp-close-icon-right-bigger;
             }
             .e-rtl {
                 .e-de-cmt-post-btn.e-btn.e-flat,
@@ -3301,6 +3313,10 @@
                 .e-de-cmt-sub-container:not(.e-de-cmt-selection):not(.e-de-cmt-reply):hover {
                     padding-left: $de-cmt-sub-container-padding-big;
                     padding-right: $de-cmt-sub-container-hover-padding-left-big;
+                }
+                .e-de-rp-close-icon {
+                    float: left;
+                    right: $de-rp-close-icon-right-bigger-rtl;
                 }
             }
         }

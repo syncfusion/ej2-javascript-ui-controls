@@ -101,10 +101,14 @@
       padding-top: 12px;
 
       @if($skin-name == 'bootstrap5') {
-        color: $field-list-default-font-color;
+        // sass-lint:disable-all
+        color: $field-list-default-font-color !important;
+        // sass-lint:enable-all
       }
 
     }
+
+
 
     .e-format-delete-button:hover,
     .e-format-delete-button:focus,
@@ -151,9 +155,12 @@
       margin: 0 2px;
       width: 14px;
       @if ($skin-name == 'bootstrap5') {
+        // sass-lint:disable-all
+        color: $field-list-default-font-color !important;
         &:hover {
-          color: $field-list-active-color;
+          color: $field-list-active-color !important;
         }
+        // sass-lint:enable-all
       }
     }
 
@@ -355,6 +362,11 @@
 
     .e-dlg-content {
       padding-bottom: $pivot-dialog-content-padding;
+      @if ($skin-name == 'FluentUI') {
+        // sass-lint:disable-all
+        padding-top: 1px !important;
+        // sass-lint:enable-all
+      }
     }
 
     .e-pivot-all-field-title,
@@ -418,7 +430,6 @@
           float: right !important;
           margin: 0;          
           margin-right: 12px !important;
-          padding-top: 10px !important;
           //sass-lint:enable-all
         }
       }
@@ -443,7 +454,7 @@
       pointer-events: auto;
       width: 24px;
 
-      @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') {
+      @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
         height: 20px;
         width: 20px;
       }
@@ -454,6 +465,9 @@
       font-size: 20px;
       margin-right: 12px;
       padding-top: 10px;
+      @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
+        padding-top: 8px;
+      }
     }
 
     .e-treeview .e-list-item div.e-iconspace {
@@ -498,10 +512,18 @@
           padding: 8px 8px 8px 12px;
         }
         @if ($skin-name == 'tailwind') {
+          // sass-lint:disable-all
           height: 20px;
           margin-top: 0;
           padding: 0 5px;
+          position: relative;
+          top:2px;
           width: 20px;
+          //sass-lint:enable-all
+        }
+        @if ($skin-name == 'FluentUI') {
+          position: relative;
+          top: .65px;
         }
       }
       @if ($skin-name == 'tailwind') {
@@ -882,15 +904,21 @@
 
     .e-treeview .e-list-item div.e-icons {
       font-size: $field-list-bigger-icon-size;
+      @if($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
+        padding-top: 12px;
+      }
     }
 
     .e-treeview .e-list-item span.e-icons {
       font-size: $field-list-bigger-icon-size;
+      @if ($skin-name == 'FluentUI') or ($skin-name == 'bootsrap5') {
+        position: relative;
+        top: 3px;
+      }
 
       @if ($skin-name == 'tailwind') {
         vertical-align: sub;
       }
-
     }
 
     .e-pivot-formula {
@@ -1983,6 +2011,9 @@
       .e-dlg-content {
         overflow: hidden;
         padding: 0;
+        @if ($skin-name == 'FluentUI') {
+          padding-top: 1px;
+        }
 
         @if ($skin-name == 'tailwind') {
           padding-top: 12px;

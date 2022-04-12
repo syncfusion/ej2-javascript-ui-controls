@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.48 (2022-04-12)
+
+### Common
+
+#### Bug Fixes
+
+- `I374390` - Resolved window undefined in server side rendering with React next JS.
+
 ## 20.1.47 (2022-04-04)
 
 ### Common
@@ -9,6 +17,7 @@
 #### Bug Fixes
 
 - `I324684` - Resolved the `Treeview` check box issues in safari browser.
+- `I342741`, `F172105`, `SF-365783`, `F172867`, `SF-367588`, `SF-358914` - Provided the `draggable` support for the mobile and touch devices.
 
 ## 17.4.51 (2020-02-25)
 

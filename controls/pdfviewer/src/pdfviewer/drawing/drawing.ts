@@ -20,6 +20,7 @@ import { DiagramHtmlElement } from './html-element';
 import { IFormField, IFormFieldBound } from '../form-designer';
 import { FormFieldModel } from '../pdfviewer-model';
 import { FontStyle, FormFieldType } from '../base';
+import { VisibilityState } from '../base/types';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -828,7 +829,7 @@ export class Drawing {
                 this.pdfViewer.renderDrawing(undefined, index);
                 const field: IFormField = {
                     // eslint-disable-next-line
-                    name: (obj as any).name, value: (obj as any).value, fontFamily: obj.fontFamily, fontSize: obj.fontSize, fontStyle: (obj as any).fontStyle,
+                    name: (obj as any).name, id: (obj as any).id, value: (obj as any).value, fontFamily: obj.fontFamily, fontSize: obj.fontSize, fontStyle: (obj as any).fontStyle,
                     // eslint-disable-next-line
                     color: (obj as any).color, backgroundColor: (obj as any).backgroundColor, alignment: (obj as any).alignment, isReadonly: (obj as any).isReadonly, visibility: (obj as any).visibility,
                     // eslint-disable-next-line
@@ -1017,7 +1018,7 @@ export class Drawing {
                                 this.pdfViewer.viewerBase.isFormFieldSelect = true;
                                 const field: IFormField = {
                                     // eslint-disable-next-line
-                                    value: (node as any).value, fontFamily: node.fontFamily, fontSize: node.fontSize, fontStyle: (node as any).fontStyle, color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, alignment: (node as PdfFormFieldBaseModel).alignment, isReadonly: (node as any).isReadonly, visibility: (node as any).visibility,
+                                    name: (node as any).name, id: (node as any).id, value: (node as any).value, fontFamily: node.fontFamily, fontSize: node.fontSize, fontStyle: (node as any).fontStyle, color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, alignment: (node as PdfFormFieldBaseModel).alignment, isReadonly: (node as any).isReadonly, visibility: (node as any).visibility,
                                     // eslint-disable-next-line
                                     maxLength: (node as any).maxLength, isRequired: (node as any).isRequired, isPrint: node.isPrint, rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip,
                                     // eslint-disable-next-line
@@ -1076,7 +1077,7 @@ export class Drawing {
                                     this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
                                 }
                             }
-                            if (node.annotName !== '') {
+                            if (node.annotName !== '' && node.annotName !== 'SignatureText') {
                                 if (helper && (node === helper) && !node.formFieldAnnotationType) {
                                     // eslint-disable-next-line max-len
                                     if (!this.pdfViewer.viewerBase.isAddComment && !this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove && !this.pdfViewer.viewerBase.isInkAdded && !this.pdfViewer.viewerBase.isNewStamp) {
@@ -1203,7 +1204,7 @@ export class Drawing {
                     if ((shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') || shapeType === 'Ink') {
                         // eslint-disable-next-line
                         let formField: any = (this.pdfViewer.nameTable as any)[selector.id.split('_')[0]];
-                        const isFormFieldSign: boolean = this.pdfViewer.viewerBase.checkSignatureFormField(selector.id.split('_')[0]);
+                        const isFormFieldSign: boolean = this.pdfViewer.viewerBase.checkSignatureFormField(selector.id);
                         // if (isFormFieldSign && options.width + 21 !== formField.bounds.width && options.height + 21 !== formField.bounds.height) {
                         //     if (this.pdfViewer.signatureFitMode === 'Default') {
                         //         let selectorBounds: any = this.pdfViewer.formFieldsModule.getDefaultBoundsforSign(formField.bounds);
@@ -1829,7 +1830,7 @@ export class Drawing {
         if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink')) {
             isNodeShape = true;
         }
-        if (!this.pdfViewer.viewerBase.checkSignatureFormField(element.id.split('_')[0]) && !nodeConstraints && !isSticky && !isPath && !allowPermission) {
+        if (!this.pdfViewer.viewerBase.checkSignatureFormField(element.id) && !nodeConstraints && !isSticky && !isPath && !allowPermission) {
             if ( isStamp || (isNodeShape && (nodeWidth >= 40 && nodeHeight >= 40) && (resizerLocation === 1 || resizerLocation === 3))) {
                 //Hide corners when the size is less than 40
                 this.renderCircularHandle(

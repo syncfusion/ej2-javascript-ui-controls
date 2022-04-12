@@ -920,6 +920,40 @@ describe('Insert & Delete ->', () => {
             });
 
         });
+        describe('SF-371630', () => {
+            let sheet: any;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ index: 11, cells: [{ index: 4, formula: '=SUM(D2:E11)'
+                }] }], selectedRange: 'D3' }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Formula reference not updated while deleting row', (done: Function) => {
+                sheet = helper.getInstance().sheets[0];
+                expect(sheet.rows[11].cells[4].formula).toEqual('=SUM(D2:E11)');
+                expect(sheet.rows[11].cells[4].value).toEqual(452);
+                expect(helper.invoke('getCell', [11, 4]).textContent).toEqual('452');
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(2, 0, [7], true);
+                setTimeout((): void => {
+                    expect(sheet.rows[10].cells[4].formula).toEqual('=SUM(D2:E10)');
+                    expect(sheet.rows[10].cells[4].value).toEqual(402);
+                    expect(helper.invoke('getCell', [10, 4]).textContent).toEqual('402');
+                    done();
+                });
+            });
+            it('Formula reference not updated while deleting column', (done: Function) => {
+                helper.openAndClickCMenuItem(0, 3, [7], false, true);
+                setTimeout((): void => {
+                    expect(sheet.rows[10].cells[3].formula).toEqual('=SUM(D2:D10)');
+                    expect(sheet.rows[10].cells[3].value).toEqual(145);
+                    expect(helper.invoke('getCell', [10, 3]).textContent).toEqual('145');
+                    done();
+                });
+            });
+        });
     });
     describe('Insert row below with conditional formatting ->', () => {
         beforeAll((done: Function) => {

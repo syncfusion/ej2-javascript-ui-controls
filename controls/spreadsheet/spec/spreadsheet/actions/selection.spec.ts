@@ -428,5 +428,18 @@ describe('Selection ->', () => {
                 });
             });
         });
+        describe('I300950 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rowCount: 10, colCount: 7 }], scrollSettings: { isFinite: true } }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Selection issue while moving the selection to active cell on double clicking the formula bar', (done: Function) => {
+                helper.invoke('goTo', ['F5']); // While double click in formula bar, the goTo method will invoked in source.
+                expect(helper.getElement('#' + helper.id + ' .e-scroller').scrollLeft).toBe(0);
+                done();
+            });
+        });
     });
 });

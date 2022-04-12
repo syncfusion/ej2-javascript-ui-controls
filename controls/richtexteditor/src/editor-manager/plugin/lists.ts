@@ -150,6 +150,10 @@ export class Lists {
             (startNode.textContent.length === 1 && startNode.textContent.charCodeAt(0) === 8203))) {
             startNode.textContent = '';
         }
+        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.length === 0 &&
+            isNOU(startNode.previousElementSibling)) {
+            startNode.removeAttribute('style');
+        }
         if (startNode === endNode && startNode.textContent === '') {
             if (startNode.parentElement.tagName === 'LI' && endNode.parentElement.tagName === 'LI') {
                 detach(startNode);

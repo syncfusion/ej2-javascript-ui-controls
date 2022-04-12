@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet } from "../../../src/index";
+import { Spreadsheet, SheetModel } from '../../../src/index';
 
 describe('Undo redo ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -128,31 +128,43 @@ describe('Undo redo ->', () => {
             });
         });
     });
-    describe('EJ2-57002', () => {
+    describe('SF-362962', () => {
+        let sheet: SheetModel;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet(
-                {
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
+                { sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A3' }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('Invalid expression throws While delete and apply undo for formula applied rows', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.updateCell({ formula: '=IF(I1="","empty","not empty")' }, "Sheet1!J1");
-            const cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
-            helper.triggerMouseAction(
-                'contextmenu', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, null,
-                cell);
+        it('Invalid expression throws While delete row and apply undo for formula applied rows', (done: Function) => {
+            sheet = helper.getInstance().sheets[0];
+            helper.invoke('updateCell', [{ formula: '=IF(I3="","empty","not empty")' }, 'Sheet1!J3']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(2, 0, [7], true);
             setTimeout((): void => {
-                document.getElementById("spreadsheet_cmenu_delete_row").click();
+                expect(sheet.rows[2].cells[9]).toBeUndefined();
+                expect(helper.invoke('getCell', [2, 9]).textContent).toEqual('');
+                helper.getElement('#spreadsheet_undo').click();
                 setTimeout((): void => {
-                    helper.getElement('#spreadsheet_undo').click();
-                    setTimeout((): void => {
-                        expect(spreadsheet.sheets[0].rows[0].cells[9].value).toEqual('empty');
-                        done();
-                    });
+                    expect(sheet.rows[2].cells[9].formula).toEqual('=IF(I3="","empty","not empty")');
+                    expect(sheet.rows[2].cells[9].value).toEqual('empty');
+                    expect(helper.invoke('getCell', [2, 9]).textContent).toEqual('empty');
+                    done();
+                });
+            });
+        });
+        it('Invalid expression throws while delete column and apply undo for formula applied columns', (done: Function) => {
+            helper.openAndClickCMenuItem(0, 9, [7], false, true);
+            setTimeout((): void => {
+                expect(sheet.rows[2].cells[9]).toBeUndefined();
+                expect(helper.invoke('getCell', [2, 9]).textContent).toEqual('');
+                helper.getElement('#spreadsheet_undo').click();
+                setTimeout((): void => {
+                    expect(sheet.rows[2].cells[9].formula).toEqual('=IF(I3="","empty","not empty")');
+                    expect(sheet.rows[2].cells[9].value).toEqual('empty');
+                    expect(helper.invoke('getCell', [2, 9]).textContent).toEqual('empty');
+                    done();
                 });
             });
         });

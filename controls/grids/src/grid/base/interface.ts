@@ -1361,6 +1361,8 @@ export interface ExportGroupCaptionEventArgs {
     type?: string;
     /** Defines the grouped data items. */
     data?: Object;
+    /** Defines the style of the grouped cell. */
+    style?: PdfStyle;
 }
 
 export interface QueryCellInfoEventArgs {
@@ -1869,9 +1871,9 @@ export interface BatchAddArgs extends ICancel, IPrimaryKey {
     /** Defines the column index. */
     columnIndex?: number;
     /** Defines the row element. */
-    row?: Element;
+    row?: Element | Element[];
     /** Defines the cell element. */
-    cell?: Element;
+    cell?: Element | Element[] | HTMLCollection[];
     /** Defines the column object. */
     columnObject?: Column;
 }

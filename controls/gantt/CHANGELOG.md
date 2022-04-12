@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.48 (2022-04-12)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#371080` - Issue in `actionBegin` event for cancelling the row drag and drop action using request type `beforeDrop` has been fixed.
+- `#374064` - Gantt height not gets responsive when collapsing all tasks in `auto` mode.
+- `#372623` - Filter popup gets closed automatically When clicking between the filter fields has been fixed.
+
 ## 20.1.47 (2022-04-04)
 
 ### Gantt

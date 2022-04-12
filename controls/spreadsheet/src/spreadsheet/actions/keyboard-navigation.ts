@@ -42,15 +42,14 @@ export class KeyboardNavigation {
             let scrollIdxes: number[];
             const isRtl: boolean = this.parent.enableRtl;
             const sheet: SheetModel = this.parent.getActiveSheet();
-            const filterArgs: { [key: string]: KeyboardEvent | boolean } = { e: e, isFilterCell: false };
             const actIdxes: number[] = getCellIndexes(sheet.activeCell);
             if ([9, 37, 38, 39, 40, 33, 34].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
             }
+            const filterArgs: { [key: string]: KeyboardEvent | boolean } = { e: e, isFilterCell: false };
             if (e.shiftKey) {// shift selection
                 this.shiftSelection(e);
-            }
-            if (!e.shiftKey && e.altKey && (e.keyCode === 38 || e.keyCode === 40)) {
+            } else if (e.altKey && e.keyCode === 40) {
                 this.parent.notify(filterCellKeyDown, filterArgs);
             }
             if ((!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)))
@@ -192,6 +191,8 @@ export class KeyboardNavigation {
                     navigateFn();
                 }
             }
+        } else if (e.altKey && e.keyCode === 38 && this.parent.element.lastElementChild.classList.contains('e-filter-popup')) {
+            this.parent.notify(filterCellKeyDown, { closePopup: true });
         }
         if ((e.target as Element).classList.contains('e-sheet-rename')) {
             if (e.keyCode === 32) {

@@ -18,7 +18,7 @@
     }
 
     #{if(&, '&', '*')} .e-input-group {
-      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
+      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
         padding: 4px 0;
       }
     }
@@ -36,7 +36,7 @@
     }
 
     #{if(&, '&', '*')} .e-input-group {
-      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
+      @if ($skin-name != 'bootstrap5' and $skin-name != 'tailwind' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark') {
         padding: 4px 0;
       }
     }
@@ -50,6 +50,10 @@
     padding: 0;
     right: 0;
     top: 0;
+
+    #{&}.e-ddl.e-popup.e-ddl-device-filter {
+      margin: $ddl-filter-margin;
+    }
   }
 
   .e-ddl.e-control-wrapper .e-ddl-disable-icon {
@@ -120,7 +124,7 @@
       #{if(&, '&', '*')} .e-filter-parent .e-input-filter:focus,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
       #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-control-wrapper.e-input-focus .e-input-filter {
-        @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'bootstrap5'  and $skin-name != 'tailwind') {
+        @if ($skin-name != 'bootstrap4' and $skin-name != 'bootstrap4-dark' and $skin-name != 'FluentUI' and $skin-name != 'bootstrap5'  and $skin-name != 'tailwind') {
           padding: $ddl-list-filter-text-indent;
         }
       }

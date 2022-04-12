@@ -929,4 +929,32 @@ describe('CellStyle', () => {
             }
         });
     });    
+    it('StrikeThrough', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'StrikeThrough',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: 'Strikethrough', style: { fontColor: '#C67878', fontName: 'Tahoma', fontSize: 20, italic: true, bold: true, underline: true, strikeThrough: true } }] },
+                        { index: 2, cells: [{ index: 1, value: 10, style: { fontColor: '#C67878', fontName: 'Tahoma', fontSize: 20, italic: true, bold: true, underline: true, strikeThrough: true } }] },
+                        { index: 3, cells: [{ index: 1, value: 'Strikethrough', style: { fontColor: '#C67878', strikeThrough: true } }] },
+                        { index: 4, cells: [{ index: 1, value: 'Strikethrough', style: { backColor: '#C67878', strikeThrough: true } }] },
+                        { index: 5, cells: [{ index: 1, value: 'Strikethrough', style: { wrapText: true, hAlign: 'right', vAlign: 'top', strikeThrough: true } }] },
+                    ],
+                }]
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'StrikeThrough.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
 });

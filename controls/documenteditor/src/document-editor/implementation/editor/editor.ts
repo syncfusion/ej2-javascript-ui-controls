@@ -1738,9 +1738,7 @@ export class Editor {
                 clearTimeout(this.animationTimer);
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
-            if (this.selection.caret.offsetParent != undefined) {
-                this.owner.editorModule.insertText(text);
-            }
+            this.owner.editorModule.insertText(text);
             /* eslint-disable @typescript-eslint/indent */
             this.animationTimer = setTimeout(() => {
                 if (this.animationTimer) {
@@ -1875,7 +1873,7 @@ export class Editor {
         }
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
             let inline: FieldElementBox = this.selection.getCurrentFormField();
-            let resultText: string = this.getFormFieldText();
+            let resultText: string = this.getFormFieldText(inline);
             let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
                 resultText = '';
@@ -9066,7 +9064,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
+     public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
         let allowFormatting: boolean = this.documentHelper.isFormFillProtectedMode
             && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
         if (this.restrictFormatting && !allowFormatting) {
@@ -9076,13 +9074,34 @@ export class Editor {
         let action: Action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1)) as Action;
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection: Selection = this.documentHelper.selection;
+        let currentPara: ParagraphWidget = selection.start.paragraph;
+        let previousPara: ParagraphWidget = currentPara.previousWidget as ParagraphWidget;
+        let listId: number;
+        if (!isNullOrUndefined(previousPara)) {
+            listId = previousPara.paragraphFormat.listFormat.listId;
+        }
         this.initHistory(action);
         if ((this.owner.isReadOnlyMode && !allowFormatting) || !this.owner.isDocumentLoaded) {
             return;
         }
         if (property === 'leftIndent') {
             if (selection.paragraphFormat.listId !== -1 && update) {
-                this.updateListLevel(value > 0);
+                if (!isNullOrUndefined(previousPara) && listId === -1 || isNullOrUndefined(previousPara)) {
+                    let list = this.documentHelper.getListById(selection.paragraphFormat.listId);
+                    let abstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
+                    let level: WListLevel;
+                    for (let i: number = 0; i < abstractList.levels.length; i++) {
+                        level = abstractList.levels[i];
+                        level.paragraphFormat.leftIndent += value as number;
+                    }
+                    if (level.paragraphFormat.leftIndent <= 0) {
+                        level.paragraphFormat.leftIndent = -level.paragraphFormat.firstLineIndent;
+                    }
+                    this.onApplyListInternal(list, selection.paragraphFormat.listLevelNumber);
+                }
+                else {
+                    this.updateListLevel(value > 0);
+                }
                 return;
             }
         }
@@ -9099,7 +9118,7 @@ export class Editor {
             }
             let para: ParagraphWidget = selection.start.paragraph;
             let layout: Layout = this.documentHelper.layout;
-            // let footNoteWidgetsInfo: FootNoteWidgetsInfo = layout.getFootNodeWidgetsToShiftToPage(para);
+            //let footNoteWidgetsInfo: FootNoteWidgetsInfo = layout.getFootNodeWidgetsToShiftToPage(para);
             para = para.combineWidget(this.owner.viewer) as ParagraphWidget;
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
@@ -9331,7 +9350,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public applyParaFormatProperty(paragraph: ParagraphWidget, property: string, value: Object, update: boolean): void {
+     public applyParaFormatProperty(paragraph: ParagraphWidget, property: string, value: Object, update: boolean): void {
         let format: WParagraphFormat = paragraph.paragraphFormat;
         if (update && property === 'leftIndent') {
             value = format.leftIndent + (value as number);
@@ -9362,7 +9381,6 @@ export class Editor {
             this.documentHelper.layout.reLayoutParagraph(format.ownerBase as ParagraphWidget, 0, 0);
             return;
         }
-
         if (property === 'afterSpacing') {
             format.afterSpacing = value as number;
         } else if (property === 'beforeSpacing') {
@@ -9391,9 +9409,42 @@ export class Editor {
                 value = value.listFormat;
             }
             format.listFormat.copyFormat(<WListFormat>value);
-            this.documentHelper.layout.clearListElementBox(format.ownerBase as ParagraphWidget);
-            this.onListFormatChange(format.ownerBase as ParagraphWidget, <WListFormat>value, format);
-            this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
+            let currentPara: ParagraphWidget = format.ownerBase as ParagraphWidget;
+            let previousPara: ParagraphWidget = currentPara.previousWidget as ParagraphWidget;
+            let isListChanged: boolean = false;
+            if (isNullOrUndefined(previousPara) || (!isNullOrUndefined(previousPara)
+                && previousPara instanceof ParagraphWidget
+                && previousPara.paragraphFormat.listFormat.listId == -1)) {
+                while (!isNullOrUndefined(currentPara) && currentPara.paragraphFormat.listFormat.listId != -1) {
+                    if (!isListChanged) {
+                        this.documentHelper.layout.clearListElementBox(currentPara as ParagraphWidget);
+                        this.onListFormatChange(currentPara as ParagraphWidget, <WListFormat>value, format);
+                    }
+                    previousPara = currentPara;
+                    currentPara = currentPara.nextWidget as ParagraphWidget;
+                    if (!isNullOrUndefined(currentPara)) {
+                        if (previousPara.paragraphFormat.listFormat.listLevelNumber != currentPara.paragraphFormat.listFormat.listLevelNumber) {
+                            const currentList: WList = this.documentHelper.getListById(currentPara.paragraphFormat.listFormat.listId);
+                            const listLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, currentPara.paragraphFormat.listFormat.listLevelNumber);
+                            this.copyFromListLevelParagraphFormat(currentPara.paragraphFormat, listLevel.paragraphFormat);
+                            isListChanged = true;
+                        }
+                    }
+                    this.layoutItemBlock(previousPara as ParagraphWidget, false);
+                }
+            }
+            else {
+                this.documentHelper.layout.clearListElementBox(format.ownerBase as ParagraphWidget);
+                this.onListFormatChange(format.ownerBase as ParagraphWidget, <WListFormat>value, format);
+                if (!isNullOrUndefined(previousPara) && previousPara instanceof ParagraphWidget) {
+                    if (currentPara.paragraphFormat.listFormat.listLevelNumber == 0
+                        && currentPara.paragraphFormat.listFormat.listLevelNumber == previousPara.paragraphFormat.listFormat.listLevelNumber
+                        && previousPara.paragraphFormat.listFormat.listId !== -1) {
+                        currentPara.paragraphFormat.leftIndent = previousPara.paragraphFormat.leftIndent;
+                    }
+                }
+                this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
+            }
             return;
         } else if (property === 'bidi') {
             format.bidi = value as boolean;
@@ -10409,11 +10460,46 @@ export class Editor {
         }
         let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(startPos);
         selection.editPosition = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let start:TextPosition=startPos.clone();
+        let body:BodyWidget=start.paragraph.containerWidget as BodyWidget;
+        let isFirstLine:boolean=start.currentWidget.isFirstLine();
+        let isMultipleSectionSelected=this.checkMultipleSectionSelected(start,endPos);
         let isRemoved: boolean = this.removeSelectedContent(endPos.paragraph, selection, startPos, endPos);
         let textPosition: TextPosition = new TextPosition(selection.owner);
+        if(isMultipleSectionSelected && isFirstLine && start.offset<1){
+            let currentParagraph:ParagraphWidget=start.paragraph;
+            let paragraph:ParagraphWidget=new ParagraphWidget();
+            let line:LineWidget=new LineWidget(paragraph);
+            line.paragraph=paragraph;
+            paragraph.containerWidget=body;
+            paragraph.childWidgets.push(line);
+            body.childWidgets.push(paragraph);
+            paragraph.index=currentParagraph.index;
+            paragraph.x=start.location.x;
+            paragraph.y=start.location.y;
+        }
         this.setPositionForCurrentIndex(textPosition, selection.editPosition);
         selection.selectContent(textPosition, true);
         return isRemoved;
+    }
+    private checkMultipleSectionSelected(start:TextPosition,end:TextPosition):boolean {
+        let startSectionIndex:number=this.getBodyWidgetIndex(start);
+        let endSectionIndex:number=this.getBodyWidgetIndex(end)
+        if(startSectionIndex==endSectionIndex){
+            return false;
+        }
+        return true;
+    }
+
+    private getBodyWidgetIndex(textPosition:TextPosition):number{
+        let position:string=textPosition.hierarchicalPosition;
+        let index: number = position.indexOf(';');
+        let value: string = position.substring(0, index);
+        position = position.substring(index).replace(';', '');
+        index= position.indexOf(';');
+        value= position.substring(0, index);
+        let bodyWidgetIndex:number = parseInt(value, 10);
+        return bodyWidgetIndex;
     }
     private removeSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition): boolean {
         //If end is not table end and start is outside the table, then skip removing the contents and move caret to start position.

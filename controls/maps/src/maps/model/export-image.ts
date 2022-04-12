@@ -91,6 +91,9 @@ export class ImageExport {
                     });
                     image.src = url;
                 } else {
+                    const svgParentElement: HTMLElement = document.getElementById(this.control.element.id + '_MapAreaBorder');
+                    let top: number = parseFloat(svgParentElement.getAttribute('y'));
+                    let left: number = parseFloat(svgParentElement.getAttribute('x'));
                     const imgxHttp: XMLHttpRequest = new XMLHttpRequest();
                     const imgTileLength: number = this.control.mapLayerPanel.tiles.length;
                     for (let i: number = 0; i <= imgTileLength + 1; i++) {
@@ -112,17 +115,15 @@ export class ImageExport {
                             if (i === 0 || i === imgTileLength + 1) {
                                 if (i === 0) {
                                     ctxt.setTransform(1, 0, 0, 1, 0, 0);
-                                    ctxt.rect(
-                                        0, parseFloat(svgParent.style.top),
-                                        parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                    ctxt.rect(0, top, parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
                                     ctxt.clip();
                                 } else {
-                                    ctxt.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                                    ctxt.setTransform(1, 0, 0, 1, left, top);
                                 }
                             } else {
                                 const tileParent: HTMLElement = document.getElementById(this.control.element.id + '_tile_parent');
-                                ctxt.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                    (parseFloat(tileParent.style.top)));
+                                ctxt.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + left, parseFloat(tile.style.top) +
+                                    top);
                             }
                             ctxt.drawImage(exportTileImg, 0, 0);
                             if (i === imgTileLength + 1) {

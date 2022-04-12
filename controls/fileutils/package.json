@@ -1,19 +1,11 @@
 {
 	"name": "@syncfusion/ej2-file-utils",
-	"version": "19.2.44",
-	"description": "Essential Javascript 2 File library",
-	"keywords": [
-		"ej2",
-		"syncfusion",
-		"Javascript",
-		"TypeScript",
-		"js",
-		"file-utils",
-		"file"
-	],
+	"version": "20.1.47",
+	"description": "Essential JS 2 File Library",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"devDependencies": {
+		"typescript": "2.3.4",
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",
 		"@types/jasmine": "2.8.9",
@@ -24,7 +16,6 @@
 		"gulp-sass": "^3.1.0",
 		"gulp-typescript": "^3.1.6",
 		"requirejs": "^2.3.3",
-		"typescript": "2.3.4",
 		"canteen": "^1.0.5",
 		"jasmine-ajax": "^3.3.1",
 		"jasmine-core": "^2.6.1",
@@ -42,12 +33,9 @@
 	"module": "./index.js",
 	"es2015": "./dist/es6/ej2-file-utils.es2015.js",
 	"dependencies": {},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
-	},
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

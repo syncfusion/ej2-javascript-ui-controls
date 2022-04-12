@@ -6,7 +6,7 @@ import { IElement, ISelectionChangeEventArgs, IConnectionChangeEventArgs } from 
 import { ScrollValues, IScrollChangeEventArgs, IBlazorScrollChangeEventArgs } from '../objects/interface/IElement';
 import { IDragOverEventArgs, IBlazorConnectionChangeEventArgs, IBlazorSelectionChangeEventArgs } from '../objects/interface/IElement';
 import { ConnectorValue } from '../objects/interface/IElement';
-import { DiagramEventObjectCollection } from '../objects/interface/IElement';
+import { DiagramEventObjectCollection,IPropertyChangeEventArgs } from '../objects/interface/IElement';
 import { IDropEventArgs, IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { Connector, getBezierPoints, isEmptyVector, BezierSegment, BpmnFlow } from '../objects/connector';
 import { Node, BpmnShape, BpmnSubEvent, BpmnAnnotation, DiagramShape, Native } from '../objects/node';
@@ -2329,6 +2329,7 @@ export class CommandHandler {
             }
             let objectId: string = (object && object.id);
             for (let i: number = 0; i < objects.length; i++) {
+                let clonedObject = cloneObject(objects[i]);
                 objectId = objects[i].id;
                 const index: number = this.diagram.nameTable[objectId].zIndex;
                 const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
@@ -2391,6 +2392,7 @@ export class CommandHandler {
                         this.addHistoryEntry(entry);
                     }
                 }
+                this.triggerOrderCommand(clonedObject, objects[i], objects[i]);
             }
         }
         this.diagram.protectPropertyChange(false);
@@ -2560,6 +2562,7 @@ export class CommandHandler {
                 objects = objects.concat(selectedItems.connectors);
             }
             for (let i: number = 0; i < objects.length; i++) {
+                let clonedObject = cloneObject(objects[i]);
                 objectName = objects[i].id;
                 const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
                 const zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
@@ -2720,12 +2723,22 @@ export class CommandHandler {
                 if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
                     this.addHistoryEntry(entry);
                 }
+                this.triggerOrderCommand(clonedObject, objects[i], objects[i]);
             }
         }
         this.diagram.protectPropertyChange(false);
         if (isBlazor()) {
             this.getZIndexObjects();
         }
+    }
+
+    private triggerOrderCommand(oldObj : NodeModel | ConnectorModel, newObj : NodeModel | ConnectorModel, obj: NodeModel | ConnectorModel){
+        let clonedObject = cloneObject(oldObj);
+        let arg: IPropertyChangeEventArgs = {
+                    element: obj, cause: this.diagram.diagramActions,
+                    oldValue: clonedObject, newValue: newObj
+                };
+                this.diagram.triggerEvent(DiagramEvent.propertyChange, arg)
     }
 
     private checkGroupNode(selectedNodeName: string, layerObject: string, nameTable: object): boolean {
@@ -2869,6 +2882,9 @@ export class CommandHandler {
         this.diagram.protectPropertyChange(true);
 
         if (hasSelection(this.diagram) || obj) {
+            let elements: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
+                : this.diagram.selectedItems.connectors[0]);
+            let clonedObjects = cloneObject(elements);
             let nodeId: string = (obj && obj.id);
             nodeId = nodeId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
                 : this.diagram.selectedItems.connectors[0].id);
@@ -2940,6 +2956,7 @@ export class CommandHandler {
                 elements.push(intersectArray[intersectArray.length - 1]);
                 this.updateBlazorZIndex(elements);
             }
+            this.triggerOrderCommand(clonedObjects, elements, elements);
         }
         this.diagram.protectPropertyChange(false);
 
@@ -2955,6 +2972,9 @@ export class CommandHandler {
         this.diagram.protectPropertyChange(true);
 
         if (hasSelection(this.diagram) || obj) {
+            let element: NodeModel | ConnectorModel = obj || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0]
+                : this.diagram.selectedItems.connectors[0]);
+            let clonedObject = cloneObject(element);
             let objectId: string = (obj && obj.id);
             objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
                 : this.diagram.selectedItems.connectors[0].id);
@@ -3034,6 +3054,7 @@ export class CommandHandler {
                 }
                 //swap the nodes
             }
+            this.triggerOrderCommand(clonedObject, element, element);
         }
         this.diagram.protectPropertyChange(false);
 

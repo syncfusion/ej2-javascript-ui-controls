@@ -605,7 +605,7 @@ export class Workbook {
         let endIndex: number = value.indexOf('>', startindex + 1);
         if (startindex >= 0 && endIndex >= 0) {
         if (startindex !== 0) {
-            processedVal += '<r><t xml:space="preserve">' + value.substring(0, startindex) + '</t></r>';
+            processedVal += '<r><t xml:space="preserve">' + this.processString(value.substring(0, startindex)) + '</t></r>';
         }        
         while (startindex >= 0 && endIndex >= 0 ) {
            endIndex = value.indexOf('>', startindex + 1);
@@ -659,7 +659,7 @@ export class Workbook {
                   break;                
                 }
             }                     
-             processedVal += '</rPr><t xml:space="preserve">' + text + '</t></r>';
+             processedVal += '</rPr><t xml:space="preserve">' + this.processString(text) + '</t></r>';
            }               
          }            
         }
@@ -768,7 +768,10 @@ export class Workbook {
         if (json.underline !== null && json.underline !== undefined) {
             cellStyle.underline = json.underline;
         }
-
+        //strikeThrough
+        if (json.strikeThrough !== null && json.strikeThrough !== undefined) {
+            cellStyle.strikeThrough = json.strikeThrough;
+        }
         //wrapText
         if (json.wrapText !== null && json.wrapText !== undefined) {
             cellStyle.wrapText = json.wrapText;
@@ -911,6 +914,7 @@ export class Workbook {
                 font.b === toCompareStyle.bold &&
                 font.i === toCompareStyle.italic &&
                 font.u === toCompareStyle.underline &&
+                font.strike === toCompareStyle.strikeThrough &&
                 font.name === toCompareStyle.fontName &&
                 font.sz === toCompareStyle.fontSize;
             if (result) {
@@ -957,6 +961,7 @@ export class Workbook {
                 baseStyle.hAlign === toCompareStyle.hAlign &&
                 baseStyle.italic === toCompareStyle.italic &&
                 baseStyle.underline === toCompareStyle.underline &&
+                baseStyle.strikeThrough === toCompareStyle.strikeThrough &&
                 baseStyle.vAlign === toCompareStyle.vAlign &&
                 baseStyle.indent === toCompareStyle.indent &&
                 baseStyle.rotation === toCompareStyle.rotation &&
@@ -1157,7 +1162,12 @@ export class Workbook {
         let length: number = this.worksheets.length;
         for (let i: number = 0; i < length; i++) {
             /* tslint:disable-next-line:max-line-length */
-            sheets += '<sheet name="' + this.worksheets[i].name + '" sheetId="' + (i + 1).toString() + '" r:id ="rId' + (i + 1).toString() + '" />';
+            let sheetName= this.worksheets[i].name;
+            sheetName= sheetName.replace("&", "&amp;");
+            sheetName= sheetName.replace("<", "&lt;");
+            sheetName= sheetName.replace(">", "&gt;");
+            sheetName= sheetName.replace("\"", "&quot;");
+            sheets += '<sheet name="' + sheetName + '" sheetId="' + (i + 1).toString() + '" r:id ="rId' + (i + 1).toString() + '" />';
         }
         sheets += '</sheets>';
         workbookTemp += sheets;
@@ -1292,6 +1302,8 @@ export class Workbook {
             if(pic.height !== undefined && pic.width !== undefined){
             this.updatelastRowOffset(sheet, pic);
             this.updatelastColumnOffSet(sheet, pic);
+            pic.lastRow -= 1;
+            pic.lastColumn -= 1;
             }else if(pic.lastRow !== undefined && pic.lastColumn !== undefined)
             {
                 pic.lastRowOffset = 0;
@@ -1495,7 +1507,7 @@ export class Workbook {
         let relStr: string = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
         for (let hLink of sheet.hyperLinks) {
             /* tslint:disable-next-line:max-line-length */
-            relStr += '<Relationship Id="rId' + hLink.rId + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="' + hLink.target + '" TargetMode="External" />';
+            relStr += '<Relationship Id="rId' + hLink.rId + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="' + this.processString(hLink.target) + '" TargetMode="External" />';
         }
         if(sheet.images != undefined && sheet.images.length > 0)
         {
@@ -1596,6 +1608,7 @@ export class Workbook {
                 font.name = style.fontName;
                 font.sz = style.fontSize;
                 font.u = style.underline;
+                font.strike = style.strikeThrough;
                 font.color = ('FF' + style.fontColor.replace('#', ''));
                 this.mFonts.push(font);
                 cellXfs.fontId = this.mFonts.length - 1;
@@ -1695,6 +1708,9 @@ export class Workbook {
                 }
                 if (font.u) {
                     fontStyle += '<u />';
+                }
+                if (font.strike) {
+                    fontStyle += '<strike />';
                 }
                 fontStyle += '<sz val="' + font.sz + '" />';
                 fontStyle += '<color rgb="' + font.color + '" />';

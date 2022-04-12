@@ -29,12 +29,24 @@
     top: 1px;
   }
 
+  .e-small .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
+    top: -1px;
+  }
+
   .e-small.e-bigger .e-multi-select-wrapper .e-close-hooker::before {
-    top: 2px;
+    top: 4px;
+  }
+
+  .e-small.e-bigger .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
+    top: 5px;
   }
 
   .e-bigger .e-multi-select-wrapper .e-close-hooker::before {
-    top: 3px;
+    top: 11px;
+  }
+
+  .e-bigger .e-multi-select-wrapper.e-down-icon .e-close-hooker::before {
+    top: 11px;
   }
 
   .e-multiselect.e-input-group .e-ddl-disable-icon::before {

@@ -401,6 +401,54 @@ describe('SendToBack exception', () => {
         expect(zIndexBeforeCall === zIndexAfterCall).toBe(true);
         done();
     });
+    it('Chekcking z-index on property change event when bringToFront method is called', (done: Function) => {
+        diagram.select([diagram.nodes[3]]);
+        let oldZindex: number = diagram.nodes[3].zIndex;
+        diagram.bringToFront();
+        diagram.propertyChange = function (args) {
+            if (args.element instanceof Node && args.newValue) {
+                console.log('zindex =' + args.oldValue.zindex);
+                expect(args.oldValue.zindex === oldZindex).toBe(true);
+            }
+        }
+        done();
+    });
+    it('Chekcking z-index on property change event when sendToBack method is called', (done: Function) => {
+        diagram.select([diagram.nodes[3]]);
+        let oldZindex: number = diagram.nodes[3].zIndex;
+        diagram.sendToBack();
+        diagram.propertyChange = function (args) {
+            if (args.element instanceof Node && args.newValue) {
+                console.log('zindex =' + args.oldValue.zindex);
+                expect(args.oldValue.zindex === oldZindex).toBe(true);
+            }
+        }
+        done();
+    });
+    it('Chekcking z-index on property change event when sendBackward method is called', (done: Function) => {
+        diagram.select([diagram.nodes[3]]);
+        let oldZindex: number = diagram.nodes[3].zIndex;
+        diagram.sendBackward();
+        diagram.propertyChange = function (args) {
+            if (args.element instanceof Node && args.newValue) {
+                console.log('zindex =' + args.oldValue.zindex);
+                expect(args.oldValue.zindex === oldZindex).toBe(true);
+            }
+        }
+        done();
+    });
+    it('Chekcking z-index on property change event when moveForward method is called', (done: Function) => {
+        diagram.select([diagram.nodes[3]]);
+        let oldZindex: number = diagram.nodes[3].zIndex;
+        diagram.moveForward();
+        diagram.propertyChange = function (args) {
+            if (args.element instanceof Node && args.newValue) {
+                console.log('zindex =' + args.oldValue.zindex);
+                expect(args.oldValue.zindex === oldZindex).toBe(true);
+            }
+        }
+        done();
+    });
 });
 describe('Default Template tooltip', () => {
     var diagram: Diagram;

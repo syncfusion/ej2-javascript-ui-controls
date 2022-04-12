@@ -190,7 +190,6 @@ $ddl-list-header-font-color: $primary-outline !default;
 $ddl-closer-hooker-font-small: 8px !default;
 $ddl-small-clear-icon-height: 12px !default;
 $ddl-small-clear-icon-width: 12px !default;
-$ddl-multiselect-list-item-box-shadow: inset 0 0 0 1px $content-text-color !default;
 
 @include export-module('multiselect-bootstrap5') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {

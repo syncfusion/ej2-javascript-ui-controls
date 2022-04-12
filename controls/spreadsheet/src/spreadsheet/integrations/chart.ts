@@ -578,9 +578,7 @@ export class SpreadsheetChart {
         const sheetIdx: number = (chart.range && chart.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent as Workbook, chart.range.split('!')[0]) : this.parent.activeSheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
-        let range: string = chart.range ? (chart.range.indexOf('!') > 0) ?
-            chart.range.split('!')[1] : chart.range.split('!')[0]
-            : this.parent.getActiveSheet().selectedRange;
+        let range: string = chart.range ? chart.range : this.parent.getActiveSheet().selectedRange;
         const rangeIdx: number[] = getRangeIndexes(range);
         let options: ChartModel = {};
         let isRowLesser: boolean;
@@ -664,10 +662,9 @@ export class SpreadsheetChart {
             chart.width = eventArgs.width;
         }
         const id: string = chart.id + '_overlay';
-        const sheetIndex: number = argsOpt.isPaste ? this.parent.getActiveSheet().index : this.parent.activeSheetIndex;
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
-        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, sheetIndex);
+        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, this.parent.getAddressInfo(eleRange).sheetIndex);
         element.classList.add('e-datavisualization-chart');
         element.style.width = chart.width + 'px';
         element.style.height = chart.height + 'px';

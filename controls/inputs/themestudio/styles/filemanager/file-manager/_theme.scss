@@ -133,6 +133,9 @@
         .e-input-group.e-control-wrapper:not(.e-success) {
           background: $fe-search-bg-color;
           border-color: $fe-border-color;
+          @if $theme-name == 'fluentui-dark' {
+            border-color: $fe-search-border-color;
+          }
         }
       }
     }

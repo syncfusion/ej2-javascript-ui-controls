@@ -21,6 +21,18 @@
       }
     }
 
+    .e-columnmenu {
+      @if $skin-name == 'bootstrap5-dark' or $skin-name == 'tailwind-dark' {
+        top: 35px;
+      }
+      @else if $skin-name == 'fluent-dark' {
+        top: 38px;
+      }
+      @else {
+        top: $bigger-column-menu-size;
+      }
+    }
+
     .e-gantt-dialog {
       .e-edit-form-column:nth-child(odd) {
         padding: $gantt-bigger-dialog-edit-form-odd-padding;

@@ -885,6 +885,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.ruleTemplateFn = this.templateParser(column.ruleTemplate);
             const templateID: string = this.element.id + column.field; let template: Element;
             args.fields = this.fields; args.columns = this.columns;
+            if (rule.field === "") {
+                rule.field = column.field;
+            }
             args.operators = this.getOperators(rule.field);
             args.operatorFields = { text: 'key', value: 'value' };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4220,7 +4223,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             }
         }
-        if (rule.rules.length === 0) {
+        if (rule.rules.length === 0 && this.headerTemplate) {
             rule.rules[0] = { 'label': '', 'field': '', 'operator': '', 'type': '', 'value': ''};
         }
         const ruleColl: RuleModel[] = rule.rules;

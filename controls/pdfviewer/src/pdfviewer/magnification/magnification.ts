@@ -23,7 +23,7 @@ export class Magnification {
     private lowerZoomLevel: number;
     private zoomPercentages: number[] = [10, 25, 50, 75, 100, 125, 150, 200, 400];
     private isNotPredefinedZoom: boolean = false;
-    private pinchStep: number = 0.02;
+    private pinchStep: number = 0;
     private reRenderPageNumber: number = 0;
     // eslint-disable-next-line
     private magnifyPageRerenderTimer: any = null;
@@ -474,6 +474,35 @@ export class Magnification {
         this.topValue = 0;
         for (let i: number = 1; i < this.pdfViewerBase.pageSize.length; i++) {
             this.topValue += (this.pdfViewerBase.pageSize[i].height + this.pdfViewerBase.pageGap) * this.zoomFactor;
+        }
+        let limit: number = this.pdfViewerBase.pageCount < 10 ? this.pdfViewerBase.pageCount : 10;
+        for (let i: number = 0; i < limit; i++) {    
+            this.updatePageContainer(i, this.pdfViewerBase.getPageWidth(i), this.pdfViewerBase.getPageHeight(i), this.pdfViewerBase.getPageTop(i), true);
+        }
+    }
+
+    private updatePageContainer(pageNumber: number, pageWidth: number, pageHeight: number, topValue: number, isReRender?: true): void {
+        // eslint-disable-next-line
+        let pageDiv: any = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber);
+        if (pageDiv) {
+            pageDiv.style.width = pageWidth + 'px';
+            pageDiv.style.height = pageHeight + 'px';
+            // eslint-disable-next-line
+            let textLayerDiv: any = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
+            if (textLayerDiv) {
+                textLayerDiv.style.width = pageWidth + 'px';
+                textLayerDiv.style.height = pageHeight + 'px';
+            }
+            pageDiv.style.width = pageWidth + 'px';
+            pageDiv.style.height = pageHeight + 'px';
+            if (this.pdfViewer.enableRtl) {
+                pageDiv.style.right = this.pdfViewerBase.updateLeftPosition(pageNumber) + 'px';
+            } else {
+                pageDiv.style.left = this.pdfViewerBase.updateLeftPosition(pageNumber) + 'px';
+            }
+            pageDiv.style.top = topValue + 'px';
+            this.pdfViewerBase.pageContainer.style.width = this.pdfViewerBase.viewerContainer.clientWidth + 'px';
+            this.pdfViewerBase.renderPageCanvas(pageDiv, pageWidth, pageHeight, pageNumber, 'block');
         }
     }
 
@@ -1015,8 +1044,10 @@ export class Magnification {
         let currentDifference = Math.sqrt(Math.pow((pointX1 - pointX2), 2) + Math.pow((pointY1 - pointY2), 2));
         if (this.previousTouchDifference > -1) {
             if (currentDifference > this.previousTouchDifference) {
+                this.pinchStep = this.getPinchStep(currentDifference, this.previousTouchDifference);
                 this.pinchOut();
             } else if (currentDifference < this.previousTouchDifference) {
+                this.pinchStep = this.getPinchStep(this.previousTouchDifference, currentDifference);
                 this.pinchIn();
             }
         }
@@ -1206,5 +1237,21 @@ export class Magnification {
      */
     public getModuleName(): string {
         return 'Magnification';
+    }
+    /**
+    * Returns the pinch step value.
+    * @param higherValue
+    * @param lowerValue
+    */
+    private getPinchStep(higherValue: number, lowerValue: number): number {
+        let defaultPinchStep: number = 0.02; // Default pinch step value.
+        let higherPinchStep: number = 1; // higher pinch step value.
+        let pinchstep: number = (higherValue - lowerValue) / 100;
+        if (pinchstep < defaultPinchStep) {
+            pinchstep = defaultPinchStep;
+        } else if (pinchstep > higherPinchStep) {
+            pinchstep = 0.1; // set the pinch step as 0.1 if the pinch reaches the higher pinch step value.
+        }
+        return pinchstep;
     }
 }

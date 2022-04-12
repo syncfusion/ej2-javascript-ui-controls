@@ -297,7 +297,7 @@ export class AxisRenderer extends Animations {
         }
         options = new PathOption(
             pointerID, (gradientMarkerColor) ? gradientMarkerColor : pointerColor,
-            pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
+            pointer.border.width, pointer.border.color, pointer.opacity, pointer.border.dashArray, null, transform);
         options = calculateShapes(
             pointer.bounds, shapeBasedOnPosition, new Size(pointer.width, pointer.height),
             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
@@ -345,7 +345,7 @@ export class AxisRenderer extends Animations {
                 this.gauge.container.width, axis, pointer.roundedCornerRadius);
             options = new PathOption(
                 pointerID, (gradientBarColor) ? gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
-                pointer.border.width, pointer.border.color, pointer.opacity, null, path);
+                pointer.border.width, pointer.border.color, pointer.opacity, pointer.border.dashArray, path);
             pointerElement = this.gauge.renderer.drawPath(options) as SVGAElement;
             box = getPathToRect(<SVGPathElement>pointerElement.cloneNode(true), size, this.gauge.element);
         }
@@ -386,7 +386,7 @@ export class AxisRenderer extends Animations {
             if (!(isNullOrUndefined(range.path))) {
                 options = new PathOption(
                     this.gauge.element.id + '_AxisIndex_' + axisIndex + '_Range_' + j, range.interior, (range.start !== range.end) ? range.border.width : 0,
-                    range.border.color, 1, null, range.path);
+                    range.border.color, 1, range.border.dashArray, range.path);
                 rangeElement.appendChild(this.gauge.renderer.drawPath(options) as SVGAElement);
             }
         }

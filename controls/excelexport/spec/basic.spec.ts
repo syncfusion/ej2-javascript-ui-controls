@@ -420,4 +420,60 @@ describe('ExcelCreation', () => {
             }
         });
     });
+    it('Hyperlinkswithampersand', (done) => {
+        let linkEncodedText: any = ' R&D <a href="https://support.dynatrace.com/supportportal/browse/" target="_blank">https://support.dynatrace.com/supportportal/browse/</a>';
+        let linkEncodedText1: any = ' R&D <a href="https://support.dynatrace.com/&supportportal/browse/" target="_blank">https://support.dynatrace.com/&supportportal/browse/</a>';
+        let book: Workbook = new Workbook({
+           worksheets: [
+                {
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value:linkEncodedText, style: { numberFormat:"C2" } }] },
+                        { index: 2, cells: [{ index: 1, value:linkEncodedText1, style: { numberFormat:"C2" } }] },
+                    ]
+                }
+            ],
+
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'Hyperlinkswithampersand.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
+    it('Hyperlinkswithampersand1', (done) => {
+        let book: Workbook = new Workbook({
+           worksheets: [
+                {
+                    rows: [
+                        { index: 1, cells: [{ index: 1, hyperlink: { target: 'https://www.google.co&.in/', displayText: 'Google&' }}]},
+                        { index: 2, cells: [{index: 1, hyperlink: { target: 'https://www.google.co&<>!@#$%^&*()_+-=.in/', displayText: 'Google&<>!@#$%^&*()_+-=' }}]},
+                    ]
+                }
+            ],
+
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'Hyperlinkswithampersand1.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
 });

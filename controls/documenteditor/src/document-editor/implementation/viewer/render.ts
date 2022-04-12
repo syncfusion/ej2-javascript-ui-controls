@@ -615,13 +615,33 @@ export class Renderer {
             }
         }
     }
-   
+    private isTOC(para: ParagraphWidget): boolean {
+        for (let i: number = 0; i < (para.childWidgets[0] as LineWidget).children.length; i++) {
+            let element: ElementBox = (para.childWidgets[0] as LineWidget).children[i];
+            if (element instanceof FieldElementBox && !isNullOrUndefined(element.fieldSeparator) && !isNullOrUndefined(element.fieldSeparator.previousElement) && element.fieldSeparator.previousElement instanceof TextElementBox) {
+                let textElementBox: TextElementBox = element.fieldSeparator.previousElement as TextElementBox;
+                let fieldCode: string = textElementBox.text;
+                if (fieldCode.match('TOC ') || fieldCode.match('Toc')) {
+                    return true;
+                }
+            } else {
+                continue;
+            }
+        }
+        return false;
+    }
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
-
+        let isTOCHeading: boolean = false;
         this.renderSelectionHighlight(page, lineWidget, top);
 
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
-        if (lineWidget.isFirstLine() && !paraFormat.bidi) {
+        if (!isNullOrUndefined(lineWidget.paragraph.nextRenderedWidget)) {
+            let para: ParagraphWidget = lineWidget.paragraph.nextRenderedWidget as ParagraphWidget;
+            if ((para.childWidgets[0] as LineWidget) instanceof LineWidget && (para.childWidgets[0] as LineWidget).children.length != 0) {
+                isTOCHeading = this.isTOC(para);
+            }
+        }
+        if (lineWidget.isFirstLine() && !paraFormat.bidi && !isTOCHeading) {
             left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         if (this.documentHelper && this.documentHelper.selection && !isNullOrUndefined(this.documentHelper.selection.formFieldHighlighters)
@@ -824,7 +844,7 @@ export class Renderer {
 
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
-        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
+        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + fontFamily + '"';
         if (baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
@@ -895,7 +915,7 @@ export class Renderer {
         italic = format.italic ? 'italic' : '';
         fontSize = format.fontSize === 0 ? 0.5 : format.fontSize / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
-        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + format.fontFamily;
+        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + format.fontFamily + '"';
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
@@ -1565,6 +1585,9 @@ export class Renderer {
             let text: string = textureStyle.replace("Texture", "").replace("Percent", "").replace("Pt", ".");
             let percent: number = parseInt(text);
             return this.getForeColor(foreColor, backColor, percent);
+        }
+        if(textureStyle === 'TextureSolid') {
+            return foreColor;
         }
         return '#FFFFFF';
     }

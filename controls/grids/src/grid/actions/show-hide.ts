@@ -3,6 +3,8 @@ import { Column } from '../models/column';
 import { iterateArrayOrObject, isGroupAdaptive } from '../base/util';
 import * as events from '../base/constant';
 import { IGrid } from '../base/interface';
+import { ContentRender } from '../renderer';
+import { Grid } from '../base';
 
 /**
  * The `ShowHide` module is used to control column visibility.
@@ -107,6 +109,10 @@ export class ShowHide {
             columns: changedStateColumns
         };
         const cancel: string = 'cancel';
+        if (this.parent.enableInfiniteScrolling && this.parent.allowGrouping
+            && (this.parent as Grid).groupModule.groupSettings.columns.length > 0) {
+            (this.parent.contentModule as ContentRender).visibleRows = [];
+        }
         this.parent.trigger(events.actionBegin, args, (showHideArgs: Object) => {
             const currentViewCols: Column[] = this.parent.getColumns();
             columns = isNullOrUndefined(columns) ? currentViewCols : columns;

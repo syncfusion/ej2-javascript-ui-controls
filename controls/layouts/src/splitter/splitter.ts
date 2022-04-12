@@ -1396,7 +1396,7 @@ export class Splitter extends Component<HTMLElement> {
                         paneMinRange = this.convertPercentageToPixel(this.paneSettings[i].min);
                     }
                     minValue = this.convertPixelToNumber((paneMinRange).toString());
-                    if (this.allPanes[i].offsetWidth < minValue) {
+                    if (this.orientation === 'Horizontal' ? this.allPanes[i].offsetWidth : this.allPanes[i].offsetHeight < minValue) {
                         if (i === paneIndex) {
                             updatePane = this.allPanes[i];
                             flexPane = this.allPanes[i + 1];
@@ -1404,12 +1404,15 @@ export class Splitter extends Component<HTMLElement> {
                             updatePane = this.allPanes[i];
                             flexPane = this.allPanes[i - 1];
                         }
-                        const sizeDiff: number = minValue - this.allPanes[i].offsetWidth;
+                        const sizeDiff: number = minValue - (this.orientation === 'Horizontal' ?
+                        this.allPanes[i].offsetWidth : this.allPanes[i].offsetHeight);
                         const isPercent: boolean = updatePane.style.flexBasis.indexOf('%') > -1;
-                        updatePane.style.flexBasis = isPercent ? this.convertPixelToPercentage(updatePane.offsetWidth + sizeDiff) + '%'
-                            : (updatePane.offsetWidth + sizeDiff) + 'px';
+                        let updatePaneOffset: number = this.orientation === 'Horizontal' ? updatePane.offsetWidth : updatePane.offsetHeight;
+                        updatePane.style.flexBasis = isPercent ? this.convertPixelToPercentage(updatePaneOffset + sizeDiff) + '%'
+                            : (updatePaneOffset + sizeDiff) + 'px';
+                        let flexPaneOffset: number = this.orientation === 'Horizontal' ? flexPane.offsetWidth : flexPane.offsetHeight;
                         flexPane.style.flexBasis = flexPane.style.flexBasis.indexOf('%') > -1 ?
-                            this.convertPixelToPercentage(flexPane.offsetWidth - sizeDiff) + '%' : (flexPane.offsetWidth - sizeDiff) + 'px';
+                            this.convertPixelToPercentage(flexPaneOffset - sizeDiff) + '%' : (flexPaneOffset - sizeDiff) + 'px';
                     }
                 }
             }

@@ -800,7 +800,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public hideColumn(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
         const sheet: SheetModel = this.getActiveSheet();
-        if (sheet.frozenRows || sheet.frozenColumns) { return; }
         for (let i: number = startIndex; i <= endIndex; i++) {
             setColumn(sheet, i, { hidden: hide });
         }
@@ -1251,9 +1250,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public replaceHandler(args: FindOptions): void {
         if (args.replaceBy === 'replace') {
-            this.notify(events.replaceHandler, args);
+            this.notify(events.replace, args);
         } else {
-            this.notify(events.replaceAllHandler, args);
+            this.notify(events.replaceAll, args);
         }
     }
 

@@ -9,7 +9,8 @@
   width: 100%;
 
   #{if(&, '&', '*')}.e-delimiter {
-    #{if(&, '&', '*')} .e-searcher {
+    #{if(&, '&', '*')} .e-searcher,
+    #{if(&, '&', '*')} .e-multi-searcher {
       height: 27px;
       vertical-align: middle;#{if(&, '&', '*')} .e-dropdownbase {
         height: 100%;
@@ -126,7 +127,9 @@
   }
 
   .e-multi-select-wrapper.e-delimiter {
-    top: -1px;
+    @if $ddl-multiselect-skin-name != 'FluentUI' {
+      top: -1px;
+    }
   }
 
   .e-multi-select-wrapper .e-clear-icon {
@@ -378,6 +381,9 @@
 
 .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
   margin-top: $ddl-closer-margin-top-bigger;
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    margin-top: $ddl-bigger-clear-margin-top;
+  }
   @if $ddl-multiselect-skin-name == 'bootstrap5' {
     margin-top: -2.15em;
   }
@@ -712,19 +718,19 @@
 }
 
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group:not(.e-rtl) .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
     padding-left: $ddl-multiselect-group-checkbox-wrapper-padding-left;
   }
 }
 
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
     padding-right: $ddl-multiselect-group-list-item-rtl-padding-right;
   }
 }
 
 .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
     padding-right: $ddl-bigger-multiselect-group-list-item-rtl-padding-right;
   }
 }
@@ -799,7 +805,7 @@
 }
 
 .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group:not(.e-rtl) .e-dropdownbase.e-dd-group .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
     padding-left: $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left;
   }
 }
@@ -836,7 +842,7 @@
 
 .e-bigger.e-multi-select-list-wrapper .e-selectall-parent .e-all-text,
 .e-bigger .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
-  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'tailwind' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
     font-size: $ddl-bigger-selectall-font-size;
   }
 }
@@ -860,6 +866,15 @@
   font-size: $ddl-chip-font-size;
   line-height: $ddl-bigger-select-all-height;
   text-indent: $ddl-bigger-check-right;
+}
+
+.e-bigger .e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent,
+.e-bigger.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent {
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-chip-font-size;
+    line-height: $ddl-bigger-select-all-height;
+    text-indent: $ddl-bigger-check-right;
+  }
 }
 
 .e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper {
@@ -1007,15 +1022,24 @@ ejs-multiselect {
   min-height: $ddl-control-small-height;
 }
 
-.e-small .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
+.e-small .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-small .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
     height: $ddl-small-input-height;
   }
 }
 
-.e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-searcher {
-  @if $ddl-multiselect-skin-name == 'tailwind' {
+.e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
     height: $ddl-bigger-small-input-height;
+  }
+}
+
+.e-bigger .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-bigger .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
+    height: $ddl-input-bigger-height;
   }
 }
 

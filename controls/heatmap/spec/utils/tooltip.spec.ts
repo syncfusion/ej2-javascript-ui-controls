@@ -269,6 +269,197 @@ describe('Heatmap Control', () => {
             expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("opacity")).toBe("1");
         });
     });
+
+    describe('Heatmap tooltip with Fluent theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                width: "100%",
+                height: "300px",
+                xAxis: {
+                    title: { text: "Weekdays" },
+                },
+                yAxis: {
+                    title: { text: "YAxis" },
+                },
+                dataSource: [[10, "", 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, null, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 0, 50, 60, 70, 80, 90, 100]],
+                paletteSettings: {
+                    palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
+                    { 'value': 50, 'color': "rgb(153, 255, 187)" },
+                    { 'value': 20, 'color': "rgb(153, 153, 255)" },
+                    { 'value': 0, 'color': "rgb(255, 159, 128)" },
+                    ],
+                    type: "Fixed"
+                },
+                theme: "Fluent",
+                legendSettings: {
+                    visible: false
+                },
+                showTooltip: true,
+            });
+            heatmap.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Check tooltip visibility of Fluent Theme', () => {
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif').toBe(true);
+        });
+    });
+
+    describe('Heatmap tooltip with Fluent Dark theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                width: "100%",
+                height: "300px",
+                xAxis: {
+                    title: { text: "Weekdays" },
+                },
+                yAxis: {
+                    title: { text: "YAxis" },
+                },
+                dataSource: [[10, "", 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, null, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 0, 50, 60, 70, 80, 90, 100]],
+                paletteSettings: {
+                    palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
+                    { 'value': 50, 'color': "rgb(153, 255, 187)" },
+                    { 'value': 20, 'color': "rgb(153, 153, 255)" },
+                    { 'value': 0, 'color': "rgb(255, 159, 128)" },
+                    ],
+                    type: "Fixed"
+                },
+                theme: "FluentDark",
+                legendSettings: {
+                    visible: false
+                },
+                showTooltip: true,
+            });
+            heatmap.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Check tooltip visibility of Fluent Dark Theme', () => {
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif').toBe(true);
+        });
+    });
+
+
+    describe('Heatmap tooltip with Bootstrap5 theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                width: "100%",
+                height: "300px",
+                xAxis: {
+                    title: { text: "Weekdays" },
+                },
+                yAxis: {
+                    title: { text: "YAxis" },
+                },
+                dataSource: [[10, "", 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, null, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 0, 50, 60, 70, 80, 90, 100]],
+                paletteSettings: {
+                    palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
+                    { 'value': 50, 'color': "rgb(153, 255, 187)" },
+                    { 'value': 20, 'color': "rgb(153, 153, 255)" },
+                    { 'value': 0, 'color': "rgb(255, 159, 128)" },
+                    ],
+                    type: "Fixed"
+                },
+                theme: "Bootstrap5",
+                legendSettings: {
+                    visible: false
+                },
+                showTooltip: true,
+            });
+            heatmap.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Check tooltip visibility of Bootstrap5 Theme', () => {
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"').toBe(true);
+        });
+    });
+
+
+    describe('Heatmap tooltip with Bootstrap5Dark theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                width: "100%",
+                height: "300px",
+                xAxis: {
+                    title: { text: "Weekdays" },
+                },
+                yAxis: {
+                    title: { text: "YAxis" },
+                },
+                dataSource: [[10, "", 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, null, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 0, 50, 60, 70, 80, 90, 100]],
+                paletteSettings: {
+                    palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
+                    { 'value': 50, 'color': "rgb(153, 255, 187)" },
+                    { 'value': 20, 'color': "rgb(153, 153, 255)" },
+                    { 'value': 0, 'color': "rgb(255, 159, 128)" },
+                    ],
+                    type: "Fixed"
+                },
+                theme: "Bootstrap5Dark",
+                legendSettings: {
+                    visible: false
+                },
+                showTooltip: true,
+            });
+            heatmap.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Check tooltip visibility of Bootstrap5Dark Theme', () => {
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute('font-family') == 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"').toBe(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

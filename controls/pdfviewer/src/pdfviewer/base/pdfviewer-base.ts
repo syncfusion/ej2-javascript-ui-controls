@@ -3275,6 +3275,26 @@ export class PdfViewerBase {
                         this.focusViewerContainer();
                     }
                     break;
+                case 9:
+                    if (event.target && (event.target as any).id && this.pdfViewer.formFields) {
+                        for (var i = 0; i < this.pdfViewer.formFields.length; i++) {
+                            let formField = this.pdfViewer.formFields[i];
+                            if ((event.target as any).id === formField.id) {
+                                // eslint-disable-next-line
+                                let field = {
+                                    value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
+                                    // eslint-disable-next-line
+                                    color: formField.color, backgroundColor: formField.backgroundColor, alignment: formField.alignment, isReadonly: (formField as any).isReadonly, visibility: (formField as any).visibility,
+                                    // eslint-disable-next-line
+                                    maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip,
+                                    // eslint-disable-next-line
+                                    options: (formField as any).options, isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected
+                                };
+                                this.pdfViewer.fireFocusOutFormField((field as any), (formField as any).pageIndex);
+                            }
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -4102,7 +4122,7 @@ export class PdfViewerBase {
                 if (this.pdfViewer.magnification && this.pdfViewer.selectedItems.annotations.length !== 1) {
                     this.pdfViewer.magnification.onDoubleTapMagnification();
                 }
-                this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
+                this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, this.toolbarHeight);
                 this.isTapHidden = false;
                 clearTimeout(this.singleTapTimer);
             }
@@ -5378,7 +5398,9 @@ export class PdfViewerBase {
         // eslint-disable-next-line max-len
         if (this.pdfViewer.magnificationModule && this.pdfViewer.magnificationModule.fitType === 'fitToPage' && this.currentPageNumber > 0) {
             if (this.pageSize[this.currentPageNumber - 1]) {
-                this.viewerContainer.scrollTop = this.pageSize[this.currentPageNumber - 1].top * this.getZoomFactor();
+                if (!this.isPanMode && (!Browser.isDevice && this.pdfViewer.enableDesktopMode)) {
+                    this.viewerContainer.scrollTop = this.pageSize[this.currentPageNumber - 1].top * this.getZoomFactor();
+                }
             }
         }
         this.renderElementsVirtualScroll(this.currentPageNumber);
@@ -5412,7 +5434,9 @@ export class PdfViewerBase {
             this.pdfViewer.firePageChange(pageIndex);
         }
         if (this.pdfViewer.magnificationModule) {
-            this.pdfViewer.magnificationModule.updatePagesForFitPage(this.currentPageNumber - 1);
+            if (!this.isPanMode && (!Browser.isDevice && this.pdfViewer.enableDesktopMode)) {
+                this.pdfViewer.magnificationModule.updatePagesForFitPage(this.currentPageNumber - 1);
+            }
         }
         const currentPage: HTMLElement = this.getElement('_pageDiv_' + (this.currentPageNumber - 1));
         if (currentPage) {
@@ -6809,6 +6833,7 @@ export class PdfViewerBase {
         let touchArg: TouchEvent;
         let offsetX: number;
         let offsetY: number;
+        let currentTarget: any = (e.target as HTMLElement).parentElement;
         if (e.type.indexOf('touch') !== -1) {
             touchArg = <TouchEvent & PointerEvent>e;
             if (this.pdfViewer.annotation) {
@@ -6825,23 +6850,29 @@ export class PdfViewerBase {
             if ((e.target as HTMLElement).classList.contains('e-pv-hyperlink')) {
                 offsetX = (e as PointerEvent).offsetX + (e.target as HTMLElement).offsetLeft;
                 offsetY = (e as PointerEvent).offsetY + (e.target as HTMLElement).offsetTop;
-            } else if ((e.target as HTMLElement).classList.contains('e-pv-text') && (e.target as HTMLElement).parentElement) {
-                const targetParentRect: ClientRect = (e.target as HTMLElement).parentElement.getBoundingClientRect();
+            } else if ((e.target as HTMLElement).classList.contains('e-pv-text') && currentTarget) {
+                const targetParentRect: ClientRect = currentTarget.getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
                 // eslint-disable-next-line
-            } else if (e.target && (e && (e as any).path) && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.classList.contains('foreign-object')) {
+            } else if (e.target && (e && (e as any).path) && currentTarget && (currentTarget.classList.contains('foreign-object') || currentTarget.parentElement.classList.contains('foreign-object'))) {
                 // eslint-disable-next-line
-                const targetParentRect: ClientRect = (e as any).path[4].getBoundingClientRect();
+                let targetParentRect;
+                if ((e as any).path[4].className === 'e-pv-page-div') {
+                    targetParentRect = (e as any).path[4].getBoundingClientRect();
+                }
+                else {
+                    for (let i = 0; i < (e as any).path.length; i++) {
+                        if ((e as any).path[i].className === 'e-pv-page-div') {
+                            targetParentRect = (e as any).path[i].getBoundingClientRect();
+                            break;
+                        }
+                    }
+                }
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
                 // eslint-disable-next-line
-            } else if (e.target && (e && (e as any).path) && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.parentElement.classList.contains('foreign-object')) {
-                // eslint-disable-next-line
-                const targetParentRect: ClientRect = (e as any).path[4].getBoundingClientRect();
-                offsetX = (e as PointerEvent).clientX - targetParentRect.left;
-                offsetY = (e as PointerEvent).clientY - targetParentRect.top;
-            } else if (e.target && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.classList.contains('foreign-object')) {
+            } else if (e.target && currentTarget && currentTarget.classList.contains('foreign-object')) {
                 // eslint-disable-next-line
                 const targetParentRect: ClientRect = (e.target as any).offsetParent.offsetParent.offsetParent.getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
@@ -7081,10 +7112,13 @@ export class PdfViewerBase {
      */
     public checkSignatureFormField(fieldID: string): boolean {
         let isFormFieldSign: boolean = false;
+        if (this.pdfViewer.formDesignerModule) {
+            fieldID = fieldID.split('_')[0];
+        }
         // eslint-disable-next-line
         const formField: any = (this.pdfViewer.nameTable as any)[fieldID];
         if (formField) {
-            if (formField.formFieldAnnotationType === 'SignatureField' || formField.formFieldAnnotationType === 'InitialField') {
+            if (formField.formFieldAnnotationType === 'SignatureField' || formField.formFieldAnnotationType === 'InitialField' || formField.annotName === 'SignatureField') {
                 isFormFieldSign = true;
             }
         }
@@ -7111,7 +7145,7 @@ export class PdfViewerBase {
             obj = this.pdfViewer.drawingObject as IElement;
         }
         let target: PdfAnnotationBaseModel;
-        const isFormFieldSign: boolean = this.pdfViewer.selectedItems.annotations.length > 0 ? this.checkSignatureFormField(this.pdfViewer.selectedItems.annotations[0].id.split('_')[0]) : false;
+        let isFormFieldSign: boolean = this.pdfViewer.selectedItems.annotations.length > 0 ? this.checkSignatureFormField(this.pdfViewer.selectedItems.annotations[0].id) : false;
         if ((Point.equals(this.currentPosition, this.prevPosition) === false || this.inAction)) {
             if (this.isMouseDown === false) {
                 this.eventArgs = {};
@@ -7399,7 +7433,7 @@ export class PdfViewerBase {
                         let annotationSettings: any = { opacity: currentObject.opacity, fillColor: (currentObject as PdfAnnotationBaseModel).fillColor, strokeColor: (currentObject as PdfAnnotationBaseModel).strokeColor, thicknes: (currentObject as PdfAnnotationBaseModel).thickness, author: (currentObject as PdfAnnotationBaseModel).author, subject: (currentObject as PdfAnnotationBaseModel).subject, modifiedDate: (currentObject as PdfAnnotationBaseModel).modifiedDate };
                         // eslint-disable-next-line max-len
                         this.isMousedOver = true;
-                        let isFormField: boolean = this.checkSignatureFormField(currentObject.id.split('_')[0]);
+                        let isFormField: boolean = this.checkSignatureFormField(currentObject.id);
                         if (currentObject.formFieldAnnotationType) {
                             this.isFormFieldMousedOver = true;
                             const field: IFormField = {
@@ -7466,7 +7500,7 @@ export class PdfViewerBase {
                     let annotationSettings: any = { opacity: currentObject.opacity, fillColor: currentObject.fillColor, strokeColor: currentObject.strokeColor, thicknes: currentObject.thickness, author: currentObject.author, subject: currentObject.subject, modifiedDate: currentObject.modifiedDate };
                     // eslint-disable-next-line max-len
                     this.isMousedOver = true;
-                    let isFormField: boolean = this.checkSignatureFormField(currentObject.id.split('_')[0]);
+                    let isFormField: boolean = this.checkSignatureFormField(currentObject.id);
                     if (currentObject.formFieldAnnotationType) {
                         this.isFormFieldMousedOver = true;
                         const field: IFormField = {
@@ -7925,7 +7959,7 @@ export class PdfViewerBase {
                 // eslint-disable-next-line
                 const field: IFormField = {
                     // eslint-disable-next-line max-len
-                    id: currentObject.id, fontFamily: currentObject.fontFamily, fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
+                    name: currentObject.name, id: currentObject.id, fontFamily: currentObject.fontFamily, fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
                     // eslint-disable-next-line
                     color: (currentObject as PdfFormFieldBaseModel).color, value: currentObject.value, type: currentObject.formFieldAnnotationType ? currentObject.formFieldAnnotationType : currentObject.type, backgroundColor: (currentObject as PdfFormFieldBaseModel).backgroundColor, alignment: (currentObject as any).alignment
                 };

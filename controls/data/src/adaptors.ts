@@ -969,6 +969,10 @@ export class ODataAdaptor extends UrlAdaptor {
         }
 
         if (type === 'string') {
+            val = val.replace(/'/g, "''");
+            if (predicate.ignoreCase) {
+                val = val.toLowerCase();
+            }
             val = encodeURIComponent(val);
             val = '\'' + val + '\'';
 
@@ -1656,7 +1660,11 @@ export class ODataV4Adaptor extends ODataAdaptor {
             }
             if(splits.length == 2){
                 if (selected[splits[0]].length && Object.keys(selected).indexOf(splits[0]) !== -1) {
-                    selected[splits[0]][0] = selected[splits[0]][0] + ',' + splits[1];
+                    if (selected[splits[0]][0].indexOf('$expand') !== -1 && selected[splits[0]][0].indexOf(';$select=') === -1) {
+                        selected[splits[0]][0] = selected[splits[0]][0] + ';' + '$select=' + splits[1];
+                    } else {
+                        selected[splits[0]][0] = selected[splits[0]][0] + ',' + splits[1];
+                    }
                 } else {
                     selected[splits[0]].push('$select=' + splits[1]);
                 }
@@ -1667,7 +1675,14 @@ export class ODataV4Adaptor extends ODataAdaptor {
                     exp = exp + '$expand=' + splits[i] + '(';
                     close = close + ')';
                 }
-                selected[splits[0]].push(exp + sel + close);
+                let combineVal: string = exp + sel + close;
+                if (selected[splits[0]].length && Object.keys(selected).indexOf(splits[0]) !== -1 && 
+                    this.expandQueryIndex(selected[splits[0]], true)) {
+                    let idx: number | boolean = this.expandQueryIndex(selected[splits[0]]);
+                    selected[splits[0]][idx] = selected[splits[0]][idx] + combineVal.replace('$expand=', ',');
+                } else {
+                    selected[splits[0]].push(combineVal);
+                }
             }
         });
         //Auto expand from select query
@@ -1681,6 +1696,15 @@ export class ODataV4Adaptor extends ODataAdaptor {
         });
         Object.keys(expanded).forEach((ex: string) => exArr.push(expanded[ex]));
         return exArr.join(',');
+    }
+
+    private expandQueryIndex( query: string[], isExpand?: boolean): boolean | number {
+        for (let i: number = 0; i < query.length; i++) {
+            if (query[i].indexOf('$expand') !== -1) {
+                return isExpand ? true : i;
+            }
+        }
+        return isExpand ? false : 0;
     }
 
     /**
