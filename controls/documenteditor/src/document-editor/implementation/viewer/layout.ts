@@ -7369,7 +7369,6 @@ export class Layout {
     }
     private reLayoutOrShiftWidgets(blockAdv: BlockWidget, viewer: LayoutViewer): void {
         let block: BlockWidget = blockAdv;
-        let isRealyoutList: Boolean = false;
         // if (block instanceof ParagraphWidget) {
         //     reLayoutItems = viewer.renderedElements.get(block as ParagraphWidget).length === 0;
         // } else {
@@ -7385,7 +7384,6 @@ export class Layout {
             viewer.updateClientAreaForBlock(block, true);
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
-            isRealyoutList = true;
         } else {
             //Handled to check client area and shift layouted widget.
             this.shiftWidgetsBlock(block, viewer);
@@ -7401,7 +7399,7 @@ export class Layout {
             }
         }
         //Updates the list value of the rendered paragraph.
-        if (this.viewer.owner.editorModule && !isRealyoutList) {
+        if (this.viewer.owner.editorModule) {
             this.viewer.owner.editorModule.updateRenderedListItems(block);
         }
         if (!this.isRelayoutFootnote && block.bodyWidget.page.footnoteWidget) {

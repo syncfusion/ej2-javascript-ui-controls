@@ -5474,6 +5474,86 @@ export class PdfViewerBase {
         proxy.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
     };
 
+    /**
+     * @private
+     * @param {Point} clientPoint - The user should provide a x, y coordinates.
+     * @returns {number}
+     */
+    public getPageNumberFromClientPoint(clientPoint: Point): number {
+        let pointX: number = clientPoint.x + this.viewerContainer.scrollLeft;
+        let pointY: number = clientPoint.y + this.viewerContainer.scrollTop;
+        for (let i: number = 0; i < this.pageCount; i++) {
+            if (pointY < (this.pageSize[i].top + this.pageSize[i].height)) {
+            let viewerContainerBounds: DOMRect | ClientRect = this.getElement('_pageViewContainer').getBoundingClientRect(); 
+            let pageLeft: number = ((viewerContainerBounds.width - this.pageSize[i].width) / 2) + (viewerContainerBounds as DOMRect).x;
+            let verticalScrollPosition: number = 0;
+            if(pointY > this.pageSize[i].top) {
+                verticalScrollPosition = (pointY - this.pageSize[i].top );
+            } else {
+                verticalScrollPosition = (this.pageSize[i].top - pointY);
+            }
+            if (verticalScrollPosition > 0) {
+                if (this.pageSize[i] != null) {
+                    const pageHeight: number = this.getPageHeight(i);
+                    if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[i].width)))) {   
+                        return -1;
+                    }
+                    if (verticalScrollPosition <= (this.getPageTop(i) + this.pageSize[i].height)) {
+                        return i + 1;
+                    }
+                }
+            }
+          }
+        }
+        return -1;
+    }
+
+    /**
+     * @private
+     * @param {Point} clientPoint - The user should provide a x, y coordinates.
+     * @param {number} pageNumber - We need to pass pageNumber.
+     * @returns {Point}
+     */
+    public convertClientPointToPagePoint(clientPoint: Point, pageNumber: number): Point {
+       if (pageNumber !== -1) {  
+            let viewerContainerBounds: DOMRect | ClientRect = this.getElement('_pageViewContainer').getBoundingClientRect(); 
+            let pageLeft: number = ((viewerContainerBounds.width - this.pageSize[pageNumber - 1].width) / 2) + (viewerContainerBounds as DOMRect).x;
+            let pagePoint: any = {x: (clientPoint.x + this.viewerContainer.scrollLeft) - pageLeft, y: (clientPoint.y + this.viewerContainer.scrollTop) - this.pageSize[pageNumber - 1].top};
+            return pagePoint;
+       }
+       return null;
+    }
+
+    /**
+     * @private
+     * @param {Point} pagePoint - The user needs to provide a page x, y position.
+     * @param {number} pageNumber - We need to pass pageNumber.
+     * @returns {Point}
+     */
+    public convertPagePointToClientPoint(pagePoint: any, pageNumber: number): Point {
+        if (pageNumber !== -1) {
+            let viewerContainerBounds: DOMRect | ClientRect = this.getElement('_pageViewContainer').getBoundingClientRect(); 
+            let pageLeft = ((viewerContainerBounds.width - this.pageSize[pageNumber - 1].width) / 2) + (viewerContainerBounds as DOMRect).x;
+            let clientPoint: any = {x: pagePoint.x + pageLeft, y: pagePoint.y + this.pageSize[pageNumber - 1].top };
+            return clientPoint;
+        }
+        return null;
+    }
+
+    /**
+     * @private
+     * @param {Point} pagePoint - The user needs to provide a page x, y position.
+     * @param {number} pageNumber - We need to pass pageNumber.
+     * @returns {Point}
+     */
+    public convertPagePointToScrollingPoint(pagePoint: any, pageNumber: number): Point {
+        if (pageNumber !== -1) { 
+            let scrollingPoint: any = { x: pagePoint.x + this.viewerContainer.scrollLeft, y: pagePoint.y + this.viewerContainer.scrollTop };
+            return scrollingPoint;
+        }
+        return null;
+    }
+
     private initiatePageViewScrollChanged(): void {
         if (this.scrollHoldTimer) {
             clearTimeout(this.scrollHoldTimer);
@@ -7223,8 +7303,8 @@ export class PdfViewerBase {
                 if (this.tool) {
                     const currentObject: PdfAnnotationBaseModel = obj as PdfAnnotationBaseModel;
                     if (currentObject && currentObject.shapeAnnotationType === 'FreeText') {
-                        if (this.pdfViewer.freeTextSettings.allowEditTextOnly && this.action!=="Ink" && 
-                         (this.eventArgs.source && (this.eventArgs.source as any).shapeAnnotationType === "FreeText")){
+                        if (this.pdfViewer.freeTextSettings.allowEditTextOnly && this.action !== "Ink" &&
+                            (this.eventArgs.source && (this.eventArgs.source as any).shapeAnnotationType === "FreeText")) {
                             const eventTarget: HTMLElement = event.target as HTMLElement;
                             eventTarget.style.cursor = 'default';
                             this.tool = null;

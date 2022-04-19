@@ -81,7 +81,8 @@ export function Search(
     const itemData: { [key: string]: Element | number } = { item: null, index: null };
     if (inputVal && inputVal.length) {
         const strLength: number = inputVal.length;
-        const queryStr: string = ignoreCase ? inputVal.toLocaleLowerCase() : inputVal;
+        let queryStr: string = ignoreCase ? inputVal.toLocaleLowerCase() : inputVal;
+        queryStr = escapeCharRegExp(queryStr);
         for (let i: number = 0, itemsData: Element[] = listItems; i < itemsData.length; i++) {
             const item: Element = itemsData[i];
             const text: string = (ignoreCase ? item.textContent.toLocaleLowerCase() : item.textContent).replace(/^\s+|\s+$/g, '');
@@ -94,6 +95,10 @@ export function Search(
         return itemData;
     }
     return itemData;
+}
+
+export function escapeCharRegExp(value: string) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export function resetIncrementalSearchValues(elementId: string) : void {

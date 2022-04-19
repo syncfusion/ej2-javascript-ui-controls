@@ -286,7 +286,7 @@ export class Crosshair {
                     );
                     pathElement.setAttribute('d', direction);
                     textElem.textContent = text;
-                    textElem.setAttribute('x', (rect.x + padding).toString());
+                    textElem.setAttribute('x', (rect.x + padding + (chart.enableRtl ? this.elementSize.width : 0)).toString());
                     textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / 4).toString());
                     if (this.chart.theme === 'Fluent' || this.chart.theme === "FluentDark") {
                         

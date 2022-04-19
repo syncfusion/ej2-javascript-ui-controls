@@ -1437,10 +1437,12 @@ export class CartesianAxisLayoutPanel {
                 }
                 newPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
                 isRotatedLabelIntersect = false;
-                for (let index: number = i; index > 0; index--) {
-                    if (newPoints[i] && newPoints[index - 1] && isRotatedRectIntersect(newPoints[i], newPoints[index - 1])) {
-                        isRotatedLabelIntersect = true; newPoints[i] = null;
-                        break;
+                if (axis.labelIntersectAction !== 'None') {
+                    for (let index: number = i; index > 0; index--) {
+                        if (newPoints[i] && newPoints[index - 1] && isRotatedRectIntersect(newPoints[i], newPoints[index - 1])) {
+                            isRotatedLabelIntersect = true; newPoints[i] = null;
+                            break;
+                        }
                     }
                 }
             }

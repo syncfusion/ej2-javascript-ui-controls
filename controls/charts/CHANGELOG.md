@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I372766` - Now axis labels rendered properly when resizing.
+- Now tooltip is rendered properly when RTL is enabled.
+
 ## 20.1.48 (2022-04-12)
 
 ### Chart

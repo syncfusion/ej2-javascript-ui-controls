@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### PDF Viewer
+
+#### New Features
+
+- `#SF-362221`,`#SF-364814`,`#SF-368380`,`#SF-363379`- Provided the support for field Id and field Name for the Form Fields events.
+- `#SF-353301`- Implemented the `zoomTo` method.
+
+#### Bug Fixes
+
+- `#SF-366955`- Now, the page can be scrolled in mobile mode when it is in fitToPage mode.
+- `#SF-368168`- PDF Viewer toolbar appeared properly from view on zooming in mobile mode.
+- `#SF-367878`- The Script error will no longer be thrown while clicking the form field for the second time.
+- `#SF-368770`,`#SF-373344`,`#SF-372215`- Now, the properties of text box fields are changed properly using the `textFieldSettings` property.
+- `#SF-370140`- The label content of calibrate annotations is correctly updated when their properties are edited programmatically.
+- `#SF-370758`- The Script error will no longer be thrown while downloading the document after adding the handwritten type signature in mobile device.
+- `#SF-370904`- The signature collection and some signature properties are properly defined in the `addSignature` event on mobile device.
+- `#SF-373344`,`#SF-372215`- The Script error will no longer be thrown while adding PDF Viewer to the Angular application.
+
 ## 20.1.47 (2022-04-04)
 
 ### PDF Viewer

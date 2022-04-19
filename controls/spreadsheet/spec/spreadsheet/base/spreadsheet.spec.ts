@@ -5,7 +5,7 @@ import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreads
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs } from '../../../src/workbook/index';
+import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell } from '../../../src/workbook/index';
 import { EmitType, setCurrencyCode } from '@syncfusion/ej2-base';
 
 Spreadsheet.Inject(BasicModule);
@@ -720,9 +720,22 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('addCustomFunction', (done: Function) => {
-            (window as any).CustomFuntion = (num: string) => {
-                expect(num).toBe(formula === '=SQRT(D2)' ? '10' : '65');
-                return Math.sqrt(Number(num));
+            (window as any).CustomFuntion = (str: string) => {
+                let num: number;
+                if (formula === '=SQRT(D2)') {
+                    expect(str).toBe('10');
+                    num = Number(str);
+                } else {
+                    expect(str).toBe('D2:D5');
+                    num = 0;
+                    const indexes: number[] = getRangeIndexes(str);
+                    for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+                        for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                            num += Number(getCell(i, j, sheet).value);
+                        }
+                    }
+                }
+                return Math.sqrt(num);
             };
             helper.invoke('addCustomFunction', ["CustomFuntion", "SQRT"]);
             let formula: string = '=SQRT(D2)';

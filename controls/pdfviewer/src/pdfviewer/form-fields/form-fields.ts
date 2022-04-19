@@ -2172,7 +2172,7 @@ export class FormFields {
             // eslint-disable-next-line
             let annotBounds: any = this.getBounds(fieldBounds, pageIndex, rotation);
             if (font !== null && font.Height) {
-                inputField.style.fontfamily = font.Name;
+                inputField.style.fontFamily = font.Name;
                 if (font.Italic) {
                     inputField.style.fontStyle = 'italic';
                 }

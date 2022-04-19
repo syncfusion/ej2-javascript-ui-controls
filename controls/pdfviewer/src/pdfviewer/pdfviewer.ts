@@ -35,7 +35,7 @@ import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-ann
 import { Drawing, ClipBoardObject } from './drawing/drawing';
 import { Selector } from './drawing/selector';
 import { SelectorModel } from './drawing/selector-model';
-import { PointModel, IElement, Rect, cornersPointsBeforeRotation } from '@syncfusion/ej2-drawings';
+import { PointModel, IElement, Rect, cornersPointsBeforeRotation, Point } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 // eslint-disable-next-line max-len
@@ -8039,6 +8039,66 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.viewerBase.isAnnotationSelect = false;
         this.viewerBase.isFormFieldSelect = false;
         this.enableServerDataBinding(allowServerDataBind, true);
+    } 
+
+    /**
+     * Get page number from the user coordinates x and y.
+     *
+     * @param {Point} clientPoint - The user will provide a x, y coordinates.
+     * @returns number
+     */
+
+    public getPageNumberFromClientPoint(clientPoint: Point): number {
+        let pageNumber: number = this.viewerBase.getPageNumberFromClientPoint(clientPoint);
+        return pageNumber;
+    }
+
+    /**
+     * Convert user coordinates to the PDF page coordinates.
+     *
+     * @param {Point} clientPoint - The user should provide a x, y coordinates.
+     * @param {number} pageNumber - We need to pass pageNumber.
+     * @returns Point
+     */
+
+    public convertClientPointToPagePoint(clientPoint: Point, pageNumber: number): Point {
+        let pagePoint: any = this.viewerBase.convertClientPointToPagePoint(clientPoint, pageNumber);
+        return pagePoint;
+    }
+
+    /**
+     * Convert page coordinates to the user coordinates.
+     *
+     * @param {Point} pagePoint - The user should provide a page x, y coordinates.
+     * @param {number} pageNumber - We need to pass pageNumber.
+     * @returns Point
+     */
+
+    public convertPagePointToClientPoint(pagePoint: Point, pageNumber: number): Point {
+        let clientPoint: any = this.viewerBase.convertPagePointToClientPoint(pagePoint, pageNumber);
+        return clientPoint;
+    }
+
+    /**
+     * Convert page coordinates to the scrolling coordinates.
+     *
+     * @param {Point} pagePoint - The user should provide a page x, y coordinates.
+     * @param {number} pageNumber - We need to pass pageNumber.
+     * @returns Point
+     */
+
+    public convertPagePointToScrollingPoint(pagePoint: Point, pageNumber: number): Point {
+        let scrollingPoint: any = this.viewerBase.convertPagePointToScrollingPoint(pagePoint, pageNumber);
+        return scrollingPoint;
+    }
+
+    /**
+     * Brings the given rectangular region to view and zooms in the document to fit the region in client area (view port).
+     *
+     * @param {Rect} rectangle - Specifies the region in client coordinates that is to be brought to view.
+     */
+    public zoomToRect(rectangle: Rect) : void {
+        this.magnificationModule.zoomToRect(rectangle);   
     }
 
     /**

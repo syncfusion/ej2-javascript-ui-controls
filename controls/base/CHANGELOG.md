@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### Common
+
+#### Bug Fixes
+
+- `I370803` - The issue with "Script error occurs while opening the popup in the DropDownList" has been resolved.
+
 ## 20.1.48 (2022-04-12)
 
 ### Common

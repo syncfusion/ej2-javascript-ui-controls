@@ -642,7 +642,7 @@ export class HtmlExport {
         if (!isNullOrUndefined(characterFormat.highlightColor) && characterFormat.highlightColor !== 'NoColor') {
             charStyle += 'background-color';
             charStyle += ':';
-            charStyle += HelperMethods.getColor(characterFormat.highlightColor.toString());
+            charStyle += HelperMethods.getHighlightColorCode(characterFormat.highlightColor.toString());
             charStyle += ';';
         }
         //Font Color

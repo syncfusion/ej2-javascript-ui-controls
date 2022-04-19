@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I374477` - Resolved the script error in XmlHttpRequest in lock and edit.
+- `#I372421` - Resolved issues in insert row/column paragraph format inheritance from previous paragraph.
+- `#IF173898` - Resolved the highlight color is not preserved in copy/paste.
+
 ## 20.1.48 (2022-04-12)
 
 ### Document Editor

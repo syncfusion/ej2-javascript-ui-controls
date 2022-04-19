@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 import { XmlHttpRequestEventArgs } from "./index";
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * @private
@@ -43,9 +44,12 @@ export class XmlHttpRequestHandler {
      */
     public send(jsonObject: object, httpRequestEventArgs?: XmlHttpRequestEventArgs): void {
         this.xmlHttpRequest = new XMLHttpRequest();
-        this.xmlHttpRequest.withCredentials = httpRequestEventArgs.withCredentials;
-        let timeout: number = (httpRequestEventArgs.timeout >= 0 ? httpRequestEventArgs.timeout : 0);
-        this.customHeaders = httpRequestEventArgs.headers;
+        let timeout: number = 0;
+        if (!isNullOrUndefined(httpRequestEventArgs)) {
+            this.xmlHttpRequest.withCredentials = httpRequestEventArgs.withCredentials;
+            timeout = (httpRequestEventArgs.timeout >= 0 ? httpRequestEventArgs.timeout : 0);
+            this.customHeaders = httpRequestEventArgs.headers;
+        }
         
         this.xmlHttpRequest.onreadystatechange = () => {
             this.stateChange(this);

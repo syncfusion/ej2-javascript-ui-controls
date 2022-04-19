@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I367373` - Now, pressing `ctrl+z` to undo the changes works properly when `enterKey` is configured as `BR`.
+
 ## 20.1.48 (2022-04-12)
 
 ### RichTextEditor
@@ -10,7 +18,7 @@
 
 - `#F173415` - Now, the input element can be inserted in the Rich Text Editor using the `executeCommand` public method.
 
-- `#I372932` - Now, copying and pasting the content with `contenteditable` set to false content doesn't add any unwanted `br` tag.
+- `#I372932` - Now, copying and pasting the content with `contenteditable` set to false doesn't add any unwanted `br` tag.
 
 - `#I370707` - Now, the font size is updated properly when removing the bullet list using the backspace key.
 

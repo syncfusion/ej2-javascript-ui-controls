@@ -5919,6 +5919,9 @@ export class Editor {
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         if (!selection.start.isAtParagraphStart) {
             if (block instanceof ParagraphWidget) {
+                if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking()) {
+                    this.insertRevisionForBlock(block, 'Insertion');
+                }
                 let startPosition: TextPosition = selection.start.clone();
                 //let prevBlock: ParagraphWidget = (block as ParagraphWidget).clone()
                 if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking()) {
@@ -6330,7 +6333,6 @@ export class Editor {
                     newCell.index = j;
                     newCell.rowIndex = row.rowIndex;
                     newCell.containerWidget = row;
-                    newCell.cellFormat.copyFormat(startCell.cellFormat);
                     newCell.cellFormat.rowSpan = 1;
                     if (isNullOrUndefined(startParagraph)) {
                         startParagraph = this.selection.getFirstParagraph(newCell);
@@ -6340,9 +6342,26 @@ export class Editor {
                     } else {
                         this.insertSpannedCells(row, rowSpannedCells, newCell, cellIndex);
                     }
+                    this.copyCellFormats(row,cellIndex);
                 }
             }
             this.tableReLayout(table, startParagraph, newCell);
+        }
+    }
+
+    private copyCellFormats(row: TableRowWidget, index: number) {
+        let newCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
+        let newCellPara: ParagraphWidget = newCell.childWidgets[0] as ParagraphWidget;
+        (index == (row.childWidgets.length - 1)) ? --index : ++index; 
+        let nextCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
+        let nextCellpara: ParagraphWidget = nextCell.childWidgets[0] as ParagraphWidget;
+        let nextCellTextBox: TextElementBox = (nextCellpara.childWidgets[0] as LineWidget).children[0] as TextElementBox
+        newCellPara.paragraphFormat.copyFormat(nextCellpara.paragraphFormat);
+        newCell.cellFormat.copyFormat(nextCell.cellFormat);
+        if (!isNullOrUndefined(nextCellTextBox)) {
+            newCellPara.characterFormat.copyFormat(nextCellTextBox.characterFormat);
+        } else {
+            newCellPara.characterFormat.copyFormat(nextCellpara.characterFormat);
         }
     }
 
@@ -6403,6 +6422,9 @@ export class Editor {
             if (!isNullOrUndefined(index) && !isNullOrUndefined(tableWidget)) {
                 if (index && index > 0 && tableWidget.childWidgets[index - 1] && (tableWidget.childWidgets[index - 1] as TableRowWidget).childWidgets[i]) {
                     startPara = ((tableWidget.childWidgets[index - 1] as TableRowWidget).childWidgets[i] as TableCellWidget).childWidgets[0] as ParagraphWidget;
+                }
+                else if(index == 0) {
+                    startPara = ((tableWidget.childWidgets[index] as TableRowWidget).childWidgets[i] as TableCellWidget).childWidgets[0] as ParagraphWidget;
                 }
             }
             let tableCell: TableCellWidget = this.createColumn(startPara,true);
@@ -9064,7 +9086,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-     public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
+    public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
         let allowFormatting: boolean = this.documentHelper.isFormFillProtectedMode
             && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
         if (this.restrictFormatting && !allowFormatting) {
@@ -9118,7 +9140,7 @@ export class Editor {
             }
             let para: ParagraphWidget = selection.start.paragraph;
             let layout: Layout = this.documentHelper.layout;
-            //let footNoteWidgetsInfo: FootNoteWidgetsInfo = layout.getFootNodeWidgetsToShiftToPage(para);
+            // let footNoteWidgetsInfo: FootNoteWidgetsInfo = layout.getFootNodeWidgetsToShiftToPage(para);
             para = para.combineWidget(this.owner.viewer) as ParagraphWidget;
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
@@ -9155,7 +9177,8 @@ export class Editor {
         let levelNumber: number;
         if (increaseLevel) {
             levelNumber = paragraphFormat.listFormat.listLevelNumber + 1;
-        } else {
+        }
+        else {
             levelNumber = paragraphFormat.listFormat.listLevelNumber - 1;
         }
         let nextListLevel: WListLevel = documentHelper.layout.getListLevel(list, levelNumber);
@@ -9350,7 +9373,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-     public applyParaFormatProperty(paragraph: ParagraphWidget, property: string, value: Object, update: boolean): void {
+    public applyParaFormatProperty(paragraph: ParagraphWidget, property: string, value: Object, update: boolean): void {
         let format: WParagraphFormat = paragraph.paragraphFormat;
         if (update && property === 'leftIndent') {
             value = format.leftIndent + (value as number);
@@ -9381,6 +9404,7 @@ export class Editor {
             this.documentHelper.layout.reLayoutParagraph(format.ownerBase as ParagraphWidget, 0, 0);
             return;
         }
+
         if (property === 'afterSpacing') {
             format.afterSpacing = value as number;
         } else if (property === 'beforeSpacing') {
@@ -10466,7 +10490,7 @@ export class Editor {
         let isMultipleSectionSelected=this.checkMultipleSectionSelected(start,endPos);
         let isRemoved: boolean = this.removeSelectedContent(endPos.paragraph, selection, startPos, endPos);
         let textPosition: TextPosition = new TextPosition(selection.owner);
-        if(isMultipleSectionSelected && isFirstLine && start.offset<1){
+        if(isMultipleSectionSelected && this.selection.currentPasteAction == "DefaultPaste" && isFirstLine && start.offset<1){
             let currentParagraph:ParagraphWidget=start.paragraph;
             let paragraph:ParagraphWidget=new ParagraphWidget();
             let line:LineWidget=new LineWidget(paragraph);
@@ -10482,6 +10506,7 @@ export class Editor {
         selection.selectContent(textPosition, true);
         return isRemoved;
     }
+
     private checkMultipleSectionSelected(start:TextPosition,end:TextPosition):boolean {
         let startSectionIndex:number=this.getBodyWidgetIndex(start);
         let endSectionIndex:number=this.getBodyWidgetIndex(end)
@@ -10501,6 +10526,7 @@ export class Editor {
         let bodyWidgetIndex:number = parseInt(value, 10);
         return bodyWidgetIndex;
     }
+
     private removeSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition): boolean {
         //If end is not table end and start is outside the table, then skip removing the contents and move caret to start position.
         if (end.paragraph.isInsideTable
@@ -11377,10 +11403,6 @@ export class Editor {
             blockCollection = containerWidget.childWidgets;
             this.updateNextBlocksIndex(block, false);
             containerWidget.childWidgets.splice(index, 1);
-            if (containerWidget.containerWidget instanceof FootNoteWidget && containerWidget.containerWidget.footNoteType === 'Endnote'
-                    && containerWidget.childWidgets.length === 0) {
-                    containerWidget.containerWidget.bodyWidgets.splice(containerWidget.containerWidget.bodyWidgets.indexOf(containerWidget as BodyWidget), 1)
-            }
             block.containerWidget = undefined;
             containerWidget.height -= block.height;
             if (!isNullOrUndefined(containerWidget.containerWidget) && containerWidget.containerWidget instanceof FootNoteWidget) {
@@ -13715,9 +13737,7 @@ export class Editor {
                 this.onApplyParagraphFormat('textAlignment', 'Left', false, true);
                 return;
             }
-            if (paragraph.previousRenderedWidget instanceof ParagraphWidget
-                && !(paragraph.index === 0 && paragraph.containerWidget && paragraph.containerWidget.containerWidget instanceof FootNoteWidget
-                    && paragraph.containerWidget.containerWidget.footNoteType === 'Endnote')) {
+            if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
                 selection.owner.isShiftingEnabled = true;
                 let previousParagraph: ParagraphWidget = paragraph.previousRenderedWidget as ParagraphWidget;
                 // if (isNullOrUndefined(previousParagraph)) {

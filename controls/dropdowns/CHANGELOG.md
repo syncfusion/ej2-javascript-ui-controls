@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with "Keyboard navigation correction for select the multiple items of listbox" has been resolved.
+
 ## 20.1.47 (2022-04-04)
 
 ### MultiSelect

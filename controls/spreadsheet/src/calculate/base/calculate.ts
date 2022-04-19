@@ -932,8 +932,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         let j: number = 0;
                         const customArgs: string[] = [];
                         for (j = 0; j < args.length; j++) {
-                            if (args[j].includes(':')) {
-                                customArgs.push(this.getFunction('SUM')([args[j]]).toString());
+                            if (args[j].includes(':') && this.isCellReference(args[j])) {
+                                customArgs.push(args[j]);
+                                (this.getCellCollection(args[j]) as string[]).forEach((cell: string): void => {
+                                    this.updateDependentCell(cell);
+                                });
                             } else {
                                 customArgs.push(this.getValueFromArg(args[j]));
                             }

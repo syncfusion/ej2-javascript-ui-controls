@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase, TileRenderingSettingsModel } from '../index';
-import { getDiagramElement, PointModel } from '@syncfusion/ej2-drawings';
+import { getDiagramElement, Point, PointModel, Rect } from '@syncfusion/ej2-drawings';
 
 /**
  * Magnification module
@@ -100,10 +100,13 @@ export class Magnification {
      * @returns void
      */
     public zoomTo(zoomValue: number): void {
-        if (zoomValue < 10) {
-            zoomValue = 10;
-        } else if (zoomValue > 400) {
-            zoomValue = 400;
+        let MaximumZoomPercentage: number = 400;
+        let MinmumZoomPercentage: number = 10;
+        if (zoomValue < MinmumZoomPercentage) {
+            zoomValue = MinmumZoomPercentage;
+        }
+        else if (zoomValue > MaximumZoomPercentage) {
+            zoomValue = MaximumZoomPercentage;
         }
         this.fitType = null;
         this.isNotPredefinedZoom = false;
@@ -1238,6 +1241,7 @@ export class Magnification {
     public getModuleName(): string {
         return 'Magnification';
     }
+    
     /**
     * Returns the pinch step value.
     * @param higherValue
@@ -1253,5 +1257,47 @@ export class Magnification {
             pinchstep = 0.1; // set the pinch step as 0.1 if the pinch reaches the higher pinch step value.
         }
         return pinchstep;
+    }
+
+    /**
+    * @private
+    * Brings the given rectangular region to view and zooms in the document to fit the region in client area (view port).
+    *
+    * @param {Rect} zoomRect - Specifies the region in client coordinates that is to be brought to view.
+    */
+    public zoomToRect(zoomRect: Rect): void {
+        let desiredScaleFactor: number;
+        let pdfViewerBase: any = this.pdfViewerBase;
+        let viewerContainer : any = pdfViewerBase.viewerContainer;
+        let pdfViewer: any = this.pdfViewer;
+        if (zoomRect.width > 0 && zoomRect.height > 0) {
+            let location: any = { x: zoomRect.x, y: zoomRect.y };
+            var pageNumber = pdfViewer.getPageNumberFromClientPoint(location);
+            if (pageNumber > 0) {
+                let desiredHorizontalScale: any = viewerContainer.getBoundingClientRect().width / zoomRect.width;
+                let desiredVerticalScale: any = viewerContainer.getBoundingClientRect().height / zoomRect.height;
+                if (desiredHorizontalScale < desiredVerticalScale) {
+                    desiredScaleFactor = desiredHorizontalScale;
+                } else {
+                    desiredScaleFactor = desiredVerticalScale;
+                }
+                let zoomValue: number = 100; // default zoom value
+                let zoomPercentage: number = pdfViewerBase.getZoomFactor() * 100;
+                zoomValue = zoomPercentage * desiredScaleFactor;
+                let prevScrollTop : number = viewerContainer.scrollTop;
+                // Zoom to desired zoom value.
+                this.zoomTo(zoomValue);
+                viewerContainer.scrollTop = prevScrollTop;
+                let zoomFactor: number = pdfViewerBase.getZoomFactor();
+                let pagepoint : any = { x: zoomRect.x, y: zoomRect.y };
+                // Convert the client point to page point.
+                pagepoint = pdfViewer.convertClientPointToPagePoint(pagepoint, pageNumber);
+                pdfViewerBase.updateScrollTop(pageNumber - 1);
+                // To adjust the container to the left position.
+                viewerContainer.scrollLeft = pagepoint.x * zoomFactor;
+                // To adjust the container to the top position.
+                viewerContainer.scrollTop = (pagepoint.y + pdfViewerBase.pageSize[pageNumber - 1].top) * zoomFactor;
+            }
+        }
     }
 }
