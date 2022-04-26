@@ -1119,6 +1119,10 @@
           min-height: $rte-quick-item-btn-height;
           min-width: $rte-quick-item-btn-width;
           padding: $rte-quick-item-padding;
+          @if $skin-name == 'FluentUI' {
+            padding-left: $rte-quick-item-padding-left;
+            padding-right: $rte-quick-item-padding-right;
+          }
         }
       }
 
@@ -1195,6 +1199,10 @@
           min-height: $rte-big-quick-item-btn-height;
           min-width: $rte-big-quick-item-btn-width;
           padding: $rte-big-quick-item-padding;
+          @if $skin-name == 'FluentUI' {
+            padding-left: $rte-quick-item-padding-left;
+            padding-right: $rte-quick-item-padding-right;
+          }
         }
 
         .e-toolbar-item:first-child,

@@ -29,7 +29,7 @@ export class ICalendarExport {
             if (eventObj[fields.recurrenceID]) {
                 const filter: Record<string, any>[] =
                     this.filterEvents(filterCollection, fields.id, eventObj[fields.recurrenceID] as number);
-                uId = filter[0].UID as string;
+                uId = filter.length > 0 ? filter[0].UID as string : uId;
             }
             if (!eventObj[fields.recurrenceID] && eventObj[fields.recurrenceRule] && eventObj[fields.recurrenceException]) {
                 const exDate: string[] = ((eventObj[fields.recurrenceException]) as string).split(',');

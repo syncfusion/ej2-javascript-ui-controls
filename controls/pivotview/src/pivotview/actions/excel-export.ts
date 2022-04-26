@@ -152,6 +152,7 @@ export class ExcelExport {
                                             pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
                                             lastCell.value = type === 'Excel' ? null : '';
                                         }
+                                        styles.numberFormat = typeof cellValue === 'string' ? undefined : styles.numberFormat;
                                         lastCell.style = !isNullOrUndefined(lastCell.value) ? styles : { bold: false, wrapText: true };
                                     } else {
                                         lastCell.style = headerStyle;

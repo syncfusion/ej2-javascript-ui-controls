@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I372766` - Now axis labels rendered properly when resizing.
+- Now tooltip is rendered properly when RTL is enabled.
+
+## 20.1.48 (2022-04-12)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I369936` - Console error when setting the legend mode as `Point` has been resolved.
+- `#I371101` - Now data labels will be rendered without overlapping.
+- `#I366649` - Polar Radar not rendered in canvas mode issue has been fixed.
+- `#I369616` - Spline curve break when zoom in issue has been fixed.
+
 ## 20.1.47 (2022-04-04)
 
 ### Chart

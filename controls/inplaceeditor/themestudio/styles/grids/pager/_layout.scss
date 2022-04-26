@@ -702,25 +702,25 @@
       & .e-next.e-icons.e-icon-next.e-nextpage.e-focused {
         @if $pager-skin == 'tailwind' {
           border: 0;
-          padding: 6.5px 8px;
+          padding: 6.5px 8px 6px;
         }
       }
 
       & .e-prevpage.e-focused {
         @if $pager-skin == 'tailwind' {
-          padding: 6.5px 8px 6.5px 7px;
+          padding: 6.5px 8px 6px 7px;
         }
       }
 
       & .e-lastpage.e-focused {
         @if $pager-skin == 'tailwind' {
-          padding: 6.5px 7px;
+          padding: 6.5px 7px 6px;
         }
       }
 
       & .e-firstpage.e-focused {
         @if $pager-skin == 'tailwind' {
-          padding: 6.5px 7px;
+          padding: 6.5px 7px 6px;
         }
       }
 

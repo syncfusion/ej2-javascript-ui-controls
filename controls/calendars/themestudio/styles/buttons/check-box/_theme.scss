@@ -99,6 +99,10 @@
           @if $skin-name == 'FluentUI' {
             font-size: $cbox-check-fontsize;
 
+            &:not(.e-check):not(.e-stop) {
+              color: $cbox-icon-color;
+            }
+
             &:not(.e-check),
             &:not(.e-stop)::before {
               content: $cbox-check-content;
@@ -180,6 +184,57 @@
           &.e-check {
             outline: $cbox-focus-outline;
             outline-offset: $cbox-focus-outline-offset;
+          }
+        }
+      }
+
+      .e-bigger .e-checkbox-wrapper,
+      .e-bigger.e-checkbox-wrapper,
+      .e-bigger .e-css.e-checkbox-wrapper,
+      .e-bigger.e-css.e-checkbox-wrapper {
+        &:hover {
+          & .e-frame {
+            @if $skin-name == 'FluentUI' {
+              font-size: $cbox-bigger-check-fontsize;
+
+              &:not(.e-check):not(.e-stop) {
+                color: $cbox-icon-color;
+              }
+            }
+          }
+        }
+      }
+
+      .e-small .e-checkbox-wrapper,
+      .e-small.e-checkbox-wrapper,
+      .e-small .e-css.e-checkbox-wrapper,
+      .e-small.e-css.e-checkbox-wrapper {
+        &:hover {
+          & .e-frame {
+            @if $skin-name == 'FluentUI' {
+              font-size: $cbox-small-check-fontsize;
+
+              &:not(.e-check):not(.e-stop) {
+                color: $cbox-icon-color;
+              }
+            }
+          }
+        }
+      }
+
+      .e-bigger.e-small .e-checkbox-wrapper,
+      .e-bigger.e-small.e-checkbox-wrapper,
+      .e-bigger.e-small .e-css.e-checkbox-wrapper,
+      .e-bigger.e-small.e-css.e-checkbox-wrapper {
+        &:hover {
+          & .e-frame {
+            @if $skin-name == 'FluentUI' {
+              font-size: $cbox-bigger-small-check-fontsize;
+
+              &:not(.e-check):not(.e-stop) {
+                color: $cbox-icon-color;
+              }
+            }
           }
         }
       }

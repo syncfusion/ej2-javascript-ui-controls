@@ -1,5 +1,5 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getRow } from '../base/index';
+import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
+import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getRow, getSheet } from '../base/index';
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, ExtendedRowModel, isNumber } from './../common/index';
 import { updateCell, intToDate, dateToInt } from './../common/index';
@@ -77,8 +77,8 @@ export class WorkbookAutoFill {
             (this.parent.getActiveSheet().isProtected && options.isLockedCell)) {
             return;
         }
-        const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection } = {
-            dataRange: null, fillRange: null, fillType: null, direction: null };
+        const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection, sheetIndex: number } = {
+            dataRange: null, fillRange: null, fillType: null, direction: null, sheetIndex: this.parent.getAddressInfo(options.dataRange).sheetIndex };
         const dataRangeIndices: number[] = getSwapRange(getRangeIndexes(options.dataRange));
         const fillRangeIndices: number[] = getSwapRange(getRangeIndexes(options.fillRange));
         this.fillInfo = this.getFillInfo({ dataRange: dataRangeIndices, fillRange: fillRangeIndices, fillType: options.fillType,
@@ -100,7 +100,7 @@ export class WorkbookAutoFill {
         }
     }
 
-    private fillSeries(options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection }): void {
+    private fillSeries(options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection, sheetIndex: number }): void {
         let val: string | string; let plen: number;
         let patterns: PatternInfo[] | number[]; let patrn: PatternInfo | number;
         let pRanges: { patternRange: number[], fillRange: number[] }; let patrnRange: number[];
@@ -113,7 +113,8 @@ export class WorkbookAutoFill {
         let cellIdx: { rowIndex: number, colIndex: number }; let cellProps: CellModel = {};
         let i: number = 0;
         let prevCellData: CellModel;
-        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIndex: number = isUndefined(options.sheetIndex) ? this.parent.activeSheetIndex : options.sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const dminr: number = options.dataRange[0]; const dminc: number = options.dataRange[1]; const dmaxr: number = options.dataRange[2];
         const dmaxc: number = options.dataRange[3];
         const fminr: number = options.fillRange[0]; const fminc: number = options.fillRange[1]; const fmaxr: number = options.fillRange[2];
@@ -126,7 +127,7 @@ export class WorkbookAutoFill {
             patrnRange = pRanges.patternRange;
             fillRange = pRanges.fillRange;
             patterns = this.getPattern(patrnRange, { isRFill: isRFill, isVFill: isVFill });
-            data = this.getRangeData({ range: patrnRange, sheetIdx: this.parent.activeSheetIndex });
+            data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
             dlen = data.length;
             if (!patterns) {
                 return;
@@ -243,7 +244,7 @@ export class WorkbookAutoFill {
         }
     }
 
-    private copyCells(options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection }): void {
+    private copyCells(options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection, sheetIndex: number }): void {
         let i: number = 0; let j: number;
         let k: number; let patrnRange: number[];
         let fillRange: number[];
@@ -266,14 +267,15 @@ export class WorkbookAutoFill {
         const isVFill: boolean = ['Down', 'Up'].indexOf(options.direction) > -1;
         const isRFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
         const len: number = isVFill ? dMaxC - dMinC : dMaxR - dMinR;
-        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIndex: number = isUndefined(options.sheetIndex) ? this.parent.activeSheetIndex : options.sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const formatOnly: boolean = options.fillType === 'FillFormattingOnly';
         let prevCellData: CellModel;
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dMinR, dMinC, dMaxR, dMaxC, fMinR, fMinC, fMaxR, fMaxC, i);
             patrnRange = pRanges.patternRange;
             fillRange = pRanges.fillRange;
-            data = this.getRangeData({ range: patrnRange, sheetIdx: this.parent.activeSheetIndex });
+            data = this.getRangeData({ range: patrnRange, sheetIdx: sheetIndex });
             dlen = data.length;
             cells = this.getSelectedRange(sheet, { rowIndex: fillRange[0], colIndex: fillRange[1] },
                                           { rowIndex: fillRange[2], colIndex: fillRange[3] });

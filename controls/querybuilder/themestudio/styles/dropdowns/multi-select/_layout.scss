@@ -9,7 +9,8 @@
   width: 100%;
 
   #{if(&, '&', '*')}.e-delimiter {
-    #{if(&, '&', '*')} .e-searcher {
+    #{if(&, '&', '*')} .e-searcher,
+    #{if(&, '&', '*')} .e-multi-searcher {
       height: 27px;
       vertical-align: middle;#{if(&, '&', '*')} .e-dropdownbase {
         height: 100%;
@@ -126,7 +127,9 @@
   }
 
   .e-multi-select-wrapper.e-delimiter {
-    top: -1px;
+    @if $ddl-multiselect-skin-name != 'FluentUI' {
+      top: -1px;
+    }
   }
 
   .e-multi-select-wrapper .e-clear-icon {
@@ -282,6 +285,45 @@
   right: $ddl-close-icon-left;
 }
 
+.e-bigger.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+.e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+.e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+.e-bigger.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+.e-bigger.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+.e-bigger .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-bigger-chip-down-icon-font;
+    right: $ddl-close-icon-bigger-right;
+  }
+}
+
+.e-bigger.e-small.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+.e-bigger.e-small .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+.e-bigger.e-small .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+.e-bigger.e-small.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon,
+.e-bigger.e-small.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+.e-bigger.e-small .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-biggersmall-chip-down-icon-font;
+    right: $ddl-close-icon-bigger-right;
+  }
+}
+
+.e-small.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+.e-small.e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
+.e-small.e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-closer-hooker-font-small;
+  }
+}
+
+.e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+.e-multiselect .e-down-icon .e-chips-close.e-close-hooker {
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-chip-close-font;
+  }
+}
+
 .e-bigger .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
 .e-bigger .e-multiselect.e-input-group.e-control-container .e-multi-select-wrapper.e-down-icon .e-clear-icon {
   @if $ddl-multiselect-skin-name == 'Fabric' or $ddl-multiselect-skin-name == 'highcontrast' {
@@ -332,10 +374,16 @@
     height: $ddl-bigger-clear-icon-height;
     width: $ddl-bigger-clear-icon-width;
   }
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-bigger-chip-down-icon-font;
+  }
 }
 
 .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
   margin-top: $ddl-closer-margin-top-bigger;
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    margin-top: $ddl-bigger-clear-margin-top;
+  }
   @if $ddl-multiselect-skin-name == 'bootstrap5' {
     margin-top: -2.15em;
   }
@@ -616,7 +664,7 @@
       left: $ddl-close-icon-left;
       position: absolute;
       right: auto;
-      @if $ddl-multiselect-skin-name == 'bootstrap5' {
+      @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'tailwind' {
         left: 0;
       }
   }
@@ -632,7 +680,7 @@
   }
 }
 
-.e-multiselect.e-rtl .e-down-icon .e-chips-close.e-icon.e-close-hooker {
+.e-multiselect.e-rtl .e-down-icon .e-chips-close.e-close-hooker {
   left: $ddl-close-rtl-icon-left;
 }
 
@@ -670,19 +718,19 @@
 }
 
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group:not(.e-rtl) .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
     padding-left: $ddl-multiselect-group-checkbox-wrapper-padding-left;
   }
 }
 
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
     padding-right: $ddl-multiselect-group-list-item-rtl-padding-right;
   }
 }
 
 .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-list-item .e-checkbox-wrapper {
-  @if ($ddl-multiselect-skin-name != 'tailwind') {
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
     padding-right: $ddl-bigger-multiselect-group-list-item-rtl-padding-right;
   }
 }
@@ -727,11 +775,15 @@
 }
 
 .e-popup.e-multi-select-list-wrapper.e-rtl .e-list-item {
-  padding-right: 0;
+  @if ($ddl-multiselect-skin-name != 'tailwind') {
+    padding-right: 0;
+  }
 }
 
 .e-popup.e-multi-select-list-wrapper.e-rtl .e-dropdownbase.e-rtl.e-dd-group .e-list-item {
-  padding-right: $ddl-list-rtl-padding-right;
+  @if ($ddl-multiselect-skin-name != 'tailwind') {
+    padding-right: $ddl-list-rtl-padding-right;
+  }
 }
 
 .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-dropdownbase.e-rtl.e-dd-group .e-list-group-item {
@@ -747,11 +799,15 @@
 }
 
 .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
-  padding-left: $ddl-multiselect-group-list-group-item-padding-left;
+  @if ($ddl-multiselect-skin-name != 'tailwind') {
+    padding-left: $ddl-multiselect-group-list-group-item-padding-left;
+  }
 }
 
 .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group:not(.e-rtl) .e-dropdownbase.e-dd-group .e-list-item .e-checkbox-wrapper {
-  padding-left: $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left;
+  @if ($ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'FluentUI') {
+    padding-left: $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left;
+  }
 }
 
 .e-multi-select-list-wrapper .e-selectall-parent {
@@ -786,7 +842,7 @@
 
 .e-bigger.e-multi-select-list-wrapper .e-selectall-parent .e-all-text,
 .e-bigger .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {
-  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'tailwind' {
+  @if $ddl-multiselect-skin-name == 'bootstrap5' or $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
     font-size: $ddl-bigger-selectall-font-size;
   }
 }
@@ -810,6 +866,15 @@
   font-size: $ddl-chip-font-size;
   line-height: $ddl-bigger-select-all-height;
   text-indent: $ddl-bigger-check-right;
+}
+
+.e-bigger .e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent,
+.e-bigger.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-selectall-parent {
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-chip-font-size;
+    line-height: $ddl-bigger-select-all-height;
+    text-indent: $ddl-bigger-check-right;
+  }
 }
 
 .e-multi-select-list-wrapper .e-selectall-parent .e-checkbox-wrapper {
@@ -957,6 +1022,27 @@ ejs-multiselect {
   min-height: $ddl-control-small-height;
 }
 
+.e-small .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-small .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
+    height: $ddl-small-input-height;
+  }
+}
+
+.e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-bigger.e-small .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
+    height: $ddl-bigger-small-input-height;
+  }
+}
+
+.e-bigger .e-multi-select-wrapper.e-delimiter .e-searcher,
+.e-bigger .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
+    height: $ddl-input-bigger-height;
+  }
+}
+
 .e-small .e-multi-select-wrapper input[type='text'] {
   @if $ddl-multiselect-skin-name == 'tailwind' {
     font-size: $ddl-chip-small-font-size;
@@ -973,7 +1059,7 @@ ejs-multiselect {
 .e-small .e-multi-select-wrapper .e-chips-close.e-close-hooker,
 .e-small .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
   margin-top: $ddl-small-closer-margin-top;
-  @if $ddl-multiselect-skin-name == 'tailwind' {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'FluentUI' {
     font-size: $ddl-closer-hooker-font-small;
     height: $ddl-small-clear-icon-height;
     width: $ddl-small-clear-icon-width;
@@ -1028,6 +1114,9 @@ ejs-multiselect {
     font-size: $ddl-closer-hooker-font-bigger-small;
     height: $ddl-bigger-small-clear-icon-height;
     width: $ddl-bigger-small-clear-icon-width;
+  }
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    font-size: $ddl-biggersmall-chip-down-icon-font;
   }
 }
 

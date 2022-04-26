@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I366649` - Polar Radar not rendered in canvas mode issue has been fixed.
+
 ## 20.1.47 (2022-04-04)
 
 ### Svg Base

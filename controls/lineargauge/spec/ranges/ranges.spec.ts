@@ -423,8 +423,7 @@ describe('Linear gauge control', () => {
         it('checking the stroke dasharray of the range element', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_AxisIndex_0_Range_0');
-                                              
-                expect(svg.getAttribute('stroke-dasharray')).toBe("null");
+                expect(svg.getAttribute('stroke-dasharray')).toBe("");
             };
             gauge.refresh();
         });

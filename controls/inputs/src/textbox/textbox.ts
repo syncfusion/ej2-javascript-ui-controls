@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject } from '../input/input';
@@ -383,6 +383,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.updateHTMLAttrToElement();
         this.checkAttributes(false);
+        if(( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) && this.element.value !== '') {
+            this.setProperties({value: this.element.value}, true);
+        }
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
@@ -683,6 +686,10 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         this.preventChange = false;
         this.trigger('change', eventArgs);
         this.previousValue = this.value;
+        //EJ2CORE-738:For this task we update the textarea value to the input when input tag with multiline is present
+        if (this.element.tagName === 'INPUT' && this.multiline && Browser.info.name === 'mozilla') {
+            this.element.value = this.respectiveElement.value; 
+        }
     }
 
     private bindClearEvent(): void {

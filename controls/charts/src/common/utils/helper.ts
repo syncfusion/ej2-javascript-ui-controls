@@ -649,18 +649,34 @@ export function getValueYByPoint(value: number, size: number, axis: Axis): numbe
     return actualValue * (axis.visibleRange.delta) + axis.visibleRange.min;
 }
 /** @private */
-export function findClipRect(series: Series): void {
+export function findClipRect(series: Series, isCanvas: boolean = false): void {
     const rect: Rect = series.clipRect;
-    if (series.chart.requireInvertedAxis) {
-        rect.x = series.yAxis.rect.x;
-        rect.y = series.xAxis.rect.y;
-        rect.width = series.yAxis.rect.width;
-        rect.height = series.xAxis.rect.height;
+    if (isCanvas && (series.chart.chartAreaType === 'PolarRadar'))
+    {
+        if (series.drawType === "Scatter") {
+            rect.x = series.xAxis.rect.x;
+            rect.y = series.yAxis.rect.y;
+            rect.width = series.xAxis.rect.width;
+            rect.height = series.yAxis.rect.height;
+        } else {
+            rect.x = series.xAxis.rect.x / 2;
+            rect.y = series.yAxis.rect.y / 2;
+            rect.width = series.xAxis.rect.width;
+            rect.height = series.yAxis.rect.height;
+        }
+        
     } else {
-        rect.x = series.xAxis.rect.x;
-        rect.y = series.yAxis.rect.y;
-        rect.width = series.xAxis.rect.width;
-        rect.height = series.yAxis.rect.height;
+        if (series.chart.requireInvertedAxis) {
+            rect.x = series.yAxis.rect.x;
+            rect.y = series.xAxis.rect.y;
+            rect.width = series.yAxis.rect.width;
+            rect.height = series.xAxis.rect.height;
+        } else {
+            rect.x = series.xAxis.rect.x;
+            rect.y = series.yAxis.rect.y;
+            rect.width = series.xAxis.rect.width;
+            rect.height = series.yAxis.rect.height;
+        }
     }
 }
 /** @private */

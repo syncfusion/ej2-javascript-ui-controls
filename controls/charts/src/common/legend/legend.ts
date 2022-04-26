@@ -19,7 +19,7 @@ import { AccumulationLegend } from '../../accumulation-chart/renderer/legend';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { BulletChartLegend } from '../../bullet-chart/legend/legend';
 import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow} from '../utils/enum';
-import { StockChart } from '../../stock-chart';
+import { StockChart, Series } from '../../stock-chart';
 import { StockLegend } from '../../stock-chart/legend/legend';
 /**
  * Configures the location for the legend.
@@ -951,14 +951,14 @@ export class BaseLegend {
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, legendTranslateGroup, false, false, false, false,
             // tslint:disable-next-line:align
                     null, this.currentPageNumber && isCanvas ?
-                        new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
 
         textOptions = new TextOption('', endLabelX, endLabelY, anchor, endLabel);
         textOptions.id = this.legendID + this.generateId(previousLegend, '_text_', 2);
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, legendTranslateGroup, false, false, false, false,
             // tslint:disable-next-line:align
                     null, this.currentPageNumber && isCanvas ?
-                        new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
         const gradientLegend: Element = chart.renderer.drawRectangle({
             width: linearBarWidth,
             height: linearBarHeight,
@@ -1139,7 +1139,7 @@ export class BaseLegend {
                 this.isBulletChartControl, control
             ));
         } else {
-            regionPadding = -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber);
+            regionPadding = -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber);
             drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
                        symbolOption, this.accessbilityText, this.chart.renderer,
                        this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null, this.isBulletChartControl, control);
@@ -1162,7 +1162,7 @@ export class BaseLegend {
                 drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
                            '', symbolOption, this.accessbilityText, this.chart.renderer,
                            this.currentPageNumber ?
-                               new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null,
+                               new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null,
                            this.isBulletChartControl, control);
 
             }
@@ -1220,7 +1220,7 @@ export class BaseLegend {
         const element : Element =
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false,
                     null, this.currentPageNumber &&  isCanvas ?
-                        new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null);
+                        new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null);
         if (element) {
             element.setAttribute('aria-label', legend.description || this.accessbilityText);
         }
@@ -1387,11 +1387,11 @@ export class BaseLegend {
                 this.calTotalPage = false;
             }
             if (!legend.enablePages && !this.isBulletChartControl) { // For new legend page navigation
-                this.translatePage(null, this.currentPage - 1, this.currentPage, legend);
+                this.translatePage(isCanvas, null, this.currentPage - 1, this.currentPage, legend);
             }
         }
         if (legend.enablePages || this.isBulletChartControl) {
-            this.translatePage(pageTextElement, this.currentPage - 1, this.currentPage, legend);
+            this.translatePage(isCanvas, pageTextElement, this.currentPage - 1, this.currentPage, legend);
         }
     }
     private getPageHeight(pageHeights : number[], pageCount : number) : number {
@@ -1422,9 +1422,9 @@ export class BaseLegend {
      * @param legend
      */
 
-    protected translatePage(pagingText: Element, page: number, pageNumber: number, legend?: LegendSettingsModel): number {
+    protected translatePage(isCanvas: boolean, pagingText: Element, page: number, pageNumber: number, legend?: LegendSettingsModel): number {
         let size: number = (this.isChartControl || this.isAccChartControl) ? (page ? this.getPageHeight(this.pageHeights, page) : 0) : ((this.clipPathHeight) * page);
-        if (this.isChartControl || this.isAccChartControl) {
+        if (!isCanvas && (this.isChartControl || this.isAccChartControl)) {
             this.clipRect.setAttribute('height', this.pageHeights[page].toString());
         }
         let translate: string = 'translate(0,-' + size + ')';
@@ -1456,14 +1456,15 @@ export class BaseLegend {
         const legend: LegendSettingsModel = (this.chart as Chart).legendSettings;
         const backwardArrow: Element = document.getElementById(this.legendID + '_pageup');
         const forwardArrow: Element = document.getElementById(this.legendID + '_pagedown');
+        const isCanvas: boolean = this.isStockChartControl ? false : (this.chart as Chart).enableCanvas;
         const pageText: Element = (legend.enablePages || this.isBulletChartControl) ?
             document.getElementById(this.legendID + '_pagenumber') : null;
         const page: number = (legend.enablePages || this.isBulletChartControl) ? parseInt(pageText.textContent.split('/')[!this.isRtlEnable ? 0 : 1], 10) :
             this.currentPage;
         if (pageUp && page > 1) {
-            this.translatePage(pageText, (page - 2), (page - 1), legend);
+            this.translatePage(isCanvas, pageText, (page - 2), (page - 1), legend);
         } else if (!pageUp && page < this.totalPages) {
-            this.translatePage(pageText, page, (page + 1), legend);
+            this.translatePage(isCanvas, pageText, page, (page + 1), legend);
         }
         if (this.isPaging && !legend.enablePages && !this.isBulletChartControl) {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -1534,8 +1535,9 @@ export class BaseLegend {
                         removeElement(this.chart.element.id + '_EJ2_Legend_Tooltip');
                     }
                     if (this.isChartControl) {
+                        let name: string = (this.chart.legendSettings as LegendSettingsModel).mode == "Point" ? ((<Chart>this.chart).visibleSeries[0] as Series).points[index].x.toString() : (<Chart>this.chart).series[index].name;
                         showTooltip(
-                            (<Chart>this.chart).series[index].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
+                            name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
                             getElement(this.chart.element.id + '_Secondary_Element')
                         );
                     } else {

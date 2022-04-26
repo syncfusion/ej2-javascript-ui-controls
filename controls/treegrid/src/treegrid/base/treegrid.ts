@@ -2,7 +2,7 @@ import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Aj
 import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
-import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row, CellRenderer, Cell } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs } from '@syncfusion/ej2-grids';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
 import {RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid } from '@syncfusion/ej2-grids';
 import { ActionEventArgs, TextAlign } from'@syncfusion/ej2-grids';
@@ -3105,10 +3105,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         rowData.parentUniqueID = record.parentUniqueID;
         rowData.expanded = record.expanded;
         this.grid.setRowData(key, rowData);
-        const table: Element = this.getContentTable();
-        const sHeight: number = table.scrollHeight;
-        const clientHeight: number = this.getContent().clientHeight;
-        this.lastRowBorder(this.getRows()[record.index], sHeight <= clientHeight);
+        const visibleRecords: ITreeData[] = this.getVisibleRecords();
+        if (visibleRecords.length > 0 && key === (visibleRecords[visibleRecords.length - 1])[primaryKey]) {
+            const table: Element = this.getContentTable();
+            const sHeight: number = table.scrollHeight;
+            const clientHeight: number = this.getContent().clientHeight;
+            this.lastRowBorder(this.getRows()[currentRecords.indexOf(record)], sHeight <= clientHeight);
+        }
     }
 
     /**
@@ -3339,32 +3342,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * @param {string} columnUid - Defines column uid
-     * @returns {void}
-     * @hidden
-     */
-    private refreshReactColumnTemplateByUid(columnUid: string): void {
-        if ((<{ isReact?: boolean }>this).isReact) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this as any).clearTemplate(['columnTemplate'], undefined, () => {
-                const cells: string = 'cells';
-                const rowIdx: string = 'index';
-                const rowsObj: Row<GridColumn>[] = this.grid.getRowsObject();
-                const indent: number = this.grid.getIndentCount();
-                const cellIndex: number = this.grid.getNormalizedColumnIndex(columnUid);
-                for (let j: number = 0; j < rowsObj.length; j++) {
-                    if (rowsObj[j].isDataRow && !isNullOrUndefined(rowsObj[j].index)) {
-                        const cell: Cell<GridColumn> = rowsObj[j][cells][cellIndex];
-                        const cellRenderer: CellRenderer = new CellRenderer(this.grid as IGrid, this.grid.serviceLocator);
-                        const td: Element = this.getCellFromIndex(rowsObj[j].index, cellIndex - indent);
-                        cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
-                    }
-                }
-            });
-        }
-    }
-
-    /**
      * Gets the content div of the TreeGrid.
      *
      * @returns {Element} - Return tree grid content element
@@ -3519,8 +3496,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.uniqueIDCollection = {};
         this.convertTreeData(this.dataSource);
         if (!isCountRequired(this)) {
-            this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData :
-                new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
+            if (!(this.dataSource instanceof DataManager)) {
+                this.grid.dataSource = this.flatData;
+            } else {
+                this.grid.setProperties({
+                    dataSource: new DataManager(this.dataSource.dataSource,
+                                                this.dataSource.defaultQuery, this.dataSource.adaptor)
+                }, true);
+            }
         }
         this.grid.refresh();
     }
@@ -3662,6 +3645,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 if (!(isRemoteData(this) && !isOffline(this)) && (!isCountRequired(this) || !isNullOrUndefined(record[children]))) {
                     const collapseArgs: RowExpandedEventArgs = { data: record, row: row };
                     this.setHeightForFrozenContent();
+                    if (!isNullOrUndefined(this.expandStateMapping)) {
+                        this.updateExpandStateMapping(collapseArgs.data, true);
+                    }
                     this.trigger(events.expanded, collapseArgs);
                 }
             }
@@ -3724,6 +3710,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 const collapseArgs: RowCollapsedEventArgs = {data: record, row: row};
                 if (!isRemoteData(this)) {
                     this.setHeightForFrozenContent();
+                    if (!isNullOrUndefined(this.expandStateMapping)) {
+                        this.updateExpandStateMapping(collapseArgs.data, false);
+                    }
                     this.trigger(events.collapsed, collapseArgs);
                     if (this.enableInfiniteScrolling) {
                         const scrollHeight: number = this.grid.getContent().firstElementChild.scrollHeight;
@@ -3735,6 +3724,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         });
+    }
+
+    private updateExpandStateMapping(record: ITreeData, state: boolean): void {
+        const totalRecords: object[] = record as object[];
+        if (totalRecords.length) {
+            for (let i: number = 0; i < totalRecords.length; i++) {
+                totalRecords[i][this.expandStateMapping] = state;
+                editAction({ value: (totalRecords[i] as ITreeData), action: 'edit' }, this,
+                           this.isSelfReference, (totalRecords[i] as ITreeData).index, this.grid.selectedRowIndex, this.expandStateMapping);
+            }
+        } else {
+            record[this.expandStateMapping] = state;
+            editAction({ value: record, action: 'edit' }, this,
+                       this.isSelfReference, record.index, this.grid.selectedRowIndex, this.expandStateMapping);
+        }
     }
 
     /**

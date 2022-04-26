@@ -975,7 +975,7 @@ export class FormFields {
             annot = {
                 // eslint-disable-next-line max-len
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y , width: bounds.width , height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.rotateAngle, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
+                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
             };
             signString = annot.data;
             signatureFontFamily = annot.fontFamily;
@@ -1016,7 +1016,7 @@ export class FormFields {
             annot = {
                 // eslint-disable-next-line max-len
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.rotateAngle, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
             signString = annot.data;
         } else {
@@ -1029,7 +1029,7 @@ export class FormFields {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.rotateAngle, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
                 signString = annot.data;
             } else {
@@ -1047,7 +1047,7 @@ export class FormFields {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.rotateAngle, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
             }
         }
@@ -2172,7 +2172,7 @@ export class FormFields {
             // eslint-disable-next-line
             let annotBounds: any = this.getBounds(fieldBounds, pageIndex, rotation);
             if (font !== null && font.Height) {
-                inputField.style.fontfamily = font.Name;
+                inputField.style.fontFamily = font.Name;
                 if (font.Italic) {
                     inputField.style.fontStyle = 'italic';
                 }
@@ -2223,13 +2223,13 @@ export class FormFields {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
             } else if (fontFamily) {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: data.FontFamily, fontSize: data.FontSize
+                    shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: data.FontFamily, fontSize: data.FontSize
                 };
                 annot.fontFamily = fontFamily;
                 annot.fontSize = data.FontSize ? data.FontSize : data.fontSize;
@@ -2237,7 +2237,7 @@ export class FormFields {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
             }
             if ((data.Name === 'SignatureField' || data.Name === 'InitialField') && !isNullOrUndefined(data.id)) {

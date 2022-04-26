@@ -15,9 +15,21 @@
       .e-gantt-tree-grid-pane {
         .e-columnheader {
           .e-headercell {
-            height: $gantt-bigger-treegrid-header-border-height;
+            height: $gantt-bigger-treegrid-header-border-height !important; // sass-lint:disable-line no-important
           }
         }
+      }
+    }
+
+    .e-columnmenu {
+      @if $skin-name == 'bootstrap5-dark' or $skin-name == 'tailwind-dark' {
+        top: 35px;
+      }
+      @else if $skin-name == 'fluent-dark' {
+        top: 38px;
+      }
+      @else {
+        top: $bigger-column-menu-size;
       }
     }
 
@@ -173,7 +185,7 @@
 
       .e-columnheader,
       .e-headercell {
-        height: $gantt-treegrid-header-border-height;
+        height: $gantt-treegrid-header-border-height !important; // sass-lint:disable-line no-important
       }
 
       .e-gridcontent .e-content {
@@ -610,7 +622,6 @@
         position: absolute;
 
         .e-span {
-          font-size: 13px;
           position: absolute;
           transform: rotate(-90deg);
           white-space: nowrap;

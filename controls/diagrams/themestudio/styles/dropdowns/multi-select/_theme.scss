@@ -135,14 +135,7 @@
     color: $ddl-multi-list-default-font-color;
   }
   @if$ddl-multiselect-skin-name == 'FluentUI' {
-    box-shadow: $ddl-multiselect-list-item-box-shadow;
     color: $ddl-list-header-font-color;
-  }
-}
-
-#{&}.e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-checkbox .e-list-group-item.e-item-focus {
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    box-shadow: $ddl-multiselect-list-item-box-shadow;
   }
 }
 
@@ -199,9 +192,6 @@
   color: $ddl-popup-active-focus-font-color;
   @if $ddl-multiselect-skin-name != 'tailwind' {
     border: $ddl-popup-active-focus-border-width solid $ddl-popup-active-focus-border-color;
-  }
-  @if $ddl-multiselect-skin-name == 'FluentUI' {
-    box-shadow: $ddl-multiselect-list-item-box-shadow;
   }
 }
 
@@ -347,6 +337,13 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
     top: $ddl-chip-close-bigger-top;
   }
   font-size: $ddl-bigger-small-chip-close-font;
+}
+
+.e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon:hover,
+.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-clear-icon:hover {
+  @if $ddl-multiselect-skin-name == 'FluentUI' {
+    background: transparent;
+  }
 }
 
 // Multiselect Outline textbox configuration

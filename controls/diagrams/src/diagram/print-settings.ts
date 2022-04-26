@@ -54,7 +54,7 @@ export class PrintAndExport {
         const buffers: string[] = [];
         let margin: MarginModel = options.margin || {};
         const region: DiagramRegions = options && options.region ? options.region : 'Content';
-        if (isBlazor) {
+        if (isBlazor()) {
             if ((options as any).Mode === 0) {
                 options.mode = 'Download';
             } else {

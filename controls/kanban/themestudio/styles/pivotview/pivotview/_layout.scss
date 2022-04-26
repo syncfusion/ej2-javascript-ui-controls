@@ -108,6 +108,9 @@
       .e-editor-search-container {
         display: flex;
         padding: 0 $pivotgrid-editor-search-padding-size 10px;
+        @if ($skin-name == 'FluentUI') {
+          padding-top: 1px;
+        }
 
         .e-clear-icon-hide {
           display: inline-block;
@@ -630,7 +633,7 @@
         box-shadow: none;
       }
 
-      @if ($skin-name == 'bootstrap5') or ($skin-name == 'tailwind') {
+      @if ($skin-name == 'bootstrap5') or ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') {
         border-top: 1px solid $pivotgrid-border;
         border-left: 1px solid $pivotgrid-border;
         border-right: 1px solid $pivotgrid-border;
@@ -809,6 +812,9 @@
   .e-report-outer {
     display: inline-block;
     width: 100%;
+    @if ($skin-name == 'FluentUI') {
+      padding-top: 1px;
+    }
   }
 
   .e-pivotview-report-label {

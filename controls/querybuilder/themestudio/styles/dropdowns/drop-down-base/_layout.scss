@@ -109,27 +109,27 @@
 
   .e-small .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-small-padding-left;
-    @if $skin-name == 'tailwind' {
+    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
       text-indent: 0;
     }
   }
 
   .e-bigger .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-bigger-padding-left;
-    @if $skin-name == 'tailwind' {
+    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
       text-indent: 0;
     }
   }
 
   .e-small.e-bigger .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-bigger-small-padding-left;
-    @if $skin-name == 'tailwind' {
+    @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
       text-indent: 0;
     }
   }
 
   .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {
-    text-indent: 0;
+    text-indent: $ddl-group-list-item-text-intent;
   }
 
   .e-popup.e-multi-select-list-wrapper.e-multiselect-group .e-dropdownbase.e-dd-group .e-list-group-item {

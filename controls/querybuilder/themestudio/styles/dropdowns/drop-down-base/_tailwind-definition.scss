@@ -69,6 +69,7 @@ $ddl-list-icon-color: $icon-color !default;
 $ddl-small-list-font-color: $content-text-color !default;
 // Touch Small color
 $ddl-bigger-small-list-font-color: $content-text-color !default;
+$ddl-group-list-item-text-intent: 0 !default;
 
 
 @include export-module('dropdownbase-tailwind') {

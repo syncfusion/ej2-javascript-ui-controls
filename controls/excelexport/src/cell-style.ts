@@ -22,6 +22,7 @@ export class CellStyle {
     public rotation: number;
     public vAlign: VAlignType;
     public underline: boolean;
+    public strikeThrough: boolean;
 
     public wrapText: boolean;
     public numberFormat: string;
@@ -36,6 +37,7 @@ export class CellStyle {
         this.italic = false;
         this.bold = false;
         this.underline = false;
+        this.strikeThrough = false;
         this.wrapText = false;
         this.hAlign = 'general';
         this.vAlign = 'bottom';
@@ -59,6 +61,7 @@ export class Font {
     public sz: number;
     public name: string;
     public color: string;
+    public strike: boolean;
     constructor() {
         this.sz = 10.5;
         this.name = 'Calibri';
@@ -66,6 +69,7 @@ export class Font {
         this.b = false;
         this.i = false;
         this.color = 'FF000000';
+        this.strike = false;
     }
 }
 

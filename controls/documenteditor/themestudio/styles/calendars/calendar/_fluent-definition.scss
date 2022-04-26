@@ -35,14 +35,14 @@ $calendar-icon-padding-top: 0 !default;
 $calendar-zero-value: 0 !default;
 $calendar-disable-opacity: 1 !default;
 //popup styles
-$calendar-normal-max-width: 220px !default;
-$calendar-normal-min-width: 222px !default;
+$calendar-normal-max-width: 229px !default;
+$calendar-normal-min-width: 229px !default;
 $calendar-small-max-width: 198px !default;
 $calendar-small-min-width: 198px !default;
-$calendar-bigger-max-width: 254px !default;
-$calendar-bigger-min-width: 256px !default;
-$calendar-weeknumber-min-width: 288px !default;
-$calendar-weeknumber-bigger-width: 325px !default;
+$calendar-bigger-max-width: 268px !default;
+$calendar-bigger-min-width: 268px !default;
+$calendar-weeknumber-min-width: 298px !default;
+$calendar-weeknumber-bigger-width: 335px !default;
 $calendar-popup-padding: 0 !default;
 $calendar-popup-bigger-padding: 0 !default;
 // today button
@@ -186,7 +186,7 @@ $calendar-hover-border-color: none !default;
 $calendar-disable-font-color: $flyout-text-color-disabled !default;
 $calendar-focused-date-bg-style: $content-bg-color-hover !default;
 $calendar-small-title-font-color: $content-text-color !default;
-$calendar-focused-state-box-shadow: 0 0 0 2px $border-alt !default;
+$calendar-focused-state-box-shadow: 0 0 0 1px $border-alt !default;
 $calendar-focused-state-border-radius: 4px !default;
 $calendar-focused-state-month-box-shadow: 0 0 0 1px $border-alt !default;
 // end td styles 

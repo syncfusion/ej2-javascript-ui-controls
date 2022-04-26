@@ -1738,9 +1738,7 @@ export class Editor {
                 clearTimeout(this.animationTimer);
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
-            if (this.selection.caret.offsetParent != undefined) {
-                this.owner.editorModule.insertText(text);
-            }
+            this.owner.editorModule.insertText(text);
             /* eslint-disable @typescript-eslint/indent */
             this.animationTimer = setTimeout(() => {
                 if (this.animationTimer) {
@@ -1875,7 +1873,7 @@ export class Editor {
         }
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
             let inline: FieldElementBox = this.selection.getCurrentFormField();
-            let resultText: string = this.getFormFieldText();
+            let resultText: string = this.getFormFieldText(inline);
             let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
                 resultText = '';
@@ -5921,6 +5919,9 @@ export class Editor {
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         if (!selection.start.isAtParagraphStart) {
             if (block instanceof ParagraphWidget) {
+                if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking()) {
+                    this.insertRevisionForBlock(block, 'Insertion');
+                }
                 let startPosition: TextPosition = selection.start.clone();
                 //let prevBlock: ParagraphWidget = (block as ParagraphWidget).clone()
                 if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking()) {
@@ -6332,7 +6333,6 @@ export class Editor {
                     newCell.index = j;
                     newCell.rowIndex = row.rowIndex;
                     newCell.containerWidget = row;
-                    newCell.cellFormat.copyFormat(startCell.cellFormat);
                     newCell.cellFormat.rowSpan = 1;
                     if (isNullOrUndefined(startParagraph)) {
                         startParagraph = this.selection.getFirstParagraph(newCell);
@@ -6342,9 +6342,26 @@ export class Editor {
                     } else {
                         this.insertSpannedCells(row, rowSpannedCells, newCell, cellIndex);
                     }
+                    this.copyCellFormats(row,cellIndex);
                 }
             }
             this.tableReLayout(table, startParagraph, newCell);
+        }
+    }
+
+    private copyCellFormats(row: TableRowWidget, index: number) {
+        let newCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
+        let newCellPara: ParagraphWidget = newCell.childWidgets[0] as ParagraphWidget;
+        (index == (row.childWidgets.length - 1)) ? --index : ++index; 
+        let nextCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
+        let nextCellpara: ParagraphWidget = nextCell.childWidgets[0] as ParagraphWidget;
+        let nextCellTextBox: TextElementBox = (nextCellpara.childWidgets[0] as LineWidget).children[0] as TextElementBox
+        newCellPara.paragraphFormat.copyFormat(nextCellpara.paragraphFormat);
+        newCell.cellFormat.copyFormat(nextCell.cellFormat);
+        if (!isNullOrUndefined(nextCellTextBox)) {
+            newCellPara.characterFormat.copyFormat(nextCellTextBox.characterFormat);
+        } else {
+            newCellPara.characterFormat.copyFormat(nextCellpara.characterFormat);
         }
     }
 
@@ -6405,6 +6422,9 @@ export class Editor {
             if (!isNullOrUndefined(index) && !isNullOrUndefined(tableWidget)) {
                 if (index && index > 0 && tableWidget.childWidgets[index - 1] && (tableWidget.childWidgets[index - 1] as TableRowWidget).childWidgets[i]) {
                     startPara = ((tableWidget.childWidgets[index - 1] as TableRowWidget).childWidgets[i] as TableCellWidget).childWidgets[0] as ParagraphWidget;
+                }
+                else if(index == 0) {
+                    startPara = ((tableWidget.childWidgets[index] as TableRowWidget).childWidgets[i] as TableCellWidget).childWidgets[0] as ParagraphWidget;
                 }
             }
             let tableCell: TableCellWidget = this.createColumn(startPara,true);
@@ -9076,13 +9096,34 @@ export class Editor {
         let action: Action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1)) as Action;
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection: Selection = this.documentHelper.selection;
+        let currentPara: ParagraphWidget = selection.start.paragraph;
+        let previousPara: ParagraphWidget = currentPara.previousWidget as ParagraphWidget;
+        let listId: number;
+        if (!isNullOrUndefined(previousPara)) {
+            listId = previousPara.paragraphFormat.listFormat.listId;
+        }
         this.initHistory(action);
         if ((this.owner.isReadOnlyMode && !allowFormatting) || !this.owner.isDocumentLoaded) {
             return;
         }
         if (property === 'leftIndent') {
             if (selection.paragraphFormat.listId !== -1 && update) {
-                this.updateListLevel(value > 0);
+                if (!isNullOrUndefined(previousPara) && listId === -1 || isNullOrUndefined(previousPara)) {
+                    let list = this.documentHelper.getListById(selection.paragraphFormat.listId);
+                    let abstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
+                    let level: WListLevel;
+                    for (let i: number = 0; i < abstractList.levels.length; i++) {
+                        level = abstractList.levels[i];
+                        level.paragraphFormat.leftIndent += value as number;
+                    }
+                    if (level.paragraphFormat.leftIndent <= 0) {
+                        level.paragraphFormat.leftIndent = -level.paragraphFormat.firstLineIndent;
+                    }
+                    this.onApplyListInternal(list, selection.paragraphFormat.listLevelNumber);
+                }
+                else {
+                    this.updateListLevel(value > 0);
+                }
                 return;
             }
         }
@@ -9136,7 +9177,8 @@ export class Editor {
         let levelNumber: number;
         if (increaseLevel) {
             levelNumber = paragraphFormat.listFormat.listLevelNumber + 1;
-        } else {
+        }
+        else {
             levelNumber = paragraphFormat.listFormat.listLevelNumber - 1;
         }
         let nextListLevel: WListLevel = documentHelper.layout.getListLevel(list, levelNumber);
@@ -9391,9 +9433,42 @@ export class Editor {
                 value = value.listFormat;
             }
             format.listFormat.copyFormat(<WListFormat>value);
-            this.documentHelper.layout.clearListElementBox(format.ownerBase as ParagraphWidget);
-            this.onListFormatChange(format.ownerBase as ParagraphWidget, <WListFormat>value, format);
-            this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
+            let currentPara: ParagraphWidget = format.ownerBase as ParagraphWidget;
+            let previousPara: ParagraphWidget = currentPara.previousWidget as ParagraphWidget;
+            let isListChanged: boolean = false;
+            if (isNullOrUndefined(previousPara) || (!isNullOrUndefined(previousPara)
+                && previousPara instanceof ParagraphWidget
+                && previousPara.paragraphFormat.listFormat.listId == -1)) {
+                while (!isNullOrUndefined(currentPara) && currentPara.paragraphFormat.listFormat.listId != -1) {
+                    if (!isListChanged) {
+                        this.documentHelper.layout.clearListElementBox(currentPara as ParagraphWidget);
+                        this.onListFormatChange(currentPara as ParagraphWidget, <WListFormat>value, format);
+                    }
+                    previousPara = currentPara;
+                    currentPara = currentPara.nextWidget as ParagraphWidget;
+                    if (!isNullOrUndefined(currentPara)) {
+                        if (previousPara.paragraphFormat.listFormat.listLevelNumber != currentPara.paragraphFormat.listFormat.listLevelNumber) {
+                            const currentList: WList = this.documentHelper.getListById(currentPara.paragraphFormat.listFormat.listId);
+                            const listLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, currentPara.paragraphFormat.listFormat.listLevelNumber);
+                            this.copyFromListLevelParagraphFormat(currentPara.paragraphFormat, listLevel.paragraphFormat);
+                            isListChanged = true;
+                        }
+                    }
+                    this.layoutItemBlock(previousPara as ParagraphWidget, false);
+                }
+            }
+            else {
+                this.documentHelper.layout.clearListElementBox(format.ownerBase as ParagraphWidget);
+                this.onListFormatChange(format.ownerBase as ParagraphWidget, <WListFormat>value, format);
+                if (!isNullOrUndefined(previousPara) && previousPara instanceof ParagraphWidget) {
+                    if (currentPara.paragraphFormat.listFormat.listLevelNumber == 0
+                        && currentPara.paragraphFormat.listFormat.listLevelNumber == previousPara.paragraphFormat.listFormat.listLevelNumber
+                        && previousPara.paragraphFormat.listFormat.listId !== -1) {
+                        currentPara.paragraphFormat.leftIndent = previousPara.paragraphFormat.leftIndent;
+                    }
+                }
+                this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
+            }
             return;
         } else if (property === 'bidi') {
             format.bidi = value as boolean;
@@ -10409,12 +10484,49 @@ export class Editor {
         }
         let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(startPos);
         selection.editPosition = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let start:TextPosition=startPos.clone();
+        let body:BodyWidget=start.paragraph.containerWidget as BodyWidget;
+        let isFirstLine:boolean=start.currentWidget.isFirstLine();
+        let isMultipleSectionSelected=this.checkMultipleSectionSelected(start,endPos);
         let isRemoved: boolean = this.removeSelectedContent(endPos.paragraph, selection, startPos, endPos);
         let textPosition: TextPosition = new TextPosition(selection.owner);
+        if(isMultipleSectionSelected && this.selection.currentPasteAction == "DefaultPaste" && isFirstLine && start.offset<1){
+            let currentParagraph:ParagraphWidget=start.paragraph;
+            let paragraph:ParagraphWidget=new ParagraphWidget();
+            let line:LineWidget=new LineWidget(paragraph);
+            line.paragraph=paragraph;
+            paragraph.containerWidget=body;
+            paragraph.childWidgets.push(line);
+            body.childWidgets.push(paragraph);
+            paragraph.index=currentParagraph.index;
+            paragraph.x=start.location.x;
+            paragraph.y=start.location.y;
+        }
         this.setPositionForCurrentIndex(textPosition, selection.editPosition);
         selection.selectContent(textPosition, true);
         return isRemoved;
     }
+
+    private checkMultipleSectionSelected(start:TextPosition,end:TextPosition):boolean {
+        let startSectionIndex:number=this.getBodyWidgetIndex(start);
+        let endSectionIndex:number=this.getBodyWidgetIndex(end)
+        if(startSectionIndex==endSectionIndex){
+            return false;
+        }
+        return true;
+    }
+
+    private getBodyWidgetIndex(textPosition:TextPosition):number{
+        let position:string=textPosition.hierarchicalPosition;
+        let index: number = position.indexOf(';');
+        let value: string = position.substring(0, index);
+        position = position.substring(index).replace(';', '');
+        index= position.indexOf(';');
+        value= position.substring(0, index);
+        let bodyWidgetIndex:number = parseInt(value, 10);
+        return bodyWidgetIndex;
+    }
+
     private removeSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition): boolean {
         //If end is not table end and start is outside the table, then skip removing the contents and move caret to start position.
         if (end.paragraph.isInsideTable
@@ -11291,10 +11403,6 @@ export class Editor {
             blockCollection = containerWidget.childWidgets;
             this.updateNextBlocksIndex(block, false);
             containerWidget.childWidgets.splice(index, 1);
-            if (containerWidget.containerWidget instanceof FootNoteWidget && containerWidget.containerWidget.footNoteType === 'Endnote'
-                    && containerWidget.childWidgets.length === 0) {
-                    containerWidget.containerWidget.bodyWidgets.splice(containerWidget.containerWidget.bodyWidgets.indexOf(containerWidget as BodyWidget), 1)
-            }
             block.containerWidget = undefined;
             containerWidget.height -= block.height;
             if (!isNullOrUndefined(containerWidget.containerWidget) && containerWidget.containerWidget instanceof FootNoteWidget) {
@@ -13629,9 +13737,7 @@ export class Editor {
                 this.onApplyParagraphFormat('textAlignment', 'Left', false, true);
                 return;
             }
-            if (paragraph.previousRenderedWidget instanceof ParagraphWidget
-                && !(paragraph.index === 0 && paragraph.containerWidget && paragraph.containerWidget.containerWidget instanceof FootNoteWidget
-                    && paragraph.containerWidget.containerWidget.footNoteType === 'Endnote')) {
+            if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
                 selection.owner.isShiftingEnabled = true;
                 let previousParagraph: ParagraphWidget = paragraph.previousRenderedWidget as ParagraphWidget;
                 // if (isNullOrUndefined(previousParagraph)) {

@@ -3,9 +3,9 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, ValidationModel, cellValidation, getIndexesFromAddress, getSheetNameFromAddress, Chart, replaceAllHandler } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, ValidationModel, cellValidation, getIndexesFromAddress, getSheetNameFromAddress } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
-import { SheetModel, MergeArgs, setMerge, getRangeAddress, triggerDataChange, applyCellFormat, CellFormatArgs } from '../../workbook/index';
+import { SheetModel, MergeArgs, setMerge, getRangeAddress, replaceAll, applyCellFormat, CellFormatArgs } from '../../workbook/index';
 import { addClass, extend, isNullOrUndefined, isObject, L10n, select } from '@syncfusion/ej2-base';
 import { CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, getRow, ExtendedRowModel, getRowHeight } from '../../workbook/index';
 import { SortDescriptor, getColIndex, beginAction, ActionEventArgs, ChartModel } from '../../workbook/index';
@@ -160,7 +160,7 @@ export class UndoRedo {
                     replaceArgs.value = (undoRedoArgs.eventArgs as unknown as { replaceValue: string}).replaceValue;
                     replaceArgs.replaceValue = undoRedoArgs.eventArgs.value;
                 }
-                this.parent.notify(replaceAllHandler, { ...undoRedoArgs.eventArgs, ...replaceArgs });
+                this.parent.notify(replaceAll, { ...undoRedoArgs.eventArgs, ...replaceArgs });
                 break;
             case 'insert':
             case 'filter':
@@ -700,7 +700,8 @@ export class UndoRedo {
                 workbookEditOperation,
                 {
                     action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
-                        cells[i].colIndex], value: cells[i].formula ? cells[i].formula : cells[i].value
+                        cells[i].colIndex], value: cells[i].formula ? cells[i].formula : cells[i].value,
+                    sheetIndex: getSheetIndex(this.parent, sheet.name)
                 });
             if ((args && args.action === 'wrap' && args.eventArgs.wrap) || (prevCell.wrap && !cells[i].wrap)) {
                 this.parent.notify(wrapEvent, {

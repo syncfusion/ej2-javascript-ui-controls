@@ -649,7 +649,9 @@ export class Edit {
                                     formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                 }
                                 this.parent.goTo(this.editCellData.fullAddr);
-                                this.endEdit(false, e);
+                                if (this.isEdit) {
+                                    this.endEdit(false, e);
+                                }
                                 return;
                             }
                         }

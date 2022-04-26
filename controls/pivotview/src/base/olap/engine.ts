@@ -624,9 +624,9 @@ export class OlapEngine {
         return gTotals;
     }
     private getValueAxis(valueAxis: string, valueIndex: number): string {
-        this.olapValueAxis = valueAxis; this.olapRowValueIndex =valueIndex;
+        this.olapValueAxis = valueAxis; this.olapRowValueIndex = valueIndex;
         for (let i: number = 0; i < this.dataSourceSettings.rows.length; i++) {
-            if(this.dataSourceSettings.rows[i].name === '[Measures]') {
+            if (this.dataSourceSettings.rows[i].name === '[Measures]') {
                 this.olapValueAxis = 'row';
                 this.olapRowValueIndex = i;
                 break;
@@ -1983,7 +1983,7 @@ export class OlapEngine {
                         let measureName: string = this.getUniqueName(measure as string);
                         let showTotals: boolean = true;
                         let attrDrill: boolean =
-                            (this.fieldList[columns[0].hierarchy] && this.fieldList[columns[0].hierarchy].isHierarchy && columns[0].isDrilled); /* eslint-disable-line */
+                            (this.fieldList[columns[0].hierarchy] && this.fieldList[columns[0].hierarchy].isHierarchy) ? columns[0].isDrilled : true; /* eslint-disable-line */
                         if (this.tupRowInfo[rowOrdinal]) {
                             showTotals = this.tupRowInfo[rowOrdinal].showTotals;
                         } else {

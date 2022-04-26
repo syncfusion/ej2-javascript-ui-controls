@@ -113,6 +113,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public ganttHeight: number;
     /** @hidden */
+    public initialChartRowElements: NodeListOf<Element>;
+    /** @hidden */
     public ganttWidth: number;
     /** @hidden */
     public predecessorModule: Dependency;
@@ -2133,6 +2135,7 @@ export class Gantt extends Component<HTMLElement>
             this.getCurrentRecords(args);
         }
         this.notify('recordsUpdated', {});
+        this.initialChartRowElements = this.ganttChartModule.getChartRows();
         this.isLoad = false;
         this.trigger('dataBound', args);
     }

@@ -77,27 +77,37 @@
           height: $range-start-end-container-height;
         }
       }#{if(&, '&', '*')} .e-separator {
-        height: $range-separator-height;
-        margin: $range-separator-margin;
+        @if ($skin-name != 'FluentUI') {
+          height: $range-separator-height;
+          margin: $range-separator-margin;
+        }
       }#{if(&, '&', '*')} .e-calendar {
         border: $range-calendar-border;
         margin: $range-calendar-margin;
-        padding: $range-calendar-popup-padding;
+        @if ($skin-name != 'FluentUI') {
+          padding: $range-calendar-popup-padding;
+        }
 
         #{if(&, '&', '*')} .e-content table {
-          padding: $range-calendar-normal-table-padding;
+          @if ($skin-name != 'FluentUI') {
+            padding: $range-calendar-normal-table-padding;
+          }
         }#{if(&, '&', '*')} .e-header {
           #{if(&, '&', '*')} .e-title {
             cursor: $range-cursor-pointer-style;
-            float: $range-float-none;
-            font-weight: $range-font-weight-normal;
             line-height: $range-normal-nav-icon-height;
-            margin-left: $range-value-zero;
             width: $range-control-header-width;
+            @if ($skin-name != 'FluentUI') {
+              float: $range-float-none;
+              font-weight: $range-font-weight-normal;
+              margin-left: $range-value-zero;
+            }
           }#{if(&, '&', '*')}.e-month,
           #{if(&, '&', '*')}.e-year,
           #{if(&, '&', '*')}.e-decade {
-            padding: $range-calendar-header-padding;
+            @if ($skin-name != 'FluentUI') {
+              padding: $range-calendar-header-padding;
+            }
           }#{if(&, '&', '*')} .e-next {
             float: $range-float-right;
           }#{if(&, '&', '*')} .e-prev {
@@ -131,7 +141,9 @@
         }
       }#{if(&, '&', '*')} .e-footer {
         align-items: $range-align-center;
-        border-top: $range-border-value;
+        @if ($skin-name != 'FluentUI') {
+          border-top: $range-border-value;
+        }
         clear: $range-float-clear;
         display: $range-flex-style;
         flex-direction: $range-flex-direction-row-reverse;
@@ -161,7 +173,9 @@
         #{if(&, '&', '*')} .e-right-container {
           float: $range-float-left;
         }#{if(&, '&', '*')} .e-left-container {
-          border-right: $range-border-value;
+          @if $skin-name != 'FluentUI' {
+            border-right: $range-border-value;
+          }
           @if $skin-name == 'tailwind' {
             border-right: $range-container-border-value;
           }
@@ -203,8 +217,10 @@
           border-left: $range-border-value;
           border-right: $range-value-zero;
         }#{if(&, '&', '*')} .e-left-container {
-          border-left: $range-border-value;
-          border-right: $range-value-zero;
+          @if $skin-name != 'FluentUI' {
+            border-left: $range-border-value;
+            border-right: $range-value-zero;
+          }
           @if $skin-name == 'tailwind' {
             border-left: $range-container-border-value;
           }
@@ -264,13 +280,13 @@
 
       #{if(&, '&', '*')} .e-start-label,
       #{if(&, '&', '*')} .e-end-label {
-        @if $skin-name == 'tailwind' {
+        @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           font-size: $range-bigger-header-label-size;
         }
       }
 
       #{if(&, '&', '*')} .e-day-span {
-        @if $skin-name == 'tailwind' {
+        @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
           font-size: $range-bigger-indicator-label-size;
         }
       }
@@ -360,10 +376,14 @@
       }
     }#{if(&, '&', '*')} .e-calendar {
       max-width: $range-calendar-bigger-max;
-      padding: $range-bigger-calendar-popup-padding;
+      @if ($skin-name != 'FluentUI') {
+        padding: $range-bigger-calendar-popup-padding;
+      }
 
       #{if(&, '&', '*')} .e-content table {
-        padding: $range-calendar-bigger-table-padding;
+        @if ($skin-name != 'FluentUI') {
+          padding: $range-calendar-bigger-table-padding;
+        }
       }#{if(&, '&', '*')} .e-header {
         #{if(&, '&', '*')} .e-next,
         #{if(&, '&', '*')} .e-prev {
@@ -381,7 +401,9 @@
         }#{if(&, '&', '*')}.e-month,
         #{if(&, '&', '*')}.e-year,
         #{if(&, '&', '*')}.e-decade {
-          padding: $range-e-bigger-header-padding;
+          @if ($skin-name != 'FluentUI') {
+            padding: $range-e-bigger-header-padding;
+          }
         }
       }
     }#{if(&, '&', '*')} .e-footer {
@@ -461,7 +483,9 @@
         }
 
         #{if(&, '&', '*')} .e-separator {
-          margin: $range-separator-small-margin;
+          @if ($skin-name != 'FluentUI') {
+            margin: $range-separator-small-margin;
+          }
         }
       }
 

@@ -1924,4 +1924,39 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
+    
+    describe('EJ2-58466 - list with font size Backspace key press testing', () => {
+        let elem: HTMLElement;
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let innerValue: string = `<div id="content-edit" contenteditable="true"><ol><li style="font-size: 24pt;" class="focusNode"><br></li><li style="font-size: 24pt;"><span style="font-size: 24pt;">RTE Content 2</span></li></ol><div>`;
+        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: innerValue
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' backspace keypress after font size changed in the first list with empty content changes the font size', () => {
+            startNode = editNode.querySelector('.focusNode');
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'backspace';
+            keyBoardEvent.event.which = 8;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let liNode: Element = editNode.querySelector('li');
+            expect(liNode.getAttribute('style')).toBe(null);
+        });
+
+        afterAll(() => {
+            detach(elem);
+        });
+    });
 });

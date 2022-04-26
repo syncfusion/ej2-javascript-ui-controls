@@ -6,7 +6,6 @@ import { createElement, isVisible, setStyleAttribute, isNullOrUndefined } from '
 import { Toolbar, ClickEventArgs, BeforeCreateArgs } from '../src/toolbar/toolbar';
 import { ItemModel } from '../src/toolbar/toolbar-model';
 import { HScroll } from '../src/common/h-scroll';
-import { VScroll } from '../src/common/v-scroll';
 import { Button } from '@syncfusion/ej2-buttons';
 import { profile, inMB, getMemoryProfile } from './common.spec';
 import '../node_modules/es6-promise/dist/es6-promise';
@@ -12380,6 +12379,83 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(i).toEqual(2);
         });
 
+    });
+
+    describe('Content security issue in toolbar ', () => {
+        let toolbar: Toolbar;
+        let i: number = 0;
+        function clickFn(): void {
+            i++;
+        }
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+            document.body.appendChild(createElement('div', { id: 'toolbar-template', innerHTML: 'toolbar template' }));
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+        });
+
+        it('Check rendered toolbar items', () => {
+            toolbar = new Toolbar({
+                width: '500px',
+                created: clickFn,
+                items: [
+                    { template: '<input placeholder="Search"/>' },
+                    { template: '#toolbar-template' }
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            const toolbarItems: Element = toolbar.element.querySelector('.e-toolbar-items');
+            expect(toolbarItems.children.length).toEqual(2);
+            expect(toolbarItems.children[0].innerHTML).toEqual('<input placeholder="Search">');
+            expect(toolbarItems.children[0].textContent).toEqual('');
+            expect(toolbarItems.children[1].innerHTML).toEqual('<div id="toolbar-template">toolbar template</div>');
+            expect(toolbarItems.children[1].textContent).toEqual('toolbar template');
+        });
+    });
+
+    describe('EJ2-58911-Toolbar Left and right scrolling arrow is read as "section" by screen reader', () => {
+        let toolbar: Toolbar;
+        document.body.innerHTML = '';
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Checking the aria-attributes of the scrollable buttons', () => {
+            toolbar = new Toolbar({
+                width: 380,
+                overflowMode: "Scrollable",
+                items: [{ text: 'Today', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Left' },
+                { text: 'Week', overflow: 'Hide', align: 'Center' },
+                { text: 'Month', overflow: 'Hide', align: 'Center' },
+                { text: 'Year', overflow: 'Hide', align: 'Right' },
+                { text: 'Print', overflow: 'Hide', align: 'Right' },
+                { text: 'Sync', overflow: 'Hide', align: 'Right' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            const ele: HTMLElement = <HTMLElement>toolbar.element.firstElementChild;
+            const left: HTMLElement = ele.querySelector('.e-scroll-left-nav');
+            const right: HTMLElement = ele.querySelector('.e-scroll-right-nav');
+            expect(isNullOrUndefined(left)).toEqual(false);
+            expect(isNullOrUndefined(right)).toEqual(false);
+            expect(left.getAttribute('aria-label')).toEqual('Scroll left');
+            expect(right.getAttribute('aria-label')).toEqual('Scroll right');
+            expect(left.getAttribute('role')).toEqual('button');
+            expect(right.getAttribute('role')).toEqual('button');
+        });
     });
 
     it('memory leak', () => {     

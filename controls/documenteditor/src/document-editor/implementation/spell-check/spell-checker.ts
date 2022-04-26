@@ -465,7 +465,7 @@ export class SpellChecker {
                 spellSuggestion.push(
                     {
                         text: str,
-                        id: this.documentHelper.owner.element.id + '_contextmenu_otherSuggestions_spellcheck_' + str,
+                        id: this.documentHelper.owner.element.id + '_contextmenu_otherSuggestions_spellcheck_' + (str === this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary') ? 'Add to Dictionary': str),
                         iconCss: ''
                     });
 

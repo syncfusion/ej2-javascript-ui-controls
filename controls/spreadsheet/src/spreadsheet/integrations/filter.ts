@@ -569,14 +569,20 @@ export class Filter {
         if (filterPopup && filterPopup.id.includes(this.parent.element.id)) {
             const excelFilter: Dialog = getComponent(filterPopup, 'dialog');
             EventHandler.remove(filterPopup, getStartEvent(), this.filterMouseDownHandler);
-            if (excelFilter) { excelFilter.hide(); }
+            if (excelFilter) {
+                excelFilter.hide();
+            }
             this.removeFilterClass();
         }
     }
 
     private removeFilterClass(): void {
-        if (this.parent.element.style.position === 'relative') { this.parent.element.style.position = ''; }
-        if (this.parent.element.classList.contains('e-filter-open')) { this.parent.element.classList.remove('e-filter-open'); }
+        if (this.parent.element.style.position === 'relative') {
+            this.parent.element.style.position = '';
+        }
+        if (this.parent.element.classList.contains('e-filter-open')) {
+            this.parent.element.classList.remove('e-filter-open');
+        }
     }
 
     /**
@@ -585,40 +591,38 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter popup is opened.
      */
     private isPopupOpened(): boolean {
-        const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
+        const filterPopup: HTMLElement = document.getElementsByClassName('e-filter-popup')[0] as HTMLElement;
         return filterPopup && filterPopup.id.includes(this.parent.element.id) && filterPopup.style.display !== 'none';
     }
 
-    private filterCellKeyDownHandler(args: { e: KeyboardEvent, isFilterCell: boolean }): void {
-        const sheetIdx: number = this.parent.activeSheetIndex;
+    private filterCellKeyDownHandler(args: { isFilterCell: boolean, closePopup?: boolean }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const indexes: number[] = getCellIndexes(sheet.activeCell);
-        if (this.isFilterCell(sheetIdx, indexes[0], indexes[1])) {
-            args.isFilterCell = true;
-            const pos: { top: number, left: number } = getCellPosition(sheet, indexes);
-            const target: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
-            if (this.isPopupOpened()) {
+        if (this.isFilterCell(this.parent.activeSheetIndex, indexes[0], indexes[1])) {
+            if (args.closePopup) {
                 this.closeDialog();
+            } else {
+                args.isFilterCell = true;
+                if (!this.isPopupOpened()) {
+                    const target: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
+                    if (target) {
+                        this.openDialog(target);
+                    }
+                }
             }
-            this.openDialog(target, pos.left, target ? target.getBoundingClientRect().bottom : pos.top);
-        } else { args.isFilterCell = false; }
+        }
     }
 
-    /**
-     * Opens the filter popup dialog on filter button click.
-     *
-     * @param {MouseEvent | TouchEvent} e - Specify the event
-     * @returns {void} - Opens the filter popup dialog on filter button click.
-     */
     private filterMouseDownHandler(e: MouseEvent & TouchEvent): void {
-        if ((Browser.isDevice && e.type === 'mousedown') || this.parent.getActiveSheet().isProtected) { return; }
+        if ((Browser.isDevice && e.type === 'mousedown') || this.parent.getActiveSheet().isProtected) {
+            return;
+        }
         const target: HTMLElement = e.target as HTMLElement;
-        if (target.classList.contains('e-filter-icon')) {
+        if (target.classList.contains('e-filter-icon') || target.classList.contains('e-filter-btn')) {
             if (this.isPopupOpened()) {
                 this.closeDialog();
-                return;
             }
-            this.openDialog(target, e.x, target.getBoundingClientRect().bottom);
+            this.openDialog(parentsUntil(target, 'e-cell') as HTMLElement);
         } else if (this.isPopupOpened()) {
             if (!target.classList.contains('e-searchinput') && !target.classList.contains('e-searchclear')
                 && (target.offsetParent && !target.offsetParent.classList.contains('e-filter-popup'))) {
@@ -629,16 +633,7 @@ export class Filter {
         }
     }
 
-    /**
-     * Opens the excel filter dialog based on target.
-     *
-     * @param {HTMLElement} target - Specify the target
-     * @param {number} xPos - Specify the xPos
-     * @param {number} yPos - Specify the yPos
-     * @returns {void} - Opens the excel filter dialog based on target.
-     */
-    private openDialog(target: HTMLElement, xPos: number, yPos: number): void {
-        const cell: HTMLElement = parentsUntil(target, 'e-cell') as HTMLElement;
+    private openDialog(cell: HTMLElement): void {
         const colIndex: number = parseInt(cell.getAttribute('aria-colindex'), 10);
         const field: string = getColumnHeaderText(colIndex);
         //Update datasource dynamically
@@ -663,40 +658,43 @@ export class Filter {
                 if (value) { checkBoxData = new DataManager(jsonData.slice(index)); }
                 return !!value;
             });
-            const offset: ClientRect = this.parent.element.getBoundingClientRect();
-            xPos -= offset.left; yPos -= offset.top;
             this.parent.element.style.position = 'relative';
             this.parent.element.classList.add('e-filter-open');
             const type: string = this.getColumnType(sheet, colIndex, range);
+            const target: HTMLElement = cell.querySelector('.e-filter-btn');
             const options: IFilterArgs = {
                 type: type, field: field, format: (type === 'date' ? this.getDateFormatFromColumn(sheet, colIndex, range) : null), displayName: displayName || 'Column ' + field,
                 dataSource: checkBoxData, height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
                 hideSearchbox: false, filteredColumns: this.filterCollection.get(sheetIdx), column: { 'field': field, 'filter': {} },
                 handler: this.filterSuccessHandler.bind(this, new DataManager(jsonData)), target: target,
-                position: { X: xPos, Y: yPos }, localeObj: this.parent.serviceLocator.getService(locale)
+                position: { X: 0, Y: 0 }, localeObj: this.parent.serviceLocator.getService(locale)
             };
             const excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
             excelFilter.openDialog(options);
             const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
-            const gClient: ClientRect = this.parent.element.getBoundingClientRect();
-            const fClient: ClientRect = target.getBoundingClientRect();
-            if (filterPopup) {
-                const leftPos: number =  fClient.right - filterPopup.offsetWidth;
-                if (leftPos < 1) {
-                    filterPopup.style.left = ((leftPos + filterPopup.offsetWidth) - gClient.left).toString() + 'px';
-                } else {
-                    filterPopup.style.left = (leftPos - gClient.left).toString() + 'px';
-                }
-            }
             if (filterPopup && filterPopup.id.includes(this.parent.element.id)) {
                 EventHandler.add(filterPopup, getStartEvent(), this.filterMouseDownHandler, this);
+                const parentOff: DOMRect = this.parent.element.getBoundingClientRect() as DOMRect;
+                const cellOff: DOMRect = target.getBoundingClientRect() as DOMRect;
+                const popupOff: DOMRect = filterPopup.getBoundingClientRect() as DOMRect;
+                let left: number = (cellOff.right - parentOff.left) - popupOff.width;
+                if (left < 0) { // Left collision wrt spreadsheet left
+                    left = cellOff.left - parentOff.left;
+                }
+                filterPopup.style.left = `${left}px`;
                 filterPopup.style.top = '0px';
                 filterPopup.style.visibility = 'hidden';
-                if (filterPopup.classList.contains('e-hide')) { filterPopup.classList.remove('e-hide'); }
-                let height: number = filterPopup.getBoundingClientRect().height;
-                if (height < 400) { height = 400; }
-                const popupOpenArea: number = offset.height - yPos;
-                filterPopup.style.top = (height > popupOpenArea ? (yPos - Math.abs(height - popupOpenArea)) : yPos) + 'px';
+                if (filterPopup.classList.contains('e-hide')) {
+                    filterPopup.classList.remove('e-hide');
+                }
+                let top: number = cellOff.bottom - parentOff.top;
+                if (popupOff.height - (parentOff.bottom - cellOff.bottom) > 0) { // Bottom collision wrt spreadsheet bottom
+                    top -= popupOff.height - (parentOff.bottom - cellOff.bottom);
+                    if (top < 0) {
+                        top = 0;
+                    }
+                }
+                filterPopup.style.top = `${top}px`;
                 filterPopup.style.visibility = '';
             }
             this.parent.hideSpinner();

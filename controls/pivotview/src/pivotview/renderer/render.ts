@@ -1819,7 +1819,7 @@ export class Render {
             let field: IFieldOptions = this.parent.dataSourceSettings.values[vCnt];
             let format: string = 'N';
             if (this.parent.dataType === 'olap') {
-                if (this.parent.olapEngineModule.fieldList[field.name]) {
+                if (this.parent.olapEngineModule.fieldList[field.name] && !isNullOrUndefined(this.parent.olapEngineModule.fieldList[field.name].formatString)) {
                     let fString: string = this.parent.olapEngineModule.fieldList[field.name].formatString;
                     format = fString.indexOf('#') > -1 ? fString : (fString[0] + '2');
                 }

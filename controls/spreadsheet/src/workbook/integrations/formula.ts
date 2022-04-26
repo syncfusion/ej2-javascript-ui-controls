@@ -691,14 +691,18 @@ export class WorkbookFormula {
 
     private refreshInsertDelete(args: InsertDeleteEventArgs): void {
         const formulaDependentCells: Map<string, Map<string, string>> = this.calculateInstance.getDependentFormulaCells();
-        const sheetIndex: number = getSheetIndexFromId(this.parent, args.sheet.id); let cell: CellModel;
+        let cell: CellModel;
+        const sheetIndex: number = getSheetIndexFromId(this.parent, args.sheet.id);
         this.parent.sheets.forEach((sheet: SheetModel, index: number): void => {
             for (let i: number = 0, rowLen: number = sheet.usedRange.rowIndex; i <= rowLen; i++) {
                 for (let j: number = 0, colLen: number = sheet.usedRange.colIndex; j <= colLen; j++) {
                     cell = getCell(i, j, sheet, false, true);
                     if (cell.formula && checkIsFormula(cell.formula)) {
-                        if (index === sheetIndex && ((i < args.startIndex && i > args.endIndex) || args.isInsert)) {
-                            this.updateFormula(args, cell, i, j);
+                        if (index === sheetIndex) {
+                            if (args.isInsert || !(args.modelType === 'Row' ? i >= args.startIndex && i <= args.endIndex :
+                                j >= args.startIndex && j <= args.endIndex)) {
+                                this.updateFormula(args, cell, i, j);
+                            }
                         } else if (cell.formula.includes(args.sheet.name)) {
                             this.updateFormula(args, cell, i, j, true);
                         }
@@ -721,11 +725,14 @@ export class WorkbookFormula {
         if (cell.formula && cell.formula.includes('UNIQUE')) {
             this.clearUniqueRange(row, col, args.sheet);
         }
-        const splitFormula: string[] = this.parseFormula(cell.formula, true);
-        for (let i: number = 0; i < splitFormula.length; i++) {
-            ref = splitFormula[i].trim().replace(/[$]/g, '');
+        const getAddress: () => string = (): string => {
+            return index[0] === index[2] && index[1] === index[3] ? getCellAddress(index[0], index[1]) : getRangeAddress(index);
+        };
+        const formulaArr: string[] = this.parseFormula(cell.formula, true);
+        for (let i: number = 0; i < formulaArr.length; i++) {
+            ref = formulaArr[i].trim().replace(/[$]/g, '');
             if (this.calculateInstance.isCellReference(ref)) {
-                pVal = i && splitFormula[i - 1].trim();
+                pVal = i && formulaArr[i - 1].trim();
                 if (pVal && pVal[pVal.length - 1] === '!') {
                     pVal = pVal.replace(/['!]/g, '');
                     if (pVal !== args.sheet.name) {
@@ -737,14 +744,15 @@ export class WorkbookFormula {
                 index = getRangeIndexes(ref);
                 updated = this.parent.updateRangeOnInsertDelete(args, index);
                 if (updated) {
-                    splitFormula[i] = index[3] < index[1] ? this.calculateInstance.getErrorStrings()[CommonErrors.ref] :
-                        this.getAddress(index);
+                    formulaArr[i] = index[2] < index[0] || index[3] < index[1] ? this.calculateInstance.getErrorStrings()[CommonErrors.ref]
+                        : getAddress();
                 }
             }
         }
-        const newFormula: string = '=' + splitFormula.join('');
+        const newFormula: string = '=' + formulaArr.join('');
         if (cell.formula !== newFormula) {
-            cell.formula = newFormula; cell.value = null;
+            cell.formula = newFormula;
+            cell.value = null;
         }
     }
 
@@ -853,10 +861,6 @@ export class WorkbookFormula {
         formula = formula.replace(/\^/g, '^' + this.uniqueExpOperator);
         formula = formula.replace(/>/g, '>' + this.uniqueGTOperator).replace(/</g, '<' + this.uniqueLTOperator);
         return formula.replace(/%/g, '%' + this.uniqueModOperator);
-    }
-
-    private getAddress(index: number[]): string {
-        return (index[0] === index[2] && index[1] === index[3] ? getCellAddress(index[0], index[1]) : getRangeAddress(index));
     }
 
     private refreshNamedRange(args: InsertDeleteEventArgs): void {

@@ -101,9 +101,9 @@ export class Overlay {
         div.style.top = pos.top + 'px'; div.style.left = pos.left + 'px';
         if (sheetIndex === this.parent.activeSheetIndex) {
             parent.appendChild(div);
+            this.renderResizeHandles(div);
+            this.addEventListener(div);
         }
-        this.renderResizeHandles(div);
-        this.addEventListener(div);
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
         this.originalHeight = parseFloat(getComputedStyle(div, null).getPropertyValue('height').replace('px', ''));
         return div;

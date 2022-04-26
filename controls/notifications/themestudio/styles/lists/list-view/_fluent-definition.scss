@@ -1,6 +1,7 @@
 //layout
 $listview-icon-margin-right: 12px !default;
 $listview-icon-back-margin: 0 !default;
+$listview-icon-back-margin-right: 12px !default;
 $listview-rtl-icon-back-margin: 4px !default;
 $listview-item-height: 38px !default;
 $listview-item-line-height: 22px !default;
@@ -47,7 +48,7 @@ $listview-touch-checkbox-left-margin: 0 16px 0 0 !default;
 $listview-touch-rtl-checkbox-left-margin: -2px 0 0 12px !default;
 $listview-touch-rtl-checkbox-right-margin: -2px 12px 0 0 !default;
 $listview-checkbox-right-margin: -2px 0 0 8px !default;
-$listview-checkbox-left-margin: 3px 12px 3px 0 !default;
+$listview-checkbox-left-margin: -2px 10px 0 0 !default;
 $listview-rtl-checkbox-left-margin: 0 3px 3px 12px !default;
 $listview-rtl-checkbox-right-margin: -2px 8px 0 0 !default;
 //ListView In-built template variables

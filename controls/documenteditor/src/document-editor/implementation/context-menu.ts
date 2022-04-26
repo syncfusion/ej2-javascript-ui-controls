@@ -541,9 +541,9 @@ export class ContextMenu {
      * @param {string} content 
      */
     private callSelectedOption(content: string): void {
-        if (content === this.locale.getConstant('Add to Dictionary')) {
+        if (content === 'Add to Dictionary') {
             this.spellChecker.handleAddToDictionary();
-        } else if (content === this.locale.getConstant('Ignore All')) {
+        } else if (content === 'Ignore All') {
             this.spellChecker.handleIgnoreAllItems();
         } else {
             this.spellChecker.manageReplace(content);

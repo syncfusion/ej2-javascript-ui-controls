@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData } from './../common/index';
-import { duplicateSheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, hideShow, HyperlinkModel, moveSheet, protectsheetHandler, setLinkModel, setLockCells } from '../../workbook/index';
+import { Cell, duplicateSheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
@@ -1188,7 +1188,7 @@ export function findMaxValue(
  */
 export function updateAction(
     options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean, undoCollections?: CollaborativeEditArgs[],
-    actionEventArgs?: ActionEventArgs): void {
+    actionEventArgs?: ActionEventArgs, isRecursive?: boolean): void {
     /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
     const eventArgs: any = options.eventArgs;
     let chartElement: HTMLElement;
@@ -1208,6 +1208,24 @@ export function updateAction(
         delete (options as unknown as { isUndoRedo: boolean }).isUndoRedo;
         spreadsheet.notify(performUndoRedo, options);
         return;
+    }
+    if (isFromUpdateAction && !isRecursive) {
+        const address: string = eventArgs.address || eventArgs.range || eventArgs.pastedRange
+            || (eventArgs.addressCollection && eventArgs.addressCollection[0]) || eventArgs.dataRange;
+        const sheetIndex: number = isUndefined(eventArgs.sheetIndex) ? isUndefined(eventArgs.sheetIdx)
+            ? isUndefined(eventArgs.activeSheetIndex) ? address ? spreadsheet.getAddressInfo(address).sheetIndex
+                : spreadsheet.activeSheetIndex : eventArgs.activeSheetIndex : eventArgs.sheetIdx : eventArgs.sheetIndex;
+        if (sheetIndex !== spreadsheet.activeSheetIndex) {
+            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, resolveAfterFullDataLoaded?: boolean } = {
+                sheet: getSheet(spreadsheet, sheetIndex), resolveAfterFullDataLoaded: true,
+                indexes: [0, 0, 0, 0], promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
+            };
+            spreadsheet.notify(updateSheetFromDataSource, args);
+            args.promise.then((): void => {
+                updateAction(options, spreadsheet, isRedo, undoCollections, actionEventArgs, true);
+            });
+            return;
+        }
     }
     switch (options.action) {
     case 'sorting':
@@ -1288,13 +1306,13 @@ export function updateAction(
     case 'resizeToFit':
         if (eventArgs.isCol) {
             if (eventArgs.hide === undefined) {
-                spreadsheet.setColWidth(isFromUpdateAction ? eventArgs.oldWidth : eventArgs.width, eventArgs.index, eventArgs.sheetIdx);
+                spreadsheet.setColWidth(isFromUpdateAction && !isUndefined(isRedo) ? eventArgs.oldWidth : eventArgs.width, eventArgs.index, eventArgs.sheetIndex);
             } else {
                 spreadsheet.hideColumn(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
         } else {
             if (eventArgs.hide === undefined) {
-                spreadsheet.setRowHeight(isFromUpdateAction ? eventArgs.oldHeight : eventArgs.height, eventArgs.index, eventArgs.sheetIdx + 1);
+                spreadsheet.setRowHeight(isFromUpdateAction && !isUndefined(isRedo) ? eventArgs.oldHeight : eventArgs.height, eventArgs.index, eventArgs.sheetIndex);
             } else {
                 spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
@@ -1322,7 +1340,7 @@ export function updateAction(
         spreadsheet.notify(goToSheet, { selectedIndex: eventArgs.currentSheetIndex, previousIndex: eventArgs.previousSheetIndex });
         break;
     case 'moveSheet':
-        moveSheet(spreadsheet, eventArgs.position, eventArgs.sheetIndexes);
+        moveSheet(spreadsheet, eventArgs.position, eventArgs.sheetIndexes, null, isFromUpdateAction);
         break;
     case 'wrap':
         wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet as Workbook);
@@ -1331,11 +1349,11 @@ export function updateAction(
         if (eventArgs.isCol) {
             spreadsheet.notify(
                 hideShow, <HideShowEventArgs>{ startIndex: eventArgs.startIndex, endIndex: eventArgs.endIndex, isCol: true,
-                    hide: isRedo === false ? !eventArgs.hide : eventArgs.hide });
+                    hide: isRedo === false ? !eventArgs.hide : eventArgs.hide, sheetIndex: eventArgs.sheetIndex });
         } else {
             spreadsheet.notify(
                 hideShow, <HideShowEventArgs>{ startIndex: eventArgs.startIndex, endIndex: eventArgs.endIndex,
-                    hide: isRedo === false ? !eventArgs.hide : eventArgs.hide });
+                    hide: isRedo === false ? !eventArgs.hide : eventArgs.hide, sheetIndex: eventArgs.sheetIndex });
         }
         break;
     case 'replace':
@@ -1501,10 +1519,12 @@ export function updateAction(
             options.eventArgs.isUndoRedo = true;
             spreadsheet.notify(refreshImgCellObj, options.eventArgs);
         }
-        element.style.height = isRedo === false ? options.eventArgs.prevHeight + 'px' : options.eventArgs.currentHeight + 'px';
-        element.style.width = isRedo === false ? options.eventArgs.prevWidth + 'px' : options.eventArgs.currentWidth + 'px';
-        element.style.top = isRedo === false ? options.eventArgs.prevTop + 'px' : options.eventArgs.currentTop + 'px';
-        element.style.left = isRedo === false ? options.eventArgs.prevLeft + 'px' : options.eventArgs.currentLeft + 'px';
+        if (element) {
+            element.style.height = isRedo === false ? options.eventArgs.prevHeight + 'px' : options.eventArgs.currentHeight + 'px';
+            element.style.width = isRedo === false ? options.eventArgs.prevWidth + 'px' : options.eventArgs.currentWidth + 'px';
+            element.style.top = isRedo === false ? options.eventArgs.prevTop + 'px' : options.eventArgs.currentTop + 'px';
+            element.style.left = isRedo === false ? options.eventArgs.prevLeft + 'px' : options.eventArgs.currentLeft + 'px';
+        }
         break;
     case 'insertChart':
         if (isRedo === false) {
@@ -1585,7 +1605,7 @@ export function updateAction(
         spreadsheet.freezePanes(eventArgs.row, eventArgs.column, eventArgs.sheetIndex);
         break;
     case 'duplicateSheet':
-        duplicateSheet(spreadsheet, eventArgs.sheetIndex);
+        duplicateSheet(spreadsheet, eventArgs.sheetIndex, null, isFromUpdateAction);
         break;
     case 'protectSheet':
         if(eventArgs.isProtected) {

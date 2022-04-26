@@ -69,6 +69,7 @@ export interface IPointEventArgs extends IChartEventArgs {
     /** Defines current window page y location */
     pageY?: number;
 }
+
 export interface ISharedTooltipRenderEventArgs extends IChartEventArgs {
     /** Defines tooltip text collections */
     text?: string[];

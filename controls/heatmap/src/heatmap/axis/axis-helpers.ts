@@ -359,7 +359,7 @@ export class AxisHelper {
             label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : labels[i];
             const options: TextOption = new TextOption(
                 heatMap.element.id + '_YAxis_Label' + i,
-                new TextBasic(x, y, anchor, label, 0, 'rotate(' + 0 + ',' + (x) + ',' + (y) + ')', 'middle'),
+                new TextBasic(x, y, anchor, label, 0, 'rotate(' + axis.angle + ',' + (x) + ',' + (y) + ')', 'middle'),
                 axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (Browser.isIE && !heatMap.enableCanvasRendering) {
                 options.dy = '1ex';
@@ -539,6 +539,10 @@ export class AxisHelper {
                 if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (multiLevel as any).setProperties({ textStyle : { fontFamily: 'Inter' }}, true);
+                }
+                if (this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' }}, true);
                 }
                 tooltip = false;
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));

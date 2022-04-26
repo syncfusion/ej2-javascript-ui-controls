@@ -54,6 +54,9 @@
 
       .e-headercell .e-css.e-hierarchycheckbox {
         height: 20px;
+        @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+          padding-top: 0;
+        }
         vertical-align: middle;
       }
     }
@@ -172,7 +175,12 @@
 
     .e-treecell {
       display: table-cell;
-      line-height: normal;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'boostrap5-dark' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        line-height: 26px;
+      }
+      @else {
+        line-height: normal;
+      }
     }
 
     .e-grid {

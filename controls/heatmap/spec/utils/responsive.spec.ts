@@ -215,6 +215,69 @@ describe('Heatmap Control', () => {
             expect(tempElement.getAttribute('font-family') == 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"').toBe(true);
         });
     });
+    describe('Heatmap with FluentUI theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: SVGTextElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                titleSettings: {
+                    text: 'Heatmap component',
+                },
+                width: "100%",
+                height: "300px",
+                dataSource: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                load: function(args: ILoadedEventArgs): void {
+                   args.heatmap.theme = "Fluent"
+                }
+            });
+            heatmap.appendTo('#container');
+        });
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Checking title font-family on Heatmap component using FluentUI theme', () => {
+            tempElement = document.getElementById("container_svg").querySelector("text");
+            expect(tempElement.getAttribute('fill') == '#201F1E').toBe(true);
+            expect(tempElement.getAttribute('font-family') == '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif').toBe(true);
+        });
+    });
+
+    describe('Heatmap with FluentUI Dark theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: SVGTextElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                titleSettings: {
+                    text: 'Heatmap component',
+                },
+                width: "100%",
+                height: "300px",
+                dataSource: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                load: function(args: ILoadedEventArgs): void {
+                   args.heatmap.theme = "FluentDark"
+                }
+            });
+            heatmap.appendTo('#container');
+        });
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Checking title font-family on Heatmap component using FluentUIDark theme', () => {
+            tempElement = document.getElementById("container_svg").querySelector("text");
+            expect(tempElement.getAttribute('fill') == '#F3F2F1').toBe(true);
+            expect(tempElement.getAttribute('font-family') == '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif').toBe(true);
+        });
+    });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

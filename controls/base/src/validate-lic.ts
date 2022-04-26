@@ -81,7 +81,7 @@ class LicenseValidator {
             } else {
                 validateMsg = this.errors.noLicense;
             }
-            if (validateMsg && !isNullOrUndefined(document)) {
+            if (validateMsg && typeof document !== "undefined" && !isNullOrUndefined(document)) {
                 let errorDiv: HTMLElement = createElement('div', {
                     innerHTML: validateMsg +
                         '<span style="position:absolute;right: 10px;top:27%;cursor:pointer;"' +

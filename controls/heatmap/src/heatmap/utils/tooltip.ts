@@ -5,7 +5,7 @@
 import { createElement, Property, Complex, ChildProperty, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { HeatMap } from '../heatmap';
 import { CurrentRect } from '../utils/helper';
-import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
+import { Tooltip as tool, TooltipTheme } from '@syncfusion/ej2-svg-base';
 import { TooltipBorderModel, FontModel } from '../model/base-model';
 import { Series } from '../series/series';
 import { ITooltipEventArgs } from '../model/interface';
@@ -138,9 +138,15 @@ export class Tooltip {
         if (this.heatMap.theme === 'Bootstrap5Dark') {
             this.heatMap.setProperties({ tooltipSettings : { fill : '#E9ECEF', textStyle : { size: '14px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"', fontWeight : '500', color : '#212529' }}}, true);
         }
+        if (this.heatMap.theme === 'Fluent') {
+            this.heatMap.setProperties({ tooltipSettings : { textStyle : { size: '12px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight : '500' }}}, true);
+        }
+        if (this.heatMap.theme === 'FluentDark') {
+            this.heatMap.setProperties({ tooltipSettings : { fill : '#252423', textStyle : { size: '12px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight : '500', color : '#F3F2F1' }}}, true);
+        }
         this.tooltipObject = new tool(
             {
-                opacity: (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark' || this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark' ) ? 1 : 0.75,
+                opacity: (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark' || this.heatMap.theme === 'Bootstrap5' || this.heatMap.theme === 'Bootstrap5Dark' || this.heatMap.theme === 'Fluent' || this.heatMap.theme === 'FluentDark') ? 1 : 0.75,
                 enableAnimation: false,
                 offset: offset,
                 location: { x: x, y: y },
@@ -154,7 +160,7 @@ export class Tooltip {
                     yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
                         this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null
                 },
-                theme: this.heatMap.theme,
+                theme: this.heatMap.theme as TooltipTheme,
                 content: tempTooltipText,
                 fill: this.heatMap.tooltipSettings.fill,
                 template: this.heatMap.tooltipSettings.template === '' ? null : this.heatMap.tooltipSettings.template,

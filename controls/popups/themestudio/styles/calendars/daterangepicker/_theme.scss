@@ -42,6 +42,9 @@
             border: $range-today-border-color;
             color: $range-calendar-today-color;
           }
+          @if $skin-name == 'FluentUI' {
+            box-shadow: $range-today-hover-box-shadow;
+          }
         }#{if(&, '&', '*')} .e-content .e-range-hover span {
           @if $skin-name != 'tailwind' {
             background: $range-hover-color;
@@ -122,6 +125,7 @@
             background-color: $range-selection-bg;
             border-radius: $range-selected-hover-radius;
             box-shadow: $range-value-none;
+            color: $range-active-font-color;
           }
         }#{if(&, '&', '*')} .e-end-date.e-selected.e-range-hover.e-other-month span.e-day,
         #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover.e-other-month span.e-day {

@@ -298,6 +298,7 @@ export type AggregateType =
  * * Both -  Wraps both header and content.
  * * Header - Wraps header alone.
  * * Content - Wraps content alone.
+ * {% codeBlock src='grid/textWrapSettings/index.md' %}{% endcodeBlock %}
  */
 export type WrapMode =
     /** Wraps both header and content */
@@ -353,6 +354,7 @@ export type ToolbarItems =
  * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
  * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
  * also it will display tooltip while hover on ellipsis applied cell.
+ * {% codeBlock src='grid/clipMode/index.md' %}{% endcodeBlock %}
  */
 export type ClipMode =
     /**  Truncates the cell content when it overflows its area */

@@ -237,6 +237,14 @@ describe('Gantt Selection support', () => {
             ganttObj.keyboardModule.keyAction(args);
             expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(0);
         });
+        it('Escape key on dependency tab', () => {
+            let Add : HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems > div > div.e-toolbar-right > div:nth-child(1)') as HTMLElement;
+            triggerMouseEvent(Add, 'click');
+            let args: any = { action: 'escape', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            let element : HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog') as HTMLElement;
+            expect(element.classList.contains('e-dialog')).toBe(true);
+        });
     });
 	  describe('Tab action', function () {
         let ganttObj: Gantt;

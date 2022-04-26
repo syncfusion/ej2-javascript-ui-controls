@@ -56,7 +56,7 @@ export class CommandColumn {
                     } else {
                         const buttons: HTMLElement[] = [].slice.call(closest(target, '.e-unboundcell').querySelectorAll('button'));
                         const index: number = buttons.findIndex((ele: HTMLElement) => ele === target);
-                        if (index >= 0 && commandCols[index][typeInString] === type) {
+                        if (index < commandCols.length && commandCols[index][typeInString] === type) {
                             commandColumn = commandCols[index];
                         }
                     }

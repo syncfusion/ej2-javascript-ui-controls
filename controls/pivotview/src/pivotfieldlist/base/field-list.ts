@@ -676,7 +676,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             group: 'Group',
             removeCalculatedField: 'Are you sure you want to delete this calculated field?',
             yes: 'Yes',
-            no: 'No'
+            no: 'No',
+            None: 'None'
         };
         /* eslint-enable */
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);

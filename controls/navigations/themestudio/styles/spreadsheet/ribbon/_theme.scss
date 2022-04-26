@@ -35,6 +35,11 @@
         & .e-toolbar-items {
           background-color: $ribbon-header-bg-color;
         }
+
+        & .e-hscroll .e-scroll-nav.e-scroll-left-nav,
+        & .e-hscroll .e-scroll-nav.e-scroll-right-nav {
+          background-color: $ribbon-header-bg-color;
+        }
       }
     }
 

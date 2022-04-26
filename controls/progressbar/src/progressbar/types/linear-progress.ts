@@ -72,8 +72,9 @@ export class Linear {
         let animationdelay: number;
         let segmentWidth: number;
         let strippedStroke: string; const ismaximum: boolean = (progress.value === progress.maximum);
+        const previousProgressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
         const progressWidth: number = progress.calculateProgressRange(progress.argsData.value);
-        progress.previousWidth = linearProgressWidth = progress.progressRect.width *
+        linearProgressWidth = progress.progressRect.width *
                               ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
             linearProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearProgressGroup' });
@@ -173,6 +174,7 @@ export class Linear {
                 );
             }
             progress.svgObject.appendChild(linearProgressGroup);
+            progress.previousWidth = previousProgressWidth;
         }
     }
 
@@ -337,10 +339,10 @@ export class Linear {
                 );
                 linearLabelGroup.appendChild(clipPath);
                 linearlabel.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathLabel)');
-                this.animation.doLabelAnimation(linearlabel, (progress.previousWidth ? progress.previousWidth :0), progressWidth - (isProgressRefresh ? progress.previousWidth : 0), progress, this.delay, textSize.width);
+                this.animation.doLabelAnimation(linearlabel, (isProgressRefresh ? progress.previousLabelWidth :0), progressWidth - (isProgressRefresh ? progress.previousLabelWidth : 0), progress, this.delay, textSize.width);
             }
             progress.svgObject.appendChild(linearLabelGroup);
-            progress.previousWidth = progressWidth;
+            progress.previousLabelWidth = progressWidth;
         }
     }
 

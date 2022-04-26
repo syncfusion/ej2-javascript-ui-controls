@@ -2019,7 +2019,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             multipleAxisMode: 'Multiple Axis Mode',
             grandTotalPosition: 'Grand totals position',
             top: 'Top',
-            bottom: 'Bottom'
+            bottom: 'Bottom',
+            None: 'None'
         };
         /* eslint-enable */
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);

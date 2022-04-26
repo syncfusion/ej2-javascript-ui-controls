@@ -391,6 +391,16 @@ describe('Enter key support - When `BR` is configured', () => {
         expect(rteObj.inputElement.innerHTML).toBe('RTE Content<br><br>');
     });
 
+    it('EJ2-58543 - Press enter at the end of the line twice to check the text node removed properly', function (): void {
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext, nodetext.textContent.length);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        rteObj.formatter.saveData();
+        expect(rteObj.inputElement.childNodes.length === 5).toBe(true);
+    });
+
     it('Press enter at the end of the line - Style Applied -', function (): void {
         rteObj.value = '<strong>​Line 1</strong>';
         rteObj.inputElement.innerHTML = '<strong>​Line 1</strong>';

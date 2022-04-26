@@ -532,7 +532,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @returns {number} - parse float
      */
     public parseFloat(value: string | number): number {
-        return Number(value);
+        let convertedNum: number = Number(value);
+        if (isNaN(convertedNum) && typeof value === 'string' && value.includes(',')) {
+            convertedNum = Number(value.split(',').join(''));
+        }
+        return convertedNum;
     }
 
     /**
@@ -928,7 +932,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         let j: number = 0;
                         const customArgs: string[] = [];
                         for (j = 0; j < args.length; j++) {
-                            customArgs.push(this.getValueFromArg(args[j]));
+                            if (args[j].includes(':') && this.isCellReference(args[j])) {
+                                customArgs.push(args[j]);
+                                (this.getCellCollection(args[j]) as string[]).forEach((cell: string): void => {
+                                    this.updateDependentCell(cell);
+                                });
+                            } else {
+                                customArgs.push(this.getValueFromArg(args[j]));
+                            }
                         }
                         args = customArgs;
                     } else {

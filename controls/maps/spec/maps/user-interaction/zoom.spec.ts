@@ -1,7 +1,7 @@
 /**
  * Zooming spec
  */
-import { Maps, ILoadedEventArgs, ITouches, BingMap, ILoadEventArgs } from '../../../src/index';
+import { Maps, ILoadedEventArgs, ITouches, BingMap, ILoadEventArgs, IMapsEventArgs } from '../../../src/index';
 import { createElement, remove, Browser } from '@syncfusion/ej2-base';
 import { World_Map, usMap, africa } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
@@ -392,7 +392,35 @@ describe('Zoom feature tesing for map control', () => {
             }
             map.refresh();
         });
-
+        
+        it('mouse wheel zoom in with bing map in zoom event', () => {
+            let element: Element = document.getElementById(map.element.id);
+            let rect: ClientRect = element.getBoundingClientRect();
+            let wheelArgs: Object = {
+                preventDefault: prevent,
+                wheelDelta: 120,
+                detail: 3,
+                clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+            };
+            map.layers[0].layerType = 'Bing';
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
+            }
+            map.refresh();
+        });
         it('mouse wheel zoom out with bing map', () => {
             let element: Element = document.getElementById(map.element.id);
             let rect: ClientRect = element.getBoundingClientRect();
@@ -1313,6 +1341,9 @@ describe('Zoom feature tesing for map control', () => {
         });
 
         it('Checking mouse double click', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = getElementByID(map.element.id + '_svg');
                 let eventObj: Object = {
@@ -1696,8 +1727,31 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+        it('Checking with data label while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id);
+                let rect: ClientRect = element.getBoundingClientRect();
+                let delta: number = 130;
+                for (let i: number = 0; i < 10; i++) {
+                    let wheelArgs: Object = {
+                        preventDefault: prevent,
+                        wheelDelta: delta++,
+                        detail: 3,
+                        clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                        pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                    };
+                    map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
+                }
+            };
+            map.refresh();
+        });
 
-        it('Checking with data label template while zooming', () => {
+        it('Checking with data label template while zooming in zoom event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id);
                 let rect: ClientRect = element.getBoundingClientRect();
@@ -1721,6 +1775,27 @@ describe('Zoom feature tesing for map control', () => {
         });
 
         it('Checking with Click event', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_26_dataIndex_undefined');
+                let rect: ClientRect = element.getBoundingClientRect();
+                let event: Object = {
+                    type: 'click',
+                    target: element,
+                    pageX: rect.left,
+                    pageY: rect.top
+                };
+                map.zoomModule.zoomColor = '#e61576';
+                map.zoomModule.click(<PointerEvent>event);
+            };
+            map.zoomSettings.toolbars = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
+            map.zoomSettings.doubleClickZoom = false;
+            map.zoomSettings.zoomOnClick = true;
+            map.refresh();
+        });
+        it('Checking with zoom event Click event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_26_dataIndex_undefined');
                 let rect: ClientRect = element.getBoundingClientRect();
@@ -1800,7 +1875,61 @@ describe('Zoom feature tesing for map control', () => {
             map.layers[0].layerType = 'OSM';
             map.refresh();
         });
+        
+        it('Checking with OSM map in zoom event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomModule['zoomingRect'] = new Rect(0, 0, 100, 200);
+                map.zoomModule.performRectZooming();
+                map.zoomModule.isPanning = true;
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'pointerdown',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(eventObj as PointerEvent);
+                eventObj['target'] = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                map.zoomModule.performToolBarAction(eventObj as PointerEvent);
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.layers[0].layerType = 'OSM';
+            map.refresh();
+        });
         it('Checking panning', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performZoomingByToolBar('pan');
+            };
+            map.load = (args: ILoadEventArgs) => {
+                let bing: BingMap = new BingMap(map);
+                bing.imageUrl = imageUrl;
+                bing.maxZoom = zoomMax;
+                bing.subDomains = subDomains;
+                map.mapLayerPanel["bing"] = bing;
+            };
+            map.refresh();
+        });
+        it('Checking panning in zoom event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
                 let eventObj: Object = {

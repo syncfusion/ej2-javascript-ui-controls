@@ -1170,9 +1170,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
             }
             if (lastRowIdx === 0) {
-                for (let i: number = viewportIndexes[0]; i < this.viewport.bottomIndex; i++) {
+                for (let i: number = viewportIndexes[0]; i <= this.viewport.bottomIndex; i++) {
                     threshold += getRowHeight(sheet, i);
-                    if (threshold > viewportSize) { lastRowIdx = i; break; }
+                    if (threshold > viewportSize) {
+                        lastRowIdx = i;
+                        break;
+                    } else if (i === this.viewport.bottomIndex) {
+                        lastRowIdx = this.viewport.bottomIndex;
+                    }
                 }
             }
             viewportIndexes[2] = lastRowIdx; let lastColIdx: number = 0; threshold = 0;
@@ -1185,9 +1190,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
             }
             if (lastColIdx === 0) {
-                for (let i: number = viewportIndexes[1]; i < this.viewport.rightIndex; i++) {
+                for (let i: number = viewportIndexes[1]; i <= this.viewport.rightIndex; i++) {
                     threshold += getColumnWidth(sheet, i);
-                    if (threshold > viewportSize) { lastColIdx = i; break; }
+                    if (threshold > viewportSize) {
+                        lastColIdx = i;
+                        break;
+                    } else if (i === this.viewport.rightIndex) {
+                        lastColIdx = this.viewport.rightIndex;
+                    }
                 }
             }
             viewportIndexes[3] = lastColIdx;
@@ -1428,7 +1438,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - Set the height of row.
      */
     public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number, edited?: boolean): void {
-        const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
+        const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
         if (sheet) {
             const mIndex: number = rowIndex;
             const rowHeight: string = (typeof height === 'number') ? height + 'px' : height;
@@ -1725,12 +1735,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - This method is used for remove highlight from invalid data.
      */
     public removeInvalidHighlight(range?: string): void {
-        const address: string = range ? range : this.dataValidationRange;
+        let address: string = range ? range : this.dataValidationRange;
         this.isValidationHighlighted = false;
         if (address.indexOf(',') > - 1) {
+            let sheetName: string = '';
+            if (address.includes('!')) {
+                sheetName = address.split('!')[0] + '!';
+                address = address.split('!')[1];
+            }
             const splitRange: string[] = address.split(',');
             for (let i: number = 0; i < splitRange.length - 1; i++) {
-                super.removeInvalidHighlight(splitRange[i]);
+                super.removeInvalidHighlight(sheetName + splitRange[i]);
             }
         } else {
             super.removeInvalidHighlight(address);

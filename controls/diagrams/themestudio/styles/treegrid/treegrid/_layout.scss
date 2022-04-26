@@ -8,10 +8,6 @@
         width: $treegrid-bigger-icon-size;
       }
 
-      .e-rowcell.e-treerowcell {
-        padding-left: $treegrid-bigger-treecell-padding;
-      }
-
       .e-hierarchycheckbox {
         padding-left: 2px;
       }
@@ -86,8 +82,10 @@
       color: $treegrid-right-arrow-hover-color;
     }
 
-    .e-rowcell.e-treerowcell {
-      padding-left: $treegrid-treecell-padding;
+    .e-rowcell.e-treerowcell.e-treegridcheckbox {
+      @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        padding-left: $treegrid-treecell-padding;
+      }
     }
 
     .e-row[aria-expanded = 'true'] .e-treecell {

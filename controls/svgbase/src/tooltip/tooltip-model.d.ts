@@ -69,6 +69,12 @@ export interface TooltipBorderModel {
      */
     width?: number;
 
+    /**
+     * The dash-array of the border.
+     * @default ''
+     */
+    dashArray?: string;
+
 }
 
 /**

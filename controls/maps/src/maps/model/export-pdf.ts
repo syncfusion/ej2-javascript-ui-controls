@@ -83,6 +83,9 @@ export class PdfExport {
                 });
                 image.src = url;
             } else {
+                const svgParentElement: HTMLElement = document.getElementById(this.control.element.id + '_MapAreaBorder');
+                let top: number = parseFloat(svgParentElement.getAttribute('y'));
+                let left: number = parseFloat(svgParentElement.getAttribute('x'));
                 const xHttp: XMLHttpRequest = new XMLHttpRequest();
                 const tileLength: number = this.control.mapLayerPanel.tiles.length;
                 for (let i: number = 0; i <= tileLength + 1; i++) {
@@ -103,17 +106,14 @@ export class PdfExport {
                         if (i === 0 || i === tileLength + 1) {
                             if (i === 0) {
                                 ctx.setTransform(1, 0, 0, 1, 0, 0);
-                                ctx.rect(
-                                    0, parseFloat(svgParent.style.top),
-                                    parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                ctx.rect(0, top, parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
                                 ctx.clip();
                             } else {
-                                ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                                ctx.setTransform(1, 0, 0, 1, left, top);
                             }
                         } else {
                             const tileParent: HTMLElement = document.getElementById(this.control.element.id + '_tile_parent');
-                            ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
-                                (parseFloat(tileParent.style.top)));
+                            ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + left, parseFloat(tile.style.top) + top);
                         }
                         ctx.drawImage(tileImg, 0, 0);
                         if (i === tileLength + 1) {

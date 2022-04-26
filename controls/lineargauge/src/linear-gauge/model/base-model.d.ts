@@ -90,6 +90,11 @@ export interface BorderModel {
      */
     width?: number;
 
+    /**
+     * Sets and gets the dash-array of the border.
+     */
+    dashArray?: string;
+
 }
 
 /**

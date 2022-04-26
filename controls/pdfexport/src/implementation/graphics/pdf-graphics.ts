@@ -769,6 +769,7 @@ export class PdfGraphics {
             this.drawPathHelper(temparg1, temparg2, false);
         }
     }
+
     /**
      * `Draws the path`.
      * @private
@@ -800,7 +801,7 @@ export class PdfGraphics {
             }
         }
     }
-     /* tslint:disable */
+       /* tslint:disable */
     //DrawImage overloads
     /**
      * `Draws the specified image`, using its original physical size, at the location specified by a coordinate pair.
@@ -2116,6 +2117,7 @@ export class PdfGraphics {
         }
         return { i : i, p2 : p2, p3 : p3 };
     }
+
     /**
      * Checks path point type flags.
      * @private

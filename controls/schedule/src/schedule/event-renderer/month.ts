@@ -17,7 +17,6 @@ export class MonthEvent extends EventBase {
     public fields: EventFieldsMapping;
     public dateRender: Date[];
     public renderedEvents: Record<string, any>[] = [];
-    public eventsRendered: Record<string, any>[] = [];
     public eventHeight: number;
     private monthHeaderHeight: number = 0;
     public workCells: HTMLElement[];
@@ -143,7 +142,6 @@ export class MonthEvent extends EventBase {
 
     public renderEventsHandler(dateRender: Date[], workDays: number[], resData?: TdData): void {
         this.renderedEvents = [];
-        this.eventsRendered = [];
         let eventsList: Record<string, any>[];
         let blockList: Record<string, any>[];
         let resIndex: number = 0;
@@ -178,11 +176,18 @@ export class MonthEvent extends EventBase {
         const filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays || this.parent.activeViewOptions.workDays);
         this.processBlockEvents(blockList, resIndex, resData);
+        let events: Record<string, any>[] = [];
         for (const event of eventsList) {
             if (this.parent.resourceBase && !resData) {
                 this.cssClass = this.parent.resourceBase.getCssClass(event);
             }
-            const spannedEvents: Record<string, any>[] = this.splitEvent(event, filteredDates || this.dateRender);
+            events = events.concat(this.splitEvent(event, filteredDates || this.dateRender));
+        }
+        for (let level: number = 0; level < this.slots.length; level++) {
+            this.renderedEvents = [];
+            const slot: number[] = this.slots[level] as any;
+            const endDate: Date = util.addDays(new Date(slot[slot.length - 1]), 1);
+            const spannedEvents: Record<string, any>[] = this.filterEvents(new Date(slot[0]), endDate, events);
             for (const event of spannedEvents) {
                 if (this.maxHeight) {
                     const sDate: Date = this.parent.currentView === 'Month' ? event[this.fields.startTime] as Date :
@@ -490,12 +495,8 @@ export class MonthEvent extends EventBase {
         if (day < 0) {
             return;
         }
-        if ((startTime.getTime() < this.parent.minDate.getTime()) || (endTime.getTime() > this.parent.maxDate.getTime())) {
-            return;
-        }
         const overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
-        this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
         const diffInDays: number = (event.data as Record<string, any>).count as number;
         if (startTime.getTime() <= endTime.getTime()) {
             const appWidth: number = (diffInDays * this.cellWidth) - 5;
@@ -505,7 +506,7 @@ export class MonthEvent extends EventBase {
                 this.monthHeaderHeight + ((overlapCount + 1) * (this.eventHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             const enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || enableAppRender) {
-                this.eventsRendered.push(extend({}, event, null, true) as Record<string, any>);
+                this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
                 let appointmentElement: HTMLElement;
                 if (this.inlineValue) {
                     appointmentElement = this.parent.inlineModule.createInlineAppointmentElement();
@@ -519,36 +520,29 @@ export class MonthEvent extends EventBase {
                 if (this.parent.rowAutoHeight) {
                     const firstChild: HTMLElement = cellTd.parentElement.firstElementChild as HTMLElement;
                     this.updateCellHeight(firstChild, height);
-                } else if (cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS)) {
-                    this.renderMoreIndicators(diffInDays, day);
                 }
             } else {
-                this.renderMoreIndicators(diffInDays, day);
-            }
-        }
-    }
-
-    private renderMoreIndicators(diffInDays: number, day: number): void {
-        for (let i: number = 0; i < diffInDays; i++) {
-            if (this.workCells[day + i]) {
-                const startDate: Date = new Date(this.dateRender[day + i].getTime());
-                const endDate: Date = util.addDays(this.dateRender[day + i], 1);
-                const groupIndex: string = this.workCells[day + i].getAttribute('data-group-index');
-                const filterEvents: Record<string, any>[] = this.getFilteredEvents(startDate, endDate, groupIndex);
-                const renderedAppCount: number = this.getOverlapEvents(startDate, this.eventsRendered).length;
-                const count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
-                const indicator: HTMLElement = this.workCells[day + i].querySelector('.' + cls.MORE_INDICATOR_CLASS);
-                if (indicator) {
-                    indicator.innerHTML = this.getMoreIndicatorText(count);
-                } else {
-                    const moreIndicatorElement: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
-                    if (!isNullOrUndefined(groupIndex)) {
-                        moreIndicatorElement.setAttribute('data-group-index', groupIndex);
+                for (let i: number = 0; i < diffInDays; i++) {
+                    if (this.workCells[day + i]) {
+                        const indicator: HTMLElement = this.workCells[day + i].querySelector('.' + cls.MORE_INDICATOR_CLASS);
+                        if (indicator) {
+                            const count: number = parseInt(indicator.getAttribute('data-count'), 10) + 1;
+                            indicator.setAttribute('data-count', count.toString());
+                            indicator.innerHTML = this.getMoreIndicatorText(count);
+                        } else {
+                            const startDate: Date = new Date(this.dateRender[day + i].getTime());
+                            const endDate: Date = util.addDays(this.dateRender[day + i], 1);
+                            const groupIndex: string = this.workCells[day + i].getAttribute('data-group-index');
+                            const moreIndicatorElement: HTMLElement = this.getMoreIndicatorElement(1, startDate, endDate);
+                            if (!isNullOrUndefined(groupIndex)) {
+                                moreIndicatorElement.setAttribute('data-group-index', groupIndex);
+                            }
+                            moreIndicatorElement.style.top = (this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight) + 'px';
+                            moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
+                            this.renderElement(this.workCells[day + i], moreIndicatorElement);
+                            EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
+                        }
                     }
-                    moreIndicatorElement.style.top = (this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight) + 'px';
-                    moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
-                    this.renderElement(this.workCells[day + i], moreIndicatorElement);
-                    EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
                 }
             }
         }
@@ -586,8 +580,8 @@ export class MonthEvent extends EventBase {
 
     public getOverlapEvents(date: Date, appointments: Record<string, any>[]): Record<string, any>[] {
         const appointmentsList: Record<string, any>[] = [];
+        const dateTime: number = util.resetTime(date).getTime();
         for (const app of appointments) {
-            const dateTime: number = util.resetTime(date).getTime();
             if ((util.resetTime(<Date>app[this.fields.startTime]).getTime() <= dateTime) &&
                 (util.resetTime(<Date>app[this.fields.endTime]).getTime() >= dateTime)) {
                 appointmentsList.push(app);
@@ -674,6 +668,7 @@ export class MonthEvent extends EventBase {
             innerHTML: this.getMoreIndicatorText(count),
             attrs: {
                 'tabindex': '0',
+                'data-count': count.toString(),
                 'data-start-date': startDate.getTime().toString(),
                 'data-end-date': endDate.getTime().toString(),
                 'role': 'list'

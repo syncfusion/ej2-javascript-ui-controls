@@ -1104,6 +1104,43 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       });
     });
 
+    describe('EJ2-58933: Searched child record not shown when its parent record in collapsed state', () => {
+      let gridObj: TreeGrid;
+      let actionComplete: ()=>void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            allowFiltering: true,
+            filterSettings: { type: 'Menu'},
+            childMapping: 'subtasks',
+            height: 350,
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 120, isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name', width: 220 },
+                { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 140, format: { skeleton: 'yMd', type: 'date' } },
+                { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 }
+            ]
+          },
+          done
+        );
+      });
+  
+      it('Expand test for the parent record ', (done: Function) => {
+          actionComplete = (args?: Object): void => {
+              expect(gridObj.getVisibleRecords().length == 2).toBe(true);
+              done();
+          }
+          gridObj.grid.actionComplete = actionComplete;
+          gridObj.collapseAll();
+          gridObj.filterByColumn("taskName", "startsWith", "Planning");
+       });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+
     it('memory leak', () => {
       profile.sample();
       let average: any = inMB(profile.averageChange)

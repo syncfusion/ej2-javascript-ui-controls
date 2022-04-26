@@ -676,7 +676,10 @@ export class ProtectSheet {
             this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
             this.parent.element.querySelector('.e-add-sheet-tab').classList.remove('e-disabled');
         }
-        document.getElementById(this.parent.element.id + '_protectworkbook').classList.remove('e-active');
+        const elem: Element = document.getElementById(this.parent.element.id + '_protectworkbook');
+        if (elem) {
+            elem.classList.remove('e-active');
+        }
         this.parent.notify(updateToggleItem, { props: 'Protectworkbook' });
     }
 

@@ -59,7 +59,8 @@ export class ContentRender implements IRenderer {
     private infiniteCache: { [x: number]: Row<Column>[] } | { [x: number]: Row<Column>[][] } = {};
     private isRemove: boolean = false;
     private pressedKey: string;
-    private visibleRows: Row<Column>[] = [];
+    /** @hidden */
+    public visibleRows: Row<Column>[] = [];
     private visibleFrozenRows: Row<Column>[] = [];
     protected rightFreezeRows: Row<Column>[] = [];
     private isAddRows: boolean = false;
@@ -897,8 +898,8 @@ export class ContentRender implements IRenderer {
             }
             if (!needFullRefresh) {
                 this.setDisplayNone(tr, colIdx, displayVal, contentrows);
-                if (contentrows[0].cells[colIdx].isTemplate){
-                    needFullRefresh = true;
+                if (isFrozenGrid) {
+                    this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
                 }
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {

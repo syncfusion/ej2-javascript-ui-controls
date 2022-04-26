@@ -216,11 +216,13 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     private createNavIcon(element: HTEle): void {
         const id: string = element.id.concat('_nav');
         const clsRight: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVRIGHT);
-        const nav: HTEle = this.createElement('div', { id: id.concat('_right'), className: clsRight });
+        const rightAttributes: { [key: string]: string; } = { 'role': 'button', 'id': id.concat('_right'), 'aria-label': 'Scroll right' };
+        const nav: HTEle = this.createElement('div', { className: clsRight, attrs: rightAttributes });
         nav.setAttribute('aria-disabled', 'false');
         const navItem: HTEle = this.createElement('div', { className: CLS_NAVRIGHTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         const clsLeft: string = 'e-' + element.id.concat('_nav ' + CLS_HSCROLLNAV + ' ' + CLS_HSCROLLNAVLEFT);
-        const navEle: HTEle = this.createElement('div', { id: id.concat('_left'), className: clsLeft + ' ' + CLS_DISABLE });
+        const leftAttributes: { [key: string]: string; } = { 'role': 'button', 'id': id.concat('_left'), 'aria-label': 'Scroll left' };
+        const navEle: HTEle = this.createElement('div', { className: clsLeft + ' ' + CLS_DISABLE, attrs: leftAttributes });
         navEle.setAttribute('aria-disabled', 'true');
         const navLeftItem: HTEle = this.createElement('div', { className: CLS_NAVLEFTARROW + ' ' + CLS_NAVARROW + ' e-icons' });
         navEle.appendChild(navLeftItem);

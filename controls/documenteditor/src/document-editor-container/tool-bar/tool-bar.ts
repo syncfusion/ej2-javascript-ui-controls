@@ -804,7 +804,9 @@ export class Toolbar {
                     continue;
                 }
                 const element: HTMLElement = document.getElementById(item.id);
-                this.toolbar.enableItems(element.parentElement, enable);
+                if (!isNullOrUndefined(element) && !isNullOrUndefined(element.parentElement)) {
+                    this.toolbar.enableItems(element.parentElement, enable);
+                }
             }
         }
         if (!isNullOrUndefined(this.documentEditor)) {
@@ -845,14 +847,20 @@ export class Toolbar {
     public enableDisableUndoRedo(): void {
         const id: string = this.container.element.id + TOOLBAR_ID;
         if (this.toolbarItems.indexOf('Undo') >= 0) {
+            let undoElement: HTMLElement = document.getElementById(id + UNDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
-            this.toolbar.enableItems(document.getElementById(id + UNDO_ID).parentElement, this.container.documentEditor.editorHistory.canUndo());
+            if (!isNullOrUndefined(undoElement)) {
+                this.toolbar.enableItems(undoElement.parentElement, this.container.documentEditor.editorHistory.canUndo());
+            }
         }
         if (this.toolbarItems.indexOf('Redo') >= 0) {
+            let redoElement: HTMLElement = document.getElementById(id + REDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
-            this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
+            if (!isNullOrUndefined(redoElement)) {
+                this.toolbar.enableItems(redoElement.parentElement, this.container.documentEditor.editorHistory.canRedo());
+            }
         }
     }
     private onToc(): void {

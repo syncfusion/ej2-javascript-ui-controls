@@ -5,6 +5,19 @@
         padding-left: $ddl-list-rtl-padding-left;
         padding-right: $ddl-list-rtl-padding-right;
       }
+
+      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-group-list-padding-left;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-list-header-padding-left;
+        }
+      }
     }
   }
 
@@ -17,6 +30,40 @@
       #{if(&, '&', '*')} .e-list-item {
         padding-left: $ddl-list-rtl-padding-left;
         padding-right: $ddl-list-rtl-padding-right;
+      }
+
+      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-group-list-small-padding-left;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-list-header-small-padding-left;
+        }
+      }
+    }
+  }
+
+  // Rtl bigger size
+
+  .e-bigger.e-rtl,
+  .e-bigger .e-rtl,
+  .e-rtl .e-bigger {
+    #{if(&, '&', '*')} .e-dropdownbase {
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-list-header-bigger-padding-left;
+        }
+      }
+
+      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-group-list-bigger-padding-left;
+        }
       }
     }
   }
@@ -32,6 +79,19 @@
       #{if(&, '&', '*')} .e-list-item {
         padding-left: $ddl-list-rtl-padding-left;
         padding-right: $ddl-list-rtl-padding-right;
+      }
+
+      #{if(&, '&', '*')}.e-dd-group .e-list-item {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-group-list-bigger-small-padding-left;
+        }
+      }
+
+      #{if(&, '&', '*')} .e-list-group-item,
+      #{if(&, '&', '*')} .e-fixed-head {
+        @if $skin-name == 'tailwind' {
+          padding-right: $ddl-list-header-bigger-small-padding-left;
+        }
       }
     }
   }
@@ -230,13 +290,13 @@
     border-color: $ddl-list-gradient-color;
     color: $ddl-list-default-font-color;
     font-family: $ddl-list-font-family;
-    padding-right: $ddl-list-padding-right;
     text-indent: $ddl-list-text-indent;
     @if ($skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
       color: $ddl-list-header-font-color;
     }
-    @if $skin-name != 'tailwind' {
+    @if $skin-name != 'tailwind' and $skin-name != 'FluentUI' {
       font-size: $ddl-list-font-size;
+      padding-right: $ddl-list-padding-right;
     }
   }
 

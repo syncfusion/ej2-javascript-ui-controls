@@ -7,6 +7,7 @@ import { Grid } from '../../../src/grid/base/grid';
 import { ReturnType } from '../../../src/grid/base/type';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Selection } from '../../../src/grid/actions/selection';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Page } from '../../../src/grid/actions/page';
 import { Group } from '../../../src/grid/actions/group';
@@ -1673,6 +1674,51 @@ describe('EJ2-49647- Column grouping with complex binding is broken when allowRe
         gridObj.groupModule.groupColumn('OrderID.ID.ordID');
     });
     
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Group caption 1st column template =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                groupSettings: { showDropArea: true, columns: ['OrderID'] },
+                columns: [
+                    { field: 'Freight', headerText: 'Freight', width: 150, format: 'C2' },
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                height: 290,
+                aggregates: [{
+                    columns: [{
+                        type: 'Sum',
+                        field: 'Freight',
+                        format: 'C2',
+                        groupFooterTemplate: 'Sum: ${Sum}'
+                    }]
+                },
+                {
+                    columns: [{
+                        type: 'Max',
+                        field: 'Freight',
+                        format: 'C2',
+                        groupCaptionTemplate: 'Max: ${Max}'
+                    }]
+                }]
+            }, done);
+    });
+
+    it('check 1st column template', () => {
+        expect(gridObj.getContent().querySelectorAll('.e-groupcaption')[0].innerHTML).toBe('Order ID: 10248 - 1 item   Max: $32.38');
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

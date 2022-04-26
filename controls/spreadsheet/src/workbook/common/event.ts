@@ -139,9 +139,9 @@ export const goto: string = 'gotoHandler';
 /** @hidden */
 export const findWorkbookHandler: string = 'findHandler';
 /** @hidden */
-export const replaceHandler: string = 'replace';
+export const replace: string = 'replace';
 /** @hidden */
-export const replaceAllHandler: string = 'replaceAll';
+export const replaceAll: string = 'replaceAll';
 /** @hidden */
 export const showDialog: string = 'ShowDialog';
 /** @hidden */

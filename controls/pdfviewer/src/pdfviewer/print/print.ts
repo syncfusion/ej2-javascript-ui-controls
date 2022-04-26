@@ -387,7 +387,7 @@ export class Print {
             const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
             const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
             let printHeight: number = pageHeight;
-            let printWidth: number = pageWidth;
+            let printWidth: number = pageWidth - 1;
             if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
                 printHeight = pageWidth;
                 printWidth = pageHeight;

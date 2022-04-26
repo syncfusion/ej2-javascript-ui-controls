@@ -331,7 +331,13 @@ describe('Gantt filter child mode', () => {
                 destroyGantt(ganttObj);
             }
         });
-
+        it('filter popup closed- when click in between the fields', () => {
+            let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[0] as HTMLElement;
+            triggerMouseEvent(filterMenuIcon, 'click');
+            let element : HTMLElement = document.querySelector('div.e-flmenu-valuediv') as HTMLElement;
+            ganttObj.filterModule.closeFilterOnContextClick(element);
+            expect(document.querySelector('.e-filter-popup').classList.contains('e-popup-open')).toBe(true);
+        });
         it('Filtering Taskname', () => {
             ganttObj.actionComplete = function (args: any): void {
                 expect(ganttObj.currentViewData.length).toBe(1);

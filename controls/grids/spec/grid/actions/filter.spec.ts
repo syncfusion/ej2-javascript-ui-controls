@@ -2881,4 +2881,65 @@ describe('EJ2-56011 - Filter null value in OData adaptor', () => {
         destroy(gridObj);
         gridObj = actionComplete = null;
     });
+});
+describe('EJ2-58920 - Incorrect filterOperator for initial filter', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: normalData,
+                allowFiltering: true,
+                filterSettings: { type: 'FilterBar',
+                showFilterBarOperator: true,
+                columns: [{ field: 'ShipCountry', matchCase: false, operator: 'startswith', predicate: 'and', value: 'Brazil' },
+                ]
+            },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', width: 120},
+                    { field: 'OrderDate', headerText: 'Order Date', format: 'yMd',width: 170},
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150}],
+            }, done);
+    });
+    it('initial operator for initial filter checking', () => {
+        let shipCountryDrpdown: Element = gridObj.element.querySelectorAll('.e-filterbaroperator')[4];
+        (shipCountryDrpdown as any).ej2_instances[0].value = 'startswith';
+        let value = (gridObj.filterModule as any).getOperatorName('ShipCountry');
+        expect(value).toBe('startswith');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
 }); 
+describe('EJ2-57916 Initial filter value is not displayed => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+    gridObj = createGrid(
+        {
+            dataSource: filterData,
+            allowFiltering: true,
+            allowPaging: true,
+            allowGrouping: true,
+            pageSettings: { currentPage: 1 },
+            filterSettings: {type: 'FilterBar', 
+                columns: [
+                    { field: 'ShipCountry', matchCase: false, operator: 'startswith', predicate: 'and', value: 'Brazil1' },
+                ],
+                showFilterBarStatus: true
+                },
+            columns: [
+                { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                { field: 'OrderDate', headerText: 'Order Date', width: 130,  format:"dd-MMM-yyyy", textAlign: 'Right' },
+                { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+                { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }],
+        }, done);
+    });
+    it('Filter a column', () => {
+        expect((gridObj as any).getHeaderContent().querySelectorAll('.e-filtertext')[3].value).toBe('Brazil1');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

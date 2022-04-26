@@ -591,9 +591,10 @@ export function getSheetName(context: Workbook, idx: number = context.activeShee
  * @returns {void}
  * @hidden
  */
-export function moveSheet(context: Workbook, position: number, sheetIndexes?: number[], action?: boolean): void {
+export function moveSheet(context: Workbook, position: number, sheetIndexes?: number[], action?: boolean, isFromUpdateAction?: boolean): void {
     const needRefresh: boolean = !!sheetIndexes;
     sheetIndexes = sheetIndexes || [context.activeSheetIndex];
+    const sheetName: string = getSheetName(context);
     position = getNextPrevVisibleSheetIndex(context.sheets, position, context.activeSheetIndex > position);
     const args: { action: string, eventArgs: { position: number, sheetIndexes: number[], cancel: boolean } } = {
         action: 'moveSheet', eventArgs: { position: position,
@@ -606,7 +607,10 @@ export function moveSheet(context: Workbook, position: number, sheetIndexes?: nu
         sheetIndexes.forEach((sIdx: number, idx: number) => {
             context.sheets.splice(position + idx, 0, context.sheets.splice(sIdx + (position > sIdx ? -1 * idx : 0), 1)[0]);
         });
-        context.setProperties({ activeSheetIndex: position > sheetIndexes[0] ? position - (sheetIndexes.length - 1) : position }, true);
+        context.setProperties({
+            activeSheetIndex: isFromUpdateAction ? getSheetIndex(context, sheetName)
+                : (position > sheetIndexes[0] ? position - (sheetIndexes.length - 1) : position)
+        }, true);
         context.notify(moveOrDuplicateSheet, { refresh: needRefresh });
         if (action) {
             delete args.eventArgs.cancel;
@@ -622,7 +626,7 @@ export function moveSheet(context: Workbook, position: number, sheetIndexes?: nu
  * @returns {void}
  * @hidden
  */
-export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: boolean): void {
+export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: boolean, isFromUpdateAction?: boolean): void {
     sheetIndex = isUndefined(sheetIndex) ? context.activeSheetIndex : sheetIndex;
     const args: { action: string, eventArgs: { sheetIndex: number, cancel: boolean } } = {
         action: 'duplicateSheet', eventArgs: { sheetIndex: sheetIndex, cancel: false }
@@ -653,7 +657,9 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
         context.createSheet(sheetIndex + 1, [sheet]);
         context.notify(
             workbookFormulaOperation, { action: 'addSheet', sheetName: 'Sheet' + sheet.id, visibleName: sheet.name, sheetId: sheet.id });
-        context.setProperties({ activeSheetIndex: sheetIndex + 1 }, true);
+        if (!isFromUpdateAction) {
+            context.setProperties({ activeSheetIndex: sheetIndex + 1 }, true);
+        }
         context.notify(moveOrDuplicateSheet, { refresh: true, isDuplicate: true });
         if (action) {
             delete args.eventArgs.cancel;

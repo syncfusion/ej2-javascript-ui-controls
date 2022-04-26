@@ -2129,13 +2129,13 @@ export class Series extends SeriesBase {
             const elementId: string = chart.element.id;
             // 8 for extend border value 5 for extend size value
             const explodeValue: number = this.marker.border.width + 8 + 5;
-            const render: SvgRenderer | CanvasRenderer = (this.type === 'Scatter' || this.type === 'Bubble') ?
+            const render: SvgRenderer | CanvasRenderer = (this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') ?
                 chart.svgRenderer : chart.renderer;
             const index: string | number = this.index === undefined ? this.category : this.index;
             let markerHeight: number;
             let markerWidth: number;
             let options: CircleOption | RectOption;
-            if (this.type === 'Scatter') {
+            if (this.type === 'Scatter' || this.drawType === 'Scatter') {
                 markerHeight = (chart.primaryYAxis.maximum || chart.primaryXAxis.maximum) ? 0 : (this.marker.height + explodeValue) / 2;
                 markerWidth = (chart.primaryYAxis.maximum || chart.primaryXAxis.maximum) ? 0 : (this.marker.width + explodeValue) / 2;
             } else {
@@ -2166,7 +2166,7 @@ export class Series extends SeriesBase {
                 'transform': transform,
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
-            if (!this.chart.enableCanvas || this.type === 'Scatter' || this.type === 'Bubble') {
+            if (!this.chart.enableCanvas || this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') {
                 this.seriesElement.appendChild(this.clipRectElement);
             }
         }
@@ -2191,7 +2191,7 @@ export class Series extends SeriesBase {
                     appendChildElement(chart.enableCanvas, chart.seriesElements, this.errorBarElement, redraw);
                 }
             }
-            if (this.type === 'Scatter' || this.type === 'Bubble') {
+            if (this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') {
                 appendChildElement(false, chart.seriesElements, this.seriesElement, redraw);
             }
         }

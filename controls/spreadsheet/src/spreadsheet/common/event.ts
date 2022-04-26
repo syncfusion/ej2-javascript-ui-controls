@@ -200,8 +200,6 @@ export const findDlg: string = 'renderFindDlg';
 /** @hidden */
 export const findHandler: string = 'findHandler';
 /** @hidden */
-export const replace: string = 'replaceHandler';
-/** @hidden */
 export const created: string = 'created';
 /** @hidden */
 export const editAlert: string = 'editAlert';

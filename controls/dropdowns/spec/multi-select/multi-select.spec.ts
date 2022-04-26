@@ -9495,4 +9495,114 @@ describe('MultiSelect', () => {
             expect((<any>listObj).ulElement.textContent === "t").toBe(true); 
         });
     });
+    describe('EJ2-58650', () => {
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let datasource: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' },
+            { id: 'list8', text: 'Racket' },
+            { id: 'list9', text: 'F#' }
+        ];
+        beforeEach(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (ele) {
+                ele.remove();
+            }
+        });
+        it('filtering does not work when item template is enabled in the multiselect component.', (done) => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: datasource,
+                allowFiltering: true,
+                showClearButton: true,
+                fields:{text:"text",value:"text"},
+                showDropDownIcon: true,
+                itemTemplate: '<div><div class="ename"> ${text} </div></div>',
+            });
+            listObj.appendTo('#multi');
+            listObj.showPopup();
+            (<any>listObj).inputElement.value = "J";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 74;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect(listObj.ulElement.childElementCount === 1).toBe(true);
+            setTimeout(()=>{
+            mouseEventArgs.target = (<any>listObj).overAllClear;
+            (<any>listObj).clearAll(mouseEventArgs);
+            expect(listObj.ulElement.childElementCount === 9).toBe(true);
+            done();
+            },200);
+        });
+    });
+    describe('EJ2-59153', () => {
+        let count: number = 0;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let datasource: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' },
+            { id: 'list8', text: 'Racket' },
+            { id: 'list9', text: 'F#' }
+        ];
+        beforeEach(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (ele) {
+                ele.remove();
+            }
+        });
+        it('Multiselect Item template with allowFiltering and maximumSelectionLength property enables the filtered item in the popup from second time', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: datasource,
+                allowFiltering: true,
+                showClearButton: true,
+                fields:{text:"text",value:"text"},
+                showDropDownIcon: true,
+                itemTemplate: '<div><div class="ename"> ${text} </div></div>',
+                maximumSelectionLength: 1
+            });
+            listObj.appendTo('#multi');
+            listObj.showPopup();
+            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+            mouseEventArgs.target = list[2];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            (<any>listObj).inputElement.value = "J";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 74;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect(listObj.ulElement.childElementCount === 1).toBe(true);
+            expect(listObj.ulElement.children[0].classList.contains('e-disable')).toBe(true);
+            (<any>listObj).inputElement.value = "";
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            (<any>listObj).inputElement.value = "J";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 74;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect(listObj.ulElement.childElementCount === 1).toBe(true);
+            expect(listObj.ulElement.children[0].classList.contains('e-disable')).toBe(true);
+        });
+    });
 });

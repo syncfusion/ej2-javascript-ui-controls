@@ -3070,6 +3070,11 @@
     background: transparent;
   }
 
+  .e-pdfviewer .e-inplaceeditor .e-editable-value-container {
+    background: transparent;
+    width: 229px;
+  }
+
   .e-pv-status-div {
     height: 20px;
     left: 8px;
@@ -3098,6 +3103,12 @@
     @if $skin-name != 'FluentUI' {
       border: 1px solid $pv-comment-panel-border-color;
     }
+  }
+
+  .e-pdfviewer .e-accordion .e-acrdn-item.e-selected.e-select.e-expand-state > .e-acrdn-header:focus,
+  .e-pdfviewer .e-accordion .e-acrdn-item.e-selected > .e-acrdn-header {
+    background: $pv-comment-panel-bg;
+    box-shadow: none;
   }
 
   .e-pdfviewer .e-pv-accordion-container.e-accordion .e-acrdn-item.e-select.e-selected.e-expand-state > .e-acrdn-header .e-acrdn-header-icon,

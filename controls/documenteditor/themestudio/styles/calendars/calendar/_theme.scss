@@ -214,6 +214,7 @@
           border: $calendar-selected-border-color;
           border-radius: $calendar-border-radius;
           color: $calendar-active-font-color;
+        }#{if(&, '&', '*')} td.e-selected:not(.e-focused-date) span.e-day {
           @if ($skin-name == 'FluentUI') {
             box-shadow: $calendar-selected-box-shadow;
           }

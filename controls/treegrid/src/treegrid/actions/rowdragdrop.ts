@@ -154,9 +154,7 @@ export class RowDD {
         for (let i: number = 0; i < currentData.length; i++) {
             currentData[i].index = i;
             if (!isNullOrUndefined(currentData[i].parentItem)) {
-                const updatedParent: ITreeData = currentData.filter((data: ITreeData) => {
-                    return data.uniqueID === currentData[i].parentUniqueID;
-                })[0];
+                const updatedParent: ITreeData = getValue('uniqueIDCollection.' + currentData[i].parentUniqueID, this.parent);
                 currentData[i].parentItem.index = updatedParent.index;
             }
         }

@@ -170,9 +170,9 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
             toggledColor: 'transparent',
             emptyCellColor: '#E5E7EB',
             legendLabel: '#343A40',
-            palette: [{ 'color': '#668E1F' },
-                { 'color': '#262E0B' },
-                { 'color': '#AF6E10' }]
+            palette: [{ 'color': '#D7E7FF' },
+                { 'color': '#0D6EFD' },
+                { 'color': '#013889' }]
         };
         break;
     case 'bootstrap5dark':
@@ -191,6 +191,38 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 { 'color': '#557EF7' }]
         };
         break;
+    case 'fluent':
+        style = {
+            heatMapTitle: '#201F1E',
+            axisTitle: '#201F1E',
+            axisLabel: '#201F1E',
+            cellBorder: '#EDEBE9',
+            background: 'transparent',
+            cellTextColor: '#111827',
+            toggledColor: 'transparent',
+            emptyCellColor: '#EDEBE9',
+            legendLabel: '#201F1E',
+            palette: [{ 'color': '#EDEBE9' },
+                { 'color': '#614570' },
+                { 'color': '#4C6FB1' }]
+        };
+        break;
+        case 'fluentdark':
+            style = {
+                heatMapTitle: '#F3F2F1',
+                axisTitle: '#F3F2F1',
+                axisLabel: '#F3F2F1',
+                cellBorder: '#EDEBE9',
+                background: 'transparent',
+                cellTextColor: '#FFFFFF',
+                toggledColor: 'transparent',
+                emptyCellColor: '#292827',
+                legendLabel: '#F3F2F1',
+                palette: [{ 'color': '#292827' },
+                    { 'color': '#2A72D5' },
+                    { 'color': '#43B786' }]
+            };
+            break;
     default:
         style = {
             heatMapTitle: '#424242',

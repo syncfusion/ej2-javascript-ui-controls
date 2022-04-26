@@ -4829,14 +4829,14 @@ export class Annotation {
                     this.pdfViewer.nodePropertyChange(currentAnnotation, {
                         // eslint-disable-next-line max-len
                         labelOpacity: annotation.labelSettings.opacity, fontColor: annotation.labelSettings.fontColor, fontSize: annotation.labelSettings.fontSize, fontFamily: annotation.labelSettings.fontFamily,
-                        labelContent: annotation.labelSettings.labelContent, labelFillColor: annotation.labelSettings.fillColor
+                        labelContent: currentAnnotation.notes, labelFillColor: annotation.labelSettings.fillColor
                     });
                 }
                 if (this.pdfViewer.enableShapeLabel && annotation.calibrate && annotation.calibrate.depth) {
                     if (this.pdfViewer.annotationModule.measureAnnotationModule.volumeDepth !== annotation.calibrate.depth) {
                         this.pdfViewer.annotationModule.measureAnnotationModule.volumeDepth = annotation.calibrate.depth;
                         // eslint-disable-next-line max-len
-                        currentAnnotation.notes = this.pdfViewer.annotationModule.measureAnnotationModule.calculateVolume(currentAnnotation.vertexPoints);
+                        currentAnnotation.notes = this.pdfViewer.annotationModule.measureAnnotationModule.calculateVolume(currentAnnotation.vertexPoints,currentAnnotation.id,currentAnnotation.pageIndex);
                         currentAnnotation.labelContent = currentAnnotation.notes;
                         if (annotation.labelSettings && annotation.labelSettings.labelContent) {
                             annotation.labelSettings.labelContent = currentAnnotation.notes;

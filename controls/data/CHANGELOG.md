@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## 19.4.52 (2022-02-15)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#F171919` - Diacritics letters are not changed to `lowercase` has been fixed.
+- `#I349854` - Expand query issue in complex columns with nested level is fixed.
+
+## 19.4.47 (2022-01-25)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#SF-349854` - Expand query is not generated properly when complex columns with nested level is fixed.
+
+## 19.4.42 (2022-01-11)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#SF-359078` - Filter `apastrophe` value is not encoded properly in `Odata` adaptor is resolved.
+
 ## 19.3.57 (2021-12-07)
 
 ### DataManager

@@ -1863,7 +1863,7 @@ export class ListBox extends DropDownBase {
                         this.moveData(listObj, this, true);
                     }
                 }
-            } else if (e.keyCode !== 37 && e.keyCode !== 39) {
+            } else if (e.keyCode !== 37 && e.keyCode !== 39 && e.code !== "KeyA") {
                 this.upDownKeyHandler(e);
             }
         } else if (this.allowFiltering) {
@@ -1891,9 +1891,6 @@ export class ListBox extends DropDownBase {
                 }
             }
             removeClass([fli], 'e-focused');
-            if (e.ctrlKey && !e.shiftKey && !this.selectionSettings.showCheckbox) {
-                removeClass([fli], 'e-selected');
-            }
         }
         const cli: Element = ul.children[fliIdx];
         if (cli) {

@@ -991,15 +991,6 @@
   }
 
   // sass-lint:disable no-vendor-prefixes 
-  .e-input-group:not(.e-success):not(.e-warning).e-error,
-  .e-input-group.e-control-wrapper:not(.e-success):not(.e-warning).e-error {
-    @if $input-skin-name == 'FluentUI' {
-      -webkit-box-shadow: $input-error-border-shadow;
-      box-shadow: $input-error-border-shadow;
-    }
-  }
-
-  // sass-lint:disable no-vendor-prefixes 
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning).e-error,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning).e-error {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
@@ -1009,29 +1000,11 @@
   }
 
   // sass-lint:disable no-vendor-prefixes 
-  .e-input-group:not(.e-error):not(.e-warning).e-success,
-  .e-input-group.e-control-wrapper:not(.e-error):not(.e-warning).e-success {
-    @if $input-skin-name == 'FluentUI' {
-      -webkit-box-shadow: $input-success-border-shadow;
-      box-shadow: $input-success-border-shadow;
-     }
-   }
-
-  // sass-lint:disable no-vendor-prefixes 
   .e-input-group.e-input-focus:not(.e-error):not(.e-warning).e-success,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-error):not(.e-warning).e-success {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
       -webkit-box-shadow: $input-success-border-shadow;
       box-shadow: $input-success-border-shadow;
-    }
-  }
-
-  // sass-lint:disable no-vendor-prefixes 
-  .e-input-group:not(.e-success):not(.e-error).e-warning,
-  .e-input-group.e-control-wrapper:not(.e-success):not(.e-error).e-warning {
-    @if $input-skin-name == 'FluentUI' {
-      -webkit-box-shadow: $input-warning-border-shadow;
-      box-shadow: $input-warning-border-shadow;
     }
   }
 
@@ -1267,6 +1240,9 @@
   .e-input-group .e-clear-icon:hover,
   .e-input-group.e-control-wrapper .e-clear-icon:hover {
     color: $input-clear-icon-hover-color;
+    @if ($input-skin-name == 'FluentUI') {
+      background: $input-clear-icon-hover-bg-color;
+    }
   }
 
   .e-float-input:not(.e-disabled) .e-clear-icon:hover,
@@ -1275,6 +1251,9 @@
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       color: $input-clear-icon-hover-color;
+    }
+    @if ($input-skin-name == 'FluentUI') {
+      background: $input-clear-icon-hover-bg-color;
     }
   }
 

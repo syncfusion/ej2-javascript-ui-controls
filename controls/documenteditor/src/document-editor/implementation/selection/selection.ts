@@ -8900,6 +8900,17 @@ export class Selection {
             this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
             for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
                 let formField: FieldElementBox = this.documentHelper.formFields[i];
+                let start: TextPosition = this.start;
+                let end: TextPosition = this.end;
+                if (!this.isForward) {
+                    start = this.end;
+                    end = this.start;
+                }
+                let startParagraph: ParagraphWidget = start.paragraph as ParagraphWidget;
+                let fieldParagraph: ParagraphWidget = formField.fieldSeparator.line.paragraph as ParagraphWidget;
+                if (fieldParagraph != startParagraph) {
+                    continue;
+                }
                 if (HelperMethods.isLinkedFieldCharacter(formField)) {
                     let offset: number = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
                     let fieldStart: TextPosition = new TextPosition(this.owner);
@@ -8909,12 +8920,6 @@ export class Selection {
                     offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
                     let fieldEnd: TextPosition = new TextPosition(this.owner);
                     fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
-                    let start: TextPosition = this.start;
-                    let end: TextPosition = this.end;
-                    if (!this.isForward) {
-                        start = this.end;
-                        end = this.start;
-                    }
                     if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
                         && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
                         field = formField;
@@ -9782,7 +9787,7 @@ export class Selection {
         this.isSkipLayouting = undefined;
         this.isImageSelected = undefined;
         if (!isNullOrUndefined(this.documentHelper)) {
-        this.documentHelper.destroy();
+            this.documentHelper.destroy();
         }
         this.contextTypeInternal = undefined;
         this.isRetrieveFormatting = undefined;
@@ -9799,7 +9804,7 @@ export class Selection {
         this.htmlWriterIn = undefined;
         this.toolTipElement = undefined;
         if (!isNullOrUndefined(this.toolTipObject)) {
-        this.toolTipObject.destroy();
+            this.toolTipObject.destroy();
         }
         this.toolTipField = undefined;
         this.isMoveDownOrMoveUp = undefined;
@@ -9809,7 +9814,7 @@ export class Selection {
         this.skipEditRangeRetrieval = undefined;
         this.editPosition = undefined;
         if (!isNullOrUndefined(this.selectedWidgets)) {
-        this.selectedWidgets.destroy();
+            this.selectedWidgets.destroy();
         }
         this.isHighlightEditRegionIn = undefined;
         this.isHighlightFormFields = undefined;
@@ -9821,10 +9826,10 @@ export class Selection {
         this.hightLightNextParagraph = undefined;
         this.isWebLayout = undefined;
         if (!isNullOrUndefined(this.editRegionHighlighters)) {
-        this.editRegionHighlighters.destroy();
+            this.editRegionHighlighters.destroy();
         }
         if (!isNullOrUndefined(this.formFieldHighlighters)) {
-        this.formFieldHighlighters.destroy();
+            this.formFieldHighlighters.destroy();
         }
     }
     /**

@@ -15,7 +15,7 @@
     position: absolute;
     width: 1px;
 
-    &:not(:checked):hover {
+    &:not(:checked):not(:disabled):hover {
       +label,
       +label.e-rtl,
       +label.e-right {
@@ -224,6 +224,16 @@
               right: auto;
             }
           }
+        }
+      }
+    }
+
+    &:focus,
+    .e-focus {
+      +label,
+      & .e-label {
+        @if $skin-name == 'FluentUI' {
+          border: 1px solid $radio-btn-border-color;
         }
       }
     }

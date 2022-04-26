@@ -1801,13 +1801,7 @@ export class Layout {
                                     this.isYPositionUpdated = true;
                                 } else if (Math.round(rect.width) <= Math.round(minwidth) && Math.round(rect.x - leftIndent) !== Math.round(this.viewer.clientArea.x)) {
                                     rect.width = 0;
-                                } else if (textWrappingStyle === 'Square' && rect.x < textWrappingBounds.right && textWrappingType !== 'Left' && elementBox.width > 0 && bodyWidget.floatingElements[i] instanceof ShapeElementBox) {
-                                    this.isYPositionUpdated = true;
-                                    rect.width = this.viewer.clientArea.width;
-                                    rect.height -= (textWrappingBounds.bottom - rect.y);
-                                    rect.y = textWrappingBounds.bottom;
-                                
-                                }
+                                } 
                                 this.viewer.updateClientAreaForTextWrap(rect);//
                             }
                         }
@@ -3384,7 +3378,7 @@ export class Layout {
                     nextParagraph.containerWidget = paragraphWidget.containerWidget;
                 }
                 paragraphWidget = nextParagraph;
-            } else if(paragraphWidget.floatingElements.length>0 && index > 0){
+            } else if(paragraphWidget.floatingElements.length > 0 && index > 0){
                 let body:BodyWidget=paragraphWidget.containerWidget as BodyWidget;
                 body.childWidgets.splice(body.childWidgets.indexOf(paragraphWidget),1);
                 nextBody.childWidgets.splice(0,0,paragraphWidget);
@@ -3481,7 +3475,7 @@ export class Layout {
             }
         }
         if (paragraphWidget instanceof ParagraphWidget &&
-            paragraphWidget.floatingElements.length > 0) {
+            paragraphWidget.floatingElements.length > 0 && !isPageBreak) {
             for (let m: number = 0; m < paragraphWidget.floatingElements.length; m++) {
                 let shape: ShapeBase = paragraphWidget.floatingElements[m];
                 let position: Point = this.getFloatingItemPoints(shape);
@@ -3833,11 +3827,13 @@ export class Layout {
                 if(paragraphWidget.floatingElements.length != 0) {
                     let floatingEleHeight: number = 0;
                     for(let i:number = 0; i < paragraphWidget.floatingElements.length; i++){
-                        if(paragraphWidget.floatingElements[i].height > floatingEleHeight && paragraphWidget.floatingElements[i].height > paragraphWidget.height) {
-                            paragraphWidget.height = paragraphWidget.floatingElements[i].height;
-                            floatingEleHeight = paragraphWidget.floatingElements[i].height;
+                        let floatingElement : ShapeBase | TableWidget | ImageElementBox = paragraphWidget.floatingElements[i];
+                        if(floatingElement.zOrderPosition != -1){
+                            if(paragraphWidget.floatingElements[i].height > floatingEleHeight && paragraphWidget.floatingElements[i].height > paragraphWidget.height) {
+                                paragraphWidget.height = paragraphWidget.floatingElements[i].height;
+                                floatingEleHeight = paragraphWidget.floatingElements[i].height;
+                            }
                         }
-                        
                     }
                 }
                 paragraphWidget.containerWidget.height += paragraphWidget.height;
@@ -9011,6 +9007,10 @@ export class Layout {
                                 if (textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind'
                                     && Math.round(indentX + shapeWidth) > Math.round(pageWidth) && shapeWidth < pageWidth) {
                                     indentX = (pageWidth - shapeWidth);
+                                }
+                                if(paragraph.paragraphFormat.leftIndent && paragraph.isInHeaderFooter){
+                                    let leftIndent = HelperMethods.convertPointToPixel(paragraph.leftIndent);
+                                    indentX-=leftIndent;
                                 }
                                 switch (horzAlignment) {
                                     case 'Center':

@@ -339,7 +339,8 @@ export class Signature {
             const opacity: number = this.pdfViewer.handWrittenSignatureSettings.opacity ? this.pdfViewer.handWrittenSignatureSettings.opacity : 1;
             // eslint-disable-next-line max-len
             const strokeColor: string = this.pdfViewer.handWrittenSignatureSettings.strokeColor ? this.pdfViewer.handWrittenSignatureSettings.strokeColor : '#000000';
-            // eslint-disable-next-line
+            const fontSize:  number =  16;
+            const fontFamily: string = 'Helvetica';
             let signatureBounds: any = this.pdfViewer.formFieldsModule.updateSignatureAspectRatio(this.outputString, true);
             // eslint-disable-next-line
             let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
@@ -347,7 +348,7 @@ export class Signature {
             this.signatureImageString = this.saveImageString;
             annot = {
                 // eslint-disable-next-line max-len
-                id: 'sign' + this.pdfViewerBase.signatureCount, bounds: signatureBounds, pageIndex: pageIndex, data: this.outputString,
+                id: 'sign' + this.pdfViewerBase.signatureCount, bounds: signatureBounds, pageIndex: pageIndex, data: this.outputString,fontFamily: fontFamily, fontSize:fontSize,
                 shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName
             };
             this.pdfViewerBase.currentSignatureAnnot = annot;
@@ -433,6 +434,10 @@ export class Signature {
             this.pdfViewerBase.isSignatureAdded = true;
             const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+            const thickness: number = this.pdfViewer.handWrittenSignatureSettings.thickness ? this.pdfViewer.handWrittenSignatureSettings.thickness : 1;
+            const opacity: number = this.pdfViewer.handWrittenSignatureSettings.opacity ? this.pdfViewer.handWrittenSignatureSettings.opacity : 1;
+            const strokeColor: string = this.pdfViewer.handWrittenSignatureSettings.strokeColor ? this.pdfViewer.handWrittenSignatureSettings.strokeColor : '#000000';
+            const fontSize:  number =  16;
             let currentLeft: number = 0;
             let currentTop: number = 0;
             const currentHeight: number = 65;
@@ -451,7 +456,7 @@ export class Signature {
                     // eslint-disable-next-line max-len
                     y: currentTop / zoomFactor, width: currentWidth, height: currentHeight
                 }, pageIndex: pageIndex, dynamicText: inputValue, data: this.pdfViewerBase.signatureModule.outputString, shapeAnnotationType: 'SignatureText',
-                fontFamily: this.fontName, signatureName: annotationName
+                opacity: opacity, strokeColor: strokeColor, thickness: thickness, fontSize:fontSize,fontFamily: this.fontName, signatureName: annotationName
             };
             this.pdfViewerBase.currentSignatureAnnot = annot;
             // eslint-disable-next-line
@@ -485,6 +490,10 @@ export class Signature {
             this.pdfViewerBase.isSignatureAdded = true;
             const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+            const thickness: number = this.pdfViewer.handWrittenSignatureSettings.thickness ? this.pdfViewer.handWrittenSignatureSettings.thickness : 1;
+            const opacity: number = this.pdfViewer.handWrittenSignatureSettings.opacity ? this.pdfViewer.handWrittenSignatureSettings.opacity : 1;
+            const strokeColor: string = this.pdfViewer.handWrittenSignatureSettings.strokeColor ? this.pdfViewer.handWrittenSignatureSettings.strokeColor : '#000000';
+            const fontSize:  number =  16;
             let currentLeft: number = 0;
             let currentTop: number = 0;
             let standardImageRatio:number = 100;
@@ -512,7 +521,7 @@ export class Signature {
                     // eslint-disable-next-line max-len
                     y: currentTop / zoomFactor, width: currentWidth, height: currentHeight
                 }, pageIndex: pageIndex, dynamicText: inputValue, data: this.pdfViewerBase.signatureModule.outputString, shapeAnnotationType: 'SignatureImage',
-                fontFamily: this.fontName, signatureName: annotationName
+                opacity: opacity, strokeColor: strokeColor, thickness: thickness, fontSize:fontSize, fontFamily: this.fontName, signatureName: annotationName
             };
             this.pdfViewerBase.currentSignatureAnnot = annot;
             // eslint-disable-next-line
@@ -1558,21 +1567,21 @@ export class Signature {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: currentAnnotation.id, bounds: { x: left, y: top, width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height }, pageIndex: currentAnnotation.pageIndex, data: currentAnnotation.data,
-                    shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.opacity, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
+                    shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.opacity,fontFamily: currentAnnotation.fontFamily, fontSize:currentAnnotation.fontSize, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
                 };
             }
             if (this.pdfViewerBase.currentSignatureAnnot.shapeAnnotationType === 'SignatureText') {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: currentAnnotation.id, bounds: { x: left, y: top, width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height }, pageIndex: currentAnnotation.pageIndex, data: currentAnnotation.data,
-                    shapeAnnotationType: 'SignatureText', opacity: currentAnnotation.opacity, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
+                    shapeAnnotationType: 'SignatureText', opacity: currentAnnotation.opacity, fontFamily: currentAnnotation.fontFamily, fontSize:currentAnnotation.fontSize, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
                 };
             }
             else if (this.pdfViewerBase.currentSignatureAnnot.shapeAnnotationType === 'SignatureImage') {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: currentAnnotation.id, bounds: { x: left, y: top, width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height }, pageIndex: currentAnnotation.pageIndex, data: currentAnnotation.data,
-                    shapeAnnotationType: 'SignatureImage', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: annotationName
+                    shapeAnnotationType: 'SignatureImage', opacity: currentAnnotation.opacity, fontFamily: currentAnnotation.fontFamily, fontSize:currentAnnotation.fontSize, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName
                 };
             }
             this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -1582,8 +1591,8 @@ export class Signature {
             this.pdfViewer.renderDrawing(canvass as any, currentAnnotation.pageIndex);
             this.pdfViewerBase.signatureAdded = true;
             // eslint-disable-next-line max-len
-            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity, currentAnnotation.strokeColor, currentAnnotation.thickness);
             this.storeSignatureData(currentAnnotation.pageIndex, annot);
+            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity, currentAnnotation.strokeColor, currentAnnotation.thickness);
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.signatureCount++;
         }

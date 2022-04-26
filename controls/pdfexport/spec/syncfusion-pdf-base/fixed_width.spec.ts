@@ -418,7 +418,7 @@ describe('PDFGrid_outer_characterwrap',()=>{
         childpdfGridRow1 = childPdfGrid.rows.addRow();
         childpdfGridRow2 = childPdfGrid.rows.addRow();
         
-        childpdfGridRow1.cells.getCell(0).value= "fixed width changes kfjsdajfd jdsaf djalkd f";
+        childpdfGridRow1.cells.getCell(0).value= "fixed width changes";
         childpdfGridRow1.cells.getCell(1).value= "RowImplementation";
         childpdfGridRow1.cells.getCell(2).value= "Nested grid";
         childpdfGridRow2.cells.getCell(0).value= "cell value";

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `FB-33350` - Now, Property change event will trigger properly when z-index values are changed.
+- `#I372613` - Now, Exporting the diagram as an image will work properly.
+
 ## 20.1.47 (2022-04-04)
 
 ### Diagram

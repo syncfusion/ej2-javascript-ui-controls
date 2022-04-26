@@ -15,6 +15,17 @@ $de-cmt-sub-container-hover-padding-left: 11px;
 $de-cmt-sub-container-hover-padding-left-big: 15px;
 $de-cmt-avatar-height: 24px;
 $de-cmt-avatar-width: 24px;
+$de-rp-sub-div-padding: 12px;
+$de-rp-sub-div-padding-big: $de-rp-sub-div-padding;
+$de-rp-whole-header-padding: 12px;
+$de-rp-whole-header-padding-big: $de-rp-whole-header-padding;
+$de-rp-enforce-padding: 12px;
+$de-rp-enforce-padding-big: $de-rp-enforce-padding;
+$de-rp-close-icon-right: -12px;
+$de-rp-close-icon-right-bigger: -17px;
+$de-rp-close-icon-top-bigger: -9px;
+$de-rp-close-icon-right-rtl: 12px;
+$de-rp-close-icon-right-bigger-rtl: 17px;
 
 // Hyperlink dialog
 $de-hyperlink-dlg-margin-top: 0 !default;
@@ -381,7 +392,7 @@ $de-ff-dlg-hdg-small-mrgn-btm: 4px;
 $de-ff-seperate-div-mrgn-btm: 12px;
 $de-ff-dlg-heading-mrgn-btm: 12px;
 $de-ff-radio-div-mrgn-btm: 16px;
-$de-ff-radio-scnd-div-mrgn-btm: 4px;
+$de-ff-radio-scnd-div-mrgn-btm: 0;
 $de-fnt-dlg-header-effects-mrgn-btm: 0;
 $de-para-dlg-cs-check-box-mrgn-btm: 0;
 $de-bullet-numbered-dlg-width: 300px;

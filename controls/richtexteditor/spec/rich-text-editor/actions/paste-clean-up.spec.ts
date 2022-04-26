@@ -2397,3 +2397,58 @@ describe("Pasting the link element added in the editor with prompt", () => {
       destroy(rteObj);
     });
 });
+
+describe("EJ2-58827 - pasting only content which is contenteditable as false", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        }
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("pasting only content which is contenteditable as false with br tag with apple class", (done) => {
+      let localElem: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><br class="Apple-interchange-newline"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">The Rich Text Editor (RTE) control is an easy to render in the client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</span><br class="Apple-interchange-newline">\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+      keyBoardEvent.clipboardData = {
+        getData: () => {
+          return localElem;
+        },
+        items: []
+      };
+      rteObj.value = '<p>22</p>';
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `<p><span>The Rich Text Editor (RTE) control is an easy to render in the client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</span>22</p>`).toBe(true)
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});

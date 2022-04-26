@@ -95,7 +95,9 @@ export class PasteCleanup {
                 this.containsHtml = htmlRegex.test(value);
                 const file: File = e && (e.args as ClipboardEvent).clipboardData &&
                 (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
-                    (e.args as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
+                    ((e.args as ClipboardEvent).clipboardData.items[0].getAsFile() === null ?
+                    (!isNOU((e.args as ClipboardEvent).clipboardData.items[1]) ? (e.args as ClipboardEvent).clipboardData.items[1].getAsFile() : null) :
+                    (e.args as ClipboardEvent).clipboardData.items[0].getAsFile()) : null;
                 this.parent.notify(events.paste, {
                     file: file,
                     args: e.args,
@@ -572,6 +574,14 @@ export class PasteCleanup {
         }
     }
 
+    private cleanAppleClass (elem: HTMLElement): HTMLElement {
+        let appleClassElem: NodeListOf<Element> = elem.querySelectorAll('br.Apple-interchange-newline');
+        for (let i = 0; i < appleClassElem.length; i++) {
+            detach(appleClassElem[i]);
+        }
+        return elem;
+    }
+
     private formatting(value: string, clean: boolean, args: Object): void {
         let clipBoardElem: HTMLElement = this.parent.createElement(
             'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
@@ -579,6 +589,7 @@ export class PasteCleanup {
             value = this.splitBreakLine(value);
         }
         clipBoardElem.innerHTML = value;
+        clipBoardElem = this.cleanAppleClass(clipBoardElem);
         if (this.parent.pasteCleanupSettings.deniedTags !== null) {
             clipBoardElem = this.deniedTags(clipBoardElem);
         }

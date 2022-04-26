@@ -1994,7 +1994,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
             if (visibility) {
                 this.visible++;
-                findClipRect(item);
+                findClipRect(item, this.enableCanvas);
                 if (this.enableCanvas) {
                     // To render scatter and bubble series in canvas
                     this.renderCanvasSeries(item);
@@ -2019,10 +2019,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (!this.seriesElements) {
             return;
         }
+        let clipRectElement: Element;
+        if (this.chartAreaType === 'PolarRadar') {
+            clipRectElement = appendClipElement(this.redraw, options, this.renderer as SvgRenderer, 'drawCircularClipPath');
+        } else {
+            clipRectElement = appendClipElement(this.redraw, options, this.renderer as SvgRenderer);
+        }
+
         if (!this.enableCanvas) {
-            this.seriesElements.appendChild(
-                appendClipElement(this.redraw, options, this.renderer as SvgRenderer)
-            );
+            this.seriesElements.appendChild(clipRectElement);
         }
         const seriesSvg: HTMLElement = document.getElementById(this.element.id + '_series_svg');
         if (seriesSvg) {
@@ -2034,7 +2039,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     protected renderCanvasSeries(item: Series): void {
         let svgElement: Element;
         let divElement: Element;
-        if ((item.type === 'Bubble' || item.type === 'Scatter')) {
+        if ((item.type === 'Bubble' || item.type === 'Scatter' || item.drawType === 'Scatter')) {
             svgElement = !svgElement ? this.svgRenderer.createSvg({ id: this.element.id + '_series_svg',
                 width: this.availableSize.width, height: this.availableSize.height }) : svgElement;
             divElement = !divElement ? this.createElement('div', { id: this.element.id + '_series' }) : divElement;
@@ -2043,10 +2048,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             divElement.appendChild(svgElement);
             mainElement.appendChild(divElement);
         }
-        svgElement = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter')) ?
+        svgElement = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter' || item.drawType === 'Scatter')) ?
             svgElement : this.svgObject;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const canvas: boolean = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter')) ?
+        const canvas: boolean = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter' || item.drawType === 'Scatter')) ?
             false : this.enableCanvas;
     }
     private initializeIndicator(): void {

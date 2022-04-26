@@ -432,7 +432,7 @@ export class PdfExport {
                 isForeignKey: col.isForeignColumn()
             };
             const value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
-            const cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: 'PDF', data: dataSourceItems };
+            const cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: 'PDF', data: dataSourceItems, style: undefined };
             this.parent.trigger(events.exportGroupCaption, cArgs, (cArgs: ExportGroupCaptionEventArgs) => {
                 row.cells.getCell(groupIndex).value = cArgs.captionText;
                 row.cells.getCell(groupIndex).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
@@ -440,6 +440,9 @@ export class PdfExport {
                 row.style.setFont(font);
                 row.style.setTextBrush(brush);
                 row.style.setBackgroundBrush(backgroundBrush);
+                if (!isNullOrUndefined(cArgs.style)) {
+                    this.processCellStyle(row.cells.getCell(groupIndex), cArgs);
+                }
                 let sRows: Row<AggregateColumnModel>[];
                 const captionSummaryModel: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
                 if (!isNullOrUndefined(dataSourceItems.items.records)) {

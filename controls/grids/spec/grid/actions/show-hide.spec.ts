@@ -17,8 +17,10 @@ import { Resize } from '../../../src/grid/actions/resize';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
 import { Edit } from '../../../src/grid/actions/edit';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
+import { Group } from '../../../src/grid/actions/group';
 
-Grid.Inject(Filter, Freeze, Resize, RowDD, Edit, VirtualScroll);
+Grid.Inject(Filter, Freeze, Resize, RowDD, Edit, VirtualScroll, InfiniteScroll, Group);
 
 describe('ShowHide module testing', () => {
 
@@ -793,6 +795,32 @@ describe('ShowHide module testing', () => {
         it('Hide Column without columns width and with virtualization', () => {
             gridObj.hideColumns(['Order ID']);
             expect(gridObj.getVisibleColumns().length).toBe(3);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+    describe('EJ2-58915 - Check visible row object after hiding column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    height: 300,
+                    enableInfiniteScrolling: true,
+                    allowGrouping: true,
+                    pageSettings: { pageSize: 50 },
+                    columns: [
+                        { field: 'OrderID', headerText: 'OrderID', isPrimaryKey: true, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'ShipName', headerText: 'ShipName' }
+                    ],
+                    groupSettings: { columns: ['CustomerID'] }
+                }, done);
+        });
+        it('Check visible row object', () => {
+            gridObj.hideColumns(['ShipName']);
+            expect((gridObj.contentModule as any).visibleRows.length).toBe(114);
         });
         afterAll(() => {
             destroy(gridObj);

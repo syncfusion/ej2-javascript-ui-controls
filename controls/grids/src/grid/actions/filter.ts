@@ -362,10 +362,10 @@ export class Filter implements IAction {
     }
 
     private refreshFilterValue(): void {
+        this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValueFn);
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.columns.length &&
-            !this.parent.getCurrentViewRecords().length && this.parent.enablePersistence) {
-            this.initialEnd();
-            this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValueFn);
+            !this.parent.getCurrentViewRecords().length) {
+            this.initialEnd(); 
         }
     }
 
@@ -473,7 +473,7 @@ export class Filter implements IAction {
         let filterCell: HTMLInputElement;
         this.column = gObj.grabColumnByFieldFromAllCols(fieldName);
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator
-            && isNullOrUndefined(this.column.filterBarTemplate)) {
+            && isNullOrUndefined(this.column.filterBarTemplate) && isNullOrUndefined(this.column.filterTemplate)) {
             filterOperator = this.getOperatorName(fieldName);
         }
         if (!this.column) {

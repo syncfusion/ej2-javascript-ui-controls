@@ -405,6 +405,13 @@ export class DialogEdit {
         dialogModel.target = document.body;
         dialogModel.close = this.dialogClose.bind(this);
         dialogModel.closeOnEscape = true;
+        dialogModel.beforeClose = function (args){
+            if(args.closedBy == "escape"){
+                if(args.event.name == "key-pressed" && args.event.target.nodeName == 'INPUT'){
+                    args.cancel = true;
+                }
+            }
+        };
         dialogModel.open = (args: Record<string, unknown>) => {
             const dialogElement: HTMLElement = getValue('element', args);
             const generalTabElement: HTMLElement = dialogElement.querySelector('#' + this.parent.element.id + 'GeneralTabContainer');
@@ -680,6 +687,8 @@ export class DialogEdit {
             this.resourceSelection(id);
         } else if (id === ganttObj.element.id + 'NotesTabContainer') {
             ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as RichTextEditor).refresh();
+            let notesTabElement: HTMLElement = document.querySelector('#' + this.parent.element.id + 'NotesTabContainer') as HTMLInputElement;
+            notesTabElement.style.overflow = 'scroll';
         } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
             if (isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate)) {
                 ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as Grid)

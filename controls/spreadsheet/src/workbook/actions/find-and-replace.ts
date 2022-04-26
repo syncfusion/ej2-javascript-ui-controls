@@ -1,8 +1,8 @@
 import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell, getSheet } from '../base/index';
 import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count } from '../common/index';
-import { goto, replaceHandler, replaceAllHandler, showDialog, replaceAllDialog, ReplaceAllEventArgs } from '../common/index';
+import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
-import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell } from '../common/index';
+import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
 /**
  * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
  */
@@ -32,8 +32,8 @@ export class WorkbookFindAndReplace {
     private addEventListener(): void {
         this.parent.on(findNext, this.findNext, this);
         this.parent.on(findPrevious, this.findPrevious, this);
-        this.parent.on(replaceHandler, this.replace, this);
-        this.parent.on(replaceAllHandler, this.replaceAll, this);
+        this.parent.on(replace, this.replace, this);
+        this.parent.on(replaceAll, this.replaceAll, this);
         this.parent.on(count, this.totalCount, this);
         this.parent.on(findAllValues, this.findAllValues, this);
     }
@@ -42,8 +42,8 @@ export class WorkbookFindAndReplace {
         if (!this.parent.isDestroyed) {
             this.parent.off(findNext, this.findNext);
             this.parent.off(findPrevious, this.findPrevious);
-            this.parent.off(replaceHandler, this.replace);
-            this.parent.off(replaceAllHandler, this.replaceAll);
+            this.parent.off(replace, this.replace);
+            this.parent.off(replaceAll, this.replaceAll);
             this.parent.off(count, this.totalCount);
             this.parent.off(findAllValues, this.findAllValues);
         }
@@ -617,42 +617,37 @@ export class WorkbookFindAndReplace {
             return;
         }
         let activeCell: number[] = getCellIndexes(sheet.activeCell);
-        const currentCell: string = sheet.rows[activeCell[0]].cells[activeCell[1]].value.toString();
-        const index: boolean = currentCell.indexOf(args.value) > -1;
-        const lowerCaseIndex: boolean = currentCell.toLowerCase().indexOf(args.value.toString().toLowerCase()) > -1;
-        const val: string = currentCell.toString().toLowerCase();
-        const triggerEvent: boolean = (args as unknown as { triggerEvent: boolean }).triggerEvent;
-        if ((currentCell !== args.value) && (!index) && (val !== args.value) && (!lowerCaseIndex)) {
+        let compareVal: string = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet, false, true)).toString();
+        let checkValue: string;
+        args.value = args.value.toString();
+        if (!args.isCSen) {
+            checkValue = args.value.toLowerCase();
+        }
+        let replacedValue: string = this.getReplaceValue(args, compareVal, checkValue);
+        if (!replacedValue) {
             args.findOpt = 'next';
             this.findNext(args);
-        }
-        activeCell = getCellIndexes(sheet.activeCell);
-        let compareVal: string = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet)).toString();
-        const replaceAddress: string = sheet.name + '!' + getCellAddress(activeCell[0], activeCell[1]);
-        const eventArgs: BeforeReplaceEventArgs = { address: replaceAddress, compareValue: compareVal, replaceValue: args.replaceValue,
-            cancel: false };
-        if (triggerEvent) {
-            this.parent.notify('actionBegin', { action: 'beforeReplace', eventArgs: eventArgs });
-        }
-        if (eventArgs.cancel) { return; }
-        compareVal = eventArgs.compareValue;
-        activeCell = getCellIndexes(eventArgs.address.split('!')[1]);
-        const updateAction: (cell: CellModel) => void = (cell: CellModel): void => {
-            updateCell(this.parent, sheet, { cell: cell, rowIdx: activeCell[0], colIdx: activeCell[1], uiRefresh: true, valChange: true });
-            if (triggerEvent) {
-                this.parent.notify(
-                    'actionComplete', { action: 'replace', eventArgs: { address: eventArgs.address, compareValue: compareVal, replaceValue:
-                        eventArgs.replaceValue } });
+            activeCell = getCellIndexes(sheet.activeCell);
+            compareVal = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet)).toString();
+            replacedValue = this.getReplaceValue(args, compareVal, checkValue);
+            if (!replacedValue) {
+                return;
             }
         }
-        const lcValueOfCell: string = compareVal.toLowerCase();
-        if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
-            updateAction({ value: eventArgs.replaceValue });
-        } else if (compareVal.indexOf(args.value) > -1) {
-            updateAction({ value: compareVal.replace(args.value, eventArgs.replaceValue) });
-        } else if (lcValueOfCell.indexOf(args.value) > -1) {
-            const regx: RegExp = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-            updateAction({ value: compareVal.replace(regx, eventArgs.replaceValue) });
+        const eventArgs: BeforeReplaceEventArgs = { address: `${sheet.name}!${getCellAddress(activeCell[0], activeCell[1])}`, cancel: false,
+            compareValue: compareVal, replaceValue: args.replaceValue };
+        if (args.isAction) {
+            this.parent.notify(beginAction, { action: 'beforeReplace', eventArgs: eventArgs });
+            if (eventArgs.cancel) {
+                return;
+            }
+            delete eventArgs.cancel;
+        }
+        updateCell(
+            this.parent, sheet, { cell: { value: replacedValue }, rowIdx: activeCell[0], colIdx: activeCell[1], uiRefresh: true,
+            valChange: true });
+        if (args.isAction) {
+            this.parent.notify('actionComplete', { action: 'replace', eventArgs: eventArgs });
         }
     }
     public replaceAll(args: FindOptions): void {
@@ -743,6 +738,22 @@ export class WorkbookFindAndReplace {
             }
         } else {
             this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });
+        }
+    }
+    private getReplaceValue(args: FindOptions, cellval: string, checkValue: string): string {
+        if (args.isCSen) {
+            if (args.isEMatch) {
+                return cellval === args.value && args.replaceValue;
+            } else {
+                return cellval.indexOf(args.value) > -1 && cellval.replace(args.value, args.replaceValue);
+            }
+        } else {
+            if (args.isEMatch) {
+                return cellval.toLowerCase() === checkValue && args.replaceValue;
+            } else {
+                return (cellval.toLowerCase().includes(checkValue)) &&
+                    cellval.replace(new RegExp(args.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig'), args.replaceValue);
+            }
         }
     }
     private totalCount(args: FindOptions): void {

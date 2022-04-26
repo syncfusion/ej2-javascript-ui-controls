@@ -532,9 +532,7 @@
       padding: 1px;
 
       & .e-selectall {
-        @if $skin-name != 'FluentUI' {
-          border-style: solid;
-        }
+        border-style: solid;
         border-width: $select-all-size / 2;
         cursor: cell;
         float: right;

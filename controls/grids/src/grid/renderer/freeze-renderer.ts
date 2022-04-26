@@ -420,7 +420,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         this.getMovableHeader().querySelector(literals.tbody).innerHTML = tbody.innerHTML;
         this.updateColgroup();
         this.widthService.setWidthToColumns();
-        if (!this.parent.enableVirtualization) {
+        if (!this.parent.enableVirtualization && !this.parent.isFrozenGrid()) {
             this.widthService.setWidthToTable();
         }
         if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
@@ -553,17 +553,15 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         const tBody: Element = this.parent.getHeaderContent().querySelector( literals.tbody);
         const height: number[] = [];
         const width: number[] = [];
-        for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue
+        for (let i: number = 0, len: number = fRows.length; i < len; i++) {
+            if (isModeChg && ((wrapMode === 'Header' && isContReset) || ((wrapMode === 'Content' && tHead.contains(fRows[i]))
+                || (wrapMode === 'Header' && tBody.contains(fRows[i])))) || isStackedHdr || (tBody.className === 'e-hide' && !isModeChg)) {
+                fRows[i].style.height = null;
+                mRows[i].style.height = null;
+            }
             if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
                 height[i] = fRows[i].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
                 width[i] = mRows[i].getBoundingClientRect().height;
-            }
-        }
-        for (let i: number = 0, len: number = fRows.length; i < len; i++) {
-            if (isModeChg && ((wrapMode === 'Header' && isContReset) || ((wrapMode === 'Content' && tHead.contains(fRows[i]))
-                || (wrapMode === 'Header' && tBody.contains(fRows[i])))) || isStackedHdr) {
-                fRows[i].style.height = null;
-                mRows[i].style.height = null;
             }
             fRowHgt = height[i];
             mRowHgt = width[i];

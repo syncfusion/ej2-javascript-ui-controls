@@ -373,20 +373,23 @@ export class TextPosition {
         }
         const startParagraph: ParagraphWidget = this.currentWidget.paragraph;
         const endParagraph: ParagraphWidget = textPosition.currentWidget.paragraph;
-        if (startParagraph.containerWidget instanceof BodyWidget && endParagraph.containerWidget instanceof BodyWidget &&
-            startParagraph.containerWidget === endParagraph.containerWidget) {
-            if (startParagraph.isInsideTable && endParagraph.isInsideTable) {
-                return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) >
-                    endParagraph.associatedCell.childWidgets.indexOf(endParagraph);
-                // } else if ((this.currentParagraph).owner instanceof WHeaderFooter) {
-                //     return ((this.currentParagraph).owner as WHeaderFooter).blocks.indexOf((this.currentParagraph)) >
-                //         ((textPosition.currentParagraph).owner as WHeaderFooter).blocks.indexOf((textPosition.currentParagraph));
-            } else {
-                return (startParagraph.containerWidget.childWidgets.indexOf(startParagraph) >
-                    (endParagraph.containerWidget.childWidgets.indexOf(endParagraph)));
+        if (!isNullOrUndefined(startParagraph) && !isNullOrUndefined(endParagraph)) {
+            if (startParagraph.containerWidget instanceof BodyWidget && endParagraph.containerWidget instanceof BodyWidget &&
+                startParagraph.containerWidget === endParagraph.containerWidget) {
+                if (startParagraph.isInsideTable && endParagraph.isInsideTable) {
+                    return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) >
+                        endParagraph.associatedCell.childWidgets.indexOf(endParagraph);
+                    // } else if ((this.currentParagraph).owner instanceof WHeaderFooter) {
+                    //     return ((this.currentParagraph).owner as WHeaderFooter).blocks.indexOf((this.currentParagraph)) >
+                    //         ((textPosition.currentParagraph).owner as WHeaderFooter).blocks.indexOf((textPosition.currentParagraph));
+                } else {
+                    return (startParagraph.containerWidget.childWidgets.indexOf(startParagraph) >
+                        (endParagraph.containerWidget.childWidgets.indexOf(endParagraph)));
+                }
             }
+            return this.owner.selection.isExistAfter(startParagraph, endParagraph);
         }
-        return this.owner.selection.isExistAfter(startParagraph, endParagraph);
+        return false;
     }
     /**
      * Return hierarchical index of current text position

@@ -13,6 +13,7 @@
       border: $border-size $border-type $tooltip-content-border-color;
       @if ($skin-name == 'FluentUI') {
         box-shadow: $tooltip-drop-shadow;
+        filter: $tooltip-drop-shadow-filter;
       }
     }
 
