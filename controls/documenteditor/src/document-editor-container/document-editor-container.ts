@@ -1238,7 +1238,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.destroy();
         }
-        if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
+        if (this.propertiesPaneContainer && this.propertiesPaneContainer.parentElement) {
             this.propertiesPaneContainer.innerHTML = '';
             this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
         }
