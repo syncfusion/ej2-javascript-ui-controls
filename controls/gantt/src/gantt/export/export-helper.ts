@@ -273,6 +273,9 @@ export class ExportHelper {
             if (data[this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
             }
+             if (data[this.parent.labelSettings.taskLabel]) {
+                taskbar.taskLabel = data[this.parent.labelSettings.taskLabel].toString();
+            }
             const reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
             taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
             taskbar.fontFamily = this.ganttStyle.fontFamily;

@@ -1,6 +1,6 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getRow, getSheet } from '../base/index';
-import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo } from './../common/index';
+import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, ExtendedRowModel, isNumber } from './../common/index';
 import { updateCell, intToDate, dateToInt } from './../common/index';
 
@@ -78,7 +78,7 @@ export class WorkbookAutoFill {
             return;
         }
         const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection, sheetIndex: number } = {
-            dataRange: null, fillRange: null, fillType: null, direction: null, sheetIndex: this.parent.getAddressInfo(options.dataRange).sheetIndex };
+            dataRange: null, fillRange: null, fillType: null, direction: null, sheetIndex: getSheetIndexFromAddress(this.parent, options.dataRange) };
         const dataRangeIndices: number[] = getSwapRange(getRangeIndexes(options.dataRange));
         const fillRangeIndices: number[] = getSwapRange(getRangeIndexes(options.fillRange));
         this.fillInfo = this.getFillInfo({ dataRange: dataRangeIndices, fillRange: fillRangeIndices, fillType: options.fillType,

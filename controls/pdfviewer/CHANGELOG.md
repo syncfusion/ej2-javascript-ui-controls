@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.51 (2022-04-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-369554`- The form fields are now added horizontally to the page, even for rotated documents.
+- `#SF-369733`- The free text annotation is no longer rotated when it is added programmatically to rotated documents.
+- `#SF-371560`- Form fields in a rotated document will be rendered according to the field rotation.
+
 ## 20.1.50 (2022-04-19)
 
 ### PDF Viewer

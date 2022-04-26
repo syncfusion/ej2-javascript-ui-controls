@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData } from './../common/index';
-import { Cell, duplicateSheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
+import { Cell, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
@@ -1213,7 +1213,7 @@ export function updateAction(
         const address: string = eventArgs.address || eventArgs.range || eventArgs.pastedRange
             || (eventArgs.addressCollection && eventArgs.addressCollection[0]) || eventArgs.dataRange;
         const sheetIndex: number = isUndefined(eventArgs.sheetIndex) ? isUndefined(eventArgs.sheetIdx)
-            ? isUndefined(eventArgs.activeSheetIndex) ? address ? spreadsheet.getAddressInfo(address).sheetIndex
+            ? isUndefined(eventArgs.activeSheetIndex) ? address ? getSheetIndexFromAddress(spreadsheet, address)
                 : spreadsheet.activeSheetIndex : eventArgs.activeSheetIndex : eventArgs.sheetIdx : eventArgs.sheetIndex;
         if (sheetIndex !== spreadsheet.activeSheetIndex) {
             const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, resolveAfterFullDataLoaded?: boolean } = {

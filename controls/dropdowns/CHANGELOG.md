@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.51 (2022-04-26)
+
+### ListBox
+
+#### Bug Fixes
+
+- `I374083` - Issue with "Filtering did not work in the datasource empty list" has been resolved.
+
 ## 20.1.50 (2022-04-19)
 
 ### ListBox

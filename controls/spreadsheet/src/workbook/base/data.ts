@@ -106,6 +106,10 @@ export function getData(
                             sRow = frozenIndexes[0];
                             continue;
                         }
+                        if (!valueOnly && isHiddenRow(sheet, sRow)) {
+                            sRow++;
+                            continue;
+                        }
                         row = getRow(sheet, sRow);
                         i = indexes[1];
                         while (i <= indexes[3]) {
@@ -142,8 +146,10 @@ export function getData(
                                     }
                                 }
                             }
-                            if (!valueOnly && isHiddenRow(sheet, sRow)) { sRow++; continue; }
-                            if (!valueOnly && isHiddenCol(sheet, i)) { i++; continue; }
+                            if (!valueOnly && isHiddenCol(sheet, i)) {
+                                i++;
+                                continue;
+                            }
                             if (checkFrozenIdx && i >= frozenCol && i < frozenIndexes[1]) {
                                 i = frozenIndexes[1];
                                 continue;

@@ -48,11 +48,17 @@ export class SelectionCommands {
             let preventRestore: boolean = false;
             const isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
             if (range.collapsed) {
+                let currentFormatNode: Node = isFormatted.getFormattedNode(range.startContainer, format, endNode);
+                let currentSelector: string = !isNOU(currentFormatNode) ?
+                    ((currentFormatNode as HTMLElement).getAttribute('style') === null ? currentFormatNode.nodeName :
+                    currentFormatNode.nodeName + `[style='` + (currentFormatNode as HTMLElement).getAttribute('style') + `']`) : null;
                 if (nodes.length > 0) {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
-                } else if (range.startContainer.nodeType === 3 && range.startContainer.parentElement.childElementCount > 0 &&
-                    range.startOffset > 0 && range.startContainer.parentElement.firstElementChild.tagName.toLowerCase() !== 'br') {
+                } else if (range.startContainer.nodeType === 3 && ((range.startContainer.parentElement.childElementCount > 0 &&
+                    range.startOffset > 0 && range.startContainer.parentElement.firstElementChild.tagName.toLowerCase() !== 'br') ||
+                    !isNOU(currentFormatNode) && currentFormatNode as HTMLElement === ((range.startContainer.parentElement as HTMLElement).closest(currentSelector)) &&
+                    (((range.startContainer.parentElement as HTMLElement).closest(currentSelector)).textContent.replace(new RegExp(String.fromCharCode(8203), 'g'), '').trim().length != 0))) {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, range.startContainer);
                     nodes.push(range.startContainer);

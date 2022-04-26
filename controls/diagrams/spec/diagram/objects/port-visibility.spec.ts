@@ -207,6 +207,92 @@ describe('Diagram Control', () => {
             done();
         })
     });
+
+    describe('Port Visiblity in Canvas Mode', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram12' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                ports: [{
+                    shape: 'Circle',
+                    visibility: PortVisibility.Visible | PortVisibility.Hover,
+                    offset: { x: 1, y: 0.75 }
+                }],
+                annotations: [{ content: 'Mouse Hover' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                ports: [{
+                    shape: 'Circle',
+                    visibility: PortVisibility.Connect,
+                    offset: { x: 1, y: 0.75 }
+                }],
+                annotations: [{ content: 'Connect' }]
+            };
+            let node33: NodeModel = {
+                id: 'node33', width: 100, height: 150, offsetX: 300, offsetY: 500,
+                ports: [{
+                    shape: 'Circle',
+                    visibility: PortVisibility.Connect,
+                    offset: { x: 1, y: 0.75 }
+                }],
+                annotations: [{ content: 'Connect node' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 100,
+                ports: [{
+                    shape: 'Circle',
+                    visibility: PortVisibility.Visible,
+                    offset: { x: 1, y: 0.75 }
+                }],
+                annotations: [{ content: 'Port Visible' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 100, height: 100, offsetX: 700, offsetY: 100,
+                ports: [{
+                    shape: 'Circle',
+                    visibility: PortVisibility.Hidden,
+                    constraints: PortConstraints.Drag,
+                    offset: { x: 1, y: 0.75 }
+                }],
+                annotations: [{ content: 'Port Hidden' }]
+            };
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: [node1, node2, node3, node4, node33], mode: 'Canvas'
+            });
+
+            diagram.appendTo('#diagram12');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking PortVisibility - Hover', (done: Function) => {
+            expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, 60, 60, false, false);
+            expect((diagram.nodes[0] as Node).wrapper.children[2].visible === true).toBe(true);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 160, 260, false, false);
+            expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
+            done();
+        });
+    });
+
     describe('Testing symbol palette', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;

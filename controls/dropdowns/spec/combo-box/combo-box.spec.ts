@@ -2700,4 +2700,109 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
         comboBox.hidePopup();
         comboBox.destroy();    
     });
+    describe('EJ2-58878', () => {
+        let comboBoxObj: any;
+        let element: any;
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74
+        };
+        let data: { [key: string]: Object }[] = [
+            {
+              Name: 'Andrew Fuller',
+              Eimg: '7',
+              Designation: 'Team Lead',
+              Country: 'England',
+            },
+            {
+              Name: 'Anne Dodsworth',
+              Eimg: '1',
+              Designation: 'Developer',
+              Country: 'USA',
+            },
+            { Name: 'Aanet Leverling', 
+              Eimg: '3',
+              Designation: 'HR', 
+              Country: 'USA' 
+            },
+            {
+              Name: 'Laura Callahan',
+              Eimg: '2',
+              Designation: 'Product Manager',
+              Country: 'USA',
+            },
+            {
+              Name: 'Margaret Peacock',
+              Eimg: '6',
+              Designation: 'Developer',
+              Country: 'USA',
+            },
+            {
+              Name: 'Aichael Suyama',
+              Eimg: '9',
+              Designation: 'Team Lead',
+              Country: 'USA',
+            },
+            {
+              Name: 'Nancy Davolio',
+              Eimg: '4',
+              Designation: 'Product Manager',
+              Country: 'USA',
+            },
+            {
+              Name: 'Robert King',
+              Eimg: '8',
+              Designation: 'Developer ',
+              Country: 'England',
+            },
+            {
+              Name: 'Steven Buchanan',
+              Eimg: '10',
+              Designation: 'CEO',
+              Country: 'England',
+            },
+          ];
+        beforeAll(() => {
+            element = createElement('EJS-COMBOBOX', { id: 'combobox' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            comboBoxObj.destroy();
+            element.remove();
+        });
+        it('Newly added data not displayed in the popup element, when item template is used', () => {
+            comboBoxObj = new ComboBox({
+                dataSource: data,
+                fields: { text: 'Name', value: 'Eimg' },
+                placeholder: "Find a country",
+                popupHeight: '250px',
+                itemTemplate: '<div>${Name}</div>',
+                allowFiltering: true,
+                autofill: true,
+                showClearButton: true,
+                change: function (args: any) {
+                    if (args.value === null) {
+                        comboBoxObj.addItem({
+                            Name: 'Raveen Kumar',
+                            Eimg: 'DL',
+                            Designation: 'CEO',
+                            Country: 'England',
+                        });
+                        comboBoxObj.dataBind();
+                    }
+                },
+            });
+            comboBoxObj.appendTo(element);
+            let list: Array<HTMLElement> = (<any>comboBoxObj).list.querySelectorAll('li');
+            mouseEventArgs.target = list[2];
+            mouseEventArgs.type = 'click';
+            (<any>comboBoxObj).onMouseClick(mouseEventArgs);
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            comboBoxObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
+            expect(comboBoxObj.list.querySelectorAll('li')[9].textContent === 'Raveen Kumar').toBe(true);
+        });
+    });
 });
+

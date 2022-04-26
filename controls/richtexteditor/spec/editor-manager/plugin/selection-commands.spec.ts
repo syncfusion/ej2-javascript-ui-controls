@@ -645,7 +645,6 @@ describe('EJ2-57778- Console error occurs and format not applied, when removing 
 });
 
 describe('EJ2-57778- Console error occurs, when removing the particular format', () => {
-    //HTML value
     let innervalue: string = `<p>Testing</p>`;
     let rteObj: any;
     let rteID: any;
@@ -677,6 +676,144 @@ describe('EJ2-57778- Console error occurs, when removing the particular format',
         expect((rteObj as any).inputElement.innerHTML).toBe('<p>Testing<strong>​</strong></p>');
         boldItem.click();
         expect((rteObj as any).inputElement.innerHTML).toBe('<p>Testing​</p>');
+        done();
+    });
+});
+
+describe('EJ2-59075 - The font name is not getting properly while loading custom font ', () => {
+    let innervalue: string = `<p><span class="focusNode" style="font-family: &quot;Kaushan Script&quot;;">​</span></p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'FontColor', 'BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('The font name is not changed properly issue - EJ2-59075 ', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 1, 1);
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.inputElement, 'P', 'Arial');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span class="focusNode" style="font-family: Arial;"><br></span></p>`);
+        done();
+    });
+});
+
+describe('EJ2-58803 - Styles format not maintain properly when applied different formats Xamarin reported', () => {
+    let innervalue: string = `<p><strong>​<em>​<span style="text-decoration: underline;">​<span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span class="focusNode" style="background-color: rgb(255, 255, 0);">RTE Content</span></span></span></em></strong></p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'FontColor', 'BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Case 1 of the formating issue - EJ2-58803 ', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 11, 11);
+        SelectionCommands.applyFormat(document, 'underline', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span class="focusNode" style="background-color: rgb(255, 255, 0);">RTE Content</span></span></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span class="focusNode" style="background-color: rgb(255, 255, 0);">​</span></span></em><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span class="focusNode" style="background-color: rgb(255, 255, 0);">​</span></span></strong><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span class="focusNode" style="background-color: rgb(255, 255, 0);">​</span></span></p>`);
+        done();
+    });
+});
+
+describe('EJ2-58803 - Styles format not maintain properly when applied different formats Xamarin reported', () => {
+    let innervalue: string = `<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span></em></strong></p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'FontColor', 'BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+
+    it('Case 2 of the formating issue - EJ2-58803 ', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 11, 11);
+        SelectionCommands.applyFormat(document, 'underline', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​</span></em><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​</span></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
+        done();
+    });
+});
+
+describe('EJ2-58803 - Styles format not maintain properly when applied different formats Xamarin reported', () => {
+    let innervalue: string = `<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span></span></p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'FontColor', 'BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+
+    it('Case 4 of the formating issue - EJ2-58803 ', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 11, 11);
+        SelectionCommands.applyFormat(document, 'underline', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', 'rgb(83, 129, 53)');
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span>​</em>​</strong>​</span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
+        done();
+    });
+});
+
+describe('EJ2-58803 - Styles format not maintain properly when applied different formats Xamarin reported', () => {
+    let innervalue: string = `<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span></span></p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'FontColor', 'BackgroundColor']
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+
+    it('Case 5 of the formating issue - EJ2-58803 ', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 11, 11);
+        SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', 'rgb(83, 129, 53)');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span><span style="background-color: rgb(246, 198, 206);"><strong><em><span class="focusNode" style="text-decoration: underline;">​</span></em></strong></span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);"><strong><em><span class="focusNode" style="text-decoration: underline;">​</span></em></strong></span></span></p>`);
         done();
     });
 });

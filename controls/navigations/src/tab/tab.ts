@@ -2172,8 +2172,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             let textValue: string | HTEle;
             items.forEach((item: TabItemModel, place: number) => {
                 textValue = item.headerTemplate || item.header.text;
-                if (!(isNOU(item.headerTemplate || item.header) ||
-                    isNOU(textValue) || ((<string>textValue).length === 0) && isNOU(item.header.iconCss))) {
+                if (!(isNOU(item.headerTemplate || item.header) || isNOU(textValue) ||
+                    ((<string>textValue).length === 0) && !isNOU(item.header) && isNOU(item.header.iconCss))) {
                     this.items.splice((index + i), 0, item);
                     i++;
                 }

@@ -72,6 +72,9 @@
         & .e-group-action .e-btn {
           margin-left: $qrybldr-group-container-margin-left;
           margin-right: $group-action-margin;
+          @if $skin-name == 'tailwind' {
+            font-size: 20px;
+          }
             }
         }
 
@@ -549,6 +552,9 @@
 
     & .e-group-action .e-btn {
       margin-left: $bigger-group-action-margin;
+      @if $skin-name == 'tailwind' {
+        font-size: 28px;
+      }
       }
 
     & .e-rule-list>:first-child::before {

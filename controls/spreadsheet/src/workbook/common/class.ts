@@ -409,6 +409,14 @@ export class Validation extends ChildProperty<Validation> {
     @Property(false)
     public isHighlighted: boolean;
 
+    /**
+     * Specifies address for validation within the same column.
+     *
+     * @default ''
+     * @hidden
+     */
+    @Property('')
+    public address: string;
 }
 
 /**

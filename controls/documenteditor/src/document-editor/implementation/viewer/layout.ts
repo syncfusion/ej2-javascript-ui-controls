@@ -1305,6 +1305,9 @@ export class Layout {
             } else {
                 element.line.marginTop += (this.viewer.clientActiveArea.y - previousTop)
             }
+            if(element.line.paragraph.containerWidget instanceof HeaderFooterWidget){
+                element.line.paragraph.containerWidget.height += (this.viewer.clientActiveArea.y - previousTop);
+            }
             this.isYPositionUpdated = false;
         }
     }
@@ -1356,8 +1359,8 @@ export class Layout {
     }
     private isNeedToWrapLeafWidget(pargaraph: ParagraphWidget, elementBox: ElementBox): boolean {
         let IsNeedToWrap: boolean = true;
-        return (pargaraph.bodyWidget.floatingElements.length > 0 && IsNeedToWrap
-            && (!pargaraph.isInHeaderFooter || pargaraph.associatedCell)
+        return (pargaraph.bodyWidget.floatingElements.length > 0 
+            && (IsNeedToWrap || pargaraph.associatedCell)
             && !(elementBox instanceof ImageElementBox));
     }
     private getMinWidth(currTextRange: TextElementBox, width: number, height: number, rect: Rect): number {
@@ -3824,20 +3827,7 @@ export class Layout {
       
         if (paragraphWidget.bodyWidget instanceof HeaderFooterWidget) {
             if (!paragraphWidget.isInsideTable) {
-                if(paragraphWidget.floatingElements.length != 0) {
-                    let floatingEleHeight: number = 0;
-                    for(let i:number = 0; i < paragraphWidget.floatingElements.length; i++){
-                        let floatingElement : ShapeBase | TableWidget | ImageElementBox = paragraphWidget.floatingElements[i];
-                        if(floatingElement.zOrderPosition != -1){
-                            if(paragraphWidget.floatingElements[i].height > floatingEleHeight && paragraphWidget.floatingElements[i].height > paragraphWidget.height) {
-                                paragraphWidget.height = paragraphWidget.floatingElements[i].height;
-                                floatingEleHeight = paragraphWidget.floatingElements[i].height;
-                            }
-                        }
-                    }
-                }
                 paragraphWidget.containerWidget.height += paragraphWidget.height;
-
             }
             if (this.viewer.owner.enableHeaderAndFooter && paragraphWidget.bodyWidget.headerFooterType.indexOf('Footer') !== -1) {
                 this.shiftFooterChildLocation(paragraphWidget.bodyWidget, this.viewer);

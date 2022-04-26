@@ -9,7 +9,6 @@ import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 import { classList } from '@syncfusion/ej2-base';
-import * as literals from '@syncfusion/ej2-grids';
 
 /**
  * `BatchEdit` module is used to handle batch editing actions.
@@ -476,7 +475,7 @@ export class BatchEdit {
             if (this.parent.editSettings.newRowPosition !== 'Bottom' && !Object.hasOwnProperty.call(args, 'updatedRecords')) {
                 data.splice(data.length - addRecords.length, addRecords.length);
                 if (this.parent.editModule['isAddedRowByMethod'] && addRecords.length && !isNullOrUndefined(this.parent.editModule['addRowIndex'])) {
-                    const index: number = parseInt((this.parent.getContentTable().getElementsByClassName('e-insertedrow')[0] as any).ariaRowIndex);
+                    const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[0].getAttribute('aria-rowindex'), 10);
                     data.splice(index, 0, addRecords[0]);
                 }
                 if (!this.parent.allowPaging && data.length !== currentViewRecords.length) {

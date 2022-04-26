@@ -25,7 +25,7 @@ export class CanvasRenderer {
         if (style.fill === 'none') { style.fill = 'transparent'; }
         if (style.stroke === 'none') { style.stroke = 'transparent'; }
         ctx.strokeStyle = style.stroke;
-        style.strokeWidth > 1 ? ctx.lineWidth = style.strokeWidth : ctx.lineWidth = ctx.lineWidth;
+        ctx.lineWidth = style.strokeWidth;
         if (style.strokeWidth === 0) {
             ctx.strokeStyle = 'transparent';
         }

@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, CellModel, getData, getSheet } from '../base/index';
 import { DataManager, Query, Deferred, Predicate } from '@syncfusion/ej2-data';
-import { getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, skipHiddenIdx } from '../common/index';
+import { getIndexesFromAddress, getSwapRange, getRangeAddress, getRangeIndexes, skipHiddenIdx, getSheetIndexFromAddress } from '../common/index';
 import { BeforeFilterEventArgs, FilterOptions, FilterEventArgs, setRow, ExtendedRowModel, getSheetIndex } from '../index';
 import { initiateFilter, hideShow } from '../common/event';
 
@@ -52,7 +52,7 @@ export class WorkbookFilter {
         eventArgs: { args: BeforeFilterEventArgs, promise: Promise<FilterEventArgs>, refresh?: boolean }): void {
         const args: BeforeFilterEventArgs = eventArgs.args;
         const deferred: Deferred = new Deferred();
-        const sheet: SheetModel = getSheet(this.parent, this.parent.getAddressInfo(args.range).sheetIndex);
+        const sheet: SheetModel = getSheet(this.parent, getSheetIndexFromAddress(this.parent, args.range));
         const filterOptions: FilterOptions = args.filterOptions || {};
         eventArgs.promise = deferred.promise;
         if (filterOptions.datasource) {

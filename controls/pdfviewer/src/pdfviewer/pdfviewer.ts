@@ -7900,7 +7900,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let allowServerDataBind: boolean = this.allowServerDataBinding;
         this.enableServerDataBinding(false);
         if (this.annotationModule) {
-            const annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
+            let module:any = this.annotationModule.textMarkupAnnotationModule;
+            const annotationSelect: number = module && module.selectTextMarkupCurrentPage;
             // eslint-disable-next-line
             let annotation: any = this.selectedItems.annotations[0];
             if (annotationSelect) {

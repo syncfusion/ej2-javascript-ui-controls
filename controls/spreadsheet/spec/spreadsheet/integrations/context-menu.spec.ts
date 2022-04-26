@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel } from '../../../src';
+import { CellModel, SheetModel } from '../../../src';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -113,22 +113,11 @@ describe('Spreadsheet context menu module ->', () => {
 
             it('Paste special -> values checking', (done: Function) => {
                 helper.invoke('selectRange', ['K4']);
-                let cElem: HTMLTableCellElement = helper.invoke('getCell', [3, 10]);
-                let coords: DOMRect = <DOMRect>cElem.getBoundingClientRect();
-                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cElem);
-                setTimeout(() => {
-                    cElem = helper.getElement('#' + helper.id + '_contextmenu li:nth-child(4)');
-                    coords = <DOMRect>cElem.getBoundingClientRect();
-                    helper.triggerMouseAction('mouseover', { x: coords.x, y: coords.y }, cElem.parentElement.parentElement, cElem);
-                    setTimeout(() => {
-                        helper.click('.e-spreadsheet-contextmenu .e-ul li');
-                        helper.invoke('getData', ['Sheet1!K4']).then((values: Map<string, CellModel>) => {
-                            expect(values.get('K4').value).toEqual('Item Name');
-                            expect(values.get('K4').style).toBeUndefined();
-                            done();
-                        });
-                    }, 10);
-                }, 10);
+                helper.openAndClickCMenuItem(3, 10, [4, 1]);
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                expect(sheet.rows[3].cells[10].value).toEqual('Item Name');
+                expect(sheet.rows[3].cells[10].style).toBeUndefined();
+                done();
             });
 
             it('Paste special -> formats checking', (done: Function) => {

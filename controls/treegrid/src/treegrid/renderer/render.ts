@@ -1,6 +1,6 @@
 import { TreeGrid } from '..';
 import { QueryCellInfoEventArgs, IGrid, RowDataBoundEventArgs, getObject, appendChildren } from '@syncfusion/ej2-grids';
-import { templateCompiler, extend } from '@syncfusion/ej2-grids';
+import { templateCompiler, extend, Row, CellRenderer, Cell } from '@syncfusion/ej2-grids';
 import { addClass, createElement, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
@@ -256,6 +256,32 @@ export class Render {
         } else {
             cellElement.innerHTML = textContent;
             args.cell.innerHTML = '';
+        }
+    }
+	
+	 /**
+     * @param {string} columnUid - Defines column uid
+     * @returns {void}
+     * @hidden
+     */
+     private refreshReactColumnTemplateByUid(columnUid: string): void {
+        if ((<{ isReact?: boolean }>this.parent).isReact) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this as any).parent.clearTemplate(['columnTemplate'], undefined, () => {
+                const cells: string = 'cells';
+                const rowIdx: string = 'index';
+                const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
+                const indent: number = this.parent.grid.getIndentCount();
+                const cellIndex: number = this.parent.grid.getNormalizedColumnIndex(columnUid);
+                for (let j: number = 0; j < rowsObj.length; j++) {
+                    if (rowsObj[j].isDataRow && !isNullOrUndefined(rowsObj[j].index)) {
+                        const cell: Cell<gridColumn> = rowsObj[j][cells][cellIndex];
+                        const cellRenderer: CellRenderer = new CellRenderer(this.parent.grid as IGrid, this.parent.grid.serviceLocator);
+                        const td: Element = this.parent.getCellFromIndex(rowsObj[j].index, cellIndex - indent);
+                        cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                    }
+                }
+            });
         }
     }
 

@@ -360,6 +360,14 @@ export interface ValidationModel {
      */
     isHighlighted?: boolean;
 
+    /**
+     * Specifies address for validation within the same column.
+     *
+     * @default ''
+     * @hidden
+     */
+    address?: string;
+
 }
 
 /**

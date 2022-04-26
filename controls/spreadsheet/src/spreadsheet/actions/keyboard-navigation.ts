@@ -370,6 +370,9 @@ export class KeyboardNavigation {
             if (noHidden) {
                 selectedRange[2] = selectedRange[2] + 1;
             }
+            if (sheet.rowCount <= selectedRange[2]) {
+                selectedRange[2] = sheet.rowCount - 1;
+            }
         }
         if (e.keyCode === 39) { // shift + right arrow
             for (let i: number = swapRange[0]; i <= swapRange[2]; i++) {
@@ -382,6 +385,9 @@ export class KeyboardNavigation {
             }
             if (noHidden) {
                 selectedRange[3] = selectedRange[3] + 1;
+            }
+            if (sheet.colCount <= selectedRange[3]) {
+                selectedRange[3] = sheet.colCount - 1;
             }
         }
         if (e.keyCode === 37) { // shift + left arrow

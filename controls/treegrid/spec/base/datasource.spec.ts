@@ -500,6 +500,19 @@ export let employeeData3: object[] = [
     }]
 }];
 
+export let sampleData5 = [
+    {
+      taskID: 1,
+      taskName: 'Planning',
+      startDate: new Date('02/03/2017'),
+      endDate: new Date('02/07/2017'),
+      progress: 100,
+      duration: 5,
+      priority: 'Normal',
+      approved: false,
+    },
+  ];
+
 export let sampleData: Object[] = [
     {
         taskID: 1,

@@ -67,5 +67,56 @@ describe('Spreadsheet cell navigation module ->', () => {
                 done();
             });
         });
+
+        describe('EJ2-59225 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rowCount: 3, colCount: 3 }], scrollSettings: { isFinite: true } }, done);
+            });
+
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+
+            it('The spreadsheet selection moves away from the spreadsheet table when we move it with the keyboard', (done: Function) => {
+                helper.getElement().focus();
+                const instance: any = helper.getInstance();
+                helper.invoke('selectRange', ['B2:B2']);
+                const selectionEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-selection');
+                const autofillEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-autofill');
+                helper.triggerKeyEvent('keydown', 39, null, false, true);
+                setTimeout(() => {
+                    expect(instance.sheets[0].selectedRange).toBe('B2:C2');
+                    expect(selectionEle.style.height).toBe('21px');
+                    expect(selectionEle.style.width).toBe('129px');
+                    expect(autofillEle.style.top).toBe('35px');
+                    expect(autofillEle.style.left).toBe('187px');
+                    helper.triggerKeyEvent('keydown', 39, null, false, true);
+                    setTimeout(() => {
+                        expect(instance.sheets[0].selectedRange).toBe('B2:C2');
+                        expect(selectionEle.style.height).toBe('21px');
+                        expect(selectionEle.style.width).toBe('129px');
+                        expect(autofillEle.style.top).toBe('35px');
+                        expect(autofillEle.style.left).toBe('187px');
+                        helper.triggerKeyEvent('keydown', 40, null, false, true);
+                        setTimeout(() => {
+                            expect(instance.sheets[0].selectedRange).toBe('B2:C3');
+                            expect(selectionEle.style.height).toBe('41px');
+                            expect(selectionEle.style.width).toBe('129px');
+                            expect(autofillEle.style.top).toBe('55px');
+                            expect(autofillEle.style.left).toBe('187px');
+                            helper.triggerKeyEvent('keydown', 40, null, false, true);
+                            setTimeout(() => {
+                                expect(instance.sheets[0].selectedRange).toBe('B2:C3');
+                                expect(selectionEle.style.height).toBe('41px');
+                                expect(selectionEle.style.width).toBe('129px');
+                                expect(autofillEle.style.top).toBe('55px');
+                                expect(autofillEle.style.left).toBe('187px');
+                                done();
+                            }, 10);
+                        }, 10);
+                    }, 10);
+                }, 10);
+            });
+        });
     });
 });

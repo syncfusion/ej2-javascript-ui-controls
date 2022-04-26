@@ -115,11 +115,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private addedRecords: string = 'addedRecords';
     private targetElement: HTMLElement;
     private isGantt: boolean;
+    private isIndentEnabled: boolean;
+    private indentOutdentAction: string = 'indentOutdentAction';
     /**
      * The `sortModule` is used to manipulate sorting in TreeGrid.
      */
     public sortModule: Sort;
     private action: string;
+    private dropIndex: number;
+    private dropPosition: string;
+    private modifiedRecords: ITreeData[] = [];
     private selectedRecords: Object[];
     private selectedRows: Object[];
     private loggerModule: TreeLogger;
@@ -1669,14 +1674,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return modules;
     }
     public extendRequiredModules(modules: ModuleDeclaration[]): void {
-        if (this.allowRowDragAndDrop) {
-            modules.push({
-                member: 'rowDragAndDrop',
-                args: [this]
-            });
-        }
-        if (!isNullOrUndefined(this.toolbar) && (this.toolbar['includes']('Indent') || this.toolbar['includes']('Outdent'))) {
-            TreeGrid.Inject(RowDD);
+        const IsRowDDInjected: Function[] = this.injectedModules.filter((e: Function) => {
+            return e.name === 'RowDD';
+        });
+        if (this.allowRowDragAndDrop || IsRowDDInjected.length) {
+            if ((!isNullOrUndefined(this.toolbar) && (this.toolbar['includes']('Indent') ||
+             this.toolbar['includes']('Outdent')))) {
+                this.isIndentEnabled = true;
+            }
             modules.push({
                 member: 'rowDragAndDrop',
                 args: [this]
@@ -1804,6 +1809,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const root: string = 'root';
         this.grid[root] = this[root] ? this[root] : this;
         this.grid.appendTo(gridContainer as HTMLElement);
+        if (this.isIndentEnabled) {
+            this.refreshToolbarItems();
+        }
         this.wireEvents();
         this.renderComplete();
         const destroyTemplate: string = 'destroyTemplate';
@@ -1816,6 +1824,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.clearTemplate(args, index);
             }
         };
+    }
+
+    private refreshToolbarItems(): void {
+        const toolbarElement: Element = this.toolbarModule.getToolbar();
+        const indentID: string = this.element.id + '_gridcontrol_indent';
+        const outdentID: string = this.element.id + '_gridcontrol_outdent';
+        const indentElement: HTMLElement = toolbarElement.querySelector('#' + indentID).parentElement;
+        const outdentElement: HTMLElement = toolbarElement.querySelector('#' + outdentID).parentElement;
+        indentElement.classList.add('e-hidden');
+        outdentElement.classList.add('e-hidden');
     }
 
     private afterGridRender(): void {
@@ -2302,13 +2320,23 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (this.action === 'indenting' || this.action === 'outdenting') {
                 this.action = this.action === 'indenting' ? 'indented' : 'outdented';
+                const selectedItem: Object[] = [this.selectedRecords];
                 const actionArgs: TreeActionEventArgs = {
+                    data: selectedItem,
+                    dropIndex: this.dropIndex,
+                    dropPosition: this.dropPosition,
+                    modifiedRecords: this.modifiedRecords,
                     requestType: this.action,
-                    data: this.selectedRecords,
                     row: this.selectedRows
                 };
                 this.trigger(events.actionComplete, actionArgs);
-                this.action = ''; this.selectedRecords = this.selectedRows = [];
+                const currentPageItem: Object[] = this.getCurrentViewRecords().filter((e: ITreeData) => {
+                    return e.uniqueID === (selectedItem[0] as ITreeData).uniqueID;
+                });
+                if (!currentPageItem.length) {
+                    this.refreshToolbarItems();
+                }
+                this.action = ''; this.selectedRecords = this.selectedRows = this.modifiedRecords = [];
             } else {
                 this.trigger(events.actionComplete, args);
             }
@@ -2509,7 +2537,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 case ToolbarItem.RowIndent:
                     tooltipText = this.l10n.getConstant('RowIndent');
                     items.push(<ItemModel>{
-                        text: tooltipText, tooltipText: tooltipText, disabled: true,
+                        text: tooltipText, tooltipText: tooltipText,
                         prefixIcon: 'e-indent', id: this.element.id + '_gridcontrol_indent'
                     });
                     break;
@@ -2517,7 +2545,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 case ToolbarItem.RowOutdent:
                     tooltipText = this.l10n.getConstant('RowOutdent');
                     items.push(<ItemModel>{
-                        text: tooltipText, tooltipText: tooltipText, disabled: true,
+                        text: tooltipText, tooltipText: tooltipText,
                         prefixIcon: 'e-outdent', id: this.element.id + '_gridcontrol_outdent'
                     });
                     break;
@@ -4695,6 +4723,33 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
         this.rowDragAndDropModule.reorderRows(fromIndexes, toIndex, position);
     }
+
+    /**
+     * Indents the record to one level of hierarchy. Moves the selected row as the last child of its previous row.
+     *
+     * @param {Object} record – specifies the record to do indented
+     * @returns {void}
+     */
+    public indent(record?: Object): void {
+        if (!isNullOrUndefined(this.rowDragAndDropModule)) {
+            record = record as ITreeData;
+            this.rowDragAndDropModule[this.indentOutdentAction](record, 'indent');
+        }
+    }
+
+    /**
+     * Outdent the record to one level of hierarchy. Moves the selected row as sibling to its parent row.
+     *
+     * @param {Object} record – specifies the record to do outdented
+     * @returns {void}
+     */
+    public outdent(record?: Object): void {
+        if (!isNullOrUndefined(this.rowDragAndDropModule)) {
+            record = record as ITreeData;
+            this.rowDragAndDropModule[this.indentOutdentAction](record, 'outdent');
+        }
+    }
+
 
     /**
      * `columnchooserModule` is used to dynamically show or hide the TreeGrid columns.

@@ -2551,7 +2551,7 @@ export class DocumentHelper {
      * @param {Page} page - Specifies page to remove
      * @returns {void}
      */
-    public removePage(page: Page): void {
+    public removePage(page: Page, updateHeaderFooterPage?:boolean): void {
         if (this.currentPage === page) {
             this.currentPage = undefined;
         }
@@ -2593,6 +2593,14 @@ export class DocumentHelper {
                 top = page.boundingRectangle.bottom + 20;
                 page.repeatHeaderRowTableWidget = false;
             }
+        }
+        let start : TextPosition = this.selection.start as TextPosition;
+        if(!this.selection.isForward){
+            start = this.selection.end;
+        }
+        let currentPage: Page = (start.paragraph.containerWidget as BodyWidget).page as Page;
+        if(updateHeaderFooterPage){
+            this.owner.viewer.findFocusedPage(start.location,true,true,currentPage);
         }
     }
     // private removeRenderedPages(): void {
@@ -3851,7 +3859,7 @@ export abstract class LayoutViewer {
             this.clientActiveArea.width = 0;
         }
     }
-    public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean, updateHeaderFooterPage?: boolean): Point {
+    public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean, updateHeaderFooterPage?: boolean, updatePage?: Page): Point {
         let point: Point = new Point(currentPoint.x, currentPoint.y);
         point.x += this.documentHelper.viewerContainer.scrollLeft;
         point.y += this.documentHelper.viewerContainer.scrollTop;
@@ -3870,12 +3878,7 @@ export abstract class LayoutViewer {
                 if (updateCurrentPage) {
                     this.documentHelper.currentPage = page;
                     if(updateHeaderFooterPage) {
-                        if (!isNullOrUndefined(page.headerWidget)) {
-                            page.headerWidget.page = page;
-                        }
-                        if (!isNullOrUndefined(page.footerWidget)) {
-                            page.footerWidget.page = page;
-                        }
+                        this.updateHeaderFooterPageInstance(page);
                     }
                 }
                 point.y = (point.y - (pageTop)) / this.documentHelper.zoomFactor;
@@ -3888,9 +3891,23 @@ export abstract class LayoutViewer {
                 }
                 return point;
             }
+            if(!isNullOrUndefined(updatePage)){
+                this.updateHeaderFooterPageInstance(updatePage);
+            }
         }
         return point;
     }
+
+
+    private updateHeaderFooterPageInstance(page:Page):void{
+        if (!isNullOrUndefined(page.headerWidget)) {
+            page.headerWidget.page = page;
+        }
+        if (!isNullOrUndefined(page.footerWidget)) {
+            page.footerWidget.page = page;
+        }
+    }
+
     public getPageHeightAndWidth(height: number, width: number, viewerWidth: number, viewerHeight: number): PageInfo {
         height = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {

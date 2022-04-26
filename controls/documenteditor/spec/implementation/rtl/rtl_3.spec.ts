@@ -144,7 +144,7 @@ describe('Rtl list delete validation', () => {
         expect(lineWidget.paragraph.paragraphFormat.listFormat.listId).not.toBe(-1);
     });
 });
-describe('Rtl hebrew text selection validation', () => {
+describe('Rtl hebrew text selection and editing validation', () => {
     let editor: DocumentEditor;
     let documentHelper: DocumentHelper;
     beforeAll((): void => {
@@ -171,8 +171,17 @@ describe('Rtl hebrew text selection validation', () => {
             done();
         }, 1000);
     });
-    it('Rtl hebrew text selection validation', () => {
+    it('Rtl hebrew text selection validation with bidi', () => {
         editor.selection.paragraphFormat.bidi = true;
+        editor.editor.insertText('יקךךם');
+        editor.editor.insertText(',')
+        editor.editor.insertText(' ');
+        let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        expect((lineWidget.children[0] as TextElementBox).text).toBe(' ');
+    });
+    it('Rtl hebrew text inserting comma and space in right aignment', () => {
+        editor.openBlank();
+        editor.selection.paragraphFormat.textAlignment = 'Right';
         editor.editor.insertText('יקךךם');
         editor.editor.insertText(',')
         editor.editor.insertText(' ');

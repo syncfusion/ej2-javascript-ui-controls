@@ -8,9 +8,9 @@ import { Dialog } from '../services/dialog';
 import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus } from '../common/index';
 import { formulaBarOperation, removeDataValidation, CellValidationEventArgs } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { isHiddenRow, setRow, ColumnModel, beginAction, ActionEventArgs, getSwapRange } from '../../workbook/index';
+import { isHiddenRow, setRow, ColumnModel, beginAction, ActionEventArgs, getSwapRange, checkColumnValidation } from '../../workbook/index';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, cellValidation, updateCell } from '../../workbook/common/index';
+import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, cellValidation, updateCell, isInMultipleRange } from '../../workbook/common/index';
 import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReference } from '../../workbook/index';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -176,6 +176,9 @@ export class DataValidation {
             const validation: ValidationModel = (cell && cell.validation) || (sheet.columns && sheet.columns[indexes[1]] &&
                 sheet.columns[indexes[1]].validation);
             if (validation && validation.type === 'List') {
+                if (validation.address && !isInMultipleRange(validation.address, indexes[0], indexes[1])) {
+                    return;
+                }
                 validation.ignoreBlank = !isNullOrUndefined(validation.ignoreBlank) ? validation.ignoreBlank : true;
                 validation.inCellDropDown = !isNullOrUndefined(validation.inCellDropDown) ?
                     validation.inCellDropDown : true;
@@ -1023,7 +1026,7 @@ export class DataValidation {
         const column: ColumnModel = getColumn(sheet, args.range[1]);
         if (cell && cell.validation) {
             validation = cell.validation;
-        } else if (column && column.validation) {
+        } else if (checkColumnValidation(column, args.range[0], args.range[1])) {
             validation = column.validation;
         }
         if (validation) {
@@ -1209,7 +1212,7 @@ export class DataValidation {
         args.td = args.td || this.parent.getCell(args.range[0], args.range[1]);
         args.sheetIdx = args.sheetIdx || this.parent.activeSheetIndex;
         const formulaArgs : InvalidFormula = { skip: false, value: '' };
-        if (cell.validation) {
+        if (cell && cell.validation) {
             if (checkIsFormula(cell.validation.value1) &&
             !isCellReference(cell.validation.value1.substring(1, cell.validation.value1.length)) &&
             cell.validation.value1.indexOf('(') > - 1) {

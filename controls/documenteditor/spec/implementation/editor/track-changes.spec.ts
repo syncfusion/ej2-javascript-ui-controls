@@ -339,3 +339,44 @@ describe('Check the revision collection after perform undo', () => {
         expect(container.revisions.changes.length).toBe(0);
     });
 });
+describe('Check the empty paragraph deletion functionality', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check the revision after delete empty paragraph', () => {
+        console.log('Check the revision after delete empty paragraph');
+        container.openBlank();
+        container.editor.insertTable(1,1);
+        container.editor.insertText("hi");
+        container.enableTrackChanges = true;
+        container.editor.onEnter();
+        container.editor.insertText("hi");
+        container.enableTrackChanges = false;
+        container.selection.moveToPreviousLine();
+        container.selection.moveToParagraphStart();
+        container.editor.delete();
+        container.editor.delete();
+        container.editor.delete();
+        container.revisions.acceptAll();
+        expect(container.revisions.changes.length).toBe(0);
+    });
+});

@@ -428,6 +428,9 @@ export class SheetRender implements IRenderer {
                     return;
                 }
             }
+            if (!row) {
+                return;
+            }
             cell = this.cellRenderer.render(<CellRenderArgs>{
                 colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
                 first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' :
@@ -546,6 +549,7 @@ export class SheetRender implements IRenderer {
             const frozenRow: number = this.parent.frozenRowCount(sheet);
             const frozenCol: number = this.parent.frozenColCount(sheet);
             const lastFrozenRow: number = skipHiddenIdx(sheet, frozenRow - 1, false);
+            const firstRow: number = skipHiddenIdx(sheet, args.indexes[0], true);
             let cellArgs: CellRenderArgs;
             (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
                 if (skipRender) { return; }
@@ -557,7 +561,7 @@ export class SheetRender implements IRenderer {
                             { cells: [] }).cells[(args.indexes[3] - args.indexes[1]) + 1],
                         getCell(indexes[0], this.parent.viewport.leftIndex + frozenCol, sheet) || {});
                 }
-                if (indexes[0] === args.indexes[0]) {
+                if (indexes[0] === firstRow) {
                     if (args.direction === 'last') {
                         col = this.col.cloneNode() as HTMLElement;
                         col.style.width = formatUnit(getColumnWidth(sheet, indexes[1], null, true));

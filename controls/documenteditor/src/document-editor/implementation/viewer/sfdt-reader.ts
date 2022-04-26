@@ -1051,6 +1051,7 @@ export class SfdtReader {
                 let field: FieldElementBox = undefined;
                 if (inline.fieldType === 2) {
                     field = new FieldElementBox(2);
+                    this.parseCharacterFormat(inline.characterFormat, field.characterFormat, writeInlineFormat);
                     this.fieldSeparator = field;
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];

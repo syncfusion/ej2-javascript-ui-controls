@@ -2943,3 +2943,47 @@ describe('EJ2-57916 Initial filter value is not displayed => ', () => {
         destroy(gridObj);
     });
 });
+describe('EJ2-59364 custom component in filterBarTemplate => ', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+    gridObj = createGrid(
+        {
+            dataSource: filterData,
+            allowFiltering: true,
+            allowPaging: false,
+            pageSettings: { currentPage: 1 },
+            filterSettings: { type: 'FilterBar', showFilterBarOperator: true },
+            columns: [{ field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+            {
+                field: 'OrderDate', headerText: 'Order Date', width: 130,  format:"dd-MMM-yyyy", textAlign: 'Right',
+                filterBarTemplate:{
+                    create: (args: any) => {
+                        let input: any = document.createElement('input');
+                        input.className = 'flm-input, e-input-group-icon';
+                        input.type = 'text';
+                        return input;
+                    },
+                    write: (args: any) => {
+                        args.element.value ='1996/07/17';
+                    },
+                    read: (args: any) => {
+                        gridObj.filterModule.filterByColumn('OrderDate', 'equal', '1937/09/19');
+                    },
+                }
+            },
+            { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+            { field: 'ShipCountry', headerText: 'Ship Country', width: 150}],
+            actionBegin: actionBegin,
+            actionComplete: actionComplete
+        }, done);
+    });
+    it("checking customComponent",()=>{
+        (((gridObj.getHeaderTable().querySelector("#OrderDate_filterBarcell") as HTMLElement).querySelector(".e-input-group-icon"))as HTMLElement).click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionBegin = actionComplete = null;
+    });
+});

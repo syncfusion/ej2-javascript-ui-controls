@@ -691,11 +691,11 @@ export class Edit {
             this.selectedIndex = this.batchEditModule.getSelectedIndex();
             if (this.parent.editModule['isAddedRowByMethod']) {
                 const args: Object = {
-                    action : "add",
+                    action : 'add',
                     data: this.parent.getBatchChanges()['addedRecords'][0],
                     index: index,
                     seletedRow: 0
-                }
+                };
                 this.parent.editModule.beginAddEdit(args);
                 this.parent.editModule.batchEditModule['batchAddRowRecord'].push(this.parent.editModule.batchEditModule['addRowRecord']);
                 this.parent.editModule.batchEditModule['batchAddedRecords'].push(args['data']);
@@ -831,7 +831,7 @@ export class Edit {
             let parentUniqueID: string; let parentItem: Object; let parentIdMapping: string;
             const isVirtualization: boolean = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
             const rows: HTMLTableRowElement[] = this.parent.getRows();
-            const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
+            const firstAriaIndex: number = rows.length ? currentData.indexOf(currentData[0]) : 0;
             const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
             const withinRange: boolean = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
             if (currentData.length) {

@@ -8177,7 +8177,7 @@ export class Page {
         this.bodyWidgets = undefined;
         if (!isNullOrUndefined(this.documentHelper)) {
             if (!isNullOrUndefined(this.documentHelper.pages)) {
-                this.documentHelper.removePage(this);
+                this.documentHelper.removePage(this,true);
             }
         }
         this.documentHelper = undefined;

@@ -258,7 +258,7 @@ describe('Treegrid Row Reorder', () => {
           allowRowDragAndDrop: true,
           toolbar: ['Indent', 'Outdent'],
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", isPrimaryKey: true, headerText: "Task Id", width: 90 },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -291,7 +291,7 @@ describe('Treegrid Row Reorder', () => {
           allowRowDragAndDrop: true,
           toolbar: ['Indent', 'Outdent'],
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", isPrimaryKey: true, width: 90 },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -354,7 +354,7 @@ describe('Treegrid Row Reorder', () => {
           allowRowDragAndDrop: true,
           toolbar: ['Indent', 'Outdent'],
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", isPrimaryKey: true, headerText: "Task Id", width: 90 },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],
@@ -777,8 +777,8 @@ describe('Treegrid Row Drop as Child', () => {
         done();
       }
       actionBegin = (args?: any): void => {
-        if (args.requestType != 'outdenting') {
-          expect(args.requestType == 'indenting').toBe(true);
+        if (args.action != 'outdenting') {
+          expect(args.action == 'indenting').toBe(true);
       }
       }
       TreeGridObj.actionComplete = actionComplete;
@@ -821,7 +821,7 @@ describe('Treegrid Row Drop as Child', () => {
         done();
       }
       actionBegin = (args?: any): void => {
-        expect(args.requestType == 'outdenting').toBe(true);
+        expect(args.action == 'outdenting').toBe(true);
         done();
       }
       TreeGridObj.actionComplete = actionComplete;

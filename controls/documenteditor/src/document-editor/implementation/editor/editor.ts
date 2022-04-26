@@ -1738,7 +1738,9 @@ export class Editor {
                 clearTimeout(this.animationTimer);
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
-            this.owner.editorModule.insertText(text);
+            if(!isNullOrUndefined(this.selection.caret.offsetParent) || this.selection.isInlineFormFillMode() || this.selection.text.length != 0) {
+                this.owner.editorModule.insertText(text);
+            }
             /* eslint-disable @typescript-eslint/indent */
             this.animationTimer = setTimeout(() => {
                 if (this.animationTimer) {
@@ -1988,7 +1990,7 @@ export class Editor {
                     isInlineContainsSpecChar = this.documentHelper.textHelper.containsSpecialCharAlone(inline.text);
                     isTextContainsSpecChar = this.documentHelper.textHelper.containsSpecialCharAlone(text);
                 }
-                if (!isBidi && inline.paragraph.paragraphFormat.bidi && (inlineLangId !== 0 || (isInlineContainsSpecChar && isTextContainsSpecChar)) && !isRtl) {
+                if (!isBidi && (inline.paragraph.paragraphFormat.bidi || inline.paragraph.paragraphFormat.textAlignment === 'Right') && (inlineLangId !== 0 || (isInlineContainsSpecChar && isTextContainsSpecChar)) && !isRtl) {
                     isBidi = true;
                 }
                 if (isBidi || !this.documentHelper.owner.isSpellCheck) {
@@ -11413,7 +11415,7 @@ export class Editor {
     }
     private removePrevParaMarkRevision(currentBlock: BlockWidget, isFromDelete?: boolean) {
         isFromDelete = isNullOrUndefined(isFromDelete) ? false : isFromDelete;
-        if (this.owner.enableTrackChanges) {
+        if (this.owner.enableTrackChanges || (currentBlock as ParagraphWidget).characterFormat.revisions.length != 0) {
             let currentPara: ParagraphWidget = currentBlock as ParagraphWidget;
             let rangeIndex: number = -1;
             let revision: Revision;
@@ -13270,7 +13272,7 @@ export class Editor {
     }
     private checkAndRemoveComments(): CommentCharacterElementBox[] {
         let selection: Selection = this.selection;
-        if (selection.isEmpty) {
+        if (selection.isEmpty || this.selection.text.length != 0) {
             return [];
         }
         let initComplexHistory: boolean = false;

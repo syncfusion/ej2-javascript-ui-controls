@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.1.51 (2022-04-26)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I371505` - The issue with "The TreeView checked node state doesn't update properly for nested levels when loadOnDemand is enabled" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#F174269` - Tab throws script error while adding items with `headerTemplate` has been fixed.
+
 ## 20.1.48 (2022-04-12)
 
 ### Menu

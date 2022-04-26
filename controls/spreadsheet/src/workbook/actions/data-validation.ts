@@ -1,9 +1,9 @@
-import { Workbook, SheetModel, CellModel, getSheet, getColumn, ColumnModel, isHiddenRow, getCell, setCell } from '../base/index';
-import { cellValidation, applyCellFormat, isValidation, addHighlight, getCellAddress, validationHighlight, getSwapRange } from '../common/index';
+import { Workbook, SheetModel, CellModel, getSheet, getColumn, ColumnModel, isHiddenRow, getCell, setCell, getSheetIndex } from '../base/index';
+import { cellValidation, applyCellFormat, isValidation, addHighlight, getCellAddress, validationHighlight, getSwapRange, getSheetIndexFromAddress, getSplittedAddressForColumn } from '../common/index';
 import { removeHighlight, InsertDeleteEventArgs, checkIsFormula, checkCellValid } from '../common/index';
 import { getRangeIndexes, getUpdatedFormulaOnInsertDelete, InsertDeleteModelArgs } from '../common/index';
 import { CellFormatArgs, ValidationType, ValidationOperator, ValidationModel, updateCell, beforeInsert, beforeDelete } from '../common/index';
-import { extend, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 /**
@@ -58,7 +58,7 @@ export class WorkbookDataValidation {
             onlyRange = args.range.split('!')[1];
             sheetName = args.range.split('!')[0];
         }
-        const sheet: SheetModel = getSheet(this.parent, this.parent.getAddressInfo(args.range).sheetIndex);
+        const sheet: SheetModel = getSheet(this.parent, sheetName ? getSheetIndex(this.parent, sheetName) : this.parent.activeSheetIndex);
         this.parent.dataValidationRange = (this.parent.dataValidationRange.indexOf('!') > -1 ? '' : sheet.name + '!') + this.parent.dataValidationRange + onlyRange + ',';
         let isfullCol: boolean = false;
         const maxRowCount: number = sheet.rowCount;
@@ -110,6 +110,13 @@ export class WorkbookDataValidation {
             for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
                 for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
                     if (args.isRemoveValidation) {
+                        if (rowIdx === indexes[2]) {
+                            column = getColumn(sheet, colIdx);
+                            if (column && column.validation) {
+                                column.validation.address = getSplittedAddressForColumn(column.validation.address,
+                                    [indexes[0], colIdx, indexes[2], colIdx], colIdx);
+                            }
+                        }
                         cell = getCell(rowIdx, colIdx, sheet);
                         if (cell && cell.validation &&
                             !updateCell(this.parent, sheet, { cell: { validation: {} }, rowIdx: rowIdx, colIdx: colIdx })) {
@@ -152,7 +159,7 @@ export class WorkbookDataValidation {
         const isCell: boolean = false;
         let cell: CellModel;
         let value: string;
-        const sheetIdx: number = range ? this.parent.getAddressInfo(range).sheetIndex : this.parent.activeSheetIndex;
+        const sheetIdx: number = range ? getSheetIndexFromAddress(this.parent, range) : this.parent.activeSheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         range = range || sheet.selectedRange;
         const indexes: number[] = range ? getSwapRange(getRangeIndexes(range)) : [];
@@ -169,7 +176,7 @@ export class WorkbookDataValidation {
                 const lastColIdx: number = range ? indexes[3] : sheet.rows[rowIdx].cells.length;
                 for (colIdx; colIdx <= lastColIdx; colIdx++) {
                     let validation: ValidationModel;
-                    if (sheet.rows[rowIdx].cells[colIdx]) {
+                    if (sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[colIdx]) {
                         const column: ColumnModel = getColumn(sheet, colIdx);
                         cell = sheet.rows[rowIdx].cells[colIdx];
                         if (cell && cell.validation) {

@@ -53,7 +53,7 @@ $badge-dot-min-width: 0 !default;
 $badge-dot-left: 100% !default;
 $badge-dot-box-shadow: none !default;
 
-$badge-padding: 3px 4px !default;
+$badge-padding: 4px !default;
 $badge-notification-line-height: $leading-none !default;
 $badge-notification-ghost-line-height: $leading-none !default;
 $badge-notification-padding: 3px 10px !default;
@@ -68,7 +68,7 @@ $badge-touch-base-font-size: $text-sm !default;
 $badge-touch-base-line-height: $leading-none !default;
 $badge-touch-base-height: 22px !default;
 $badge-touch-base-font-weight: 500 !default;
-$badge-touch-padding: 4px 3px !default;
+$badge-touch-padding: 4px !default;
 
 // Pill Badge
 $badge-touch-pill-padding: 3px 8px !default;
@@ -105,6 +105,6 @@ $badge-success-font-color: $white !default;
 $badge-danger-font-color: $white !default;
 $badge-info-font-color: $white !default;
 $badge-light-font-color: $content-text-color-alt1 !default;
-$badge-dark-font-color: $content-bg-color !default;
+$badge-dark-font-color: $white !default;
 $badge-warning-font-color: $white !default;
 

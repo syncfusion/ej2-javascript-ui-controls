@@ -121,7 +121,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                     getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
                 }
             }
-            if ((!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') || this.isDataSourceChanged) {
+            if ((!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') || (this.isDataSourceChanged && this.startIndex === -1 )) {
                 this.contents.scrollTop = 0;
                 this.isDataSourceChanged = false;
             }

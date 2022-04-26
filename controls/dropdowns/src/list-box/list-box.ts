@@ -1286,7 +1286,7 @@ export class ListBox extends DropDownBase {
         let filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
         if (this.allowFiltering) {
             const filterType: string = this.inputString === '' ? 'contains' : this.filterType;
-            const dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
+            const dataType: string = <string>this.typeOfData(this.jsonData as { [key: string]: Object; }[]).typeof;
             if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
                 filterQuery.where('', filterType, this.inputString, this.ignoreCase, this.ignoreAccent);
             } else {

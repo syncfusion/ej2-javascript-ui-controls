@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.1.50 (2022-04-19)
+## 20.1.51 (2022-04-26)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I375103` - Now, Port visibility will work properly on mouse hover in Canvas mode.
+
+## 20.1.48 (2022-04-12)
 
 ### Diagram
 

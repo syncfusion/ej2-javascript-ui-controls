@@ -7719,6 +7719,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (changed) {
                 this.updateDiagramObject(node);
             }
+            //EJ2-59672 - Added the below code to render the ports while hovering over the node  
+            if (this.mode === 'Canvas') {
+                this.refreshCanvasLayers();
+            }
         }
     }
 

@@ -4012,7 +4012,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const cellIndex: number = this.getNormalizedColumnIndex(columnUid);
                 for (let j: number = 0; j < rows.length; j++) {
                     const rowsObj: Row<Column> = this.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
-                    if (rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index)) {
+                    if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index)) {
                         const cell: Cell<Column> = rowsObj[cells][cellIndex];
                         const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
                         const td: Element = this.getCellFromIndex(j, cellIndex - indent);

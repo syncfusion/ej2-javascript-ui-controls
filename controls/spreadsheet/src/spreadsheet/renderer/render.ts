@@ -154,9 +154,18 @@ export class Render {
                     lastRow += (args.frozenIndexes[0] - frozenRow);
                     lastCol += (args.frozenIndexes[1] - frozenCol);
                 }
-                lastRow += sheet.frozenRows;
-                lastCol += sheet.frozenColumns;
-                const rowIdx: number = args.frozenIndexes[0] > frozenRow ? args.frozenIndexes[0] : args.rowIndex + frozenRow;
+                if (args.refresh === 'Row') {
+                    lastRow += frozenRow;
+                } else {
+                    lastRow += sheet.frozenRows;
+                }
+                if (args.refresh === 'Column') {
+                    lastCol += frozenCol;
+                } else {
+                    lastCol += sheet.frozenColumns;
+                }
+                const rowIdx: number = args.frozenIndexes[0] > frozenRow ? args.frozenIndexes[0] : args.rowIndex + (args.refresh === 'Row' ?
+                    frozenRow : sheet.frozenRows);
                 let indexes: number[] = this.parent.skipHidden(rowIdx, lastRow, 'rows', false);
                 lastRow = indexes[1];
                 if (rowIdx !== indexes[0]) {
@@ -190,7 +199,8 @@ export class Render {
                 } else {
                     startRow = args.rowIndex = frozenRow ? skipHiddenIdx(sheet, startRow, true) : indexes[0];
                 }
-                const colIdx: number = args.frozenIndexes[1] > frozenCol ? args.frozenIndexes[1] : args.colIndex + frozenCol;
+                const colIdx: number = args.frozenIndexes[1] > frozenCol ? args.frozenIndexes[1] : args.colIndex + (args.refresh ===
+                    'Column' ? frozenCol : sheet.frozenColumns);
                 indexes = this.parent.skipHidden(colIdx, lastCol, 'columns', false);
                 lastCol = indexes[1];
                 if (colIdx !== indexes[0]) {

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, dialog, getCell, SheetModel } from "../../../src/index";
+import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, dialog, getCell, SheetModel, ValidationModel } from "../../../src/index";
 import { Dialog } from "../../../src/spreadsheet/services/index";
 
 
@@ -371,7 +371,7 @@ describe('Data validation ->', () => {
             });
         });
 
-        describe('EJ2-56780 ->', () => {
+        describe('EJ2-56780, EJ2-57644 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{
@@ -647,6 +647,45 @@ describe('Data validation ->', () => {
                 expect(getCell(19, 3, sheet)).toBeNull();
                 expect(getCell(20, 3, sheet)).toBeNull();
                 done();
+            });
+
+            it('Clear all on column validation is not working', (done: Function) => {
+                helper.getInstance().workbookDataValidationModule.validationHandler({
+                    range: 'Sheet1!G:G', rules: {
+                        type: 'List', operator: 'Between', value1: '1', value2: '', ignoreBlank: true, inCellDropDown: true
+                    }
+                });
+                helper.invoke('selectRange', ['G3:G5']);
+                helper.click(`#${helper.id}_clear`);
+                helper.click('.e-clear-ddb ul li');
+                const validation: ValidationModel = helper.getInstance().sheets[0].columns[6].validation;
+                expect(validation.address).toBe('G1:G2 G6:G1048576');
+                helper.edit('G3', '4');
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('.e-validationerror-dlg')).toBeNull();
+                    helper.edit('G2', '4');
+                    setTimeout(() => {
+                        expect(helper.getElementFromSpreadsheet('.e-validationerror-dlg')).not.toBeNull();
+                        helper.setAnimationToNone('.e-validationerror-dlg');
+                        helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
+                        // Clearing another range
+                        helper.invoke('selectRange', ['G10:G14']);
+                        helper.click(`#${helper.id}_clear`);
+                        helper.click('.e-clear-ddb ul li');
+                        expect(validation.address).toBe('G1:G2 G6:G9 G15:G1048576');
+                        // Clearing between the range
+                        helper.invoke('selectRange', ['G12:G16']);
+                        helper.click(`#${helper.id}_clear`);
+                        helper.click('.e-clear-ddb ul li');
+                        expect(validation.address).toBe('G1:G2 G6:G9 G17:G1048576');
+                        // Clearing between the range
+                        helper.invoke('selectRange', ['G2:G3']);
+                        helper.click(`#${helper.id}_clear`);
+                        helper.click('.e-clear-ddb ul li');
+                        expect(validation.address).toBe('G1:G1 G6:G9 G17:G1048576');
+                        done();
+                    });
+                });
             });
         });
 

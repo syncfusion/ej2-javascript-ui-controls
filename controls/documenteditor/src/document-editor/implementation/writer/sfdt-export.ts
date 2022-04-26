@@ -1079,7 +1079,7 @@ export class SfdtExport {
         let dataLabel: any = {};
         dataLabel.position = dataLabels.position;
         dataLabel.fontName = dataLabels.fontName;
-        dataLabel.fontColor = dataLabels.fontColor;
+        dataLabel.fontColor = HelperMethods.convertArgbToRgb(dataLabels.fontColor);
         dataLabel.fontSize = dataLabels.fontSize;
         dataLabel.isLegendKey = dataLabels.isLegendKey;
         dataLabel.isBubbleSize = dataLabels.isBubbleSize;

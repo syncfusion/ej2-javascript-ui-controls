@@ -237,7 +237,7 @@ export class FormDesigner {
             borderColor: this.getRgbCode(drawingObject.borderColor), thickness: drawingObject.thickness, backgroundColor: this.getRgbCode(drawingObject.backgroundColor) as unknown as string,
             textAlign: drawingObject.alignment, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected, isReadonly: drawingObject.isReadonly, font: {
                 isBold: drawingObject.font.isBold, isItalic: drawingObject.font.isItalic, isStrikeout: drawingObject.font.isStrikeout, isUnderline: drawingObject.font.isUnderline
-            }, selectedIndex: drawingObject.selectedIndex, radiobuttonItem: null, option: drawingObject.options ? drawingObject.options : [], visibility: drawingObject.visibility, maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: 0, tooltip: drawingObject.tooltip
+            }, selectedIndex: drawingObject.selectedIndex, radiobuttonItem: null, option: drawingObject.options ? drawingObject.options : [], visibility: drawingObject.visibility, maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: drawingObject.rotateAngle,tooltip: drawingObject.tooltip
         };
         if (formDesignObj.formFieldAnnotationType === "RadioButton") {
             formDesignObj.radiobuttonItem = [];
@@ -1552,7 +1552,7 @@ export class FormDesigner {
             thickness: 0, bounds: { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height },
             fontFamily: !isNullOrUndefined((options as TextFieldSettings).fontFamily) ? (options as TextFieldSettings).fontFamily : "Helvetica", fontSize: !isNullOrUndefined((options as TextFieldSettings).fontSize) ? (options as TextFieldSettings).fontSize : 10,
             color: !isNullOrUndefined((options as TextFieldSettings).color) ? (options as TextFieldSettings).color : "black", backgroundColor: !isNullOrUndefined((options as TextFieldSettings).backgroundColor) ? (options as TextFieldSettings).backgroundColor : "#daeaf7ff",
-            alignment: !isNullOrUndefined((options as TextFieldSettings).alignment) ? (options as TextFieldSettings).alignment : "left", isReadonly: options.isReadOnly ? options.isReadOnly : false
+            alignment: !isNullOrUndefined((options as TextFieldSettings).alignment) ? (options as TextFieldSettings).alignment : "left", isReadonly: options.isReadOnly ? options.isReadOnly : false, rotateAngle: (options as any).rotateAngle
         };
         (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
         obj.visibility = !isNullOrUndefined(options.visibility) ? options.visibility : "visible";
@@ -2905,7 +2905,7 @@ export class FormDesigner {
                      bounds = { X: pageDetails.width - bound.X - bound.Width, Y: pageDetails.height - bound.Y - bound.Height, Width: bound.Width, Height: bound.Height };
                      break;
                  case 3:
-                     bounds = { X: (pageDetails.height - bound.Y - bound.Width + (bound.Width / 2 - bound.Height / 2)), Y: bound.X + (bound.Width / 2 - bound.Height / 2), Width: bound.Width, Height: bound.Height };
+                     bounds = { X: (pageDetails.height - bound.Y - bound.Width + (bound.Width / 2 - bound.Height / 2)), Y: bound.X + (bound.Width / 2 - bound.Height / 2), Width: bound.Height, Height: bound.Width };
                      break;
              }
          }
@@ -2925,7 +2925,6 @@ export class FormDesigner {
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 let currentData: any = formFieldsData[i].FormField;
                 currentData.Multiline = currentData.isMultiline;
-                currentData.lineBound = this.getFieldBounds(currentData.lineBound, currentData.pageNumber - 1);
                 if (currentData.isRequired) {
                     if (currentData.formFieldAnnotationType === 'Textbox' || currentData.formFieldAnnotationType === 'PasswordField' || currentData.Multiline) {
                         if (currentData.value === null || currentData.value === '') {
@@ -2938,7 +2937,6 @@ export class FormDesigner {
                         if (currentData.radiobuttonItem) {
                             let isSelected: boolean = false;
                             for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
-                                currentData.radiobuttonItem[j].lineBound = this.getFieldBounds(currentData.radiobuttonItem[j].lineBound, currentData.radiobuttonItem[j].pageNumber - 1);
                                 if (currentData.radiobuttonItem[j].isSelected) {
                                     isSelected = true;
                                     break;
@@ -2966,9 +2964,6 @@ export class FormDesigner {
                             delete (this.pdfViewerBase.nonFillableFields[currentData.name]);
                         }
                     } else if (currentData.formFieldAnnotationType === 'SignatureField' || currentData.formFieldAnnotationType === 'InitialField') {
-                        if (currentData.signatureBound) {
-                            currentData.signatureBound = this.getFieldBounds(currentData.signatureBound, currentData.pageNumber - 1);
-                        }
                         if (currentData.value === null || currentData.value === '') {
                             this.pdfViewerBase.validateForm = true;
                             this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.value;

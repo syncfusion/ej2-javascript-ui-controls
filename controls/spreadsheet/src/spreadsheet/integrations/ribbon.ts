@@ -1165,23 +1165,23 @@ export class Ribbon {
         const id: string = this.parent.element.id;
         const bordersMenu: Menu = new Menu({
             cssClass: 'e-borders-menu',
-            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders') }, {
+            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders'), id:`${id}_border_topborders` }, {
                 iconCss: 'e-icons e-left-borders',
-                text: l10n.getConstant('LeftBorders')
-            }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders') }, {
-                iconCss: 'e-icons e-bottom-borders', text: l10n.getConstant('BottomBorders')
+                text: l10n.getConstant('LeftBorders'), id:`${id}_border_leftborders`
+            }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders'), id:`${id}_border_rightborders` }, {
+                iconCss: 'e-icons e-bottom-borders', text: l10n.getConstant('BottomBorders'), id:`${id}_border_bottomborders`
             }, {
                 iconCss: 'e-icons e-all-borders', text:
-                    l10n.getConstant('AllBorders')
-            }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders') }, {
-                iconCss: 'e-icons e-vertical-borders', text: l10n.getConstant('VerticalBorders')
+                    l10n.getConstant('AllBorders'), id:`${id}_border_allborders`
+            }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders'), id:`${id}_border_horizontalborders` }, {
+                iconCss: 'e-icons e-vertical-borders', text: l10n.getConstant('VerticalBorders'), id:`${id}_border_verticalborders`
             }, {
                 iconCss: 'e-icons e-outside-borders',
-                text: l10n.getConstant('OutsideBorders')
-            }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders') },
-            { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders') }, { separator: true }, {
+                text: l10n.getConstant('OutsideBorders'), id:`${id}_border_outsideborders`
+            }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders'), id:`${id}_border_insideborders` },
+            { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders'), id:`${id}_border_noborders` }, { separator: true }, {
                 text:
-                    l10n.getConstant('BorderColor'), items: [{ id: `${id}_border_colors` }]
+                    l10n.getConstant('BorderColor'), items: [{ id: `${id}_border_colors` }], id:`${id}_border_bordercolor`
             }, {
                 text: l10n.getConstant('BorderStyle'), items: [
                     { iconCss: 'e-icons e-selected-icon', id: `${id}_1px` }, { id: `${id}_2px` },
@@ -1190,7 +1190,7 @@ export class Ribbon {
             }],
             orientation: 'Vertical',
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.parentItem.text === 'Border Color') {
+                if (args.parentItem.id === `${id}_border_bordercolor`) {
                     this.colorPicker.refresh();
                     const cPickerWrapper: HTMLElement = this.colorPicker.element.parentElement;
                     args.element.firstElementChild.appendChild(cPickerWrapper);
@@ -1201,7 +1201,7 @@ export class Ribbon {
                 }
             },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.parentItem.text === 'Border Color') {
+                if (args.parentItem.id === `${id}_border_bordercolor`) {
                     if (!closest(args.event.target as Element, '.e-border-colorpicker') ||
                         closest(args.event.target as Element, '.e-apply') || closest(args.event.target as Element, '.e-cancel')) {
                         this.colorPicker = <ColorPicker>getComponent(this.cPickerEle, 'colorpicker');
@@ -1215,7 +1215,7 @@ export class Ribbon {
                 }
             },
             onOpen: (args: OpenCloseMenuEventArgs): void => {
-                if (args.parentItem.text === 'Border Color') { args.element.parentElement.style.overflow = 'visible'; }
+                if (args.parentItem.id === `${id}_border_bordercolor`) { args.element.parentElement.style.overflow = 'visible'; }
             },
             select: (args: MenuEventArgs): void => this.borderSelected(args, bordersMenu)
         });
@@ -1268,9 +1268,9 @@ export class Ribbon {
     }
 
     private borderSelected(args: MenuEventArgs, bordersMenu: Menu): void {
-        if (args.item.items.length || args.item.id === `${this.parent.element.id}_border_colors`) { return; }
+        const id: string = this.parent.element.id;
+        if (args.item.items.length || args.item.id === `${id}_border_colors`) { return; }
         if (!args.item.text) {
-            const id: string = this.parent.element.id;
             const border: string[] = this.border.split(' ');
             const prevStyleId: string = border[1] === 'solid' ? `${id}_${border[0]}` : `${id}_${border[1]}`;
             if (prevStyleId === args.item.id) { return; }
@@ -1290,35 +1290,35 @@ export class Ribbon {
         }
         this.bordersDdb.toggle();
         this.parent.showSpinner();
-        switch (args.item.text) {
-        case 'Top Borders':
+        switch (args.item.id) {
+        case `${id}_border_topborders`:
             this.parent.notify(setCellFormat, { style: { borderTop: this.border }, onActionUpdate: true });
             break;
-        case 'Left Borders':
+        case `${id}_border_leftborders`:
             this.parent.notify(setCellFormat, { style: { borderLeft: this.border }, onActionUpdate: true });
             break;
-        case 'Right Borders':
+        case `${id}_border_rightborders`:
             this.parent.notify(setCellFormat, { style: { borderRight: this.border }, onActionUpdate: true });
             break;
-        case 'Bottom Borders':
+        case `${id}_border_bottomborders`:
             this.parent.notify(setCellFormat, { style: { borderBottom: this.border }, onActionUpdate: true });
             break;
-        case 'All Borders':
+        case `${id}_border_allborders`:
             this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true });
             break;
-        case 'Horizontal Borders':
+        case `${id}_border_horizontalborders`:
             this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Horizontal' });
             break;
-        case 'Vertical Borders':
+        case `${id}_border_verticalborders`:
             this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Vertical' });
             break;
-        case 'Outside Borders':
+        case `${id}_border_outsideborders`:
             this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Outer' });
             break;
-        case 'Inside Borders':
+        case `${id}_border_insideborders`:
             this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Inner' });
             break;
-        case 'No Borders':
+       case `${id}_border_noborders`:
             this.parent.notify(setCellFormat, { style: { border: '' }, onActionUpdate: true });
             break;
         }

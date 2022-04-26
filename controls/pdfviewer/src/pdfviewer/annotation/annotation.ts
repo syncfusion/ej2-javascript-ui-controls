@@ -3363,7 +3363,8 @@ export class Annotation {
                             this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                             // eslint-disable-next-line max-len
                             if(!this.pdfViewer.formDesignerModule && (pdfAnnotationBase as any).properties.id != '' && (pdfAnnotationBase as any).properties.id != null && (pdfAnnotationBase as any).properties.id.slice(0, 4) != 'sign'){
-                                let isFieldReadOnly: boolean = (document.getElementById((pdfAnnotationBase as any).properties.id) as any).disabled;
+                                let id:any = document.getElementById((pdfAnnotationBase as any).properties.id) as any;
+                                let isFieldReadOnly: boolean = id && id.disabled;                                
                                 if(!isFieldReadOnly){
                                     this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
                                 }
@@ -4418,8 +4419,9 @@ export class Annotation {
                     }
                 }
             } else {
-                let multiPageCollection: ITextMarkupAnnotation[] = this.textMarkupAnnotationModule.multiPageCollectionList(annotation);
-                if (multiPageCollection.length === 0) {
+                let module:any = this.textMarkupAnnotationModule;
+                let multiPageCollection: ITextMarkupAnnotation[] = module && module.multiPageCollectionList(annotation);
+                if (multiPageCollection && multiPageCollection.length === 0) {
                     multiPageCollection = null;
                 }
                 if (this.annotationSelected) {

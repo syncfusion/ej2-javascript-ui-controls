@@ -1312,6 +1312,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     dataSource = this.selectData;
                 }
             }
+            dataSource = this.getModuleName() === 'combobox' && this.selectData && dataSource instanceof Array && dataSource.length < this.selectData.length ? this.selectData : dataSource;
             this.setListData(dataSource, fields, query);
         }
     }

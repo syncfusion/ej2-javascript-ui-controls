@@ -244,7 +244,6 @@ export class Drawing {
             // eslint-disable-next-line
             const htmlContent: DiagramHtmlElement = new DiagramHtmlElement();
             content = (htmlContent as DrawingElement);
-            content.rotateAngle = this.pdfViewer.formFieldsModule.getAngle(obj.pageIndex);
             content.id = obj.id + '_content';
             canvas.children.push(content);
             break;

@@ -236,13 +236,8 @@ export class Print {
                         this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
                         inputField.InsertSpaces = currentData.InsertSpaces;
                         if (inputField.InsertSpaces) {
-                            const browserUserAgent: string = navigator.userAgent;
                             // eslint-disable-next-line
-                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.5;
-                            // eslint-disable-next-line
-                            if ((browserUserAgent.indexOf('Firefox')) !== -1) {
-                                font = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 1.2;
-                            }
+                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.6;
                             inputField.style.letterSpacing = '' + font + 'px';
                             inputField.style.fontFamily = 'monospace';
                         }

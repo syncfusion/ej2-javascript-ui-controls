@@ -2908,6 +2908,52 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 500);
         });
     });
+    describe(" EJ2-59189 - Images removed from list when inserting table", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            Browser.userAgent = ieUA;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: `<ol><li><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></li></ol><p class="focusNode"><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+            Browser.userAgent = currentBrowserUA;
+        });
+        it(' Images removed from list when inserting table ', (done) => {
+            rteObj.focusIn();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector(".focusNode");
+            setCursorPoint(node, 0);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(function () {
+                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", false, true);
+                target.dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+                    target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                    target.dispatchEvent(clickEvent);
+                    setTimeout(() => {
+                        expect(rteEle.querySelectorAll('table').length).toBe(1);
+                        expect(rteEle.querySelectorAll('img').length).toBe(1);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+    });
     describe(" EJ2-43332 - Table getting removed while using bulleting/numbering", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

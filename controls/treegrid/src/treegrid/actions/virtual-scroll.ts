@@ -107,7 +107,7 @@ export class VirtualScroll {
             pageingDetails.result = dm.executeLocal(query);
         } else {
             const requestType: string = pageingDetails.actionArgs.requestType;
-            if (requestType === 'filtering' || requestType === 'collapseAll' ||
+            if (requestType === 'filtering' || requestType === 'collapseAll' || requestType === 'searching' ||
                 (requestType === 'refresh' && this.parent.enableCollapseAll && endIndex > visualData.length)) {
                 startIndex = 0;
                 endIndex = this.parent.grid.pageSettings.pageSize - 1;

@@ -4,25 +4,25 @@
 
       & .e-prev-icon {
         &::before {
-          content: '\e752';
+          content: '\e776';
         }
       }
 
       & .e-next-icon {
         &::before {
-          content: '\e706';
+          content: '\e729';
         }
       }
 
       & .e-option-icon {
         &::before {
-          content: '\e75b';
+          content: '\e770';
         }
       }
 
       & .e-close {
         &::before {
-          content: '\e771';
+          content: '\e7e7';
         }
       }
     }
@@ -30,126 +30,126 @@
     & .e-ribbon {
       & .e-bold-icon {
         &::before {
-          content: '\e79d';
+          content: '\e737';
         }
       }
 
       & .e-italic-icon {
         &::before {
-          content: '\e722';
+          content: '\e75a';
         }
       }
 
       & .e-underline-icon {
         &::before {
-          content: '\e7d4';
+          content: '\e82f';
         }
       }
 
       & .e-line-through-icon {
         &::before {
-          content: '\e760';
+          content: '\e758';
         }
       }
 
       & .e-font-color {
         &::before {
-          content: '\e775';
+          content: '\e79f';
         }
       }
 
       & .e-fill-color {
         &::before {
-          content: '\e782';
+          content: '\e783';
         }
       }
 
       .e-wrap-icon::before {
-        content: '\e830';
+        content: '\e7ce';
       }
 
       & .e-hide-headers {
         &::before {
-          content: '\e83a';
+          content: '\e7ea';
         }
       }
 
       & .e-hide-gridlines {
         &::before {
-          content: '\e813';
+          content: '\e816';
         }
       }
 
       & .e-freeze-pane::before {
-        content: '\e815';
+        content: '\e7ec';
       }
 
       & .e-freeze-row::before {
-        content: '\e78e';
+        content: '\e77f';
       }
 
       & .e-freeze-column::before {
-        content: '\e7dc';
+        content: '\e841';
       }
 
       & .e-insert-function {
         &::before {
-          content: '\e84e';
+          content: '\e7fa';
         }
       }
 
       & .e-hyperlink-icon {
         &::before {
-          content: '\e74a';
+          content: '\e757';
         }
       }
 
       & .e-image-icon {
         &::before {
-          content: '\e7da';
+          content: '\e786';
         }
       }
 
       & .e-merge-icon {
         &::before {
-          content: '\e73f';
+          content: '\e71e';
         }
       }
     }
 
     & .e-insert-function .e-btn-icon {
       &::before {
-        content: '\e84e';
+        content: '\e7fa';
       }
     }
 
     & .e-add-icon {
       &::before {
-        content: '\e78a';
+        content: '\e805';
       }
     }
 
     & .e-sheets-list .e-btn-icon {
       &::before {
-        content: '\e75c';
+        content: '\e799';
       }
     }
 
     & .e-formula-bar-panel .e-drop-icon {
       &::before {
-        content: '\e706';
+        content: '\e729';
       }
     }
 
     & .e-file-menu-icon {
       &::before {
-        content: '\e75b';
+        content: '\e770';
       }
     }
 
     & .e-tick-icon {
       &::before {
-        content: '\e75d';
+        content: '\e774';
       }
     }
   }
@@ -157,7 +157,7 @@
   .e-spreadsheet-find-ddb {
     & .e-search-icon {
       &::before {
-        content: '\e737';
+        content: '\e754';
       }
     }
 }
@@ -165,7 +165,7 @@
   .e-spreadsheet-contextmenu.e-contextmenu-wrapper {
     & .e-delete {
       &::before {
-        content: '\e78d';
+        content: '\e820';
       }
     }
   }
@@ -175,7 +175,7 @@
     &.e-numformat-ddb.e-dropdown-popup .e-active-item,
     &.e-menu-popup .e-selected-icon {
       &::before {
-        content: '\e75d';
+        content: '\e774';
       }
     }
   }
@@ -183,61 +183,61 @@
   .e-borders-ddb {
     & .e-top-borders {
       &::before {
-        content: '\e7a7';
+        content: '\e7e0';
       }
     }
 
     & .e-left-borders {
       &::before {
-        content: '\e784';
+        content: '\e806';
       }
     }
 
     & .e-right-borders {
       &::before {
-        content: '\e72e';
+        content: '\e7ab';
       }
     }
 
     & .e-bottom-borders {
       &::before {
-        content: '\e791';
+        content: '\e766';
       }
     }
 
     & .e-all-borders {
       &::before {
-        content: '\e79f';
+        content: '\e7d1';
       }
     }
 
     & .e-horizontal-borders {
       &::before {
-        content: '\e73b';
+        content: '\e83b';
       }
     }
 
     & .e-vertical-borders {
       &::before {
-        content: '\e702';
+        content: '\e792';
       }
     }
 
     & .e-outside-borders {
       &::before {
-        content: '\e7c4';
+        content: '\e7ad';
       }
     }
 
     & .e-inside-borders {
       &::before {
-        content: '\e79c';
+        content: '\e78f';
       }
     }
 
     & .e-no-borders {
       &::before {
-        content: '\e84b';
+        content: '\e827';
       }
     }
   }
@@ -245,37 +245,37 @@
   .e-align-ddb {
     & .e-left-icon {
       &::before {
-        content: '\e7ae';
+        content: '\e7b8';
       }
     }
 
     & .e-center-icon {
       &::before {
-        content: '\e74f';
+        content: '\e813';
       }
     }
 
     & .e-right-icon {
       &::before {
-        content: '\e772';
+        content: '\e719';
       }
     }
 
     & .e-bottom-icon {
       &::before {
-        content: '\e73e';
+        content: '\e7a0';
       }
     }
 
     & .e-middle-icon {
       &::before {
-        content: '\e7cc';
+        content: '\e74f';
       }
     }
 
     & .e-top-icon {
       &::before {
-        content: '\e709';
+        content: '\e707';
       }
     }
   }
@@ -283,7 +283,7 @@
   .e-datavalidation-ddb {
     & .e-datavalidation-icon {
       &::before {
-        content: '\e81c';
+        content: '\e835';
       }
     }
   }
@@ -291,7 +291,7 @@
   .e-clear-ddb {
     & .e-clear-icon {
       &::before {
-        content: '\e792';
+        content: '\e7cc';
       }
     }
   }
@@ -299,7 +299,7 @@
   .e-dragfill-ddb {
     & .e-dragfill-icon {
       &::before {
-        content: '\e926';
+        content: '\e877';
         }
       }
     }
@@ -309,7 +309,7 @@
     & .e-chart-icon,
     & .e-chart-type-icon {
       &::before {
-        content: '\e86c';
+        content: '\e845';
       }
     }
   }
@@ -340,56 +340,56 @@
 
     & .e-column {
       &::before {
-        content: '\e86c';
+        content: '\e845';
       }
     }
 
     & .e-bar {
       &::before {
-        content: '\e8e3';
+        content: '\e872';
       }
     }
 
     & .e-area {
       &::before {
-        content: '\e87b';
+        content: '\e84d';
       }
     }
 
     & .e-pie-doughnut {
       &::before {
-        content: '\e87e';
+        content: '\e850';
       }
     }
 
     & .e-line {
       &::before {
-        content: '\e875';
+        content: '\e84a';
       }
     }
 
     & .e-scatter {
       &::before {
-        content: '\e86f';
+        content: '\e847';
       }
     }
 
     & .e-column-main {
       & .e-clusteredcolumn {
         &::before {
-          content: '\e8c1';
+          content: '\e86a';
         }
      }
 
       & .e-stackedcolumn {
         &::before {
-          content: '\e8ee';
+          content: '\e875';
         }
       }
 
       & .e-stackedcolumn100 {
         &::before {
-          content: '\e8d9';
+          content: '\e86f';
         }
       }
     }
@@ -397,19 +397,19 @@
     & .e-bar-main {
       & .e-clusteredbar {
         &::before {
-          content: '\e8cb';
+          content: '\e86c';
         }
       }
 
       & .e-stackedbar {
         &::before {
-          content: '\e8ab';
+          content: '\e866';
         }
       }
 
       & .e-stackedbar100 {
         &::before {
-          content: '\e8d4';
+          content: '\e86d';
         }
       }
     }
@@ -417,13 +417,13 @@
     & .e-pie-main {
       & .e-pie {
         &::before {
-          content: '\e8bf';
+          content: '\e869';
         }
       }
 
       & .e-doughnut {
         &::before {
-          content: '\e8bc';
+          content: '\e868';
         }
       }
     }
@@ -431,19 +431,19 @@
     & .e-area-main {
       & .e-area {
         &::before {
-          content: '\e8e9';
+          content: '\e873';
         }
       }
 
       & .e-stackedarea {
         &::before {
-          content: '\e8e1';
+          content: '\e871';
         }
       }
 
       & .e-stackedarea100 {
         &::before {
-          content: '\e8c2';
+          content: '\e86b';
         }
       }
     }
@@ -451,19 +451,19 @@
     & .e-line-main {
       & .e-line {
         &::before {
-          content: '\e8d8';
+          content: '\e86e';
         }
       }
 
       & .e-stackedline {
         &::before {
-          content: '\e8bb';
+          content: '\e867';
         }
       }
 
       & .e-stackedline100 {
         &::before {
-          content: '\e8dc';
+          content: '\e870';
         }
       }
     }
@@ -471,7 +471,7 @@
     & .e-scatter-main {
       & .e-scatter {
         &::before {
-          content: '\e8ed';
+          content: '\e874';
         }
       }
     }
@@ -480,44 +480,44 @@
   .e-addchart-ddb {
     & .e-addchart-icon {
       &::before {
-        content: '\e872';
+        content: '\e848';
       }
     }
 
     & .e-addchart-menu {
       & .e-axes {
         &::before {
-          content: '\e879';
+          content: '\e84c';
         }
       }
 
       & .e-axis-title {
         &::before {
-          content: '\e87c';
+          content: '\e84e';
         }
       }
 
       & .e-chart-title {
         &::before {
-          content: '\e87d';
+          content: '\e84f';
         }
       }
 
       & .e-data-labels {
         &::before {
-          content: '\e881';
+          content: '\e851';
         }
       }
 
       & .e-gridlines {
         &::before {
-          content: '\e873';
+          content: '\e849';
         }
       }
 
       & .e-legends {
         &::before {
-          content: '\e86e';
+          content: '\e846';
         }
       }
     }
@@ -526,135 +526,135 @@
   .e-addchart-menu {
     & .e-ph-axes {
       &::before {
-        content: '\e894';
+        content: '\e85a';
       }
     }
 
     & .e-pv-axes {
       &::before {
-        content: '\e889';
+        content: '\e856';
       }
     }
 
     & .e-ph-axistitle {
       &::before {
-        content: '\e883';
+        content: '\e852';
       }
     }
 
     & .e-pv-axistitle {
       &::before {
-        content: '\e8a0';
+        content: '\e860';
       }
     }
 
     & .e-ct-none {
       &::before {
-        content: '\e8a7';
+        content: '\e864';
       }
     }
 
     & .e-ct-abovechart {
       &::before {
-        content: '\e8a8';
+        content: '\e865';
       }
     }
 
     & .e-dl-none {
       &::before {
-        content: '\e88c';
+        content: '\e858';
       }
     }
 
     & .e-dl-center {
       &::before {
-        content: '\e88a';
+        content: '\e857';
       }
     }
 
     & .e-dl-insideend {
       &::before {
-        content: '\e8a6';
+        content: '\e863';
       }
     }
 
     & .e-dl-insidebase {
       &::before {
-        content: '\e8a2';
+        content: '\e862';
       }
     }
 
     & .e-dl-outsideend {
       &::before {
-        content: '\e89f';
+        content: '\e85f';
       }
     }
 
     & .e-gl-major-horizontal {
       &::before {
-        content: '\e89c';
+        content: '\e85d';
       }
     }
 
     & .e-gl-major-vertical {
       &::before {
-        content: '\e88d';
+        content: '\e859';
       }
     }
 
     & .e-gl-minor-horizontal {
       &::before {
-        content: '\e897';
+        content: '\e85c';
       }
     }
 
     & .e-gl-minor-vertical {
       &::before {
-        content: '\e888';
+        content: '\e855';
       }
     }
 
     & .e-legends-none {
       &::before {
-        content: '\e885';
+        content: '\e853';
       }
     }
 
     & .e-legends-right {
       &::before {
-        content: '\e886';
+        content: '\e854';
       }
     }
 
     & .e-legends-left {
       &::before {
-        content: '\e8a1';
+        content: '\e861';
       }
     }
 
     & .e-legends-bottom {
       &::before {
-        content: '\e89d';
+        content: '\e85e';
       }
     }
 
     & .e-legends-top {
       &::before {
-        content: '\e896';
+        content: '\e85b';
       }
     }
 }
 
   .e-switch-row-column-icon {
     &::before {
-      content: '\e876';
+      content: '\e84b';
     }
   }
 
   .e-cf-ddb {
     & .e-conditionalformatting-icon {
       &::before {
-        content: '\e90b';
+        content: '\e812';
       }
     }
   }
@@ -666,115 +666,115 @@
   .e-cf-menu {
     & .e-hlcellrules {
       &::before {
-        content: '\e913';
+        content: '\e83d';
       }
     }
 
     & .e-topbottomrules {
       &::before {
-        content: '\e91b';
+        content: '\e80d';
       }
     }
 
     & .e-databars {
       &::before {
-        content: '\e924';
+        content: '\e791';
       }
     }
 
     & .e-colorscales {
       &::before {
-        content: '\e925';
+        content: '\e7c6';
       }
     }
 
     & .e-iconsets {
       &::before {
-        content: '\e91f';
+        content: '\e764';
       }
     }
 
     & .e-clearrules {
       &::before {
-        content: '\e907';
+        content: '\e7a2';
       }
     }
 
     & .e-greaterthan {
       &::before {
-        content: '\e911';
+        content: '\e79a';
       }
     }
 
     & .e-lessthan {
       &::before {
-        content: '\e919';
+        content: '\e7d7';
        }
     }
 
     & .e-between {
       &::before {
-        content: '\e912';
+        content: '\e73b';
        }
     }
 
     & .e-equalto {
       &::before {
-        content: '\e904';
+        content: '\e81a';
       }
     }
 
     & .e-textcontains {
       &::before {
-        content: '\e90e';
+        content: '\e75f';
       }
     }
 
     & .e-adateoccuring {
       &::before {
-        content: '\e90d';
+        content: '\e7bd';
       }
     }
 
     & .e-top10items {
       &::before {
-        content: '\e91b';
+        content: '\e80d';
       }
     }
 
     & .e-top10 {
       &::before {
-        content: '\e923';
+        content: '\e76c';
       }
     }
 
     & .e-bottom10items {
       &::before {
-        content: '\e91a';
+        content: '\e79c';
       }
     }
 
     & .e-bottom10 {
       &::before {
-        content: '\e922';
+        content: '\e777';
       }
     }
 
     & .e-aboveaverage {
       &::before {
-        content: '\e91e';
+        content: '\e808';
      }
     }
 
     & .e-belowaverage {
       &::before {
-        content: '\e921';
+        content: '\e7d6';
       }
     }
 
     & .e-duplicate {
       &::before {
-        content: '\e91d';
+        content: '\e7ef';
       }
     }
   }
@@ -782,43 +782,43 @@
   .e-menu-wrapper.e-file-menu {
     & .e-new {
       &::before {
-        content: '\e7d9';
+        content: '\e7dc';
       }
     }
 
     & .e-open {
       &::before {
-        content: '\e749';
+        content: '\e760';
       }
     }
 
     & .e-save {
       &::before {
-        content: '\e746';
+        content: '\e7ae';
       }
     }
 
     & .e-xls {
       &::before {
-        content: '\e820';
+        content: '\e781';
       }
     }
 
     & .e-xlsx {
       &::before {
-        content: '\e780';
+        content: '\e7c1';
       }
     }
 
     & .e-csv {
       &::before {
-        content: '\e73d';
+        content: '\e7ba';
       }
     }
 
     & .e-pdf {
       &::before {
-        content: '\e741';
+        content: '\e700';
       }
     }
   }
@@ -827,32 +827,32 @@
   .e-spreadsheet-contextmenu {
     & .e-cut-icon {
       &::before {
-        content: '\e763';
+        content: '\e7fb';
       }
     }
 
     & .e-copy-icon {
       &::before {
-        content: '\e7ce';
+        content: '\e77c';
       }
     }
 
     & .e-paste-icon {
       &::before {
-        content: '\e75e';
+        content: '\e70b';
       }
     }
   }
 
   .e-undo-icon {
     &::before {
-      content: '\e7bd';
+      content: '\e713';
     }
   }
 
   .e-redo-icon {
     &::before {
-      content: '\e7b9';
+      content: '\e755';
     }
   }
 
@@ -860,25 +860,25 @@
   .e-spreadsheet-contextmenu {
     & .e-sort-icon {
       &::before {
-        content: '\e837';
+        content: '\e7a3';
       }
     }
 
     & .e-sort-asc {
       &::before {
-        content: '\e837';
+        content: '\e7a3';
       }
     }
 
     & .e-sort-desc {
       &::before {
-        content: '\e84c';
+        content: '\e7b6';
       }
     }
 
     & .e-sort-custom {
       &::before {
-        content: '\e73c';
+        content: '\e824';
       }
     }
   }
@@ -886,25 +886,25 @@
   .e-spreadsheet-contextmenu {
     & .e-hyperlink-icon {
       &::before {
-        content: '\e74a';
+        content: '\e757';
       }
     }
 
     & .e-edithyperlink-icon {
       &::before {
-        content: '\e7ad';
+        content: '\e722';
       }
     }
 
     & .e-openhyperlink-icon {
       &::before {
-        content: '\e77a';
+        content: '\e797';
       }
     }
 
     & .e-removehyperlink-icon {
       &::before {
-        content: '\e714';
+        content: '\e80c';
       }
     }
   }
@@ -913,7 +913,7 @@
 
     & .e-sort-delete {
       &::before {
-        content: '\e78d';
+        content: '\e820';
       }
     }
   }
@@ -923,73 +923,73 @@
   .e-spreadsheet-contextmenu {
     & .e-filter-icon {
       &::before {
-        content: '\e918';
+        content: '\e843';
       }
     }
 
     & .e-filter-icon.e-filtered {
       &::before {
-        content: '\e910';
+        content: '\e796';
       }
     }
 
     & .e-filter-icon.e-sortasc-filter {
       &::before {
-        content: '\e906';
+        content: '\e7aa';
       }
     }
 
     & .e-filter-icon.e-sortdesc-filter {
       &::before {
-        content: '\e905';
+        content: '\e71f';
       }
     }
 
     & .e-filter-icon.e-filtered.e-sortasc-filter {
       &::before {
-        content: '\e909';
+        content: '\e81e';
       }
     }
 
     & .e-filter-icon.e-filtered.e-sortdesc-filter {
       &::before {
-        content: '\e908';
+        content: '\e74b';
       }
     }
 
     & .e-filter-apply {
       &::before {
-        content: '\e71b';
+        content: '\e7f7';
       }
     }
 
     & .e-filter-clear {
       &::before {
-        content: '\e774';
+        content: '\e72c';
       }
     }
 
     & .e-filter-reapply {
       &::before {
-        content: '\e914';
+        content: '\e814';
       }
     }
 
     & .e-protect-icon {
       &::before {
-        content: '\e916';
+        content: '\e70a';
       }
     }
 
     & .e-sort-filter-icon {
       &::before {
-        content: '\e915';
+        content: '\e731';
       }
     }
 
     & .e-password-protect-icon {
       &::before {
-        content: '\e8f5';
+        content: '\e788';
         }
     }
   }

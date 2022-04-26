@@ -7,11 +7,11 @@
       background-color: $grid-rows-bg-color;
     }
 
-    .e-icons {
+    .e-icons:not(.e-btn-icon) {
       color: $grid-icon-color;
     }
 
-    .e-unboundcelldiv .e-icons {
+    .e-unboundcelldiv .e-icons:not(.e-btn-icon) {
       color: $grid-command-icon-color;
     }
 
@@ -218,10 +218,25 @@
       border-right-color: $frozen-border-color;
   }
 
+    .e-frozenheader.e-frozenborderdisabled > .e-table,
+    .e-frozencontent.e-frozenborderdisabled > .e-table,
+    .e-frozencontent.e-frozenborderdisabled .e-virtualtable > .e-table,
+    .e-frozenheader.e-frozenborderdisabled .e-virtualtable > .e-table {
+      border-right-color: $grid-frozenborder-disabled-color;
+    }
+
     .e-frozenheader.e-frozen-right-header > .e-table,
-    .e-frozencontent.e-frozen-right-content > .e-table {
+    .e-frozencontent.e-frozen-right-content > .e-table,
+    .e-rowcell .e-frozen-default-cursor,
+    .e-gridheader .e-headercell .e-frozen-default-cursor,
+    .e-gridheader .e-filterbarcell .e-frozen-default-cursor {
       border-left-color: $frozen-border-color;
   }
+
+    .e-frozenheader.e-frozen-right-header.e-frozenborderdisabled > .e-table,
+    .e-frozencontent.e-frozen-right-content.e-frozenborderdisabled > .e-table {
+      border-left-color: $grid-frozenborder-disabled-color;
+    }
 
     &.e-rtl .e-frozenheader > .e-table,
     &.e-rtl .e-frozencontent > .e-table,
@@ -235,11 +250,11 @@
       border-right-color: $frozen-border-color;
   }
 
-    &.e-gridhover tr[role='row']:not(.e-editedrow):hover .e-rowcell,
-    &.e-gridhover tr[role='row']:hover .e-detailrowcollapse,
+    &.e-gridhover tr[role='row']:not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+    &.e-gridhover tr[role='row']:not(.e-detailrow):hover .e-detailrowcollapse,
     &.e-gridhover tr[role='row']:hover .e-rowdragdrop,
     &.e-rtl .e-gridhover tr[role='row']:hover .e-rowdragdrop,
-    &.e-gridhover tr[role='row']:hover .e-detailrowexpand {
+    &.e-gridhover tr[role='row']:not(.e-detailrow):hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: $grid-hover-bg-color;
         color: $grid-hover-content-font-color;

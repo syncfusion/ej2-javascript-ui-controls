@@ -409,12 +409,9 @@ export class Image {
                 img.style.width = this.pixToPerc(expectedX, (img.previousElementSibling || img.parentElement)) + '%';
                 img.style.height = null;
                 img.removeAttribute('height');
-            } else if (img.style.width !== '') {
+            } else {
                 img.style.width = expectedX + 'px';
                 img.style.height = expectedX + 'px';
-            } else {
-                img.setAttribute('width', expectedX.toString());
-                img.setAttribute('height', expectedX.toString());
             }
         }
     }

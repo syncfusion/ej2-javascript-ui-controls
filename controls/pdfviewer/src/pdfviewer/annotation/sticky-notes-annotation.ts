@@ -633,7 +633,7 @@ export class StickyNotesAnnotation {
         }
         if (isInitialRender) {
             for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
-                this.pdfViewerBase.renderAnnotations(this.pdfViewerBase.renderedPagesList[i]);
+                this.pdfViewerBase.renderAnnotations(this.pdfViewerBase.renderedPagesList[i],false);
             }
         }
     }
@@ -2370,7 +2370,8 @@ export class StickyNotesAnnotation {
     private modifyTextProperty(text: string, previousValue: any, annotationName?: any): void {
         // eslint-disable-next-line
         let currentAnnotation: any;
-        if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+        let module: any = this.pdfViewer.annotationModule.textMarkupAnnotationModule;
+        if (module && module.currentTextMarkupAnnotation) {
             currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
         }
         if (currentAnnotation) {

@@ -1588,7 +1588,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.validNodes.push(checkedChild);
             }
             let subChildItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), childItems[index]);
-            if (subChildItems) {
+            if (subChildItems && subChildItems.length) {
                 this.parentCheckData.push(treeData);
                 this.updateChildCheckState(subChildItems, childItems[index]);
             }

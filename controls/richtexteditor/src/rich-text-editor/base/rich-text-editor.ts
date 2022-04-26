@@ -1740,6 +1740,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
             const totalLength: number = (currentLength - selectionLength) + pastedContentLength;
             if (this.editorMode === 'Markdown') {
+                const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
+                setTimeout(() => {
+                    this.formatter.onSuccess(this, args);
+                }, 0);
                 if (!(this.maxLength === -1 || totalLength <= this.maxLength)) {
                     e.preventDefault();
                 }

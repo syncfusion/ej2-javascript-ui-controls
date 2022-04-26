@@ -1,7 +1,7 @@
 import { SheetModel } from './index';
 import { ColumnModel } from './column-model';
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
-import { FormatModel, Format, ValidationModel } from '../common/index';
+import { FormatModel, Format, ValidationModel, isInMultipleRange } from '../common/index';
 
 /**
  * Configures the Column behavior for the spreadsheet.
@@ -150,4 +150,19 @@ export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: num
  */
 export function isHiddenCol(sheet: SheetModel, index: number): boolean {
     return sheet.columns[index] && sheet.columns[index].hidden;
+}
+
+/**
+ * @hidden
+ * @param {ColumnModel} column - Specifies the column.
+ * @param {number} rowIndex - Specifies the row index.
+ * @param {number} colIndex - Specifies the column index.
+ */
+export function checkColumnValidation(column: ColumnModel, rowIndex: number, colIndex: number): boolean {
+    if (column && column.validation) {
+        if (!column.validation.address || (column.validation.address && isInMultipleRange(column.validation.address, rowIndex, colIndex))) {
+            return true;
+        }
+    }
+    return false;
 }

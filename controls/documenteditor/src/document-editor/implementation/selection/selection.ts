@@ -7900,24 +7900,28 @@ export class Selection {
                 }
                 if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 0
                     && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox))) {
-                    let nextInline: ElementBox = isNullOrUndefined((inline as FieldElementBox).fieldSeparator) ?
-                        (inline as FieldElementBox).fieldEnd : (inline as FieldElementBox).fieldSeparator;
+                    let nextInline: ElementBox = isNullOrUndefined((inline as FieldElementBox).fieldEnd) ?
+                        (inline as FieldElementBox).fieldBegin : (inline as FieldElementBox).fieldEnd;
+                        j--;
                     do {
+                        this.characterFormat.combineFormat(inline.characterFormat);
                         count += inline.length;
                         inline = inline.nextNode;
                         i++;
+                        j++;
                     } while (!isNullOrUndefined(inline) && inline !== nextInline);
-                    isFieldStartSelected = true;
+                    continue;
+                    //isFieldStartSelected = true;
                 }
-                if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1
-                    && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)) && isFieldStartSelected) {
-                    let fieldInline: ElementBox = (inline as FieldElementBox).fieldBegin;
-                    do {
-                        this.characterFormat.combineFormat(fieldInline.characterFormat);
-                        fieldInline = fieldInline.nextNode as ElementBox;
-                    } while (!(fieldInline instanceof FieldElementBox));
-                }
-                if (inline instanceof TextElementBox) {
+                // if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1
+                //     && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)) && isFieldStartSelected) {
+                //     let fieldInline: ElementBox = (inline as FieldElementBox).fieldBegin;
+                //     do {
+                //         this.characterFormat.combineFormat(fieldInline.characterFormat);
+                //         fieldInline = fieldInline.nextNode as ElementBox;
+                //     } while (!(fieldInline instanceof FieldElementBox));
+                // }
+                if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
                     this.characterFormat.combineFormat(inline.characterFormat);
                 }
                 if (isNullOrUndefined(inline) || endOffset <= count + inline.length) {

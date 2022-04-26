@@ -69,7 +69,18 @@ export class HelperMethods {
         }
         return isNullOrUndefined(index) ? -1 : index;
     }
-
+    /**
+     * Convert ARGB to RGB 
+     * @private
+     * @param {string} color 
+     * @returns {string}
+     */
+     public static convertArgbToRgb(color: string): string {
+        if (color.length >= 8) {
+            return color.substr(0, 6);
+        }
+        return color;
+    }
     public static lastIndexOfAny(text: string, wordSplitCharacter: string[]): number {
         for (let i: number = text.length - 1; i >= 0; i--) {
             for (let j: number = 0; j <= wordSplitCharacter.length - 1; j++) {

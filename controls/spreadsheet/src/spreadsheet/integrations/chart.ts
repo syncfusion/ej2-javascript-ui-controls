@@ -3,7 +3,7 @@
  */
 import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
-import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition } from '../../workbook/common/index';
+import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition, getSheetIndexFromAddress } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
@@ -664,7 +664,7 @@ export class SpreadsheetChart {
         const id: string = chart.id + '_overlay';
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
-        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, this.parent.getAddressInfo(eleRange).sheetIndex);
+        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
         element.classList.add('e-datavisualization-chart');
         element.style.width = chart.width + 'px';
         element.style.height = chart.height + 'px';

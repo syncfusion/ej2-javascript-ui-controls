@@ -69,7 +69,7 @@ export class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, true) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
                     const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && this.isImgElm(fragment) && fragment.textContent.trim() === '') ? true : false;
+                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node, true);
