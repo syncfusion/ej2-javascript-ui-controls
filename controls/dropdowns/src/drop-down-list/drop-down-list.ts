@@ -1023,7 +1023,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const focusEle: Element = this.list.querySelector('.' + dropDownListClasses.focus);
         if (this.isSelectFocusItem(focusEle)) {
             this.setSelection(focusEle, e);
-        }  else if(!isNullOrUndefined(this.liCollections)) {
+        }  else if (!isNullOrUndefined(this.liCollections)) {
             let index: number = e.action === 'down' ? this.activeIndex + 1 : this.activeIndex - 1;
             let startIndex: number = 0;
             if (this.getModuleName() === 'autocomplete') {
@@ -1309,9 +1309,9 @@ export class DropDownList extends DropDownBase implements IInput {
             detach(this.valueTempElement);
             this.inputElement.style.display = 'block';
         }
-        let clearIcon: string = dropDownListClasses.clearIcon;
-        let isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');
-        let clearElement: HTMLElement = isFilterElement && this.filterInput.parentElement.querySelector('.' + clearIcon);
+        const clearIcon: string = dropDownListClasses.clearIcon;
+        const isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');
+        const clearElement: HTMLElement = isFilterElement && this.filterInput.parentElement.querySelector('.' + clearIcon);
         if (this.isFiltering() && clearElement) {
             clearElement.style.removeProperty('visibility');
         }
@@ -1692,7 +1692,7 @@ export class DropDownList extends DropDownBase implements IInput {
         query?: Query, fields?: FieldSettingsModel): void {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = (!this.isPopupOpen && this.getModuleName() === 'combobox' && this.filterInput.value === '') ?
-            false : true;
+                false : true;
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
@@ -2721,7 +2721,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (this.allowFiltering) {
                     this.actionCompleteData = { ulElement: this.ulElement,
                         list: this.listData as { [key: string]: Object }[], isUpdated: true };
-                        this.actionData = this.actionCompleteData;
+                    this.actionData = this.actionCompleteData;
                     this.updateSelectElementData(this.allowFiltering);
                 }
                 break;
@@ -2776,7 +2776,7 @@ export class DropDownList extends DropDownBase implements IInput {
             }
         };
     }
-    
+
     protected setReadOnly(): void {
         if (this.readonly) {
             addClass([this.inputWrapper.container], ['e-readonly']);
@@ -2815,7 +2815,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
-        if (this.isFiltering() && this.dataSource instanceof DataManager && (this.actionData.list != this.actionCompleteData.list) &&
+        if (this.isFiltering() && this.dataSource instanceof DataManager && (this.actionData.list !== this.actionCompleteData.list) &&
             this.actionData.list && this.actionData.ulElement) {
             this.actionCompleteData = this.actionData;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);

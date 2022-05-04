@@ -51,6 +51,8 @@ export class BatchEdit {
     private preventSaveCell: boolean = false;
     private index: number;
     private field: string;
+    private initialRender: boolean = true;
+    private validationColObj: { field: string, cellIdx: number }[] = [];
     private isAdd: boolean;
     private newReactTd: Element;
     private evtHandlers: { event: string, handler: Function }[];
@@ -620,6 +622,17 @@ export class BatchEdit {
             this.parent.notify(events.editNextValCell, {});
         }
         if (gObj.isEdit) { return; }
+        if (this.initialRender) {
+            const visibleColumns: Column[] = gObj.getVisibleColumns();
+            for (let i: number = 0; i < visibleColumns.length; i++) {
+                if (visibleColumns[i].validationRules &&
+                    visibleColumns[i].validationRules['required']) {
+                    const obj: { field: string, cellIdx: number } = { field: (visibleColumns[i]['field']).slice(), cellIdx: i };
+                    this.validationColObj.push(obj);
+                }
+            }
+            this.initialRender = false;
+        }
         this.parent.element.classList.add('e-editing');
         const defaultData: Object = data ? data : this.getDefaultData();
         const args: BeforeBatchAddArgs = {
@@ -1144,8 +1157,9 @@ export class BatchEdit {
 
     private editNextValCell(): void {
         const gObj: IGrid = this.parent;
-        const btmIdx: number = this.getBottomIndex();
-        if (this.isAdded && !gObj.isEdit) {
+        const insertedRows: NodeListOf<Element> = gObj.element.querySelectorAll('.e-insertedrow');
+        if (insertedRows.length === 1 && this.isAdded && !gObj.isEdit) {
+            const btmIdx: number = this.getBottomIndex();
             for (let i: number = this.cellDetails.cellIndex; i < gObj.getColumns().length; i++) {
                 if (gObj.isEdit) {
                     return;
@@ -1167,12 +1181,42 @@ export class BatchEdit {
                 this.isAdded = false;
             }
         }
+        else if (insertedRows.length > 1 && this.isAdded && !gObj.isEdit) {
+            let editRowIdx: number = 0;
+            if (gObj.editSettings.newRowPosition === 'Bottom') {
+                const changes: Object = this.getBatchChanges();
+                editRowIdx = gObj.getCurrentViewRecords().length - changes[literals.deletedRecords].length;
+            }
+            for (let i: number = 0; i < insertedRows.length; i++, editRowIdx++) {
+                if (!gObj.isEdit) {
+                    for (let j: number = 0; j < this.validationColObj.length; j++) {
+                        if (gObj.isEdit) {
+                            break;
+                        }
+                        else if (insertedRows[i].querySelectorAll('td')[this.validationColObj[j].cellIdx].innerText === '') {
+                            this.editCell(editRowIdx, this.validationColObj[j].field);
+                            if (this.validateFormObj()) {
+                                this.saveCell();
+                            }
+                        }
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+            if (!gObj.isEdit) {
+                this.isAdded = false;
+            }
+        }
     }
 
     public escapeCellEdit(): void {
         const args: CellSaveArgs = this.generateCellArgs();
         args.value = args.previousValue;
-        this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
+        if (args.value || !this.cellDetails.column.validationRules) {
+            this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
+        }
     }
 
     private generateCellArgs(): Object {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I368371` - Progress bar label fading out on animation is resolved now.
+
 ## 19.1.54 (2021-03-30)
 
 ### ProgressBar

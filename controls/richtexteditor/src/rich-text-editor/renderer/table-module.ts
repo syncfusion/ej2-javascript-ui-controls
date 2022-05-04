@@ -850,7 +850,7 @@ export class Table {
                         EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
                     }
                     const widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
-                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
+                    this.curTable.style.width = widthType && !this.curTable.closest('TD') ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
                         : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
                     tableReBox.classList.add('e-rbox-select');

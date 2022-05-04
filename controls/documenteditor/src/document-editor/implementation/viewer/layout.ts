@@ -116,6 +116,7 @@ export class Layout {
     private isFootNoteLayoutStart: boolean = false;
     public wrapPosition: WrapPosition[] = [];
     private shiftedFloatingItemsFromTable: any = [];
+    public isDocumentContainsRtl: boolean = false;
 
     private isSameStyle(currentParagraph: ParagraphWidget, isAfterSpacing: boolean): boolean {
         let nextOrPrevSibling: ParagraphWidget = undefined;
@@ -520,12 +521,21 @@ export class Layout {
         if (!isNullOrUndefined(table.bodyWidget)) {
             const tableY: number = table.y;
             const tableRect: Rect = new Rect(table.x, table.y, table.width, table.height);
-            table.bodyWidget.floatingElements.forEach((shape: ShapeElementBox) => {
+            table.bodyWidget.floatingElements.forEach((shape: ShapeElementBox | TableWidget) => {
                 if (shape instanceof ShapeElementBox && !shape.paragraph.isInsideTable) {
                     const shapeRect: Rect = new Rect(shape.x, shape.y, shape.width, shape.height);
                     const considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom' || shape.textWrappingStyle === 'Square');
                     if (considerShape && tableRect.isIntersecting(shapeRect)) {
                         table.y = shape.y + shape.height + shape.distanceBottom;
+                        this.updateChildLocationForTable(table.y, table);
+                        const height: number = table.y - tableY;
+                        this.viewer.cutFromTop(this.viewer.clientActiveArea.y + height);
+                    }
+                }
+                else if(shape instanceof TableWidget && !table.wrapTextAround){
+                    const tableWidget: Rect = new Rect(shape.x, shape.y, shape.width, shape.height);
+                    if(tableRect.isIntersecting(tableWidget)){
+                        table.y = shape.y + shape.height;
                         this.updateChildLocationForTable(table.y, table);
                         const height: number = table.y - tableY;
                         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + height);
@@ -1215,7 +1225,11 @@ export class Layout {
         } else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 let currentLine: LineWidget = element.line;
-                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
+				if(isNullOrUndefined(element.nextElement) && element.line.paragraph.isInsideTable && element instanceof TabElementBox) {
+                    this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element));
+                }else{
+                    this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
+                }
                 this.moveToNextLine(currentLine);
                 // Recalculates tab width based on new client active area X position
                 element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element as TabElementBox);
@@ -1847,6 +1861,9 @@ export class Layout {
                     if (floatingElement instanceof TableWidget && !floatingElement.isInsideTable) {
                         continue;
                     }
+                }
+                if(floatingElement instanceof TableWidget && floatingElement.wrapTextAround){
+                    continue;
                 }
                 let tableWidth: number = table.getTableCellWidth();
                 let isShape: boolean = floatingElement instanceof ShapeBase;
@@ -3471,10 +3488,6 @@ export class Layout {
                     }
                     this.updateClientAreaForNextBlock(line, lastBlock);
                 }
-                if (line.indexInOwner === 0 && !(line.children[0] instanceof ListTextElementBox)) {
-                    let firstLineIndent: number = -HelperMethods.convertPointToPixel(line.paragraph.paragraphFormat.firstLineIndent);
-                    this.viewer.updateClientWidth(firstLineIndent);
-                }
             }
         }
         if (paragraphWidget instanceof ParagraphWidget &&
@@ -4285,6 +4298,9 @@ export class Layout {
                 let diff: number = parseFloat(((position * 100) % (defaultTabWidth * 100) / 100).toFixed(2));
                 let cnt: number = (position - diff) / defaultTabWidth;
                 fPosition = (cnt + 1) * defaultTabWidth;
+            }
+            if (leftIndent > defaultTabWidth && leftIndent == -(firstLineIndent)) {
+                fPosition = leftIndent;
             }
             if (parseFloat(fPosition.toFixed(1)) === parseFloat(position.toFixed(1))) {
                 return defaultTabWidth;
@@ -8429,12 +8445,18 @@ export class Layout {
     //#endregion
     //RTL Feature layout start
     public isContainsRtl(lineWidget: LineWidget): boolean {
+        if(this.viewer.documentHelper.isSelectionChangedOnMouseMoved&&!this.isDocumentContainsRtl){
+            return false;
+        }
         let isContainsRTL: boolean = false;
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             if (lineWidget.children[i] instanceof TextElementBox) {
                 isContainsRTL = lineWidget.children[i].characterFormat.bidi || lineWidget.children[i].characterFormat.bdo === 'RTL'
                     || this.documentHelper.textHelper.isRTLText((lineWidget.children[i] as TextElementBox).text);
                 if (isContainsRTL) {
+                    if(!this.isDocumentContainsRtl) {
+                        this.isDocumentContainsRtl = isContainsRTL;
+                    }
                     break;
                 }
             }

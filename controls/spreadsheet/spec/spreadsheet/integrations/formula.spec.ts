@@ -669,7 +669,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-58254 ->', () => {
+        describe('EJ2-58254, EJ2-59388 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     {
@@ -703,6 +703,15 @@ describe('Spreadsheet formula module ->', () => {
                 expect(Element[4].textContent).toBe('Max: 6/11/2014');
                 Element[0].click();
                 expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Count: 2');
+                done();
+            });
+            it('When using the dollar formula with a single argument, an error occurs', (done: Function) => {
+                helper.edit('I2', '=DOLLAR(H2)');
+                expect(helper.invoke('getCell', [1, 8]).textContent).toBe('$10.00');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8].value)).toBe('"$10.00"');
+                helper.edit('I2', '=DOLLAR(H2,3)');
+                expect(helper.invoke('getCell', [1, 8]).textContent).toBe('$10.000');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8].value)).toBe('"$10.000"');
                 done();
             });
         });

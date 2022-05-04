@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I375071` - Now axis labels is rendering properly with label rotation.
+
+## 20.1.51 (2022-04-26)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I375071` - Now axis labels is rendering properly with label rotation.
+
 ## 20.1.50 (2022-04-19)
 
 ### Chart

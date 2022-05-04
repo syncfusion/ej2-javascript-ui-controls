@@ -6,7 +6,7 @@ import { OpenOptions, OpenFailureArgs } from '../common/interface';
 import { refreshSheetTabs, completeAction, unProtectSheetPassword } from '../common/event';
 import { dialog, importProtectWorkbook, locale } from '../common/index';
 import { Dialog } from '../services/index';
-import { openSuccess, openFailure } from '../../workbook/index';
+import { openSuccess, openFailure, clearFormulaDependentCells } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
@@ -147,6 +147,7 @@ export class Open {
                 this.parent.trigger('openComplete', { response: response });
                 this.parent.notify(completeAction, { response: response, action: 'import' });
             }
+            this.parent.notify(clearFormulaDependentCells, { cellRef: null, isOpen: true });
             this.parent.renderModule.refreshSheet(response.isOpenFromJson);
             this.parent.notify(refreshSheetTabs, this);
             this.isImportedFile = true;

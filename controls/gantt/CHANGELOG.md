@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#372661` - Data not properly updated in the Gantt Chart when switching between list view issue has been fixed.
+
 ## 20.1.51 (2022-04-26)
 
 ### Gantt

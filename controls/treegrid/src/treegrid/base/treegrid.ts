@@ -137,6 +137,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private isEditCollapse: boolean;
     private treeColumnTextAlign: TextAlign;
     private treeColumnField: string;
+    private stackedHeader: boolean = false;
     /** @hidden */
     public initialRender: boolean;
     /** @hidden */
@@ -3199,7 +3200,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Column} - Returns tree grid column
      */
     public getColumnByUid(uid: string): Column {
-        const Columns: Column[] = this.initialRender ? <Column[]>this.grid.columns : <Column[]>this.columns;
+        let Columns: Column[] = this.initialRender ? <Column[]>this.grid.columns : <Column[]>this.columns;
+        const columnModel: string = 'columnModel';
+        if (this.grid.columns.length !== this.columnModel.length) {
+            Columns = this.grid[columnModel];
+        }
         return iterateArrayOrObject<Column, Column>(<Column[]>Columns, (item: Column) => {
             if (item.uid === uid) {
                 return item;
@@ -3342,7 +3347,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             temp = (this.columnModel[this.treeColumnIndex] as Column).template;
             field = (this.columnModel[this.treeColumnIndex] as Column).field;
         }
-        let stackedHeader: boolean = false;
         let gridColumn: ColumnModel;
         if (!this.enableColumnVirtualization || (this.enableColumnVirtualization && this.columnModel.length === gridColumns.length)) {
             this.columnModel = [];
@@ -3360,9 +3364,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const merge: string = 'deepMerge';
         this[merge] = ['columns']; // Workaround for blazor updateModel
         if (this.grid.columns.length !== this.columnModel.length) {
-            stackedHeader = true;
+            this.stackedHeader = true;
         }
-        if (!stackedHeader) {
+        if (!this.stackedHeader) {
             this.setProperties({ columns: this.columnModel }, true);
         }
         this[merge] = undefined;  // Workaround for blazor updateModel

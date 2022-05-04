@@ -1797,6 +1797,9 @@ export class BasicFormulas {
      */
     public ComputeDOLLAR(...args: string[]): string | number  {
         let value: string;
+        if (args.length === 1) {
+            args.push("2");
+        }
         if (isNullOrUndefined(args) || args.length !== 2 || args[0] === '') {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
@@ -1807,7 +1810,12 @@ export class BasicFormulas {
         if (val === '#NAME?') { return this.parent.getErrorStrings()[CommonErrors.name]; }
         if (val.toUpperCase().match(/^[0-9.]+$/) && val2.toUpperCase().match(/^[0-9.]+$/)) {
             const intl: Internationalization = new Internationalization();
-            value = intl.formatNumber(parseFloat(parseFloat(val).toFixed(parseInt(val2, 10))), { format: '$#,##.00' });
+            const decimalCount: number = parseInt(val2, 10);
+            let decimalValue: string = "";
+            for (let decimalIdx: number = 1; decimalIdx <= decimalCount; decimalIdx++) {
+                decimalValue += "0";
+            }
+            value = intl.formatNumber(parseFloat(parseFloat(val).toFixed(parseInt(val2, 10))), { format: '$#,##.' + decimalValue });
         } else {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }

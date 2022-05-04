@@ -1362,3 +1362,30 @@ describe('BLAZ-18839 - Enter Key press after link make the first char in the nex
         destroy(rteObj);
     });
 });
+
+describe('EJ2-59670 - Enter Key press at the start of the image with caption', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode"><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="blob:null/789e321d-7734-445f-831e-d62dc21a3ccf" class="e-rte-image e-imginline e-resize" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span> </p>`
+        });
+        done();
+    });
+
+    it('EJ2-59670 - Enter Key press at the start of the image with caption', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.element.querySelectorAll('img').length === 1).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

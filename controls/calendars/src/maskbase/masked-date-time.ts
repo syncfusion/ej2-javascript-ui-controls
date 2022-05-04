@@ -163,7 +163,7 @@ export class MaskedDateTime {
         }
     }
     private setDynamicValue(): void {
-        this.maskDateValue = this.parent.value;
+        this.maskDateValue = new Date(+this.parent.value);
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = true
         this.updateValue();
         // this.parent.inputElement.selectionStart = start;

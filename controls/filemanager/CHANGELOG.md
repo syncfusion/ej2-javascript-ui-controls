@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I371623` - The issue with "Unable to perform file operations on the filtered file items in File Manager" has been resolved.
+
 ## 19.2.56 (2021-08-17)
 
 ### File Manager

@@ -103,8 +103,13 @@ export class WorkbookFormula {
         this.calculateInstance.grid = this.parent.getActiveSheet().id.toString();
     }
 
-    private clearFormulaDependentCells(args: { [key: string]: string }): void {
-        let cellRef: string = args.cellRef;
+    private clearFormulaDependentCells(args: { [key: string]: string | boolean }): void {
+        if (args.isOpen as boolean) {
+            this.calculateInstance.getDependentCells().clear();
+            this.calculateInstance.getFormulaInfoTable().clear();
+            return;
+        }
+        let cellRef: string = args.cellRef as string;
         cellRef = cellRef.split(':')[0];
         cellRef = '!' + this.parent.activeSheetIndex + '!' + cellRef;
         this.calculateInstance.clearFormulaDependentCells(cellRef);
@@ -451,6 +456,10 @@ export class WorkbookFormula {
         }
         this.calculateInstance.cell = '';
         const updatedCell: CellModel = getCell(rowIdx, colIdx, this.parent.getActiveSheet());
+        if (value && value.toString().toUpperCase().startsWith('=DOLLAR(') &&
+            updatedCell && updatedCell.value && updatedCell.value.startsWith('$')) {
+            this.dollarFormulaDecimalHandler(updatedCell);
+        }
         if (updatedCell && value && value.toString().toUpperCase().indexOf('=SUM(') === 0) {
             const errorStrings: string[] = ['#N/A', '#VALUE!', '#REF!', '#DIV/0!', '#NUM!', '#NAME?', '#NULL!', 'invalid arguments'];
             const val: string = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
@@ -463,6 +472,15 @@ export class WorkbookFormula {
                 }
             }
         }
+    }
+
+    private dollarFormulaDecimalHandler(updatedCell: CellModel) {
+        const decimalCount: number = updatedCell.value.split('.')[1].length;
+        let decimalValue: string = "";
+        for (let decimalIdx: number = 1; decimalIdx <= decimalCount; decimalIdx++) {
+            decimalValue += "0";
+        }
+        updatedCell.format = '$#,##.' + decimalValue;
     }
 
     private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number, sheetIdx: number): string {

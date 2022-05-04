@@ -512,6 +512,9 @@ export class EventBase {
             this.parent.removeSelectedClass();
         }
         addClass(cells, cls.APPOINTMENT_BORDER);
+        if (cells.length > 0) {
+            (cells[cells.length - 1] as HTMLElement).focus();
+        }
     }
 
     public getSelectedAppointments(): Element[] {

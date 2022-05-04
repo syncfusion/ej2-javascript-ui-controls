@@ -268,6 +268,14 @@
         }
       }
     }
+    
+    &.sf-pivotview .e-spinner-pane.e-pivot-outer-spinner {
+      z-index: 1 !important;
+    }
+
+    &.sf-pivotview .e-spinner-pane.e-pivot-outer-spinner .e-spinner-inner {
+      visibility: hidden;
+    }
 
     .sf-grid.e-responsive {
       .e-stackedheadercelldiv .e-stackedheadertext,

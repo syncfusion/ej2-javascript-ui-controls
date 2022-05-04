@@ -1513,7 +1513,7 @@ export class LargeIconsView {
         } else {
             for (let i: number = 0, len: number = this.items.length; i < len; i++) {
                 const name: string = getValue('filterPath', this.items[i]) + getValue('name', this.items[i]);
-                if (items.indexOf(name) !== -1) {
+                if ((items.indexOf(name) !== -1) || (items.indexOf(getValue(filterName, this.items[i])) !== -1)) {
                     indexes.push(i);
                 }
             }

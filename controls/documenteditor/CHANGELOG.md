@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-368653` - Resolved the Document Editor numbering continuity issue.
+- `#SF-376374` - Resolved the exception thrown on exporting a sfdt without a metafile property in server-side.
+- `#SF-373298` - Resolved the  extra paragraph added while updating the table of contents.
+- `#SF-373359` - Resolved the multiples instances of table of content creation when track changes is enabled.
+- `#SF-373451` - Resolved exception while open the document with image without relation identifier.
+- `#SF-373159` - Resolved the console error thrown on pasting a content and then changing page orientation.
+- `#SF-373175` - Resolved the script error thrown on deleting the revision text.
+- `#SF-372741` - Resolved inconsistent behaviour of text selection inside an editable table cell within a read only document.
+- `#SF-372794` - Resolved the script error while serializing sfdt document with page break to html format in server-side.
+- `#SF-372636` - Resolved the text inside the shape with wrapping style 'in-front of text'.
+- `#SF-372159` - Default number format for Page field is now displayed properly.
+- `#SF-371816` - List format is now preserved properly on importing.
+- `#SF-371644` - Table formatting is now preserved properly while copy pasting table and resolved the document hanging in copying.
+- `#SF-370909` - Resolved the script error rendering after content delete.
+- `#SF-369585` - Resolved the scrolling becomes quite slow while selecting the text in document with more than 20 pages.
+- `#SF-368794` - Resolved the tab space issue.
+- `#SF-366157`, `#SF-367362` - Resolved the table rendering issue at the bottom of the page.
+- `#SF-293527` - Justify paragraph layout issue in new page first paragraph is now resolved.
+- `#SF-373340` - Resolved the content hanging issue while opening the attached document.
+- `#SF-372431` - Resolved the table misalignment issue if the table has positioning properties.
+
 ## 20.1.51 (2022-04-26)
 
 ### Document Editor

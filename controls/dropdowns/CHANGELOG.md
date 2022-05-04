@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 20.1.51 (2022-04-26)
+## 20.1.52 (2022-05-04)
 
 ### ListBox
 
@@ -11,6 +11,12 @@
 - `I374083` - Issue with "Filtering did not work in the datasource empty list" has been resolved.
 
 ## 20.1.50 (2022-04-19)
+
+### ListBox
+
+#### Bug Fixes
+
+- `I376206` - Issue with "When `MoveUp/MoveDown` Buttons retain enabled state after removing item and script error thrown" has been resolved.
 
 ### ListBox
 

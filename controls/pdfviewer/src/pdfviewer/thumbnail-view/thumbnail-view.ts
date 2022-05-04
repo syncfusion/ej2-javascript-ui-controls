@@ -226,7 +226,7 @@ export class ThumbnailView {
                 thumbnail.appendChild(thumbnailPageNumber);
                 // eslint-disable-next-line max-len
                 this.thumbnailImage = createElement('img', { id: this.pdfViewer.element.id + '_thumbnail_image_' + i, className: 'e-pv-thumbnail-image' }) as HTMLImageElement;
-                this.thumbnailImage.src = data.thumbnailImage[i];
+                this.thumbnailImage.src = "data:image/png;base64," + data.thumbnailImage[i];
                 if (this.pdfViewerBase.pageSize[i] && (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width)) {
                     this.thumbnailImage.style.height = '86px';
                     this.thumbnailImage.style.width = '126px';

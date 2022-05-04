@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `SF-361979`- Now, signature fields with the same value for the name property will be visible when the document is downloaded and reloaded.
+
 ## 20.1.51 (2022-04-26)
 
 ### PDF Viewer

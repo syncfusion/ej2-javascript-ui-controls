@@ -552,3 +552,5 @@ export const refreshInfinitePersistSelection: string = 'refresh-infinite-persist
 export const refreshInfiniteEditrowindex: string = 'refresh-infinite-editrowindex';
 /** @hidden */
 export const afterFilterColumnMenuClose: string = 'after-filter-column-menu-close';
+/** @hidden */
+export const beforeCheckboxfilterRenderer: string = 'beforeCheckboxfilterRenderer';

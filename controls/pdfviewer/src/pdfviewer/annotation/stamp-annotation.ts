@@ -243,7 +243,10 @@ export class StampAnnotation {
                                     // eslint-disable-next-line max-len
                                     proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass, true, annotation);
                                 };
-                                image.src = imageData;
+                                if (!isImport)
+                                   image.src = "data:image/png;base64," + imageData;
+                                else
+                                   image.src = imageData;
                             }
                         }
                     }

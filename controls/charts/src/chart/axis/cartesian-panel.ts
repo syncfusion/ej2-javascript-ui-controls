@@ -1340,7 +1340,7 @@ export class CartesianAxisLayoutPanel {
                 anchor = (chart.enableRtl) ? ((isEndAnchor) ? '': 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
-            if (axis.edgeLabelPlacement && (angle === 0)) {
+            if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
                 case 'None':
                     break;

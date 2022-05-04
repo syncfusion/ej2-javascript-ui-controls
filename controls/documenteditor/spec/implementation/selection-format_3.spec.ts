@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer, DocumentHelper } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, DocumentHelper, BodyWidget, SfdtExport } from '../../src/index';
 import { Editor } from '../../src/index';
 import { Selection } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/index';
@@ -935,4 +935,932 @@ console.log('preferred width type undo and redo multiple times validation testin
         editor.editorHistory.undo();
         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.preferredWidthType).toBe('Point');
     });
+});
+let tableDoc:any = {
+	"sections": [
+		{
+			"sectionFormat": {
+				"pageWidth": 612,
+				"pageHeight": 792,
+				"leftMargin": 72,
+				"rightMargin": 72,
+				"topMargin": 72,
+				"bottomMargin": 72,
+				"differentFirstPage": false,
+				"differentOddAndEvenPages": false,
+				"headerDistance": 36,
+				"footerDistance": 36,
+				"bidi": false
+			},
+			"blocks": [
+				{
+					"rows": [
+						{
+							"cells": [
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"rightIndent": 0,
+												"textAlignment": "Left",
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"listFormat": {}
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {
+														"bold": false,
+														"italic": false,
+														"fontSize": 11,
+														"fontFamily": "Calibri",
+														"fontColor": "#000000FF",
+														"boldBidi": false,
+														"italicBidi": false,
+														"fontSizeBidi": 11,
+														"fontFamilyBidi": "Calibri",
+														"allCaps": false
+													},
+													"text": " "
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"left": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"right": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"bottom": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"diagonalDown": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"preferredWidthType": "Point",
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 0
+								},
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"rightIndent": 0,
+												"textAlignment": "Left",
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"listFormat": {}
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {
+														"bold": false,
+														"italic": false,
+														"fontSize": 11,
+														"fontFamily": "Calibri",
+														"fontColor": "#000000FF",
+														"boldBidi": false,
+														"italicBidi": false,
+														"fontSizeBidi": 11,
+														"fontFamilyBidi": "Calibri",
+														"allCaps": false
+													},
+													"text": " "
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"left": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"right": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"bottom": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"diagonalDown": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"preferredWidthType": "Point",
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 1
+								}
+							],
+							"rowFormat": {
+								"height": 0.9999974966049194,
+								"allowBreakAcrossPages": true,
+								"heightType": "AtLeast",
+								"isHeader": false,
+								"borders": {
+									"top": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"left": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"right": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"bottom": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"diagonalDown": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"diagonalUp": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"horizontal": {
+										"hasNoneStyle": false,
+										"lineStyle": "Cleared",
+										"lineWidth": 0
+									},
+									"vertical": {
+										"hasNoneStyle": false,
+										"lineStyle": "Cleared",
+										"lineWidth": 0
+									}
+								},
+								"gridBefore": 0,
+								"gridAfter": 0,
+								"leftMargin": 0,
+								"topMargin": 0,
+								"rightMargin": 0,
+								"bottomMargin": 0
+							}
+						},
+						{
+							"cells": [
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"rightIndent": 0,
+												"textAlignment": "Left",
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"listFormat": {}
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {
+														"bold": false,
+														"italic": false,
+														"fontSize": 11,
+														"fontFamily": "Calibri",
+														"fontColor": "#000000FF",
+														"boldBidi": false,
+														"italicBidi": false,
+														"fontSizeBidi": 11,
+														"fontFamilyBidi": "Calibri",
+														"allCaps": false
+													},
+													"text": " "
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"left": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"right": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"bottom": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalDown": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"preferredWidthType": "Point",
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 0
+								},
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"rightIndent": 0,
+												"textAlignment": "Left",
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"listFormat": {}
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {
+														"bold": false,
+														"italic": false,
+														"fontSize": 11,
+														"fontFamily": "Calibri",
+														"fontColor": "#000000FF",
+														"boldBidi": false,
+														"italicBidi": false,
+														"fontSizeBidi": 11,
+														"fontFamilyBidi": "Calibri",
+														"allCaps": false
+													},
+													"text": " "
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"left": {
+												"color": "#000000FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 0.5
+											},
+											"right": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"bottom": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalDown": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"preferredWidthType": "Point",
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 1
+								}
+							],
+							"rowFormat": {
+								"height": 0.9999974966049194,
+								"allowBreakAcrossPages": true,
+								"heightType": "AtLeast",
+								"isHeader": false,
+								"borders": {
+									"top": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"left": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"right": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"bottom": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"diagonalDown": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"diagonalUp": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"horizontal": {
+										"hasNoneStyle": false,
+										"lineStyle": "Cleared",
+										"lineWidth": 0
+									},
+									"vertical": {
+										"hasNoneStyle": false,
+										"lineStyle": "Cleared",
+										"lineWidth": 0
+									}
+								},
+								"gridBefore": 0,
+								"gridAfter": 0,
+								"leftMargin": 0,
+								"topMargin": 0,
+								"rightMargin": 0,
+								"bottomMargin": 0
+							}
+						}
+					],
+					"grid": [
+						234,
+						234
+					],
+					"tableFormat": {
+						"borders": {
+							"top": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"left": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"right": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"bottom": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"diagonalDown": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"diagonalUp": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"horizontal": {
+								"hasNoneStyle": false,
+								"lineStyle": "Cleared",
+								"lineWidth": 0
+							},
+							"vertical": {
+								"hasNoneStyle": false,
+								"lineStyle": "Cleared",
+								"lineWidth": 0
+							}
+						},
+						"shading": {},
+						"leftIndent": 0,
+						"tableAlignment": "Left",
+						"topMargin": 0,
+						"rightMargin": 0,
+						"leftMargin": 0,
+						"bottomMargin": 0,
+						"preferredWidthType": "Auto",
+						"bidi": false,
+						"allowAutoFit": true
+					},
+					"description": null,
+					"title": null,
+					"columnCount": 2
+				},
+				{
+					"paragraphFormat": {
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				}
+			],
+			"headersFooters": {
+				"header": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": []
+						}
+					]
+				},
+				"footer": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": []
+						}
+					]
+				},
+				"evenHeader": {},
+				"evenFooter": {},
+				"firstPageHeader": {},
+				"firstPageFooter": {}
+			}
+		}
+	],
+	"characterFormat": {
+		"bold": false,
+		"italic": false,
+		"fontSize": 11,
+		"fontFamily": "Calibri",
+		"underline": "None",
+		"strikethrough": "None",
+		"baselineAlignment": "Normal",
+		"highlightColor": "NoColor",
+		"fontColor": "#00000000",
+		"boldBidi": false,
+		"italicBidi": false,
+		"fontSizeBidi": 11,
+		"fontFamilyBidi": "Calibri",
+		"allCaps": false
+	},
+	"paragraphFormat": {
+		"leftIndent": 0,
+		"rightIndent": 0,
+		"firstLineIndent": 0,
+		"textAlignment": "Left",
+		"beforeSpacing": 0,
+		"afterSpacing": 8,
+		"lineSpacing": 1,
+		"lineSpacingType": "Multiple",
+		"listFormat": {},
+		"bidi": false,
+		"keepLinesTogether": false,
+		"keepWithNext": false,
+		"widowControl": true
+	},
+	"defaultTabWidth": 36,
+	"trackChanges": false,
+	"enforcement": false,
+	"hashValue": "",
+	"saltValue": "",
+	"formatting": false,
+	"protectionType": "NoProtection",
+	"dontUseHTMLParagraphAutoSpacing": false,
+	"formFieldShading": true,
+	"compatibilityMode": "Word2013",
+	"styles": [
+		{
+			"name": "Normal",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {}
+			},
+			"characterFormat": {},
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 1",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 12,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level1",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 16,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 1 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 1 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 16,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Default Paragraph Font",
+			"type": "Character",
+			"characterFormat": {}
+		},
+		{
+			"name": "Heading 2",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level2",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 13,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 2 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 2 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 13,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 3",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level3",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontSizeBidi": 12,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 3 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 3 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontSizeBidi": 12,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 4",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level4",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"italicBidi": true,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 4 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 4 Char",
+			"type": "Character",
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"italicBidi": true,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 5",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level5",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 5 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 5 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 6",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level6",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 6 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 6 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		}
+	],
+	"lists": [],
+	"abstractLists": [],
+	"comments": [],
+	"revisions": [],
+	"customXml": []
+}
+describe('table border copy/paste validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
+        document.body.innerHTML = '';
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, EditorHistory, Selection,SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true, enableLocalPaste:true,enableSfdtExport:true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.editorModule.insertTable(2, 2);
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        documentHelper = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('table border copy/paste validation',()=>{
+        console.log("table border copy/paste validation");
+        editor.open(JSON.stringify(tableDoc));
+        editor.selection.selectTable();
+        editor.selection.copy();
+        editor.editor.onBackSpace();
+        editor.selection.checkForCursorVisibility();
+        editor.editor.paste();
+        let body:BodyWidget = editor.documentHelper.pages[0].bodyWidgets[0] as BodyWidget;
+        let table: TableWidget = body.childWidgets[0] as TableWidget;
+        let firstRow : TableRowWidget = table.childWidgets[0] as TableRowWidget;
+        let secondRow : TableRowWidget = table.childWidgets[1] as TableRowWidget;
+        //first row
+        //first cell
+        expect((firstRow.childWidgets[0] as TableCellWidget).cellFormat.borders.right.isBorderDefined).toBe(true);
+        expect((firstRow.childWidgets[0] as TableCellWidget).cellFormat.borders.left.isBorderDefined).toBe(false);
+        expect((firstRow.childWidgets[0] as TableCellWidget).cellFormat.borders.top.isBorderDefined).toBe(false);
+        expect((firstRow.childWidgets[0] as TableCellWidget).cellFormat.borders.bottom.isBorderDefined).toBe(true);
+        //second cell
+        expect((firstRow.childWidgets[1] as TableCellWidget).cellFormat.borders.right.isBorderDefined).toBe(false);
+        expect((firstRow.childWidgets[1] as TableCellWidget).cellFormat.borders.left.isBorderDefined).toBe(true);
+        expect((firstRow.childWidgets[1] as TableCellWidget).cellFormat.borders.top.isBorderDefined).toBe(false);
+        expect((firstRow.childWidgets[1] as TableCellWidget).cellFormat.borders.bottom.isBorderDefined).toBe(true);
+        //second row
+        //first cell
+        expect((secondRow.childWidgets[0] as TableCellWidget).cellFormat.borders.right.isBorderDefined).toBe(true);
+        expect((secondRow.childWidgets[0] as TableCellWidget).cellFormat.borders.left.isBorderDefined).toBe(false);
+        expect((secondRow.childWidgets[0] as TableCellWidget).cellFormat.borders.top.isBorderDefined).toBe(true);
+        expect((secondRow.childWidgets[0] as TableCellWidget).cellFormat.borders.bottom.isBorderDefined).toBe(false);
+        //second cell
+        expect((secondRow.childWidgets[1] as TableCellWidget).cellFormat.borders.right.isBorderDefined).toBe(false);
+        expect((secondRow.childWidgets[1] as TableCellWidget).cellFormat.borders.left.isBorderDefined).toBe(true);
+        expect((secondRow.childWidgets[1] as TableCellWidget).cellFormat.borders.top.isBorderDefined).toBe(true);
+        expect((secondRow.childWidgets[1] as TableCellWidget).cellFormat.borders.bottom.isBorderDefined).toBe(false);
+
+    })
 });

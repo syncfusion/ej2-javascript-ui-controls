@@ -438,7 +438,7 @@ export class ComboBox extends DropDownList {
         }
         if (!this.preventAutoFill && this.getModuleName() === 'combobox' && this.isTyped) {
             setTimeout(() => {
-            this.inlineSearch();   
+                this.inlineSearch();
             });
         }
     }
@@ -553,7 +553,7 @@ export class ComboBox extends DropDownList {
                 }
             }
             if (!this.isAndroidAutoFill(currentValue)) {
-                this.setAutoFillSelection(currentValue);
+                this.setAutoFillSelection(currentValue, isHover);
             }
         }
     }
@@ -623,14 +623,14 @@ export class ComboBox extends DropDownList {
         }
     }
 
-    private setAutoFillSelection(currentValue: string): void {
+    private setAutoFillSelection(currentValue: string, isKeyNavigate: boolean = false): void {
         const selection: { [key: string]: number } = this.getSelectionPoints();
         const value: string = this.inputElement.value.substr(0, selection.start);
         if (value && (value.toLowerCase() === currentValue.substr(0, selection.start).toLowerCase())) {
             const inputValue: string = value + currentValue.substr(value.length, currentValue.length);
             Input.setValue(inputValue, this.inputElement, this.floatLabelType, this.showClearButton);
             this.inputElement.setSelectionRange(selection.start, this.inputElement.value.length);
-        } else {
+        } else if(isKeyNavigate) {
             Input.setValue(currentValue, this.inputElement, this.floatLabelType, this.showClearButton);
             this.inputElement.setSelectionRange(0, this.inputElement.value.length);
         }

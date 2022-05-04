@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#F174531` - Cleared the formula dependencies from calculate instance while importing the excel file.
+- `#I375090` - The dollar formula throws an error when used with a single argument issue resolved.
+
 ## 20.1.51 (2022-04-26)
 
 ### Spreadsheet

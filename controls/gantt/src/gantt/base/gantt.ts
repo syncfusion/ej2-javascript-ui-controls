@@ -1718,6 +1718,9 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGrid.dataSource = {result: this.flatData, count: count};
             } else {
                 this.treeGrid.dataSource = this.flatData;
+                if (!isNullOrUndefined(document.getElementsByClassName('e-listview')[0])) {
+                    this.treeGrid.dataBind();
+                }
             }
         } else {
             if (this.enableValidation) {

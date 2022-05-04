@@ -6327,6 +6327,7 @@ export class PdfViewerBase {
                                         data = JSON.parse(data);
                                     }
                                     if (data.image && data.uniqueId === proxy.documentId) {
+                                        data.image = "data:image/png;base64," + data.image;
                                         let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
                                         proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
                                         const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;

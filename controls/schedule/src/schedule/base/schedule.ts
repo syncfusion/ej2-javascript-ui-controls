@@ -1494,7 +1494,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
-                        this.uiStateValues.isInitial = ['TimelineMonth', 'TimelineYear', 'Year'].indexOf(view) > -1 ? true : this.uiStateValues.isInitial;
+                        this.uiStateValues.isInitial = view.indexOf('Timeline') > -1 || this.currentView.indexOf('Timeline') > -1 ? true : this.uiStateValues.isInitial;
                         this.viewIndex = navigationArgs.viewIndex;
                         this.setProperties({ currentView: view }, true);
                         if (this.headerModule) {

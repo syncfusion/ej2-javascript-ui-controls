@@ -5272,7 +5272,7 @@ export class Editor {
                             let clientWidth: number = startParagraph.getContainerWidth();
                             table.fitCellsToClientArea(clientWidth);
                         }
-                        if (startParagraph.isEmpty() && startParagraph.previousWidget instanceof TableWidget) {
+                        if (startParagraph.isEmpty() && startParagraph.previousWidget instanceof TableWidget && !this.isPaste) {
                             return this.insertTableRows(table, startParagraph.previousWidget as TableWidget);
                         }
                     }
@@ -9101,7 +9101,7 @@ export class Editor {
         let currentPara: ParagraphWidget = selection.start.paragraph;
         let previousPara: ParagraphWidget = currentPara.previousWidget as ParagraphWidget;
         let listId: number;
-        if (!isNullOrUndefined(previousPara)) {
+        if (previousPara instanceof ParagraphWidget && !isNullOrUndefined(previousPara)) {
             listId = previousPara.paragraphFormat.listFormat.listId;
         }
         this.initHistory(action);
@@ -11051,7 +11051,8 @@ export class Editor {
             this.editorHistory.currentBaseHistoryInfo.action = 'InsertTextParaReplace';
         }
         if (end.paragraph === paragraph && end.currentWidget !== paragraph.lastChild ||
-            end.currentWidget === paragraph.lastChild || paraReplace) {
+            (end.currentWidget === paragraph.lastChild && (end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget) && (!((paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof CommentCharacterElementBox) && end.offset + 1 <= selection.getLineLength(paragraph.lastChild as LineWidget)))) ||
+            paraReplace) {
             let isStartParagraph: boolean = start.paragraph === paragraph;
             if (end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
                 //If selection end with this paragraph and selection doesnot include paragraph mark.               
@@ -12378,7 +12379,7 @@ export class Editor {
                         this.clearFieldElementRevisions(fieldInline, inline.revisions);
                     }
                 }
-                if (this.canHandleDeletion() || (this.owner.enableTrackChanges && !this.skipTracking() && !this.skipFieldDeleteTracking)) {
+                if (this.canHandleDeletion() || (this.owner.enableTrackChanges && !this.skipTracking() && !this.skipFieldDeleteTracking && !this.isInsertingTOC)) {
                     if (!this.skipTableElements) {
                         this.addRemovedNodes(inline.clone());
                     }
@@ -14623,7 +14624,9 @@ export class Editor {
             removeOffset = removeOffset - lineLength;
         }
         this.removeAtOffset(lineWidget, selection, removeOffset);
-        if (this.owner.enableTrackChanges && !this.skipTracking()) {
+        if (this.owner.enableTrackChanges && !isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Delete') {
+            this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset, false);
+        } else if (this.owner.enableTrackChanges && !this.skipTracking()) {
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + 1, false);
         } else {
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset, false);
@@ -17134,6 +17137,11 @@ export class Editor {
 
                 for (let i: number = startIndex; i <= endIndex; i++) {
                     const editStart: EditRangeStartElementBox = this.addEditElement(user);
+                    if (i == startIndex) {
+                        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+                            this.editorHistory.currentHistoryInfo.editRangeStart = editStart;
+                        }
+                    }
                     editStart.columnFirst = i;
                     editStart.columnLast = i;
                     editStart.line = selection.start.currentWidget;
@@ -17143,6 +17151,9 @@ export class Editor {
                     endElement.push(editEnd);
                 }
                 this.insertElements(endElement, startElement);
+                if (this.editorHistory) {
+                    this.editorHistory.updateComplexHistoryInternal();
+                }
                 let offset: number = startElement[0].line.getOffset(startElement[0], 1);
                 this.selection.start.setPositionParagraph(startElement[0].line, offset);
                 offset = endElement[0].line.getOffset(endElement[0], 1);
@@ -17151,6 +17162,9 @@ export class Editor {
                 this.fireContentChange();
             } else {
                 this.insertEditRangeInsideTable(startCell, endCell, user);
+                if (this.editorHistory) {
+                    this.editorHistory.updateComplexHistoryInternal();
+                }
                 const startLine: LineWidget = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
                 const endLine: LineWidget = this.selection.getLastParagraph(endCell).childWidgets[0] as LineWidget;
                 let offset: number = startLine.getOffset(startLine.children[0], 1);
@@ -17204,6 +17218,11 @@ export class Editor {
                     startParagraph = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
                 }
                 const editStart: EditRangeStartElementBox = this.addEditElement(user);
+                if (z === cellSelectionStartIndex) {
+                    if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.currentHistoryInfo.editRangeStart = editStart;
+                    }
+                }
                 editStart.columnFirst = z;
                 editStart.columnLast = z;
                 editStart.line = startParagraph;

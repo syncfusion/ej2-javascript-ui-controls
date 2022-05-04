@@ -427,47 +427,57 @@ export class Annotation {
                 const annotationId: string = selectedAnnot.annotName;
                 const annotType: AnnotationType = this.getAnnotationType(selectedAnnot.shapeAnnotationType, selectedAnnot.measureType);
                 if (shapeType === 'Path' || selectedAnnot.formFieldAnnotationType === 'SignatureField' || selectedAnnot.formFieldAnnotationType === 'InitialField' || shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') {                    // eslint-disable-next-line
-                    let inputFields: any = document.getElementById(selectedAnnot.id);
-                    let signatureFieldElement: any = document.getElementById(selectedAnnot.id + "_html_element");
-                    if (inputFields === null && !isNullOrUndefined(signatureFieldElement)) {
-                        inputFields = signatureFieldElement.children[0].children[0]
-                    }
-                    if (inputFields && inputFields.classList.contains('e-pdfviewer-signatureformfields-signature')) {
-                        inputFields.className = 'e-pdfviewer-signatureformfields';
-                        inputFields.style.pointerEvents = '';
-                        inputFields.parentElement.style.pointerEvents = '';
-                        if (this.pdfViewer.formDesignerModule) {
-                            this.pdfViewer.formDesignerModule.updateSignatureValue(selectedAnnot.id);
-                        } else {
-                            this.pdfViewer.formFieldsModule.updateDataInSession(inputFields, '');
-                        }
-                    }
-                    // eslint-disable-next-line
                     let formFieldCollection: any = this.pdfViewer.retrieveFormFields();
-                    for (let m: number = 0; m < formFieldCollection.length; m++) {
-                        if (selectedAnnot.id === formFieldCollection[m].id) {
+                    let index: number = formFieldCollection.findIndex((el: { id: any; }) => el.id === annotation.id);
+                    let formFieldName: string;
+                    if (index > -1) {
+                        formFieldName = formFieldCollection[index].name;
+                    }
+                    for (var m = 0; m < formFieldCollection.length; m++) {
+                        if (selectedAnnot.id === formFieldCollection[m].id || (isNullOrUndefined(formFieldName) && formFieldName === formFieldCollection[m].name)) {
                             formFieldCollection[m].value = '';
                             formFieldCollection[m].signatureType = '';
+                            let annotation: any = this.getAnnotationsFromCollections(formFieldCollection[m].id);
+                            this.updateInputFieldDivElement(annotation);
+                            undoElement = this.modifyInCollections(annotation, 'delete');
+                            // eslint-disable-next-line max-len
+                            this.pdfViewer.annotation.addAction(annotation.pageIndex, null, annotation, 'Delete', '', undoElement, annotation);
+                            if (this.pdfViewer.formDesignerModule && selectedAnnot.formFieldAnnotationType)
+                                this.updateFormFieldCollection(annotation);
+                            else
+                                this.updateAnnotationCollection(annotation);
+                            this.pdfViewer.remove(annotation);
                         }
                     }
+                    if (this.pdfViewer.formDesignerModule && selectedAnnot.formFieldAnnotationType)
+                        this.updateFormFieldCollection(annotation)
+                    else
+                        this.updateAnnotationCollection(annotation);
                 }
-                if (this.pdfViewer.formDesignerModule && selectedAnnot.formFieldAnnotationType)
-                    this.updateFormFieldCollection(annotation)
-                else
-                    this.updateAnnotationCollection(annotation);
                 let formFieldObj: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[annotation.id.split("_")[0]];
                 if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField')) {
                     let index: number = this.pdfViewer.formFieldCollections.findIndex(el => el.id === annotation.id.split("_")[0]);
+                    let formFieldName: string;
                     if (index > -1) {
-                        let formFieldsIndex: any = this.pdfViewer.formFieldCollections[index];
-                        this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsIndex, formFieldsIndex.pageIndex, true, false, false,
-                            false, false, false, false, false, false, false, false,
-                            false, false, false, false, formFieldsIndex.value, "");
-                        formFieldsIndex.value = "";
-                        formFieldsIndex.signatureType = "";
-                        this.pdfViewer.formDesignerModule.updateFormFieldCollections(formFieldsIndex);
+                        formFieldName = this.pdfViewer.formFieldCollections[index].name;
                     }
-                    formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(annotation.wrapper.children[0]), 1);
+                    for (var i = 0; i < this.pdfViewer.formFieldCollections.length; i++) {
+                        if (formFieldName === this.pdfViewer.formFieldCollections[i].name) {
+                            let formFieldsIndex: any = this.pdfViewer.formFieldCollections[i];
+                            this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsIndex, formFieldsIndex.pageIndex, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, formFieldsIndex.value, "");
+                            formFieldsIndex.value = "";
+                            formFieldsIndex.signatureType = "";
+                            this.pdfViewer.formDesignerModule.updateFormFieldCollections(formFieldsIndex);
+                            let annotation: any = this.getAnnotationsFromCollections(formFieldsIndex.id + '_content');
+                            undoElement = this.modifyInCollections(annotation,'delete');
+                            // eslint-disable-next-line max-len
+                            this.pdfViewer.annotation.addAction(annotation.pageIndex, null, annotation, 'Delete', '', undoElement, annotation);
+                            this.updateInputFieldDivElement(annotation);
+                            let formFieldObject: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[annotation.id.split("_")[0]];
+                            formFieldObject.wrapper.children.splice(formFieldObject.wrapper.children.indexOf(annotation.wrapper.children[0]), 1);
+                            this.pdfViewer.remove(annotation);
+                        }
+                    }
                 }
                 this.pdfViewer.remove(annotation);
                 this.pdfViewer.renderDrawing();
@@ -498,7 +508,41 @@ export class Annotation {
             }
         }
     }
+    /**
+     * @param annotationId
+    */
+   // eslint-disable-next-line max-len
+    private getAnnotationsFromCollections(annotationId : string): any {
+        let collections : any = this.pdfViewer.annotations;
+        if (collections && annotationId) {
+            for (var i = 0; i < collections.length; i++) {
+                if (collections[i].id === annotationId) {
+                    return collections[i];
+                }
+            }
+        }
+    };
 
+    /**
+     * @param annotation
+    */
+    private updateInputFieldDivElement(annotation: any): void {
+        let inputFields: any = document.getElementById(annotation.id);
+        let signatureFieldElement: any = document.getElementById(annotation.id + "_html_element");
+        if (inputFields === null && !isNullOrUndefined(signatureFieldElement)) {
+            inputFields = signatureFieldElement.children[0].children[0]
+        }
+        if (inputFields && inputFields.classList.contains('e-pdfviewer-signatureformfields-signature')) {
+            inputFields.className = 'e-pdfviewer-signatureformfields';
+            inputFields.style.pointerEvents = '';
+            inputFields.parentElement.style.pointerEvents = '';
+            if (this.pdfViewer.formDesignerModule) {
+                this.pdfViewer.formDesignerModule.updateSignatureValue(annotation.id);
+            } else {
+                this.pdfViewer.formFieldsModule.updateDataInSession(inputFields, '');
+            }
+        }
+    }
     /**
      * @param annotation
      * @param pageNumber

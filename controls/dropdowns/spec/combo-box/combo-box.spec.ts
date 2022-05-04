@@ -2804,5 +2804,175 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             expect(comboBoxObj.list.querySelectorAll('li')[9].textContent === 'Raveen Kumar').toBe(true);
         });
     });
+    describe('EJ2-59155-Unable to type in the input when autofill is enabled with Contains filter', () => {
+        let comboBoxObj: any;
+        let e: any = { preventDefault: function () { }, target: null, type: null };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox1' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            comboBoxObj.destroy();
+            element.remove();
+        });
+        it('with filtertype as contains', () => {
+           comboBoxObj = new ComboBox({
+                dataSource: [
+                    { text: 'MM/dd/yyyy' },
+                    { text: 'yyyy-MM-dd' },
+                    { text: 'dd.MM.yyyy' },
+                    { text: 'dd/yyyy/MM' },
+                    { text: 'dd/MM/yyyy' },
+                  ],
+                  autofill: true,
+                  filterType: 'Contains',
+            });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.showPopup();
+            comboBoxObj.inputElement.value = 'm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mM/dd/yyyy');
+            let item: Element = comboBoxObj.list.querySelector('.e-active')
+            expect(item.textContent === 'MM/dd/yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'mm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm/dd/yyyy');
+            comboBoxObj.inputElement.value = 'mm-';
+            e.key = '-';
+            e.keyCode = 189;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm-');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'yyyy-MM-dd').toBe(true);
+            comboBoxObj.inputElement.value = 'mm'
+            e.key= "Backspace"
+            e.keyCode = 8;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm');
+            comboBoxObj.inputElement.value = 'mm.'
+            e.key = '.';
+            e.keyCode = 190;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm.');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'dd.MM.yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'y';
+            e.key = 'y';
+            e.keyCode = 89;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'MM/dd/yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'y/';
+            e.key = 'y/';
+            e.keyCode = 191;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y/');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'dd/yyyy/MM').toBe(true);
+            comboBoxObj.inputElement.value = 'y'
+            e.key= "Backspace"
+            e.keyCode = 8;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y');
+            comboBoxObj.inputElement.value = 'y-'
+            e.key= "-"
+            e.keyCode = 189;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y-');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'yyyy-MM-dd').toBe(true);
+            keyEventArgs.type = 'keydown';
+            keyEventArgs.action = 'down';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('dd.MM.yyyy');
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('dd/yyyy/MM');
+            keyEventArgs.type = 'keyup';
+            keyEventArgs.action = 'up';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('dd.MM.yyyy');
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('yyyy-MM-dd');
+            comboBoxObj.destroy();
+        });
+        it('with filtertype as endswith', () => {
+            comboBoxObj = new ComboBox({
+                 dataSource: [
+                     { text: 'MM/dd/yyyy' },
+                     { text: 'yyyy-MM-dd' },
+                     { text: 'dd.MM.yyyy' },
+                     { text: 'dd/yyyy/MM' },
+                     { text: 'dd/MM/yyyy' },
+                   ],
+                   autofill: true,
+                   filterType: 'EndsWith',
+             });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.showPopup();
+            comboBoxObj.inputElement.value = 'm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('m');
+            let item: Element = comboBoxObj.list.querySelector('.e-active')
+            expect(item.textContent === 'dd/yyyy/MM').toBe(true);
+            comboBoxObj.inputElement.value = 'mm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'dd/yyyy/MM').toBe(true);
+            comboBoxObj.inputElement.value = 'mm-';
+            e.key = '-';
+            e.keyCode = 189;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm-');
+            expect(isNullOrUndefined(comboBoxObj.list.querySelector('.e-active'))).toBe(true);
+            comboBoxObj.inputElement.value = 'mm'
+            e.key= "Backspace"
+            e.keyCode = 8;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm');
+            expect(isNullOrUndefined(comboBoxObj.list.querySelector('.e-active'))).toBe(true);
+            comboBoxObj.inputElement.value = 'y'
+            e.key = 'y';
+            e.keyCode = 89;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'MM/dd/yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'y/';
+            e.key = 'y/';
+            e.keyCode = 191;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y/');
+            expect(isNullOrUndefined(comboBoxObj.list.querySelector('.e-active'))).toBe(true);
+            keyEventArgs.type = 'keydown';
+            keyEventArgs.action = 'down';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('MM/dd/yyyy');
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('yyyy-MM-dd');
+            keyEventArgs.type = 'keyup';
+            keyEventArgs.action = 'up';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('MM/dd/yyyy');
+            comboBoxObj.destroy();
+        });
+    });
 });
 

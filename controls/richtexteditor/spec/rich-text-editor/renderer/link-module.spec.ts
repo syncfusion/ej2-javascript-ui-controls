@@ -659,6 +659,34 @@ describe('IE 11 insert link', () => {
         });
     });
 
+    describe('EJ2-59194 - More space between the text and Inserting a new link removes the space between the words issue', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class="focusNode">The Rich Text Editor (RTE) control is an easy to render in the client side.&nbsp;&nbsp;&nbsp;&nbsp;<a class="e-rte-anchor" href="http://fdbdfbdb" title="http://fdbdfbdb" target="_blank">Customer</a>easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`,
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('More space between the text and Inserting a new link removes the space between the words issue', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let focusNode = rteObj.element.querySelector('.focusNode');
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), focusNode.childNodes[0], focusNode.childNodes[0], 70, 75);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'side.').toBe(true);
+        });
+    });
+
     describe('EJ2-51959- Link is not generated properly, when pasteCleanUpModule is imported', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

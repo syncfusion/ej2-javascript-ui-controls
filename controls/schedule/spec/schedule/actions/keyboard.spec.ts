@@ -3779,6 +3779,46 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('EJ2-59285 - Event deselection issue checking', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: ['Month'],
+                allowMultiDrag: true,
+                showQuickInfo: false,
+                selectedDate: new Date(2017, 10, 1)
+            };
+            schObj = util.createSchedule(model, defaultData, done);            
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Ensuring event deselection', () => {
+            const apps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            apps[0].click();
+            util.triggerMouseEvent(apps[1], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
+            expect((document.activeElement as HTMLElement).dataset.id).toEqual('Appointment_2');
+            util.triggerMouseEvent(apps[2], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(3);
+            expect((document.activeElement as HTMLElement).dataset.id).toEqual('Appointment_3');
+            util.triggerMouseEvent(apps[3], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(4);
+            expect((document.activeElement as HTMLElement).dataset.id).toEqual('Appointment_4');
+            util.triggerMouseEvent(apps[3], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(3);
+            expect((document.activeElement as HTMLElement).dataset.id).toEqual('Appointment_3');
+            util.triggerMouseEvent(apps[2], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
+            expect((document.activeElement as HTMLElement).dataset.id).toEqual('Appointment_2');
+            util.triggerMouseEvent(apps[1], 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
+            expect((document.activeElement as HTMLElement).dataset.id).toEqual('Appointment_1');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

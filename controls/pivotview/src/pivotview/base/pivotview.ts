@@ -4415,6 +4415,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.setGridRowWidth();
                 }
+                if(this.chart || this.pivotChartModule){
+                    this.chart.height = this.pivotChartModule.getResizedChartHeight();
+                }                
             }
             if (this.showToolbar && this.toolbarModule && this.toolbarModule.toolbar) {
                 this.toolbarModule.toolbar.width = this.grid ? (this.getGridWidthAsNumber() - 2) : (this.getWidthAsNumber() - 2);
@@ -4422,13 +4425,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.chart && ((this.showToolbar && this.currentView === 'Chart') || !this.showToolbar)) {
                 this.chart.width = (this.showToolbar && this.grid) ? this.getGridWidthAsNumber().toString() :
                     (this.displayOption.view === 'Both' && this.grid) ? this.getGridWidthAsNumber().toString() : this.getWidthAsNumber().toString();
-                this.chart.height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.chartSettings.chartSeries.type) < 0 &&
-                    this.chartSettings.enableScrollOnMultiAxis && this.chartSettings.enableMultipleAxis &&
-                    this.dataSourceSettings.values.length > 0 ? Number(this.chart.height) > (this.dataSourceSettings.values.length * 235) + 100 ? /* eslint-disable-line */
-                    isNaN(Number(this.pivotChartModule.getChartHeight())) ? this.pivotChartModule.getChartHeight().toString() : (Number(this.pivotChartModule.getChartHeight()) - 5).toString() :
-                    (!isNaN(Number(this.pivotChartModule.getChartHeight())) || this.dataSourceSettings.values.length > 1) ?
-                        ((this.dataSourceSettings.values.length * 235) + 100).toString() :
-                        this.pivotChartModule.getChartHeight().toString() : this.pivotChartModule.getChartHeight().toString();
+                this.chart.height = this.pivotChartModule.getResizedChartHeight();
                 if (this.displayOption.view === 'Chart' && this.showGroupingBar && this.groupingBarModule &&
                     this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.refreshUI();

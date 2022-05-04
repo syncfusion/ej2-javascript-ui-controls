@@ -8,6 +8,15 @@
 
 #### Bug Fixes
 
+- `I368359` - Issue with Validate Fields is not properly working for the rule template in query builder has been fixed.
+- `I374364` - Issue with Query builder rule shows field value instead of label value, while we set fieldMode as dropdowntree has been fixed.
+
+## 20.1.48 (2022-04-12)
+
+### QueryBuilder
+
+#### Bug Fixes
+
 - `F174051` - Issue with Script error throws while adding group in Query builder header template has been fixed.
 
 ## 19.3.45 (2021-10-12)

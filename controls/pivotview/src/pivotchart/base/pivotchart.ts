@@ -1609,6 +1609,19 @@ export class PivotChart {
         this.parent.trigger(events.chartResized, args);
     }
 
+    /* eslint-disable */
+    /** @hidden */
+    public getResizedChartHeight(): string {
+        let height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
+            this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
+            this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ? /* eslint-disable-line */
+            isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
+            (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
+                ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() :
+                this.getChartHeight().toString() : this.getChartHeight().toString();
+        return height;
+    }
+
     /**
      * To destroy the chart module
      * @returns {void}

@@ -114,7 +114,7 @@ export class NodeCutter {
             this.spliceEmptyNode(fragment.childNodes[len], isStart);
         } else if (len > -1) {
             this.spliceEmptyNode(fragment.childNodes[0], isStart);
-        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11) {
+        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11 && fragment.nodeName !== 'IMG') {
             fragment.parentNode.removeChild(fragment);
         }
         return fragment;

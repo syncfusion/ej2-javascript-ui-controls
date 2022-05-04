@@ -258,6 +258,7 @@ export class ProgressAnimation {
             delay: delay,
             progress: (args: AnimationOptions): void => {
                 progress.cancelResize = true;
+				args.name = "SlideRight";
                 if (progress.type === 'Linear') {
                     if (args.timeStamp >= args.delay) {
                         if (labelText === '') {

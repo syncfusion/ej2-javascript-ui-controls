@@ -650,3 +650,99 @@ describe('EJ2-55635 - changing datasource for TreeGrid when treeColumnIndex and 
     destroy(gridObj);
   });
 });
+
+describe('Stacked Header with checkbox column - EJ2-59568', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        allowPaging: true,
+        autoCheckHierarchy: true,
+        columns: [
+          { field: 'progress', headerText: 'progress',  width: 250 },
+
+          { field: 'priority', headerText: 'priority', showCheckbox: true, width: 250 },
+
+          {headerText: 'Task Details', textAlign: 'Center', columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+          { field: 'taskName', headerText: 'Task Name', width: 250 },
+          ]},
+          { field: 'duration', headerText: 'Priority', textAlign: 'Left', width: 135 },
+      ]
+      },
+      done
+    );
+  });
+  it('Header Checkboxcolumn rendering test', () => {
+    expect(document.querySelectorAll(".e-treeselectall").length == 1).toBe(true);
+  });
+  it('Checkbox click test', () => {
+    (<HTMLElement>document.querySelectorAll(".e-treeselectall")[0]).click();
+    expect(gridObj.getCheckedRecords().length > 0).toBe(true);
+  });
+  it('Checkbox column rendering check after paging', () => {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "paging" ) {
+        expect(document.querySelectorAll(".e-hierarchycheckbox").length > 0).toBe(true);
+      }
+    }
+    gridObj.actionComplete = actionComplete;
+    (<HTMLElement>document.querySelectorAll(".e-treeselectall")[0]).click();
+    gridObj.goToPage(2);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('Checkbox column within stacked header - EJ2-59568', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 3,
+        allowPaging: true,
+        autoCheckHierarchy: true,
+        columns: [
+          { field: 'progress', headerText: 'progress',  width: 250 },
+
+          { field: 'priority', headerText: 'priority',  width: 250 },
+
+          {headerText: 'Task Details', textAlign: 'Center', columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+          { field: 'taskName', headerText: 'Task Name', showCheckbox: true, width: 250 },
+          ]},
+          { field: 'duration', headerText: 'Priority', textAlign: 'Left', width: 135 },
+      ]
+      },
+      done
+    );
+  });
+  it('Header Checkboxcolumn rendering test', () => {
+    expect(document.querySelectorAll(".e-treeselectall").length == 1).toBe(true);
+  });
+  it('Checkbox click test', () => {
+    (<HTMLElement>document.querySelectorAll(".e-treeselectall")[0]).click();
+    expect(gridObj.getCheckedRecords().length > 0).toBe(true);
+  });
+  it('Checkbox column rendering check after paging', () => {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "paging" ) {
+        expect(document.querySelectorAll(".e-hierarchycheckbox").length > 0).toBe(true);
+      }
+    }
+    gridObj.actionComplete = actionComplete;
+    (<HTMLElement>document.querySelectorAll(".e-treeselectall")[0]).click();
+    gridObj.goToPage(2);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.52 (2022-05-04)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I349917` - Now, the floating toolbar in the Rich Text Editor is displayed properly when rendered inside the modal dialog.
+
+- `#I376141` - Now, pressing enter key before the image with caption doesn't remove the image.
+
 ## 20.1.51 (2022-04-26)
 
 ### RichTextEditor
@@ -15,6 +25,8 @@
 - `#I372489` - Now, resizing the images with equal height and width works properly.
 
 - `#F173394` - Now, the undo and redo keys work properly when pasting the content in the Rich Text Editor.
+
+- `#SF-367649` - Now, more space between the text and inserting a new link does not remove the space between the words.
 
 ## 20.1.50 (2022-04-19)
 

@@ -5032,5 +5032,130 @@ describe('EJ2CORE-735 - Date reset to first month after clearing the selected da
         expect(datePicker.inputElement.value === "month/day/year").toBe(true)
     });
 });
-
+describe('EJ2CORE-779 - Month reset to first month after clearing the selected month by using backspace key',function(){
+    let datePicker:any;
+    beforeEach(function(){
+        let element: HTMLElement = createElement('input',{id:'date'});
+        document.body.appendChild(element);
+    });
+    afterEach(function(){
+        if(datePicker){
+            datePicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('check the input is updated correctly',function(){
+        datePicker = new DatePicker({
+            format: 'MM/dd/yyyy',
+            enableMask: true,
+            strictMode: true,
+        });
+        datePicker.appendTo('#date');
+        expect(datePicker.element.value).toBe('month/day/year');
+        datePicker.value = new Date('5/5/2020');
+        datePicker.dataBind();
+        datePicker.element.focus();
+        datePicker.element.selectionStart = 0;
+        datePicker.element.selectionEnd = 2;
+        datePicker.element.value = '/05/2020';
+        datePicker.element.selectionStart = 0;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "month/05/2020").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "05/05/2020").toBe(true)
+        datePicker.element.selectionStart = 3;
+        datePicker.element.selectionEnd = 5;
+        datePicker.element.value = '05//2020';
+        datePicker.element.selectionStart = 3;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "05/day/2020").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "05/05/2020").toBe(true)
+        datePicker.element.selectionStart = 6;
+        datePicker.element.selectionEnd = 10;
+        datePicker.element.value = '05/05/';
+        datePicker.inputHandler();
+        datePicker.element.selectionStart = 6;
+        expect(datePicker.inputElement.value === "05/05/year").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "05/05/2020").toBe(true)
+        datePicker.min = new Date('5/8/2020');
+        datePicker.dataBind();
+        datePicker.max = new Date('5/20/2020');
+        datePicker.dataBind();
+        datePicker.element.selectionStart = 0;
+        datePicker.element.selectionEnd = 2;
+        datePicker.element.value = '/08/2020';
+        datePicker.element.selectionStart = 0;
+        datePicker.inputHandler();
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "05/08/2020").toBe(true)
+    });
+    it('change the format and test the input is updated correctly',function(){
+        datePicker = new DatePicker({
+            format: 'M/d/yyyy',
+            enableMask: true,
+            strictMode: true,
+        });
+        datePicker.appendTo('#date');
+        expect(datePicker.element.value).toBe('month/day/year');
+        datePicker.value = new Date('5/5/2020');
+        datePicker.dataBind();
+        datePicker.element.focus();
+        datePicker.element.selectionStart = 0;
+        datePicker.element.selectionEnd = 1;
+        datePicker.element.value = '/5/2020';
+        datePicker.element.selectionStart = 0;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "month/5/2020").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "5/5/2020").toBe(true)
+        datePicker.element.selectionStart = 2;
+        datePicker.element.selectionEnd = 3;
+        datePicker.element.value = '5//2020';
+        datePicker.element.selectionStart = 2;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "5/day/2020").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "5/5/2020").toBe(true)
+        datePicker.element.selectionStart = 5;
+        datePicker.element.selectionEnd = 8;
+        datePicker.element.value = '5/5/';
+        datePicker.inputHandler();
+        datePicker.element.selectionStart = 5;
+        expect(datePicker.inputElement.value === "5/5/year").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "5/5/2020").toBe(true)
+        datePicker.format = 'MMM yyyy';
+        datePicker.dataBind();
+        datePicker.element.selectionStart = 0;
+        datePicker.element.selectionEnd = 3;
+        datePicker.element.value = ' 2020';
+        datePicker.element.selectionStart = 0;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "month 2020").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "May 2020").toBe(true)
+        datePicker.format = 'dd.MM.yyyy';
+        datePicker.dataBind();
+        datePicker.element.selectionStart = 3;
+        datePicker.element.selectionEnd = 5;
+        datePicker.element.value = '05..2020';
+        datePicker.element.selectionStart = 3;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "05.month.2020").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "05.05.2020").toBe(true)
+        datePicker.format = 'dd-MM-yyyy';
+        datePicker.dataBind();
+        datePicker.element.selectionStart = 3;
+        datePicker.element.selectionEnd = 5;
+        datePicker.element.value = '05--2020';
+        datePicker.element.selectionStart = 3;
+        datePicker.inputHandler();
+        expect(datePicker.inputElement.value === "05-month-2020").toBe(true)
+        datePicker.inputBlurHandler();
+        expect(datePicker.inputElement.value === "05-05-2020").toBe(true)
+    });
+});
 });

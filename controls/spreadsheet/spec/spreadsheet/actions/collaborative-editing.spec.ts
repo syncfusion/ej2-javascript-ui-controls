@@ -595,7 +595,7 @@ describe('Collaborative Editing ->', () => {
                 replaceValue: '121',
                 replaceBy: 'replaceAll',
                 sheetIndex: 0,
-                triggerEvent: true
+                isAction: true
             });
             setTimeout(() => {
                 expect(getCell(1, 3, sheets2[0]).value as any).toBe(121);
@@ -605,7 +605,7 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(1, 3, sheets2[1]).value as any).toBe(10);
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 done();
-            });
+            }, 100);
         });
 
         it('Find & ReplaceAll - Undo & Redo', (done: Function) => {

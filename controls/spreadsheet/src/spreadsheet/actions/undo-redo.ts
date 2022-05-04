@@ -155,7 +155,7 @@ export class UndoRedo {
                 undoRedoArgs = this.performOperation(undoRedoArgs);
                 break;
             case 'replaceAll':
-                (undoRedoArgs.eventArgs as unknown as { triggerEvent: boolean }).triggerEvent = false;
+                (undoRedoArgs.eventArgs as unknown as { isAction: boolean }).isAction = false;
                 if (args.isUndo) {
                     replaceArgs.value = (undoRedoArgs.eventArgs as unknown as { replaceValue: string}).replaceValue;
                     replaceArgs.replaceValue = undoRedoArgs.eventArgs.value;

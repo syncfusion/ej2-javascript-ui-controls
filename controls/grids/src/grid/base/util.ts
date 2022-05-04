@@ -969,7 +969,7 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
     let nextDate: Date;
     const prevObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
     const nextObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
-    if (isNullOrUndefined(filterObject.value)) {
+    if (isNullOrUndefined(filterObject.value) || filterObject.value === '') {
         datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
         return datePredicate;
     }

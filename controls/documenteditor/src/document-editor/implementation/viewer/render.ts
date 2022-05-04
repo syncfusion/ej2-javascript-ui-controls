@@ -7,7 +7,7 @@ import {
     Page, Rect, IWidget, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox
+    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox, TextFrame
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
@@ -161,10 +161,16 @@ export class Renderer {
             }
         } else {
             const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
-
-            const footerHeight: number = page.boundingRectangle.height -
+            let footerHeight: number;
+            if (isNullOrUndefined(page.footerWidget.sectionFormat)) {
+                footerHeight = page.boundingRectangle.height -
+                /* eslint-disable-next-line max-len */
+                Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
+            } else {
+                footerHeight = page.boundingRectangle.height -
                 /* eslint-disable-next-line max-len */
                 Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+            }
             height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
             pageHt = page.boundingRectangle.height - footerDistance;
         }
@@ -633,7 +639,6 @@ export class Renderer {
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
         let isTOCHeading: boolean = false;
         this.renderSelectionHighlight(page, lineWidget, top);
-
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
         if (!isNullOrUndefined(lineWidget.paragraph.nextRenderedWidget)) {
             let para: ParagraphWidget = lineWidget.paragraph.nextRenderedWidget as ParagraphWidget;
@@ -999,6 +1004,9 @@ export class Renderer {
                     return bgColor;
                 }
             }
+        }else if(element.paragraph.containerWidget instanceof TextFrame
+            && (element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat.color  === '#000000FF'){
+                return (element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat.color;
         }
         return this.documentHelper.backgroundColor;
     }

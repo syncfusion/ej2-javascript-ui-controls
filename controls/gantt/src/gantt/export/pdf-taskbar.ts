@@ -137,7 +137,10 @@ export class PdfGanttTaskbarCollection {
         const progressFormat: PdfStringFormat = new PdfStringFormat();
         progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
         progressFormat.alignment = PdfTextAlignment.Right;
+        let isLabelString: boolean = false;
+        let updatedWidth: number;
         if (/^[a-zA-Z]/.test(this.taskLabel)) {
+            isLabelString = true;
             progressFormat.alignment = PdfTextAlignment.Left;
         }
         let pageIndex: number = -1;
@@ -163,7 +166,11 @@ export class PdfGanttTaskbarCollection {
                     if (this.isScheduledTask) {
                         taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
                         if (!isNullOrUndefined(this.parent.labelSettings.taskLabel) && !isNullOrUndefined(this.taskLabel)) {
-                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(this.progressWidth), pixelToPoint(this.height), progressFormat);
+                            updatedWidth = this.progressWidth;
+                            if(isLabelString) {
+                                updatedWidth = this.width;
+                            }
+                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                         }
                     }
                 }
@@ -178,7 +185,9 @@ export class PdfGanttTaskbarCollection {
                     this.isStartPoint = true;
                 }
                 let renderWidth: number = 0;
-                this.width = this.width - (detail.totalWidth - (this.left - cumulativeWidth));
+                if (!isLabelString) {
+                    this.width = this.width - (detail.totalWidth - (this.left - cumulativeWidth));
+                }
                 renderWidth = (detail.totalWidth - (this.left - cumulativeWidth));
                 if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
@@ -194,7 +203,11 @@ export class PdfGanttTaskbarCollection {
                         taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
                         this.progressWidth -= progressBoundsWidth;
                         if (this.parent.labelSettings.taskLabel && !isNullOrUndefined(this.taskLabel)) {
-                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(progressBoundsWidth), pixelToPoint(this.height), progressFormat);
+                            updatedWidth = progressBoundsWidth;
+                            if(isLabelString) {
+                                updatedWidth = this.width;
+                            }
+                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                         }
                     }
                 }
@@ -212,7 +225,11 @@ export class PdfGanttTaskbarCollection {
                 if (this.isScheduledTask) {
                     taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
                     if (!isNullOrUndefined(this.taskLabel)) {
-                        taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(this.progressWidth), pixelToPoint(this.height), progressFormat);
+                        updatedWidth = this.progressWidth;
+                        if (isLabelString) {
+                            updatedWidth = this.width;
+                        }
+                        taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                     }
                 }
                 this.isCompleted = true;
@@ -236,7 +253,11 @@ export class PdfGanttTaskbarCollection {
                     taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
                     this.progressWidth -= progressBoundsWidth;
                     if (!isNullOrUndefined(this.taskLabel)) {
-                        taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(progressBoundsWidth), pixelToPoint(this.height), progressFormat);
+                        updatedWidth = progressBoundsWidth;
+                        if (isLabelString) {
+                            updatedWidth = this.width;
+                        }
+                        taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                     }
                 }
                 this.isCompleted = false;

@@ -1553,6 +1553,7 @@ export class DocumentHelper {
         }
         this.heightInfoCollection = {};
         this.owner.isDocumentLoaded = false;
+        this.layout.isDocumentContainsRtl = false;
         this.updateAuthorIdentity();
         for (let i: number = 0; i < this.pages.length; i++) {
             this.pages[i].bodyWidgets[0].destroy();

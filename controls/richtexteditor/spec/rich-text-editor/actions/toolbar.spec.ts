@@ -2316,3 +2316,35 @@ describe("Toolbar - Actions Module", () => {
         });
     });
 });
+
+describe(" EJ2-59527 - Floating toolbar testing", () => {
+    it("EJ2-59527 - with target and with extra element as top", (done: Function) => {
+        let rteObj: RichTextEditor;
+        let ele1: HTMLElement = createElement("div", { id: "div1", className: "default-section", styles: "height: 400px;" });
+        document.body.appendChild(ele1);
+        let ele2: HTMLElement = createElement("div", { id: "div2", styles: "height: 100px; background-color: red;" });
+        ele1.appendChild(ele2);
+        let ele3: HTMLElement = createElement("div", { id: "div3", styles: "height: 300px; overflow: scroll" });
+        ele1.appendChild(ele3);
+        let ele4: HTMLElement = createElement("div", { id: "defaultFloatRTE"});
+        ele3.appendChild(ele4);
+        rteObj = new RichTextEditor({
+            toolbarSettings: {
+                enableFloating: true,
+                type: ToolbarType.Expand
+            },
+            height: '600px',
+            value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
+        });
+        rteObj.appendTo(ele4);
+        expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
+        ele3.scrollTo(0, 200);
+        setTimeout(() => {
+            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
+            window.scrollTo(0, 0);
+            detach(ele1);
+            destroy(rteObj);
+            done();
+        }, 500);
+    });
+});

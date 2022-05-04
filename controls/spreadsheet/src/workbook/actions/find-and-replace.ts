@@ -656,7 +656,7 @@ export class WorkbookFindAndReplace {
         let endRow: number = sheet.usedRange.rowIndex;
         let startRow: number = 0; let endColumn: number = sheet.usedRange.colIndex; let startColumn: number = 0;
         const addressCollection: string[] = [];
-        const triggerEvent: boolean = (args as unknown as { triggerEvent: boolean }).triggerEvent
+        const triggerEvent: boolean = args.isAction;
         const eventArgs: ReplaceAllEventArgs & FindOptions = { addressCollection: addressCollection, cancel: false, ...args };
         const updateAsync: (cellValue: string, index: number) => void = (cellValue: string, index: number): void => {
             if (requestAnimationFrame) {
@@ -734,7 +734,6 @@ export class WorkbookFindAndReplace {
             this.parent.notify('actionBegin', { action: 'beforeReplaceAll', eventArgs: eventArgs });
             if (!eventArgs.cancel) {
                 this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });
-                this.parent.notify('actionComplete', { action: 'replaceAll', eventArgs: eventArgs });
             }
         } else {
             this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });

@@ -215,7 +215,7 @@ export class Toolbar {
             topValue = (e && e.target !== document) ? scrollParent.getBoundingClientRect().top : 0;
             if ((parent.bottom < (floatOffset + tbHeight + topValue)) || parent.bottom < 0 || parent.top > floatOffset + topValue) {
                 isFloat = false;
-            } else if (parent.top < floatOffset) {
+            } else if (parent.top < floatOffset || parent.top < floatOffset + topValue) {
                 isFloat = true;
             }
         }

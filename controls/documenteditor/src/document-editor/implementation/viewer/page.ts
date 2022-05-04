@@ -494,7 +494,7 @@ export abstract class BlockContainer extends Widget {
         let container: BlockContainer = this;
         if (container instanceof BodyWidget) {
             return container.sectionFormatIn;
-        } else if (container.page) {
+        } else if (!isNullOrUndefined(container.page.bodyWidgets) && container.page) {
             return container.page.bodyWidgets[0].sectionFormat;
         }
         return undefined;

@@ -3642,3 +3642,95 @@ describe('EJ2-49067 - Batch changes with date column without changing the value'
         destroy(gridObj);
     });
 });
+
+describe('EJ2-57804 - Need to consider validation when multiple records are added in batch edit mode => ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch'},
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', {
+                    text: 'Add 5 Rows',
+                    tooltipText: 'Add 5 Rows',
+                    prefixIcon: 'e-add',
+                    id: 'add5Rows',
+                }],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, validationRules: { required: true, number: true } },
+                    { field: 'Freight', headerText: 'Freight', width: 150, format: 'C2', validationRules: { required: true }},// minValue: 50, maxValue: 200
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150, validationRules: {minLength: 3} },// , validationRules: { required: true }
+                    { field: 'OrderDate', headerText: 'Order Date', width: 120, format: {type: 'datetime', format: 'y/M/d hh:mm a'}, validationRules: { required: true, date: true }, editType: "dateTimePickerEdit" },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150, validationRules: { required: true, minLength: 3 } }
+                ],
+                height: 290,
+            }, done);
+    });
+
+    it('toolbar click action', () => {
+        gridObj.toolbarClick = toolbarClick;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: 'add5Rows' } });
+        function toolbarClick(args: any): void {
+            var nextNumber = 10260;
+            if (gridObj && args.item.id.includes('add5Rows')) {
+                for (let i = 0; i < 5; i++) {
+                    if(i==0){
+                        this.addRecord({ });
+                    }
+                    else if(i==1) {
+                        this.addRecord({ OrderID: nextNumber, Freight: 20.22, OrderDate: '2022/4/14', ShipCountry: 'India' });
+                    }
+                    else if(i==4){
+                        this.addRecord({ OrderID: nextNumber, OrderDate: 'hgf' });
+                    }
+                    else if(i==3){
+                        this.addRecord({ ShipCountry: 'India'  });
+                    }
+                    else{
+                        this.addRecord({  });
+                    }
+                    nextNumber = parseInt(nextNumber.toString()) + 1;
+                }
+            }
+        }
+    });
+
+    it('check multiple row adding', () => {
+        var rowLength = gridObj.element.querySelectorAll('.e-insertedrow').length;
+        expect(rowLength).toBe(5);
+        var row = gridObj.element.querySelectorAll('.e-insertedrow')[0];
+        expect(row.classList.contains('e-editedrow')).toBe(false);
+    });
+
+    it('update click action', () => {
+        select('#' + gridObj.element.id + '_update', gridObj.toolbarModule.getToolbar()).click();
+    });
+
+    it('check validation for multiple row adding when update', () => {
+        var row = gridObj.element.querySelectorAll('.e-insertedrow')[0];
+        expect(row.classList.contains('e-editedrow')).toBe(true);
+        var cell = row.querySelectorAll('td')[1];
+        expect(cell.classList.contains('e-editedbatchcell')).toBe(true);
+        var validation = row.querySelectorAll('.e-formvalidator')[0];
+        expect(validation).toBeDefined();
+    });
+
+    it('escape keyboard action', () => {
+        gridObj.keyboardModule.keyAction({ action: 'escape', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+    });
+
+    it('check escape validation when adding rows', () => {
+        var row = gridObj.element.querySelectorAll('.e-insertedrow')[0];
+        expect(row.classList.contains('e-editedrow')).toBe(true);
+        var cell = row.querySelectorAll('td')[1];
+        expect(cell.classList.contains('e-editedbatchcell')).toBe(true);
+        var validation = row.querySelectorAll('.e-formvalidator')[0];
+        expect(validation).toBeDefined();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null; 
+    });
+});
