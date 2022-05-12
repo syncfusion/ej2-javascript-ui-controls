@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#376228` - Duration is not updated while updating resource units using `updateRecordByID` method issue has been fixed.
+- `#370224` - Filtering issue when rendering Gantt inside the modal has been fixed.
+- `#376455` - Tab key navigation not working properly when moving from grid to timeline issue has been fixed.
+
 ## 20.1.52 (2022-05-04)
 
 ### Gantt

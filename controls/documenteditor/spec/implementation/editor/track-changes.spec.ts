@@ -2,6 +2,7 @@ import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { DocumentHelper, LineWidget, ParagraphWidget, Selection, TextElementBox } from '../../../src/index';
+import { TableCellWidget, TableRowWidget, TableWidget } from '../../../src/index';
 import { Editor } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
 import { SfdtExport } from "../../../src/document-editor/implementation/writer/sfdt-export";
@@ -415,5 +416,41 @@ describe('Check the deletion functionality with trackChange enable mode', () => 
         let paragraphWidget: ParagraphWidget = container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
         let lineWidget: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
         expect(lineWidget.children.length).toBe(0);
+    });
+});
+describe('Check the empty para insertion inside the table after insert bookmark with trackChange enable mode', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check the empty para count after bookmark insertion with trackChange enable mode', () => {
+        console.log('Check the empty para count after bookmark insertion with trackChange enable mode');
+        container.openBlank();
+        container.editor.insertTable(1,1);
+        container.editor.insertBookmark('hello');
+        container.enableTrackChanges = true;
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.editor.onEnter();
+        let paraLength: number = (((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets.length;
+        expect(paraLength).toBe(4);
     });
 });

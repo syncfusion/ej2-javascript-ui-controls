@@ -40,7 +40,7 @@ export class DialogRenderer {
      */
     public render(): void {
         let fieldListWrappper: HTMLElement = createElement('div', {
-            id: this.parent.element.id + '_Wrapper',
+            id: this.parent.element.id + '_Container',
             className: cls.WRAPPER_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_WRAPPER_CLASS : ''),
             styles: 'width:' + this.parent.element.style.width
         });
@@ -631,8 +631,8 @@ export class DialogRenderer {
                 this.fieldListDialog.destroy();
                 this.fieldListDialog = null;
             }
-            if (document.getElementById(this.parent.element.id + '_Wrapper')) {
-                remove(document.getElementById(this.parent.element.id + '_Wrapper'));
+            if (document.getElementById(this.parent.element.id + '_Container')) {
+                remove(document.getElementById(this.parent.element.id + '_Container'));
             }
         }
     }

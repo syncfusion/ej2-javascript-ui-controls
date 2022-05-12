@@ -2083,7 +2083,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 value = dataSource[i][field].toString();
             }
             const data: object = {};
-            if (!(value in original) && !isNullOrUndefined(value)) {
+            if (!(value in original)) {
                 original[value] = 1;
                 if (isNested === 0) {
                     data[field] = value;
@@ -3612,6 +3612,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             try {
                 detach (clnruleElem);
             } catch (err) {
+                // eslint-disable-next-line no-ex-assign
+                err = [];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const error: any = 'error';
+                err[error] = error;
             }
             // eslint-enable
             if (column && column.ruleTemplate) {

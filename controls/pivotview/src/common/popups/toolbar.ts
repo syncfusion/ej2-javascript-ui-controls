@@ -1167,8 +1167,8 @@ export class Toolbar {
         return this.showLableState;
     }
     private getAllChartItems(): string[] {
-        return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
-            'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto',
+        return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar','StackingLine', 'StepLine', 'StepArea',
+            'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100','Bubble', 'Pareto',
             'Polar', 'Radar', 'Pie', 'Pyramid', 'Funnel', 'Doughnut'] as ChartSeriesType[];
     }
     private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
@@ -1578,8 +1578,8 @@ export class Toolbar {
     }
     private getDialogContent(): HTMLElement {
         let mainWrapper: HTMLElement = createElement('div', { className: 'e-chart-type-div-content' });
-        let optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-wrapper' });
-        let axisModeWrapperDiv: HTMLElement = createElement('div', { className: 'e-multiple-axes-mode-wrapper' });
+        let optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-container' });
+        let axisModeWrapperDiv: HTMLElement = createElement('div', { className: 'e-multiple-axes-mode-container' });
         let optionTextDiv: HTMLElement = createElement('div', {
             className: 'e-chart-type-option-text', innerHTML: this.parent.localeObj.getConstant('ChartType')
         });

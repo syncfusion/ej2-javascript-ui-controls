@@ -74,7 +74,8 @@ export class FieldList implements IAction {
             target: this.parent.element.parentElement,
             aggregateTypes: this.parent.aggregateTypes,
             maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
-            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent)
+            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
+            onHeadersSort: this.parent.bindTriggerEvents.bind(this.parent)
         });
         this.parent.pivotFieldListModule.isPopupView = true;
         this.parent.pivotFieldListModule.pivotGridModule = this.parent;

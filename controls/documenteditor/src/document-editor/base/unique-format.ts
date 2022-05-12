@@ -464,6 +464,9 @@ export class WUniqueFormat {
         if (property === 'initialEndNoteNumber') {
             return 21;
         }
+        if (property === 'pageNumberStyle') {
+            return 22;
+        }
         return 0;
     }
     /**
@@ -844,6 +847,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('initialEndNoteNumber', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('pageNumberStyle', source, modifiedProperty, modifiedValue, 10)) {
             return false;
         }
         return true;

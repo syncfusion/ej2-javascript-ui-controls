@@ -423,8 +423,12 @@ export class SpreadsheetHyperlink {
             }
         }
         if (closest(trgt, '.e-list-item') && trgt.classList.contains('e-fullrow')) {
-            const item: HTMLElement = this.parent.element.getElementsByClassName('e-link-dialog')[0].
-                getElementsByClassName('e-content')[0].getElementsByClassName('e-active')[0] as HTMLElement;
+            let item: HTMLElement = this.parent.element.getElementsByClassName('e-link-dialog')[0] as HTMLElement;
+            if (item) {
+                item = item.getElementsByClassName('e-content')[0].getElementsByClassName('e-active')[0] as HTMLElement;
+            } else {
+                return;
+            }
             const cellRef: HTMLElement = item.getElementsByClassName('e-cont')[1].getElementsByClassName('e-text')[0] as HTMLElement;
             const dlgEle: Element = closest(trgt, '.e-hyperlink-dlg') || closest(trgt, '.e-edithyperlink-dlg');
             const ftrEle: HTMLElement = dlgEle.getElementsByClassName('e-footer-content')[0] as HTMLElement;

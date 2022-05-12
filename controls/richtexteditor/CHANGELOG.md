@@ -2,15 +2,27 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I374234` - Now, the Rich Text Editor table resize works properly when width is configured for the parent element.
+
 ## 20.1.52 (2022-05-04)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
+- `#I375434` - Now, pressing the enter key multiple times when the content is empty in the Rich Text Editor on the `Firefox` browser works properly.
+
 - `#I349917` - Now, the floating toolbar in the Rich Text Editor is displayed properly when rendered inside the modal dialog.
 
 - `#I376141` - Now, pressing enter key before the image with caption doesn't remove the image.
+
+- `#I373983` - Now, the Rich Text Editor table resize works properly when placed inside the `Grid` component.
 
 ## 20.1.51 (2022-04-26)
 

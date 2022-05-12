@@ -165,7 +165,8 @@ export class StampAnnotation {
                 // eslint-disable-next-line
                 annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
                 // eslint-disable-next-line
-                if (stampName && annotation['Subject'] && annotation['Subject'] !== 'Draft') {
+                let isImageStamp : boolean = this.stampImageData(annotation);
+                if (stampName && annotation['Subject'] && annotation['Subject'] !== 'Draft' && !isImageStamp) {
                     // eslint-disable-next-line
                     this.retrieveDynamicStampAnnotation(annotation['Subject']);
                     this.isExistingStamp = true;
@@ -201,7 +202,7 @@ export class StampAnnotation {
                     this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width, currentLocation.height, pageIndex, opacity, rotation, canvass, annotation, true);
                 }
                 // eslint-disable-next-line
-                else if (annotation['Subject']) {
+                else if (annotation['Subject'] && !isImageStamp) {
                     // eslint-disable-next-line
                     this.retrievestampAnnotation(annotation['Subject']);
                     this.isExistingStamp = true;
@@ -243,10 +244,7 @@ export class StampAnnotation {
                                     // eslint-disable-next-line max-len
                                     proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass, true, annotation);
                                 };
-                                if (!isImport)
-                                   image.src = "data:image/png;base64," + imageData;
-                                else
-                                   image.src = imageData;
+                                image.src = imageData;
                             }
                         }
                     }
@@ -1302,9 +1300,10 @@ export class StampAnnotation {
         let stampName: any = annotation['IsDynamic'];
         // eslint-disable-next-line
         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-        if (annotation.Subject && stampName && annotation.Subject !== 'Draft') {
+        let isImageStamp : boolean = this.stampImageData(annotation);
+        if (annotation.Subject && stampName && annotation.Subject !== 'Draft' && !isImageStamp) {
             stampAnnotation = this.retrieveDynamicStampAnnotation(annotation.Subject);
-        } else if (annotation.Subject) {
+        } else if (annotation.Subject && !isImageStamp) {
             stampAnnotation = this.retrievestampAnnotation(annotation.Subject);
         } else {
             // eslint-disable-next-line max-len
@@ -1344,6 +1343,23 @@ export class StampAnnotation {
             };
             return annotationObject;
         }
+    }
+
+
+    public stampImageData(annot: any): boolean
+    {
+        let isStampImage: boolean = false;
+        if(annot && annot.Apperarance)
+        {
+            for(let j:number = 0; j < annot.Apperarance.length ; j++)
+            {
+              if(annot.Apperarance[j].imagedata){
+                isStampImage = true;
+                 break;
+                 }
+            }
+        }
+        return isStampImage;
     }
 
     // eslint-disable-next-line

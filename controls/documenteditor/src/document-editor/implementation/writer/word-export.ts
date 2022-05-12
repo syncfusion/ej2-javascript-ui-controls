@@ -950,6 +950,28 @@ export class WordExport {
         }
     }
 
+    private getPageNumberFormat(numberFormat: string): string {
+        let patternType: string;
+        switch (numberFormat) {
+        case 'RomanUpper':
+            patternType = 'upperRoman';
+            break;
+        case 'RomanLower':
+            patternType = 'lowerRoman';
+            break;
+        case 'LetterUpper':
+            patternType = 'upperLetter';
+            break;
+        case 'LetterLower':
+            patternType = 'lowerLetter';
+            break;
+        default:
+            patternType = 'Arabic';
+            break;
+        }
+        return patternType;
+    }
+
     // Serialize the Footnote Properties
     private serializeEndNotesPr(writer: XmlWriter, section: any): void {
         if (section.endnoteNumberFormat || section.restartIndexForEndnotes) {
@@ -1023,6 +1045,7 @@ export class WordExport {
         if (pageSetup !== undefined) {
             this.serializePageSize(writer, pageSetup);
             this.serializePageMargins(writer, pageSetup);
+            this.serializePageNumberType(writer,pageSetup);
         }
         // // StartElement paperSrc (if any)
         // if (pageSetup.FirstPageTray > 0 || pageSetup.OtherPagesTray > 0) {
@@ -1090,6 +1113,14 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'gutter', this.wNamespace, '0');
 
         writer.writeEndElement();
+    }
+    //Serialize the page number type
+    private serializePageNumberType(writer: XmlWriter, pageSetup: any): void {
+        if (pageSetup.pageNumberStyle !== undefined) {
+            writer.writeStartElement(undefined, 'pgNumType', this.wNamespace);
+            writer.writeAttributeString(undefined, 'fmt', this.wNamespace, this.getPageNumberFormat(pageSetup.pageNumberStyle));
+            writer.writeEndElement();
+        }
     }
     // Serialize the section type.
     private serializeSectionType(writer: XmlWriter, sectionBreakCode: string): void {

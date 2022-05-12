@@ -253,11 +253,11 @@ export class AggregateMenu {
             className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
             attrs: { 'data-type': summaryType, 'data-caption': fieldCaption, 'data-basefield': baseField, 'data-baseitem': baseItem }
         });
-        let textWrappper: HTMLElement = createElement('div', { className: 'e-field-name-text-wrapper', });
-        let filterWrapperDiv1: HTMLElement = createElement('div', { className: 'e-field-option-wrapper' });
-        let optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-wrapper' });
-        let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-wrapper' });
-        let optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-wrapper' });
+        let textWrappper: HTMLElement = createElement('div', { className: 'e-field-name-text-container', });
+        let filterWrapperDiv1: HTMLElement = createElement('div', { className: 'e-field-option-container' });
+        let optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-container' });
+        let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
+        let optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
         let texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title', innerHTML: this.parent.localeObj.getConstant('sourceName') + '&nbsp;' });
         let textContent: HTMLElement = createElement('div', { className: 'e-field-name-content', innerHTML: buttonElement.id.toString() });
         let inputTextDiv1: HTMLElement = createElement('div', {
@@ -272,7 +272,7 @@ export class AggregateMenu {
         let optionTextDiv3: HTMLElement = createElement('div', {
             className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('baseItem')
         });
-        let inputDiv1: HTMLElement = createElement('div', { className: 'e-caption-input-wrapper' });
+        let inputDiv1: HTMLElement = createElement('div', { className: 'e-caption-input-container' });
         let dropOptionDiv1: HTMLElement = createElement('div', { id: this.parentElement.id + '_type_option' });
         let dropOptionDiv2: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_field_option' });
         let dropOptionDiv3: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_item_option' });

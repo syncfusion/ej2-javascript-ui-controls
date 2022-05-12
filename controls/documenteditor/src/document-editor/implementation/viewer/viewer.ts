@@ -399,11 +399,6 @@ export class DocumentHelper {
     /**
      * @private
      */
-    public triggerElementsOnLoading: boolean = false;
-
-    /**
-     * @private
-     */
     public triggerSpellCheck: boolean = false;
 
     /**
@@ -1358,7 +1353,6 @@ export class DocumentHelper {
      */
     public onKeyPressInternal = (event: KeyboardEvent): void => {
         const key: number = event.which || event.keyCode;
-        this.triggerElementsOnLoading = false;
         let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
         const alt: boolean = event.altKey ? event.altKey : ((key === 18) ? true : false); // alt key detection
         if (Browser.isIE && alt && ctrl) {
@@ -3139,7 +3133,12 @@ export class DocumentHelper {
             let fieldCategory: string = fieldCodes[0].replace(/[^\w\s]/gi, '').trim().toLowerCase();
             let fieldPattern: string = '';
             if (fieldCodes.length > 1) {
-                fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
+                if(fieldCodes[1] !== ' MERGEFORMAT'){
+                    fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
+                }
+            }
+            if(fieldPattern == '') {
+                fieldPattern = page.bodyWidgets[0].sectionFormat.pageNumberStyle;
             }
             fieldCategory = (!fieldCategory.match('numpages') && !fieldCategory.match('sectionpages') &&
                 fieldCategory.match('page')) ? 'page' : fieldCategory;
@@ -3193,6 +3192,14 @@ export class DocumentHelper {
                 return this.layout.getAsRoman(value).toLowerCase();
             case 'ROMAN':
                 return this.layout.getAsRoman(value).toUpperCase();
+            case 'RomanUpper':
+                return this.layout.getAsRoman(value).toUpperCase();
+            case 'RomanLower':
+                return this.layout.getAsRoman(value).toLowerCase();
+            case 'LetterUpper':
+                return this.layout.getAsLetter(value).toUpperCase();
+            case 'LetterLower':
+                return this.layout.getAsLetter(value).toLowerCase();
             default:
                 return value.toString();
         }
@@ -3611,14 +3618,7 @@ export abstract class LayoutViewer {
             if (!isNullOrUndefined(page.footerWidget)) {
                 isEmptyWidget = page.footerWidget.isEmpty;
                 let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
-              //  if (footnoteHeight === 0) {
-               //     let num: number = this.owner.documentHelper.pages.indexOf(page);
-               //     if (num > 0) {
-              //          let footNote: FootNoteWidget = this.owner.documentHelper.pages[num - 1].footnoteWidget;
-              //          footnoteHeight = !isNullOrUndefined(footNote) ? footNote.height : 0
-              //          this.clientArea.height -= footnoteHeight;
-             //       }
-             //   }
+                footnoteHeight = Math.min(footnoteHeight, ((pageHeight - top - bottom) / 100 * 90));
                 if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
                     bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
                 }
@@ -4367,7 +4367,7 @@ export class PageLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.triggerElementsOnLoading || this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
             this.documentHelper.cachedPages.push(page.index);
             let content: string = this.owner.spellChecker.getPageContent(page);
             if (content.trim().length > 0) {
@@ -4381,7 +4381,6 @@ export class PageLayoutViewer extends LayoutViewer {
                     this.documentHelper.triggerSpellCheck = true;
                     this.renderPage(page, x, y, width, height);
                     this.documentHelper.triggerSpellCheck = false;
-                    this.documentHelper.triggerElementsOnLoading = false;
                 });
             } else {
                 this.renderPage(page, x, y, width, height);
@@ -4530,7 +4529,7 @@ export class WebLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
             this.owner.documentHelper.cachedPages.push(page.index);
             let contentlen: string = this.documentHelper.owner.spellChecker.getPageContent(page);
             if (contentlen.trim().length > 0) {
@@ -4544,7 +4543,6 @@ export class WebLayoutViewer extends LayoutViewer {
                     this.owner.documentHelper.triggerSpellCheck = true;
                     this.renderPage(page, x, y, width, height);
                     this.owner.documentHelper.triggerSpellCheck = false;
-                    this.owner.documentHelper.triggerElementsOnLoading = false;
                 });
             } else {
                 this.renderPage(page, x, y, width, height);

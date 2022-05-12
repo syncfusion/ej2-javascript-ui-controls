@@ -551,3 +551,13 @@ export interface duplicateSheetOption {
     sheetIndex: number;
     newSheetIndex: number;
 }
+
+/** @hidden */
+export interface FilterCheckboxArgs {
+    element: Element;
+    isCheckboxFilterTemplate: boolean;
+    column: { field: string };
+    dataSource: { [key: string]: Object }[];
+    btnObj: { element: HTMLElement };
+    type: string;
+}

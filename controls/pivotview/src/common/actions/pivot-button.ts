@@ -83,9 +83,9 @@ export class PivotButton implements IAction {
             }
         }
         this.parentElement = this.parent.getModuleName() === 'pivotview' ? this.parent.element :
-            document.getElementById(this.parent.element.id + '_Wrapper');
+            document.getElementById(this.parent.element.id + '_Container');
         if (this.parent.getModuleName() === 'pivotfieldlist') {
-            this.parentElement = document.getElementById(this.parent.element.id + '_Wrapper');
+            this.parentElement = document.getElementById(this.parent.element.id + '_Container');
             if (this.parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-' + axis)) {
                 let axisPrompt: Element = this.parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-' + axis)
                     .querySelector('.' + cls.AXIS_PROMPT_CLASS);
@@ -925,7 +925,7 @@ export class PivotButton implements IAction {
             }
             pivotObj.mouseEventArgs = args;
             pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
-                this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
+                this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Container');
             if (pivotObj.dataSourceSettings.mode === 'Server') {
                 if (this.parent.engineModule.fieldList[fieldName].members && Object.keys(this.parent.engineModule.fieldList[fieldName].members).length > 0) {
                     this.updateFilterEvents();

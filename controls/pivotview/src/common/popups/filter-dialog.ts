@@ -12,14 +12,14 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
-import { IFilter, IFieldOptions, IFormatSettings } from '../../base/engine';
-import { Operators, FilterType } from '../../base/types';
+import { IFilter, IFieldOptions, IFormatSettings, IField } from '../../base/engine';
+import { Operators, FilterType, Sorting } from '../../base/types';
 import { ChangedEventArgs, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { ItemModel, DropDownButton, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
 import * as events from '../base/constant';
-import { MemberEditorOpenEventArgs } from '../base/interface';
+import { MemberEditorOpenEventArgs, HeadersSortEventArgs } from '../base/interface';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -158,7 +158,7 @@ export class FilterDialog {
         });
         let levelWrapper: HTMLElement = createElement('button', {
             id: this.parent.parentID + '_LevelDiv',
-            className: 'e-level-wrapper-class', attrs: { 'type': 'button' }
+            className: 'e-level-container-class', attrs: { 'type': 'button' }
         });
         let searchWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
@@ -439,17 +439,49 @@ export class FilterDialog {
     }
 
     private updateFilterMembers(order: string, fieldName: string): void {
+        let fieldInfo: IField = this.parent.engineModule.fieldList[fieldName];
         let members: { [key: string]: Object; }[] = order === 'None' ?  /* eslint-disable-line  */
-            PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember as []) :
+            PivotUtil.getClonedData(fieldInfo.dateMember as []) :
             [...this.parent.currentTreeItems];
+
+        let sortType: string | boolean = fieldInfo.isAlphanumeric ? true : undefined;
+        let isHeaderSortByDefault: boolean = false;
+        let membersInfo: string[] | number[] = fieldInfo && fieldInfo.membersOrder ?
+            [...fieldInfo.membersOrder] as string[] | number[] : [];
+        let sortDetails: HeadersSortEventArgs = {
+            fieldName: fieldName,
+            sortOrder: order as Sorting,
+            members: membersInfo && membersInfo.length > 0 ? membersInfo : Object.keys(members),
+            IsOrderChanged: false
+        };
+        if (membersInfo && membersInfo.length > 0) {
+            members = PivotUtil.applyCustomSort(sortDetails, members, sortType) as { [key: string]: Object; }[];
+        }
+        else {
+            members = PivotUtil.applyHeadersSort(members, sortDetails.sortOrder, sortType) as { [key: string]: Object; }[];
+            isHeaderSortByDefault = true;
+        }
+        let control: PivotView | PivotFieldList =
+            this.parent.moduleName === 'pivotfieldlist' && (this.parent.control as PivotFieldList).isPopupView ?
+                (this.parent.control as PivotFieldList).pivotGridModule : this.parent.control;
+
+        if (isHeaderSortByDefault) {
+            let copyOrder: string[] | number[] = [];
+            for (let m: number = 0, n: number = 0; m < members.length; m++) {
+                if (members[m].actualText !== 'Grand Total') {
+                    copyOrder[n++] = members[m].actualText as string | number;
+                }
+            }
+            sortDetails.members = copyOrder as string[];
+        }
+        control.trigger(events.onHeadersSort, sortDetails);
+        if (sortDetails.IsOrderChanged) {
+            members = PivotUtil.applyCustomSort(sortDetails, members, sortType, true) as { [key: string]: Object; }[]
+        }
         this.parent.currentTreeItems = [];
         this.parent.searchTreeItems = [];
         /* eslint-disable  */
         let treeData: { [key: string]: Object; }[] = [];
-        members = order === 'Ascending' ? (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
-            ((b.actualText > a.actualText) ? -1 : 0))) : order === 'Descending' ?
-            (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
-                ((b.actualText < a.actualText) ? -1 : 0))) : members;
         /* eslint-enable  */
         let modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (let i: number = 0, lnt: number = members.length; i < lnt; i++) {
@@ -554,7 +586,7 @@ export class FilterDialog {
     }
     private createTabMenu(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName: string): void {   /* eslint-disable-line */
         let wrapper: HTMLElement = createElement('div', {
-            className: 'e-filter-tab-wrapper'
+            className: 'e-filter-tab-container'
         });
         this.dialogPopUp.content = wrapper;
         this.dialogPopUp.dataBind();
@@ -707,17 +739,17 @@ export class FilterDialog {
         let separatordiv: HTMLElement = createElement('div', { className: cls.SEPARATOR_DIV_CLASS });
         let filterWrapperDiv1: HTMLElement = createElement('div', { className: cls.FILTER_OPTION_WRAPPER_1_CLASS });
         let levelWrapperDiv: HTMLElement = createElement('div', {
-            className: 'e-level-option-wrapper' + ' ' +
+            className: 'e-level-option-container' + ' ' +
                 (this.parent.dataType === 'olap' ? '' : cls.ICON_DISABLE),
         });
         let optionWrapperDiv1: HTMLElement = createElement('div', {
-            className: 'e-measure-option-wrapper' + ' ' + (((['label', 'date', 'number']).indexOf(type) >= 0) ? cls.ICON_DISABLE : ''),
+            className: 'e-measure-option-container' + ' ' + (((['label', 'date', 'number']).indexOf(type) >= 0) ? cls.ICON_DISABLE : ''),
         });
-        let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-condition-option-wrapper' });
+        let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-condition-option-container' });
         let filterWrapperDiv2: HTMLElement = createElement('div', { className: cls.FILTER_OPTION_WRAPPER_2_CLASS });
-        let levelDropOption: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_level_option_wrapper' });
-        let dropOptionDiv1: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_measure_option_wrapper' });
-        let dropOptionDiv2: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_contition_option_wrapper' });
+        let levelDropOption: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_level_option_container' });
+        let dropOptionDiv1: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_measure_option_container' });
+        let dropOptionDiv2: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_contition_option_container' });
         let inputDiv1: HTMLElement = createElement('div', { className: cls.FILTER_INPUT_DIV_1_CLASS });
         let inputDiv2: HTMLElement = createElement('div', {
             className: cls.FILTER_INPUT_DIV_2_CLASS + ' ' +

@@ -1,8 +1,8 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
-import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndexFromId, getRow } from '../base/index';
+import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndexFromId, isFilterHidden } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
 import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
-import { triggerDataChange, ExtendedRowModel } from '../common/index';
+import { triggerDataChange } from '../common/index';
 import { getFormatFromType } from './number-format';
 import { extend } from '@syncfusion/ej2-base';
 
@@ -599,7 +599,7 @@ export class DataBind {
                             const filterCheck: boolean = !args.isDataRequest && !inRangeCut && !isNewRow && !args.skipFilterCheck;
                             for (let i: number = 0, count: number = 0; i < (isNewRow ? args.model.length : (cellIndices[2] - cellIndices[0])
                                 + 1 || 1); i++) {
-                                if (filterCheck && ((getRow(sheet, cellIndices[0] + i) || {}) as ExtendedRowModel).isFiltered) { continue; }
+                                if (filterCheck && isFilterHidden(sheet, cellIndices[0] + i)) { continue; }
                                 changedData[count + addedCutData] = {};
                                 range.info.flds.forEach((fld: string, idx: number) => {
                                     if (fld) {

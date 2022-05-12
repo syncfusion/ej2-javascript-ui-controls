@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `SF-372732`- A signature in the signature field will be displayed in the downloaded document when the form field properties have been updated using the `updateFormFields` method.
+
 ## 20.1.52 (2022-05-04)
 
 ### PDF Viewer

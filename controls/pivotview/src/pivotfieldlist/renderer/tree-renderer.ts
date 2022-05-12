@@ -60,7 +60,7 @@ export class TreeViewRenderer implements IAction {
                 id: this.parent.element.id + '_TreeView',
                 className: cls.FIELD_LIST_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_FIELD_LIST_CLASS : '')
             });
-            let fieldHeaderWrappper: Element = createElement('div', { className: 'e-field-header-wrapper' });
+            let fieldHeaderWrappper: Element = createElement('div', { className: 'e-field-header-container' });
             fieldHeaderWrappper.appendChild(treeHeader);
             fieldTable.appendChild(fieldHeaderWrappper);
             this.updateSortElements(fieldHeaderWrappper);
@@ -443,7 +443,7 @@ export class TreeViewRenderer implements IAction {
                     }
                 }
                 if (sourcePosition === dropPosition || (sourcePosition === (pivotButtons.length - 1) && dropPosition === -1)) {
-                    let parentElement: HTMLElement = document.getElementById(this.parent.element.id + '_Wrapper');
+                    let parentElement: HTMLElement = document.getElementById(this.parent.element.id + '_Container');
                     removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
                     isDropped = false;
                 }
@@ -452,7 +452,7 @@ export class TreeViewRenderer implements IAction {
         return isDropped;
     }
     private getButton(fieldName: string): HTMLElement {
-        let wrapperElement: HTMLElement = document.getElementById(this.parent.element.id + '_Wrapper');
+        let wrapperElement: HTMLElement = document.getElementById(this.parent.element.id + '_Container');
         let pivotButtons: HTMLElement[] = [].slice.call(wrapperElement.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
         let buttonElement: HTMLElement;
         for (let i: number = 0, n: number = pivotButtons.length; i < n; i++) {

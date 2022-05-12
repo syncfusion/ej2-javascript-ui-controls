@@ -7,7 +7,7 @@ import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../.
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, HeadersSortEventArgs } from '../../common/base/interface';
 import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
 import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';
 import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';
@@ -475,6 +475,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public actionFailure: EmitType<PivotActionFailureEventArgs>;
+
+    /**
+     * It triggers before the sorting performed.
+     * @event
+     */
+    @Event()
+    public onHeadersSort: EmitType<HeadersSortEventArgs>;
 
     /**
      * Constructor for creating the widget
@@ -1086,7 +1093,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 customProperties.enableValueSorting = this.staticPivotGridModule ?
                     this.staticPivotGridModule.enableValueSorting : this.enableValueSorting;
                 if (this.dataSourceSettings.mode !== 'Server') {
-                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this));
+                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this), this.getHeaderSortInfo.bind(this));
                 }
                 this.pivotFieldList = this.engineModule.fieldList;
                 let eventArgs: EnginePopulatedEventArgs = {
@@ -1102,7 +1109,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 });
             } else if (this.dataType === 'olap') {
                 this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions,
-                    this.frameCustomProperties(this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList));
+                    this.frameCustomProperties(this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList), this.getHeaderSortInfo.bind(this));
                 this.pivotFieldList = this.olapEngineModule.fieldList;
                 let eventArgs: EnginePopulatedEventArgs = {
                     pivotFieldList: this.pivotFieldList,
@@ -1149,6 +1156,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         return args;
     }
 
+    private getHeaderSortInfo(sortingObj: HeadersSortEventArgs): HeadersSortEventArgs {
+        let args: HeadersSortEventArgs = sortingObj;
+        this.trigger(events.onHeadersSort, args);
+        return args;
+    }
+
     private getData(): void {
         (this.dataSourceSettings.dataSource as DataManager).executeQuery(new Query()).then(this.executeQuery.bind(this));
     }
@@ -1164,7 +1177,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         if (this.renderMode === 'Popup' && this.dialogRenderer.fieldListDialog && !this.dialogRenderer.fieldListDialog.isDestroyed) {
             showDialog = this.dialogRenderer.fieldListDialog.visible;
             this.dialogRenderer.fieldListDialog.destroy();
-            remove(document.getElementById(this.element.id + '_Wrapper'));
+            remove(document.getElementById(this.element.id + '_Container'));
         }
         this.renderModule.render();
         if (this.renderMode === 'Popup') {
@@ -1173,7 +1186,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.dialogRenderer.fieldListDialog.show();
             }
         } else {
-            this.fieldListSpinnerElement = this.element.querySelector('.e-pivotfieldlist-wrapper');
+            this.fieldListSpinnerElement = this.element.querySelector('.e-pivotfieldlist-container');
         }
         if (this.spinnerTemplate) {
             createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate }, this.createElement);
@@ -1185,7 +1198,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             pivotEngine: this.dataType === 'olap' ? this.olapEngineModule : this.engineModule,
             dataSourceSettings: this.dataSourceSettings as IDataOptions,
             id: this.element.id,
-            element: document.getElementById(this.element.id + '_Wrapper'),
+            element: document.getElementById(this.element.id + '_Container'),
             moduleName: this.getModuleName(),
             enableRtl: this.enableRtl,
             isAdaptive: this.isAdaptive as boolean,
@@ -1329,7 +1342,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             pivot.lastCalcFieldInfo = {};
                             pivot.lastFilterInfo = {};
                         } else {
-                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
+                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot), pivot.getHeaderSortInfo.bind(pivot));
                         }
                     }
                 } else {
@@ -1421,7 +1434,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.olapEngineModule.onSort(pivot.dataSourceSettings as IDataOptions);
             }
         } else {
-            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties);
+            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getHeaderSortInfo.bind(pivot));
         }
         pivot.lastSortInfo = {};
         pivot.lastAggregationInfo = {};

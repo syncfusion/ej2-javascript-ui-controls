@@ -1021,3 +1021,60 @@ describe('Mouse Enter, Mouse Over event does not get triggered for selected item
          done();
      });
 });
+describe('SourcePointChange and TargetPointChange Event on node dragging', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram2' });
+        document.body.appendChild(ele); 
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+        let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100 };
+        diagram = new Diagram({
+            width: 800, height: 500, nodes: [node, node1],
+            connectors: [{id: 'connector', sourceID: 'node1', targetID: 'node2'}]
+        });
+        diagram.appendTo('#diagram2');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+
+
+    it('Checking SourcePointChange event on moving node', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let isSourcePointChange: boolean = false;
+        diagram.sourcePointChange = (args: IEndChangeEventArgs) => {
+            isSourcePointChange = true;
+            console.log("sourcePontChange");
+        };
+        mouseEvents.clickEvent(diagramCanvas, 150, 150);
+
+        mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 600, 600);
+        expect(isSourcePointChange).toBe(true);
+        done();
+    }); 
+    it('Checking  targetPointChange event on moving node', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let isTargetPointChange: boolean = false;
+        diagram.targetPointChange = (args: IEndChangeEventArgs) => {
+            isTargetPointChange = true;
+            console.log("targetPointChange");
+        };
+        mouseEvents.clickEvent(diagramCanvas, 350, 150);
+
+        mouseEvents.dragAndDropEvent(diagramCanvas, 300, 100, 500, 600);
+        expect(isTargetPointChange).toBe(true);
+        done();
+    }); 
+     
+});

@@ -1002,7 +1002,7 @@ export class GanttChart {
                     this.parent.treeGrid.grid.notify('key-pressed', e);
                 }
             }
-            if (!this.parent.editModule.cellEditModule.isCellEdit) {
+            if (!isInEditedState) {
                 if (nextElement) {
                     if ($target.classList.contains('e-rowcell')) {
                         this.manageFocus($target as HTMLElement, 'remove', false);

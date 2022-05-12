@@ -142,7 +142,6 @@ describe('CheckBox', () => {
 
         it('Checkbox with ARIA attribute', () => {
             checkbox = new CheckBox({}, '#checkbox');
-            expect(element.parentElement.parentElement.getAttribute('role')).toEqual('checkbox');
             expect(element.parentElement.parentElement.getAttribute('aria-checked')).toEqual('false');
             checkbox.checked = true;
             checkbox.dataBind();

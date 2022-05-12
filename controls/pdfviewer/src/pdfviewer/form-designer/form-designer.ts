@@ -1902,7 +1902,12 @@ export class FormDesigner {
                 newValue = backColor;
             }
             formFieldObject.backgroundColor = backColor;
-            htmlElement.style.background = backColor;
+            if (formFieldObject.formFieldAnnotationType === 'SignatureField' || formFieldObject.formFieldAnnotationType === 'InitialField') {
+                (htmlElement as any).parentElement.style.background = backColor;
+            }
+            else {
+                htmlElement.style.background = backColor;
+            }
             if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
                 (htmlElement as any).parentElement.style.background = formFieldObject.backgroundColor;
             }

@@ -124,9 +124,9 @@ export class GaugeTooltip {
                     if (template) {
                         const elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
                         this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
-                            this.findPosition(rect, angle, pointerContent, tooltipArgs.location) : rect;
+                            this.findPosition(rect, angle, pointerContent, tooltipArgs.location, true) : rect;
                     } else {
-                        this.findPosition(rect, angle, pointerContent, tooltipArgs.location);
+                        this.findPosition(rect, angle, pointerContent, tooltipArgs.location, false);
                     }
                 } else {
                     tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
@@ -142,6 +142,9 @@ export class GaugeTooltip {
                                                             tooltipArgs.tooltip.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
+                    if (template && (this.tooltipPosition === 'LeftTop' || this.tooltipPosition === 'LeftBottom')) {
+                        this.tooltipEle.style.left = (parseFloat(this.tooltipEle.style.left) - this.tooltipEle.getBoundingClientRect().width - 20) + 'px';
+                    }
                     if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
                         this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
                     }
@@ -212,9 +215,9 @@ export class GaugeTooltip {
                     if (rangeTemplate) {
                         const elementSize: Size = getElementSize(rangeTemplate, this.gauge, this.tooltipEle);
                         this.tooltipRect = Math.abs(rangeAxisRect.left - rangeSvgRect.left) > elementSize.width ?
-                            this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location) : rect;
+                            this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location, true) : rect;
                     } else {
-                        this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location);
+                        this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location, false);
                     }
                 } else {
                     rangeTooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
@@ -232,6 +235,9 @@ export class GaugeTooltip {
                                                              rangeTooltipTextStyle, rangeTooltipArgs.tooltip.rangeSettings.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
+                    if (rangeTemplate && (this.tooltipPosition === 'LeftTop' || this.tooltipPosition === 'LeftBottom')) {
+                        this.tooltipEle.style.left = (parseFloat(this.tooltipEle.style.left) - this.tooltipEle.getBoundingClientRect().width - 20) + 'px';
+                    }
                     if (rangeTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
                         this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
                     }
@@ -416,10 +422,11 @@ export class GaugeTooltip {
      * @param {number} angle - Specifies the angle.
      * @param {string} text - Specifies the text.
      * @param {GaugeLocation} location - Specifies the location.
+     * @param {boolean} template - whether it is template or not .
      * @returns {Rect} - Returns the rect element.
      */
-    private findPosition(rect: Rect, angle: number, text: string, location: GaugeLocation): Rect {
-        let addLeft: number; let addTop: number; let addHeight: number; let addWidth: number;
+    private findPosition(rect: Rect, angle: number, text: string, location: GaugeLocation, isTemplate: boolean): Rect {
+        let addLeft: number; let addTop: number; let addHeight: number; let addWidth: number; const padding: number = 10;
         switch (true) {
         case (angle >= 0 && angle < 45):
             this.arrowInverted = true;
@@ -438,26 +445,26 @@ export class GaugeTooltip {
             this.tooltipPosition = 'BottomLeft';
             break;
         case (angle >= 135 && angle < 180):
-            this.arrowInverted = true;
-            addTop = (angle >= 150 && angle <= 160) ? location.y : 0;
-            this.tooltipRect = new Rect(rect.x - rect.width, rect.y + addTop, rect.width, rect.height);
+            this.arrowInverted = isTemplate ? true : isTemplate;
+            addTop = (angle >= 150 && angle <= 160 && isTemplate) ? location.y : 0;
+            this.tooltipRect = new Rect(rect.x, rect.y + addTop, rect.width, rect.height);
             this.tooltipPosition = 'LeftBottom';
             break;
         case (angle >= 180 && angle < 225):
             this.arrowInverted = true;
             addHeight = (angle >= 200 && angle <= 225) ? Math.abs(rect.y - location.y) : rect.height;
-            this.tooltipRect = new Rect(rect.x - rect.width, rect.y, rect.width, addHeight);
+            this.tooltipRect = new Rect(rect.x - location.x, rect.y, rect.width, addHeight);
             this.tooltipPosition = 'LeftTop';
             break;
         case (angle >= 225 && angle < 270):
             this.arrowInverted = false;
             addWidth = (angle >= 250 && angle <= 290) ? rect.width : Math.abs(rect.x - location.x);
-            this.tooltipRect = new Rect(rect.x, rect.y, addWidth, rect.height);
+            this.tooltipRect = new Rect(rect.x + padding, rect.y, addWidth, rect.height);
             this.tooltipPosition = 'TopLeft';
             break;
         case (angle >= 270 && angle < 315):
             this.arrowInverted = false;
-            addLeft = (angle >= 270 && angle > 290) ? location.x : 0;
+            addLeft = (angle >= 270 && angle > 290) ? location.x - padding : 0;
             this.tooltipRect = new Rect(rect.x + addLeft, rect.y, rect.width, rect.height);
             this.tooltipPosition = 'TopRight';
             break;

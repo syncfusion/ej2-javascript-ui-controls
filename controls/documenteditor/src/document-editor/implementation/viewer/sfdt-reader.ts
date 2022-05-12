@@ -1836,6 +1836,9 @@ export class SfdtReader {
         if (!isNullOrUndefined(data.initialEndNoteNumber)) {
             sectionFormat.initialEndNoteNumber = data.initialEndNoteNumber;
         }
+        if (!isNullOrUndefined(data.pageNumberStyle)) {
+            sectionFormat.pageNumberStyle = data.pageNumberStyle;
+        }
     }
 
     private parseTabStop(wTabs: any, tabs: WTabStop[]): void {

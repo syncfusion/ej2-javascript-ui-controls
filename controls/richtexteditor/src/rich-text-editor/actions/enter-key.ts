@@ -307,8 +307,9 @@ export class EnterKeyAction {
     
     private removeBRElement(currentElement: Node): void {
         if (Browser.userAgent.indexOf('Firefox') != -1 &&
-        this.range.endOffset === currentElement.textContent.length &&
-        currentElement.lastChild.nodeName === 'BR') {
+        this.range.endOffset === currentElement.textContent.length && (currentElement.textContent.length !== 0 || 
+        (currentElement as HTMLElement).querySelectorAll('BR').length > 1) &&
+        !isNOU(currentElement.lastChild) && currentElement.lastChild.nodeName === 'BR') {
             detach(currentElement.lastChild);
         }
     }

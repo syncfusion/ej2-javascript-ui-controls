@@ -811,7 +811,8 @@ export class Table {
                 const tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
                 const tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
                 const paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
-                const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - paddingSize * 2;
+                const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - ((this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
+                      (this.contentModule.getEditPanel() as HTMLElement).clientWidth) - paddingSize * 2;
                 if (this.resizeBtnStat.column) {
                     const cellColl: HTMLCollectionOf<Element> = this.curTable.rows[this.calMaxCol(this.curTable)].cells;
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
@@ -850,7 +851,7 @@ export class Table {
                         EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
                     }
                     const widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
-                    this.curTable.style.width = widthType && !this.curTable.closest('TD') ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
+                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
                         : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
                     tableReBox.classList.add('e-rbox-select');

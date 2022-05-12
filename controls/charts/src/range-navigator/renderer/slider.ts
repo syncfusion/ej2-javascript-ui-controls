@@ -433,7 +433,7 @@ export class RangeSlider {
             trigger = false;
         }
         if (this.isDrag && control.allowSnapping) {
-            this.setAllowSnapping(control, this.currentStart, this.currentEnd, trigger, enabledTooltip);
+            this.setAllowSnapping(control, this.currentStart, this.currentEnd, true, enabledTooltip);
             trigger = false;
         }
         if (trigger) {

@@ -1429,7 +1429,8 @@ export class Selection extends BaseSelection {
                     return;
                 }
                 this.calculateSelectedElements(event);
-                if (target.id.indexOf("_chart_legend_") == -1 && target.id.indexOf("_Series_") == -1) {
+                if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&
+                    target.id.indexOf("_chart_legend_") == -1 && target.id.indexOf("_Series_") == -1) {
                     this.removeLegendHighlightStyles();
                 } 
                 return;
@@ -1470,21 +1471,34 @@ export class Selection extends BaseSelection {
      * @private
      */
     public removeLegendHighlightStyles() {
+        this.chart.highlightModule.highlightDataIndexes = [];
         let elementCollection: HTMLCollection;
         for (let i = 0; i < this.chart.series.length; i++) {
-            elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
-            for (let j = 0; j < elementCollection.length; j++) {
-                let element: HTMLElement = elementCollection[j] as HTMLElement;
-                if (element) {
-                    this.removeSvgClass(element, element.getAttribute("class"));
+            if (this.selectedDataIndexes.length === 0) {
+                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
+                while (elementCollection.length > 0) {
+                    let element: HTMLElement = elementCollection[0] as HTMLElement;
+                    if (element) {
+                        this.removeSvgClass(element, element.getAttribute("class"));
+                    }
+                }
+                elementCollection = document.getElementsByClassName(this.unselected);
+                while (elementCollection.length > 0) {
+                    let element: HTMLElement = elementCollection[0] as HTMLElement;
+                    if (element) {
+                        this.removeSvgClass(element, element.getAttribute("class"));
+                    }
                 }
             }
-        }
-        elementCollection = document.getElementsByClassName(this.unselected);
-        for (let i: number = 0; i < elementCollection.length; i++) {
-            let element: HTMLElement = elementCollection[i] as HTMLElement;
-            if (element) {
-                this.removeSvgClass(element, element.getAttribute("class"));
+            else {
+                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
+                while (elementCollection.length > 0) {
+                    let element: HTMLElement = elementCollection[0] as HTMLElement;
+                    if (element) {
+                        this.removeSvgClass(element, element.getAttribute("class"));
+                        this.addSvgClass(element, this.unselected);
+                    }
+                }
             }
         }
     }

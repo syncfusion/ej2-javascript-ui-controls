@@ -11045,43 +11045,6 @@ let spell: any = {
 		]
 	}
 }
-describe('spell check page trigger', () => {
-  let editor: DocumentEditor = undefined;
-  beforeAll(() => {
-      document.body.innerHTML = '';
-      let ele: HTMLElement = createElement('div', { id: 'container' });
-      document.body.appendChild(ele);
-      DocumentEditor.Inject(Selection, Editor);
-      editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableWordExport: true, enableSfdtExport: true });
-      (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-      (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-      (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-      (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-      editor.appendTo('#container');
-  });
-  afterAll((done) => {
-      editor.destroy();
-      document.body.removeChild(document.getElementById('container'));
-      editor = undefined;
-      document.body.innerHTML = '';
-      setTimeout(() => {
-          done();
-      }, 1000);
-  });
-  it('Spell Check Page trigger validation', () => {
-      editor.open(JSON.stringify(spell));
-      editor.scrollToPage(2);
-      expect(editor.editor.triggerPageSpellCheck).toBe(true);
-     
-  });
-  it('Spell Check trigger Validation', () => {
-      editor.open(JSON.stringify(spell));
-      editor.scrollToPage(1);
-      editor.editor.insertText('aa');
-      expect(editor.editor.triggerPageSpellCheck).toBe(false);
-     
-  });
-});
 describe('Section break validation', () => {
   let editor: DocumentEditor = undefined;
   let dialog: PageSetupDialog;

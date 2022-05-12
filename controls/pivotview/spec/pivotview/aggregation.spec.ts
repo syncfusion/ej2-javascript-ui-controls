@@ -235,7 +235,7 @@ describe('Aggregation', () => {
         });
         it('close the fieldlist dialog', () => {
             cf.closeDialog();
-            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Wrapper');
+            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Container');
             (fieldListWrapper.querySelector('.e-cancel-btn') as HTMLElement).click();
         });
     });
@@ -591,7 +591,7 @@ describe('Aggregation', () => {
             });
             it('close the fieldlist dialog', () => {
                 cf.closeDialog();
-                let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Wrapper');
+                let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Container');
                 (fieldListWrapper.querySelector('.e-cancel-btn') as HTMLElement).click();
             });
             it('contextmenu open', () => {
@@ -807,7 +807,7 @@ describe('Aggregation', () => {
                 setTimeout(() => {
                     let valueFieldDialog = fieldListObj.element.querySelector('.e-value-field-settings');
                     expect(valueFieldDialog).toBeTruthy();
-                    expect((valueFieldDialog.querySelector('.e-type-option-wrapper input') as HTMLInputElement).value).toBe('Difference From');
+                    expect((valueFieldDialog.querySelector('.e-type-option-container input') as HTMLInputElement).value).toBe('Difference From');
                     (valueFieldDialog.querySelector('.e-cancel-btn') as HTMLInputElement).click();
                 }, 1000);
             });

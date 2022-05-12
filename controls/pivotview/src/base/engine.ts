@@ -4,7 +4,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PivotUtil } from './util';
 import { Sorting, SummaryTypes, FilterType, LabelOperators, ValueOperators, Operators, DateOperators, Condition } from './types';
 import { DateGroup, GroupType, ProviderType, DataSourceType } from './types';
-import { HeaderCollection, AggregateEventArgs, GrandTotalsPosition } from '../common';
+import { HeaderCollection, AggregateEventArgs, GrandTotalsPosition, HeadersSortEventArgs } from '../common';
 
 /**
  * PivotEngine is used to manipulate the relational or Multi-Dimensional data as pivoting values.
@@ -175,6 +175,7 @@ export class PivotEngine {
     private headerObjectsCollection: { [key: string]: IAxisSet[] } = {};
     private localeObj: L10n;
     private getValueCellInfo: Function;
+    private getHeaderSortInfo: Function;
     private fieldsType: IStringIndex;
     private columnKeys: { [key: string]: IFieldOptions } = {};
     private fieldDrillCollection: { [key: string]: string } = {};
@@ -184,8 +185,9 @@ export class PivotEngine {
     private measureNames: { [key: string]: string } = {};
     private currencyCode: string;
     public renderEngine(
-        dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function): void {
+        dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function, onHeadersSort?: Function): void {
         this.getValueCellInfo = fn;
+        this.getHeaderSortInfo = onHeadersSort;
         this.formatFields = {};
         this.dateFormatFunction = {};
         this.calculatedFields = {};
@@ -977,6 +979,7 @@ export class PivotEngine {
                         this.fieldList[key].formattedMembers = {};
                         this.fieldList[key].members = {};
                     }
+                    this.updateMembersOrder(key);
                 } else {
                     type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
                         field.dataType.toLowerCase() : type;
@@ -1019,6 +1022,7 @@ export class PivotEngine {
                         baseItem: (field && 'baseItem' in field) ?
                             field.baseItem : undefined
                     };
+                    this.updateMembersOrder(key);
                 }
             }
         } else {
@@ -1067,9 +1071,19 @@ export class PivotEngine {
                     baseItem: (field && 'baseItem' in field) ?
                         field.baseItem : undefined
                 };
+                this.updateMembersOrder(key);
             }
         }
         this.updateTreeViewData(dataFields);
+    }
+
+    private updateMembersOrder(key: string) {
+        for (let sortInfo of this.dataSourceSettings.sortSettings) {
+            if (key === sortInfo.name && sortInfo.membersOrder) {
+                this.fieldList[key].membersOrder = sortInfo.membersOrder;
+                break;
+            }
+        }
     }
 
     private getMappingField(key: string, fieldMapping: IFieldOptions[]): IFieldOptions {
@@ -2506,9 +2520,10 @@ export class PivotEngine {
         return framedHeader;
     }
     private getSortedHeaders(headers: IAxisSet[], sortOrder: string): IAxisSet[] {
-        let isNotDateType: boolean = !(this.formatFields && this.formatFields[(headers[0].valueSort as any).axis] &&
-            this.formatFields[(headers[0].valueSort as any).axis].type);
-        let childrens: IField = this.fieldList[(headers[0].valueSort as any).axis];
+        let fieldName: string = headers[0].actualText !== 'Grand Total' ? (headers[0].valueSort as any).axis : (headers[1].valueSort as any).axis;
+        let isNotDateType: boolean = !(this.formatFields && this.formatFields[fieldName] &&
+            this.formatFields[fieldName].type);
+        let childrens: IField = this.fieldList[fieldName];
         if (isNotDateType) {
             if (childrens && childrens.type == 'number' && headers.length > 0 && (typeof (headers[0].actualText) == 'string')) {
                 let stringValue: IAxisSet[] = [];
@@ -2526,32 +2541,77 @@ export class PivotEngine {
                     }
                 }
                 if (stringValue.length > 0) {
-                    stringValue = childrens.sort === 'Ascending' ? (stringValue.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0)))) :
-                        childrens.sort === 'Descending' ? (stringValue.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)))) : stringValue;
+                    stringValue = this.sortHeaders(fieldName, childrens, headers, childrens.sort, childrens.type);
                 }
                 if (alphaNumbervalue.length > 0) {
-                    alphaNumbervalue = childrens.sort === 'Ascending' ?
-                        (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
-                        childrens.sort === 'Descending' ?
-                            (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
-                            alphaNumbervalue;
+                    alphaNumbervalue = this.sortHeaders(fieldName, childrens, headers, childrens.sort, childrens.isAlphanumeric);
                 }
                 return headers = nullValue.concat(alphaNumbervalue, stringValue);
             }
             else {
-                return sortOrder === 'Ascending' ?
-                    (headers.sort(function (a, b) { return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0)); })) :
-                    sortOrder === 'Descending' ?
-                        (headers.sort(function (a, b) { return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)); })) :
-                        headers;
+                return this.sortHeaders(fieldName, childrens, headers, sortOrder, childrens.type);
             }
         } else {
-            return sortOrder === 'Ascending' ?
-                (headers.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
-                sortOrder === 'Descending' ?
-                    (headers.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0))) :
-                    headers;
+            return this.sortHeaders(fieldName, childrens, headers, sortOrder, childrens.type);
         }
+    }
+
+    private sortHeaders(fieldName: string, childrens: IField, sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean): IAxisSet[] {
+        let isHeaderSortByDefault: boolean = false;
+        let membersInfo: string[] | number[] = this.fieldList[fieldName] && this.fieldList[fieldName].membersOrder ? [...this.fieldList[fieldName].membersOrder] as string[] | number[] : [];
+        let sortDetails: HeadersSortEventArgs = {
+            fieldName: fieldName,
+            sortOrder: sortOrder as Sorting,
+            members: membersInfo && membersInfo.length > 0 ? membersInfo : Object.keys(childrens.members),
+            IsOrderChanged: false
+        };
+        let isDateType: boolean = type === 'datetime' || type === 'date' || type === 'time';
+        if (isDateType) {
+            if (membersInfo && membersInfo.length > 0) {
+                PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
+            }
+            else {
+                PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
+                isHeaderSortByDefault = true;
+            }
+        }
+        else if (type === true) {
+            if (membersInfo && membersInfo.length > 0) {
+                PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
+            }
+            else {
+                PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
+                isHeaderSortByDefault = true;
+            }
+        }
+        else {
+            if (membersInfo && membersInfo.length > 0) {
+                PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
+            }
+            else {
+                PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
+                isHeaderSortByDefault = true;
+            }
+        }
+        if (isHeaderSortByDefault) {
+            let copyOrder: string[] | number[] = [];
+            for (let m: number = 0, n: number = 0; m < sortMembersOrder.length; m++) {
+                let member: IAxisSet = sortMembersOrder[m];
+                let sortText: string | number = isDateType ?
+                    member.dateText : member.actualText;
+                if (member.actualText !== 'Grand Total') {
+                    copyOrder[n++] = sortText;
+                }
+            }
+            sortDetails.members = copyOrder as string[];
+        }
+        if (this.getHeaderSortInfo) {
+            this.getHeaderSortInfo(sortDetails);
+        }
+        if (sortDetails.IsOrderChanged) {
+            PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type, true);
+        }
+        return sortMembersOrder;
     }
     /** @hidden */
     public applyValueSorting(rMembers?: IAxisSet[], cMembers?: IAxisSet[]): ISortedHeaders {
@@ -3058,11 +3118,7 @@ export class PivotEngine {
             if (this.enableSort) {
                 // return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
                 if (isDateType) {
-                    return childrens.sort === 'Ascending' ?
-                        (hierarchy.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
-                        childrens.sort === 'Descending' ?
-                            (hierarchy.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0))) :
-                            hierarchy;
+                    return this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.type);
                 } else {
                     if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string')) {
                         let stringValue: IAxisSet[] = [];
@@ -3080,24 +3136,16 @@ export class PivotEngine {
                             }
                         }
                         if (stringValue.length > 0) {
-                            stringValue = childrens.sort === 'Ascending' ? (stringValue.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                                childrens.sort === 'Descending' ? (stringValue.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) : stringValue;
+                            stringValue = this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.type);
                         }
                         if (alphaNumbervalue.length > 0) {
-                            alphaNumbervalue = childrens.sort === 'Ascending' ?
-                                (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
-                                childrens.sort === 'Descending' ?
-                                    (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
-                                    alphaNumbervalue;
+                            this.fieldList[fieldName].isAlphanumeric = true;
+                            alphaNumbervalue = this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.isAlphanumeric);
                         }
                         return hierarchy = nullValue.concat(alphaNumbervalue, stringValue);
                     }
                     else {
-                        return childrens.sort === 'Ascending' ?
-                            (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                            childrens.sort === 'Descending' ?
-                                (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
-                                hierarchy;
+                        return this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.type);
                     }
                 }
             } else {
@@ -5508,6 +5556,10 @@ export interface ISort {
      * * `None`: It allows to display the field members based on JSON order. 
      */
     order?: Sorting;
+    /**
+    * Allows to specify the sorting order for custom sorting.
+    */
+    membersOrder?: string[] | number[];
 }
 
 /** 
@@ -5784,6 +5836,15 @@ export interface IField {
      * Allows you to expand or collapse all of the pivot table's headers for a specific field.
      */
     expandAll?: boolean;
+    /**
+     * It allows to set custom sort members of the specific field.
+     */
+    membersOrder?: string[] | number[];
+    /**
+     * It allows you to check if the custom sort type of a specific field is Alphanumeric or not.
+     * @default false
+     */
+    isAlphanumeric?: boolean;
 }
 
 /** 

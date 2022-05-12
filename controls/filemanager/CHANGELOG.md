@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I368832`, `#I374668` - The issue with "Not able to upload an excel file in the File Manager component with SQL file provider" has been resolved.
+
 ## 20.1.52 (2022-05-04)
 
 ### File Manager

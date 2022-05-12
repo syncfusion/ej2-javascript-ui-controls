@@ -113,10 +113,6 @@ export class Editor {
     /**
      * @private
      */
-    public triggerPageSpellCheck: boolean = true;
-    /**
-     * @private
-     */
     public chartType: boolean = false;
 
     private removedBookmarkElements: BookmarkElementBox[] = [];
@@ -1064,9 +1060,6 @@ export class Editor {
         }
         if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editor.isUserInsert && !this.documentHelper.owner.isShiftingEnabled) {
             this.documentHelper.owner.fireContentChange();
-        }
-        if (!isNullOrUndefined(this.selection.editPosition)) {
-            this.triggerPageSpellCheck = false;
         }
     }
     /**
@@ -7418,23 +7411,25 @@ export class Editor {
     private checkAndShiftFromBottom(page: Page, footerWidget: HeaderFooterWidget | FootNoteWidget): void {
         let bodyWidget: BodyWidget = page.bodyWidgets[0];
         let blockToShift: BlockWidget;
-        for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
-            let block: BlockWidget = bodyWidget.childWidgets[i] as BlockWidget;
-            if (block.y + block.height > footerWidget.y) {
-                blockToShift = block;
-                break;
-            }
-            if (!(footerWidget instanceof FootNoteWidget)) {
-                if (bodyWidget.childWidgets.length - 1 === i && block.y + block.height < footerWidget.y) {
-                    blockToShift = block as BlockWidget;
+        if (bodyWidget.childWidgets.length > 1) {
+            for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
+                let block: BlockWidget = bodyWidget.childWidgets[i] as BlockWidget;
+                if (block.y + block.height > footerWidget.y) {
+                    blockToShift = block;
                     break;
                 }
+                if (!(footerWidget instanceof FootNoteWidget)) {
+                    if (bodyWidget.childWidgets.length - 1 === i && block.y + block.height < footerWidget.y) {
+                        blockToShift = block as BlockWidget;
+                        break;
+                    }
+                }
             }
-        }
-        if (!isNullOrUndefined(blockToShift)) {
-            this.owner.viewer.updateClientArea(bodyWidget.sectionFormat, page, true);
-            this.owner.viewer.cutFromTop(blockToShift.y);
-            this.documentHelper.blockToShift = blockToShift;
+            if (!isNullOrUndefined(blockToShift)) {
+                this.owner.viewer.updateClientArea(bodyWidget.sectionFormat, page, true);
+                this.owner.viewer.cutFromTop(blockToShift.y);
+                this.documentHelper.blockToShift = blockToShift;
+            }
         }
     }
 
@@ -13022,13 +13017,27 @@ export class Editor {
                     this.insertParaRevision(paragraph, paragraphAdv.firstChild as LineWidget);
                 }
             } else {
-                if (this.owner.enableTrackChanges) {
-                    let firstLine: LineWidget = paragraphAdv.firstChild as LineWidget;
-                    let firstElement: ElementBox = firstLine.children[0].previousValidNodeForTracking;
-                    //ensure whether para mark can be combined with element revision
-                    if (!this.checkParaMarkMatchedWithElement(firstElement, paragraph.characterFormat, true, 'Insertion')) {
-                        this.insertParaRevision(paragraph);
-                    }
+                let paragraphWidget: ParagraphWidget = paragraphAdv.previousRenderedWidget as ParagraphWidget;
+                let isPreviousRevision: boolean = false;
+                if(!isNullOrUndefined(paragraphWidget) && paragraphWidget instanceof ParagraphWidget){
+                    isPreviousRevision = paragraphWidget.characterFormat.revisions.length > 0 ? true : false;
+                }
+                if(this.owner.enableTrackChanges){
+                    if (!isPreviousRevision) {
+                        let firstLine: LineWidget = paragraphAdv.firstChild as LineWidget;
+                        let firstElement: ElementBox = firstLine.children[0].previousValidNodeForTracking;
+                        //ensure whether para mark can be combined with element revision
+                        if (!isNullOrUndefined(firstElement) && !this.checkParaMarkMatchedWithElement(firstElement, paragraph.characterFormat, true, 'Insertion')) {
+                            this.insertParaRevision(paragraph);
+                        } else if (isNullOrUndefined(firstElement)) {
+                            insertIndex++;
+                            blockIndex++;
+                        }
+                    } else {
+                        if(!this.checkToMatchEmptyParaMark(paragraphAdv,paragraph)){
+                            this.insertParaRevision(paragraphAdv);
+                        }
+                    } 
                 }
             }
             paragraphAdv = paragraphAdv.getSplitWidgets()[0] as ParagraphWidget;
@@ -13156,12 +13165,16 @@ export class Editor {
         }
         return false;
     }
-    private checkToMatchEmptyParaMark(paraWidget: ParagraphWidget): boolean {
+    private checkToMatchEmptyParaMark(paraWidget: ParagraphWidget, paragraphAdv?:ParagraphWidget): boolean {
         let prevPara: ParagraphWidget = paraWidget.previousRenderedWidget as ParagraphWidget;
         if (!isNullOrUndefined(prevPara) && prevPara instanceof ParagraphWidget && prevPara.characterFormat.revisions.length > 0) {
             let matchedRevisions: Revision[] = this.getMatchedRevisionsToCombine(prevPara.characterFormat.revisions, 'Insertion');
             if (matchedRevisions.length > 0) {
-                this.mapMatchedRevisions(matchedRevisions, prevPara.characterFormat, paraWidget.characterFormat, false);
+                if(!isNullOrUndefined(paragraphAdv)){
+                    this.mapMatchedRevisions(matchedRevisions, prevPara.characterFormat, paragraphAdv.characterFormat, false);
+                } else{
+                    this.mapMatchedRevisions(matchedRevisions, prevPara.characterFormat, paraWidget.characterFormat, false);
+                }
                 return true;
             }
         }
@@ -16976,7 +16989,8 @@ export class Editor {
     private insertTocPageNumber(bookMarkname: string, lineWidget: LineWidget, isRightAlign: boolean, widget: ParagraphWidget): FieldElementBox {
         const fieldCode: string = ' PAGEREF' + bookMarkname + ' \\h ';
         const fieldBegin: FieldElementBox = this.createTocFieldElement(lineWidget, fieldCode, true);
-        let text: string = (this.documentHelper.pages.indexOf(widget.bodyWidget.page) + 1).toString();
+        let bodyWidget : BodyWidget = widget.containerWidget as BodyWidget;
+        let text: string = (bodyWidget.page.currentPageNum).toString();
         //text element.
         const span: FieldTextElementBox = new FieldTextElementBox();
         span.fieldBegin = fieldBegin;
@@ -16994,7 +17008,8 @@ export class Editor {
         for (const key of Object.keys(this.pageRefFields)) {
             if (this.documentHelper.bookmarks.containsKey(key)) {
                 const bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(key);
-                const pageRef: string = (bookmark.paragraph.bodyWidget.page.index + 1).toString();
+                let bodyWidget : BodyWidget = bookmark.paragraph.containerWidget as BodyWidget;
+                const pageRef: string = (bodyWidget.page.currentPageNum).toString();
                 const span: FieldTextElementBox = this.pageRefFields[key];
                 if (pageRef !== span.text) {
                     span.text = pageRef;

@@ -2667,6 +2667,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      * * StackingColumn
      * * StackingArea
      * * StackingBar
+     * * StackingLine
      * * StepLine
      * * Line
      * * Column
@@ -2681,6 +2682,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      * * StackingColumn100
      * * StackingBar100
      * * StackingArea100
+     * * StackingLine100
      * * Polar
      * * Radar
      * @default 'Line'

@@ -1792,12 +1792,12 @@ export class Ribbon {
             cssClass: 'e-clear-ddb',
             iconCss: 'e-icons e-clear-icon',
             items: [
-                { text: l10n.getConstant('ClearAll') },
-                { text: l10n.getConstant('ClearFormats') },
-                { text: l10n.getConstant('ClearContents') },
-                { text: l10n.getConstant('ClearHyperlinks') }],
+                { text: l10n.getConstant('ClearAll'), id: id + '_Clear All' },
+                { text: l10n.getConstant('ClearFormats'), id: id + '_Clear Formats' },
+                { text: l10n.getConstant('ClearContents'), id: id + '_Clear Contents' },
+                { text: l10n.getConstant('ClearHyperlinks'), id: id + '_Clear Hyperlinks' }],
             createPopupOnClick: true,
-            select: (args: MenuEventArgs): void => this.parent.notify(clearViewer, { options: { type: args.item.text } }),
+            select: (args: MenuEventArgs): void => this.parent.notify(clearViewer, { options: { type: args.item.id.replace(id + '_','') } }),
             close: (): void => focus(this.parent.element)
         });
         this.clearDdb.createElement = this.parent.createElement;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `I375944` - Issue with Null value is not available in IN operator of query builder has been fixed.
+
 ## 20.1.51 (2022-04-26)
 
 ### QueryBuilder

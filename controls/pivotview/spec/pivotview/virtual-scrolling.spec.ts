@@ -1315,7 +1315,7 @@ describe(' - VirtualScrolling', () => {
             (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = '10';
             expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
             cf.dialog.buttons[0].click();
-            document.querySelector('.e-pivotfieldlist-wrapper .e-cancel-btn').dispatchEvent(click);
+            document.querySelector('.e-pivotfieldlist-container .e-cancel-btn').dispatchEvent(click);
         });
         it('Country -> open filter dialog + uncheck canada + click ok btn', (done: Function) => {
             pivotGridObj.engineModule.enableSort = true;
@@ -1323,7 +1323,7 @@ describe(' - VirtualScrolling', () => {
             document.querySelectorAll('#Country .e-btn-filter')[0].dispatchEvent(click);
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
                 firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 firstNode.querySelector('.e-frame').dispatchEvent(click);
@@ -1337,7 +1337,7 @@ describe(' - VirtualScrolling', () => {
             document.querySelectorAll('#Country .e-btn-filter')[0].dispatchEvent(click);
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
                 firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 firstNode.querySelector('.e-frame').dispatchEvent(click);
@@ -1358,7 +1358,7 @@ describe(' - VirtualScrolling', () => {
             document.querySelectorAll('#Country .e-btn-filter')[0].dispatchEvent(click);
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[2] as HTMLElement;
+                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[2] as HTMLElement;
                 firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 firstNode.querySelector('.e-frame').dispatchEvent(click);
@@ -1372,7 +1372,7 @@ describe(' - VirtualScrolling', () => {
             document.querySelectorAll('#Country .e-btn-filter')[0].dispatchEvent(click);
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[2] as HTMLElement;
+                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[2] as HTMLElement;
                 firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 firstNode.querySelector('.e-frame').dispatchEvent(click);
@@ -1386,7 +1386,7 @@ describe(' - VirtualScrolling', () => {
             document.querySelectorAll('#State .e-btn-filter')[0].dispatchEvent(click);
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let treeNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[11] as HTMLElement;
+                let treeNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[11] as HTMLElement;
                 treeNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 treeNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 treeNode.querySelector('.e-frame').dispatchEvent(click);
@@ -1399,7 +1399,7 @@ describe(' - VirtualScrolling', () => {
             expect(document.querySelectorAll('.e-frozencontent td')[11].textContent).toBe('Garonne (Haute)');
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let treeNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[11] as HTMLElement;
+                let treeNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[11] as HTMLElement;
                 treeNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 treeNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 treeNode.querySelector('.e-frame').dispatchEvent(click);
@@ -1427,7 +1427,7 @@ describe(' - VirtualScrolling', () => {
             document.querySelectorAll('#Product .e-btn-filter')[0].dispatchEvent(click);
             setTimeout(() => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[2] as HTMLElement;
+                let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[2] as HTMLElement;
                 firstNode.querySelector('.e-frame').dispatchEvent(mousedown);
                 firstNode.querySelector('.e-frame').dispatchEvent(mouseup);
                 firstNode.querySelector('.e-frame').dispatchEvent(click);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### Common
+
+#### Bug Fixes
+
+- `SF-376600` - The issue with "`IsDevice` value return as false only for Safari browser in iPad" has been resolved.
+
 ## 20.1.50 (2022-04-19)
 
 ### Common

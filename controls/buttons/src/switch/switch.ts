@@ -219,7 +219,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         let wrapper: Element = this.element.parentElement;
         if (!wrapper.classList.contains(WRAPPER)) {
             wrapper = this.createElement('div', {
-                className: WRAPPER, attrs: { 'role': 'switch', 'aria-checked': 'false' }
+                className: WRAPPER, attrs: { 'aria-checked': 'false' }
             });
             this.element.parentNode.insertBefore(wrapper, this.element);
         }

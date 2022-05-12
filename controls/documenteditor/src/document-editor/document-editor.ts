@@ -2238,7 +2238,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.cachedPages = [];
             this.clearSpellCheck();
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
-                this.documentHelper.triggerElementsOnLoading = true;
                 this.documentHelper.triggerSpellCheck = true;
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
@@ -2249,7 +2248,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
-                this.documentHelper.triggerElementsOnLoading = false;
                 this.documentHelper.triggerSpellCheck = false;
             }
         }

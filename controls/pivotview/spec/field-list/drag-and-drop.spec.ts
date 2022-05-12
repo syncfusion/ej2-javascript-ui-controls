@@ -187,7 +187,7 @@ describe('Pivot Field List Rendering', () => {
             mousemove = util.setMouseCordinates(mousemove, 15, 75);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mouseEventArgs.target = pivotButton[0];
-            (fieldListObj.pivotButtonModule as any).parentElement = fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper');
+            (fieldListObj.pivotButtonModule as any).parentElement = fieldListObj.element.querySelector('.e-pivotfieldlist-container');
             (fieldListObj.pivotButtonModule as any).updateDropIndicator(mouseEventArgs);
             let mouseOverEventArgs: any = extend({}, mousemove, null, true);
             mouseOverEventArgs.type = 'mouseover';

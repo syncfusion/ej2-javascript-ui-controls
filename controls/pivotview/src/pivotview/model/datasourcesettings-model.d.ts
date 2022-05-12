@@ -312,6 +312,12 @@ export interface SortModel {
      */
     order?: Sorting;
 
+    /**
+    * Allows to specify the order in which the members should be sorted.
+    * @default []
+    */
+    membersOrder?: string[] | number[];
+
 }
 
 /**

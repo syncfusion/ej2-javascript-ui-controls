@@ -147,14 +147,14 @@ export class Browser {
 
     private static getValue(key: string, regX: RegExp): Object {
         const browserDetails: {} = window.browserDetails;
-        if ('undefined' === typeof (<{ [key: string]: Object }>browserDetails)[key]) {
-            return (<{ [key: string]: Object }>browserDetails)[key] = regX.test(Browser.userAgent);
-        }
         if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && Browser.isTouch === true) {
             browserDetails['isIos'] = true;
             browserDetails['isDevice'] = true;
             browserDetails['isTouch'] = true;
             browserDetails['isPointer'] = true;
+        }
+        if ('undefined' === typeof (<{ [key: string]: Object }>browserDetails)[key]) {
+            return (<{ [key: string]: Object }>browserDetails)[key] = regX.test(Browser.userAgent);
         }
         return (<{ [key: string]: Object }>browserDetails)[key];
     }

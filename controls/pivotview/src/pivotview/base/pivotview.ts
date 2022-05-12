@@ -21,7 +21,7 @@ import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, Cel
 import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs } from '../../common/base/interface';
 import { FieldListRefreshedEventArgs, MemberFilteringEventArgs, FieldDropEventArgs } from '../../common/base/interface';
 import { MemberEditorOpenEventArgs, FieldRemoveEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
-import { CalculatedFieldCreateEventArgs, NumberFormattingEventArgs, FieldDragStartEventArgs } from '../../common/base/interface';
+import { CalculatedFieldCreateEventArgs, NumberFormattingEventArgs, FieldDragStartEventArgs, HeadersSortEventArgs } from '../../common/base/interface';
 import { Render } from '../renderer/render';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { Common } from '../../common/actions/common';
@@ -1161,6 +1161,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * * `StackingColumn`: Allows to display the pivot chart with stacked column series.
      * * `StackingArea`: Allows to display the pivot chart with stacked area series.
      * * `StackingBar`: Allows to display the pivot chart with stacked bar series.
+     * * `StackingLine`: Allows to display the pivot chart with stacked line series.
      * * `StepLine`: Allows to display the pivot chart with step line series.
      * * `StepArea`: Allows to display the pivot chart with step area series.
      * * `SplineArea`: Allows to display the pivot chart with spline area series.
@@ -1169,6 +1170,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * * `StackingColumn100`: Allows to display the pivot chart with 100% stacked column series.
      * * `StackingBar100`: Allows to display the pivot chart with 100% stacked bar series.
      * * `StackingArea100`: Allows to display the pivot chart with 100% stacked area series.
+     * * `StackingLine100`: Allows to display the pivot chart with 100% stacked line series.
      * * `Bubble`: Allows to display the pivot chart with bubble series.
      * * `Pareto`: Allows to display the pivot chart with pareto series.
      * * `Polar`: Allows to display the pivot chart with polar series.
@@ -1181,10 +1183,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * To use this option, the `showToolbar` property must be **true** along with toolbar option **Chart**
      * to be set to the `toolbar` property.
      * @default ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
-     * 'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto', 'Polar',
+     * 'SplineArea','StackingLine', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100', 'Bubble', 'Pareto', 'Polar',
      * 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid' ])
      */
-    @Property(['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Polar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea', 'SplineArea', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto', 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid'])
+    @Property(['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Polar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StackingLine', 'StepLine', 'StepArea', 'SplineArea', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100', 'Bubble', 'Pareto', 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid'])
     public chartTypes: ChartSeriesType[];
 
     //Event Declarations
@@ -1659,6 +1661,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public destroyEngine: boolean = false;
 
+    /**
+     * It triggers before the sorting performed.
+     * @event
+     */
+    @Event()
+    public onHeadersSort: EmitType<HeadersSortEventArgs>;
+
     /* eslint-enable */
     /**
      * Constructor for creating the widget
@@ -1922,6 +1931,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             stackingcolumn: 'Stacked Column',
             stackingarea: 'Stacked Area',
             stackingbar: 'Stacked Bar',
+            stackingline: 'Stacked Line',
             stepline: 'Step Line',
             steparea: 'Step Area',
             splinearea: 'Spline Area',
@@ -1929,6 +1939,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             stackingcolumn100: '100% Stacked Column',
             stackingbar100: '100% Stacked Bar',
             stackingarea100: '100% Stacked Area',
+            stackingline100: '100% Stacked Line',
             bubble: 'Bubble',
             pareto: 'Pareto',
             radar: 'Radar',
@@ -3222,7 +3233,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             pivot.lastSortInfo = {};
                         }
                     } else {
-                        pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties);
+                        pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getHeaderSortInfo.bind(pivot));
                     }
                     pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
@@ -3262,7 +3273,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         pivot.lastFilterInfo = {};
                     } else {
                         pivot.engineModule.renderEngine(
-                            pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
+                            pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot), pivot.getHeaderSortInfo.bind(pivot));
                         pivot.allowServerDataBinding = false;
                         pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
                         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -3396,15 +3407,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             axis = chartDrillInfo.cell.axis;
             action = chartDrillInfo.isDrilled ? 'up' : 'down';
         } else {
-            fieldName = target.parentElement.getAttribute('fieldname');
             axis = target.parentElement.classList.contains(cls.ROWSHEADER) ? 'row' : 'column';
+            fieldName = axis === 'row' ? closest(target, 'td').getAttribute('fieldname') : closest(target, 'th').getAttribute('fieldname');
             action = target.classList.contains(cls.COLLAPSE) ? 'up' : 'down';
         }
         if (this.dataType === 'pivot') {
             let clonedDrillMembers: IDrillOptions[] = PivotUtil.cloneDrillMemberSettings(this.dataSourceSettings.drilledMembers);
+            let colIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('aria-colindex')) : Number(closest(target, 'th').getAttribute('aria-colindex'));
+            let rowIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('index')) : Number(closest(target, 'th').getAttribute('index'));
             let currentCell: IAxisSet = chartDrillInfo ? chartDrillInfo.cell :
-                this.engineModule.pivotValues[Number(target.parentElement.getAttribute('index'))]
-                [Number(target.parentElement.getAttribute('aria-colindex'))] as IAxisSet;
+                this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet;
             let memberName: string =
                 (currentCell.valueSort.levelName as string).
                     split(this.engineModule.valueSortSettings.headerDelimiter).join(delimiter);
@@ -3496,9 +3508,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private onOlapDrill(fieldName: string, axis: string, action: string, delimiter: string, target: Element, chartDrillInfo?: ChartLabelInfo): void {
         let pivot: PivotView = this;
         let clonedDrillMembers: IDrillOptions[] = PivotUtil.cloneDrillMemberSettings(this.dataSourceSettings.drilledMembers);
-        let currentCell: IAxisSet = chartDrillInfo ? chartDrillInfo.cell :
-            this.olapEngineModule.pivotValues[Number(target.parentElement.getAttribute('index'))]
-            [Number(target.parentElement.getAttribute('aria-colindex'))] as IAxisSet;
+        let currentCell: IAxisSet;
+        if (chartDrillInfo) {
+            currentCell = chartDrillInfo.cell;
+        } else {
+            let colIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('aria-colindex')) : Number(closest(target, 'th').getAttribute('aria-colindex'));
+            let rowIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('index')) : Number(closest(target, 'th').getAttribute('index'));
+            currentCell = this.olapEngineModule.pivotValues[rowIndex][colIndex] as IAxisSet;
+        }
         let tupInfo: ITupInfo = axis === 'row' ? this.olapEngineModule.tupRowInfo[currentCell.ordinal] :
             this.olapEngineModule.tupColumnInfo[currentCell.ordinal];
         let drillInfo: IDrilledItem = {
@@ -4009,8 +4026,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.isCellBoxMultiSelection) {
             this.isMouseDown = true;
             this.isMouseUp = false;
-            let parent: HTMLElement = this.parentAt(e.target as HTMLElement, 'TH');
-            this.clearSelection(parent, e, Number(parent.getAttribute('aria-colindex')), Number(parent.getAttribute('index')));
             this.lastSelectedElement = undefined;
         }
     }
@@ -4019,19 +4034,34 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.isCellBoxMultiSelection) {
             e.preventDefault();
             if (this.isMouseDown && e.target) {
-                let ele: HTMLElement = e.target as HTMLElement;
-                let parentElement: HTMLElement = this.parentAt(ele, 'TH');
-                if (this.lastSelectedElement && this.lastSelectedElement !== parentElement &&
-                    parentElement.classList.contains(cls.SELECTED_BGCOLOR)) {
-                    this.lastSelectedElement.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
-                    this.lastSelectedElement.classList.remove(cls.SELECTED_BGCOLOR);
-                    this.lastSelectedElement = parentElement;
-                } else {
-                    this.lastSelectedElement = parentElement;
-                    parentElement.classList.add(cls.CELL_ACTIVE_BGCOLOR);
-                    parentElement.classList.add(cls.SELECTED_BGCOLOR);
-                }
-                this.renderModule.selected();
+                let ele: Element = e.target as Element;
+                let axis: string = (ele.parentElement.classList.contains(cls.ROWSHEADER) || ele.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
+                ele = axis === 'column' ? closest(ele, 'th') : closest(ele, 'td');
+                let colIndex: number = Number(ele.getAttribute('aria-colindex'));
+                let rowIndex: number = Number(ele.getAttribute('index'));
+                let selectArgs: PivotCellSelectedEventArgs = {
+                    cancel: false,
+                    isCellClick: true,
+                    currentCell: ele,
+                    data: this.pivotValues[rowIndex][colIndex] as IAxisSet
+                };
+                this.trigger(events.cellSelecting, selectArgs, (observedArgs: PivotCellSelectedEventArgs) => {
+                    if (!observedArgs.cancel) {
+                        this.grid.clearSelection();
+                        let parentElement: HTMLElement = this.parentAt(ele as HTMLElement, 'TH');
+                        if (this.lastSelectedElement && this.lastSelectedElement !== parentElement &&
+                            parentElement.classList.contains(cls.SELECTED_BGCOLOR)) {
+                            this.lastSelectedElement.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
+                            this.lastSelectedElement.classList.remove(cls.SELECTED_BGCOLOR);
+                            this.lastSelectedElement = parentElement;
+                        } else {
+                            this.lastSelectedElement = parentElement;
+                            parentElement.classList.add(cls.CELL_ACTIVE_BGCOLOR);
+                            parentElement.classList.add(cls.SELECTED_BGCOLOR);
+                        }
+                        this.renderModule.selected();
+                    }
+                });
             }
         }
     }
@@ -4061,31 +4091,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.lastCellClicked = (e.target as Element);
         }
         let target: Element = (e.target as Element);
-        if ((target.classList.contains('e-headercell') ||
-            target.classList.contains('e-headercelldiv') ||
-            target.classList.contains('e-rowsheader') ||
-            target.classList.contains('e-rowcell') ||
-            target.classList.contains('e-stackedheadercelldiv') ||
-            target.classList.contains('e-headertext') ||
-            target.classList.contains('e-ascending') ||
-            target.classList.contains('e-descending')) && this.enableValueSorting && this.dataType === 'pivot') {
-            let ele: Element = null;
-            if (target.classList.contains('e-headercell') || target.classList.contains('e-rowsheader')
-                || target.classList.contains('e-rowcell')) {
-                ele = target;
-            } else if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-headercelldiv') ||
-                target.classList.contains('e-ascending') || target.classList.contains('e-descending')) {
-                ele = target.parentElement;
-            } else if (target.classList.contains('e-headertext')) {
-                ele = target.parentElement.parentElement;
-            }
-            this.CellClicked(target, e);
+        let ele: Element = null;
+        if (!target.classList.contains(cls.COLLAPSE) && !target.classList.contains(cls.EXPAND) && this.enableValueSorting && this.dataType === 'pivot') {
+            let axis: string = (target.parentElement.classList.contains(cls.ROWSHEADER) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
+            ele = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
+            this.cellClicked(target, ele, e);
             try {
                 if ((ele.parentElement.parentElement.parentElement.parentElement.classList.contains('e-movableheader')
                     && this.dataSourceSettings.valueAxis === 'column') || (ele.parentElement.classList.contains('e-row') &&
                         this.dataSourceSettings.valueAxis === 'row') && (ele.classList.contains('e-rowsheader') ||
                             ele.classList.contains('e-stot'))) {
-                    let FieldName: string = target.parentElement.getAttribute('fieldname');
+                    let FieldName: string = ele.getAttribute('fieldname');
                     let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(FieldName, this);
                     this.actionObj.actionName = events.sortValue;
                     this.actionObj.fieldInfo = fieldInfo.fieldItem;
@@ -4171,7 +4187,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.actionFailureMethod(execption);
             }
         } else {
-            this.CellClicked(target, e);
+            this.cellClicked(target, ele, e);
             return;
         }
     }
@@ -4434,16 +4450,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    private CellClicked(target: Element, e: MouseEvent): void { /* eslint-disable-line */
-        let ele: Element = null;
-        if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
-            ele = target;
-        } else if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
-            target.classList.contains('e-headercelldiv') || target.classList.contains('e-sortfilterdiv')) {
-            ele = target.parentElement;
-        } else if (target.classList.contains('e-headertext')) {
-            ele = target.parentElement.parentElement;
-        } else if (target.classList.contains(cls.ROW_SELECT)) {
+    private cellClicked(target: Element, ele: Element, e: MouseEvent): void { /* eslint-disable-line */
+        if (target.classList.contains(cls.ROW_SELECT)) {
             if (target.classList.contains(cls.SPAN_CLICKED)) {
                 this.isPopupClicked = false;
             } else {
@@ -4455,7 +4463,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             let colIndex: number = Number(ele.getAttribute('aria-colindex'));
             let rowIndex: number = Number(ele.getAttribute('index'));
             let colSpan: number = Number(ele.getAttribute('aria-colspan'));
-            // let selectArgs: PivotCellSelectedEventArgs = { isCellClick: true, currentCell: target };
             let selectArgs: PivotCellSelectedEventArgs = {
                 cancel: false,
                 isCellClick: true,
@@ -4466,8 +4473,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.gridSettings.allowSelection) {
                     if (this.gridSettings.selectionSettings.mode === 'Both' ? !ele.classList.contains(cls.ROW_CELL_CLASS) :
                         this.gridSettings.selectionSettings.mode !== 'Row') {
-                        this.clearSelection(ele, e, colIndex, rowIndex);
                         if (!observedArgs.cancel) {
+                            this.clearSelection(ele, e, colIndex, rowIndex);
                             this.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
                         }
                     }
@@ -4767,7 +4774,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
                 }
                 if (this.dataSourceSettings.mode !== 'Server') {
-                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this));
+                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this), this.getHeaderSortInfo.bind(this));
                 }
                 this.allowServerDataBinding = false;
                 this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
@@ -4777,7 +4784,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } else if (this.dataSourceSettings.providerType === 'SSAS' && this.dataType === 'olap') {
                 customProperties.savedFieldList = this.olapEngineModule.fieldList;
                 (customProperties as IOlapCustomProperties).savedFieldListData = this.olapEngineModule.fieldListData;
-                this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties);
+                this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getHeaderSortInfo.bind(this));
                 this.allowServerDataBinding = false;
                 this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
                 delete (this as any).bulkChanges.pivotValues;
@@ -4887,6 +4894,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private getValueCellInfo(aggregateObj: AggregateEventArgs): AggregateEventArgs {
         let args: AggregateEventArgs = aggregateObj;
         this.trigger(events.aggregateCellInfo, args);
+        return args;
+    }
+
+    private getHeaderSortInfo(sortingObj: HeadersSortEventArgs): HeadersSortEventArgs {
+        let args: HeadersSortEventArgs = sortingObj;
+        this.trigger(events.onHeadersSort, args);
         return args;
     }
 

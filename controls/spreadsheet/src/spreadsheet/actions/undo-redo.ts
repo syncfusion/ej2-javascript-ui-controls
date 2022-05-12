@@ -7,7 +7,7 @@ import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, w
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, replaceAll, applyCellFormat, CellFormatArgs } from '../../workbook/index';
 import { addClass, extend, isNullOrUndefined, isObject, L10n, select } from '@syncfusion/ej2-base';
-import { CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, getRow, ExtendedRowModel, getRowHeight } from '../../workbook/index';
+import { CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, isFilterHidden, getRowHeight } from '../../workbook/index';
 import { SortDescriptor, getColIndex, beginAction, ActionEventArgs, ChartModel } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
@@ -645,7 +645,7 @@ export class UndoRedo {
         let cell: CellModel; const filterCheck: boolean = action === 'cellDelete';
         address = getSwapRange(address);
         for (let i: number = address[0]; i <= address[2]; i++) {
-            if (filterCheck && ((getRow(sheet, i) || {}) as ExtendedRowModel).isFiltered) { continue; }
+            if (filterCheck && isFilterHidden(sheet, i)) { continue; }
             for (let j: number = address[1]; j <= address[3]; j++) {
                 cell = getCell(i, j, sheet);
                 cells.push({

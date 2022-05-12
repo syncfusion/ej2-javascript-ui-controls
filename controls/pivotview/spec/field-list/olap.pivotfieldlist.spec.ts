@@ -121,7 +121,7 @@ describe('PivotFieldList spec', () => {
                 fieldListObj.locale = 'fr-FR';
             });
             it('check-set locale property', () => {
-                let element: HTMLElement = document.getElementById('PivotFieldList_Wrapper_title').querySelector('.e-title-content');
+                let element: HTMLElement = document.getElementById('PivotFieldList_Container_title').querySelector('.e-title-content');
                 expect(element.textContent).toBe('Field List');
             });
             it('field-list destroy', () => {
@@ -188,7 +188,7 @@ describe('PivotFieldList spec', () => {
                 expect(document.getElementById('PivotFieldList').classList.contains('e-pivotfieldlist')).toEqual(true);
             });
             it('check field list control wrapper', () => {
-                expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper')));
+                expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-container')));
             });
         });
         describe('Field List with Dynamic mode', () => {
@@ -256,7 +256,7 @@ describe('PivotFieldList spec', () => {
                 expect(true).toBe(true);
             });
             it('check field list dialog with targetID', () => {
-                expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-wrapper')));
+                expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-container')));
             });
             it('open filter popup', () => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -269,9 +269,9 @@ describe('PivotFieldList spec', () => {
                 expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(50);
             });
             it('check close field list', () => {
-                let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-wrapper');
+                let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-container');
                 (controlWrapper.querySelector('.e-cancel-btn') as HTMLElement).click();
-                expect(elem1.querySelector('.e-pivotfieldlist-wrapper').classList.contains('e-popup-close'));
+                expect(elem1.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-close'));
             });
         });
         describe('Field List rendering on mobile device', () => {
@@ -522,7 +522,7 @@ describe('PivotFieldList spec', () => {
             let persistdata: string;
             it('check field list tree view', () => {
                 expect(fieldListObj.olapEngineModule.mdxQuery).toBe('Select NON EMPTY (({DrilldownLevel({[Customer].[Customer Geography]})}) * {{[Measures].[Customer Count]}}) DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE ON COLUMNS, NON EMPTY (({DrilldownLevel({[Date].[Fiscal]})})) DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE ON ROWS FROM [Adventure Works] CELL PROPERTIES VALUE, FORMAT_STRING, FORMATTED_VALUE');
-                expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper')));
+                expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-container')));
                 expect(fieldListObj.treeViewModule.fieldTable.element.classList.contains('e-field-list'));
             });
             it('check tree header node', () => {

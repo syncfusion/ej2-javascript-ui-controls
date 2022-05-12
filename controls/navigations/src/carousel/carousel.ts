@@ -34,6 +34,7 @@ const CLS_HOVER: string = 'e-carousel-hover';
 const CLS_TEMPLATE: string = 'e-template';
 const CLS_SLIDE_ANIMATION: string = 'e-carousel-slide-animation';
 const CLS_FADE_ANIMATION: string = 'e-carousel-fade-animation';
+const CLS_CUSTOM_ANIMATION: string = 'e-carousel-custom-animation';
 const CLS_PREV_SLIDE: string = 'e-prev';
 const CLS_NEXT_SLIDE: string = 'e-next';
 const CLS_TRANSITION_START: string = 'e-transition-start';
@@ -692,12 +693,11 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     private applyAnimation(): void {
         const animationTarget: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-        removeClass([animationTarget], [CLS_FADE_ANIMATION, CLS_SLIDE_ANIMATION]);
+        removeClass([animationTarget], [CLS_CUSTOM_ANIMATION, CLS_FADE_ANIMATION, CLS_SLIDE_ANIMATION]);
         if (this.animation.customEffect) {
-            addClass([animationTarget], this.animation.customEffect);
+            addClass([animationTarget], [CLS_CUSTOM_ANIMATION, this.animation.customEffect]);
         } else if (this.animation.effect !== 'None') {
-            const animationClass: string = this.animation.effect === 'Fade' ? CLS_FADE_ANIMATION : CLS_SLIDE_ANIMATION;
-            addClass([animationTarget], animationClass);
+            addClass([animationTarget], this.animation.effect === 'Fade' ? CLS_FADE_ANIMATION : CLS_SLIDE_ANIMATION);
         }
     }
 
@@ -802,8 +802,14 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 isSwiped: isSwiped
             };
             let slideHeight: number;
-            if (this.animation.effect === 'None' || this.animation.customEffect) {
-                this.onTransitionEnd();
+            if (this.animation.customEffect) {
+                if (direction === 'Previous') {
+                    addClass([args.nextSlide], CLS_NEXT_SLIDE);
+                    addClass([args.currentSlide], CLS_PREV_SLIDE);
+                } else {
+                    addClass([args.currentSlide], CLS_PREV_SLIDE);
+                    addClass([args.nextSlide], CLS_NEXT_SLIDE);
+                }
             } else if (this.animation.effect === 'Slide') {
                 if (direction === 'Previous') {
                     addClass([args.nextSlide], CLS_PREV_SLIDE);
@@ -818,6 +824,8 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             } else if (this.animation.effect === 'Fade') {
                 removeClass([args.currentSlide], CLS_ACTIVE);
                 addClass([args.nextSlide], CLS_ACTIVE);
+            } else {
+                this.onTransitionEnd();
             }
             this.handleNavigatorsActions(currentIndex);
         });
@@ -1048,6 +1056,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     private wireEvents(): void {
         EventHandler.add(this.element, 'focusin focusout', this.onFocusActions, this);
         EventHandler.add(this.element, 'mouseenter mouseleave', this.onHoverActions, this);
+        EventHandler.add(this.element.firstElementChild, 'animationend', this.onTransitionEnd, this);
         EventHandler.add(this.element.firstElementChild, 'transitionend', this.onTransitionEnd, this);
     }
 
@@ -1064,6 +1073,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (playIcon) {
             EventHandler.remove(playIcon, 'click', this.playButtonClickHandler);
         }
+        EventHandler.remove(this.element.firstElementChild, 'animationend', this.onTransitionEnd);
         EventHandler.remove(this.element.firstElementChild, 'transitionend', this.onTransitionEnd);
         EventHandler.clearEvents(this.element);
     }

@@ -333,3 +333,7 @@ export const updateTranslate: string = 'updateTranslate';
 export const getUpdatedScrollPosition: string = 'getUpdatedScrollPosition';
 /** @hidden */
 export const updateScrollValue: string = 'updateScrollValue';
+/** @hidden */
+export const beforeCheckboxRender: string = 'beforeCheckboxfilterRenderer';
+/** @hidden */
+export const refreshCheckbox: string = 'refreshCheckbox';

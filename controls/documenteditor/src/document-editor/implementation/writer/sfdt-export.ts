@@ -371,6 +371,9 @@ export class SfdtExport {
             section.sectionFormat.initialEndNoteNumber = bodyWidget.sectionFormat.initialEndNoteNumber;
 
         }
+        if(!isNullOrUndefined(bodyWidget.sectionFormat.pageNumberStyle)) {
+            section.sectionFormat.pageNumberStyle = bodyWidget.sectionFormat.pageNumberStyle;
+        }
         section.blocks = [];
         section.headersFooters = {};
         return section;

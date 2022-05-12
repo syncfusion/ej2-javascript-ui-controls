@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Selection, IGanttData, Filter, IActionBeginEventArgs } from '../../src/index';
-import { cellEditData, resourcesData, projectData } from '../base/data-source.spec';
+import { cellEditData, resourcesData, projectData, normalResourceData, resourceCollection } from '../base/data-source.spec';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 
@@ -657,6 +657,130 @@ describe('Gantt Edit support', () => {
         });
         afterAll(() => {
             destroyGantt(ganttObj);
+        });
+    });
+    describe('Update resource units using method', () => {
+        let ganttObj_tree: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_tree = createGantt(
+                {
+                    dataSource: normalResourceData,
+                    resources: resourceCollection,
+                    showOverAllocation: true,
+                    enableContextMenu: true,
+                    allowSorting: true,
+                    allowReordering: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        resourceInfo: 'resources',
+                        work: 'work',
+                        child: 'subtasks'
+                    },
+                    resourceFields: {
+                        id: 'resourceId',
+                        name: 'resourceName',
+                        unit: 'resourceUnit',
+                        group: 'resourceGroup'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        { field: 'TaskName', headerText: 'Name', width: 250 },
+                        { field: 'work', headerText: 'Work' },
+                        { field: 'Progress' },
+                        { field: 'resourceGroup', headerText: 'Group' },
+                        { field: 'StartDate' },
+                        { field: 'Duration' },
+                    ],
+                    labelSettings: {
+                        rightLabel: 'resources',
+                        taskLabel: 'Progress'
+                    },
+                    splitterSettings: {
+                        columnIndex: 3
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    eventMarkers: [
+                        {
+                            day: '04/17/2019',
+                            cssClass: 'e-custom-event-marker',
+                            label: 'Project approval and kick-off'
+                        }
+                    ],
+                    holidays: [{
+                        from: "04/04/2019",
+                        to: "04/05/2019",
+                        label: " Public holidays",
+                        cssClass: "e-custom-holiday"
+                    }],
+                    readOnly: false,
+                    allowRowDragAndDrop: true,
+                    allowResizing: true,
+                    allowFiltering: true,
+                    allowSelection: true,
+                    highlightWeekends: true,
+                    treeColumnIndex: 1,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    actionComplete(args: any) {
+                        if (args.requestType == 'save') {
+                            expect(args.data.Duration).toBe(1.67);
+                        }
+                    },
+                    projectStartDate: new Date('03/28/2019'),
+                    projectEndDate: new Date('05/18/2019')
+                }, done);
+        });
+        it('updating resource units', () => {
+            let data: object = {
+                TaskID: 2,
+                TaskName: 'Updated by index value',
+                resources: [
+                    {
+                        resourceId: 1,
+                        resourceName: 'Martin Tamer',
+                        resourceUnit: 75,
+                    },
+                ],
+            };
+            ganttObj_tree.updateRecordByID(data);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj_tree);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
         });
     });
 });

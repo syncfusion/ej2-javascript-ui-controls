@@ -260,7 +260,7 @@ export class Filter {
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
         addClass([element], 'e-gantt');
-        document.body.appendChild(element);
+        document.querySelector('#' + this.parent.controlId).appendChild(element);
         let targetElement: HTMLElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');

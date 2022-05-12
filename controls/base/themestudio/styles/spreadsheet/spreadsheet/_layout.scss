@@ -417,6 +417,27 @@
       }
     }
 
+    & .e-excelfilter {
+      & .e-spreadsheet-ftrchk {
+        padding-left: $filter-selectall-padding;
+      }
+
+      &.e-rtl .e-spreadsheet-ftrchk {
+        padding-left: 0;
+        padding-right: $filter-selectall-padding;
+      }
+    }
+
+    & .e-checkboxtree {
+      ul {
+        padding-left: 0;
+      }
+
+      &.e-rtl ul {
+        padding-right: 0;
+      }
+    }
+
     & .e-table {
       border: 0 none;
       border-collapse: separate;
@@ -2866,6 +2887,31 @@
             margin-bottom: 4px;
           }
         }
+      }
+    }
+
+    & .e-excelfilter {
+      & .e-spreadsheet-ftrchk {
+        padding-left: $filter-selectall-bigger-padding;
+
+        & .e-checkboxfiltertext {
+          width: auto;
+        }
+      }
+
+      &.e-rtl .e-spreadsheet-ftrchk {
+        padding-left: 0;
+        padding-right: $filter-selectall-bigger-padding;
+      }
+    }
+
+    & .e-checkboxtree {
+      ul {
+        padding-left: 0;
+      }
+
+      &.e-rtl ul {
+        padding-right: 0;
       }
     }
   }

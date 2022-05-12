@@ -864,3 +864,39 @@ describe('Track changes empty para delete validation', () => {
         expect(para.characterFormat.revisions.length).toBe(0);
     });
 });
+describe('Track change reject validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it("Track change reject validation",()=>{
+        editor.editor.insertTable(1,1);
+        editor.selection.checkForCursorVisibility();
+        editor.editor.insertText("hello");
+        editor.enableTrackChanges = true;
+        editor.selection.handleControlHomeKey();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        expect(editor.revisions.changes[0].range.length).toBe(3);
+        editor.revisions.rejectAll();
+        expect(editor.revisions.changes.length).toBe(0);
+    });
+});

@@ -17,7 +17,7 @@ import { IEndChangeEventArgs, FixedUserHandleClickEventArgs } from '../objects/i
 import { IBlazorConnectionChangeEventArgs, IConnectionChangeEventArgs } from '../objects/interface/IElement';
 import { IBlazorDropEventArgs } from '../objects/interface/IElement';
 import { IRotationEventArgs, IDoubleClickEventArgs, IClickEventArgs, IDropEventArgs } from '../objects/interface/IElement';
-import { CommandHandler } from './command-manager';
+import { CommandHandler } from './command-manager'; 
 import { IBlazorDraggingEventArgs } from '../objects/interface/IElement';
 import { rotatePoint, cloneObject } from '../utility/base-util';
 import { Rect } from '../primitives/rect';
@@ -811,7 +811,7 @@ export class MoveTool extends ToolBase {
     private portId: string;
 
     private source: NodeModel | PortModel;
-
+ 
     private canCancel: boolean = false;
     private tempArgs: IDraggingEventArgs | IBlazorDraggingEventArgs;
     constructor(commandHandler: CommandHandler, objType?: ObjectTypes) {
@@ -861,8 +861,7 @@ export class MoveTool extends ToolBase {
         }
         super.mouseDown(args);
         this.initialOffset = { x: 0, y: 0 };
-
-    }
+       }
 
     /* tslint:disable */
     /**
@@ -942,6 +941,7 @@ export class MoveTool extends ToolBase {
                     }
                     if (!isBlazor()) {
                         this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                        this.connectorEndPointChangeEvent(arg);
                     }
                     if (!isPreventHistory) {
                         this.commandHandler.startGroupAction(); historyAdded = true;
@@ -1020,6 +1020,37 @@ export class MoveTool extends ToolBase {
         super.mouseUp(args);
     }
 
+    //EJ2-59309-While drag the connected node the connector endPointChange event does not get trigger
+    private connectorEndPointChangeEvent(arg: any, snappedPoint?: PointModel): void { 
+        let selectedElement: any = arg.source;
+        if (selectedElement instanceof Selector && selectedElement.nodes.length > 0) {
+            for (let i: number = 0; i < selectedElement.nodes.length; i++) {
+                let node: NodeModel = selectedElement.nodes[i];
+                if(node && (node as any).inEdges.length > 0) {
+                    for (let j: number =0; j < (node as any).inEdges.length; j++) {
+                        let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).inEdges[j]);
+                        this.triggerEndPointEvent(connector, arg, snappedPoint, 'targetPointChange');
+                    }
+                }
+                if(node && (node as any).outEdges.length > 0) {
+                    for (let j: number =0; j < (node as any).outEdges.length; j++) {
+                        let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).outEdges[j]);
+                        this.triggerEndPointEvent(connector, arg, snappedPoint, 'sourcePointChange');
+                    }
+                }
+            }
+        }
+    }
+
+    private triggerEndPointEvent(connector: ConnectorModel, arg: any, snappedPoint: PointModel, eventName: string): void {
+        let args: IEndChangeEventArgs = {
+            connector: connector, state: arg.state, targetNode: connector.targetID, targetPort: connector.targetPortID,
+            sourceNode: connector.sourceID, sourcePort: connector.sourcePortID, oldValue: {x: connector.targetPoint.x, y: connector.targetPoint.y}, 
+            newValue: {x: connector.targetPoint.x + (snappedPoint?snappedPoint.x:0), y: connector.targetPoint.y + (snappedPoint?snappedPoint.y:0)}, cancel: arg.cancel, 
+        };
+        this.commandHandler.triggerEvent((eventName === 'targetPointChange')? DiagramEvent.targetPointChange: DiagramEvent.sourcePointChange, args);
+    }
+
     private isSelectionHasConnector(args: any): boolean {
         if (args.nodes && args.connectors && args.nodes.length > 0 && args.connectors.length > 0 &&
             (args.width !== this.undoElement.width || args.height !== this.undoElement.height)) {
@@ -1072,8 +1103,11 @@ export class MoveTool extends ToolBase {
             newValue: cloneBlazorObject(oldValues),
             target: args.target, targetPosition: args.position, allowDrop: arg.allowDrop, cancel: arg.cancel
         };
-        if (isSame && !isBlazor()) { this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg); }
-        this.currentPosition = args.position;
+        if (isSame && !isBlazor()) { 
+            this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg); 
+            this.connectorEndPointChangeEvent(arg);
+        }
+        this.currentPosition = args.position; 
         if (this.objectType !== 'Port') {
             const x: number = this.currentPosition.x - this.prevPosition.x; const y: number = this.currentPosition.y - this.prevPosition.y;
             const diffX: number = this.initialOffset.x + (this.currentPosition.x - this.prevPosition.x);
@@ -1106,6 +1140,7 @@ export class MoveTool extends ToolBase {
             }
             if (!isBlazor()) {
                 this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                this.connectorEndPointChangeEvent(arg, snappedPoint);
             }
             if (!arg.cancel && !this.canCancel) {
                 this.blocked = !this.commandHandler.dragSelectedObjects(snappedPoint.x, snappedPoint.y);
@@ -1140,7 +1175,7 @@ export class MoveTool extends ToolBase {
             const position: PointModel = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
             this.commandHandler.portDrag(args.source, args.sourceWrapper, position.x - prevPosition.x, position.y - prevPosition.y);
         }
-        this.prevPosition = this.currentPosition;
+        this.prevPosition = this.currentPosition; 
         return !this.blocked;
     }
 

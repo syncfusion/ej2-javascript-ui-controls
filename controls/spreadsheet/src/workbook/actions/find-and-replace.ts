@@ -1,5 +1,5 @@
 import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell, getSheet } from '../base/index';
-import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count } from '../common/index';
+import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count, getRangeIndexes } from '../common/index';
 import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
@@ -611,12 +611,14 @@ export class WorkbookFindAndReplace {
         return false;
     }
     public replace(args: FindOptions): void {
-        const sheet: SheetModel = isUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, args.sheetIndex);
+        const sheetIndex: number = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
+        const sheet: SheetModel = getSheet(this.parent, args.sheetIndex);
         if (sheet.isProtected) {
             this.parent.notify(workBookeditAlert, null);
             return;
         }
-        let activeCell: number[] = getCellIndexes(sheet.activeCell);
+        const address: string = (args as unknown as { address: string }).address;
+        let activeCell: number[] = getRangeIndexes(address || sheet.activeCell);
         let compareVal: string = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet, false, true)).toString();
         let checkValue: string;
         args.value = args.value.toString();
@@ -634,8 +636,8 @@ export class WorkbookFindAndReplace {
                 return;
             }
         }
-        const eventArgs: BeforeReplaceEventArgs = { address: `${sheet.name}!${getCellAddress(activeCell[0], activeCell[1])}`, cancel: false,
-            compareValue: compareVal, replaceValue: args.replaceValue };
+        const eventArgs: BeforeReplaceEventArgs & { sheetIndex: number } = { address: `${sheet.name}!${getCellAddress(activeCell[0], activeCell[1])}`, cancel: false,
+            compareValue: args.value, replaceValue: args.replaceValue, sheetIndex: sheetIndex };
         if (args.isAction) {
             this.parent.notify(beginAction, { action: 'beforeReplace', eventArgs: eventArgs });
             if (eventArgs.cancel) {

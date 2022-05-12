@@ -47,7 +47,7 @@ export class AxisTableRenderer {
                 className: cls.FIELD_LIST_CLASS + '-' + fieldLabels[len]
             });
             let axisTitleWrapper: HTMLElement = createElement('div', {
-                className: cls.AXIS_ICON_CLASS + '-wrapper'
+                className: cls.AXIS_ICON_CLASS + '-container'
             });
             let axisTitle: HTMLElement = createElement('div', {
                 className: cls.AXIS_HEADER_CLASS,
@@ -87,7 +87,7 @@ export class AxisTableRenderer {
     private getIconupdate(axis: string): HTMLElement {
         let axisWrapper: HTMLElement = createElement('span', {
             attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
-            className: cls.AXIS_ICON_CLASS + '-icon-wrapper'
+            className: cls.AXIS_ICON_CLASS + '-icon-container'
         });
         let axisElement: HTMLElement = createElement('span', {
             attrs: {

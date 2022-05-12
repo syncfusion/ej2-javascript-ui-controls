@@ -492,7 +492,7 @@ export class MonthEvent extends EventBase {
         const startTime: Date = event[this.fields.startTime] as Date;
         const endTime: Date = event[this.fields.endTime] as Date;
         const day: number = this.parent.getIndexOfDate(this.dateRender, util.resetTime(startTime));
-        if (day < 0) {
+        if ((day < 0) || (startTime.getTime() < this.parent.minDate.getTime()) || (endTime.getTime() > this.parent.maxDate.getTime())) {
             return;
         }
         const overlapCount: number = this.getIndex(startTime);

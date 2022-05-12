@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### Spreadsheet
+
+#### New Features
+
+- `#I362282` - Provided support for date column filter popup UI like parent-child combination of checkboxes functionality.
+
+#### Bug Fixes
+
+- `#F174225` - Background color not exported properly when the conditional formatting contains "null" format issue resolved.
+- `#I377104` - Clear options not working properly for localized text issue is resolved.
+
 ## 20.1.52 (2022-05-04)
 
 ### Spreadsheet

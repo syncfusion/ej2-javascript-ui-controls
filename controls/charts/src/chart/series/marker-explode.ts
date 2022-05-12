@@ -66,7 +66,7 @@ export class MarkerExplode extends ChartData {
      */
     private mouseMoveHandler(): void {
         const chart: Chart = this.chart;
-        if ((!chart.crosshair.enable || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
+        if ((chart.highlightMode !='None' || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
             this.markerMove(false);
         }
     }
@@ -147,7 +147,7 @@ export class MarkerExplode extends ChartData {
                 this.previousPoints = <PointData[]>extend([], this.currentPoints, null, true);
             }
         }
-        if (!chart.tooltip.enable && ((this.currentPoints.length === 0 && this.isRemove) || (remove && this.isRemove) ||
+        if (((this.currentPoints.length === 0 && this.isRemove) || (remove && this.isRemove) ||
                 !withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect))) {
             this.isRemove = false;
             if (!isNullOrUndefined(this.previousPoints[0])) {

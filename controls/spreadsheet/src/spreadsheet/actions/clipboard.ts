@@ -17,7 +17,7 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
 import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
-import { updateCell, ModelType, getRow, ExtendedRowModel, beginAction } from '../../workbook/index';
+import { updateCell, ModelType, beginAction, isFilterHidden } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -299,7 +299,7 @@ export class Clipboard {
                 let isUniqueCell: boolean = false;
                 let uniqueCellColl: number[][] = [];
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
-                    if (!isExternal && !copyInfo.isCut && ((getRow(prevSheet, i) || {}) as ExtendedRowModel).isFiltered) {
+                    if (!isExternal && !copyInfo.isCut && isFilterHidden(prevSheet, i)) {
                         l--; hiddenCount++; continue;
                     }
                     if (isInRange) {
@@ -366,7 +366,7 @@ export class Clipboard {
                         }
                         if (isRepeative) {
                             for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
-                                if (!copyInfo.isCut && !hiddenCount && ((getRow(curSheet, x + l) || {}) as ExtendedRowModel).isFiltered) {
+                                if (!copyInfo.isCut && !hiddenCount && isFilterHidden(curSheet, x + l)) {
                                     continue;
                                 }
                                 for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
@@ -842,7 +842,7 @@ export class Clipboard {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let data: string = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml"><tbody>';
         for (let i: number = range[0]; i <= range[2]; i++) {
-            if (!isCut && ((getRow(sheet, i) || {}) as ExtendedRowModel).isFiltered) { continue; }
+            if (!isCut && isFilterHidden(sheet, i)) { continue; }
             data += '<tr>';
             for (let j: number = range[1]; j <= range[3]; j++) {
                 cell = getCell(i, j, sheet, false, true);

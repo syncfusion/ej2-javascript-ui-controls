@@ -85,7 +85,7 @@ describe('PivotFieldList spec', () => {
                 fieldListObj.locale = 'fr-FR';
             });
             it('set locale property', () => {
-                let element: HTMLElement = document.getElementById('PivotFieldList_Wrapper_title').querySelector('.e-title-content');
+                let element: HTMLElement = document.getElementById('PivotFieldList_Container_title').querySelector('.e-title-content');
                 expect(element.textContent).toBe('Field List');
                 fieldListObj.destroy();
             });
@@ -144,7 +144,7 @@ describe('PivotFieldList spec', () => {
                 fieldListObj.locale = 'en-US';
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let element: HTMLElement = document.getElementById('PivotFieldList_Wrapper_title').querySelector('.e-title-content');
+                    let element: HTMLElement = document.getElementById('PivotFieldList_Container_title').querySelector('.e-title-content');
                     expect(element.textContent).toBe('Field List');
                     done();
                 }, 1000);
@@ -225,7 +225,7 @@ describe('PivotFieldList spec', () => {
 
             let persistdata: string;
             it('check field list tree view', () => {
-                expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper')));
+                expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-container')));
                 expect(fieldListObj.treeViewModule.fieldTable.element.classList.contains('e-field-list'));
             });
             it('check tree header node', (done: Function) => {

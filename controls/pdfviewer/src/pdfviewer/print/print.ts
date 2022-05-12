@@ -225,9 +225,9 @@ export class Print {
                 // eslint-disable-next-line
                 if (parseFloat(currentData['PageIndex']) === pageIndex) {
                     // eslint-disable-next-line
-
+                    let field: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
                     // eslint-disable-next-line
-                    let inputField: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
+                    let inputField: any = field.currentField;
                     if (inputField) {
                         // eslint-disable-next-line
                         let bounds: any = currentData['LineBounds'];

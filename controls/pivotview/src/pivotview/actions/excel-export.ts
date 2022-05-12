@@ -122,7 +122,7 @@ export class ExcelExport {
                     for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
                         if (pivotValues[rCnt][cCnt]) {
                             let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
-                            if (pivotCell && pivotCell.axis === 'value' && pivotCell.formattedText === "") {
+                            if(pivotCell && pivotCell.axis === 'value' && pivotCell.formattedText === ""){
                                 pivotCell.value = pivotCell.formattedText as any;
                             }
                             let field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&

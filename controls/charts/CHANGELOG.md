@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.55 (2022-05-12)
+
+### Chart
+
+#### New Features
+
+- `#I360879` - Provided support to disable the marker explode without tooltip and highlight mode.
+
 ## 20.1.52 (2022-05-04)
 
 ### Chart

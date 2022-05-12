@@ -79,7 +79,7 @@ export class FormFields {
                 for (var i = 0; i < this.formFieldsData.length; i++) {
                     let formField: any = this.formFieldsData[i];
                     if (!flag && isNullOrUndefined(formField.ActualFieldName) && formField.PageIndex === pageIndex) {
-                        count = formField.FieldName.split('_')[1];
+                        count = parseInt(formField.FieldName.split('_')[1]);
                         flag = true;
                     }
                 }
@@ -1148,6 +1148,7 @@ export class FormFields {
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key === key) {
+                let formFieldIndex: number = this.pdfViewer.formFieldCollections.findIndex(el => el.id === formFieldsData[i].FormField.id.split('_')[0]);
                 if (annot.shapeAnnotationType === "SignatureText") {
                     formFieldsData[i].FormField.signatureType = "Text";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
@@ -1155,18 +1156,22 @@ export class FormFields {
                     formFieldsData[i].FormField.fontFamily = annot.fontFamily;
                     this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
                     (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Text" : null;
                 } else if (annot.shapeAnnotationType === "SignatureImage") {
                     formFieldsData[i].FormField.signatureType = "Image";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
                     (this.pdfViewer.nameTable as any)[key].signatureType = "Image";
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Image" : null;
                 } else {
                     formFieldsData[i].FormField.signatureType = "Path";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
                     (this.pdfViewer.nameTable as any)[key].signatureType = "Path";
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Path" : null;
                 }
                 formFieldsData[i].FormField.signatureBound = annot.bounds;
                 this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = annot.bounds;
                 (this.pdfViewer.nameTable as any)[key].signatureBound = annot.bounds;
+                formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureBound = annot.bounds : null;
                 if (annot.shapeAnnotationType === "Path") {
                     let collectionData: any = processPathData(annot.data);
                     let csData: any = splitArrayCollection(collectionData);
@@ -1174,11 +1179,13 @@ export class FormFields {
                     (this.pdfViewer.nameTable as any)[key].value = annot.data;
                     (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
                     this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = JSON.stringify(csData) : null;
                 } else {
                     formFieldsData[i].FormField.value = annot.data;
                     this.pdfViewerBase.formFieldCollection[i].FormField.value = annot.data;
                     (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
                     (this.pdfViewer.nameTable as any)[key].value = annot.data;
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = annot.data : null;
                 }
                 this.pdfViewer.formDesigner.updateFormFieldCollections(formFieldsData[i].FormField);
                 this.pdfViewer.formDesigner.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldsData[i].FormField, true, false, false,

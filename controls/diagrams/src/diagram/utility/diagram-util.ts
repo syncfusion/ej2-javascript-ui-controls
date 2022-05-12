@@ -1227,6 +1227,8 @@ function preventDefaults(clonedObject: Object, model: object, defaultObject?: ob
             delete clonedObject[property];
         }
     }
+    defaultObject = undefined;
+    properties = undefined;
     return clonedObject;
 }
 
@@ -1285,6 +1287,7 @@ function preventArrayDefaults(clonedObject: object, defaultObject: object, model
             }
         }
     }
+    clonedObject = undefined;
 }
 /* eslint-disable */
 /**
@@ -1297,13 +1300,14 @@ function preventArrayDefaults(clonedObject: object, defaultObject: object, model
  */
 /* tslint:disable */
 function getConstructor(model: object, defaultObject: object): object {
-    const obj: object = []; let constructor: object;
-    const parent: object = new Diagram();
+    const obj: object = []; let constructor: object; 
     const getClassName: string = 'getClassName';
     if (model[getClassName]) {
+        //EJ2-59327 - Memory leak occurs in saveDiagram method 
+        const parent: object = new Diagram();
         switch (model[getClassName]()) {
             case 'Diagram':
-                constructor = new Diagram(); break;
+                constructor = parent; break;
             case 'Node':
                 constructor = new Node(parent, '', obj); break;
             case 'Path':
@@ -1395,7 +1399,9 @@ function getConstructor(model: object, defaultObject: object): object {
         }
     } else {
         constructor = defaultObject;
-    }
+    } 
+    parent = undefined;
+    defaultObject = undefined;
     return constructor;
 }
 /* eslint-enable */

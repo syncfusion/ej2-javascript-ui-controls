@@ -525,6 +525,16 @@ describe('Collaborative Editing ->', () => {
             });
         });
 
+        it('Conditional Format -> Clear rules from selected cells', (done: Function) => {
+            helper.getInstance().workbookConditionalFormattingModule.clearRules({ range: 'D5', isPublic: false });
+            setTimeout(() => {
+                expect(sheets2[0].conditionalFormats[0]).toBeUndefined();
+                expect(sheets2[1].conditionalFormats[0]).toBeUndefined();
+                expect(helper2.getInstance().activeSheetIndex).toBe(1);
+                done();
+            });
+        });
+
         it('Clear All', (done: Function) => {
             helper.click('#spreadsheet_clear');
             helper.click('#spreadsheet_clear-popup ul li:nth-child(1)');
@@ -584,6 +594,27 @@ describe('Collaborative Editing ->', () => {
             });
         });
 
+        it('Find & Replace with partial value', (done: Function) => {
+            helper.getInstance().replaceHandler({
+                value: 'Shoes',
+                mode: 'Sheet',
+                isCSen: false,
+                isEMatch: false,
+                searchBy: 'By Row',
+                findOpt: 'next',
+                replaceValue: 'Test',
+                replaceBy: 'replace',
+                sheetIndex: 0,
+                isAction: true
+            });
+            setTimeout(() => {
+                expect(getCell(7, 0, sheets2[0]).value).toBe('Running Test');
+                expect(getCell(7, 0, sheets2[1]).value).not.toBe('Running Test');
+                expect(helper2.getInstance().activeSheetIndex).toBe(1);
+                done();
+            });
+        });
+
         it('Find & ReplaceAll', (done: Function) => {
             helper.getInstance().replaceHandler({
                 value: '10',
@@ -605,7 +636,7 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(1, 3, sheets2[1]).value as any).toBe(10);
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 done();
-            }, 100);
+            }, 200);
         });
 
         it('Find & ReplaceAll - Undo & Redo', (done: Function) => {
@@ -1248,6 +1279,25 @@ describe('Collaborative Editing ->', () => {
             });
         });
 
+        it('Hide column & show column using autofit', (done: Function) => {
+            helper.invoke('selectRange', ['L1']);
+            helper.openAndClickCMenuItem(0, 11, [8], null, true);
+            const colHdr: HTMLElement = helper.invoke('getCell', [null, 12, helper.invoke('getColHeaderTable').rows[0]]);
+            const hdrPanel: HTMLElement = helper.getElementFromSpreadsheet('.e-header-panel') as HTMLElement;
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            setTimeout(() => {
+                expect(sheets2[0].columns[11].hidden).toBeFalsy();
+                expect(sheets2[0].columns[11].width).toBe(64);
+                expect(sheets2[1].columns[11]).toBeUndefined();
+                expect(helper2.getInstance().sheets[0].columns[11].hidden).toBeFalsy();
+                expect(helper2.getInstance().sheets[0].columns[11].width).toBe(64);
+                expect(helper2.getInstance().activeSheetIndex).toBe(1);
+                done();
+            });
+        });
+
         it('Hide row', (done: Function) => {
             helper.invoke('selectRange', ['A4']);
             helper.openAndClickCMenuItem(4, 0, [8], true);
@@ -1569,16 +1619,28 @@ describe('Collaborative Editing ->', () => {
             });
         });
 
+        it('Insert sheet over duplicated sheet', (done: Function) => {
+            helper.openAndClickCMenuItem(null, null, [1], null, null, null, true, document.querySelector('.e-sheet-tab .e-toolbar-item:nth-child(4)'));
+            setTimeout(() => {
+                sheets2 = helper2.getInstance().sheets;
+                expect(sheets2.length).toBe(5);
+                expect(sheets2[2].name).toBe('Sheet4');
+                expect(helper2.getInstance().activeSheetIndex).toBe(0);
+                expect(helper2.getElement('#spreadsheet2 .e-sheet-tab .e-active').textContent).toBe('Sheet1');
+                done();
+            });
+        });
+
         it('Delete sheet', (done: Function) => {
-            helper.openAndClickCMenuItem(null, null, [2], null, null, null, true, document.querySelector('.e-sheet-tab .e-toolbar-item:nth-child(4)'));
+            helper.openAndClickCMenuItem(null, null, [2], null, null, null, true, document.querySelector('.e-sheet-tab .e-toolbar-item:nth-child(5)'));
             helper.setAnimationToNone('.e-delete-sheet-dlg');
             helper.click('.e-delete-sheet-dlg .e-primary');
             setTimeout(() => {
-                expect(sheets2.length).toBe(3);
-                expect(sheets2[2].name).toBe('TestSheet');
+                expect(sheets2.length).toBe(4);
+                expect(sheets2[3].name).toBe('TestSheet');
                 expect(helper2.getInstance().activeSheetIndex).toBe(0);
                 expect(helper2.getElement('#spreadsheet2 .e-sheet-tab .e-active').textContent).toBe('Sheet1');
-                expect(helper2.getElement('#spreadsheet2 .e-sheet-tab .e-toolbar-item:nth-child(4)').textContent).toBe('TestSheet');
+                expect(helper2.getElement('#spreadsheet2 .e-sheet-tab .e-toolbar-item:nth-child(5)').textContent).toBe('TestSheet');
                 done();
             });
         });

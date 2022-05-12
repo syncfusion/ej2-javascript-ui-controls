@@ -101,7 +101,7 @@ export class CommandHandler {
     public isContainer: boolean = false;
     private state: TransactionState;
     /** @private */
-    private diagram: Diagram;
+    public diagram: Diagram;
 
     private childTable: {} = {};
 

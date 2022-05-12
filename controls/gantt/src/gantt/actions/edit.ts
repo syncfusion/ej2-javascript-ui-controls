@@ -389,6 +389,9 @@ export class Edit {
             if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
                 this.parent.isOnEdit = true;
                 this.validateUpdateValues(data, ganttData, true);
+                if (data[this.parent.taskFields.resourceInfo]) {
+                    this.updateResourceRelatedFields(ganttData,'resource');
+                }
                 const keys: string[] = Object.keys(data);
                 if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
                     keys.indexOf(tasks.duration) !== -1) {

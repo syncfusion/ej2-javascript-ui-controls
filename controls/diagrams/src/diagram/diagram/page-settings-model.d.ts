@@ -282,4 +282,10 @@ export interface ScrollSettingsModel {
      */
     padding?: MarginModel;
 
+    /**
+     * Specifies the percentage of scale value for each ZoomIn or ZoomOut functionality.
+     * @default 0.2
+     */
+    zoomFactor?: number;
+
 }

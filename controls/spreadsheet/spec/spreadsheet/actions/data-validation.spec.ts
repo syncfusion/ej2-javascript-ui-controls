@@ -267,7 +267,7 @@ describe('Data validation ->', () => {
                                     'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 },
                                     document, cell);
                                 setTimeout((): void => {
-                                    helper.getElement('.e-excelfilter .e-check:not(.e-selectall)').click();
+                                    helper.getElement().getElementsByClassName('e-ftrchk')[2].click();
                                     helper.getElement('.e-excelfilter .e-footer-content .e-btn.e-primary').click();
                                     const spreadsheet: Spreadsheet = helper.getInstance();
                                     expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');

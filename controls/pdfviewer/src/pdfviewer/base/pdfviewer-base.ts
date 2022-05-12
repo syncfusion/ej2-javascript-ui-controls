@@ -97,6 +97,7 @@ export class PdfViewerBase {
     /**
      * @private
      */
+   
     public isReRenderRequired: boolean = true;
     /**
      * @private
@@ -3464,7 +3465,8 @@ export class PdfViewerBase {
                 // this.pdfViewer.linkAnnotationModule.modifyZindexForHyperlink((event.target as HTMLElement), true);
                 // }
                 if (!isIE) {
-                    event.preventDefault();
+                    if ((event.target as HTMLElement).className != 'e-pdfviewer-formFields')
+                         event.preventDefault();
                     this.mouseX = event.clientX;
                     this.mouseY = event.clientY;
                     // eslint-disable-next-line
@@ -6327,7 +6329,6 @@ export class PdfViewerBase {
                                         data = JSON.parse(data);
                                     }
                                     if (data.image && data.uniqueId === proxy.documentId) {
-                                        data.image = "data:image/png;base64," + data.image;
                                         let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
                                         proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
                                         const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
@@ -7351,22 +7352,39 @@ export class PdfViewerBase {
                             if (!formFieldElement) {
                                 // eslint-disable-next-line max-len
                                 this.pdfViewer.formDesignerModule.drawHelper((obj as PdfFormFieldBaseModel).formFieldAnnotationType, obj, evt);
-                            } else if (formFieldElement) {
-                                // eslint-disable-next-line
-                                const point: any = this.getMousePosition(event as any);
-                                if (obj.formFieldAnnotationType === 'Checkbox') {
-                                    (formFieldElement.firstElementChild.firstElementChild.lastElementChild as HTMLElement).style.visibility = 'visible';
-                                } else if (obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
-                                    (formFieldElement.firstElementChild.firstElementChild as HTMLElement).style.visibility = 'visible';
-                                    (formFieldElement.firstElementChild.lastElementChild as HTMLElement).style.visibility = 'visible';
-                                } else {
-                                    (formFieldElement.firstElementChild.firstElementChild as HTMLElement).style.visibility = 'visible';
-                                }
-                                formFieldElement.setAttribute(
-                                    'style', 'height:' + bounds.height + 'px; width:' + bounds.width + 'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
-                                    'position:absolute;opacity: 0.5;'
-                                );
                             }
+                           
+                            else if (formFieldElement) {
+                                let previousActivePage =formFieldElement.parentElement.id.split("_text_")[1]  ||formFieldElement.parentElement.id.split("_textLayer_")[1] || formFieldElement.parentElement.id.split("_annotationCanvas_")[1] ||formFieldElement.parentElement.id.split("_pageDiv_")[1]
+                                      if(parseInt(previousActivePage)!==this.activeElements.activePageID){
+                                        formFieldElement.remove("FormField_helper_html_element");
+                                      }else{
+									    // eslint-disable-next-line
+                                        const point: any = this.getMousePosition(event as any);
+                                      
+                                        if (obj.formFieldAnnotationType === 'Checkbox') {
+                                            (formFieldElement.firstElementChild.firstElementChild.lastElementChild as HTMLElement).style.visibility = 'visible';
+                                        } else if (obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
+                                            (formFieldElement.firstElementChild.firstElementChild as HTMLElement).style.visibility = 'visible';
+                                            (formFieldElement.firstElementChild.lastElementChild as HTMLElement).style.visibility = 'visible';
+                                        } else {
+                                            (formFieldElement.firstElementChild.firstElementChild as HTMLElement).style.visibility = 'visible';
+                                        }
+                                        formFieldElement.setAttribute(
+                                            'style', 'height:' + bounds.height + 'px; width:' + bounds.width + 'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
+                                        'position:absolute;opacity: 0.5;'
+                                        );
+
+                                      }
+                                
+                              
+                               
+                               
+                            }
+                           
+                           
+
+                           
                         } else if (this.currentPosition.x > pageWidth || this.currentPosition.y > pageHeight) {
                             // eslint-disable-next-line
                             const formFieldElement: any = document.getElementById('FormField_helper_html_element');

@@ -181,8 +181,7 @@
       }
 
       &.e-value-sort-icon {
-        margin: 0px !important;
-        padding: 2px 4px !important;
+        padding: 1px 4px !important;
         @if ($pivotgrid-skin == 'bootstrap4') {
           padding-bottom: 3px !important;
           padding-top: 3px !important;
@@ -203,9 +202,11 @@
     }
 
     .e-rowsheader .e-sortfilterdiv {
-      @if ($skin-name == 'tailwind') or ($skin-name == 'bootstrap5') {
-        margin: -16px -5px !important;
-      }
+      margin: -10px 0 !important;
+    }
+
+    .e-rowsheader .e-sortfilterdiv.e-value-sort-align {
+      margin: $pivotgrid-vsort-row-margin !important;
     }
 
     .e-pivotchart > svg, .e-pivotchart-inner > svg {
@@ -269,7 +270,15 @@
       }
     }
 
-    .sf-grid.e-responsive {
+    &.sf-pivotview .e-spinner-pane.e-pivot-outer-spinner {
+      z-index: 1 !important;
+    }
+
+    &.sf-pivotview .e-spinner-pane.e-pivot-outer-spinner .e-spinner-inner {
+      visibility: hidden;
+    }
+
+    .e-grid.e-responsive {
       .e-stackedheadercelldiv .e-stackedheadertext,
       .e-headercelldiv .e-headertext {
         text-overflow: ellipsis;
@@ -297,8 +306,8 @@
     z-index: 1 !important;
     }
 
-    .sf-grid .e-headercelldiv,
-    .sf-grid .e-columnsheader {
+    .e-grid .e-headercelldiv,
+    .e-grid .e-columnsheader {
       padding-right: 8px !important;
     }
 
@@ -321,6 +330,7 @@
 
     .e-stackedheadertext.e-cellvalue,
     .e-stackedheadercelldiv.e-cellvalue {
+      display: inline-block;
       padding-left: 12px !important;
       margin-top: 5px;
 
@@ -947,7 +957,6 @@
     // sass-lint:disable-all
     th .e-expand,
     th .e-collapse {
-      float: left;
       font-size: $pivotgrid-expcoldiv-fontsize !important;
       margin-left: 0px;
       margin-top: $pivotgrid-drill-margintop;
@@ -964,12 +973,6 @@
       .e-expand::before,
       .e-collapse::before {
         margin-left: 0;
-      }
-
-      th .e-expand,
-      th .e-collapse {
-        float: right;
-        margin-right: -8px;
       }
 
       // sass-lint:disable-all
@@ -1400,8 +1403,6 @@
       .e-right-axis-fields {
         .e-axis-nav-div {
 
-          .e-left-nav-wrapper,
-          .e-right-nav-wrapper,
           .e-left-nav-container,
           .e-right-nav-container {
             width: 24px;
@@ -1464,21 +1465,6 @@
       @if ($pivotgrid-skin == 'bootstrap4') or ($skin-name == 'bootstrap5') {
         font-size: 12px !important;
       }
-      
-      &.e-value-sort-icon {
-        margin: 0px !important;
-
-        @if ($skin-name == 'tailwind') {
-          margin: -28px -5px !important;
-        }
-
-      }
-    }
-
-    .e-rowsheader .e-sortfilterdiv {
-      @if ($skin-name == 'tailwind') {
-        margin: -15px 0px !important;
-      }
     }
 
     .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
@@ -1488,7 +1474,6 @@
 
     // sass-lint:enable-all
 
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container,
     .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container {
       height: $pivotgrid-member-filter-list-bigger-height;
     }

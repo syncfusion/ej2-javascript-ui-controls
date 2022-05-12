@@ -282,24 +282,24 @@ describe('- Members limit in editor', () => {
             }, 1000);
         });
         it('check all nodes on filter popup', () => {
-            let allNode: HTMLElement = document.querySelector('.e-member-editor-wrapper .e-checkbox-wrapper');
+            let allNode: HTMLElement = document.querySelector('.e-member-editor-container .e-checkbox-wrapper');
             let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             allNode.querySelector('.e-frame').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             allNode.querySelector('.e-frame').dispatchEvent(args);
             args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             allNode.querySelector('.e-frame').dispatchEvent(args);
-            let checkedEle: Element[] = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-wrapper .e-check');
+            let checkedEle: Element[] = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-container .e-check');
             expect(checkedEle.length).toEqual(0);
             expect(document.querySelector('.e-ok-btn').getAttribute('disabled')).toBe('disabled');
-            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
             args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             firstNode.querySelector('.e-frame').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             firstNode.querySelector('.e-frame').dispatchEvent(args);
             args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             firstNode.querySelector('.e-frame').dispatchEvent(args);
-            checkedEle = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-wrapper .e-check');
+            checkedEle = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-member-editor-container .e-check');
             expect(checkedEle.length).toEqual(1);
             expect(document.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
             (document.querySelector('.e-ok-btn') as HTMLElement).click();
@@ -342,7 +342,7 @@ describe('- Members limit in editor', () => {
         });
         it('check 11', () => {
             let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[1] as HTMLElement;
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[1] as HTMLElement;
             args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             firstNode.querySelector('.e-frame').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -368,7 +368,7 @@ describe('- Members limit in editor', () => {
         });
         it('check all search 0', () => {
             let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[0] as HTMLElement;
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[0] as HTMLElement;
             args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             firstNode.querySelector('.e-frame').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -387,7 +387,7 @@ describe('- Members limit in editor', () => {
         });
         it('check all btn click', () => {
             let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-wrapper .e-checkbox-wrapper')[0] as HTMLElement;
+            let firstNode: HTMLElement = document.querySelectorAll('.e-member-editor-container .e-checkbox-wrapper')[0] as HTMLElement;
             args = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             firstNode.querySelector('.e-frame').dispatchEvent(args);
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });

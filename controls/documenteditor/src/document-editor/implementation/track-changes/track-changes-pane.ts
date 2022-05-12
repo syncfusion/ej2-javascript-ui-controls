@@ -96,6 +96,7 @@ export class TrackChangesPane {
         this.selectedType = this.locale.getConstant('All');
         this.initTrackChangePane();
         this.commentReviewPane.reviewTab.items[1].content = this.trackChangeDiv;
+        this.commentReviewPane.reviewTab.refresh();
     }
 
     private initTrackChangePane(): void {

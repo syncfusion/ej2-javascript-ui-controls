@@ -9,7 +9,7 @@ import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign } from '@
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { SeriesModel, ExportType, Axis, FontModel, Alignment } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
-import { SummaryTypes } from '../../base/types';
+import { SummaryTypes, Sorting } from '../../base/types';
 import { DisplayOption, PivotView } from '../../pivotview/base/pivotview';
 import { OlapEngine } from '../../base/olap/engine';
 import { GridSettings } from '../../pivotview/model/gridsettings';
@@ -456,7 +456,7 @@ export interface ColumnRenderEventArgs {
     /**
      * Defines the grid column information that used to display the column headers (stacked headers) based on its level in the Pivot Table.
      */
-      stackedColumns?: ColumnModel[];
+    stackedColumns?: ColumnModel[];
 }
 
 /**
@@ -1289,3 +1289,19 @@ export interface PivotToolbarInfo {
     /** Defines the pivot chart settings such as chart series, chart area, axis labels, legends, border, crosshairs, theme, title, tooltip, zooming, etc. */
     chartSettings?: ChartSettings;
 }
+
+/** 
+ * Defines the cusrrent sorting information such as field name, sort order and members which is to be sorted.
+ */
+export interface HeadersSortEventArgs {
+    /** Defines the name of the field to be sorted. */
+    fieldName?: string;
+    /** Defines the hierarchy. `Note`: It is applicable only for OLAP data. */
+    levelName?: string;
+    /** Defines the sort order for the members to be sorted. */
+    sortOrder?: Sorting;
+    /** Defines the members to be sorted. */
+    members?: string[] | number[];
+    /** Defines an option to restrict the unwanted custom sorting operation. By default, the value is in 'false' state. */
+    IsOrderChanged?: boolean;
+} 

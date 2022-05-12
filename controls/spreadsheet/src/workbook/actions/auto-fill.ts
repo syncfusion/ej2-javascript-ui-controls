@@ -1,7 +1,7 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
-import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getRow, getSheet } from '../base/index';
+import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getSheet, isFilterHidden } from '../base/index';
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress } from './../common/index';
-import { checkIsFormula, getColumnHeaderText, ExtendedRowModel, isNumber } from './../common/index';
+import { checkIsFormula, getColumnHeaderText, isNumber } from './../common/index';
 import { updateCell, intToDate, dateToInt } from './../common/index';
 
 /**
@@ -786,7 +786,7 @@ export class WorkbookAutoFill {
         const range: number[] = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
         i = range[0]; const j: number = range[2];
         while (i <= j) {
-            if (((getRow(sheet, i) || {}) as ExtendedRowModel).isFiltered) { i++; continue; }
+            if (isFilterHidden(sheet, i)) { i++; continue; }
             k = range[1];
             l = range[3];
             while (k <= l) {

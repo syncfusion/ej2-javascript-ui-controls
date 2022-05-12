@@ -515,6 +515,9 @@ export class VerticalEvent extends EventBase {
         const currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
         const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         const isValidEvent: boolean = this.isValidEvent(eventObj, eStart, eEnd, schedule);
+        if ((eStart.getTime() < this.parent.minDate.getTime()) || (eEnd.getTime() > this.parent.maxDate.getTime())) {
+            return;
+        }
         if (eStart <= eEnd && isValidEvent) {
             const appHeight: number = this.getHeight(eStart, eEnd);
             if (eStart.getTime() > schedule.startHour.getTime()) {

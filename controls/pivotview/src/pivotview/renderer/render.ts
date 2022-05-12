@@ -944,18 +944,13 @@ export class Render {
                         'e-descending' : 'e-ascending');
                     tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
                         'e-icon-descending' : 'e-icon-ascending');
+                    tCell.querySelector('.e-sortfilterdiv').classList.add('e-value-sort-icon');
                 } else {
                     tCell.appendChild(createElement('div', {
                         className: (vSort.sortOrder === 'Descending' ?
-                            'e-icon-descending e-icons e-descending e-sortfilterdiv' :
-                            'e-icon-ascending e-icons e-ascending e-sortfilterdiv')
+                            'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
+                            'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon')
                     }));
-                }
-                if (!isNullOrUndefined(cell.hasChild) && cell.type !== 'grand sum' && tCell.querySelector('.e-expand') &&
-                    (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending'))) {
-                    let element: HTMLElement =
-                        (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending')) as HTMLElement;
-                    setStyleAttribute(element, { 'padding-top': '12px' });
                 }
             }
             // return tCell;
@@ -1160,13 +1155,11 @@ export class Render {
                         (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
                         if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
                             === vSort.headerText) {
-                            let style: string = (tCell.querySelector('.e-expand') || tCell.querySelector('.e-collapse')) ?
-                                'padding-top: 18px' : 'padding-top: 12px';
                             tCell.appendChild(createElement('div', {
                                 className: (vSort.sortOrder === 'Descending' ?
-                                    'e-icon-descending e-icons e-descending e-sortfilterdiv' :
-                                    'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
-                                styles: style
+                                    'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
+                                    'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
+                                styles: tCell.style.textAlign === 'right' ? 'float: left' : ''
                             }));
                         }
                     }
@@ -1432,13 +1425,24 @@ export class Render {
                                 this.parent.localeObj.getConstant('expand')
                         }
                     });
-                    tCell.children[0].classList.add(cls.CELLVALUE);
                     if (window.navigator.userAgent.indexOf('Edge') > -1 || window.navigator.userAgent.indexOf('Trident') > -1) {
                         (tCell.children[0] as HTMLElement).style.display = 'table';
                     } else {
                         (tCell.children[0] as HTMLElement).style.display = 'block';
                     }
-                    tCell.insertBefore(div, tCell.children[0]);
+                    if (tCell.children[0].classList.contains('e-stackedheadercelldiv')) {
+                        let span: HTMLElement = createElement('span', {
+                            className: 'e-stackedheadertext' + ' ' + cls.CELLVALUE,
+                            innerHTML: tCell.children[0].innerHTML
+                        });
+                        tCell.children[0].innerHTML = '';
+                        tCell.children[0].append(div);
+                        tCell.children[0].append(span);
+                    } else {
+                        this.updateWrapper(tCell, div);
+                    }
+                } else {
+                    this.updateWrapper(tCell);
                 }
                 tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex);
                 if (this.parent.cellTemplate) {
@@ -1472,6 +1476,22 @@ export class Render {
             }
         }
         this.parent.trigger(events.headerCellInfo, args);
+    }
+    private updateWrapper(tCell: HTMLElement, div?: HTMLElement): HTMLElement {
+        if (tCell.children[0].classList.contains('e-headercelldiv')) {
+            let outerDiv: HTMLElement = createElement('div');
+            let innerDiv: HTMLElement = createElement('div', {
+                className: (div ? 'e-stackedheadertext' : 'e-headertext') + ' ' + cls.CELLVALUE,
+                innerHTML: tCell.children[0].children[0].innerHTML
+            });
+            if (div) {
+                outerDiv.append(div);
+            }
+            outerDiv.append(innerDiv);
+            tCell.children[0].innerHTML = '';
+            tCell.children[0].append(outerDiv);
+        }
+        return tCell;
     }
     private onOlapColumnCellBoundEvent(tCell: HTMLElement, cell: IAxisSet): HTMLElement {
         tCell.setAttribute('fieldname', cell.memberType === 3 ? cell.actualText.toString() : cell.hierarchy);

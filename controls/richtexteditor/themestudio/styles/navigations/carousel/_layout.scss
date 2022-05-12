@@ -15,7 +15,7 @@
       position: relative;
       width: 100%;
 
-      .e-carousel-item {
+      &:not(.e-carousel-custom-animation) .e-carousel-item {
         backface-visibility: hidden;
         display: none;
         float: left;
@@ -61,6 +61,24 @@
           &.e-active {
             opacity: 1;
             z-index: 1;
+          }
+        }
+      }
+
+      &.e-carousel-custom-animation {
+        .e-carousel-item {
+          display: block;
+          height: 100%;
+          left: 0;
+          opacity: 0;
+          pointer-events: none;
+          position: absolute;
+          top: 0;
+          width: 100%;
+
+          &.e-active {
+            opacity: 1;
+            pointer-events: visible;
           }
         }
       }

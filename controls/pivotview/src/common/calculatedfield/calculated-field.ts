@@ -1096,8 +1096,8 @@ export class CalculatedField implements IAction {
         let parentElement: HTMLElement;
         if (this.parent.getModuleName() === 'pivotview' && this.parent.element) {
             parentElement = this.parent.element;
-        } else if (document.getElementById(this.parent.element.id + '_Wrapper')) {
-            parentElement = document.getElementById(this.parent.element.id + '_Wrapper');
+        } else if (document.getElementById(this.parent.element.id + '_Container')) {
+            parentElement = document.getElementById(this.parent.element.id + '_Container');
         }
         if (parentElement) {
             let pivotButtons: HTMLElement[] = [].slice.call(parentElement.querySelectorAll('.e-pivot-button'));
@@ -1152,7 +1152,7 @@ export class CalculatedField implements IAction {
             }) as HTMLInputElement;
             inputDiv.appendChild(inputObj);
             (this.parent.dataType === 'olap' && !this.parent.isAdaptive ? olapCalcDiv.appendChild(inputDiv) : outerDiv.appendChild(inputDiv));
-            let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_wrapper', className: cls.TREEVIEWOUTER });
+            let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_container', className: cls.TREEVIEWOUTER });
             if (!this.parent.isAdaptive) {
                 let fieldTitle: HTMLElement = createElement('div', {
                     className: cls.PIVOT_ALL_FIELD_TITLE_CLASS,
@@ -1160,7 +1160,7 @@ export class CalculatedField implements IAction {
                         this.parent.localeObj.getConstant('formulaField'))
                 });
                 if (this.parent.dataType === 'olap') {
-                    let headerWrapperDiv: HTMLElement = createElement('div', { className: cls.PIVOT_ALL_FIELD_TITLE_CLASS + '-wrapper' });
+                    let headerWrapperDiv: HTMLElement = createElement('div', { className: cls.PIVOT_ALL_FIELD_TITLE_CLASS + '-container' });
                     headerWrapperDiv.appendChild(fieldTitle);
                     let spanElement: HTMLElement = createElement('span', {
                         attrs: {
@@ -1678,7 +1678,7 @@ export class CalculatedField implements IAction {
      * @returns HTMLElement
      */
     private createTypeContainer(key: string): HTMLElement {
-        let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_wrapper', className: cls.TREEVIEWOUTER });
+        let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_container', className: cls.TREEVIEWOUTER });
         let type: AggregateTypes[] = this.getMenuItems(this.parent.engineModule.fieldList[key].type);
         for (let i: number = 0; i < type.length; i++) {
             let input: HTMLInputElement = createElement('input', {

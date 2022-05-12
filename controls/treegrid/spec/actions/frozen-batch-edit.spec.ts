@@ -479,63 +479,63 @@ describe('Frozen Columns With Editing', () => {
     });
   });
 
-  describe('Hierarchy Frozen - Child update count checking', () => {
-    let gridObj: TreeGrid;
-    let actionComplete: () => void;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          allowPaging: true,
-          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Below" },
-          allowSorting: true,
-          allowFiltering: true,
-          treeColumnIndex: 1,
-          frozenColumns: 3,
-          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
-          columns: [
-            {
-                field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
-                validationRules: { required: true, number: true}, width: 90
-            },
-            { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
-            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
-              format: 'yMd' },
-            { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right',
-              type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
-            { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 210 },
-            { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 210 },
-            { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 230 },
-            { field: 'approved', headerText: 'Approved', width: 230, textAlign: 'Left' }
-          ]
-        },
-        done
-      );
-    });
-    it('Add - Batch Editing', (done: Function) => {
-      actionComplete = (args?: Object): void => {
-        if (args['requestType'] == "batchSave" ) {
-          expect(gridObj.dataSource[1].taskID === 42).toBe(true);
-        }
-         done();
-      }
-      let addedRecords = 'addedRecords';
-      gridObj.grid.actionComplete = actionComplete;
-      gridObj.selectRow(1);
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });      
-      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
-      gridObj.selectRow(0);
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });      
-      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 42;
-      expect(gridObj.getBatchChanges()[addedRecords].length === 2).toBe(true);
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
-    });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
+//   describe('Hierarchy Frozen - Child update count checking', () => {
+//     let gridObj: TreeGrid;
+//     let actionComplete: () => void;
+//     beforeAll((done: Function) => {
+//       gridObj = createGrid(
+//         {
+//           dataSource: sampleData,
+//           childMapping: 'subtasks',
+//           allowPaging: true,
+//           editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Below" },
+//           allowSorting: true,
+//           allowFiltering: true,
+//           treeColumnIndex: 1,
+//           frozenColumns: 3,
+//           toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+//           columns: [
+//             {
+//                 field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+//                 validationRules: { required: true, number: true}, width: 90
+//             },
+//             { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
+//             { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+//               format: 'yMd' },
+//             { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right',
+//               type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+//             { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 210 },
+//             { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 210 },
+//             { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 230 },
+//             { field: 'approved', headerText: 'Approved', width: 230, textAlign: 'Left' }
+//           ]
+//         },
+//         done
+//       );
+//     });
+//     it('Add - Batch Editing', (done: Function) => {
+//       actionComplete = (args?: Object): void => {
+//         if (args['requestType'] == "batchSave" ) {
+//           expect(gridObj.dataSource[1].taskID === 42).toBe(true);
+//         }
+//          done();
+//       }
+//       let addedRecords = 'addedRecords';
+//       gridObj.grid.actionComplete = actionComplete;
+//       gridObj.selectRow(1);
+//       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });      
+//       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
+//       gridObj.selectRow(0);
+//       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });      
+//       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 42;
+//       expect(gridObj.getBatchChanges()[addedRecords].length === 2).toBe(true);
+//       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+//       select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+//     });
+//     afterAll(() => {
+//       destroy(gridObj);
+//     });
+//   });
 
   describe('Hierarchy Frozen - gotopage delete and add', () => {
     let gridObj: TreeGrid;

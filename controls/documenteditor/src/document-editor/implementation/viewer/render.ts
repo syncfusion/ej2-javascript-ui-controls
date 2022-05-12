@@ -108,11 +108,11 @@ export class Renderer {
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             this.render(page, page.bodyWidgets[i]);
             if (page.footnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
-                this.renderfootNoteWidget(page, page.footnoteWidget);
+                this.renderfootNoteWidget(page, page.footnoteWidget, width);
             }
         }
         if (page.endnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
-            this.renderfootNoteWidget(page, page.endnoteWidget);
+            this.renderfootNoteWidget(page, page.endnoteWidget, width);
         }
         if (this.documentHelper.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidgetIn);
@@ -227,6 +227,15 @@ export class Renderer {
             ctx.restore();
         }
     }
+
+    private getFooterHeight(page: Page): number {
+        const footerWidgetHeight: number = ((page.boundingRectangle.height) / 100) * 40;
+        const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
+        let actualHeight: number = page.boundingRectangle.height -
+            Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+        return Math.max((page.boundingRectangle.height) - footerWidgetHeight, actualHeight);
+    }
+
     private getHeaderFooterType(page: Page, isHeader: boolean): string {
         let type: string;
         let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
@@ -459,9 +468,19 @@ export class Renderer {
             top += widget.height;
         }
     }
-    private renderfootNoteWidget(page: Page, footnote: FootNoteWidget): void {
+
+    private renderfootNoteWidget(page: Page, footnote: FootNoteWidget, width: number): void {
         let isEmptyPage: boolean = footnote.page.bodyWidgets.length === 1 && ((footnote.page.bodyWidgets[0].childWidgets.length === 1
             && (footnote.page.bodyWidgets[0].childWidgets[0] as ParagraphWidget).isEmpty()) || footnote.page.bodyWidgets[0].childWidgets.length === 0);
+        let footerY: number = this.getFooterHeight(page);
+        let height: number = footnote.y + footnote.height;
+        if (height > footerY) {
+            height = (footerY - footnote.y);
+        }
+        this.pageContext.beginPath();
+        this.pageContext.save();
+        this.pageContext.rect(this.pageLeft, this.getScaledValue(footnote.y, 2), this.getScaledValue(width), this.getScaledValue(height));
+        this.pageContext.clip();
         for (let i: number = 0; i < footnote.bodyWidgets.length; i++) {
             let bodyWidget: BodyWidget = footnote.bodyWidgets[i];
             let footNoteReference: FootnoteElementBox = bodyWidget.footNoteReference;
@@ -479,6 +498,7 @@ export class Renderer {
                 this.renderWidget(page, widget);
             }
         }
+        this.pageContext.restore();
     }
     private renderTableWidget(page: Page, tableWidget: TableWidget): void {
         if (this.isFieldCode) {
@@ -953,9 +973,10 @@ export class Renderer {
 
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
 
-        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
-            && (!this.documentHelper.selection.isSelectionInsideElement(elementBox) || this.documentHelper.triggerElementsOnLoading || this.documentHelper.owner.editor.triggerPageSpellCheck))) {
-            elementBox.canTrigger = true;
+        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || !elementBox.canTrigger || elementBox.isSpellChecked) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
+            && (!this.documentHelper.selection.isSelectionInsideElement(elementBox)))) {
+                if(!elementBox.canTrigger)
+                elementBox.canTrigger = true;
             this.leftPosition = this.pageLeft;
             this.topPosition = this.pageTop;
             let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
@@ -968,7 +989,7 @@ export class Renderer {
                         this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
-            } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
+            } else if (elementBox.ischangeDetected || elementBox.line.paragraph.isChangeDetected) {
                 elementBox.ischangeDetected = false;
                 this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
             }
@@ -1050,7 +1071,7 @@ export class Renderer {
                                 let hasSpellingError: boolean = this.spellChecker.isErrorWord(retrievedText) ? true : false;
                                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                                 this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
-                            } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                            } else {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
                                 this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1081,7 +1102,7 @@ export class Renderer {
                     let hasSpellingError: boolean = this.spellChecker.isErrorWord(currentText) ? true : false;
                     let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                     this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                } else {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */

@@ -1508,6 +1508,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private previousNodeCollection: NodeModel[] = [];
     private previousConnectorCollection: ConnectorModel[] = [];
     private crudDeleteNodes: Object[] = [];
+    private previousSelectedObjects: (NodeModel | ConnectorModel)[] = []; 
 
     // Group update to server when BlazorAction is isGroupAction;
     private blazorAddorRemoveCollection: (NodeModel | ConnectorModel)[] = [];
@@ -2610,7 +2611,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {boolean} multipleSelection -Defines whether the existing selection has to be cleared or not
      *
      */
-    public select(objects: (NodeModel | ConnectorModel)[], multipleSelection?: boolean): void {
+    public select(objects: (NodeModel | ConnectorModel)[], multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel)[]): void {
         if (isBlazor()) {
             for (let i: number = 0; i < objects.length; i++) {
                 objects[i] = this.nameTable[(objects[i] as NodeModel).id];
@@ -2618,7 +2619,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             objects = this.nameTable[(objects as NodeModel).id] || objects;
         }
         if (objects != null) {
-            this.commandHandler.selectObjects(objects, multipleSelection);
+            this.commandHandler.selectObjects(objects, multipleSelection, oldValue);
         }
     }
 
@@ -7912,6 +7913,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if (renderNode instanceof Connector && renderNode.type === 'Bezier') {
                         getCenterPoint = this.getMidPoint(renderNode);
+                        // (EJ2-58802) - Added the below code to add the transform x and y values to center point value in canvas mode
+                        if (this.mode === 'Canvas' && transform) {
+                            (getCenterPoint as any).cx += transformValue.tx;
+                            (getCenterPoint as any).cy += transformValue.ty;
+                        }
                     } else {
                         getCenterPoint = null;
                     }
@@ -10868,7 +10874,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.droppable = new Droppable(this.element);
         // this.droppable.accept = '.e-dragclone';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.droppable.over = (args: any) => {
+        this.droppable.over = (args: any) => { 
+            //EJ2-59341- SelectionChange OldValue argument is null
+            if (this.previousSelectedObjects.length === 0 && !this.currentSymbol) {
+                this.previousSelectedObjects = this.commandHandler.getSelectedObject(); 
+            }
             if (!this.currentSymbol) {
                 let dragDataHelper = null;
                 if (!args.dragData && args.name === 'drag') {
@@ -11206,7 +11216,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             value = this.add(clonedObject, true);
                         }
                         if ((clonedObject || value) && canSingleSelect(this)) {
-                            this.select([this.nameTable[clonedObject[id]]]);
+                            this.select([this.nameTable[clonedObject[id]]], false, this.previousSelectedObjects);
                         }
                     }
                 } else {
@@ -11257,6 +11267,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             this.allowServerDataBinding = true;
+            this.previousSelectedObjects = [];
         };
 
         this.droppable.out = (args: Object) => {

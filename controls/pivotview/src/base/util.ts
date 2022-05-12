@@ -7,6 +7,7 @@ import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { SummaryTypes } from './types';
 import { IOlapField } from './olap/engine';
+import { HeadersSortEventArgs } from '../common/base/interface';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -307,7 +308,8 @@ export class PivotUtil {
             for (let set of collection) {
                 clonedCollection.push(this.getDefinedObj({
                     name: set.name,
-                    order: set.order
+                    order: set.order,
+                    membersOrder: set.membersOrder ? [...set.membersOrder] : set.membersOrder
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
                 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -801,5 +803,85 @@ export class PivotUtil {
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
         /* eslint-enable */
+    }
+
+    /** @hidden */
+    public static applyCustomSort(sortDetails: HeadersSortEventArgs, sortMembersOrder: IAxisSet[], type: string | boolean, hasMembersOrder?: boolean, isOlap?: boolean): IAxisSet[] {
+        let grandTotal: IAxisSet;
+        let order: string[] | number[] = [];
+        if (sortDetails.IsOrderChanged) {
+            order = sortDetails.members;
+        }
+        else {
+            order = (sortDetails.sortOrder === 'Ascending' || sortDetails.sortOrder === 'None' || sortDetails.sortOrder === undefined) ? [].concat(sortDetails.members) : [].concat(sortDetails.members).reverse();
+        }
+        let updatedMembers: string[] | number[] = [];
+        let isNormalType: boolean = type === undefined || type === 'string' || type === 'number';
+        if (sortMembersOrder[0].actualText === 'Grand Total') {
+            grandTotal = sortMembersOrder[0];
+            sortMembersOrder.shift();
+        }
+        for (let i: number = 0, j: number = 0; i < sortMembersOrder.length; i++) {
+            let member: IAxisSet = sortMembersOrder[i];
+            let sortText: string | number = isOlap ? member.formattedText : isNormalType ? member.actualText :
+                type === true ? member.actualText.toString() : member.dateText;
+            if (order[j] === sortText) {
+                sortMembersOrder.splice(j++, 0, member);
+                sortMembersOrder.splice(++i, 1);
+                if (j < order.length) {
+                    i = -1;
+                }
+                else {
+                    if (!hasMembersOrder) {
+                        updatedMembers.splice(--j, 0, sortText as string);
+                    }
+                    break;
+                }
+            }
+            if (i >= 0 && !hasMembersOrder) {
+                updatedMembers[i] = sortText;
+            }
+        }
+        if (!hasMembersOrder) {
+            for (let i: number = updatedMembers.length; i < sortMembersOrder.length; i++) {
+                let member: IAxisSet = sortMembersOrder[i];
+                let sortText: string | number = isOlap ? member.formattedText : isNormalType ? member.actualText : type === true ? member.actualText.toString() : member.dateText;
+                updatedMembers[i] = sortText;
+            }
+            if (updatedMembers[updatedMembers.length - 1] === 'Grand Total') {
+                updatedMembers.pop();
+            }
+            sortDetails.members = updatedMembers;
+        }
+        if (grandTotal) {
+            sortMembersOrder.splice(0, 0, grandTotal);
+        }
+        return sortMembersOrder;
+    }
+
+    /** @hidden */
+    public static applyHeadersSort(sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean): IAxisSet[] {
+        if (type === 'datetime' || type === 'date' || type === 'time') {
+            sortOrder === 'Ascending' ?
+                (sortMembersOrder.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
+                sortOrder === 'Descending' ?
+                    (sortMembersOrder.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0))) :
+                    sortMembersOrder;
+        }
+        else if (type === true) {
+            sortOrder === 'Ascending' ?
+                (sortMembersOrder.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                sortOrder === 'Descending' ?
+                    (sortMembersOrder.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                    sortMembersOrder;
+        }
+        else {
+            sortOrder === 'Ascending' ?
+                (sortMembersOrder.sort(function (a, b) { return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0)); })) :
+                sortOrder === 'Descending' ?
+                    (sortMembersOrder.sort(function (a, b) { return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)); })) :
+                    sortMembersOrder;
+        }
+        return sortMembersOrder;
     }
 }

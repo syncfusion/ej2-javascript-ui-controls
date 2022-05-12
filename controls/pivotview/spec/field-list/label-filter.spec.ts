@@ -138,7 +138,7 @@ describe('Label Filter', () => {
         it('check label filter options', (done: Function) => {
             let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
             expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
-            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_wrapper') as HTMLElement, DropDownList);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_container') as HTMLElement, DropDownList);
             expect(dropdownlist).toBeTruthy;
             dropdownlist.value = "Between";
             let input1: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_input_option_1') as HTMLElement, MaskedTextBox);
@@ -159,7 +159,7 @@ describe('Label Filter', () => {
         it('check update filter using ok', (done: Function) => {
             let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
             expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
-            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_wrapper') as HTMLElement, DropDownList);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_container') as HTMLElement, DropDownList);
             dropdownlist.value = 'Contains';
             setTimeout(() => {
                 (dialogElement.querySelector('.e-ok-btn') as HTMLElement).click();
@@ -356,7 +356,7 @@ describe('Label Filter', () => {
         it('check label filter options', (done: Function) => {
             let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
             expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
-            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_wrapper') as HTMLElement, DropDownList);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_container') as HTMLElement, DropDownList);
             expect(dropdownlist).toBeTruthy;
             dropdownlist.value = "Between";
             let input1: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_input_option_1') as HTMLElement, MaskedTextBox);
@@ -377,7 +377,7 @@ describe('Label Filter', () => {
         it('check update filter using ok', (done: Function) => {
             let dialogElement: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
             expect(dialogElement.classList.contains('e-popup-open')).toBe(true);
-            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_wrapper') as HTMLElement, DropDownList);
+            let dropdownlist: any = getInstance(dialogElement.querySelector('#' + fieldListObj.element.id + '_label_contition_option_container') as HTMLElement, DropDownList);
             dropdownlist.value = 'Contains';
             setTimeout(() => {
                 (dialogElement.querySelector('.e-ok-btn') as HTMLElement).click();

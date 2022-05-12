@@ -338,7 +338,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         let wrapper: Element = this.element.parentElement;
         if (!wrapper.classList.contains(WRAPPER)) {
             wrapper = this.createElement('div', {
-                className: WRAPPER, attrs: { 'role': 'checkbox', 'aria-checked': 'false' }
+                className: WRAPPER, attrs: { 'aria-checked': 'false' }
             });
             this.element.parentNode.insertBefore(wrapper, this.element);
         }
