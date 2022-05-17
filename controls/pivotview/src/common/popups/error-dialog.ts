@@ -57,6 +57,7 @@ export class ErrorDialog {
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 }
             ],
+            cssClass: this.parent.cssClass,
             closeOnEscape: true,
             target: document.body,
             close: this.removeErrorDialog.bind(this)

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.56 (2022-05-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I377121` - Now, adding the `cssClass` property will also add the CSS class to all the dependent components of the Rich Text Editor.
+
 ## 20.1.55 (2022-05-12)
 
 ### RichTextEditor

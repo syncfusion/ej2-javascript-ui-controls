@@ -524,6 +524,48 @@ describe('TreeGrid Pager module', () => {
           destroy(gridObj);
         });
       });
+
+	describe('While Selecting ALL, displays only 3 records', () => {
+		let gridObj: TreeGrid;
+		let rows: HTMLTableRowElement[];
+		let dataBound: () => void;
+		beforeAll((done: Function) => {
+			gridObj = createGrid(
+				{
+					dataSource: sampleData,
+					allowPaging: true,
+					childMapping: 'subtasks',
+					height: 350,
+					treeColumnIndex: 1,
+					columns: [
+						{ field: 'taskID', headerText: 'Task ID', width: 70, textAlign: 'Right' },
+						{ field: 'taskName', headerText: 'Task Name', width: 200, textAlign: 'Left' },
+						{ field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+						{ field: 'endDate', headerText: 'End Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+						{ field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+						{ field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+						{ field: 'priority', headerText: 'Priority', width: 90 }
+					],
+					pageSettings: { pageSize: 5, pageSizes: true }
+				},
+				done
+			);
+		});
+		it('Checking the totalRecordCount', (done: Function) => {
+			if (gridObj.pageSettings.pageSizes) {
+				gridObj.collapseAll();
+				gridObj.grid.pagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value = gridObj.grid.pagerModule.pagerObj.getLocalizedLabel('All');
+				gridObj.expandAll();
+				done();
+			}
+			expect(gridObj.grid.pagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value === 36).toBe(true);
+		});
+		afterAll(() => {
+			destroy(gridObj);
+		});
+	});
+
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

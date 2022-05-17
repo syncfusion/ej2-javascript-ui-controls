@@ -100,6 +100,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enabled?: boolean
     readonly?: boolean
     placeholder?: string
+    cssClass?: string
     valueContainer?: HTMLTextAreaElement
     editorMode?: EditorMode
     enableHtmlEncode?: boolean
@@ -223,6 +224,14 @@ export interface NotifyArgs {
     insertElement?: Element
     touchData?: ITouchData
     allowedStylePropertiesArray?: string[]
+}
+
+/**
+ * Provides information about the current and previous cssClass property .
+ */
+export interface ICssClassArgs {
+    cssClass?: string
+    oldCssClass?: string
 }
 
 /**
@@ -480,6 +489,7 @@ export interface IToolbarOptions {
     rteToolbarObj: BaseToolbar
     enablePersistence: boolean
     overflowMode?: OverflowMode
+    cssClass?: string
 }
 
 /**
@@ -500,6 +510,7 @@ export interface IToolbarRenderOptions {
     items?: (string | IToolbarItems)[]
     mode?: OverflowMode
     container?: string
+    cssClass?: string
 }
 
 /**
@@ -681,7 +692,8 @@ export interface IQuickToolbarOptions {
     popupType: string
     mode: OverflowMode
     renderType: RenderType
-    toolbarItems: (string | IToolbarItems)[]
+    toolbarItems: (string | IToolbarItems)[],
+    cssClass: string
 }
 
 /**

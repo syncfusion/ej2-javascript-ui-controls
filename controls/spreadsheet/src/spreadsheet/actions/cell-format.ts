@@ -6,6 +6,7 @@ import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clear
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
 import { setRowHeight, CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded } from '../../workbook/index';
 import { removeClass } from '@syncfusion/ej2-base';
+import { deleteChart, deleteImage } from '../common/index';
 /**
  * CellFormat module allows to format the cell styles.
  */
@@ -293,55 +294,77 @@ export class CellFormat {
         const eRIdx: number = rangeIdx[2];
         let sCIdx: number;
         let eCIdx: number;
+        const overlayElements: HTMLCollection = this.parent.element.getElementsByClassName('e-ss-overlay-active');
+        const isOverlay: boolean = overlayElements.length > 0;
         let eventArgs: object = { range: range, type: options.type, requestType: 'clear', sheetIndex: sheetIndex };
         if (!args.isPublic) {
             this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
         }
         if (options.type === 'Clear Formats' || options.type === 'Clear All') {
-            this.parent.notify(clearCFRule, { range: range, isPublic: false, isclearFormat: true });
+            if (!isOverlay) {
+                this.parent.notify(clearCFRule, { range: range, isPublic: false, isclearFormat: true });
+            }
             if (options.type === "Clear All") {
-                this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
-                if(sRIdx === 0 && rangeIdx[1] === 0 && eRIdx >= sheet.usedRange.rowIndex  && rangeIdx[3] >= sheet.usedRange.colIndex) {
-                    this.parent.setUsedRange(sRIdx, rangeIdx[1], sheet, false, true);
+                if (isOverlay) {
+                    if (overlayElements[0].classList.contains('e-datavisualization-chart')) {
+                        this.parent.notify(deleteChart, {
+                            id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                        });
+                    } else {
+                        this.parent.notify(deleteImage, {
+                            id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                        });
+                    }
+                } else {
+                    this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
+                    if (sRIdx === 0 && rangeIdx[1] === 0 && eRIdx >= sheet.usedRange.rowIndex && rangeIdx[3] >= sheet.usedRange.colIndex) {
+                        this.parent.setUsedRange(sRIdx, rangeIdx[1], sheet, false, true);
+                    }
                 }
             }
-            for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
-                sCIdx = rangeIdx[1];
-                eCIdx = rangeIdx[3];
-                for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-                    const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
-                    const cellElem: HTMLElement = this.parent.getCell(sRIdx, sCIdx);
-                    if (cell) {
-                        if (cell.formula) {
-                            this.parent.notify(clearFormulaDependentCells, { cellRef: getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]) });
-                        }
-                        if (cell.wrap) {
-                            this.parent.notify(wrapEvent, { range: [sRIdx, sCIdx, sRIdx, sCIdx], wrap: false, sheet: sheet });
-                        }
-                        if (cell.hyperlink) {
-                            removeClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
-                            if (options.type === 'Clear All') {
-                                this.parent.removeHyperlink(sheet.name + '!' + getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]));
+            if (!isOverlay) {
+                for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
+                    sCIdx = rangeIdx[1];
+                    eCIdx = rangeIdx[3];
+                    for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
+                        const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
+                        const cellElem: HTMLElement = this.parent.getCell(sRIdx, sCIdx);
+                        if (cell) {
+                            if (cell.formula) {
+                                this.parent.notify(clearFormulaDependentCells, { cellRef: getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]) });
+                            }
+                            if (cell.wrap) {
+                                this.parent.notify(wrapEvent, { range: [sRIdx, sCIdx, sRIdx, sCIdx], wrap: false, sheet: sheet });
+                            }
+                            if (cell.hyperlink) {
+                                removeClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
+                                if (options.type === 'Clear All') {
+                                    this.parent.removeHyperlink(sheet.name + '!' + getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]));
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        if (options.type === 'Clear Hyperlinks') {
-            this.parent.removeHyperlink(sheet.name + '!' + range);
+        if (!isOverlay) {
+            if (options.type === 'Clear Hyperlinks') {
+                this.parent.removeHyperlink(sheet.name + '!' + range);
+            }
+            this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
+            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(range));
         }
-        this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
-        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(range));
         if (!args.isPublic) {
             eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'clear' });
         }
-        this.parent.notify(addHighlight, { range: range, isclearFormat: true });
-        if (!args.isFromUpdateAction) {
-            this.parent.notify(selectRange, { address: range });
+        if (!isOverlay) {
+            this.parent.notify(addHighlight, { range: range, isclearFormat: true });
+            if (!args.isFromUpdateAction) {
+                this.parent.notify(selectRange, { address: range });
+            }
+            this.parent.notify(activeCellChanged, null);
         }
-        this.parent.notify(activeCellChanged, null);
     }
 
     private addEventListener(): void {

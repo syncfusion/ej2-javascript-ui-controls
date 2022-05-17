@@ -1,7 +1,7 @@
 import { detach, closest, Browser, L10n, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, EventHandler, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer, IDropDownItemModel, OffsetPosition, ResizeArgs } from '../base/interface';
-import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs } from '../base/interface';
+import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs, ICssClassArgs } from '../base/interface';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { DialogModel } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -28,6 +28,7 @@ export class Table {
     private tblHeader: HTMLElement;
     public popupObj: Popup;
     public editdlgObj: Dialog;
+    private createTableButton: Button;
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
     private quickToolObj: IRenderer;
@@ -40,6 +41,9 @@ export class Table {
     private columnEle: HTMLTableDataCellElement;
     private rowTextBox: NumericTextBox;
     private columnTextBox: NumericTextBox;
+    private tableWidthNum: NumericTextBox;
+    private tableCellPadding: NumericTextBox;
+    private tableCellSpacing: NumericTextBox;
     private rowEle: HTMLTableRowElement;
     private l10n: L10n;
     private moveEle: HTMLElement = null;
@@ -71,6 +75,7 @@ export class Table {
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.on(events.keyDown, this.keyDown, this);
         this.parent.on(events.mouseUp, this.selectionTable, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
 
@@ -92,7 +97,37 @@ export class Table {
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
         this.parent.off(events.keyDown, this.keyDown);
         this.parent.off(events.mouseUp, this.selectionTable);
+        this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
+    }
+
+    private updateCss(currentObj: Button | Dialog | NumericTextBox, e: ICssClassArgs) : void {
+        if (currentObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
+    }
+
+    private setCssClass(e: ICssClassArgs) {
+        if (this.popupObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                addClass([this.popupObj.element], e.cssClass);
+            } else {
+                removeClass([this.popupObj.element], e.oldCssClass);
+                addClass([this.popupObj.element], e.cssClass);
+            }
+        }
+        this.updateCss(this.createTableButton, e);
+        this.updateCss(this.editdlgObj, e);
+        const numericTextBoxObj: NumericTextBox[] = [
+            this.columnTextBox, this.rowTextBox, this.tableWidthNum, this.tableCellPadding, this.tableCellSpacing
+        ];
+        for (let i: number = 0; i < numericTextBoxObj.length; i++) {
+            this.updateCss(numericTextBoxObj[i], e);
+        }
     }
 
     private selectionTable(e: ITableNotifyArgs): void {
@@ -228,6 +263,7 @@ export class Table {
     }
     private showDialog(): void {
         this.openDialog(false);
+        this.setCssClass({cssClass: this.parent.cssClass});
     }
     private closeDialog(): void {
         if (this.editdlgObj) { this.editdlgObj.hide({ returnValue: true } as Event); }
@@ -962,12 +998,12 @@ export class Table {
             (this.parent.getToolbarElement().querySelector('.e-expended-nav') as HTMLElement).setAttribute('tabindex', '1');
         }
         this.dlgDiv.appendChild(btnEle);
-        const button: Button = new Button({
-            iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat',
+        this.createTableButton = new Button({
+            iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat' + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
-        button.isStringTemplate = true;
-        button.appendTo(btnEle);
+        this.createTableButton.isStringTemplate = true;
+        this.createTableButton.appendTo(btnEle);
         EventHandler.add(btnEle, 'click', this.insertTableDialog, { self: this, args: args.args, selection: args.selection });
         this.parent.getToolbar().appendChild(this.dlgDiv);
         let target: HTMLElement = (((args as ITableNotifyArgs).args as ClickEventArgs).originalEvent.target as HTMLElement);
@@ -990,6 +1026,9 @@ export class Table {
             }
         });
         addClass([this.popupObj.element], 'e-popup-open');
+        if (!isNOU(this.parent.cssClass)) {
+            addClass([this.popupObj.element], this.parent.cssClass);
+        }
         this.popupObj.refreshPosition(target);
     }
     private docClick(e: { [key: string]: object }): void {
@@ -1063,7 +1102,8 @@ export class Table {
                     this.cancelDialog(e);
                 },
                 buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
-            }]
+            }],
+            cssClass: this.parent.cssClass
         });
         this.editdlgObj.element.style.maxHeight = 'none';
         (this.editdlgObj.content as HTMLElement).querySelector('input').focus();
@@ -1093,6 +1133,9 @@ export class Table {
                 buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
             }]
         });
+        if (!isNOU(proxy.parent.cssClass)) {
+            proxy.editdlgObj.setProperties({ cssClass: proxy.parent.cssClass });
+        }
         proxy.editdlgObj.element.style.maxHeight = 'none';
         (proxy.editdlgObj.content as HTMLElement).querySelector('input').focus();
     }
@@ -1113,7 +1156,8 @@ export class Table {
             placeholder: tableColumn,
             floatLabelType: 'Auto',
             max: 50,
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            cssClass: this.parent.cssClass
         });
         this.columnTextBox.isStringTemplate = true;
         this.columnTextBox.appendTo(tableWrap.querySelector('#tableColumn') as HTMLElement);
@@ -1124,7 +1168,8 @@ export class Table {
             placeholder: tableRow,
             floatLabelType: 'Auto',
             max: 50,
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            cssClass: this.parent.cssClass
         });
         this.rowTextBox.isStringTemplate = true;
         this.rowTextBox.appendTo(tableWrap.querySelector('#tableRow') as HTMLElement);
@@ -1152,7 +1197,7 @@ export class Table {
         const header: string = this.l10n.getConstant('tabledialogHeader');
         const dialogModel: DialogModel = {
             header: header,
-            cssClass: classes.CLS_RTE_ELEMENTS,
+            cssClass: classes.CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass, 
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'initial',
@@ -1243,7 +1288,7 @@ export class Table {
             + ' </div><div class="e-rte-field"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing" /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
-        const widthNum: NumericTextBox = new NumericTextBox({
+        this.tableWidthNum = new NumericTextBox({
             format: 'n0',
             min: 0,
             value: widthVal,
@@ -1251,9 +1296,9 @@ export class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
-        widthNum.isStringTemplate = true;
-        widthNum.appendTo(tableWrap.querySelector('#tableWidth') as HTMLElement);
-        const padding: NumericTextBox = new NumericTextBox({
+        this.tableWidthNum.isStringTemplate = true;
+        this.tableWidthNum.appendTo(tableWrap.querySelector('#tableWidth') as HTMLElement);
+        this.tableCellPadding = new NumericTextBox({
             format: 'n0',
             min: 0,
             // eslint-disable-next-line
@@ -1262,9 +1307,9 @@ export class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
-        padding.isStringTemplate = true;
-        padding.appendTo(tableWrap.querySelector('#cellPadding') as HTMLElement);
-        const spacing: NumericTextBox = new NumericTextBox({
+        this.tableCellPadding.isStringTemplate = true;
+        this.tableCellPadding.appendTo(tableWrap.querySelector('#cellPadding') as HTMLElement);
+        this.tableCellSpacing = new NumericTextBox({
             format: 'n0',
             min: 0,
             // eslint-disable-next-line
@@ -1273,8 +1318,8 @@ export class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
-        spacing.isStringTemplate = true;
-        spacing.appendTo(tableWrap.querySelector('#cellSpacing') as HTMLElement);
+        this.tableCellSpacing.isStringTemplate = true;
+        this.tableCellSpacing.appendTo(tableWrap.querySelector('#cellSpacing') as HTMLElement);
         return tableWrap;
     }
 

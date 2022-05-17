@@ -34,6 +34,7 @@ export class Layout {
     //private viewer:LayoutViewer;
     private documentHelper: DocumentHelper;
     private value: number;
+    private previousPara: number;
     /**
      * @private
      */
@@ -245,16 +246,23 @@ export class Layout {
             nextBlock = this.layoutBlock(block, index);
             index = 0;
             this.viewer.updateClientAreaForBlock(block, false);
-            if (prevBlock && isNullOrUndefined(prevBlock.nextWidget) && prevBlock.bodyWidget
-                && prevBlock.bodyWidget.page.footnoteWidget) {
-                this.layoutfootNote(prevBlock.bodyWidget.page.footnoteWidget);
-            }
-            prevBlock = block;
             block = nextBlock;
-            if (isNullOrUndefined(block) && prevBlock.bodyWidget.page.footnoteWidget) {
-                this.layoutfootNote(prevBlock.bodyWidget.page.footnoteWidget);
-            }
         } while (block);
+        block = section.firstChild as BlockWidget;
+        let page: Page;
+        if (block && block.bodyWidget && block.bodyWidget.page) {
+            page = block.bodyWidget.page;
+        }
+        while (page) {
+            if (page.footnoteWidget) {
+                this.layoutfootNote(page.footnoteWidget);
+                page = page.nextPage;
+            } else {
+                page = page.nextPage;
+            }
+        } 
+        page = undefined;
+        block = undefined;
     }
     public layoutHeaderFooter(section: BodyWidget, viewer: PageLayoutViewer, page: Page): void {
         //Header layout
@@ -508,6 +516,10 @@ export class Layout {
                 nextBlock = nextBlockToLayout;
             }
         } else {
+            (block as TableWidget).calculateGrid();
+            (block as TableWidget).isGridUpdated = false;
+            (block as TableWidget).buildTableColumns();
+            (block as TableWidget).isGridUpdated = true;
             nextBlock = this.layoutTable(block as TableWidget, index);
             this.checkAndRelayoutPreviousOverlappingBlock(block);
             this.updateTableYPositionBasedonTextWrap(nextBlock as TableWidget);
@@ -620,8 +632,14 @@ export class Layout {
             paragraphWidget.x = left;
             paragraphWidget.y = area.y;
         } else {
+            if (this.viewer.clientActiveArea.width <= 0 && this.viewer instanceof WebLayoutViewer) {
+                paragraphWidget.x = this.previousPara;
+            }
+            else {
+                paragraphWidget.x = area.x;
+                this.previousPara = paragraphWidget.x;
+            }
             paragraphWidget.width = area.width;
-            paragraphWidget.x = area.x;
             paragraphWidget.y = area.y;
         }
         return paragraphWidget;
@@ -1238,7 +1256,7 @@ export class Layout {
         } else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 let currentLine: LineWidget = element.line;
-				if(isNullOrUndefined(element.nextElement) && element.line.paragraph.isInsideTable && element instanceof TabElementBox) {
+				if(isNullOrUndefined(element.nextElement) && element instanceof TabElementBox) {
                     this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element));
                 }else{
                     this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
@@ -4337,6 +4355,9 @@ export class Layout {
             if (parseFloat(fPosition.toFixed(1)) === parseFloat(position.toFixed(1))) {
                 return defaultTabWidth;
             }
+            if(viewer.clientArea.width < fPosition - position){
+                return viewer.clientArea.width;
+            }
             return (fPosition - position) > 0 ? fPosition - position : defaultTabWidth;
         }
     }
@@ -4836,6 +4857,9 @@ export class Layout {
         //cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
         cell.margin.right += (isRightStyleNone && !linestyle) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
+        if (cell.width < cell.sizeInfo.minimumWidth / 2 && this.documentHelper.owner.editor.tableResize.checkCellMinWidth) {
+            cell.width = cell.sizeInfo.minimumWidth / 2;
+        }
         return cell;
     }
     private checkPreviousMargins(table: TableWidget): boolean {

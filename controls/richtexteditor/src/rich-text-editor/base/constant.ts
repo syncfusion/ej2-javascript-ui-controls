@@ -601,3 +601,8 @@ export const showTableDialog: string = 'showTableDialog';
  * @deprecated
  */
 export const closeTableDialog: string = 'closeTableDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const bindCssClass: string = 'closeTableDialog';

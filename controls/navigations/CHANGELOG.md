@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 20.1.56 (2022-05-17)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I373045` - An issue with "Script error occurs while using keyboard navigation in menu" has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I371505` - The issue with "The TreeView checked node state doesn't update properly for nested levels when loadOnDemand is enabled" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#F174831` - An issue with drag not works when adding multiple tab items has been fixed.
+
 ## 20.1.51 (2022-04-26)
 
 ### TreeView

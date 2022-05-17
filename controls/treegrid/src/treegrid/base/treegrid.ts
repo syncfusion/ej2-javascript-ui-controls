@@ -1676,7 +1676,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     public extendRequiredModules(modules: ModuleDeclaration[]): void {
         const IsRowDDInjected: Function[] = this.injectedModules.filter((e: Function) => {
-            return e.name === 'RowDD';
+            return e.prototype.getModuleName() === 'rowDragAndDrop';
         });
         if (this.allowRowDragAndDrop || IsRowDDInjected.length) {
             if ((!isNullOrUndefined(this.toolbar) && (this.toolbar['includes']('Indent') ||
@@ -2493,6 +2493,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                         target: '.e-content' , id: this.element.id + '_gridcontrol_cmenu_AddRow' ,
                         items: [{ text: this.l10n.getConstant('Above') , id: 'Above' }, { text: this.l10n.getConstant('Below') , id: 'Below'}, { text: this.l10n.getConstant('Child') , id: 'Child'}]});
                     break;
+                case 'Indent':
+                case ContextMenuItems.RowIndent:
+                    items.push(<ContextMenuItemModel>{ text: this.l10n.getConstant('RowIndent') ,
+                        target: '.e-content' , iconCss: 'e-indent e-icons', id: this.element.id + '_gridcontrol_cmenu_Indent'});
+                    break;
+                case 'Outdent':
+                case ContextMenuItems.RowOutdent:
+                    items.push(<ContextMenuItemModel>{ text: this.l10n.getConstant('RowOutdent') ,
+                        target: '.e-content' , iconCss: 'e-outdent e-icons', id: this.element.id + '_gridcontrol_cmenu_Outdent'});
+                    break;
                 default:
                     items.push(this.contextMenuItems[i]);
                 }
@@ -2511,6 +2521,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     private getGridToolbar(): Object[] {
         if (this.toolbar) {
+            this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
             const items: Object[] = [];
             let tooltipText: string;
             for (let i: number = 0; i < this.toolbar.length; i++) {
@@ -2723,7 +2734,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 this.grid.width = this.width; break;
             case 'locale':
-                this.grid.locale = this.locale; break;
+                this.grid.locale = this.locale;
+                this.TreeGridLocale(); this.grid.toolbar = this.getGridToolbar();
+                this.grid.contextMenuItems = this.getContextMenu();
+                break;
             case 'selectedRowIndex':
                 this.grid.selectedRowIndex = this.selectedRowIndex; break;
             case 'enableAltRow':

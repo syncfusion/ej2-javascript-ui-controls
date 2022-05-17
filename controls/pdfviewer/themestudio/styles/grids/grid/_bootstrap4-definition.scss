@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 $grid-content-padding: 7px !default;
 $grid-headecell-height: 24px !default;
 $grid-font-size: 14px !default;
@@ -107,7 +109,7 @@ $grid-rtl-stackedhader-firstcell-left-border-size: 0 !default;
 $grid-rtl-stackedhader-firstcell-right-border-size: 1px !default;
 $grid-rtl-bothlines-stackedhader-firstcell-left-border-size: 1px !default;
 $grid-rtl-bothlines-stackedhader-firstcell-right-border-size: 0 !default;
-$grid-bigger-headercell-bootom-padding: round($grid-header-bottom-padding/.75) !default;
+$grid-bigger-headercell-bootom-padding: round(math.div($grid-header-bottom-padding, .75)) !default;
 $grid-bigger-grightarrow-icon-font-size: 12px !default;
 $group-bigger-sorticon-margin-right: 0 !default;
 $grid-bigger-groupdroparea-padding: 22px 24px !default;

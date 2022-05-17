@@ -1204,7 +1204,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             isAdaptive: this.isAdaptive as boolean,
             renderMode: this.renderMode,
             localeObj: this.localeObj,
-            dataType: this.dataType
+            dataType: this.dataType,
+            cssClass: this.cssClass
         };
         this.pivotCommon = new PivotCommon(args);
         this.pivotCommon.control = this;

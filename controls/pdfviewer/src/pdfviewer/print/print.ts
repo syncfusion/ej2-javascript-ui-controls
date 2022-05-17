@@ -354,7 +354,7 @@ export class Print {
             const height: number = isFormDesignerField ? (bounds.Height / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
             let fontHeight: number = 0;
             if (font !== null && font.Height) {
-                inputField.style.fontfamily = font.Name;
+                inputField.style.fontFamily = font.Name;
                 if (font.Italic) {
                     inputField.style.fontStyle = 'italic';
                 }

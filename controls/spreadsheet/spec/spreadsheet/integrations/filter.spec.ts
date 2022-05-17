@@ -106,6 +106,7 @@ describe('Filter ->', () => {
         });
         it('Date filter popup rendering check', (done: Function) => {
             helper.invoke('applyFilter');
+            helper.invoke('numberFormat', ['dddd, mmmm dd, yyyy', 'B2']);
             const cell: HTMLElement = helper.invoke('getCell', [0, 1]);
             cell.focus();
             helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
@@ -143,6 +144,9 @@ describe('Filter ->', () => {
             expect(treeObj.fields.dataSource[19]['B']).toBe(31);
             expect(treeObj.fields.dataSource[17]['hasChild']).toBeUndefined();
             expect(treeObj.fields.dataSource[15]['pId']).toBe('2014 July');
+            expect(treeObj.fields.dataSource[13]['B']).toBe(14);
+            expect(treeObj.fields.dataSource[13]['pId']).toBe('2014 February');
+            expect(treeObj.fields.dataSource[13]['__rowIndex']).toBe('2014 February 14');
             ulList = checkboxList.lastElementChild.querySelector('.e-ul');
             expect(ulList.childElementCount).toBe(3);
             expect(ulList.getElementsByClassName('e-check').length).toBe(3);

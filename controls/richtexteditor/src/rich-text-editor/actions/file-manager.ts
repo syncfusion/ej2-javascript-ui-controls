@@ -1,4 +1,4 @@
-import { L10n, Browser, detach, closest, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
+import { L10n, Browser, detach, closest, isNullOrUndefined as isNOU, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { ButtonPropsModel, Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { ContextMenu, DetailsView, FileManager as EJ2FileManager } from '@syncfusion/ej2-filemanager';
@@ -10,7 +10,7 @@ import { dispatchEvent } from '../base/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { IImageCommandsArgs, IRichTextEditor, IRenderer, IImageNotifyArgs } from '../base/interface';
+import { IImageCommandsArgs, IRichTextEditor, IRenderer, IImageNotifyArgs, ICssClassArgs } from '../base/interface';
 
 /**
  * `FileManager` module is used to display the directories and images inside the editor.
@@ -97,6 +97,17 @@ export class FileManager {
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(dlgTarget);
         this.dialogObj.show(Browser.isDevice ? true : false);
+        this.setCssClass({cssClass: this.parent.cssClass});
+    }
+
+    private setCssClass(e: ICssClassArgs) {
+        if (this.dialogObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                this.dialogObj.setProperties({ cssClass: (this.dialogObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                this.dialogObj.setProperties({ cssClass: (this.dialogObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
     }
 
     private renderFileManager(): void {
@@ -225,6 +236,7 @@ export class FileManager {
     private addEventListener(): void {
         this.parent.on(events.initialEnd, this.initialize, this);
         this.parent.on(events.renderFileManager, this.render, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
 
@@ -232,6 +244,7 @@ export class FileManager {
         EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
         this.parent.off(events.initialEnd, this.initialize);
         this.parent.off(events.renderFileManager, this.render);
+        this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
     }
 

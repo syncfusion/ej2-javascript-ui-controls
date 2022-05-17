@@ -2540,7 +2540,7 @@ export class PivotEngine {
                         alphaNumbervalue.push(headers[i]);
                     }
                 }
-                if (stringValue.length > 0) {
+                if (stringValue.length > 1) {
                     stringValue = this.sortHeaders(fieldName, childrens, headers, childrens.sort, childrens.type);
                 }
                 if (alphaNumbervalue.length > 0) {
@@ -2565,33 +2565,15 @@ export class PivotEngine {
             members: membersInfo && membersInfo.length > 0 ? membersInfo : Object.keys(childrens.members),
             IsOrderChanged: false
         };
-        let isDateType: boolean = type === 'datetime' || type === 'date' || type === 'time';
-        if (isDateType) {
-            if (membersInfo && membersInfo.length > 0) {
-                PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
-            }
-            else {
-                PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
-                isHeaderSortByDefault = true;
-            }
-        }
-        else if (type === true) {
-            if (membersInfo && membersInfo.length > 0) {
-                PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
-            }
-            else {
-                PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
-                isHeaderSortByDefault = true;
-            }
+        type = (type === 'datetime' || type === 'date' || type === 'time') ? (this.formatFields[fieldName] &&
+            (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1)) ? type : 'string' : type;
+        let isDateType: boolean = (type === 'datetime' || type === 'date' || type === 'time');
+        if (membersInfo && membersInfo.length > 0) {
+            PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
         }
         else {
-            if (membersInfo && membersInfo.length > 0) {
-                PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
-            }
-            else {
-                PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
-                isHeaderSortByDefault = true;
-            }
+            PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
+            isHeaderSortByDefault = true;
         }
         if (isHeaderSortByDefault) {
             let copyOrder: string[] | number[] = [];

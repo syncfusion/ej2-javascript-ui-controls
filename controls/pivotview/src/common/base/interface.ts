@@ -559,6 +559,7 @@ export interface CommonArgs {
     renderMode: Mode;
     localeObj: L10n;
     dataType: string;
+    cssClass: string;
 }
 
 /**

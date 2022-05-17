@@ -6353,6 +6353,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // eslint-disable-next-line
     public updateFormFields(formFields: any): void {
+        this.updateFormFieldsValue(formFields);
         this.formFieldsModule.updateFormFieldValues(formFields);
     }
 

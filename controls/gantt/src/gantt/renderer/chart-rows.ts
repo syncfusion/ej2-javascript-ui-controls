@@ -1738,7 +1738,7 @@ export class ChartRows extends DateProcessor {
         const chartRows: NodeListOf<Element> = this.parent.ganttChartModule.getChartRows();
         //Below code is for rendering taskbartemplate in resource view with multi taskbar
         if (this.parent.initialChartRowElements) {
-            for (let j: number = 0; j <= this.parent.initialChartRowElements.length; j++) {
+            for (let j: number = 0; j < this.parent.initialChartRowElements.length; j++) {
                 if (!isNullOrUndefined(chartRows[j])) {
                     if (!isNullOrUndefined(chartRows[j].childNodes[0].childNodes[1].childNodes[2]) && 
                        !isNullOrUndefined(this.parent.initialChartRowElements[j].childNodes[0].childNodes[1].childNodes[2])) {

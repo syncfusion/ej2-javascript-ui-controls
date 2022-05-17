@@ -381,20 +381,20 @@ export class Column {
      */
     public freeze: freezeDirection;
 
-	private parent: TreeGrid;
+    private parent: TreeGrid;
 
     constructor(options: ColumnModel) {
         merge(this, options);
     }
-	
-	 /**
+
+    /**
      * Update the State changes reflected for TreeGrid columndirective in react platform.
-     * 
+     *
      * @param {Column} column - specifies the column
      * @returns {void}
      * @hidden
      */
-     private setProperties(column: Column): void {
+    private setProperties(column: Column): void {
         //Angular two way binding
         const keys: string[] = Object.keys(column);
         for (let i: number = 0; i < keys.length; i++) {

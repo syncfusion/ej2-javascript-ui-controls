@@ -1452,6 +1452,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         // eslint-disable-next-line
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        this.notify(events.bindCssClass, {cssClass: this.cssClass});
         this.renderComplete();
     }
 
@@ -2046,6 +2047,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             case 'cssClass':
                 this.element.classList.remove(oldProp[prop]);
                 this.setCssClass(newProp[prop]);
+                this.notify(events.bindCssClass, {cssClass: newProp[prop], oldCssClass: oldProp[prop]});
                 break;
             case 'enabled': this.setEnable(); break;
             case 'enableRtl': this.updateRTL(); break;

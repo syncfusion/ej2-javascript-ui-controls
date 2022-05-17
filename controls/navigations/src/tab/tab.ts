@@ -1592,10 +1592,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private bindDraggable(): void {
         if (this.allowDragAndDrop) {
             const tabHeader: Element = this.element.querySelector('.' + CLS_HEADER);
-            const items: NodeList = tabHeader.querySelectorAll('.' + CLS_TB_ITEM);
-            items.forEach((element: HTMLElement) => {
-                this.initializeDrag(element as HTMLElement);
-            });
+            if (tabHeader){
+                const items: NodeList = tabHeader.querySelectorAll('.' + CLS_TB_ITEM);
+                items.forEach((element: HTMLElement) => {
+                    this.initializeDrag(element as HTMLElement);
+                });
+            }
         }
     }
     private wireEvents(): void {
@@ -2147,6 +2149,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (isNOU(this.hdrEle)) {
             this.items = items;
             this.reRenderItems();
+            this.bindDraggable();
         } else {
             const itemsCount: number = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element).length;
             if (itemsCount !== 0) {

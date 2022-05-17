@@ -97,6 +97,7 @@ $field-list-sort-select-border-color: $grey-ad !default;
 $field-list-sort-select-color: $grey-dark !default;
 $field-list-border: $field-list-default-border-color !default;
 $field-list-cal-button-text-color: $field-list-default-font-color !default;
+$field-list-calc-expand-icon-padding: 8px !default;
 
 /*! component's common definitions and variables */
 $field-list-static-padding-size: 10px !default;
@@ -171,3 +172,5 @@ $olap-tree-outer-div-height: 437px;
 $olap-bigger-tree-wrapper-height: 511px;
 $olap-bigger-tree-outer-div-height: 475px;
 $field-list-text-transform: none !default;
+$olap-bigger-tree-width: 283px !default;;
+$olap-bigger-tree-outer-div-width: 325px !default;

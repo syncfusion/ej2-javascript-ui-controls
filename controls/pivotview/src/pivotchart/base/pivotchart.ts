@@ -1288,7 +1288,7 @@ export class PivotChart {
             option[1].items = collapse;
         }
         let menuOptions: ContextMenuModel = {
-            cssClass: this.parent.element.id + '_accumulationChart',
+            cssClass: this.parent.element.id + '_accumulationChart' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             items: option,
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.drillMenuOpen.bind(this),

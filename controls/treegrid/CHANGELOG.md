@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.56 (2022-05-17)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I376335` - Tree Grid locales are updated dynamically.
+
 ## 20.1.52 (2022-05-04)
 
 ### Tree Grid

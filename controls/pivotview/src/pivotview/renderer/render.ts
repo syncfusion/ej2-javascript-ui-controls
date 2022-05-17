@@ -402,6 +402,9 @@ export class Render {
     }
     /* eslint-disable */
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        if (args.element && this.parent.cssClass) {
+            addClass([args.element.parentElement], this.parent.cssClass);
+        }
         for (let item of args.items) {
             let cellTarget: Element = this.parent.lastCellClicked;
             let elem: Element = null;

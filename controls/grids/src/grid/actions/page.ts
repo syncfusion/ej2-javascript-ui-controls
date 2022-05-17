@@ -87,6 +87,7 @@ export class Page implements IAction {
                 created: this.addAriaAttr.bind(this)
             },
             ['parentObj', 'propName']);
+        pagerObj.cssClass = this.parent.cssClass ? this.parent.cssClass : '';
         this.pagerObj = new Pager(pagerObj, undefined, this.parent);
         this.pagerObj.hasParent = true;
         this.pagerObj.on(events.pagerRefresh, this.renderReactPagerTemplate, this);

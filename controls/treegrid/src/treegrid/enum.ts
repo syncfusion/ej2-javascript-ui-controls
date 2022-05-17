@@ -115,7 +115,11 @@ export type ContextMenuItem =
     /** `NextPage` - Go to the next page. */
     'NextPage' |
     /** AddRow to the TreeGrid */
-    'AddRow';
+    'AddRow'|
+    /** `Indent` - Indents the record to one level of hierarchy */
+    'Indent'|
+    /** `Outdent` - Outdent the record to one level of hierarchy */
+    'Outdent';
 
 /**
  * Defines predefined contextmenu items.
@@ -138,7 +142,9 @@ export enum ContextMenuItems {
     PrevPage,
     LastPage,
     NextPage,
-    AddRow
+    AddRow,
+    RowIndent,
+    RowOutdent
 }
 /**
  * Defines modes of editing.

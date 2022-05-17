@@ -1317,4 +1317,18 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('EJ2-59866 - The getText public method returned \n when Rich Text Editor have empty content', () => {
+        let rteObj:RichTextEditor;
+        let innerHTML: string;
+        beforeAll(() => {
+            rteObj = renderRTE({ value: innerHTML });
+            });
+        afterAll(()=>{
+            destroy(rteObj);
+        })
+        it('should return empty string when value is editor is empty ', () => {
+            innerHTML= `<p><b></b></p>`;
+            expect(rteObj.getText()==="").toBe(true);
+        });
+    });
 });

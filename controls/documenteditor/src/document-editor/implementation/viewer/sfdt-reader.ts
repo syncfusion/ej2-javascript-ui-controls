@@ -1234,10 +1234,10 @@ export class SfdtReader {
                 if (inline.hasOwnProperty('textFrame')) {
                     let textFrame: TextFrame = new TextFrame();
                     textFrame.textVerticalAlignment = inline.textFrame.textVerticalAlignment;
-                    textFrame.marginLeft = inline.textFrame.leftMargin;
-                    textFrame.marginRight = inline.textFrame.rightMargin;
-                    textFrame.marginTop = inline.textFrame.topMargin;
-                    textFrame.marginBottom = inline.textFrame.bottomMargin;
+                    textFrame.marginLeft = HelperMethods.convertPointToPixel(inline.textFrame.leftMargin);
+                    textFrame.marginRight = HelperMethods.convertPointToPixel(inline.textFrame.rightMargin);
+                    textFrame.marginTop = HelperMethods.convertPointToPixel(inline.textFrame.topMargin);
+                    textFrame.marginBottom = HelperMethods.convertPointToPixel(inline.textFrame.bottomMargin);
                     this.parseBody(inline.textFrame.blocks, textFrame.childWidgets as BlockWidget[], textFrame);
                     shape.textFrame = textFrame;
                     textFrame.containerShape = shape;

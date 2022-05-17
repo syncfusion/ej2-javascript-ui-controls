@@ -128,7 +128,7 @@ export class PdfExport {
         //To set section page size and page orientation.
         if (!isNullOrUndefined(pdfExportProperties)) {
             const pdfPageSettings: PdfPageSettings = new PdfPageSettings();
-            if (!isNullOrUndefined(pdfExportProperties.pageOrientation && pdfExportProperties.pageOrientation === 'Portrait')) {
+            if (!isNullOrUndefined(pdfExportProperties.pageOrientation) && pdfExportProperties.pageOrientation === 'Portrait') {
                 pdfPageSettings.orientation = PdfPageOrientation.Portrait;
             } else {
                 pdfPageSettings.orientation = PdfPageOrientation.Landscape;

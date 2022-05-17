@@ -529,6 +529,107 @@ describe('ContextMenu module', () => {
     });
   });
 
+
+  describe('EJ2-59747 - Indent using context menu', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: CellSaveEventArgs) => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          contextMenuItems: ['Indent', 'Outdent'],
+         columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'progress', headerText: 'Progress' },
+              { field: 'startDate', headerText: 'Start Date' }
+              ]
+        },
+        done
+      );
+    });
+
+    it('Indent Action with contextmenu and ensure outdent disabling ', (done: Function) => {
+      actionComplete = (args: CellSaveEventArgs): void => {
+        if(args.requestType === 'indented'){
+          expect(args.data[0].parentItem.taskID == 1).toBe(true);
+        }
+        done();
+       }
+       gridObj.actionComplete = actionComplete;
+       gridObj.selectRow(5);
+       (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+       let e: Object = {
+         event: (gridObj.grid.contextMenuModule as any).eventArgs,
+         items: gridObj.grid.contextMenuModule.contextMenu.items,
+         parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+       };
+       (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+       (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+       expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Outdent').style.display == "none").toBe(true);
+       document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Indent').click();
+
+    });
+    it('DataSource check after record indent using contextmenu', (done: Function) => {
+       expect(gridObj.dataSource[0].subtasks.length == 5).toBe(true);
+       done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+
+
+    describe('EJ2-59747 - Outdent using context menu', () => {
+      let gridObj: TreeGrid;
+      let actionComplete: (args: CellSaveEventArgs) => void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            contextMenuItems: ['Indent', 'Outdent'],
+           columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+                ]
+          },
+          done
+        );
+      });
+  
+      it('Outdent Action with contextmenu and ensure indent disabling ', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'indented'){
+            expect(args.data[0].parentItem.taskID == 2).toBe(true);
+          }
+          done();
+         }
+         gridObj.actionComplete = actionComplete;
+         gridObj.selectRow(1);
+         (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+         let e: Object = {
+           event: (gridObj.grid.contextMenuModule as any).eventArgs,
+           items: gridObj.grid.contextMenuModule.contextMenu.items,
+           parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+         };
+         (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+         (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+         expect(document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Indent').style.display == "none").toBe(true);
+         document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Outdent').click();
+      });
+      it('DataSource check after record indent using contextmenu', (done: Function) => {
+         expect(gridObj.dataSource[0].subtasks.length == 3).toBe(true);
+         done();
+      });
+      afterAll(() => {
+          destroy(gridObj);
+        });
+      });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

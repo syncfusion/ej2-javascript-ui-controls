@@ -174,6 +174,14 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     public click: EmitType<Object>;
 
     /**
+     * Defines the own class for the pager element.
+     *
+     * @default ''
+     */
+    @Property('')
+    public cssClass: string;
+
+    /**
      * Triggers after pageSize is selected in DropDownList.
      *
      * @default null
@@ -252,8 +260,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             lastPageTooltip: 'Go to last page',
             nextPageTooltip: 'Go to next page',
             previousPageTooltip: 'Go to previous page',
-            nextPagerTooltip: 'Go to next pager',
-            previousPagerTooltip: 'Go to previous pager',
+            nextPagerTooltip: 'Go to next pager items',
+            previousPagerTooltip: 'Go to previous pager items',
             pagerDropDown: 'Items per page',
             pagerAllDropDown: 'Items',
             CurrentPageInfo: '{0} of {1} pages',
@@ -262,8 +270,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             LastPageTooltip: 'Go to last page',
             NextPageTooltip: 'Go to next page',
             PreviousPageTooltip: 'Go to previous page',
-            NextPagerTooltip: 'Go to next pager',
-            PreviousPagerTooltip: 'Go to previous pager',
+            NextPagerTooltip: 'Go to next pager items',
+            PreviousPagerTooltip: 'Go to previous pager items',
             PagerDropDown: 'Items per page',
             PagerAllDropDown: 'Items',
             All: 'All'

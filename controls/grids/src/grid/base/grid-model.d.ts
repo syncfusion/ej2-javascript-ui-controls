@@ -1285,6 +1285,13 @@ export interface GridModel extends ComponentModel{
     frozenColumns?: number;
 
     /**
+     * Defines the own class for the grid element.
+     *
+     * @default ''
+     */
+    cssClass?: string;
+
+    /**
      * `columnQueryMode`provides options to retrive data from the datasource.Their types are
      * * `All`: It Retrives whole datasource.
      * * `Schema`: Retrives data for all the defined columns in grid from the datasource.

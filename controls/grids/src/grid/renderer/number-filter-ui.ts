@@ -50,7 +50,7 @@ export class NumberFilterUI implements IFilterMUI {
                 format: typeof (args.column.format) === 'string' || isUndefined(args.column.format) ? args.column.format :
                     args.column.format.format,
                 locale: this.parent.locale,
-                cssClass: 'e-popup-flmenu',
+                cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 placeholder: args.localizeText.getConstant('EnterValue'),
                 enableRtl: this.parent.enableRtl
             },

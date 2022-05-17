@@ -1,7 +1,7 @@
 /**
  * Lists plugin spec
  */
-import { createElement, detach, isNullOrUndefined, selectAll } from '@syncfusion/ej2-base';
+import { createElement, detach, isNullOrUndefined, selectAll, Browser } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
 
 function setCursorPoint(element: Element, point: number) {
@@ -633,6 +633,44 @@ describe ('left indent testing', () => {
                 expect(editNode.querySelectorAll('li')[7].children[0].nodeName === 'BR').toBe(true);
             });
             afterAll(() => {
+                detach(elem);
+            });
+        });
+
+        describe('EJ2-59780 - List not applied in fire fox testing', () => {
+            let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+            let defaultUA: string = navigator.userAgent;
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p class="startFocus">A paragraph is a series of sentences that are organized and coherent,
+                and are all related to a single topic. Almost every piece of writing 
+               you do that is longer than a few sentences should be organized into 
+               paragraphs. This is because paragraphs show a reader where the 
+               subdivisions of an essay begin and end, and thus help the reader see the
+                organization of the essay and grasp its main points.</p><p class="endFocus">Paragraphs 
+               can contain many different kinds of information. A paragraph could 
+               contain a series of brief examples or a single long illustration of a 
+               general point. It might describe a place, character, or process; narrate
+                a series of events; compare or contrast two or more things; classify 
+               items into categories; or describe causes and effects. Regardless of the
+                kind of information they contain, all paragraphs share certain 
+               characteristics. One of the most important of these is a topic sentence.</p></div>`
+            });
+            beforeAll(() => {
+                Browser.userAgent = fireFox;
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            it(' apply list not working for the pasted content when select all', () => {
+                startNode = editNode.querySelector('.startFocus');
+                endNode = editNode.querySelector('.endFocus');
+                startNode = editNode as HTMLElement;
+                editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 0);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect(editNode.querySelectorAll('li').length === 2).toBe(true);
+            });
+            afterAll(() => {
+                Browser.userAgent = defaultUA;
                 detach(elem);
             });
         });

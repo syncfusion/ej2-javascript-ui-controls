@@ -258,13 +258,13 @@ export class Render {
             args.cell.innerHTML = '';
         }
     }
-	
-	 /**
+
+    /**
      * @param {string} columnUid - Defines column uid
      * @returns {void}
      * @hidden
      */
-     private refreshReactColumnTemplateByUid(columnUid: string): void {
+    private refreshReactColumnTemplateByUid(columnUid: string): void {
         if ((<{ isReact?: boolean }>this.parent).isReact) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).parent.clearTemplate(['columnTemplate'], undefined, () => {

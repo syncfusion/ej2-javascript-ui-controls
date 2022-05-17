@@ -1964,8 +1964,18 @@ export class StickyNotesAnnotation {
                     }
                 }
             }
-            if (event.currentTarget && event.currentTarget.id && event.currentTarget.childNodes[1].ej2_instances[0]) {
+            let editModule : any;
+            if(event && event.currentTarget && event.currentTarget.childNodes[1])
+               {
+                editModule = event.currentTarget.childNodes[1].ej2_instances[0];
+               }
+            if (event.currentTarget && event.currentTarget.id && editModule) {
                 // eslint-disable-next-line
+                if(annotation && annotation.isCommentLock)
+                {
+                     editModule.enableEditMode = false;
+                     this.createCommentDiv(event.currentTarget);
+                }
                 this.pdfViewer.fireCommentSelect(event.currentTarget.id, event.currentTarget.childNodes[1].ej2_instances[0].value, annotation);
             }
             this.commentDivOnSelect(event);

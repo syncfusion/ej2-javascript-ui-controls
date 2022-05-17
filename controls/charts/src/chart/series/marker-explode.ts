@@ -147,7 +147,7 @@ export class MarkerExplode extends ChartData {
                 this.previousPoints = <PointData[]>extend([], this.currentPoints, null, true);
             }
         }
-        if (((this.currentPoints.length === 0 && this.isRemove) || (remove && this.isRemove) ||
+        if (!chart.tooltip.enable && ((this.currentPoints.length === 0 && this.isRemove) || (remove && this.isRemove) ||
                 !withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect))) {
             this.isRemove = false;
             if (!isNullOrUndefined(this.previousPoints[0])) {

@@ -1,6 +1,6 @@
 import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
-import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs, ICssClassArgs } from './../base/interface';
 import { IDropDownItemModel } from './../base/interface';
 import { ServiceLocator } from './../services/service-locator';
 import * as events from '../base/constant';
@@ -54,6 +54,7 @@ export class Link {
         this.parent.on(events.editLink, this.editLink, this);
         this.parent.on(events.openLink, this.openLink, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
     private onToolbarAction(args: NotifyArgs): void {
@@ -86,12 +87,28 @@ export class Link {
         this.parent.off(events.editLink, this.editLink);
         this.parent.off(events.openLink, this.openLink);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
+        this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
     }
     private onIframeMouseDown(): void {
         if (this.dialogObj) {
             this.dialogObj.hide({ returnValue: true } as Event);
         }
+    }
+
+    private updateCss(currentObj: CheckBox | Dialog, e: ICssClassArgs) : void {
+        if (currentObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
+    }
+
+    private setCssClass(e: ICssClassArgs) {
+        this.updateCss(this.checkBoxObj, e);
+        this.updateCss(this.dialogObj, e);
     }
     private showLinkQuickToolbar(e: IShowPopupArgs): void {
         if (!isNullOrUndefined(e.args) && (e.args as KeyboardEventArgs).action !== 'enter' &&
@@ -222,6 +239,7 @@ export class Link {
     }
     private showDialog(): void {
         this.openDialog(false);
+        this.setCssClass({cssClass: this.parent.cssClass});
     }
     private closeDialog(): void {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
@@ -272,7 +290,7 @@ export class Link {
         const linkText: HTMLInputElement = linkContent.querySelector('.e-rte-linkText') as HTMLInputElement;
         const linkTitle: HTMLInputElement = linkContent.querySelector('.e-rte-linkTitle') as HTMLInputElement;
         const linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
-        this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl });
+        this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass });
         this.checkBoxObj.isStringTemplate = true;
         this.checkBoxObj.createElement = this.parent.createElement;
         this.checkBoxObj.appendTo(linkTarget);
@@ -285,7 +303,7 @@ export class Link {
         const dialogModel: DialogModel = {
             header: this.i10n.getConstant('linkHeader'),
             content: linkContent,
-            cssClass: CLS_RTE_ELEMENTS,
+            cssClass: CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px', height: 'inherit',

@@ -161,7 +161,8 @@ export class Toolbar {
             clicked: this.toolbarClickHandler.bind(this),
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
-            created: this.toolbarCreated.bind(this)
+            created: this.toolbarCreated.bind(this),
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         (<{ isReact?: boolean }>this.toolbar).isReact = this.parent.isReact;
         this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);

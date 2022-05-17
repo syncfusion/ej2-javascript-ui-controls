@@ -89,7 +89,8 @@ export class DialogEditRender {
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
         this.dialogObj = new Dialog(extend(
             {
-                header: this.createDialogHeader(args), isModal: true, visible: true, cssClass: 'e-edit-dialog',
+                header: this.createDialogHeader(args), isModal: true, visible: true,
+                cssClass: this.parent.cssClass ? 'e-edit-dialog' + ' ' + this.parent.cssClass : 'e-edit-dialog',
                 content: this.getEditElement(elements, args) as HTMLElement,
                 showCloseIcon: true,
                 allowDragging: true,
@@ -101,9 +102,14 @@ export class DialogEditRender {
                 footerTemplate: gObj.editSettings.footerTemplate ? this.getDialogEditTemplateElement('FooterTemplate', args) : null,
                 buttons: [{
                     click: this.btnClick.bind(this),
-                    buttonModel: { content: this.l10n.getConstant('SaveButton'), cssClass: 'e-primary', isPrimary: true }
+                    buttonModel: { content: this.l10n.getConstant('SaveButton'),
+                        cssClass: this.parent.cssClass ? 'e-primary' + ' ' + this.parent.cssClass : 'e-primary',
+                        isPrimary: true }
                 },
-                { click: this.btnClick.bind(this), buttonModel: { cssClass: 'e-flat', content: this.l10n.getConstant('CancelButton') } }]
+                { click: this.btnClick.bind(this),
+                    buttonModel: { 
+                        cssClass: this.parent.cssClass ? 'e-flat' + ' ' + this.parent.cssClass : 'e-flat',
+                        content: this.l10n.getConstant('CancelButton') } }]
             },
             gObj.editSettings.dialog ? (gObj.editSettings.dialog.params || {}) : {}
         ));

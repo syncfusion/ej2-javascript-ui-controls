@@ -158,7 +158,7 @@ export class FormFields {
                                 value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
                                 isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
                             };
-                              if (!currentData.id && this.pdfViewer.formFieldCollections[i] && this.pdfViewer.formFieldCollections[i].name === currentData['ActualFieldName']) {
+                              if (!currentData.id && this.pdfViewer.formFieldCollections[i] && !isNullOrUndefined(currentData['ActualFieldName'])) {
                                   fieldProperties.id = this.pdfViewer.formFieldCollections[i].id;
                               }
                             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {

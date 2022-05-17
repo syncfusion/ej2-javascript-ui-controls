@@ -136,6 +136,14 @@
             border: 1px solid darken($gray-600, 10%);
           }
         }
+        @else if $inplace-skin == 'bootstrap5' {
+
+          &:hover {
+            background-color: darken($gray-600, 7.5%);
+            border: 1px solid darken($gray-600, 10%);
+          }
+        }
+
 
         @if $inplace-skin == 'bootstrap4' {
 

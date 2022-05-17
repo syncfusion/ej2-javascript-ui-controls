@@ -1835,7 +1835,6 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.initRemoteRender) {
                 this.initial = true;
                 this.activeIndex = this.index;
-                this.updateValues();
                 this.initRemoteRender = false;
                 this.initial = false;
                 if (this.value && this.dataSource instanceof DataManager) {
@@ -1847,9 +1846,15 @@ export class DropDownList extends DropDownBase implements IInput {
                                 if ((e as ResultData).result.length > 0) {
                                     this.addItem((e as ResultData).result, list.length);
                                     this.updateValues();
+                                } else {
+                                    this.updateValues(); 
                                 }
                             });
+                    }  else {
+                        this.updateValues(); 
                     }
+                } else {
+                    this.updateValues(); 
                 }
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {

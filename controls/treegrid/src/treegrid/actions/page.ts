@@ -143,6 +143,18 @@ export class Page {
         }
         return newResults;
     }
+
+	private updatePageSize(pageingDetails: {result: ITreeData[], count: number}) : void {
+        const updateSize: number = pageingDetails.result.length;
+        const gridPagerModule: GridPage = this.parent.grid.pagerModule;
+        if (this.parent.pageSettings.pageSizes === true) {
+            if (gridPagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value === gridPagerModule.pagerObj.getLocalizedLabel('All')) {
+                gridPagerModule['pagerObj'].totalRecordsCount = updateSize;
+                this.parent.grid.pageSettings.pageSize = updateSize;
+            }
+        }
+    }
+
     private pageAction(pageingDetails: {result: ITreeData[], count: number}): void {
         const dm: DataManager = new DataManager(pageingDetails.result);
         if (this.parent.pageSettings.pageSizeMode === 'Root') {
@@ -177,6 +189,7 @@ export class Page {
             pageingDetails.count = visualData.length;
             let query: Query = new Query();
             const size: number = this.parent.grid.pageSettings.pageSize;
+			this.updatePageSize(pageingDetails);
             let current: number = this.parent.grid.pageSettings.currentPage;
             if (visualData.length < (current * size)) {
                 current = (Math.floor(visualData.length / size)) + ((visualData.length % size) ? 1 : 0);

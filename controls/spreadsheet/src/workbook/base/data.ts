@@ -1,9 +1,9 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes, isFilterHidden } from '../index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel, DateFormatCheckArgs } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setCell } from './../index';
+import { setCell, getTypeFromFormat } from './../index';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -74,7 +74,7 @@ export function getData(
                                 }
                                 key = getColumnHeaderText(i + 1);
                                 if (valueOnly) {
-                                    cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
+                                    cells[key] = row ? getValueFromFormat(context, getCell(sRow, i, sheet)) : '';
                                     if (typeof cells[key] === 'string' && !!Number(cells[key])) {
                                         cells[key] = Number(cells[key]);
                                     }
@@ -82,11 +82,9 @@ export function getData(
                                     const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
-                                            cells[key] = extend(
-                                                {}, cell, { value: getValueFromFormat(context, sRow, i, sheetIdx, sheet, true) });
+                                            cells[key] = extend({}, cell, { value: getValueFromFormat(context, cell, true) });
                                             if (typeof (cells[key] as CellModel).value === 'string' && !!Number((cells[key] as CellModel).value)) {
-                                                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                                                (cells[key] as any).value = Number((cells[key] as CellModel).value);
+                                                cells[key]['value'] = Number((cells[key] as CellModel).value);
                                             }
                                         } else {
                                             cells[key] = cell;
@@ -180,32 +178,17 @@ export function getData(
 /**
  * @hidden
  * @param {Workbook} context - Specifies the context.
- * @param {number} rowIndex - Specifies the rowIndex.
- * @param {number} colIndex - Specifies the colIndex.
- * @param {number} sheetIdx - Specifies the sheetIdx.
- * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} cell - Specifies the cell model.
  * @param {boolean} getIntValueFromDate - Specify the getIntValueFromDate.
  * @returns {string | Date} - To get the value format.
  */
-export function getValueFromFormat(
-    context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number, sheet: SheetModel,
-    getIntValueFromDate?: boolean): string | Date {
-    const cell: CellModel = getCell(rowIndex, colIndex, sheet);
+export function getValueFromFormat(context: Workbook, cell: CellModel, getIntValueFromDate?: boolean): string | Date {
     if (cell) {
         if (cell.format) {
-            const args: { [key: string]: string | number | boolean | Date } = {
-                value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
-                sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
-            };
+            const args: DateFormatCheckArgs = { value: context.getDisplayText(cell), cell: cell,
+                isDate: getTypeFromFormat(cell.format).includes('Date') };
             context.notify(checkDateFormat, args);
-            if (args.isDate) {
-                if (getIntValueFromDate) {
-                    return <string>args.updatedVal;
-                }
-                return args.dateObj as Date;
-            } else {
-                return cell.value || (<unknown>cell.value === 0 ? cell.value : '');
-            }
+            return args.isDate ? (getIntValueFromDate ? args.updatedVal : args.dateObj) : args.value;
         } else {
             return cell.value || (<unknown>cell.value === 0 ? cell.value : '');
         }

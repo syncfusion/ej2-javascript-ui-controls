@@ -473,7 +473,18 @@ export interface CellUpdateArgs {
     requestType?: string;
     cellDelete?: boolean;
 }
-
+/** @hidden */
+export interface DateFormatCheckArgs {
+    value: string;
+    cell?: CellModel;
+    rowIndex?: number;
+    colIndex?: number;
+    sheetIndex?: number;
+    isDate?: boolean;
+    isTime?: boolean;
+    dateObj?: Date;
+    updatedVal?: string;
+}
 /** @hidden */
 export interface checkCellValid {
     value?: string;

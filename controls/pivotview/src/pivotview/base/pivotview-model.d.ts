@@ -818,6 +818,13 @@ export interface PivotViewModel extends ComponentModel{
     chartTypes?: ChartSeriesType[];
 
     /**
+     * Allows you to add the CSS class name to the pivot table element. 
+     * Use this class name, you can customize the pivot table and its inner elements easily at your end.
+     * @default ''
+     */
+    cssClass?: string;
+
+    /**
      * @hidden
      */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;

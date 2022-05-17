@@ -1,6 +1,6 @@
 import { createGrid, destroy } from '../base/treegridutil.spec';
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
-import { L10n } from '@syncfusion/ej2-base';
+import { L10n, setCulture } from '@syncfusion/ej2-base';
 import { ToolbarItem } from '../../src/treegrid/enum';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
@@ -47,6 +47,44 @@ describe('Localization', () => {
       expect(gridObj.element.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe('Uitbreiden');
       expect(gridObj.element.querySelectorAll(".e-toolbar-item")[2].getAttribute("title")).toBe('Ineenstorting');
     });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+    describe('EJ2-59730 - Dynamic Localization Update Testing', () => {
+    let gridObj: TreeGrid;
+    const localede = {
+      'de-DE': {
+        'treegrid': {
+          ExpandAll: 'Alle erweitern',
+          CollapseAll: 'Alles einklappen',
+          Print: 'Drucken'
+        }
+      }
+    };
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: [],
+          toolbar: ['Print','ExpandAll', 'CollapseAll'],
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('set new locale testing', () => {
+      gridObj.locale = 'de-DE';
+      L10n.load(localede);
+      setCulture('de-DE');
+    });
+    it ('test localization change', () => {
+      expect(gridObj.element.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe('Drucken');
+      expect(gridObj.element.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe('Alle erweitern');
+      expect(gridObj.element.querySelectorAll(".e-toolbar-item")[2].getAttribute("title")).toBe('Alles einklappen');
+      gridObj.locale = 'en-US';
+      setCulture('en-US');
+    })
     afterAll(() => {
       destroy(gridObj);
     });

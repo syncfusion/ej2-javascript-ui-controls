@@ -105,7 +105,7 @@ export class TreeViewRenderer implements IAction {
         this.fieldTable = new TreeView({
             fields: { dataSource: this.getTreeData(), id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
             nodeChecked: this.nodeStateChange.bind(this),
-            cssClass: cls.FIELD_LIST_TREE_CLASS,
+            cssClass: cls.FIELD_LIST_TREE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             showCheckBox: true,
             allowDragAndDrop: true,
             sortOrder: 'None',
@@ -245,6 +245,7 @@ export class TreeViewRenderer implements IAction {
                 }
             }],
             closeOnEscape: false,
+            cssClass: this.parent.cssClass,
             target: this.parentElement.parentElement,
             close: this.dialogClose.bind(this)
         });
@@ -300,6 +301,7 @@ export class TreeViewRenderer implements IAction {
             sortOrder: this.parent.dataType === 'olap' ? 'None' : 'Ascending',
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            cssClass: this.parent.cssClass,
             nodeChecked: this.addNode.bind(this),
             drawNode: this.updateTreeNode.bind(this),
             nodeExpanding: this.updateNodeIcon.bind(this),

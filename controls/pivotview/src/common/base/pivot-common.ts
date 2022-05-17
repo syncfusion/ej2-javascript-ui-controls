@@ -56,6 +56,8 @@ export class PivotCommon {
     public isDateField: boolean = false;
     /** @hidden */
     public dataType: string;
+    /** @hidden */
+    public cssClass: string;
 
 
     //Module Declarations
@@ -88,6 +90,7 @@ export class PivotCommon {
         this.parentID = control.id;
         this.localeObj = control.localeObj;
         this.dataType = control.dataType;
+        this.cssClass = control.cssClass;
         this.nodeStateModified = new NodeStateModified(this);
         this.dataSourceUpdate = new DataSourceUpdate(this);
         this.eventBase = new EventBase(this);

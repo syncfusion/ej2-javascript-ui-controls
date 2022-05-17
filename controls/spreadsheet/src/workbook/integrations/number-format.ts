@@ -1,8 +1,9 @@
 import { getRangeIndexes, NumberFormatType, getCellAddress, updateCell } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs } from '../common/math';
-import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText, setCellFormat, rowFillHandler , getTextSpace, updateCustomFormatsFromImport } from '../common/event';
+import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFormatCheckArgs, rowFillHandler } from '../common/index';
+import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/index';
+import { setCellFormat, getTextSpace, updateCustomFormatsFromImport } from '../common/index';
 import { checkIsNumberAndGetNumber } from '../common/internalization';
 /**
  * Specifies number format.
@@ -71,18 +72,15 @@ export class WorkbookNumberFormat {
         const currencySymbol: string = getNumberDependable(this.parent.locale, option.currency);
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
-            const dateEventArgs: { [key: string]: string | number | boolean } = {
-                value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetIndex,
-                updatedVal: <string>args.value, isDate: false, isTime: false
-            };
+            const dateEventArgs: DateFormatCheckArgs = { value: <string>args.value, updatedVal: <string>args.value, cell: cell };
             this.checkDateFormat(dateEventArgs);
             if (dateEventArgs.isDate) {
                 rightAlign = true;
-                cell.value = args.value = <string>dateEventArgs.updatedVal;
+                cell.value = args.value = dateEventArgs.updatedVal;
                 cell.format = args.format = getFormatFromType('ShortDate');
             } else if (dateEventArgs.isTime) {
                 rightAlign = true;
-                cell.value = args.value = <string>dateEventArgs.updatedVal;
+                cell.value = args.value = dateEventArgs.updatedVal;
                 cell.format = args.format = getFormatFromType('Time');
             }
         }
@@ -805,32 +803,27 @@ export class WorkbookNumberFormat {
         return 2;
     }
 
-    public checkDateFormat(args: { [key: string]: string | number | boolean | Date | CellModel }): void {
-        let dateObj: ToDateArgs;
-        const intl: Internationalization = new Internationalization();
-        let value: string = !isNullOrUndefined(args.value) ? args.value.toString() : '';
-        let cell: CellModel = getCell(
-            <number>args.rowIndex, <number>args.colIndex,
-            getSheet(this.parent, isNullOrUndefined(<number>args.sheetIndex) ? this.parent.activeSheetIndex : <number>args.sheetIndex));
-        const checkedDate: string = this.checkCustomDateFormat(value);
-        if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
-            value = checkedDate;
-            if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-                dateObj = toDate(value, intl, this.parent.locale, '', cell);
-                if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
-                    cell = cell ? cell : {};
-                    value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
-                    if (!cell.format || cell.format === '') {
-                        if (dateObj.type === 'time') {
-                            cell.format = getFormatFromType('Time');
-                        } else {
-                            cell.format = getFormatFromType('ShortDate');
-                        }
+    public checkDateFormat(args: DateFormatCheckArgs): void {
+        let value: string = this.checkCustomDateFormat(isNullOrUndefined(args.value) ? '' : args.value.toString());
+        if (args.isDate || ((value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && value !== 'Invalid')) {
+            const cell: CellModel = args.cell || getCell(
+                args.rowIndex, args.colIndex,
+                getSheet(this.parent, isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex), false, true);
+            const dateObj: ToDateArgs = toDate(value, new Internationalization(), this.parent.locale, '', cell);
+            if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
+                value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
+                if (!cell.format) {
+                    if (dateObj.type === 'time') {
+                        cell.format = getFormatFromType('Time');
+                    } else {
+                        cell.format = getFormatFromType('ShortDate');
                     }
-                    args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
-                    args.isTime = dateObj.type === 'time';
-                    args.dateObj = dateObj.dateObj;
                 }
+                args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
+                args.isTime = dateObj.type === 'time';
+                args.dateObj = dateObj.dateObj;
+            } else {
+                args.isDate = false;
             }
             args.updatedVal = value;
         }

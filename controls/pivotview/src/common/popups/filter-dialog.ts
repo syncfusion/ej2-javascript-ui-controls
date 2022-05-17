@@ -112,6 +112,7 @@ export class FilterDialog {
                 }],
             closeOnEscape: this.parent.renderMode === 'Popup' ? false : true,
             target: target,
+            cssClass: this.parent.cssClass,
             close: this.removeFilterDialog.bind(this)
         });
         this.dialogPopUp.isStringTemplate = true;
@@ -316,7 +317,7 @@ export class FilterDialog {
             items.push({ id: levels[i].id, text: levels[i].name });
         }
         this.dropMenu = new DropDownButton({
-            cssClass: 'e-level-drop e-caret-hide',
+            cssClass: 'e-level-drop e-caret-hide' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             items: items, iconCss: 'e-icons e-dropdown-icon',
             disabled: (levelCount === levels.length),
             enableRtl: this.parent.enableRtl,
@@ -790,7 +791,7 @@ export class FilterDialog {
                 dataSource: lDataSource, enableRtl: this.parent.enableRtl,
                 fields: { value: 'value', text: 'text', iconCss: 'iconClass' },
                 index: levelIndex,
-                cssClass: cls.LEVEL_OPTIONS_CLASS, width: '100%',
+                cssClass: cls.LEVEL_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
                 change: (args: ChangeEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     let fieldName: string = element.getAttribute('data-fieldName');
@@ -848,7 +849,7 @@ export class FilterDialog {
         let optionWrapper1: DropDownList = new DropDownList({
             dataSource: vDataSource, enableRtl: this.parent.enableRtl,
             fields: { value: 'value', text: 'text' }, index: valueIndex,
-            cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                 if (!isNullOrUndefined(element)) {
@@ -864,7 +865,7 @@ export class FilterDialog {
         let optionWrapper: DropDownList = new DropDownList({
             dataSource: oDataSource, enableRtl: this.parent.enableRtl,
             fields: { value: 'value', text: 'text' }, value: option,
-            cssClass: cls.FILTER_OPERATOR_CLASS, width: '100%',
+            cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                 if (!isNullOrUndefined(element)) {
@@ -902,6 +903,7 @@ export class FilterDialog {
                     }
                 },
                 width: '100%',
+                cssClass: this.parent.cssClass
             });
             let inputObj2: DateTimePicker = new DateTimePicker({
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
@@ -919,6 +921,7 @@ export class FilterDialog {
                     }
                 },
                 width: '100%',
+                cssClass: this.parent.cssClass
             });
             inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);

@@ -1353,6 +1353,17 @@ export class Axis extends ChildProperty<Axis> {
             } else {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
             }
+        } else if (this.angle !== 0 && this.orientation === 'Vertical') {
+            //I264474: Fix for datasource bind im mounted console error ocurred
+            this.rotatedLabel = isNullOrUndefined(this.rotatedLabel) ? '' : this.rotatedLabel;
+            const isHorizontalAngle: boolean = this.angle === -360 || this.angle === 0 || this.angle === -180 ||
+                this.angle === 180 || this.angle === 360;
+            // To avoid overlap axis label with chart title or chart legend when it is outside.
+            if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
+                this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
+            } else {
+                this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+            }
         }
         if (chart.multiLevelLabelModule && this.multiLevelLabels.length > 0) {
             chart.multiLevelLabelModule.getMultilevelLabelsHeight(this);

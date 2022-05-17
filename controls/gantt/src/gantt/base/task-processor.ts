@@ -164,7 +164,7 @@ export class TaskProcessor extends DateProcessor {
             const child: string = this.parent.taskFields.child;
             const resourceData: [] = tempData && tempData[this.parent.taskFields.resourceInfo];
             const resourceIdMapping: string = this.parent.resourceFields.id;
-            if (!tempData[child] && resourceData && resourceData.length) {
+            if ((!tempData[child] || tempData[child].length === 0) && resourceData && resourceData.length) {
                 resourceData.forEach((resource: number | object) => {
                     const id: string = (typeof resource === 'object') ? resource[resourceIdMapping] :
                         resource;

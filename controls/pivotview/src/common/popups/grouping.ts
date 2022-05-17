@@ -294,7 +294,8 @@ export class Grouping implements IAction {
             },
             closeOnEscape: true,
             close: this.removeDialog.bind(this),
-            target: this.parentElement
+            target: this.parentElement,
+            cssClass: this.parent.cssClass
         });
         this.groupDialog.isStringTemplate = true;
         this.groupDialog.appendTo(groupDialog);
@@ -443,7 +444,8 @@ export class Grouping implements IAction {
                             locale: this.parent.locale,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(startAt === undefined),
-                            width: '100%'
+                            width: '100%',
+                            cssClass: this.parent.cssClass
                         });
                         startAtInputObj.isStringTemplate = true;
                         startAtInputObj.appendTo(startAtInputField1);
@@ -453,7 +455,8 @@ export class Grouping implements IAction {
                             locale: this.parent.locale,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(endAt === undefined),
-                            width: '100%'
+                            width: '100%',
+                            cssClass: this.parent.cssClass
                         });
                         endAtInputObj.isStringTemplate = true;
                         endAtInputObj.appendTo(endAtInputField1);
@@ -470,6 +473,7 @@ export class Grouping implements IAction {
                             filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + this.parent.localeObj.getConstant('Months'),
                             enableRtl: this.parent.enableRtl,
                             locale: this.parent.locale,
+                            cssClass: this.parent.cssClass,
                             select: () => {
                                 groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
                             },

@@ -299,15 +299,18 @@ export class CheckBoxFilterBase {
                 click: this.btnClick.bind(this),
                 buttonModel: {
                     content: this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton'),
-                    cssClass: 'e-primary', isPrimary: true
+                    cssClass: this.parent.cssClass ? 'e-primary' + ' ' + this.parent.cssClass : 'e-primary',
+                    isPrimary: true
                 }
             },
             {
                 click: this.btnClick.bind(this),
-                buttonModel: { cssClass: 'e-flat', content: this.getLocalizedLabel(this.isExcel ? 'CancelButton' : 'ClearButton') }
+                buttonModel: { cssClass: this.parent.cssClass ? 'e-flat' + ' ' + this.parent.cssClass : 'e-flat',
+                    content: this.getLocalizedLabel(this.isExcel ? 'CancelButton' : 'ClearButton') }
             }],
             created: this.dialogCreated.bind(this),
-            open: this.dialogOpen.bind(this)
+            open: this.dialogOpen.bind(this),
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         const isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;

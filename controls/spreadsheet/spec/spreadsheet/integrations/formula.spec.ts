@@ -669,7 +669,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-58254, EJ2-59388 ->', () => {
+        describe('EJ2-58254, EJ2-59388, EJ2-59734 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     {
@@ -712,6 +712,12 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('I2', '=DOLLAR(H2,3)');
                 expect(helper.invoke('getCell', [1, 8]).textContent).toBe('$10.000');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8].value)).toBe('"$10.000"');
+                done();
+            });
+            it('It takes too long to import an excel file into a spreadsheet due to the IF function not working properly', (done: Function) => {
+                helper.edit('I2', '=IF(H2 = 0,"It is true", "It is false")');
+                expect(helper.invoke('getCell', [1, 8]).textContent).toBe('It is false');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8].value)).toBe('"It is false"');
                 done();
             });
         });

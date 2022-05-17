@@ -685,6 +685,28 @@ describe('Self reference data', () => {
         triggerMouseEvent(element, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
       });
+      it("dynamically changes project to resource view", () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'refresh') {
+                ganttObj.viewType = 'ResourceView';
+                ganttObj.dataBind();
+              }
+            };
+        ganttObj.selectionModule.selectRows([1]);
+        let deleteToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
+        triggerMouseEvent(deleteToolbar, 'click');
+        let okElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(okElement, 'click');
+        ganttObj.openEditDialog(1);
+        let resource: HTMLElement = document.querySelector('#e-item-' + ganttObj.element.id + '_Tab_1') as HTMLElement;
+        triggerMouseEvent(resource, 'click');
+        let resourceCheckbox1: HTMLElement = document.querySelector("#" +
+          ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
+        triggerMouseEvent(resourceCheckbox1, "click");
+        let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id +"_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
+        triggerMouseEvent(saveButton, "click");
+        expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe("Project Initiation");
+    });
   });
   describe("Virtualization in resource view", () => {
     let ganttObj: Gantt;

@@ -1589,7 +1589,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             let subChildItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), childItems[index]);
             if (subChildItems && subChildItems.length) {
-                this.parentCheckData.push(treeData);
+                if (this.parentCheckData.indexOf(treeData) === -1) this.parentCheckData.push(treeData);
                 this.updateChildCheckState(subChildItems, childItems[index]);
             }
             if (count === childItems.length && this.autoCheck && this.checkedNodes.indexOf(checkedParent) === -1) {
@@ -1604,7 +1604,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
-        this.parentCheckData = [];
     }
 
     private beforeNodeCreate(e: ItemCreatedArgs): void {

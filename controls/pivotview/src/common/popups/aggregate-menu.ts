@@ -121,6 +121,7 @@ export class AggregateMenu {
             items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            cssClass: this.parent.cssClass,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: (args: OpenCloseMenuEventArgs) => {    /* eslint-disable-line */
                 (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
@@ -201,7 +202,8 @@ export class AggregateMenu {
             overlayClick: () => {
                 this.removeDialog();
             },
-            close: this.removeDialog.bind(this)
+            close: this.removeDialog.bind(this),
+            cssClass: this.parent.cssClass
         });
         this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
@@ -303,7 +305,7 @@ export class AggregateMenu {
             fields: { value: 'value', text: 'text' },
             value: summaryType,
             // popupWidth: 'auto',
-            cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 optionWrapper2.enabled = baseFieldTypes.indexOf(args.value as string) !== -1 ? true : false;
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
@@ -321,7 +323,7 @@ export class AggregateMenu {
             value: baseField,
             // popupWidth: 'auto',
             enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 fieldItemDataSource = Object.keys(popupInstance.parent.engineModule.fieldList[args.value as string].formattedMembers);
                 optionWrapper3.dataSource = fieldItemDataSource;
@@ -340,7 +342,7 @@ export class AggregateMenu {
             allowFiltering: true,
             filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0],
             enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: cls.FILTER_OPERATOR_CLASS, width: '100%',
+            cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
         });
         optionWrapper3.isStringTemplate = true;
         optionWrapper3.appendTo(dropOptionDiv3);

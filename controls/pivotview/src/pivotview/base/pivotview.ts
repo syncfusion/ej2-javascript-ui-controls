@@ -1189,6 +1189,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Property(['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Polar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StackingLine', 'StepLine', 'StepArea', 'SplineArea', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100', 'Bubble', 'Pareto', 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid'])
     public chartTypes: ChartSeriesType[];
 
+    /**
+     * Allows you to add the CSS class name to the pivot table element. 
+     * Use this class name, you can customize the pivot table and its inner elements easily at your end.
+     * @default ''
+     */
+     @Property('')
+     public cssClass: string;
+
     //Event Declarations
     /**
      * @hidden
@@ -2049,7 +2057,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.showTooltip) {
             if (this.tooltipTemplate) {
                 this.tooltip = new Tooltip({
-                    target: 'td.e-valuescontent',
+                    target: 'td.e-valuescontent' + (this.cssClass ? (' ' + this.cssClass) : ''),
                     cssClass: 'e-pivottooltiptemplate',
                     showTipPointer: false,
                     position: 'BottomRight',
@@ -2061,7 +2069,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 });
             } else {
                 this.tooltip = new Tooltip({
-                    target: 'td.e-valuescontent',
+                    target: 'td.e-valuescontent' + (this.cssClass ? (' ' + this.cssClass) : ''),
                     showTipPointer: false,
                     position: 'BottomRight',
                     mouseTrail: true,
@@ -4007,6 +4015,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             addClass([this.element], cls.DEVICE);
         } else {
             removeClass([this.element], cls.DEVICE);
+        }
+        if (this.cssClass) {
+            addClass([this.element], this.cssClass);
         }
     }
 

@@ -1396,7 +1396,7 @@ export class Splitter extends Component<HTMLElement> {
                         paneMinRange = this.convertPercentageToPixel(this.paneSettings[i].min);
                     }
                     minValue = this.convertPixelToNumber((paneMinRange).toString());
-                    if (this.orientation === 'Horizontal' ? this.allPanes[i].offsetWidth : this.allPanes[i].offsetHeight < minValue) {
+                    if ((this.orientation === 'Horizontal' ? this.allPanes[i].offsetWidth : this.allPanes[i].offsetHeight) < minValue) {
                         if (i === paneIndex) {
                             updatePane = this.allPanes[i];
                             flexPane = this.allPanes[i + 1];

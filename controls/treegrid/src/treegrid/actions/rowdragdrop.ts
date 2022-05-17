@@ -863,8 +863,8 @@ export class RowDD {
         if (this.dropPosition === 'bottomSegment') {
             const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
             const rowIndex: number = selectedItemIndex === -1 ?
-                (this.parent.grid.getRowIndexByPrimaryKey(data[0][primaryKeyField])) - 1
-                : this.parent.getSelectedRowIndexes()[0] - 1;
+                (this.parent.grid.getRowIndexByPrimaryKey(data[0][primaryKeyField]))
+                : this.parent.getSelectedRowIndexes()[0];
             const selectedRecord: ITreeData = this.parent.getCurrentViewRecords()[rowIndex];
             this.droppedRecord = getParentData(this.parent, selectedRecord.parentItem.uniqueID);
         }

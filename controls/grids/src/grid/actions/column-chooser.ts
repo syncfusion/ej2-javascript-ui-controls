@@ -329,16 +329,18 @@ export class ColumnChooser implements IAction {
                 click: this.confirmDlgBtnClick.bind(this),
                 buttonModel: {
                     content: this.l10n.getConstant('OKButton'), isPrimary: true,
-                    cssClass: 'e-cc e-cc_okbtn'
+                    cssClass: this.parent.cssClass ? 'e-cc e-cc_okbtn' + ' ' + this.parent.cssClass : 'e-cc e-cc_okbtn'
                 }
             },
             {
                 click: this.clearBtnClick.bind(this),
-                buttonModel: { cssClass: 'e-flat e-cc e-cc-cnbtn', content: this.l10n.getConstant('CancelButton') }
+                buttonModel: { cssClass: this.parent.cssClass ?
+                    'e-flat e-cc e-cc-cnbtn' + ' ' + this.parent.cssClass : 'e-flat e-cc e-cc-cnbtn',
+                    content: this.l10n.getConstant('CancelButton') }
             }],
             content: this.renderChooserList(),
             width: 250,
-            cssClass: 'e-cc',
+            cssClass: this.parent.cssClass ? 'e-cc' + ' ' + this.parent.cssClass : 'e-cc',
             animationSettings: { effect: 'None' }
         });
         const isStringTemplate: string = 'isStringTemplate';

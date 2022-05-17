@@ -73,18 +73,19 @@ export class BaseQuickToolbar {
         this.element = this.parent.createElement('div', { id: popupId, className: className + ' ' + classes.CLS_RTE_ELEMENTS });
         this.element.setAttribute('aria-owns', this.parent.getID());
         this.appendPopupContent();
-        this.createToolbar(args.toolbarItems, args.mode);
+        this.createToolbar(args.toolbarItems, args.mode, args.cssClass);
         this.popupRenderer.renderPopup(this);
         this.addEventListener();
     }
 
-    private createToolbar(items: (string | IToolbarItems)[], mode: OverflowMode): void {
+    private createToolbar(items: (string | IToolbarItems)[], mode: OverflowMode, cssClass: string): void {
         this.quickTBarObj = new BaseToolbar(this.parent, this.locator);
         this.quickTBarObj.render({
             container: 'quick',
             target: this.toolbarElement,
             items: items,
-            mode: mode
+            mode: mode,
+            cssClass: cssClass
         } as IToolbarRenderOptions);
         this.quickTBarObj.toolbarObj.refresh();
     }
@@ -266,6 +267,10 @@ export class BaseQuickToolbar {
                 this.popupObj.element.classList.remove('e-popup-open');
                 removeClass([this.element], [classes.CLS_HIDE]);
                 this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
+                if (this.popupObj && this.parent.cssClass) {
+                    removeClass([this.popupObj.element], this.parent.cssClass);
+                    addClass([this.popupObj.element], this.parent.cssClass);
+                }
                 setStyleAttribute(this.element, {
                     maxWidth: window.outerWidth + 'px'
                 });

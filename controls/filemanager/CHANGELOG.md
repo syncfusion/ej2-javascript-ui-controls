@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.56 (2022-05-17)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#F174002` - The issue with "Drag and drop throws an error for the date-modified column of the File Manager" has been resolved.
+
 ## 20.1.55 (2022-05-12)
 
 ### File Manager

@@ -30,7 +30,8 @@ export class ComboboxEditCell extends EditCellBase implements IEditCell {
                 enableRtl: this.parent.enableRtl, actionComplete: this.finalValue.bind(this),
                 placeholder: isInlineMode ? '' : args.column.headerText,
                 floatLabelType: isInlineMode ? 'Never' : 'Always',
-                enabled: isEditable(args.column, args.requestType, args.element)
+                enabled: isEditable(args.column, args.requestType, args.element),
+                cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             args.column.edit.params));
         this.obj.appendTo(args.element as HTMLElement);

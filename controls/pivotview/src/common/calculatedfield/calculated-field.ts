@@ -525,7 +525,7 @@ export class CalculatedField implements IAction {
      */
     private createMenu(menuItems: MenuItemModel[], node: HTMLElement): void {
         let menuOptions: ContextMenuModel = {
-            cssClass: this.parentID + 'calculatedmenu',
+            cssClass: this.parentID + 'calculatedmenu' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             items: menuItems,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -1048,7 +1048,8 @@ export class CalculatedField implements IAction {
             locale: this.parent.locale,
             showCloseIcon: true,
             header: this.parent.localeObj.getConstant('createCalculatedField'),
-            target: document.body
+            target: document.body,
+            cssClass: this.parent.cssClass
         });
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parentID + 'calculateddialog');
@@ -1178,7 +1179,8 @@ export class CalculatedField implements IAction {
                         offsetY: (this.parent.enableRtl ? -10 : -10),
                         locale: this.parent.locale,
                         enableRtl: this.parent.enableRtl,
-                        width: 220
+                        width: 220,
+                        cssClass: this.parent.cssClass
                     });
                     tooltip.appendTo(headerWrapperDiv);
                     wrapDiv.appendChild(headerWrapperDiv);
@@ -1403,7 +1405,7 @@ export class CalculatedField implements IAction {
             fields: { value: 'value', text: 'text' },
             value: this.fieldType !== null ? this.fieldType : mData[0].value as string,
             readonly: this.isEdit,
-            cssClass: cls.MEMBER_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.MEMBER_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 hierarchyListObj.enabled = args.value === 'Dimension' ? true : false;
                 this.fieldType = args.value as string;
@@ -1421,7 +1423,7 @@ export class CalculatedField implements IAction {
             fields: { value: 'value', text: 'text' },
             value: this.parentHierarchy !== null && memberTypeObj.value === 'Dimension' ?
                 this.parentHierarchy : fieldData[0].value as string,
-            cssClass: cls.MEMBER_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.MEMBER_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 this.parentHierarchy = args.value as string;
                 this.formulaText = (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value;
@@ -1433,7 +1435,7 @@ export class CalculatedField implements IAction {
             dataSource: fData, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
             value: this.formatType !== null ? this.formatType : fData[0].value as string,
-            cssClass: cls.MEMBER_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.MEMBER_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 customerFormatObj.enabled = args.value === 'Custom' ? true : false;
                 this.formatType = args.value as string;
@@ -1493,7 +1495,8 @@ export class CalculatedField implements IAction {
                 drawNode: this.drawTreeNode.bind(this),
                 nodeExpanding: this.updateNodeIcon.bind(this),
                 nodeCollapsed: this.updateNodeIcon.bind(this),
-                sortOrder: 'None'
+                sortOrder: 'None',
+                cssClass: this.parent.cssClass
             });
         } else {
             this.treeObj = new TreeView({
@@ -1501,6 +1504,7 @@ export class CalculatedField implements IAction {
                 allowDragAndDrop: true,
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
+                cssClass: this.parent.cssClass,
                 nodeCollapsing: this.nodeCollapsing.bind(this),
                 nodeDragStart: this.dragStart.bind(this),
                 nodeClicked: this.fieldClickHandler.bind(this),
@@ -1817,7 +1821,8 @@ export class CalculatedField implements IAction {
                     nodeSelected: (args: NodeSelectEventArgs) => {
                         removeClass([args.node], 'e-active');
                         args.cancel = true;
-                    }
+                    },
+                    cssClass: this.parent.cssClass
                 });
                 this.treeObj.isStringTemplate = true;
                 this.treeObj.appendTo('#' + this.parentID + 'accordDiv');
@@ -2056,6 +2061,7 @@ export class CalculatedField implements IAction {
             visible: true,
             closeOnEscape: true,
             target: document.body,
+            cssClass: this.parent.cssClass,
             close: this.removeErrorDialog.bind(this),
         });
         /* eslint-enable max-len */

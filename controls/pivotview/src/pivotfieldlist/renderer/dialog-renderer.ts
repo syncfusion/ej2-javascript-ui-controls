@@ -264,6 +264,7 @@ export class DialogRenderer {
                 position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
                 buttons: buttons,
                 target: document.body,
+                cssClass: this.parent.cssClass,
                 close: this.removeFieldListIcon.bind(this),
                 open: this.dialogOpen.bind(this)
             });
@@ -297,6 +298,7 @@ export class DialogRenderer {
                 position: { X: 'center', Y: this.parent.element.offsetTop },    /* eslint-disable-line */
                 footerTemplate: template,
                 closeOnEscape: false,
+                cssClass: this.parent.cssClass,
                 target: !isNullOrUndefined(this.parent.target) ? ((typeof this.parent.target) === 'string') ?
                     <HTMLElement>document.querySelector(<string>this.parent.target) : <HTMLElement>this.parent.target : document.body,
                 close: this.removeFieldListIcon.bind(this)

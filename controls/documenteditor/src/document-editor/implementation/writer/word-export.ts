@@ -5774,6 +5774,9 @@ export class WordExport {
             writer.writeStartElement(undefined, 'abstractNumId', this.wNamespace);
             writer.writeAttributeString(undefined, 'val', this.wNamespace, list.abstractListId.toString());
             writer.writeEndElement();
+            for (let lvl: number = 0, cnt: number = list.levelOverrides.length; lvl < cnt; lvl++) {
+                this.serializeLevelOverrides(writer, list.levelOverrides[lvl], lvl);
+            }
             writer.writeEndElement();
         }
     }
@@ -5844,6 +5847,15 @@ export class WordExport {
         this.serializeParagraphFormat(writer, listLevel.paragraphFormat, undefined);
         writer.writeEndElement(); //end of pPr
         this.serializeCharacterFormat(writer, listLevel.characterFormat);
+        writer.writeEndElement();
+    }
+    //Serialize the levelOverrides
+    private serializeLevelOverrides(writer: XmlWriter, listLevel: any, levelIndex: number): void {
+        writer.writeStartElement(undefined, 'lvlOverride', this.wNamespace);
+        writer.writeAttributeString(undefined, 'ilvl', this.wNamespace, levelIndex.toString());
+        writer.writeStartElement(undefined, 'startOverride', this.wNamespace);
+        writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
+        writer.writeEndElement();
         writer.writeEndElement();
     }
     private getLevelPattern(levelPattern: any): string {
@@ -6253,7 +6265,7 @@ export class WordExport {
         // serialize chart relations
         this.serializeChartDocumentRelations(this.documentCharts, writer);
 
-        //this.serializeExternalLinkImages(writer);
+        this.serializeExternalLinkImages(writer);
 
         // if (HasHyperlink && HyperlinkTargets.length > 0) {
         //     SerializeHyperlinkRelations(docRelstream, HyperlinkTargets);

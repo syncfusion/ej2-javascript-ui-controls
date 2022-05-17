@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.56 (2022-05-17)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I378180` - Image not cleared when apply clear all action issue is resolved.
+- `#I376814` - SPILL error in UNIQUE and IFS formula with the loaded JSON data issue fixed.
+- `#F174476` - The issue of importing an excel file into a spreadsheet taking too long has been resolved.
+
 ## 20.1.55 (2022-05-12)
 
 ### Spreadsheet
@@ -23,6 +33,7 @@
 
 - `#F174531` - Cleared the formula dependencies from calculate instance while importing the excel file.
 - `#I375090` - The dollar formula throws an error when used with a single argument issue resolved.
+- `#I370988` - Formula dependency not cleared while performing clipboard functionality is fixed.
 
 ## 20.1.51 (2022-04-26)
 

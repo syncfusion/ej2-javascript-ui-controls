@@ -1,9 +1,9 @@
 import { Workbook, CellModel, getCell } from '../base/index';
 import { executeTaskAsync } from '../common/worker';
-import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation } from '../common/index';
+import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, getRangeIndexes } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
-import { SaveCompleteEventArgs } from '../common/index';
+import { SaveCompleteEventArgs, isInRange } from '../common/index';
 import { checkUniqueRange } from '../../workbook/index';
 import { detach } from '@syncfusion/ej2-base';
 
@@ -281,6 +281,8 @@ export class WorkbookSave extends SaveWorker {
                         };
                         this.parent.notify(checkUniqueRange, args);
                         if (cell) {
+                            const uniqueArgs: { range: string[] } = { range: [] };
+                            this.parent.notify(events.getUniqueRange, uniqueArgs);
                             if ((cell.formula && (cell.formula.indexOf('=UNIQUE(') > -1)) || args.isUnique) {
                                 delete cell.value;
                                 continue;
@@ -290,6 +292,20 @@ export class WorkbookSave extends SaveWorker {
                                     workbookFormulaOperation, { action: 'refreshCalculate', value: cell.formula, rowIndex: args.cellIdx[0],
                                     colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true });
                                 cell.value = getCell(args.cellIdx[0], i, model).value;
+                            }
+                            if (cell.value) {
+                                const uniqueColl: string[] = uniqueArgs.range;
+                                for (let uniqueIdx = 0; uniqueIdx < uniqueColl.length; uniqueIdx++) {
+                                    const uniqueSheet: string = uniqueColl[uniqueIdx].split('!')[0];
+                                    if (uniqueSheet === this.parent.sheets[sheetIdx].name) {
+                                        const uniqueRange: string = uniqueColl[uniqueIdx].split('!')[1];
+                                        const uniqueIndex: number[] = getRangeIndexes(uniqueRange);
+                                        if (isInRange(uniqueIndex, [args.cellIdx[0], args.cellIdx[1], args.cellIdx[0], args.cellIdx[1]])) {
+                                            delete cell.value;
+                                            continue;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

@@ -8,7 +8,7 @@ import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
 import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice } from '../base/util';
 import { updateDropDownFontFormatLocale } from '../base/util';
 import * as model from '../models/items';
-import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions, IColorPickerRenderArgs  } from '../base/interface';
+import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions, IColorPickerRenderArgs, ICssClassArgs } from '../base/interface';
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -636,6 +636,7 @@ export class Toolbar {
         this.parent.on(events.focusChange, this.focusChangeHandler, this);
         this.parent.on(events.mouseDown, this.mouseDownHandler, this);
         this.parent.on(events.sourceCodeMouseDown, this.mouseDownHandler, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
         if (!this.parent.inlineMode.enable && !isIDevice()) {
             this.parent.on(events.toolbarClick, this.toolbarClickHandler, this);
         }
@@ -660,8 +661,19 @@ export class Toolbar {
         this.parent.off(events.focusChange, this.focusChangeHandler);
         this.parent.off(events.mouseDown, this.mouseDownHandler);
         this.parent.off(events.sourceCodeMouseDown, this.mouseDownHandler);
+        this.parent.off(events.bindCssClass, this.setCssClass);
         if (!this.parent.inlineMode.enable && !isIDevice()) {
             this.parent.off(events.toolbarClick, this.toolbarClickHandler);
+        }
+    }
+
+    private setCssClass(e: ICssClassArgs) {
+        if (this.toolbarObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                this.toolbarObj.setProperties({ cssClass: (this.toolbarObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                this.toolbarObj.setProperties({ cssClass: (this.toolbarObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
         }
     }
 

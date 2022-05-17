@@ -65,7 +65,7 @@ export class StringFilterUI implements IFilterMUI {
                 enableRtl: this.parent.enableRtl,
                 query: isForeignColumn ? foreignColumnQuery : this.parent.query.clone(),
                 sortOrder: 'Ascending',
-                cssClass: 'e-popup-flmenu',
+                cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 autofill: true,
                 placeholder: args.localizeText.getConstant('EnterValue')
             },

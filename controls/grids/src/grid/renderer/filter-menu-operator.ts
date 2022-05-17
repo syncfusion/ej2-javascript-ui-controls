@@ -63,7 +63,7 @@ export class FlMenuOptrUI {
         this.dropOptr = new DropDownList({
             dataSource: dropDatasource,
             fields: { text: 'text', value: 'value' },
-            cssClass: 'e-popup-flmenu',
+            cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
             enableRtl: this.parent.enableRtl,
             text: selectedValue
         });

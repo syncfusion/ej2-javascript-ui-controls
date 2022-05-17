@@ -385,7 +385,9 @@ export class SfdtExport {
         if (widget instanceof ParagraphWidget) {
             if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.blockContentControl(widget);
-                if (!isNullOrUndefined(block) && this.isBlockClosed) {
+                this.blockContent = false;
+                if (!isNullOrUndefined(block) && (this.isBlockClosed || !this.nestedBlockContent)) {
+                    this.nestedBlockEnabled = false;
                     blocks.push(block);
                     this.blocks = [];
                 }
@@ -448,7 +450,6 @@ export class SfdtExport {
         if (!this.blockContent) {
             return blocks;
         } else if (!this.nestedBlockContent && this.nestedBlockEnabled) {
-            this.nestedBlockEnabled = false;
             return blocks;
         }
     }

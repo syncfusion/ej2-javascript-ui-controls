@@ -1753,6 +1753,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public frozenColumns: number;
 
     /**
+     * Defines the own class for the grid element.
+     *
+     * @default ''
+     */
+    @Property('')
+    public cssClass: string;
+
+    /**
      * `columnQueryMode`provides options to retrive data from the datasource.Their types are
      * * `All`: It Retrives whole datasource.
      * * `Schema`: Retrives data for all the defined columns in grid from the datasource.
@@ -5194,7 +5202,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (indentWidth < 1) {
             indentWidth = 1;
         }
-        if (this.enableColumnVirtualization || this.isAutoGen) { indentWidth = 30; }
+        if (this.enableColumnVirtualization || this.isAutoGen || (this.columns.length === this.groupSettings.columns.length)) { 
+            indentWidth = 30; 
+        }
         while (i < this.groupSettings.columns.length) {
             applyWidth(i, indentWidth);
             i++;
@@ -5470,6 +5480,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.rowHeight) {
             this.element.classList.add('e-grid-min-height');
         }
+        if (this.cssClass) {
+            this.element.classList.add(this.cssClass);
+        }
         classList(this.element, ['e-responsive', 'e-default'], []);
         const rendererFactory: RendererFactory = this.serviceLocator.getService<RendererFactory>('rendererFactory');
         this.headerModule = rendererFactory.getRenderer(RenderType.Header);
@@ -5593,7 +5606,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public createTooltip(): void {
-        this.toolTipObj = new Tooltip({ opensOn: 'custom', content: '' }, this.element);
+        this.toolTipObj = new Tooltip({
+            opensOn: 'custom',
+            content: '',
+            cssClass: this.cssClass ? this.cssClass : null
+        }, this.element);
     }
 
     /** @hidden

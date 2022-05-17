@@ -909,6 +909,7 @@ export class Group implements IAction {
                 this.updateGroupDropArea();
                 if (this.groupSettings.showDropArea) {
                     this.element.style.display = '';
+                    this.parent.headerModule.refreshUI();
                 } else {
                     this.element.style.display = 'none';
                 }

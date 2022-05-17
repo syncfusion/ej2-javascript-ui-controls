@@ -21,7 +21,8 @@ export class MultiSelectEditCell extends EditCellBase implements IEditCell {
                 value: getValue(args.column.field, args.rowData),
                 enableRtl: this.parent.enableRtl,
                 placeholder: isInline ? '' : args.column.headerText, popupHeight: '200px',
-                floatLabelType: isInline ? 'Never' : 'Always'
+                floatLabelType: isInline ? 'Never' : 'Always',
+                cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             args.column.edit.params));
         this.obj.appendTo(args.element as HTMLElement);

@@ -36,6 +36,7 @@ export interface IXLFilter extends Component<HTMLElement> {
     isVue?: boolean;
     renderTemplates?: Function;
     allowSorting?: boolean;
+    cssClass?: string;
 }
 
 /** @hidden */

@@ -239,7 +239,7 @@ export class PivotButton implements IAction {
                                         parent.pivotChartModule.currentMeasure : valueData[0].value,
                                     width: 200,
                                     fields: { value: 'value', text: 'text' },
-                                    cssClass: cls.GROUP_CHART_VALUE_DROPDOWN,
+                                    cssClass: cls.GROUP_CHART_VALUE_DROPDOWN + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                                     change: (args: ChangeEventArgs) => {
                                         if (args.e && args.e !== null) {
                                             parent.chartSettings.value = args.value as string;
@@ -317,7 +317,7 @@ export class PivotButton implements IAction {
                                     value: availColindex ? columnData[availColindex - 1].value : (columnData[0] ? columnData[0].value : ''),
                                     width: '200',
                                     fields: { value: 'value', text: 'text', htmlAttributes: 'title' },
-                                    cssClass: cls.GROUP_CHART_COLUMN_DROPDOWN,
+                                    cssClass: cls.GROUP_CHART_COLUMN_DROPDOWN + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                                     change: (args: ChangeEventArgs) => {
                                         if (args.e && args.e !== null) {
                                             let delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
@@ -714,7 +714,7 @@ export class PivotButton implements IAction {
         let element: Element = closest(args.element, '.' + cls.PIVOT_BUTTON_CLASS);
         let cloneElement: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_DragClone',
-            className: cls.DRAG_CLONE_CLASS
+            className: cls.DRAG_CLONE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
         });
         let contentElement: HTMLElement = createElement('span', {
             className: cls.TEXT_CONTENT_CLASS,

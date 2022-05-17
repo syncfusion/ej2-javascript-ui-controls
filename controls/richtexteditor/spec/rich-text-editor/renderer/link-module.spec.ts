@@ -630,6 +630,50 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
         });
     });
+
+
+    describe('EJ2-59865 - css class dependency component - Link Module', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion</p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                },
+                cssClass: 'customClass'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' css class dependency initial load and dynamic change ', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(document.querySelector('.e-rte-link-dialog').classList.contains('customClass')).toBe(true);
+            expect(document.querySelector('.e-checkbox-wrapper').classList.contains('customClass')).toBe(true);
+            rteObj.cssClass = 'changedClass';
+            rteObj.dataBind();
+            expect(document.querySelector('.e-rte-link-dialog').classList.contains('changedClass')).toBe(true);
+            expect(document.querySelector('.e-checkbox-wrapper').classList.contains('changedClass')).toBe(true);
+        });
+    });
     
     describe('EJ2-57822 - insert link to the content before link content issue', () => {
         let rteEle: HTMLElement;

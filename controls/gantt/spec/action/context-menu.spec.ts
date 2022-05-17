@@ -1,7 +1,7 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData} from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, editingResources} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 interface EJ2Instance extends HTMLElement {
@@ -713,6 +713,79 @@ describe('Context-', () => {
                 }, done);
         });
         it('Convert  to milestone', () => {
+            (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[2];
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData[2].ganttProperties.isMilestone).toBeTruthy;
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+    describe('Context menu resources-', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: editingData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        notes: 'info',
+                        resourceInfo: 'resources'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', width: 80 },
+                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                        { field: 'StartDate' },
+                        { field: 'EndDate' },
+                        { field: 'Duration' },
+                        { field: 'Progress' },
+                        { field: 'Predecessor' },
+                        { field: 'resources' },
+                        { field: 'info' },
+                    ],
+                    resourceFields: {
+                        id: 'resourceId',
+                        name: 'resourceName'
+                    },
+                    resources: editingResources,
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        rightLabel: 'resources'
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                    enableContextMenu: true,
+                    allowSelection: true,
+                    height: '450px',
+                    treeColumnIndex: 1,
+                    highlightWeekends: true,
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('07/28/2019')
+                }, done);
+        });
+        it('Convert  to milestone resources', () => {
             (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[2];
             let e: ContextMenuClickEventArgs = {
                 item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },

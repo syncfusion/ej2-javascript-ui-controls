@@ -444,11 +444,14 @@ export class Edit implements IAction {
             [
                 {
                     click: this.dlgOk.bind(this),
-                    buttonModel: { content: this.l10n.getConstant('OKButton'), cssClass: 'e-primary', isPrimary: true }
+                    buttonModel: { content: this.l10n.getConstant('OKButton'),
+                        cssClass: this.parent.cssClass ? 'e-primary' + ' ' + this.parent.cssClass : 'e-primary',
+                        isPrimary: true }
                 },
                 {
                     click: this.dlgCancel.bind(this),
-                    buttonModel: { cssClass: 'e-flat', content: this.l10n.getConstant('CancelButton') }
+                    buttonModel: { cssClass: this.parent.cssClass ? 'e-flat' + ' ' + this.parent.cssClass : 'e-flat',
+                        content: this.l10n.getConstant('CancelButton') }
                 }
             ],
             'EditConfirm');
@@ -458,8 +461,10 @@ export class Edit implements IAction {
         this.alertDObj = this.dlgWidget(
             [
                 {
-                    click: this.alertClick.bind(this), buttonModel:
-                        { content: this.l10n.getConstant('OKButton'), cssClass: 'e-flat', isPrimary: true }
+                    click: this.alertClick.bind(this),
+                    buttonModel: { content: this.l10n.getConstant('OKButton'),
+                        cssClass: this.parent.cssClass ? 'e-flat' + ' ' + this.parent.cssClass : 'e-flat',
+                        isPrimary: true }
                 }
             ],
             'EditAlert');
@@ -479,7 +484,8 @@ export class Edit implements IAction {
             closeOnEscape: true,
             target: this.parent.element,
             width: '320px',
-            animationSettings: { effect: 'None' }
+            animationSettings: { effect: 'None' },
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         };
         (options as { buttons: Object[] }).buttons = btnOptions;
         const obj: Dialog = new Dialog(options);

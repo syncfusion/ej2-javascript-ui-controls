@@ -1731,9 +1731,7 @@ export class Editor {
                 clearTimeout(this.animationTimer);
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
-            if(!isNullOrUndefined(this.selection.caret.offsetParent) || this.selection.isInlineFormFillMode() || this.selection.text.length != 0) {
-                this.owner.editorModule.insertText(text);
-            }
+            this.owner.editorModule.insertText(text);
             /* eslint-disable @typescript-eslint/indent */
             this.animationTimer = setTimeout(() => {
                 if (this.animationTimer) {
@@ -11046,10 +11044,9 @@ export class Editor {
             this.editorHistory.currentBaseHistoryInfo.action = 'InsertTextParaReplace';
         }
         if (end.paragraph === paragraph && end.currentWidget !== paragraph.lastChild ||
-            (end.currentWidget === paragraph.lastChild && (end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget) && (!((paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof CommentCharacterElementBox) && end.offset + 1 <= selection.getLineLength(paragraph.lastChild as LineWidget)))) ||
-            paraReplace) {
+            end.currentWidget === paragraph.lastChild || paraReplace) {
             let isStartParagraph: boolean = start.paragraph === paragraph;
-            if (end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
+            if (!this.isInsertingTOC || this.owner.enableTrackChanges && end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
                 //If selection end with this paragraph and selection doesnot include paragraph mark.               
                 this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
                 //Removes the splitted paragraph.
@@ -13286,7 +13283,7 @@ export class Editor {
     }
     private checkAndRemoveComments(): CommentCharacterElementBox[] {
         let selection: Selection = this.selection;
-        if (selection.isEmpty || this.selection.text.length != 0) {
+        if (selection.isEmpty) {
             return [];
         }
         let initComplexHistory: boolean = false;

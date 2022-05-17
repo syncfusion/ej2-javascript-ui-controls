@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.1.56 (2022-05-17)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#F174816` - Landscape page orientation is not working when exporting Pdf has been fixed.
+- `#377857` - Task not assigned to resources when dynamically changes from project view into resource view has been fixed.
+
 ## 20.1.55 (2022-05-12)
 
 ### Gantt

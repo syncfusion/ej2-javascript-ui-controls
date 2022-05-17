@@ -2634,6 +2634,105 @@ describe('RTE base module', () => {
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].firstElementChild.id.indexOf("Bold") > 0).toBe(true);
         });
     });
+
+    describe('EJ2-59865 - CSS class property', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                cssClass: 'myClass',
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                        'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', 'SuperScript', '|',
+                        'LowerCase', 'UpperCase', '|', 
+                        'Formats', '|', 'OrderedList', 'UnorderedList', '|',
+                        'Indent', 'Outdent', '|',
+                        'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                        'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                }
+            });
+            done();
+        });
+        it('Ensure cssClass property for dropdownpopup', () => {
+            expect(rteObj.element.classList.contains('myClass')).toBe(true);
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
+            }
+        });
+        it('change cssClass property dropdownpopup', () => {
+            rteObj.cssClass = 'textClass';
+            rteObj.dataBind();
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
+            }
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-59865 - CSS class property in Inline toolbar', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                cssClass: 'myClass',
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                        'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', 'SuperScript', '|',
+                        'LowerCase', 'UpperCase', '|', 
+                        'Formats', '|', 'OrderedList', 'UnorderedList', '|',
+                        'Indent', 'Outdent', '|',
+                        'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                        'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                },
+                inlineMode: {
+                    enable: true,
+                    onSelection: true
+                }
+            });
+            done();
+        });
+        it('Ensure cssClass property in inline toolbar', () => {
+            rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
+            rteObj.inlineMode.enable = true;
+            rteObj.dataBind();
+            let start = rteObj.inputElement.querySelector('#p2');
+            setCursorPoint(document, start.childNodes[0] as Element, 5);
+            rteObj.showInlineToolbar();
+            expect(rteObj.element.classList.contains('myClass')).toBe(true);
+            expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('myClass')).toBe(true);
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
+            }
+            rteObj.hideInlineToolbar();
+        });
+        it('through onproperty change cssClass property in inline toolbar', () => {
+            rteObj.hideInlineToolbar();
+            rteObj.cssClass = 'textClass';
+            rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
+            rteObj.inlineMode.enable = true;
+            rteObj.dataBind();
+            let start = rteObj.inputElement.querySelector('#p2');
+            setCursorPoint(document, start.childNodes[0] as Element, 5);
+            rteObj.showInlineToolbar();
+            expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('textClass')).toBe(true);
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
+            }
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('RTE Properties', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;

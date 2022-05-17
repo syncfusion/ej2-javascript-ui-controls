@@ -46,7 +46,7 @@ export class DateFilterUI implements IFilterMUI {
             this.datePickerObj = new DatePicker(extend(
                 {
                     format: format,
-                    cssClass: 'e-popup-flmenu',
+                    cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                     placeholder: args.localizeText.getConstant('ChooseDate'),
                     width: '100%',
                     locale: this.parent.locale,
@@ -58,7 +58,7 @@ export class DateFilterUI implements IFilterMUI {
             this.datePickerObj = new DateTimePicker(extend(
                 {
                     format: format,
-                    cssClass: 'e-popup-flmenu',
+                    cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                     placeholder: args.localizeText.getConstant('ChooseDate'),
                     width: '100%',
                     locale: this.parent.locale,

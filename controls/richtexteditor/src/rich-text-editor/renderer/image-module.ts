@@ -4,7 +4,7 @@ import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
     ImageDropEventArgs, ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ImageUploadingEventArgs
 } from '../base/interface';
-import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
+import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs, ICssClassArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { ServiceLocator } from '../services/service-locator';
@@ -33,6 +33,9 @@ export class Image {
     private inputUrl: HTMLElement;
     private captionEle: HTMLElement;
     private checkBoxObj: CheckBox;
+    private widthNum: TextBox;
+    private heightNum: TextBox;
+    private browseButton: Button;
     private uploadUrl: IImageCommandsArgs;
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
@@ -86,6 +89,7 @@ export class Image {
         this.parent.on(events.initialEnd, this.afterRender, this);
         this.parent.on(events.dynamicModule, this.afterRender, this);
         this.parent.on(events.paste, this.imagePaste, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
     }
 
@@ -113,6 +117,7 @@ export class Image {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.dynamicModule, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
+        this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.removeEventListener);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
@@ -129,6 +134,32 @@ export class Image {
                 EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
             }
         }
+    }
+
+    private updateCss(currentObj: CheckBox | TextBox | Uploader | Dialog, e: ICssClassArgs) : void {
+        if (currentObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
+    }
+
+    private setCssClass(e: ICssClassArgs) {
+        if (this.popupObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                addClass([this.popupObj.element], e.cssClass);
+            } else {
+                removeClass([this.popupObj.element], e.oldCssClass);
+                addClass([this.popupObj.element], e.cssClass);
+            }
+        }
+        this.updateCss(this.checkBoxObj, e);
+        this.updateCss(this.widthNum, e);
+        this.updateCss(this.heightNum, e);
+        this.updateCss(this.uploadObj, e);
+        this.updateCss(this.dialogObj, e);
     }
     private onIframeMouseDown(): void {
         if (this.dialogObj) {
@@ -725,6 +756,7 @@ export class Image {
     }
     private showDialog(): void {
         this.openDialog(false);
+        this.setCssClass({cssClass: this.parent.cssClass});
     }
     private closeDialog(): void {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
@@ -939,7 +971,8 @@ export class Image {
             const inputLink: HTMLElement = linkWrap.querySelector('.e-img-link') as HTMLElement;
             const linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
             this.checkBoxObj = new CheckBox({
-                label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl, change: (e: ChangeEventArgs) => {
+                label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass,
+                change: (e: ChangeEventArgs) => {
                     if (e.checked) {
                         target = '_blank';
                     } else {
@@ -973,6 +1006,9 @@ export class Image {
                     }
                 }]
             });
+            if (!isNOU(this.parent.cssClass)) {
+                this.dialogObj.setProperties({ cssClass: this.parent.cssClass });
+            }
             if (!isNullOrUndefined(inputDetails)) {
                 (inputLink as HTMLInputElement).value = inputDetails.url;
                 // eslint-disable-next-line
@@ -1018,6 +1054,9 @@ export class Image {
                     }
                 }]
             });
+            if (!isNOU(this.parent.cssClass)) {
+                this.dialogObj.setProperties({ cssClass: this.parent.cssClass });
+            }
             this.dialogObj.element.style.maxHeight = 'inherit';
             (this.dialogObj.content as HTMLElement).querySelector('input').focus();
         }
@@ -1241,6 +1280,9 @@ export class Image {
                     }
                 }]
             });
+            if (!isNOU(this.parent.cssClass)) {
+                this.dialogObj.setProperties({ cssClass: this.parent.cssClass });
+            }
             this.dialogObj.element.style.maxHeight = 'inherit';
             (this.dialogObj.content as HTMLElement).querySelector('input').focus();
         }
@@ -1518,24 +1560,26 @@ export class Image {
             + ' /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         imgSizeWrap.appendChild(contentElem);
-        const widthNum: TextBox = new TextBox({
+        this.widthNum = new TextBox({
             value: formatUnit(widthVal as string),
             enableRtl: this.parent.enableRtl,
+            cssClass: this.parent.cssClass,
             input: (e: InputEventArgs) => {
                 this.inputWidthValue = formatUnit(this.inputValue(e.value));
             }
         });
-        widthNum.createElement = this.parent.createElement;
-        widthNum.appendTo(imgSizeWrap.querySelector('#imgwidth') as HTMLElement);
-        const heightNum: TextBox = new TextBox({
+        this.widthNum.createElement = this.parent.createElement;
+        this.widthNum.appendTo(imgSizeWrap.querySelector('#imgwidth') as HTMLElement);
+        this.heightNum = new TextBox({
             value: formatUnit(heightVal as string),
             enableRtl: this.parent.enableRtl,
+            cssClass: this.parent.cssClass,
             input: (e: InputEventArgs) => {
                 this.inputHeightValue = formatUnit(this.inputValue(e.value));
             }
         });
-        heightNum.createElement = this.parent.createElement;
-        heightNum.appendTo(imgSizeWrap.querySelector('#imgheight') as HTMLElement);
+        this.heightNum.createElement = this.parent.createElement;
+        this.heightNum.appendTo(imgSizeWrap.querySelector('#imgheight') as HTMLElement);
         return imgSizeWrap;
     }
 
@@ -1618,9 +1662,9 @@ export class Image {
         });
         span.appendChild(btnEle); uploadParentEle.appendChild(span);
         const browserMsg: string = this.i10n.getConstant('browse');
-        const button: Button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
-        button.isStringTemplate = true; button.createElement = this.parent.createElement;
-        button.appendTo(btnEle);
+        this.browseButton = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
+        this.browseButton.isStringTemplate = true; this.browseButton.createElement = this.parent.createElement;
+        this.browseButton.appendTo(btnEle);
         const btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
         EventHandler.add(btnClick, 'click', this.fileSelect, this);
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
@@ -1634,7 +1678,7 @@ export class Image {
         let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, removeUrl: this.parent.insertImageSettings.removeUrl },
-            dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
+            dropArea: span, multiple: false, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
                 proxy.isImgUploaded = true;
@@ -1999,6 +2043,9 @@ export class Image {
         this.popupObj.element.style.display = 'none';
         addClass([this.popupObj.element], classes.CLS_POPUP_OPEN);
         addClass([this.popupObj.element], classes.CLS_RTE_UPLOAD_POPUP);
+        if (!isNOU(this.parent.cssClass)) {
+            addClass([this.popupObj.element], this.parent.cssClass);
+        }
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         const timeOut: number = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;
         setTimeout(() => {
@@ -2011,7 +2058,7 @@ export class Image {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
                 removeUrl: this.parent.insertImageSettings.removeUrl
             },
-            cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
+            cssClass: classes.CLS_RTE_DIALOG_UPLOAD + ' ' + this.parent.cssClass,
             dropArea: this.parent.element,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             removing: () => {

@@ -84,6 +84,7 @@ export class DrillThroughDialog {
                     allowDragging: false,
                     header: this.parent.localeObj.getConstant('details'),
                     content: this.createDrillThroughGrid(eventArgs),
+                    cssClass: this.parent.cssClass,
                     beforeOpen: () => {
                         this.drillThroughGrid.setProperties({
                             dataSource: this.parent.editSettings.allowEditing ?

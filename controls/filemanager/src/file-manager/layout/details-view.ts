@@ -908,7 +908,13 @@ export class DetailsView {
         const dragTarget: Element = <Element>args.sender.target;
         const dragLi: Element = dragTarget.closest('tr.e-row');
         if (!dragLi) { return null; }
-        const name: string = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
+        let name: string;
+        if(<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]){
+            name  = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText
+        }
+         else if(<HTMLElement>dragLi.getElementsByClassName("e-rowcell e-templatecell")[0].nextElementSibling){
+            name = (<HTMLElement>dragLi.getElementsByClassName("e-rowcell e-templatecell")[0].nextElementSibling).innerText;
+         }
         if (dragLi && !dragLi.querySelector('.e-active')) {
             this.selectRecords([name]);
         }

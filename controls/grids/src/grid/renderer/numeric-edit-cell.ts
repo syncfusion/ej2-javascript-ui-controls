@@ -48,7 +48,8 @@ export class NumericEditCell implements IEditCell {
                 placeholder: isInline ? '' : args.column.headerText,
                 enabled: isEditable(args.column, args.requestType, args.element),
                 floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
-                locale: this.parent.locale
+                locale: this.parent.locale,
+                cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             col.edit.params));
         args.element.setAttribute('name', getComplexFieldID(args.column.field));

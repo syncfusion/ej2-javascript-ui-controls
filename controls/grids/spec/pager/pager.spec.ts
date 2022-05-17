@@ -32,8 +32,8 @@ describe('Pager base module', () => {
                         'lastPageTooltip': 'Ga naar de laatste pagina',
                         'nextPageTooltip': 'Ga naar de volgende pagina',
                         'previousPageTooltip': 'Ga naar de vorige pagina',
-                        'nextPagerTooltip': 'Ga naar de volgende pager',
-                        'previousPagerTooltip': 'Ga naar vorige pager'
+                        'nextPagerTooltip': 'Ga naar de volgende pager-items',
+                        'previousPagerTooltip': 'Ga naar vorige pager-items'
                     }
                 }
             });

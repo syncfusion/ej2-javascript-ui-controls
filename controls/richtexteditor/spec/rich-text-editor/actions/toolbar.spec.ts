@@ -71,6 +71,63 @@ import { NodeSelection } from "../../../src/selection/index";
             destroy(rteObj);
         });
     });
+
+    describe('EJ2-59865 - css class dependency component', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList', 'Align', 'Display']
+                },
+                cssClass: 'customClass',
+                numberFormatList: {
+                    types: [
+                        { text: 'None', value:'none' },
+                        { text: 'Number', value: 'decimal' },
+                        { text: 'UpperAlpha', value: 'upperAlpha' },
+                        { text: 'LowerGreek', value: 'lowerGreek' },
+                        { text: 'Hebrew', value: 'hebrew' },
+                        { text: 'Katakana', value: 'katakana'}
+            
+                    ]
+                },
+                bulletFormatList: {
+                    types: [
+                        { text: 'None', value: 'none' },
+                        { text: 'Square', value: 'square' },
+                    ]
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' css class dependency initial load and dynamic change ', (done) => {
+            let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(format, 'mousedown');
+            dispatchEvent(format, 'mouseup');
+            format.click();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-dropdown-popup')[0].classList.contains('customClass')).toBe(true);
+                expect(document.querySelectorAll('.e-dropdown-popup')[1].classList.contains('customClass')).toBe(true);
+                expect(document.querySelector('.e-rte-numberformatlist-dropdown').classList.contains('customClass')).toBe(true);
+                expect(document.querySelector('.e-rte-bulletformatlist-dropdown').classList.contains('customClass')).toBe(true);
+                rteObj.cssClass = 'changedClass';
+                rteObj.dataBind();
+                expect(document.querySelectorAll('.e-dropdown-popup')[0].classList.contains('changedClass')).toBe(true);
+                expect(document.querySelectorAll('.e-dropdown-popup')[1].classList.contains('changedClass')).toBe(true);
+                expect(document.querySelector('.e-rte-numberformatlist-dropdown').classList.contains('changedClass')).toBe(true);
+                expect(document.querySelector('.e-rte-bulletformatlist-dropdown').classList.contains('changedClass')).toBe(true);
+                done();
+            }, 200)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('Checking the NumberFormatList dropdownItems', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

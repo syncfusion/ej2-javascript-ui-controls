@@ -5,7 +5,7 @@ import * as events from '../base/constant';
 import { getTooltipText, toObjectLowerCase } from '../base/util';
 import { ToolbarItems } from '../base/enum';
 import { tools, templateItems } from '../models/items';
-import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems, IToolsItems } from '../base/interface';
+import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems, IToolsItems, ICssClassArgs } from '../base/interface';
 import { IToolbarOptions, IToolbarItemModel } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -36,12 +36,24 @@ export class BaseToolbar {
 
     private addEventListener(): void {
         this.parent.on(events.rtlMode, this.setRtl, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
     }
 
     private removeEventListener(): void {
         this.parent.off(events.rtlMode, this.setRtl);
+        this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.removeEventListener);
+    }
+
+    private setCssClass(e: ICssClassArgs): void {
+        if (!isNullOrUndefined(this.toolbarObj)) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                this.toolbarObj.setProperties({ cssClass: (this.toolbarObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                this.toolbarObj.setProperties({ cssClass: (this.toolbarObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
     }
 
     private setRtl(args: { [key: string]: Object }): void {
@@ -170,7 +182,8 @@ export class BaseToolbar {
             items: this.getItems(args.items, args.container),
             overflowMode: args.mode,
             enablePersistence: this.parent.enablePersistence,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            cssClass: args.cssClass,
         };
     }
 

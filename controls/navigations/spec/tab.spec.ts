@@ -10652,6 +10652,39 @@ describe('Tab Control', () => {
             tab.enableTab(1, false);
             expect((tab.element.querySelectorAll('.e-toolbar-item')[1]).classList.contains('e-draggable')).toBe(false);
         });
+        it('Allow drag and drop testing with empty items', () => {
+            tab = new Tab({
+                items: [],
+                allowDragAndDrop: true
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = document.getElementById('ej2Tab');
+            tab.enableTab(1, false);
+            expect(element.children.length).toEqual(0);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(0);
+            expect(element.querySelectorAll('.e-content').length).toEqual(0);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(0);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(0);
+            expect(element.querySelectorAll('.e-content > .e-item').length).toEqual(0);
+            const newItems: Object[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab.addTab(newItems, 0);
+            expect(element.children.length).toEqual(2);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.querySelectorAll('.e-content').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(2);
+            expect(element.querySelectorAll('.e-content > .e-item').length).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item').item(0).id).toEqual('e-item' + tab.tabId + '_0');
+            expect(element.querySelectorAll('.e-toolbar-item').item(1).id).toEqual('e-item' + tab.tabId + '_1');
+            expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-active')).toEqual(true);
+            expect(element.querySelectorAll('.e-content > .e-item.e-active').length).toEqual(1);
+            expect(element.querySelector('.e-content > .e-item.e-active').innerHTML).toEqual('<div>Content1</div>');
+            expect(element.querySelectorAll('.e-toolbar-item')[0].classList.contains('e-draggable')).toBe(true);
+            expect(element.querySelectorAll('.e-toolbar-item')[1].classList.contains('e-draggable')).toBe(true);
+        });
     });
 
     describe('reorderActiveTab property testing', () => {

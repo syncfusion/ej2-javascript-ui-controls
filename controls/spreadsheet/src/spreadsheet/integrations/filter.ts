@@ -392,9 +392,8 @@ export class Filter {
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         range[1] = range[3] = cell[1];
         const field: string = getColumnHeaderText(cell[1] + 1);
-        const type: string = this.getColumnType(sheet, cell[1], cell).type;
-        const predicates: PredicateModel[] = [{ field: field, operator: 'equal', matchCase: false, type: type,
-            value: getValueFromFormat(this.parent, cell[0], cell[1], getSheetIndex(this.parent, sheet.name), sheet) }];
+        const predicates: PredicateModel[] = [{ field: field, operator: 'equal', type: this.getColumnType(sheet, cell[1], cell).type,
+            matchCase: false, value: getValueFromFormat(this.parent, getCell(cell[0], cell[1], sheet)) }];
         const addr: string = `${sheet.name}!${this.getPredicateRange(range, this.filterCollection.get(sheetIdx))}`;
         const fullAddr: string = getRangeAddress(range);
         getData(this.parent, addr, true, true, null, true, null, null, false, fullAddr).then((jsonData: { [key: string]: CellModel }[]) => {

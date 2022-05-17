@@ -3,7 +3,7 @@ import { OverflowMode } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import * as events from '../base/constant';
 import { pageYOffset, hasClass, isIDevice } from '../base/util';
-import { IRichTextEditor, IQuickToolbarOptions, IRenderer, IToolbarItems, NotifyArgs } from '../base/interface';
+import { IRichTextEditor, IQuickToolbarOptions, IRenderer, IToolbarItems, NotifyArgs, ICssClassArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { BaseQuickToolbar } from './base-quick-toolbar';
@@ -68,7 +68,8 @@ export class QuickToolbar {
             popupType: popType,
             toolbarItems: items,
             mode: mode as OverflowMode,
-            renderType: type
+            renderType: type,
+            cssClass: this.parent.cssClass
         };
     }
 
@@ -395,6 +396,7 @@ export class QuickToolbar {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
     }
 
     private onKeyDown(e: NotifyArgs): void {
@@ -410,6 +412,25 @@ export class QuickToolbar {
         this.hideQuickToolbars();
         this.hideInlineQTBar();
     }
+
+    private updateCss(baseQTObj: BaseQuickToolbar, e: ICssClassArgs) : void {
+        if (baseQTObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass && baseQTObj.quickTBarObj.toolbarObj.cssClass !== e.cssClass)) {
+                baseQTObj.quickTBarObj.toolbarObj.setProperties({ cssClass: (baseQTObj.quickTBarObj.toolbarObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                baseQTObj.quickTBarObj.toolbarObj.setProperties({ cssClass: (baseQTObj.quickTBarObj.toolbarObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
+    }
+
+    private setCssClass(e: ICssClassArgs): void {
+        const baseQuickToolbarObj: BaseQuickToolbar[] = [
+            this.inlineQTBar, this.imageQTBar, this.linkQTBar, this.textQTBar, this.tableQTBar
+        ];
+        for (let i: number = 0; i < baseQuickToolbarObj.length; i++) {
+            this.updateCss(baseQuickToolbarObj[i], e);
+        }
+    }
     private setRtl(args: { [key: string]: Object }): void {
         if (this.inlineQTBar) {
             this.inlineQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
@@ -418,7 +439,7 @@ export class QuickToolbar {
             this.imageQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
         if (this.linkQTBar) {
-            this.imageQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
+            this.linkQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
     }
     /**
@@ -447,6 +468,7 @@ export class QuickToolbar {
         this.parent.off(events.iframeMouseDown, this.onIframeMouseDown);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.rtlMode, this.setRtl);
+        this.parent.off(events.bindCssClass, this.setCssClass);
     }
 
     /**

@@ -2,13 +2,47 @@
 
 ## [Unreleased]
 
-## 20.1.55 (2022-05-12)
+## 20.1.56 (2022-05-17)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- `SF-372732`- A signature in the signature field will be displayed in the downloaded document when the form field properties have been updated using the `updateFormFields` method.
+- `#SF-371824`- The properties of form fields will be updated properly using the `updateFormField` method while scrolling over pages.
+
+## 20.1.55 (2022-05-12)
+
+### PDF Viewer
+
+#### New Features
+
+- `#SF-368647`, `#SF-366041`- Exposed a method to focus form fields on a document.
+- `#SF-362221`, `#SF-364814`, `#SF-368380`, `#SF-363379`- Provided the support for field Id and field Name for the Form Fields events.
+- `#SF-353301`- Implemented the `GetPageNumberFromClientPoint`, `ConvertClientPointToPagePoint`, `ConvertPagePointToClientPoint`, `ConvertPagePointToScrollingPoint` and `zoomToRect` methods.
+
+#### Bug Fixes
+
+- `#SF-372732`- A signature in the signature field will be displayed in the downloaded document when the form field properties have been updated using the `updateFormFields` method.
+- `#SF-361979`- Now, signature fields with the same value for the name property will be visible when the document is downloaded and reloaded.
+- `#SF-367560`, `#SF-367313`- Improved the pinch-zoom in and out responsiveness in the mobile device.
+- `#SF-368770`, `#SF-373344`, `#SF-372215`- Now, the properties of text box fields are changed properly using the `textFieldSettings` property.
+- `#SF-369002`- A signature will be downloaded in the correct position for rotated and scanned documents.
+- `#SF-369554`- The form fields are now added horizontally to the page, even for rotated documents.
+- `#SF-371560`- Form fields in a rotated document will be rendered according to the field rotation.
+- `#SF-373137`- The `ArgumentOutOfRangeException` exception will no longer occur when extracting the text for the provided document.
+- `#SF-375548`, `#SF-374826`, `#SF-375215`, `#SF-376171`, `#SF-376531`- The `Microsoft.Extensions.Caching.Memory` was changed into a stable version.
+- `#SF-364871`- Now, the handwritten signature images and custom stamps will be resized proportionally.
+- `#SF-368168`- PDF Viewer toolbar appeared properly from view on zooming in mobile mode.
+- `#SF-370140`- The label content of calibrating annotations is correctly updated when their properties are edited programmatically.
+- `#SF-370758`- The Script error will no longer be thrown while downloading the document after adding the handwritten type signature on a mobile device.
+- `#SF-370904`- The signature collection and some signature properties are properly defined in the `addSignature` event on a mobile device.
+- `#SF-377746`- The PDF Viewer download button no longer opens the blob URL in Firefox for downloading the document.
+- `#SF-367878`- The Script error will no longer be thrown while clicking the form field for the second time.
+- `#SF-373785`- The initial field will no longer be undefined after filling the field.
+- `#SF-363381`- The `formFieldPropertiesChange` event triggers on removing the signature from the signature field.
+- `#SF-371825`- Now, the form fields will appear while scrolling through the different pages.
+- `#SF-371838`- The Custom stamp annotation will be rendered correctly for the PDF document provided.
+- `#SF-365736`, `#SF-366420`- In mobile devices, the Script error will no longer occur when adding the signature.
 
 ## 20.1.52 (2022-05-04)
 
@@ -16,7 +50,7 @@
 
 #### Bug Fixes
 
-- `SF-361979`- Now, signature fields with the same value for the name property will be visible when the document is downloaded and reloaded.
+- `#SF-361979`- Now, signature fields with the same value for the name property will be visible when the document is downloaded and reloaded.
 
 ## 20.1.51 (2022-04-26)
 

@@ -7,7 +7,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { getDropDownValue, getFormattedFontSize, getTooltipText } from '../base/util';
 import * as model from '../models/items';
-import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs, IListDropDownModel } from '../base/interface';
+import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs, IListDropDownModel, ICssClassArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { dispatchEvent } from '../base/util';
@@ -211,6 +211,9 @@ export class DropDownButtons {
                 }
             }
         });
+        if(this.parent.inlineMode.enable) {
+            this.setCssClass({cssClass: this.parent.cssClass});
+        }
     }
 
     private getUpdateItems(items: IDropDownItemModel[], value: string): IDropDownItemModel[] {
@@ -510,6 +513,27 @@ export class DropDownButtons {
         }
     }
 
+    private updateCss(dropDownObj: DropDownButton, e: ICssClassArgs) : void {
+        if (dropDownObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
+    }
+
+    private setCssClass(e: ICssClassArgs): void {
+        const dropDownObj: DropDownButton[] = [
+            this.formatDropDown, this.fontNameDropDown, this.fontSizeDropDown, this.alignDropDown, this.imageAlignDropDown,
+            this.displayDropDown, this.numberFormatListDropDown, this.bulletFormatListDropDown, this.tableRowsDropDown,
+            this.tableColumnsDropDown, this.tableCellVerticalAlignDropDown
+        ];
+        for (let i: number = 0; i < dropDownObj.length; i++) {
+            this.updateCss(dropDownObj[i], e);
+        }
+    }
+
     protected addEventListener(): void {
         if (this.parent.isDestroyed) {
             return;
@@ -519,6 +543,7 @@ export class DropDownButtons {
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
     }
 
     private onIframeMouseDown(): void {
@@ -534,6 +559,7 @@ export class DropDownButtons {
         this.parent.off(events.beforeDropDownItemRender, this.beforeRender);
         this.parent.off(events.destroy, this.removeEventListener);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
+        this.parent.off(events.bindCssClass, this.setCssClass);
     }
 
 }

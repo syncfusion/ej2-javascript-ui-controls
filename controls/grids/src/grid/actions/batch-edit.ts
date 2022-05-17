@@ -1158,7 +1158,10 @@ export class BatchEdit {
     private editNextValCell(): void {
         const gObj: IGrid = this.parent;
         const insertedRows: NodeListOf<Element> = gObj.element.querySelectorAll('.e-insertedrow');
-        if (insertedRows.length === 1 && this.isAdded && !gObj.isEdit) {
+        const isSingleInsert: boolean = insertedRows.length === 1 ? true : (gObj.getFrozenColumns() > 0 ||
+            gObj.getFrozenRightColumnsCount() > 0 || gObj.getFrozenLeftColumnsCount() > 0) && (insertedRows.length === 2 ||
+            insertedRows.length === 3) ? true : false;
+        if (isSingleInsert && this.isAdded && !gObj.isEdit) {
             const btmIdx: number = this.getBottomIndex();
             for (let i: number = this.cellDetails.cellIndex; i < gObj.getColumns().length; i++) {
                 if (gObj.isEdit) {
@@ -1181,7 +1184,7 @@ export class BatchEdit {
                 this.isAdded = false;
             }
         }
-        else if (insertedRows.length > 1 && this.isAdded && !gObj.isEdit) {
+        else if (!isSingleInsert && this.isAdded && !gObj.isEdit && !gObj.isFrozenGrid()) {
             let editRowIdx: number = 0;
             if (gObj.editSettings.newRowPosition === 'Bottom') {
                 const changes: Object = this.getBatchChanges();
@@ -1196,6 +1199,66 @@ export class BatchEdit {
                         else if (insertedRows[i].querySelectorAll('td')[this.validationColObj[j].cellIdx].innerText === '') {
                             this.editCell(editRowIdx, this.validationColObj[j].field);
                             if (this.validateFormObj()) {
+                                this.saveCell();
+                            }
+                        }
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+            if (!gObj.isEdit) {
+                this.isAdded = false;
+            }
+        }
+        else if (!isSingleInsert && this.isAdded && !gObj.isEdit && gObj.isFrozenGrid()) {
+            let fLeftInsertedRow: NodeListOf<Element> = gObj.getFrozenLeftContentTbody() ? gObj.getFrozenLeftContentTbody()
+                .querySelectorAll('.e-insertedrow') : undefined;
+            let fRightInsertedRow: NodeListOf<Element> = gObj.getFrozenRightContentTbody() ? gObj.getFrozenRightContentTbody()
+                .querySelectorAll('.e-insertedrow') : undefined;
+            let mInsertedRow: NodeListOf<Element> = gObj.getMovableContentTbody().querySelectorAll('.e-insertedrow');
+            let editRowIdx: number = 0;
+            const fLeftCount: number = gObj.getVisibleFrozenLeftCount() ? gObj.getVisibleFrozenLeftCount() :
+                gObj.getFrozenColumns();
+            const fRightCount: number = gObj.getVisibleFrozenRightCount();
+            const mColumnCount: number = gObj.getVisibleMovableCount();
+            if (gObj.editSettings.newRowPosition === 'Bottom') {
+                const changes: Object = this.getBatchChanges();
+                editRowIdx = gObj.getCurrentViewRecords().length - changes[literals.deletedRecords].length;
+            }
+            else if (gObj.editSettings.newRowPosition === 'Top' && gObj.frozenRows) {
+                fLeftInsertedRow = gObj.getFrozenHeaderTbody() ? gObj.getFrozenHeaderTbody()
+                    .querySelectorAll('.e-insertedrow') : undefined;
+                fRightInsertedRow = gObj.getFrozenRightHeader() ? gObj.getFrozenRightHeader()
+                    .querySelectorAll('.e-insertedrow') : undefined;
+                mInsertedRow = gObj.getMovableHeaderTbody().querySelectorAll('.e-insertedrow');
+            }
+            for (let i: number = 0; i < mInsertedRow.length; i++, editRowIdx++) {
+                if (!gObj.isEdit) {
+                    for (let j: number = 0; j < this.validationColObj.length; j++) {
+                        if (gObj.isEdit) {
+                            break;
+                        }
+                        else if (fLeftCount && this.validationColObj[j].cellIdx < fLeftCount) {
+                            if (fLeftInsertedRow[i].querySelectorAll('td')[this.validationColObj[j].cellIdx].innerText === '') {
+                                this.editCell(editRowIdx, this.validationColObj[j].field);
+                                if (gObj.editModule.formObj.validate()) {
+                                    this.saveCell();
+                                }
+                            }
+                        }
+                        else if (fRightCount && mColumnCount <= this.validationColObj[j].cellIdx) {
+                            if (fRightInsertedRow[i].querySelectorAll('td')[this.validationColObj[j].cellIdx - (mColumnCount + fLeftCount)].innerText === '') {
+                                this.editCell(editRowIdx, this.validationColObj[j].field);
+                                if (gObj.editModule.formObj.validate()) {
+                                    this.saveCell();
+                                }
+                            }
+                        }
+                        else if (mInsertedRow[i].querySelectorAll('td')[this.validationColObj[j].cellIdx - fLeftCount].innerText === '') {
+                            this.editCell(editRowIdx, this.validationColObj[j].field);
+                            if (gObj.editModule.formObj.validate()) {
                                 this.saveCell();
                             }
                         }

@@ -420,6 +420,14 @@
     & .e-excelfilter {
       & .e-spreadsheet-ftrchk {
         padding-left: $filter-selectall-padding;
+
+        & .e-chk-hidden {
+          margin: 3px 3px 3px 4px;
+        }
+
+        & .e-checkboxfiltertext {
+          width: auto;
+        }
       }
 
       &.e-rtl .e-spreadsheet-ftrchk {
@@ -554,7 +562,7 @@
 
       & .e-selectall {
         border-style: solid;
-        border-width: $select-all-size / 2;
+        border-width: $select-all-size * .5;
         cursor: cell;
         float: right;
         height: $select-all-size;
@@ -2893,10 +2901,6 @@
     & .e-excelfilter {
       & .e-spreadsheet-ftrchk {
         padding-left: $filter-selectall-bigger-padding;
-
-        & .e-checkboxfiltertext {
-          width: auto;
-        }
       }
 
       &.e-rtl .e-spreadsheet-ftrchk {

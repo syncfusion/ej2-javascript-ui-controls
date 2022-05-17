@@ -471,7 +471,7 @@ export class Renderer {
 
     private renderfootNoteWidget(page: Page, footnote: FootNoteWidget, width: number): void {
         let isEmptyPage: boolean = footnote.page.bodyWidgets.length === 1 && ((footnote.page.bodyWidgets[0].childWidgets.length === 1
-            && (footnote.page.bodyWidgets[0].childWidgets[0] as ParagraphWidget).isEmpty()) || footnote.page.bodyWidgets[0].childWidgets.length === 0);
+            && (footnote.page.bodyWidgets[0].childWidgets[0] as ParagraphWidget).isEmpty != undefined && (footnote.page.bodyWidgets[0].childWidgets[0] as ParagraphWidget).isEmpty()) || footnote.page.bodyWidgets[0].childWidgets.length === 0);
         let footerY: number = this.getFooterHeight(page);
         let height: number = footnote.y + footnote.height;
         if (height > footerY) {

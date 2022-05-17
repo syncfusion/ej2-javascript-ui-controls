@@ -42,7 +42,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let QTBarModule: IRenderer;
 
         beforeAll((done: Function) => {
-            rteObj = renderRTE({});
+            rteObj = renderRTE({ });
             rteEle = rteObj.element;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
@@ -129,6 +129,56 @@ describe("Quick Toolbar - Actions Module", () => {
             (rteObj as any).keyDown({ which: 8, preventDefault: () => { }, action: null });
             document.getElementById('Image_Quick_Popup_4')
             expect(document.getElementById('Image_Quick_Popup_3')).toBe(null);
+        });
+    });
+
+    describe("EJ2-59865 - css class dependency component", () => {
+        let trg: HTMLElement;
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                cssClass: 'customClass'
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            QTBarModule.linkQTBar.showPopup(0, 0, trg);
+            QTBarModule.textQTBar.showPopup(0, 0, trg);
+            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it("css class dependency initial load and dynamic change", () => {
+            let linkPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            let textPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[1];
+            let imgPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[2];
+            expect(linkPop.classList.contains('customClass')).toBe(true);
+            expect(textPop.classList.contains('customClass')).toBe(true);
+            expect(imgPop.classList.contains('customClass')).toBe(true);
+            QTBarModule.linkQTBar.hidePopup();
+            QTBarModule.textQTBar.hidePopup();
+            QTBarModule.imageQTBar.hidePopup();
+            rteObj.cssClass = 'changedClass';
+            rteObj.dataBind();
+            QTBarModule.linkQTBar.showPopup(0, 0, trg);
+            QTBarModule.textQTBar.showPopup(0, 0, trg);
+            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+            let linkPop2: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            let textPop2: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[1];
+            let imgPop2: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[2];
+            expect(linkPop2.classList.contains('changedClass')).toBe(true);
+            expect(textPop2.classList.contains('changedClass')).toBe(true);
+            expect(imgPop2.classList.contains('changedClass')).toBe(true);
         });
     });
 
