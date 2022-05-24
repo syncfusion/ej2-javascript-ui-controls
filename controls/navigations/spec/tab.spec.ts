@@ -10824,6 +10824,8 @@ describe('Tab Control', () => {
             expect(content).toBeTruthy();
             expect(content.textContent).toEqual('Tab content 4');
             expect(tab.element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+            expect(tab.element.getAttribute('aria-owns')).toEqual(tab.element.id + '_tab_header_items');
+            expect(tab.element.querySelector('.e-toolbar-items').id).toEqual(tab.element.id + '_tab_header_items');
         });
     });
 

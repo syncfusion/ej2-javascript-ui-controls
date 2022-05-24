@@ -1140,12 +1140,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 const filteredChild: { [key: string]: Object } = this.nestedChildFilter(value, children[i]);
                 if (!isNOU(filteredChild)) { matchedChildren.push(filteredChild); }
             }
+            let filteredItems: any = (<any>Object).assign({}, node);
             if (matchedChildren.length !== 0) {
-                node[this.fields.child as string] = matchedChildren;
-                return node;
+                filteredItems[this.fields.child as string] = matchedChildren;
+                return filteredItems;
             } else {
-                node[this.fields.child as string] = null;
-                return (this.isMatchedNode(value, node)) ? node : null;
+                filteredItems[this.fields.child as string] = null;
+                return (this.isMatchedNode(value, filteredItems)) ? filteredItems : null;
             }
         }
     }
@@ -2479,11 +2480,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
             return 2;
         }
-        for (let i: number = 0, len: number = ds.length; i < len; i++) {
-            if ((typeof field.child === 'string') && !isNOU(getValue(field.child, ds[i]))) {
+        this.fields.dataSource = isNOU(this.fields.dataSource) ? [] : this.fields.dataSource;
+        for (let i: number = 0, len: number = this.fields.dataSource.length; i < len; i++) {
+            if ((typeof field.child === 'string') && !isNOU(getValue(field.child, this.fields.dataSource[i]))) {
                 return 2;
             }
-            if (!isNOU(getValue(field.parentValue, ds[i])) || !isNOU(getValue(field.hasChildren, ds[i]))) {
+            if (!isNOU(getValue(field.parentValue, this.fields.dataSource[i])) || !isNOU(getValue(field.hasChildren, this.fields.dataSource[i]))) {
                 return 1;
             }
         }

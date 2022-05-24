@@ -334,7 +334,7 @@ export class PivotChart {
                             let columnSeries: string = colHeaders + ' | ' + actualText;
                             let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
                                 !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
-                                Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
+                                Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value));
                             yValue = yValue === Infinity ? null : yValue;
                             if (yValue === 0) {
                                 this.accEmptyPoint = true;

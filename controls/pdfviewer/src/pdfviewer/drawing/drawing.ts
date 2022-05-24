@@ -507,7 +507,6 @@ export class Drawing {
             signatureText.style.textAlign = 'Left';
             signatureText.rotateValue = undefined;
             signatureText.content = obj.data;
-            signatureText.margin.top = (obj.fontSize / 2); 
             signatureText.style.strokeWidth = 0;
             canvas.children.push(signatureText);   
             break;
@@ -592,7 +591,7 @@ export class Drawing {
         const textele: TextElement = new TextElement();
         setElementStype(obj, textele);
         textele.horizontalAlignment = 'Center';
-        textele.verticalAlignment = 'Top';
+        obj.shapeAnnotationType === 'SignatureText' ? textele.verticalAlignment = 'Center' : textele.verticalAlignment = 'Top';
         textele.relativeMode = 'Object';
         textele.setOffsetWithRespectToBounds(.5, .5, 'Absolute');
         return textele;
@@ -2306,9 +2305,9 @@ export class Drawing {
                                     }
                                 } else {
                                     if (ratio != 0) {
-                                        element.style.fontSize = (actualObject.bounds.width / ratio);
+                                        element.style.fontSize = this.fontSizeCalculation(actualObject, element, (actualObject.bounds.width - 20));
                                     } else {
-                                        element.style.fontSize = (actualObject.wrapper.bounds.width / 20);
+                                        element.style.fontSize = this.fontSizeCalculation(actualObject, element, (actualObject.wrapper.bounds.width - 20));
                                     }
                                 }
                                 if (ratio !== 0) {
@@ -2752,6 +2751,28 @@ export class Drawing {
         }
     }
 
+    private fontSizeCalculation(actualObject: any, element: any, boundsWidth: number): number {
+        var canvas =  <HTMLCanvasElement>document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + actualObject.pageIndex);
+        const context = canvas.getContext("2d");
+        var textwidth = 0;
+        var newsize = 0;
+        var fontStyle = '';
+        if (element.style.italic && element.style.bold) {
+            fontStyle = 'bold italic ';
+        } else if(element.style.bold) {
+            fontStyle = 'bold ';
+        } else if(element.style.italic) {
+            fontStyle = 'italic ';
+        }
+        while (boundsWidth > textwidth) {
+            context.font = fontStyle + newsize + 'px ' + element.style.fontFamily;
+            textwidth = context.measureText(actualObject.dynamicText).width;
+            newsize += 0.1;
+        }
+        newsize -= 0.1;
+
+        return newsize;
+    }
     // eslint-disable-next-line
     private setLineDistance(actualObject: any, points: any, segment: any, leader: boolean): void {
         let node1: PathElement;

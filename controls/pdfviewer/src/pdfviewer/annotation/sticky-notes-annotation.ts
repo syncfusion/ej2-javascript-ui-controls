@@ -8,7 +8,7 @@ import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { cloneObject } from '../drawing/drawing-util';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
-
+import { BeginEditEventArgs } from '@syncfusion/ej2-inplace-editor';
 /**
  * @hidden
  */
@@ -892,6 +892,8 @@ export class StickyNotesAnnotation {
             const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox', className: 'e-pv-comment-textbox' });
             // eslint-disable-next-line
             let editObj: any = new InPlaceEditor({
+                created: created,
+                beginEdit: beginEdit,
                 mode: 'Inline',
                 type: 'Text',
                 model: { placeholder: this.pdfViewer.localeObj.getConstant('Add a comment') + '..' },
@@ -967,6 +969,14 @@ export class StickyNotesAnnotation {
             commentTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
             commentTextBox.addEventListener('focusin', this.commentDivFocus.bind(this));
             return (this.commentsContainer.id);
+        }
+        function created(): void {
+            setTimeout(() => {
+            this.element.querySelector('.e-editable-value').innerText = data ? data.Note : '';
+            }); 
+        }    
+        function beginEdit(e: BeginEditEventArgs): void {   
+            this.value = this.valueEle.innerText;   
         }
         return '';
     }
@@ -1135,6 +1145,8 @@ export class StickyNotesAnnotation {
             replyCommentDiv.style.zIndex = 1002;
             // eslint-disable-next-line
             let saveObj: any = new InPlaceEditor({
+                created: created,
+                beginEdit: beginEdit,
                 mode: 'Inline',
                 type: 'Text',
                 emptyText: '',
@@ -1170,6 +1182,14 @@ export class StickyNotesAnnotation {
             this.createCommentDiv(replyCommentDiv.parentElement);
             this.modifyCommentsProperty(commentValue, replyCommentDiv.id, commentsContainer.id);
         }
+        function created(): void {
+            setTimeout(() => {
+            this.element.querySelector('.e-editable-value').innerText = commentValue;
+            });
+            }
+        function beginEdit(e: BeginEditEventArgs): void {
+            this.value = this.valueEle.innerText;
+            }
     }
 
     // eslint-disable-next-line
@@ -1205,6 +1225,8 @@ export class StickyNotesAnnotation {
         replyTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
         // eslint-disable-next-line
         let saveObj: any = new InPlaceEditor({
+            created: created,
+            beginEdit: beginEdit,
             mode: 'Inline',
             type: 'Text',
             emptyText: '',
@@ -1227,6 +1249,14 @@ export class StickyNotesAnnotation {
         }
         saveObj.appendTo(replyTextBox);
         replyDiv.appendChild(replyTextBox);
+        function created(): void {
+            setTimeout(() => {
+            this.element.querySelector('.e-editable-value').innerText = data ? data.Note : '';
+            });
+            }
+        function beginEdit(e: BeginEditEventArgs): void { 
+            this.value = this.valueEle.innerText; 
+            }
         if (undoRedoAction) {
             data.State = data.state;
         }
@@ -1435,7 +1465,7 @@ export class StickyNotesAnnotation {
     }
 
     // eslint-disable-next-line
-    private createTitleContainer(commentsDivElement: HTMLElement, type: string, subType?: string, modifiedDate?: string, author?: string): any {
+    private createTitleContainer(commentsDivElement: HTMLElement, type: string, subType?: string, modifiedDate?: string, author?: string, note?: string): any {
         let annotationType: string = this.getAnnotationType(type);
         // eslint-disable-next-line max-len
         const commentTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitleConatiner', className: 'e-pv-comment-title-container' });

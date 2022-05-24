@@ -1041,7 +1041,7 @@
                   font-size: 14px !important;
 
                   @if ($field-list-skin == 'bootstrap4') {
-                    color: #fff;
+                    color: $white;
                   }
 
                   @if ($skin-name == 'bootstrap5') {

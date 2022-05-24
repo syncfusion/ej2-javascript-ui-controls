@@ -1,9 +1,9 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes, isFilterHidden } from '../index';
-import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel, DateFormatCheckArgs } from '../common/index';
+import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel, getFormattedCellObject, NumberFormatArgs } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setCell, getTypeFromFormat } from './../index';
+import { setCell } from './../index';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -184,13 +184,17 @@ export function getData(
  */
 export function getValueFromFormat(context: Workbook, cell: CellModel, getIntValueFromDate?: boolean): string | Date {
     if (cell) {
+        if (isNullOrUndefined(cell.value)) {
+            return '';
+        }
         if (cell.format) {
-            const args: DateFormatCheckArgs = { value: context.getDisplayText(cell), cell: cell,
-                isDate: getTypeFromFormat(cell.format).includes('Date') };
-            context.notify(checkDateFormat, args);
-            return args.isDate ? (getIntValueFromDate ? args.updatedVal : args.dateObj) : args.value;
+            const args: NumberFormatArgs = { value: cell.value, formattedText: cell.value, cell: cell, format: cell.format, onLoad: true,
+                checkDate: !getIntValueFromDate };
+            context.notify(getFormattedCellObject, args);
+            return args.dateObj && args.dateObj.toString() !== 'Invalid Date' ? args.dateObj : (getIntValueFromDate ? <string>args.value :
+                args.formattedText);
         } else {
-            return cell.value || (<unknown>cell.value === 0 ? cell.value : '');
+            return cell.value;
         }
     } else {
         return '';

@@ -901,7 +901,7 @@ export class DateRangePicker extends CalendarBase {
             this.validationAttribute(this.element, this.inputElement);
         }
         this.checkHtmlAttributes(false);
-        merge(this.defaultKeyConfigs, { shiftTab: 'shift+tab' });
+        merge(this.defaultKeyConfigs, { shiftTab: 'shift+tab' , tab: 'tab' });
         const start: Date = this.checkDateValue(new Date(this.checkValue(this.startValue)));
         this.setProperties({ startDate: start }, true); // persist the value propeerty.
         this.setProperties({ endValue: this.checkDateValue(new Date(this.checkValue(this.endValue))) }, true);
@@ -1604,8 +1604,10 @@ export class DateRangePicker extends CalendarBase {
             }
         }
     }
-    private keyCalendarUpdate(isLeftCalendar: boolean, ele: HTMLElement): HTMLElement {
-        this.removeFocusedDate();
+    private keyCalendarUpdate(isLeftCalendar: boolean, ele: HTMLElement, isRemoveFocus: boolean = true): HTMLElement {
+        if (isRemoveFocus) {
+            this.removeFocusedDate();
+        }
         if (isLeftCalendar) {
             this.leftCalCurrentDate = new Date(+this.currentDate);
             ele = this.leftCalendar;
@@ -1698,7 +1700,36 @@ export class DateRangePicker extends CalendarBase {
             }
             this.keyNavigation(ele, e);
             break;
+        case 'tab':
+            if (this.tabKeyValidation(ele, LEFTCALENDER)) {
+                ele = this.keyCalendarUpdate(false, ele, false);
+                const focusedCell: HTMLElement = ele.querySelector('.e-focused-date');
+                if (isNullOrUndefined(focusedCell)) {
+                    this.currentDate = this.firstCellToFocus(this.rightCalendar);
+                }
+                this.keyboardNavigate(0, view, e, max, min);
+                this.keyNavigation(ele, e);
+            }
+            break;
+        case 'shiftTab':
+            if (this.tabKeyValidation(ele, RIGHTCALENDER)) {
+                ele = this.keyCalendarUpdate(true, ele, false);
+                const focusedCell: HTMLElement = ele.querySelector('.e-focused-date');
+                if (isNullOrUndefined(focusedCell)) {
+                    this.currentDate = this.firstCellToFocus(this.leftCalendar);
+                }
+                this.keyboardNavigate(0, view, e, max, min);
+                this.keyNavigation(ele, e);
+            }
+            break;
         }
+    }
+    private firstCellToFocus(calendar: HTMLElement): Date {
+        const focusAbleEle: HTMLElement = calendar.children[1].firstElementChild.querySelector('td.e-cell:not(.e-week-number):not(.e-disabled):not(.e-other-month)');
+        const focusEleID: string = focusAbleEle && focusAbleEle.id ? focusAbleEle.id.split('_')[0] : null;
+        const currentFirstDay: Date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
+        const focusDate: Date = focusEleID ? new Date(+focusEleID) : currentFirstDay;
+        return focusDate;
     }
     private keyInputHandler(e: KeyboardEventArgs, value?: Date): void {
         let date: Date;
@@ -1876,11 +1907,23 @@ export class DateRangePicker extends CalendarBase {
                 this.presetElement.focus();
                 this.removeFocusedDate();
             }
-            e.preventDefault();
+            if (isLeftCalendar) {
+                e.preventDefault();
+            }
+            if (this.tabKeyValidation(ele, RIGHTCALENDER)) {
+                this.currentDate = new Date(+this.leftCalCurrentDate);
+                this.navInCalendar(e, isLeftCalendar, leftDateLimit, rightDateLimit, ele);
+            }
             break;
         case 'spacebar':
             if (this.applyButton && !this.applyButton.disabled) {
                 this.applyFunction(e);
+            }
+            break;
+        case 'tab':
+            if (this.tabKeyValidation(ele, LEFTCALENDER)) {
+                this.currentDate = new Date(+this.rightCalCurrentDate);
+                this.navInCalendar(e, isLeftCalendar, leftDateLimit, rightDateLimit, ele);
             }
             break;
         default:
@@ -1888,6 +1931,14 @@ export class DateRangePicker extends CalendarBase {
             this.checkMinMaxDays();
         }
         this.presetHeight();
+    }
+    private tabKeyValidation(ele: HTMLElement, calendarPos: string): boolean {
+        const isLeftCalendar: boolean = ele.classList.contains(calendarPos);
+        const rightHeader: HTMLElement = this.rightCalendar.querySelector('.e-header');
+        const leftHeader: HTMLElement = this.leftCalendar.querySelector('.e-header');
+        const isRightMonth: boolean = rightHeader ? rightHeader.classList.contains('e-month') : false;
+        const isLeftMonth: boolean = leftHeader ? leftHeader.classList.contains('e-month') : false;
+        return isLeftCalendar && isLeftMonth && isRightMonth && !this.isMobile;
     }
     private keyNavigation(calendar: HTMLElement, e: KeyboardEventArgs): void {
         this.bindCalendarCellEvents(calendar);
@@ -2595,9 +2646,9 @@ export class DateRangePicker extends CalendarBase {
         }
         this.removeFocusedDate();
     }
-    private updateControl(calendar: HTMLElement): void {
+    private updateControl(calendar: HTMLElement, customDate: Date = null): void {
         if (calendar.classList.contains(RIGHTCALENDER)) {
-            this.rightCalCurrentDate = new Date(+this.currentDate);
+            this.rightCalCurrentDate = new Date(+(customDate ? customDate : this.currentDate));
         } else {
             this.leftCalCurrentDate = new Date(+this.currentDate);
         }
@@ -2918,7 +2969,7 @@ export class DateRangePicker extends CalendarBase {
             this.rightCalNextIcon = <HTMLElement>this.calendarElement.querySelector('.' + RIGHTCALENDER + ' .' + NEXTICON);
             this.rightTitle = <HTMLElement>this.calendarElement.querySelector('.' + RIGHTCALENDER + ' .' + TITLE);
             remove(this.calendarElement.querySelector('.' + RIGHTCALENDER + ' .' + ICONCONTAINER));
-            this.calendarElement.querySelector('table').setAttribute('tabindex', '-1');
+            this.calendarElement.querySelector('table').setAttribute('tabindex', '0');
             this.calendarElement.querySelector('.' + RIGHTCALENDER + ' .' + HEADER).appendChild(this.rightCalNextIcon);
             this.calendarElement.querySelector('.' + RIGHTCALENDER + ' .' + HEADER).appendChild(this.rightCalPrevIcon);
             prepend([this.rightCalPrevIcon], this.calendarElement.querySelector('.' + RIGHTCALENDER + ' .' + HEADER));
@@ -3027,7 +3078,8 @@ export class DateRangePicker extends CalendarBase {
                         this.updateControl(this.leftCalendar);
                         this.updateCalendarElement(this.rightCalendar);
                         super.navigateTo.call(this, view, this.rightCalCurrentDate);
-                        this.updateControl(this.rightCalendar);
+                        const customDate: Date = this.rightCalCurrentDate ? this.rightCalCurrentDate : this.currentDate;
+                        this.updateControl(this.rightCalendar, customDate);
                         this.updateNavIcons();
                         this.calendarIconEvent();
                         this.calendarIconRipple();

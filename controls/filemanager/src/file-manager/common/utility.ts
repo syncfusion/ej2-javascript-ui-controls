@@ -797,6 +797,15 @@ export function pasteHandler(parent: IFileManager): void {
                 parent.enablePaste = false;
                 parent.notify(events.hidePaste, {});
                 removeBlur(parent);
+                const result: ReadArgs = {
+                    files: null,
+                    error: {
+                        code: '402',
+                        message: getLocaleText(parent, 'Same-Folder-Error'),
+                        fileExists: null
+                    }
+                };
+                createDialog(parent, 'Error', result);
             }
         }
     }

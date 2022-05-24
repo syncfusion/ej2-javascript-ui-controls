@@ -474,6 +474,25 @@ export interface CellUpdateArgs {
     cellDelete?: boolean;
 }
 /** @hidden */
+export interface NumberFormatArgs {
+    value: string | number;
+    format?: string;
+    type?: string;
+    rowIndex?: number;
+    colIndex?: number,
+    cell?: CellModel;
+    sheetIndex?: number;
+    result?: string;
+    isRightAlign?: boolean;
+    isRowFill?: boolean;
+    onLoad?: boolean;
+    formattedText?: string;
+    curSymbol?: string;
+    td?: HTMLElement;
+    checkDate?: boolean;
+    dateObj?: Date;
+}
+/** @hidden */
 export interface DateFormatCheckArgs {
     value: string;
     cell?: CellModel;

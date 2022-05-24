@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### Circular Gauge
+
+#### New Features
+
+- `#I365344` - Dash array can now be customized in the border of the Circular Gauge.
+
 ## 19.4.43 (2022-01-18)
 
 ### CircularGauge

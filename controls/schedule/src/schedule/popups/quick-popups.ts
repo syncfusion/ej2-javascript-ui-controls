@@ -780,10 +780,10 @@ export class QuickPopups {
             (endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000) < 24 ? 1 : 0;
         if (eventData[fields.isAllDay]) {
             details = startDateDetails + ' (' + this.l10n.getConstant('allDay') + ')';
-            if (((endDate.getTime() - startDate.getTime()) / util.MS_PER_DAY) > 1) {
+            if (((util.getUniversalTime(endDate) - util.getUniversalTime(startDate)) / util.MS_PER_DAY) > 1) {
                 details += '&nbsp;-&nbsp;' + endDateDetails + ' (' + this.l10n.getConstant('allDay') + ')';
             }
-        } else if ((((endDate.getTime() - startDate.getTime()) / util.MS_PER_DAY) >= 1) || spanLength > 0) {
+        } else if ((((util.getUniversalTime(endDate) - util.getUniversalTime(startDate)) / util.MS_PER_DAY) >= 1) || spanLength > 0) {
             details = startDateDetails + ' (' + startTimeDetail + ')' + '&nbsp;-&nbsp;' + endDateDetails + ' (' + endTimeDetail + ')';
         } else {
             details = startDateDetails + ' (' + (startTimeDetail + '&nbsp;-&nbsp;' + endTimeDetail) + ')';

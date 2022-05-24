@@ -1886,7 +1886,7 @@ export class DropDownList extends DropDownBase implements IInput {
 
     private updateActionCompleteDataValues(ulElement: HTMLElement, list: { [key: string]: Object }[]) : void {
         this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
-        if (isNullOrUndefined(this.actionData.ulElement) && isNullOrUndefined(this.actionData.list)) {
+        if (this.actionData.list !== this.actionCompleteData.list && this.actionCompleteData.ulElement && this.actionCompleteData.list) {
             this.actionData = this.actionCompleteData;
         }
     }

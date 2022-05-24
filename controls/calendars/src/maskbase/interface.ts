@@ -22,4 +22,5 @@ export interface IMaskedDateTime extends Component<HTMLElement> {
     cldrTimeFormat(): string
     calendarMode: CalendarType;
     globalize: Internationalization;
+    isFocused: boolean;
 }

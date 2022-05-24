@@ -568,6 +568,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             duration: 400,
             isCenterRipple: true
         });
+        if (this.getModuleName() === 'daterangepicker') {
+            attributes(this.previousIcon, {tabIndex: '-1'});
+            attributes(this.nextIcon, {tabIndex: '-1'});
+        }
         attributes(this.nextIcon, <{ [key: string]: string }>ariaNextAttrs);
         this.headerTitleElement = this.createElement('div', { className: '' + LINK + ' ' + TITLE });
         attributes(this.headerTitleElement, <{ [key: string]: string }>ariaTitleAttrs);
@@ -685,7 +689,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.todayElement = this.createElement('button', { attrs: { role: 'button' } });
             rippleEffect(this.todayElement);
             this.updateFooter();
-            addClass([this.todayElement], [BTN, TODAY, FLAT, PRIMARY, CSS]);            
+            addClass([this.todayElement], [BTN, TODAY, FLAT, PRIMARY, CSS]);
             if ((!(+new Date(minimum.setHours(0, 0, 0, 0)) <= +this.todayDate &&
                 +this.todayDate <= +new Date(maximum.setHours(0, 0, 0, 0)))) || (this.todayDisabled)) {
                 addClass([this.todayElement], DISABLED);

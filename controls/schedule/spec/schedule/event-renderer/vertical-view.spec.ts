@@ -944,7 +944,7 @@ describe('Vertical View Event Render Module', () => {
         });
         it('checking appointment presents after change start and endHour', (done: DoneFn) => {
             schObj.dataBound = () => {
-                expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toEqual(3);
                 const app1: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]') as HTMLElement;
                 expect(app1.querySelectorAll('.e-indicator').length).toEqual(2);
                 expect(app1.querySelectorAll('.e-indicator')[0].classList.contains('e-up-icon')).toBe(true);

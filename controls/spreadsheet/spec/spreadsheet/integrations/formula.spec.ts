@@ -204,6 +204,20 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('computeExpression', ['=SUM(E2,E5)'])).toBe(40);
             done();
         });
+        it('Now formula', (done: Function) => {
+            helper.edit('A13', '=NOW()');
+            const cell: CellModel = helper.getInstance().sheets[0].rows[12].cells[0];
+            expect(cell.value.indexOf('/') > -1).toBeFalsy();
+            expect(cell.value.indexOf(':') > -1).toBeFalsy();
+            expect(!!Number(cell.value)).toBeTruthy();
+            expect(cell.format).toBe('M/d/yyyy h:mm');
+            const cellContent: string = helper.invoke('getCell', [12, 0]).textContent;
+            expect(cellContent.indexOf('/') > -1).toBeTruthy();
+            expect(cellContent.indexOf(':') > -1).toBeTruthy();
+            expect(cellContent.indexOf('AM') > -1).toBeFalsy();
+            expect(cellContent.indexOf('PM') > -1).toBeFalsy();
+            done();
+        });
     });
 
     describe('CR-Issues ->', () => {

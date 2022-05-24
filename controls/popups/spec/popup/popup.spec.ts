@@ -797,6 +797,40 @@ describe('Popup # ', () => {
             Browser.userAgent = ua;
         });
     });
+
+    describe(" EJ2-59889 - prevent calling unwire event if it is already called in hide method", function() {
+        var popEle = createElement('div',{id:"posPopup"});
+        var popObj:any;
+        var eventStatus:boolean=false;
+        var popupunwirecscrollevent: any;
+        
+        it("prevent calling unwire event Test Case ", function() {
+            popObj = new Popup(popEle,{
+                position:{X:'left', Y:'bottom'}
+            },
+            );
+            popupunwirecscrollevent = popObj.unwireScrollEvents;
+            popObj.unwireScrollEvents = function(){
+                eventStatus=!eventStatus; 
+            };
+            popObj.show();
+            popObj.hide();
+            
+            popObj.destroy();
+            expect(eventStatus).toEqual(true);
+            eventStatus=false;
+        });
+
+        afterEach(function() {
+            if(popObj){
+                popObj.destroy();
+            }
+            document.body.innerHTML = "";
+            document.body.style.height ="";
+            document.body.style.width ="";
+            document.body.style.margin ="8px";
+        });
+    });
     describe("isElementOnViewport method test", function() {
         var popObj:any, flexContainer:HTMLElement;
         beforeEach(function() {            

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.56 (2022-05-17)
+
+### Common
+
+#### Bug Fixes
+
+- `F173666` - The issue with sanitize html while creating a appointment in scheduler has been resolve.
+
 ## 20.1.55 (2022-05-12)
 
 ### Common

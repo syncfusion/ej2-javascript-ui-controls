@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F173877` - Now, Node template has been rendered properly in layout.
+
 ## 20.1.55 (2022-05-12)
 
 ### Diagram

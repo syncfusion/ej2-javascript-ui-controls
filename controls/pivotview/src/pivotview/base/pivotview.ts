@@ -1194,8 +1194,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * Use this class name, you can customize the pivot table and its inner elements easily at your end.
      * @default ''
      */
-     @Property('')
-     public cssClass: string;
+    @Property('')
+    public cssClass: string;
 
     //Event Declarations
     /**
@@ -3895,7 +3895,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (cell && hasField) {
             let rowHeaders: string = this.getRowText(rowIndex, 0);
             let columnHeaders: string = this.getColText(0, colIndex, rowIndex);
-            let value: string = ((cell.formattedText === '0' || cell.formattedText === '') ? this.localeObj.getConstant('noValue') :
+            let value: string = (cell.formattedText === '' ? this.localeObj.getConstant('noValue') :
                 cell.formattedText);
             if (this.tooltipTemplate && this.getTooltipTemplate() !== undefined) {
                 let rowFields: string = this.getHeaderField(rowIndex, colIndex, 'row');
@@ -4103,9 +4103,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         let target: Element = (e.target as Element);
         let ele: Element = null;
+        let axis: string = (target.parentElement.classList.contains(cls.ROWSHEADER) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
+        ele = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
+        if (axis === 'column' && !ele && this.gridSettings.selectionSettings.mode !== 'Row') {
+            ele = closest(target, 'td');
+        }
         if (!target.classList.contains(cls.COLLAPSE) && !target.classList.contains(cls.EXPAND) && this.enableValueSorting && this.dataType === 'pivot') {
-            let axis: string = (target.parentElement.classList.contains(cls.ROWSHEADER) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
-            ele = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
             this.cellClicked(target, ele, e);
             try {
                 if ((ele.parentElement.parentElement.parentElement.parentElement.classList.contains('e-movableheader')
@@ -4442,9 +4445,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.setGridRowWidth();
                 }
-                if(this.chart || this.pivotChartModule){
+                if (this.chart || this.pivotChartModule) {
                     this.chart.height = this.pivotChartModule.getResizedChartHeight();
-                }                
+                }
             }
             if (this.showToolbar && this.toolbarModule && this.toolbarModule.toolbar) {
                 this.toolbarModule.toolbar.width = this.grid ? (this.getGridWidthAsNumber() - 2) : (this.getWidthAsNumber() - 2);

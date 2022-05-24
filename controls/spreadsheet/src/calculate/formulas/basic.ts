@@ -1308,9 +1308,8 @@ export class BasicFormulas {
         }
         const date: Date = new Date(Date.now());
         const intl: Internationalization = new Internationalization();
-        const dFormatter: Function = intl.getDateFormat({ skeleton: 'short', type: 'dateTime' });
-        const formattedString: string = dFormatter(date);
-        return formattedString;
+        const dFormatter: Function = intl.getDateFormat({ format: 'M/d/yyyy h:mm a' });
+        return dFormatter(date);
     }
 
     /**

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### Popup
+
+#### Bug Fixes
+
+- `#I376806` - Now, the drop down list popup will close properly even after interaction with more than one drop down component.
+
 ## 19.4.38 (2021-12-17)
 
 ### Tooltip

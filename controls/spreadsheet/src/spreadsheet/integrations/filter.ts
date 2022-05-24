@@ -1,10 +1,10 @@
 /* eslint-disable no-useless-escape */
 import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
-import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
+import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort } from '../index';
 import { filterRangeAlert, getFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler } from '../../workbook/common/event';
 import { FilterCollectionModel, getRangeIndexes, getCellAddress, updateFilter, ColumnModel, beforeInsert } from '../../workbook/index';
-import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, getSheetIndex } from '../../workbook/index';
+import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, isCustomDateTime } from '../../workbook/index';
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
@@ -1301,7 +1301,11 @@ export class Filter {
                         num++;
                         break;
                     default:
-                        str++;
+                        if (isCustomDateTime(cell)) {
+                            date++;
+                        } else {
+                            str++;
+                        }
                         break;
                     }
                 } else {
@@ -1550,8 +1554,8 @@ export class Filter {
                         }
                     }
                 }
-                this.parent.notify(initiateFilterUI, { predicates: predicates !== [] ? predicates : null, range:
-                    filterCol.filterRange, sIdx: sIdx, isCut: true });
+                this.parent.notify(initiateFilterUI, { predicates: predicates.length ? predicates : undefined, range:
+                    filterCol.filterRange, sIdx: sIdx, isInternal: true });
             }
             if (this.parent.sortCollection) {
                 this.parent.notify(sortImport, null);

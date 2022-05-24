@@ -1443,7 +1443,7 @@
           float: right;
           & .e-firstsummarycell {
             border-left: 1px solid;
-            border-color: #e0e0e0;
+            border-color: $grid-cell-border-color;
           }
       }
 

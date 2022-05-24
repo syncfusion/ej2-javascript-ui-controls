@@ -590,6 +590,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    private fromTarget: any;
+    /**
+     * @private
+     */
     public drawSignatureWithTool: boolean = false;
     /**
      * @private
@@ -7631,6 +7635,7 @@ export class PdfViewerBase {
                             // eslint-disable-next-line
                             isChecked: (currentObject as any).isChecked, isSelected: (currentObject as any).isSelected
                         };
+                        this.fromTarget = currentObject;
                         this.pdfViewer.fireFormFieldMouseoverEvent('formFieldMouseover', field, currentObject.pageIndex, relativePosition.x, relativePosition.y, currentPosition.x, currentPosition.y);
                     } else {
                         if (!isFormField)
@@ -7646,7 +7651,24 @@ export class PdfViewerBase {
                             pageIndex = this.pdfViewer.annotation.getEventPageNumber(event);
                         }
                         if (this.isFormFieldMousedOver) {
-                            this.pdfViewer.fireFormFieldMouseLeaveEvent('formFieldMouseLeave', null, pageIndex);
+                            if(this.fromTarget){
+                                const field: IFormField = {
+                                    // eslint-disable-next-line
+                                    name: (this.fromTarget as any).name, id: (this.fromTarget as any).id, value: (this.fromTarget as any).value, fontFamily: this.fromTarget.fontFamily, fontSize: this.fromTarget.fontSize, fontStyle: (this.fromTarget as any).fontStyle,
+                                    // eslint-disable-next-line max-len
+                                    color: (this.fromTarget as PdfFormFieldBaseModel).color, backgroundColor: (this.fromTarget as PdfFormFieldBaseModel).backgroundColor, borderColor: (this.fromTarget as PdfFormFieldBaseModel).borderColor,
+                                    // eslint-disable-next-line
+                                    thickness: (this.fromTarget as PdfFormFieldBaseModel).thickness, alignment: (this.fromTarget as PdfFormFieldBaseModel).alignment, isReadonly: (this.fromTarget as any).isReadonly, visibility: (this.fromTarget as any).visibility,
+                                    // eslint-disable-next-line
+                                    maxLength: (this.fromTarget as any).maxLength, isRequired: (this.fromTarget as any).isRequired, isPrint: this.fromTarget.isPrint, rotation: (this.fromTarget as any).rotateAngle, tooltip: (this.fromTarget as any).tooltip, options: (this.fromTarget as any).options,
+                                    // eslint-disable-next-line
+                                    isChecked: (this.fromTarget as any).isChecked, isSelected: (this.fromTarget as any).isSelected
+                                };
+                                this.pdfViewer.fireFormFieldMouseLeaveEvent('formFieldMouseLeave', field, pageIndex);
+                            }
+                            else{
+                                this.pdfViewer.fireFormFieldMouseLeaveEvent('formFieldMouseLeave', null, pageIndex);
+                            }
                         } else {
                             this.pdfViewer.fireAnnotationMouseLeave(pageIndex);
                         }

@@ -672,32 +672,31 @@ export class WorkbookFormula {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let range: string = getSingleSelectedRange(sheet);
         const indexes: number[] = getRangeIndexes(range.split(':')[1]);
-        let i: number; let calcValue: string;
-        const formulaVal: string[] = ['SUM', 'AVERAGE', 'MIN', 'MAX'];
-        const formatedValues: string[] = [];
         if (indexes[0] + 1 === sheet.rowCount && indexes[1] + 1 === sheet.colCount) {
             range = `A1:${getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex)}`;
         }
-        const actCell: number[] = getRangeIndexes(sheet.activeCell);
-        const actCellModel: CellModel = sheet.rows[actCell[0]] ? sheet.rows[actCell[0]].cells ?
-            sheet.rows[actCell[0]].cells[actCell[1]] : {} : {};
-        const actCellfrmt: string = (actCellModel) ? actCellModel.format : '';
-        let cellValue: string;
+        let calcValue: string; let i: number;
         const cellCol: string | string[] = this.calculateInstance.getCellCollection(range);
         for (i = 0; i < cellCol.length; i++) {
-            cellValue = this.calculateInstance.getValueFromArg(cellCol[i]);
-            if (isNumber(cellValue)) { args.countOnly = false; break; }
+            calcValue = this.calculateInstance.getValueFromArg(cellCol[i]);
+            if (isNumber(calcValue)) {
+                args.countOnly = false;
+                break;
+            }
         }
         args.Count = this.calculateInstance.getFunction('COUNTA')(range);
-        if (!args.Count || args.countOnly) { return; }
+        if (!args.Count || args.countOnly) {
+            return;
+        }
+        const formulaVal: string[] = ['SUM', 'AVERAGE', 'MIN', 'MAX'];
+        const formatedValues: string[] = [];
+        const index: number[] = getRangeIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(index[0], index[1], sheet, false, true);
         for (i = 0; i < 4; i++) {
             calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i])(range));
-            const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-                formattedText: calcValue, value: calcValue, format: actCellfrmt,
-                cell: { value: calcValue, format: actCellfrmt },
-                onLoad: true
-            };
-            if (actCellfrmt) {
+            if (cell.format) {
+                const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: calcValue, value: calcValue,
+                    format: cell.format, cell: { value: calcValue, format: cell.format }, onLoad: true };
                 this.parent.notify(getFormattedCellObject, eventArgs);
                 calcValue = eventArgs.formattedText as string;
             }

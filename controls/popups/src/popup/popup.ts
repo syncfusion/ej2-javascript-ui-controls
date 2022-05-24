@@ -326,7 +326,9 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public destroy(): void {
         this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL, CLASSNAMES.OPEN, CLASSNAMES.CLOSE);
-        this.unwireEvents();
+        if (this.element.classList.contains('e-popup-open')) {
+            this.unwireEvents();
+        }
         super.destroy();
     }
     /**

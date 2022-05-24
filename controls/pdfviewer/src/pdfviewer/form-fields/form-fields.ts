@@ -891,9 +891,6 @@ export class FormFields {
             let currentIndex: any = backgroundcolor.lastIndexOf(',');
             // eslint-disable-next-line
             let currentColor: any = backgroundcolor.slice(0, currentIndex + 1) + 0 + ')';
-            if (currentTarget.type === 'checkbox') {
-                currentTarget.style.webkitAppearance = '';
-            }
             currentTarget.style.backgroundColor = currentColor;
         } else if (currentTarget) {
             // eslint-disable-next-line
@@ -922,11 +919,6 @@ export class FormFields {
         let currentIndex: any = backgroundcolor.lastIndexOf(',');
         // eslint-disable-next-line
         let currentColor: any = backgroundcolor.slice(0, currentIndex + 1) + 0.2 + ')';
-        if ((currentTarget.type === 'checkbox') && !currentTarget.checked) {
-            currentTarget.style.webkitAppearance = 'none';
-        } else {
-            currentTarget.style.webkitAppearance = '';
-        }
         currentTarget.style.backgroundColor = currentColor;
     }
     public updateFormFields(event: MouseEvent): void {
@@ -1023,6 +1015,13 @@ export class FormFields {
                         id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
                         shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: rotateAngle === 90 || rotateAngle === 270 ? (bounds.width / 2) : (bounds.height / 2)
                     };
+                    if (annot.shapeAnnotationType === 'SignatureText') {
+                        let textWidth: number = this.getTextWidth(annot.data, annot.fontSize, annot.fontFamily); 
+                        let widthRatio: number = 1;
+                        if (textWidth > bounds.width)
+                           widthRatio =  bounds.width / textWidth;
+                        annot.fontSize = this.getFontSize(Math.floor((annot.fontSize * widthRatio))); 
+                    }
                     signString = annot.data;
                     signatureFontFamily = annot.fontFamily;
                     signatureFontSize = annot.fontSize;
@@ -1156,6 +1155,9 @@ export class FormFields {
                     formFieldsData[i].FormField.fontFamily = annot.fontFamily;
                     this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
                     (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
+                    formFieldsData[i].FormField.fontSize = annot.fontSize;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.fontSize = annot.fontSize;
+                    (this.pdfViewer.nameTable as any)[key].fontSize = annot.fontSize;
                     formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Text" : null;
                 } else if (annot.shapeAnnotationType === "SignatureImage") {
                     formFieldsData[i].FormField.signatureType = "Image";
@@ -1582,7 +1584,6 @@ export class FormFields {
                                     if ((currentData.GroupName === target.name) && (currentData.uniqueID !== currentTarget.id)) {
                                         currentData.Selected = false;
                                         currentTarget.checked = false;
-                                        currentTarget.style.webkitAppearance = 'none';
                                     }
                                 }
                             }
@@ -1996,8 +1997,6 @@ export class FormFields {
         inputField.type = type;
         if (data.Selected) {
             inputField.checked = true;
-        } else if (type === 'checkbox' && !printContainer) {
-            inputField.style.webkitAppearance = 'none';
         }
         inputField.name = data.GroupName;
         inputField.value = data.Value;
@@ -2552,5 +2551,30 @@ export class FormFields {
      */
     public getModuleName(): string {
         return 'FormFields';
+    }
+
+    /**
+     * Get the text wdith
+     * @param text
+     * @param font
+     * @param fontFamily
+    */
+    private getTextWidth(text: any, font: any, fontFamily: any): number {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        let fontName: any;
+        if (font) {
+            fontName = font + 'px' + ' ' + fontFamily;
+        }
+        context.font = fontName || getComputedStyle(document.body).font;
+        return context.measureText(text).width;
+    }
+
+    /**
+     * @param {number} fontSize - Font size.
+     * @returns {number} - Returns the font size.
+    */
+    private getFontSize(fontSize: number): number {
+        return (fontSize % 2 === 0) ? fontSize : --fontSize;
     }
 }

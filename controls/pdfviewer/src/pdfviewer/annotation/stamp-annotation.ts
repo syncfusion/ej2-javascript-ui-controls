@@ -298,7 +298,7 @@ export class StampAnnotation {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: X, y: Y, width: annotation.bounds.width, height: annotation.bounds.height }, pageIndex: pageIndex, data: annotation.data, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureText', thickness: annotation.thickness, strokeColor: annotation.strokeColor, opacity: annotation.opacity, signatureName: annotation.signatureName, fontFamily: annotation.fontFamily, fontSize: (annotation.bounds.height / 2)
+                    shapeAnnotationType: 'SignatureText', thickness: annotation.thickness, strokeColor: annotation.strokeColor, opacity: annotation.opacity, signatureName: annotation.signatureName, fontFamily: annotation.fontFamily, fontSize: Math.floor((annotation.bounds.height / 2))
                 };
             } else if (annotation.shapeAnnotationType === 'SignatureImage') {
                 annot = {

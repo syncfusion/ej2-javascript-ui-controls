@@ -556,7 +556,7 @@ export class DragAndDrop extends ActionBase {
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
         const eventStart: Date = eventObj[this.parent.eventFields.startTime] as Date;
         const eventEnd: Date = eventObj[this.parent.eventFields.endTime] as Date;
-        const eventDuration: number = eventEnd.getTime() - eventStart.getTime();
+        const eventDuration: number = util.getUniversalTime(eventEnd) - util.getUniversalTime(eventStart);
         let offsetTop: number = Math.floor(parseInt(this.actionObj.clone.style.top, 10) / this.actionObj.cellHeight)
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
@@ -911,8 +911,8 @@ export class DragAndDrop extends ActionBase {
         if (isNullOrUndefined(this.parent.eventDragArea)) {
             this.removeCloneElement();
         }
-        const eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
-            (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
+        const eventDuration: number = util.getUniversalTime(<Date>eventObj[this.parent.eventFields.endTime]) -
+            util.getUniversalTime(<Date>eventObj[this.parent.eventFields.startTime]);
         let td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         if (!isNullOrUndefined(td)) {
             const tr: HTMLTableRowElement = td.parentElement as HTMLTableRowElement;
@@ -925,12 +925,12 @@ export class DragAndDrop extends ActionBase {
                     this.actionObj.groupIndex = parseInt(td.getAttribute('data-group-index'), 10);
                 }
                 const timeString: Date = new Date(currentDate.setDate(currentDate.getDate() - this.daysVariation));
-                let dragStart: Date = new Date(timeString.getTime());
-                let dragEnd: Date = new Date(dragStart.getTime());
-                const startTimeDiff: number = (<Date>eventObj[this.parent.eventFields.startTime]).getTime() -
-                    (util.resetTime(new Date(+eventObj[this.parent.eventFields.startTime]))).getTime();
-                dragStart = new Date(dragStart.getTime() + startTimeDiff);
-                dragEnd = new Date(dragStart.getTime() + eventDuration);
+                const dragStart: Date = new Date(timeString.getTime());
+                const startTimeDiff: number = util.getUniversalTime(<Date>eventObj[this.parent.eventFields.startTime]) -
+                    util.getUniversalTime(util.resetTime(new Date(+eventObj[this.parent.eventFields.startTime])));
+                dragStart.setMilliseconds(startTimeDiff);
+                const dragEnd: Date = new Date(dragStart.getTime());
+                dragEnd.setMilliseconds(eventDuration);
                 this.actionObj.start = new Date(dragStart.getTime());
                 this.actionObj.end = new Date(dragEnd.getTime());
             }
@@ -984,8 +984,8 @@ export class DragAndDrop extends ActionBase {
 
     private calculateTimelineTime(e: MouseEvent & TouchEvent): void {
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
-        const eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
-            (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
+        const eventDuration: number = util.getUniversalTime(<Date>eventObj[this.parent.eventFields.endTime]) -
+            util.getUniversalTime(<Date>eventObj[this.parent.eventFields.startTime]);
         let offsetLeft: number = this.parent.enableRtl ? Math.abs(this.actionObj.clone.offsetLeft) - this.actionObj.clone.offsetWidth :
             parseInt(this.actionObj.clone.style.left, 10);
         offsetLeft = Math.floor(offsetLeft / this.actionObj.cellWidth) * this.actionObj.cellWidth;

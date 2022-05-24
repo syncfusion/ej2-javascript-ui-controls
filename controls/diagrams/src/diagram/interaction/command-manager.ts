@@ -103,6 +103,9 @@ export class CommandHandler {
     /** @private */
     public diagram: Diagram;
 
+    /** @private */
+    public canUpdateTemplate: boolean = false;
+
     private childTable: {} = {};
 
     private parentTable: {} = {};
@@ -5169,8 +5172,13 @@ Remove terinal segment in initial
         this.diagram.blazorActions |= BlazorAction.expandNode;
         let objects: ILayout = {};
         if (!canLayout) {
+            // BLAZ-22230 - Added below code to check if its blazor means then we set canUpdateTemplate as true
+            if(isBlazor()) {
+                this.canUpdateTemplate = true;
+            }
             objects = this.diagram.doLayout() as ILayout;
         }
+        this.canUpdateTemplate = false;
         this.diagram.blazorActions &= ~BlazorAction.expandNode;
         this.diagram.preventNodesUpdate = preventNodesUpdate;
         this.diagram.preventConnectorsUpdate = false;

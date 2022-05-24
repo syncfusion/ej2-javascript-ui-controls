@@ -701,7 +701,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 }
                 arg.currentSize = this.progressSize;
                 this.trigger('resized', arg);
-                if ((this.width === null || this.height === null) && !arg.cancel) {
+                if ((this.width === null || this.height === null || this.width.indexOf("%") > -1 || this.height.indexOf("%") > -1)
+                    && !arg.cancel) {
                     this.secElement ? this.secElement.innerHTML = '' : this.secElement;
                     this.calculateProgressBarSize();
                     this.createSVG();

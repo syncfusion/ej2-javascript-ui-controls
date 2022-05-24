@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-376240`- Multiple words in the typed handwritten signature and signature fields are preserved correctly in the downloaded document.
+- `#F174506`- Improved the printing quality of the PDF viewer.
+- `#SF-372853`- Now, ink annotation will be added programmatically with path data available in the annotationAdd event.
+
 ## 20.1.56 (2022-05-17)
 
 ### PDF Viewer

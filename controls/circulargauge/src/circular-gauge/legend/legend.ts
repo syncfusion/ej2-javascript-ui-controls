@@ -554,7 +554,7 @@ export class Legend {
                 legendOption.location, legendOption.shape, new Size(legendOption.shapeWidth, legendOption.shapeHeight),
                 '', new PathOption(
                     this.legendID + '_Axis_' + axisIndex + '_Shape_' + rangeIndex, legendOption.fill,
-                    legendOption.shapeBorder.width, legendOption.shapeBorder.color, null, '0', '', ''
+                    legendOption.shapeBorder.width, legendOption.shapeBorder.color, null, legendOption.shapeBorder.dashArray, '', ''
                 )
             ),
             group, this.gauge,

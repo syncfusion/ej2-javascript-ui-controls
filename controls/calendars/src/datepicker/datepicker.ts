@@ -90,6 +90,7 @@ export class DatePicker extends Calendar implements IInput {
     protected isIconClicked : boolean = false;
     protected isDynamicValueChanged: boolean = false;
     protected moduleName: string = this.getModuleName();
+    protected isFocused: boolean = false;
     /**
      * Specifies the width of the DatePicker component.
      *
@@ -1004,6 +1005,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private inputFocusHandler(): void {
+        this.isFocused = true;
         if (!this.enabled) {
             return;
         }

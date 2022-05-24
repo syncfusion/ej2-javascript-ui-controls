@@ -18,6 +18,11 @@ export interface BorderModel {
      */
     width?: number;
 
+    /**
+     * Gets and sets the dash-array of the border.
+     */
+    dashArray?: string;
+
 }
 
 /**

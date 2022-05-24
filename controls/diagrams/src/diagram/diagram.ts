@@ -5360,7 +5360,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.preventDiagramUpdate = true;
                 const connectors: Object = {};
                 const updatedNodes: NodeModel[] = nodes as NodeModel[];
-                if (isBlazor()) { this.updateTemplate(); }
+                // BLAZ-22230 - Added condition to check if canUpdateTemplate is false means then we can update the template for blazor
+                if (isBlazor() && !this.commandHandler.canUpdateTemplate) { this.updateTemplate(); }
                 for (const obj of updatedNodes) {
                     const node: Node = obj as Node;
                     if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {

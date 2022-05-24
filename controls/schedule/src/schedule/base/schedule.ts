@@ -2342,8 +2342,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     this.refreshEvents(false);
                 }
                 break;
-            case 'showWeekend':
             case 'workDays':
+                if (JSON.stringify(oldProp.workDays) !== JSON.stringify(newProp.workDays)) {
+                    state.isLayout = true;
+                }
+                break;
+            case 'showWeekend':
             case 'startHour':
             case 'endHour':
             case 'workHours':

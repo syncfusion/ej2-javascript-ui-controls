@@ -83,20 +83,22 @@ export class Annotations {
                     const line: Rect = axis.lineBounds;
                     const extraWidth: number = getExtraWidth(this.gauge.element);
                     const axisCollection: HTMLElement = getElement(this.gauge.element.id + '_Axis_Collections');
-                    const transformValue: string = axisCollection.getAttribute('transform').split("(")[1].split(")")[0];
-                    const leftTransformValue: number = parseInt(transformValue.split(",")[0]);
-                    const topTransformValue: number = parseInt(transformValue.split(",")[1]);
-                    if (this.gauge.orientation === 'Vertical') {
-                        left = line.x + parseFloat(annotation.x.toString()) + leftTransformValue - extraWidth;
-                        top = ((valueToCoefficient(parseFloat(annotation.axisValue.toString()), axis, this.gauge.orientation, range) * line.height) + line.y);
-                        top += parseFloat(annotation.y.toString());
-                    } else {
-                        left = ((valueToCoefficient(parseFloat(annotation.axisValue.toString()), axis, this.gauge.orientation, range) * line.width) + line.x - extraWidth);
-                        left += parseFloat(annotation.x.toString());
-                        top = line.y + parseFloat(annotation.y.toString()) + topTransformValue;
+                    if (!isNullOrUndefined(axisCollection)) {
+                        const transformValue: string = axisCollection.getAttribute('transform').split("(")[1].split(")")[0];
+                        const leftTransformValue: number = parseInt(transformValue.split(",")[0]);
+                        const topTransformValue: number = parseInt(transformValue.split(",")[1]);
+                        if (this.gauge.orientation === 'Vertical') {
+                            left = line.x + parseFloat(annotation.x.toString()) + leftTransformValue - extraWidth;
+                            top = ((valueToCoefficient(parseFloat(annotation.axisValue.toString()), axis, this.gauge.orientation, range) * line.height) + line.y);
+                            top += parseFloat(annotation.y.toString());
+                        } else {
+                            left = ((valueToCoefficient(parseFloat(annotation.axisValue.toString()), axis, this.gauge.orientation, range) * line.width) + line.x - extraWidth);
+                            left += parseFloat(annotation.x.toString());
+                            top = line.y + parseFloat(annotation.y.toString()) + topTransformValue;
+                        }
+                        left -= (offset.width / 2);
+                        top -= (offset.height / 2);
                     }
-                    left -= (offset.width / 2);
-                    top -= (offset.height / 2);
                 } else {
                     const elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
                     const bounds: ClientRect = this.gauge.svgObject.getBoundingClientRect();

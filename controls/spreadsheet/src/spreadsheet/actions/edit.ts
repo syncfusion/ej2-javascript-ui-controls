@@ -1021,9 +1021,8 @@ export class Edit {
 
     private getRefreshNodeArgs(cell: CellModel, rowIdx?: number, colIdx?: number): RefreshValueArgs {
         cell = cell ? cell : {};
-        const fCode: string = (cell && cell.format) ? cell.format : '';
         const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-            value: cell.value, format: fCode, onLoad: true,
+            value: cell.value, format: cell.format, onLoad: true,
             formattedText: '', isRightAlign: false, type: 'General', cell: cell,
             rowIndex: rowIdx === undefined ? this.editCellData.rowIndex : rowIdx,
             colIndex: colIdx === undefined ? this.editCellData.colIndex : colIdx, isRowFill: false

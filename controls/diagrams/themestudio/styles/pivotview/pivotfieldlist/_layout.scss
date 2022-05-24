@@ -28,7 +28,7 @@
       font-weight: normal;
       @if ($field-list-skin == 'bootstrap4') {
         // sass-lint:disable-all
-        color: #000;
+        color: $black;
         // sass-lint:enable-all
         opacity: .5;
       }
@@ -1113,9 +1113,9 @@
 
           &:hover {
             @if ($field-list-skin == 'bootstrap4') {
-              background-color: #6c757d !important;
-              border-color: #6c757d !important;
-              color: #fff !important;
+              background-color: $gray-600 !important;
+              border-color: $gray-600 !important;
+              color: $white !important;
             }
           }
 
@@ -1135,9 +1135,9 @@
 
           &:focus {
             @if ($field-list-skin == 'bootstrap4') {
-              background-color: #6c757d !important;
-              border-color: #6c757d !important;
-              color: #fff !important;
+              background-color: $gray-600 !important;
+              border-color: $gray-600 !important;
+              color: $white !important;
             }
 
             &.e-active {

@@ -92,7 +92,7 @@ export class Save {
     private exportDialog(args: MenuEventArgs): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-        const type: string = args ? args.item.id.split('_')[1] : 'xlsx';
+        const type: string = args ? args.item.id.split(this.parent.element.id + '_')[1] : 'xlsx';
         if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
             const dlg: DialogModel = {
                 isModal: true, showCloseIcon: true, cssClass: 'e-open-dlg', allowDragging: false,

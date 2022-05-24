@@ -27,7 +27,7 @@ export class Insert {
         case 'Sheet':
             this.parent.notify(
                 insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !args.isAction });
-            this.parent.renderModule.refreshSheet(false, false, true);
+            this.parent.renderModule.refreshSheet(false, false, true, true);
             break;
         case 'Row':
             if (args.activeSheetIndex === this.parent.activeSheetIndex) {
@@ -35,7 +35,7 @@ export class Insert {
                 if (!this.parent.scrollSettings.enableVirtualization ||
                     args.index <= this.parent.viewport.bottomIndex) {
                     if (args.freezePane) {
-                        this.parent.renderModule.refreshSheet(false, false, true);
+                        this.parent.renderModule.refreshSheet(false, false, true, true);
                     } else if (this.parent.scrollSettings.enableVirtualization) {
                         const frozenCol: number = this.parent.frozenColCount(sheet);
                         if (args.index >= this.parent.viewport.topIndex + frozenRow) {
@@ -70,7 +70,7 @@ export class Insert {
                 } else if (this.parent.scrollSettings.isFinite && (this.parent.viewport.topIndex + frozenRow ===
                     skipHiddenIdx(sheet, 0, true) || this.parent.viewport.bottomIndex === skipHiddenIdx(
                         sheet, sheet.rowCount - args.model.length - 1, false))) {
-                    this.parent.renderModule.refreshSheet(false, false, true);
+                    this.parent.renderModule.refreshSheet(false, false, true, true);
                 }
             }
             break;
@@ -79,7 +79,7 @@ export class Insert {
                 const frozenCol: number = this.parent.frozenColCount(sheet);
                 if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.rightIndex) {
                     if (args.freezePane) {
-                        this.parent.renderModule.refreshSheet(false, false, true);
+                        this.parent.renderModule.refreshSheet(false, false, true, true);
                     } else if (this.parent.scrollSettings.enableVirtualization) {
                         const frozenRow: number = this.parent.frozenRowCount(sheet);
                         if (args.index >= this.parent.viewport.leftIndex + frozenCol) {
@@ -111,7 +111,7 @@ export class Insert {
                 } else if (this.parent.scrollSettings.isFinite && (this.parent.viewport.leftIndex + frozenCol ===
                     skipHiddenIdx(sheet, 0, true, 'columns') || this.parent.viewport.rightIndex === skipHiddenIdx(
                         sheet, sheet.colCount - args.model.length - 1, false, 'columns'))) {
-                    this.parent.renderModule.refreshSheet(false, false, true);
+                    this.parent.renderModule.refreshSheet(false, false, true, true);
                 }
             }
             break;

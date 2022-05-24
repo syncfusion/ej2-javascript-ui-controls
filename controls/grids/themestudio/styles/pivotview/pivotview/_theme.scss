@@ -221,7 +221,7 @@
     .e-grid .e-icons {
       color: $pivotgrid-button-icon-color !important;
       @if ($pivotgrid-skin == 'bootstrap4') {
-        color: #495057 !important;
+        color: $gray-700 !important;
       }
 
       @if ($skin-name == 'bootstrap5') {
@@ -231,7 +231,7 @@
       &:hover {
         color: $pivotgrid-icon-hover-color !important;
         @if ($pivotgrid-skin == 'bootstrap4') {
-          color: #495057 !important;
+          color: $gray-700 !important;
         }
 
         @if ($skin-name == 'bootstrap5') {
@@ -260,7 +260,7 @@
         .e-icons {
           color: $pivotgrid-button-active-icon-color !important;
           @if ($pivotgrid-skin == 'bootstrap4') {
-            color: #495057 !important;
+            color: $gray-700 !important;
           }
 
           @if ($skin-name == 'bootstrap5') {

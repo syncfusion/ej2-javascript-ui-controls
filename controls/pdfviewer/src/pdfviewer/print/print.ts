@@ -152,7 +152,7 @@ export class Print {
                 proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
                 proxy.printCanvas.style.width = pageWidth + 'px';
                 proxy.printCanvas.style.height = pageHeight + 'px';
-                const printScaleValue: number = 1.5;
+                const printScaleValue: number = 2;
                 if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
                     proxy.printCanvas.height = pageWidth * printScaleValue * window.devicePixelRatio;
                     proxy.printCanvas.width = pageHeight * printScaleValue * window.devicePixelRatio;

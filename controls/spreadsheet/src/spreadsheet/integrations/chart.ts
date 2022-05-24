@@ -139,34 +139,25 @@ export class SpreadsheetChart {
     }
 
     private getPropertyValue(rIdx: number, cIdx: number, sheetIndex: number): string | number {
-        const sheets: SheetModel[] = this.parent.sheets;
-        if (sheets[sheetIndex] && sheets[sheetIndex].rows[rIdx] && sheets[sheetIndex].rows[rIdx].cells[cIdx]) {
-            const cell: CellModel = getCell(rIdx, cIdx, this.parent.sheets[sheetIndex]);
-            let value: string | number = '';
+        const cell: CellModel = getCell(rIdx, cIdx, getSheet(this.parent, sheetIndex));
+        if (cell) {
+            let value: string | number;
             if (cell.format) {
-                const formatObj: { [key: string]: string | boolean | CellModel } = {
-                    type: getTypeFromFormat(cell.format),
-                    value: cell && cell.value, format: cell && cell.format ?
-                        cell.format : 'General', formattedText: cell && cell.value,
-                    onLoad: true, isRightAlign: false, cell: cell,
-                    rowIndex: rIdx.toString(), colIndex: cIdx.toString()
-                };
-                if (cell) {
-                    this.parent.notify(getFormattedCellObject, formatObj);
-                    if (typeof (formatObj.value) === 'number') {
-                        // eslint-disable-next-line no-useless-escape
-                        const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
-                        formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
-                        value = parseInt(formatObj.formattedText.toString(), 10);
-                    } else {
-                        value = formatObj.formattedText && formatObj.formattedText.toString();
-                    }
+                const formatObj: { [key: string]: string | boolean | CellModel } = { value: cell.value, format: cell.format, onLoad: true,
+                    formattedText: cell.value, isRightAlign: false, cell: cell, rowIndex: rIdx.toString(), colIndex: cIdx.toString() };
+                this.parent.notify(getFormattedCellObject, formatObj);
+                if (typeof (formatObj.value) === 'number') {
+                    // eslint-disable-next-line no-useless-escape
+                    const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
+                    formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
+                    value = parseInt(formatObj.formattedText.toString(), 10);
+                } else {
+                    value = formatObj.formattedText && formatObj.formattedText.toString();
                 }
             } else {
-                value = this.parent.sheets[sheetIndex].rows[rIdx].cells[cIdx].value;
+                value = cell.value;
             }
-            value = isNullOrUndefined(value) ? '' : value;
-            return value;
+            return isNullOrUndefined(value) ? '' : value;
         } else {
             return '';
         }
@@ -306,28 +297,21 @@ export class SpreadsheetChart {
     private pushRowData(
         options: { range: number[], sheetIdx: number, skipFormula: boolean }, minr: number,
         minc: number, maxr: number, maxc: number, arr: object[], rowIdx: number[], isDataSrcEnsured: boolean, isYvalue: boolean): void {
-        const minCol: number = minc; const sheet: SheetModel = this.parent.sheets[options.sheetIdx];
+        const minCol: number = minc; const sheet: SheetModel = this.parent.sheets[options.sheetIdx]; let value: string | number;
         while (minr <= maxr) {
             if (isHiddenRow(sheet, minr)) { minr++; continue; }
             minc = minCol;
             while (minc <= maxc) {
                 if (isHiddenCol(sheet, minc)) { minc++; continue; }
-                let value: string | number = '';
-                const cell: CellModel = getCell(minr, minc, sheet);
-                if (cell && cell.format && !isYvalue) {
-                    const forArgs: { [key: string]: string | boolean | CellModel } = {
-                        value: cell && cell.value, format: cell && cell.format ? cell.format : 'General',
-                        formattedText: cell && cell.value, onLoad: true,
-                        type: cell && getTypeFromFormat(cell.format),
-                        rowIndex: minr.toString(), colIndex: minc.toString(),
-                        isRightAlign: false, cell: cell
-                    };
+                const cell: CellModel = getCell(minr, minc, sheet, false, true);
+                if (cell.format && !isYvalue) {
+                    const forArgs: { [key: string]: string | boolean | CellModel } = { value: cell.value, format: cell.format, onLoad: true,
+                        formattedText: cell.value, rowIndex: minr.toString(), colIndex: minc.toString(), isRightAlign: false, cell: cell };
                     this.parent.notify(getFormattedCellObject, forArgs);
                     value = forArgs.formattedText ? forArgs.formattedText.toString() : '';
                 } else {
-                    value = cell ? (!isNullOrUndefined(cell.value) ? cell.value : '') : '';
+                    value = cell.value || (<unknown>cell.value === 0 ? 0 : '');
                 }
-                // = this.parent.getValueRowCol(options.sheetIdx, minr + 1, minc + 1);
                 arr.push({ value });
                 minc++;
             }

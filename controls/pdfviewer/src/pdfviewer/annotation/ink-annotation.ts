@@ -654,8 +654,18 @@ export class InkAnnotation {
         annotationObject.width = annotationObject.width?annotationObject.width :150;
         annotationObject.height = annotationObject.height?annotationObject.height :60;        
         let pathData: string = annotationObject.path?annotationObject.path:'';
-        annotationObject.path = getPathString(JSON.parse(pathData));
-
+        if (!isNullOrUndefined(pathData)) {
+            // Check whether the given path of the ink annotation is starts with Move path or Line path. 
+            if (pathData[0] === 'M' || pathData[0] === 'L') {
+                let collectionData: any = processPathData(pathData);
+                let csData: any = splitArrayCollection(collectionData);
+                pathData = JSON.stringify(csData);
+            }
+            else {
+                pathData = getPathString(JSON.parse(pathData));
+            }
+        }
+        annotationObject.path = pathData;
         //Creating Annotation objects with it's proper properties
         let signatureInkAnnotation: any = [];
         let ink: any = 

@@ -3,7 +3,7 @@ import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, ChangeEventArgs, ClickEventArgs } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import * as events from '../../common/base/constant';
 import { IDataOptions, IFieldListOptions } from '../../base/engine';
@@ -536,7 +536,7 @@ export class DialogRenderer {
         }
     }
 
-    private onCloseFieldList(): void {
+    private onCloseFieldList(args: ClickEventArgs): void {
         if (this.parent.allowDeferLayoutUpdate) {
             this.parent.dataSourceSettings =
                 extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;   /* eslint-disable-line */
@@ -559,7 +559,9 @@ export class DialogRenderer {
             }
             if (this.parent.isPopupView && this.parent.pivotGridModule) {
                 this.parent.pivotGridModule.notify(events.uiUpdate, this);
-                this.parent.pivotGridModule.notify(events.contentReady, this);
+                if (!(args as any).currentTarget.classList.contains('e-defer-cancel-button')) {
+                    this.parent.pivotGridModule.notify(events.contentReady, this);
+                }
             } else {
                 this.cancelButtonClick();
             }

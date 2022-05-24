@@ -485,7 +485,9 @@ export class Toolbar {
      * @deprecated
      */
     public refreshToolbarOverflow(): void {
-        this.baseToolbar.toolbarObj.refreshOverflow();
+        if( !this.parent.inlineMode.enable){
+            this.baseToolbar.toolbarObj.refreshOverflow();
+        }
     }
 
     private isToolbarDestroyed(): boolean {

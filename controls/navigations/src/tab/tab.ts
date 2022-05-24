@@ -596,7 +596,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.tbObj = null;
         }
         this.unWireEvents();
-        ['role', 'aria-disabled', 'aria-activedescendant', 'tabindex', 'aria-orientation'].forEach((val: string): void => {
+        ['role', 'aria-disabled', 'aria-activedescendant', 'tabindex', 'aria-orientation', 'aria-owns'].forEach((val: string): void => {
             this.element.removeAttribute(val);
         });
         this.expTemplateContent();
@@ -679,7 +679,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const css: Str = (name === 'msie') ? 'e-ie' : (name === 'edge') ? 'e-edge' : (name === 'safari') ? 'e-safari' : '';
         setStyle(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
         this.setCssClass(this.element, this.cssClass, true);
-        attributes(this.element, { role: 'tablist', 'aria-disabled': 'false', 'aria-activedescendant': '' });
+        attributes(this.element, { role: 'tablist', 'aria-disabled': 'false', 'aria-activedescendant': '', 'aria-owns': this.element.id + '_' + 'tab_header_items' });
         this.setCssClass(this.element, css, true);
         this.updatePopAnimationConfig();
     }
@@ -873,6 +873,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         attributes(this.hdrEle, { 'aria-label': 'tab-header' });
         this.updateOrientationAttribute();
         this.setCloseButton(this.showCloseButton);
+        const toolbarHeader: HTEle = this.tbObj.element.querySelector('.' + CLS_TB_ITEMS);
+        if (!isNOU(toolbarHeader)) {
+            toolbarHeader.id = this.element.id + '_' +  'tab_header_items';
+        }
     }
     private renderContent(): void {
         this.cntEle = <HTEle>select('.' + CLS_CONTENT, this.element);

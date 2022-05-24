@@ -2916,7 +2916,7 @@ export class PivotEngine {
         parentMember?: string, valueFil?: boolean
     ): IAxisSet[] {
         let hierarchy: IAxisSet[] = [];
-        if (keys) {
+        if (keys && keys.length > 0) {
             let rlen: number = keys.length;
             let decisionObj: IIterator = {};
             let fieldName: string = keys[keyInd].name;
@@ -4230,8 +4230,8 @@ export class PivotEngine {
             axis: 'value', actualText: field, indexObject: this.isDrillThrough ? this.rawIndexObject : {},
             rowHeaders: rows[rln].type === 'grand sum' ? '' : rows[rln].valueSort.levelName,
             columnHeaders: columns[cln].type === 'grand sum' ? '' : columns[cln].valueSort.levelName,
-            formattedText: formattedText, value: isNullOrUndefined(value) ? 0 : value,
-            actualValue: isNullOrUndefined(actualValue) ? 0 : actualValue,
+            formattedText: formattedText, value: value,
+            actualValue: actualValue,
             rowIndex: tnum, colIndex: dln, isSum: isSum, isGrandSum: isGrand, showSubTotals: !subTotal
         };
         this.rawIndexObject = {};

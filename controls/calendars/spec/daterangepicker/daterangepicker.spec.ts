@@ -2,7 +2,7 @@ import { DateRangePicker, RangeEventArgs, RangePopupEventArgs } from '../../src/
 import { DateRangePickerModel } from '../../src/daterangepicker/daterangepicker-model';
 import { createElement, removeClass, remove, addClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { EventHandler, Component, Browser, Ajax, L10n, loadCldr } from '@syncfusion/ej2-base';
-import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
+import { profile, inMB, getMemoryProfile } from '../common/common.spec';
 
 
 /**
@@ -271,7 +271,7 @@ describe('DateRangePicker', () => {
                         expect(document.querySelector('.e-daterangepicker.e-popup').classList.contains('e-popup')).toBe(true);
                     });
                     it('allowedit property with e-non-edit calss ', () => {
-                        daterangepicker = new DateRangePicker({value: [new Date('02/11/2017'), new Date('03/11/2017')]});
+                        daterangepicker = new DateRangePicker({ value: [new Date('02/11/2017'), new Date('03/11/2017')] });
                         daterangepicker.appendTo('#date');
                         expect(daterangepicker.element.getAttribute('readonly')).toBe(null);
                         expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
@@ -281,7 +281,7 @@ describe('DateRangePicker', () => {
                         expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(true);
                     });
                     it('allowedit property with e-non-edit calss with readonly ', () => {
-                        daterangepicker = new DateRangePicker({value: [new Date('02/11/2017'), new Date('03/11/2017')]});
+                        daterangepicker = new DateRangePicker({ value: [new Date('02/11/2017'), new Date('03/11/2017')] });
                         daterangepicker.appendTo('#date');
                         expect(daterangepicker.element.getAttribute('readonly')).toBe(null);
                         expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
@@ -355,15 +355,15 @@ describe('DateRangePicker', () => {
                     });
                     it('Element created with object type Format property', () => {
                         let date = new Date('04/06/2018');
-                        daterangepicker = new DateRangePicker({ format:{skeleton:'short'}, startDate: date, endDate: new Date(new Date('04/06/2018 10:30 AM').setDate(date.getDate() + 10)) });
+                        daterangepicker = new DateRangePicker({ format: { skeleton: 'short' }, startDate: date, endDate: new Date(new Date('04/06/2018 10:30 AM').setDate(date.getDate() + 10)) });
                         daterangepicker.appendTo('#date');
                         expect(daterangepicker.inputElement.value == '4/6/18 - 4/16/18').toBe(true);
                     });
                     it('onproperty change for object type Format property', () => {
                         let date = new Date('04/06/2018 10:30 AM');
-                        daterangepicker = new DateRangePicker({startDate: date, endDate: new Date(new Date('04/06/2018 10:30 AM').setDate(date.getDate() + 10)) });
+                        daterangepicker = new DateRangePicker({ startDate: date, endDate: new Date(new Date('04/06/2018 10:30 AM').setDate(date.getDate() + 10)) });
                         daterangepicker.appendTo('#date');
-                        daterangepicker.format={skeleton:'short'};
+                        daterangepicker.format = { skeleton: 'short' };
                         daterangepicker.dataBind();
                         expect(daterangepicker.inputElement.value == '4/6/18 - 4/16/18').toBe(true);
                     });
@@ -458,9 +458,9 @@ describe('DateRangePicker', () => {
                         daterangepicker.appendTo('#date');
                         expect(daterangepicker.element.getAttribute('autocomplete') == 'off').toBe(true);
                     });
-                     /**
-                    * tabIndex
-                    */
+                    /**
+                   * tabIndex
+                   */
                     it('tab index of focus element', () => {
                         daterangepicker = new DateRangePicker({});
                         daterangepicker.appendTo('#date');
@@ -849,7 +849,7 @@ describe('DateRangePicker', () => {
                 let endDate: string = daterangepicker.globalize.formatDate(daterangepicker.endDate, { format: daterangepicker.format, type: 'date', skeleton: 'yMd' });
                 expect(daterangepicker.element.value === startDate + ' - ' + endDate).toBe(true);
             })
-            it('Error Class for start value before 1905-Chrome testing',()=>{
+            it('Error Class for start value before 1905-Chrome testing', () => {
                 daterangepicker = new DateRangePicker();
                 daterangepicker.appendTo('#date');
                 daterangepicker.inputElement.value = '1/1/1900 - 1/1/2018';
@@ -3035,6 +3035,41 @@ describe('DateRangePicker', () => {
             expect(document.activeElement === daterangepicker.rightCalendar.children[1].firstElementChild).toBe(true);
         });
     });
+    describe('Tab KeyBoard action - DateRangePicker element', () => {
+        let daterangepicker: any;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: 'alt+right',
+            target: 'target'
+        };
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            daterangepicker = new DateRangePicker();
+            daterangepicker.appendTo('#date');
+            daterangepicker.show();
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('move focus from left to right calendar using tab', function () {
+            daterangepicker.value = [new Date('1/1/2019'), new Date('1/1/2020')];
+            daterangepicker.dataBind();
+            daterangepicker.show();
+            keyEventArgs.action = 'tab';
+            keyEventArgs.target = daterangepicker.leftCalendar.querySelector('table');
+            daterangepicker.leftCalendar.querySelector('table').focus();
+            daterangepicker.keyInputHandler(keyEventArgs);
+            expect(document.activeElement === daterangepicker.rightCalendar.children[1].firstElementChild).toBe(true);
+            keyEventArgs.target = daterangepicker.rightCalendar.querySelector('table');
+            keyEventArgs.action = 'shiftTab';
+            daterangepicker.keyInputHandler(keyEventArgs);
+            expect(document.activeElement === daterangepicker.leftCalendar.children[1].firstElementChild).toBe(true);
+        });
+    });
     describe('Min/Max test case - Device', () => {
         let daterangepicker: any;
         let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February"];
@@ -4268,12 +4303,12 @@ describe('DateRangePicker', () => {
             }
             document.body.innerHTML = '';
         });
-      it('Hidden input value test case with de culture', function () {
+        it('Hidden input value test case with de culture', function () {
             daterangepicker = null;
             daterangepicker = createControl({ value: [new Date("1/1/2019"), new Date("1/20/2019")] });
             daterangepicker.locale = 'de';
-            expect(daterangepicker.firstHiddenChild.value === daterangepicker.globalize.formatDate(daterangepicker.startDate, { type: 'date', skeleton: 'yMd'})).toBe(true);
-            expect(daterangepicker.secondHiddenChild.value === daterangepicker.globalize.formatDate(daterangepicker.endDate, { type: 'date', skeleton: 'yMd'})).toBe(true);
+            expect(daterangepicker.firstHiddenChild.value === daterangepicker.globalize.formatDate(daterangepicker.startDate, { type: 'date', skeleton: 'yMd' })).toBe(true);
+            expect(daterangepicker.secondHiddenChild.value === daterangepicker.globalize.formatDate(daterangepicker.endDate, { type: 'date', skeleton: 'yMd' })).toBe(true);
         });
     });
     describe('Check placeholder after load culture', () => {
@@ -4586,7 +4621,7 @@ describe('DateRangePicker', () => {
         beforeEach((): void => {
             daterangepicker = undefined;
             let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'daterange' });
-            ele.setAttribute('placeholder','Enter a date');
+            ele.setAttribute('placeholder', 'Enter a date');
             ele.setAttribute('readonly', '');
             ele.setAttribute('disabled', '');
             document.body.appendChild(ele);
@@ -4605,28 +4640,28 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.element.hasAttribute('enabled')).toBe(false);
         });
         it('Inline and API testing', () => {
-            daterangepicker = new DateRangePicker({placeholder:"Select a date", readonly: false, enabled: true});
+            daterangepicker = new DateRangePicker({ placeholder: "Select a date", readonly: false, enabled: true });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.placeholder).toBe("Select a date");
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
             expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
         });
         it('Inline and html attributes API testing', () => {
-            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false"}});
+            daterangepicker = new DateRangePicker({ htmlAttributes: { placeholder: "Choose a date", readonly: "false", disabled: "false" } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.placeholder).toBe("Choose a date");
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
             expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
         });
         it('Inline, API and html attributes API testing', () => {
-            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: ""}, placeholder: "Select a date", readonly: false, enabled: true});
+            daterangepicker = new DateRangePicker({ htmlAttributes: { placeholder: "Choose a date", readonly: "true", disabled: "" }, placeholder: "Select a date", readonly: false, enabled: true });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.placeholder).toBe("Select a date");
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
             expect(daterangepicker.element.hasAttribute('enabled')).toBe(false);
         });
     });
-    
+
     describe('HTML attribute API testing', () => {
         let daterangepicker: any;
         beforeEach((): void => {
@@ -4641,28 +4676,28 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
         });
         it('API testing', () => {
-            daterangepicker = new DateRangePicker({placeholder:"Select a date", readonly: false, enabled: true});
+            daterangepicker = new DateRangePicker({ placeholder: "Select a date", readonly: false, enabled: true });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.placeholder).toBe("Select a date");
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
             expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
         });
         it('HTML attributes API testing', () => {
-            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false"}});
+            daterangepicker = new DateRangePicker({ htmlAttributes: { placeholder: "Choose a date", readonly: "false", disabled: "false" } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.placeholder).toBe("Choose a date");
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
             expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
         });
         it('API and HTML attributes API testing', () => {
-            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: ""}, placeholder: "Select a date", readonly: false, enabled: true});
+            daterangepicker = new DateRangePicker({ htmlAttributes: { placeholder: "Choose a date", readonly: "true", disabled: "" }, placeholder: "Select a date", readonly: false, enabled: true });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.placeholder).toBe("Select a date");
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
             expect(daterangepicker.element.hasAttribute('enabled')).toBe(false);
         });
         it('Other attribute testing with htmlAttributes API', () => {
-            daterangepicker = new DateRangePicker({ htmlAttributes:{class: "test", title:"sample"}});
+            daterangepicker = new DateRangePicker({ htmlAttributes: { class: "test", title: "sample" } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
             expect(daterangepicker.inputWrapper.container.classList.contains('test')).toBe(true);
@@ -4682,7 +4717,7 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
         });
         it('Dynamically change attributes with htmlAttributes API', () => {
-            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Enter a date", readonly: "", disabled: "disabled", value: "2/20/2018", max: "2/25/2018", min: "2/10/2018", class: "test", title:"sample", style: 'background-color:yellow'}});
+            daterangepicker = new DateRangePicker({ htmlAttributes: { placeholder: "Enter a date", readonly: "", disabled: "disabled", value: "2/20/2018", max: "2/25/2018", min: "2/10/2018", class: "test", title: "sample", style: 'background-color:yellow' } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.element.getAttribute('placeholder')).toBe('Enter a date');
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(true);
@@ -4693,7 +4728,7 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
             expect(daterangepicker.inputWrapper.container.classList.contains('test')).toBe(true);
             expect(daterangepicker.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
-            daterangepicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title:"heading"};
+            daterangepicker.htmlAttributes = { placeholder: "choose a date", readonly: "false", disabled: "false", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title: "heading" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
             expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
@@ -4704,11 +4739,11 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.getAttribute('title')).toBe('heading');
         });
         it('Placeholder testing in auto case', () => {
-            daterangepicker = new DateRangePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+            daterangepicker = new DateRangePicker({ floatLabelType: "Auto", htmlAttributes: { placeholder: "Enter a name" } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
             expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
-            daterangepicker.htmlAttributes = { placeholder:"choose a date"};
+            daterangepicker.htmlAttributes = { placeholder: "choose a date" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
             expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
@@ -4721,11 +4756,11 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
         });
         it('Placeholder testing in always case', () => {
-            daterangepicker = new DateRangePicker({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            daterangepicker = new DateRangePicker({ floatLabelType: "Always", htmlAttributes: { placeholder: "Enter a name" } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
             expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
-            daterangepicker.htmlAttributes = { placeholder:"choose a date"};
+            daterangepicker.htmlAttributes = { placeholder: "choose a date" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
             expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
@@ -4738,10 +4773,10 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
         });
         it('Placeholder testing in never case', () => {
-            daterangepicker = new DateRangePicker({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            daterangepicker = new DateRangePicker({ floatLabelType: "Never", htmlAttributes: { placeholder: "Enter a name" } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.element.getAttribute('placeholder')).toBe('Enter a name');
-            daterangepicker.htmlAttributes = { placeholder:"choose a date"};
+            daterangepicker.htmlAttributes = { placeholder: "choose a date" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
             daterangepicker.floatLabelType = "Always";
@@ -4769,7 +4804,7 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
         });
         it('Html attributes at initial rendering', () => {
-            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", class: "sample" } });
+            daterangepicker = new DateRangePicker({ htmlAttributes: { placeholder: "Choose a date", class: "sample" } });
             daterangepicker.appendTo('#daterange');
             expect(daterangepicker.element.getAttribute('placeholder')).toBe('Choose a date');
             expect(daterangepicker.inputWrapper.container.classList.contains('sample')).toBe(true);
@@ -4777,7 +4812,7 @@ describe('DateRangePicker', () => {
         it('Pass multiple attributes dynamically', () => {
             daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
             daterangepicker.appendTo('#daterange');
-            daterangepicker.htmlAttributes = { class:"sample", readonly: "true", disabled: "true"};
+            daterangepicker.htmlAttributes = { class: "sample", readonly: "true", disabled: "true" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
             expect(daterangepicker.inputWrapper.container.classList.contains('sample')).toBe(true);
@@ -4788,14 +4823,14 @@ describe('DateRangePicker', () => {
             daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
             daterangepicker.appendTo('#daterange');
             daterangepicker.inputElement.value = "5/5/2019 - 6/10/2019";
-            daterangepicker.htmlAttributes = { class:"sample" };
+            daterangepicker.htmlAttributes = { class: "sample" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('5/5/2019 - 6/10/2019');
         });
         it('Dynamically change multiple attributes through htmlAttributes API', () => {
             daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
             daterangepicker.appendTo('#daterange');
-            daterangepicker.htmlAttributes = { class:"sample" , max:'5/15/2019', min:'6/5/2019'};
+            daterangepicker.htmlAttributes = { class: "sample", max: '5/15/2019', min: '6/5/2019' };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
             expect(daterangepicker.element.getAttribute('max')).toBe('5/15/2019');
@@ -4804,14 +4839,14 @@ describe('DateRangePicker', () => {
         it('Pass null value in htmlAttributes', () => {
             daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
             daterangepicker.appendTo('#daterange');
-            daterangepicker.htmlAttributes = { null: "null"};
+            daterangepicker.htmlAttributes = { null: "null" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
         });
         it('Pass undefined in htmlAttributes', () => {
             daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
             daterangepicker.appendTo('#daterange');
-            daterangepicker.htmlAttributes = { undefined: "undefined"};
+            daterangepicker.htmlAttributes = { undefined: "undefined" };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
         });
@@ -5389,8 +5424,8 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null && daterangepicker.popupObj.element.querySelector('.e-end-date') !== null).toBe(true);
             expect(+daterangepicker.startDate === +new Date('05/10/2017') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
             expect(daterangepicker.inputElement.value !== '').toBe(true);
-        });        
-		it('startDate out of min range(min:default)', () => {
+        });
+        it('startDate out of min range(min:default)', () => {
             daterangepicker = createControl({ strictMode: true, startDate: new Date('04/24/1017'), endDate: new Date('08/10/2017') });
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null && daterangepicker.popupObj.element.querySelector('.e-end-date') !== null).toBe(true);
             expect(+daterangepicker.startDate === +new Date('1/1/1900') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
@@ -6866,8 +6901,8 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).dispatchEvent(clickEvent);
             rightCalendarTitleClick();
             if (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling) {
-                ((document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling)as HTMLElement).click();
-            } else if(<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').parentElement.previousElementSibling) {
+                ((document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling) as HTMLElement).click();
+            } else if (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').parentElement.previousElementSibling) {
                 ((document.querySelector('.e-right-calendar .e-focused-date').parentElement.previousElementSibling.lastElementChild) as HTMLElement).click();
             } else {
                 document.querySelector('.e-right-calendar .e-header .e-prev').dispatchEvent(clickEvent);
@@ -7054,7 +7089,7 @@ describe('DateRangePicker', () => {
             }
             document.body.innerHTML = '';
         });
-         // Test cases for reset the component when value has been given.
+        // Test cases for reset the component when value has been given.
         it('Input element value reset test case (initialized)', () => {
             range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')] });
             range.appendTo('#range');
@@ -7090,7 +7125,7 @@ describe('DateRangePicker', () => {
             expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
             expect(range.value !== null).toBe(true);
         });
-        
+
         // below test cases are modified since this behavior has been changed in all input component.
 
         it('Input element value reset with enabled test case (initialized)', () => {
@@ -7135,7 +7170,7 @@ describe('DateRangePicker', () => {
             expect((<any>document.getElementById('range')).value !== '2/2/2017 - 4/4/2018').toBe(true);
             range = null;
         });
-        
+
         // Test cases for reset the component when value not initialized
 
         it('Input element value changing dynamically', () => {
@@ -7186,7 +7221,7 @@ describe('DateRangePicker', () => {
         // });
 
         it('Form reset with floatLabeltype("Always") property test case', () => {
-            range = new DateRangePicker({  floatLabelType: "Always" });
+            range = new DateRangePicker({ floatLabelType: "Always" });
             range.appendTo('#range');
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
             (<any>document.getElementById("form-element")).reset();
@@ -7195,7 +7230,7 @@ describe('DateRangePicker', () => {
             expect(range.element.value).toBe('');
         });
         it('Form reset with floatLabeltype("Never") property test case', () => {
-            range = new DateRangePicker({  floatLabelType: "Never" });
+            range = new DateRangePicker({ floatLabelType: "Never" });
             range.appendTo('#range');
             expect(document.querySelector('.e-float-text')).toBe(null);
             (<any>document.getElementById("form-element")).reset();
@@ -7349,7 +7384,7 @@ describe('DateRangePicker', () => {
         beforeEach(() => {
             let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
             document.body.appendChild(ele);
-            ele.setAttribute("data-value","true");
+            ele.setAttribute("data-value", "true");
         });
         afterEach(() => {
             if (daterangepicker) {
@@ -7367,7 +7402,7 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.children[4].classList.contains('e-daterange-hidden')).toBe(true);
         });
         it('Data attribute at hidden element testing', () => {
-            daterangepicker = new DateRangePicker({htmlAttributes:{"data-valmsg-replace":"true"}});
+            daterangepicker = new DateRangePicker({ htmlAttributes: { "data-valmsg-replace": "true" } });
             daterangepicker.appendTo('#date');
             expect(daterangepicker.inputWrapper.container.childElementCount).toBe(5);
             expect(daterangepicker.inputWrapper.container.children[3].getAttribute('data-value')).toBe("true");
@@ -7391,38 +7426,38 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
         });
         it('valid string array Value Test Case', () => {
-            daterangepicker = new DateRangePicker({value:[<any>'1/9/2018',<any>'4/10/2019']});
+            daterangepicker = new DateRangePicker({ value: [<any>'1/9/2018', <any>'4/10/2019'] });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
             expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
             expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2019'));
-            daterangepicker.value=[new Date('1/9/2018'),'4/10/2020'];
+            daterangepicker.value = [new Date('1/9/2018'), '4/10/2020'];
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2020');
             expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
             expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2020'));
         });
         it('valid string object Value Test Case', () => {
-            daterangepicker = new DateRangePicker({value:{start:<any>'1/9/2018',end:<any>'4/10/2019'}});
+            daterangepicker = new DateRangePicker({ value: { start: <any>'1/9/2018', end: <any>'4/10/2019' } });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
             expect(+daterangepicker.value.start).toBe(+new Date('1/9/2018'));
             expect(+daterangepicker.value.end).toBe(+new Date('4/10/2019'));
-            daterangepicker.value={start:new Date('1/9/2018'),end:'4/10/2020'};
+            daterangepicker.value = { start: new Date('1/9/2018'), end: '4/10/2020' };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2020');
             expect(+daterangepicker.value.start).toBe(+new Date('1/9/2018'));
             expect(+daterangepicker.value.end).toBe(+new Date('4/10/2020'));
         });
         it('valid string Value Test Case', () => {
-            daterangepicker = new DateRangePicker({value:<any>'1/9/2018 - 4/10/2019'});
+            daterangepicker = new DateRangePicker({ value: <any>'1/9/2018 - 4/10/2019' });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
             expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
             expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2019'));
         });
         it('valid string on property Value Test Case', () => {
-            daterangepicker = new DateRangePicker({value:<any>'1/9/2018 - 4/10/2019'});
+            daterangepicker = new DateRangePicker({ value: <any>'1/9/2018 - 4/10/2019' });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
             expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
@@ -7432,67 +7467,67 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.element.value).toBe('1/5/2018 - 4/10/2020');
             expect(+daterangepicker.value[0]).toBe(+new Date('1/5/2018'));
             expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2020'));
-            daterangepicker.value = ['1/9/2018','4/10/2019'];
+            daterangepicker.value = ['1/9/2018', '4/10/2019'];
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
             expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
             expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2019'));
-            daterangepicker.value = {start:'1/5/2018',end:'4/10/2020'};
+            daterangepicker.value = { start: '1/5/2018', end: '4/10/2020' };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('1/5/2018 - 4/10/2020');
             expect(+daterangepicker.value.start).toBe(+new Date('1/5/2018'));
             expect(+daterangepicker.value.end).toBe(+new Date('4/10/2020'));
         });
         it('invalid string type with value test case', () => {
-            daterangepicker = new DateRangePicker({value:<any>'dfgggdf - 4/10/2019'});
+            daterangepicker = new DateRangePicker({ value: <any>'dfgggdf - 4/10/2019' });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('dfgggdf - 4/10/2019');
             expect(daterangepicker.value).toBe(null)
             daterangepicker.value = '4/10/2020 - 2/2/2023'
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
-            expect(daterangepicker.value!==null).toBe(true)
+            expect(daterangepicker.value !== null).toBe(true)
             daterangepicker.value = '4/10/2019 - dfg'
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2019 - dfg');
             expect(daterangepicker.value).toBe(null)
         });
         it('invalid string Array type with value test case', () => {
-            daterangepicker = new DateRangePicker({value:[<any>'dfgggdf',<any>'4/10/2019']});
+            daterangepicker = new DateRangePicker({ value: [<any>'dfgggdf', <any>'4/10/2019'] });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('dfgggdf - 4/10/2019');
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
             expect(daterangepicker.value).toBe(null)
-            daterangepicker.value = [<any>'4/10/2020',<any>'2/2/2023']
+            daterangepicker.value = [<any>'4/10/2020', <any>'2/2/2023']
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
-            expect(daterangepicker.value!==null).toBe(true)
-            daterangepicker.value = [<any>'4/10/2019',<any>'dfg']
+            expect(daterangepicker.value !== null).toBe(true)
+            daterangepicker.value = [<any>'4/10/2019', <any>'dfg']
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2019 - dfg');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
         });
         it('invalid string Object type with value test case', () => {
-            daterangepicker = new DateRangePicker({value:[<any>'dfgggdf',<any>'4/10/2019']});
+            daterangepicker = new DateRangePicker({ value: [<any>'dfgggdf', <any>'4/10/2019'] });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('dfgggdf - 4/10/2019');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
-            daterangepicker.value = [<any>'4/10/2020',<any>'2/2/2023']
+            daterangepicker.value = [<any>'4/10/2020', <any>'2/2/2023']
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
-            expect(daterangepicker.value!==null).toBe(true)
-            daterangepicker.value = [new Date('4/10/2019'),<any>'dfg']
+            expect(daterangepicker.value !== null).toBe(true)
+            daterangepicker.value = [new Date('4/10/2019'), <any>'dfg']
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2019 - dfg');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
         });
         it('invalid number type with value test case ', () => {
-            daterangepicker = new DateRangePicker({value:[<any>'4/10/2019',<any>42019]});
+            daterangepicker = new DateRangePicker({ value: [<any>'4/10/2019', <any>42019] });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe('4/10/2019 - 42019');
             expect(daterangepicker.value).toBe(null)
@@ -7501,15 +7536,15 @@ describe('DateRangePicker', () => {
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
-            expect(daterangepicker.value!==null).toBe(true)
-            daterangepicker.value = {start:<any>1234,end:new Date('4/10/2019')};
+            expect(daterangepicker.value !== null).toBe(true)
+            daterangepicker.value = { start: <any>1234, end: new Date('4/10/2019') };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('1234 - 4/10/2019');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
         });
         it('invalid string type with value test case and strictMode true ', () => {
-            daterangepicker = new DateRangePicker({ value: {start:new Date('4/10/2019'),end:<any>'123werf4'}, strictMode:true });
+            daterangepicker = new DateRangePicker({ value: { start: new Date('4/10/2019'), end: <any>'123werf4' }, strictMode: true });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe("");
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
@@ -7517,21 +7552,21 @@ describe('DateRangePicker', () => {
             daterangepicker.value = '4/10/2020 - 2/2/2023';
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
-            daterangepicker.value = ['4/10/2019','123werf4'];
+            daterangepicker.value = ['4/10/2019', '123werf4'];
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
         });
         it('invalid number type with value test case and strictMode true', () => {
-            daterangepicker = new DateRangePicker({ value: [<any>'4/10/2019',<any>1234], strictMode:true });
+            daterangepicker = new DateRangePicker({ value: [<any>'4/10/2019', <any>1234], strictMode: true });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe("");
             expect(daterangepicker.value).toBe(null)
         });
-        
+
         it('single value test case', () => {
-            daterangepicker = new DateRangePicker({ value:<any>'1234' });
+            daterangepicker = new DateRangePicker({ value: <any>'1234' });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe("1234");
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
@@ -7541,14 +7576,14 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.element.value).toBe('4/10/2019');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
-            daterangepicker.value = {start:'4/10/209'};
+            daterangepicker.value = { start: '4/10/209' };
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/209');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
         });
         it('ISO string type with value test case ', () => {
-            daterangepicker = new DateRangePicker({ value:[ <any>"2017-02-02T12:30:00.000Z",<any>"2019-01-02T08:06:13.3426049+00:00" ]});
+            daterangepicker = new DateRangePicker({ value: [<any>"2017-02-02T12:30:00.000Z", <any>"2019-01-02T08:06:13.3426049+00:00"] });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value != '').toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
@@ -7556,7 +7591,7 @@ describe('DateRangePicker', () => {
             // expect(daterangepicker.element.value).toBe('2/2/2017 - 1/2/2019');
         });
         it('invalid object type with value test case  ', () => {
-            daterangepicker = new DateRangePicker({ value: {start:new Date('4/10/2019'),end:<any>{a:'b'}} });
+            daterangepicker = new DateRangePicker({ value: { start: new Date('4/10/2019'), end: <any>{ a: 'b' } } });
             daterangepicker.appendTo('#range');
             expect(daterangepicker.element.value).toBe("");
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
@@ -7564,14 +7599,14 @@ describe('DateRangePicker', () => {
             daterangepicker.value = '4/10/2020 - 2/2/2023';
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
-            daterangepicker.value = [{a:'b'},'123werf4'];
+            daterangepicker.value = [{ a: 'b' }, '123werf4'];
             daterangepicker.dataBind();
             expect(daterangepicker.element.value).toBe('');
             expect(daterangepicker.value).toBe(null)
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
         });
     });
-    
+
     describe('Start and Depth-Desktop', () => {
         function leftCalendarTitleClick(): void {
             (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).click();
@@ -7598,12 +7633,12 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
         });
         it('default value testing', () => {
-            daterangepicker=createControl({value:[new Date('1/8/2019'), new Date('1/10/2019')]});
+            daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2019')] });
             expect(daterangepicker.start).toBe('Month');
             expect(daterangepicker.depth).toBe('Month');
         });
-        it('start and Depth as year',() =>{
-            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('1/10/2018')],start:'Year',depth:'Year'});
+        it('start and Depth as year', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('1/10/2018')], start: 'Year', depth: 'Year' });
             expect(daterangepicker.start).toBe('Year');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
@@ -7631,8 +7666,8 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).click();
             expect(document.querySelectorAll('.e-end-date').length).toBe(2);
         });
-        it('start as Decade and Depth as Year',() =>{
-            daterangepicker=createControl({value:[new Date('1/8/2019'), new Date('1/10/2039')],start:'Decade',depth:'Year'});
+        it('start as Decade and Depth as Year', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2039')], start: 'Decade', depth: 'Year' });
             expect(daterangepicker.start).toBe('Decade');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
@@ -7743,15 +7778,15 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2119')], start: 'Decade', depth: 'Decade' });
             expect(daterangepicker.start).toBe('Decade');
             expect(daterangepicker.depth).toBe('Decade');
-            let startyear:number = (new Date()).getFullYear();
-            let stDec:number = (startyear-(startyear%10));
-            let startDecade = (stDec.toString())+' - '+((stDec + 9).toString());
-            let endDecade = ((stDec + 10).toString())+' - '+((stDec + 19).toString());
+            let startyear: number = (new Date()).getFullYear();
+            let stDec: number = (startyear - (startyear % 10));
+            let startDecade = (stDec.toString()) + ' - ' + ((stDec + 9).toString());
+            let endDecade = ((stDec + 10).toString()) + ' - ' + ((stDec + 19).toString());
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe(startDecade);
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe(endDecade);
         });
-        it('navigation via drill up and selction with start Date only',()=>{
-            daterangepicker = createControl({startDate:new Date('1/2/2011') });
+        it('navigation via drill up and selction with start Date only', () => {
+            daterangepicker = createControl({ startDate: new Date('1/2/2011') });
             expect(daterangepicker.start).toBe('Month');
             expect(daterangepicker.depth).toBe('Month');
             rightCalendarTitleClick();
@@ -7769,10 +7804,10 @@ describe('DateRangePicker', () => {
             rightCalendarTitleClick();
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2011');
-            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2014');  
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2014');
         })
-        it('navigation via drill up and selction with start and End Date',()=>{
-            daterangepicker = createControl({startDate:new Date('1/1/2011'),endDate:new Date('6/30/2011') });
+        it('navigation via drill up and selction with start and End Date', () => {
+            daterangepicker = createControl({ startDate: new Date('1/1/2011'), endDate: new Date('6/30/2011') });
             expect(daterangepicker.start).toBe('Month');
             expect(daterangepicker.depth).toBe('Month');
             rightCalendarTitleClick();
@@ -7790,10 +7825,10 @@ describe('DateRangePicker', () => {
             rightCalendarTitleClick();
             (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2011');
-            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2014');  
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2014');
         })
         it('start and Depth as year with mindays and maxdays', () => {
-            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year',minDays:65,maxDays:159 });
+            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year', minDays: 65, maxDays: 159 });
             expect(daterangepicker.start).toBe('Year');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
@@ -7808,7 +7843,7 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[3]).classList.contains('e-disabled')).toBe(true);
         });
         it('start and Depth as year Selection maintained on navigation', () => {
-            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year',minDays:64 });
+            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year', minDays: 64 });
             expect(daterangepicker.start).toBe('Year');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
@@ -7832,9 +7867,9 @@ describe('DateRangePicker', () => {
             expect(document.querySelectorAll('.e-end-date').length).toBe(0);
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
-        });      
+        });
         it('start and Depth as Decade Selection maintained on navigation', () => {
-            daterangepicker = createControl({ value: [new Date('1/1/2015'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade',minDays:864 });
+            daterangepicker = createControl({ value: [new Date('1/1/2015'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade', minDays: 864 });
             expect(daterangepicker.start).toBe('Decade');
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
@@ -7885,7 +7920,7 @@ describe('DateRangePicker', () => {
         });
     });
     describe('Start and Depth-Mobile', () => {
-       function calendarTitleClick(): void {
+        function calendarTitleClick(): void {
             (<HTMLElement>document.querySelector('.e-day.e-title')).click();
         }
         let clickEvent: MouseEvent = document.createEvent('MouseEvents');
@@ -7902,12 +7937,12 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
         });
         it('default value testing', () => {
-            daterangepicker=createControl({value:[new Date('1/8/2019'), new Date('1/10/2019')]},true);
+            daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2019')] }, true);
             expect(daterangepicker.start).toBe('Month');
             expect(daterangepicker.depth).toBe('Month');
         });
-        it('start and Depth as year',() =>{
-            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Year',depth:'Year'},true);
+        it('start and Depth as year', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('2/10/2018')], start: 'Year', depth: 'Year' }, true);
             expect(daterangepicker.start).toBe('Year');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
@@ -7936,8 +7971,8 @@ describe('DateRangePicker', () => {
             expect(document.querySelectorAll('.e-end-date').length).toBe(1);
             expect(document.querySelectorAll('.e-start-date').length).toBe(1);
         });
-        it('start and Depth as year, navigation with start alone',() =>{
-            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Year',depth:'Year'},true);
+        it('start and Depth as year, navigation with start alone', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('2/10/2018')], start: 'Year', depth: 'Year' }, true);
             expect(daterangepicker.start).toBe('Year');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
@@ -7967,8 +8002,8 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
         });
-        it('start and Depth as year and navigation',() =>{
-            daterangepicker=createControl({value:[new Date('2/1/2018'), new Date('5/31/2018')],start:'Year',depth:'Year'},true);
+        it('start and Depth as year and navigation', () => {
+            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year' }, true);
             expect(daterangepicker.start).toBe('Year');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
@@ -7996,7 +8031,7 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(true);
             /*start Button*/
             (<HTMLElement>document.querySelector('.e-start-btn.e-btn')).click();
-            daterangepicker.value='';
+            daterangepicker.value = '';
             daterangepicker.dataBind();
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
@@ -8005,8 +8040,8 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
             expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
         });
-        it('start and Depth as Decade',() =>{
-            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Decade',depth:'Decade'},true);
+        it('start and Depth as Decade', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('2/10/2018')], start: 'Decade', depth: 'Decade' }, true);
             expect(daterangepicker.start).toBe('Decade');
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
@@ -8035,8 +8070,8 @@ describe('DateRangePicker', () => {
             expect(document.querySelectorAll('.e-end-date').length).toBe(1);
             expect(document.querySelectorAll('.e-start-date').length).toBe(1);
         });
-        it('start and Depth as Decade, navigation with start alone',() =>{
-            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Decade',depth:'Decade'},true);
+        it('start and Depth as Decade, navigation with start alone', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('2/10/2018')], start: 'Decade', depth: 'Decade' }, true);
             expect(daterangepicker.start).toBe('Decade');
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
@@ -8066,8 +8101,8 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
         });
-        it('start and Depth as Decade and navigation',() =>{
-            daterangepicker=createControl({value:[new Date('1/1/2018'), new Date('12/31/2018')],start:'Decade',depth:'Decade'},true);
+        it('start and Depth as Decade and navigation', () => {
+            daterangepicker = createControl({ value: [new Date('1/1/2018'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade' }, true);
             expect(daterangepicker.start).toBe('Decade');
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
@@ -8080,7 +8115,7 @@ describe('DateRangePicker', () => {
             /*start Button*/
             (<HTMLElement>document.querySelector('.e-start-btn.e-btn')).click();
             expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
-            daterangepicker.value='';
+            daterangepicker.value = '';
             daterangepicker.dataBind();
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
@@ -8090,7 +8125,7 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
         });
         it('start and Depth as Decade on property', () => {
-            daterangepicker = createControl({ value: [new Date('1/1/2017'), new Date('12/31/2037')] },true);
+            daterangepicker = createControl({ value: [new Date('1/1/2017'), new Date('12/31/2037')] }, true);
             expect(daterangepicker.start).toBe('Month');
             expect(daterangepicker.depth).toBe('Month');
             daterangepicker.depth = 'Decade';
@@ -8107,7 +8142,7 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-end-btn').innerHTML).toBe('Dec 31, 2037');
         });
         it('start as Decade and Depth as Year on property', () => {
-            daterangepicker = createControl({ value: [new Date('1/1/2019'), new Date('1/31/2039')] },true);
+            daterangepicker = createControl({ value: [new Date('1/1/2019'), new Date('1/31/2039')] }, true);
             expect(daterangepicker.start).toBe('Month');
             expect(daterangepicker.depth).toBe('Month');
             daterangepicker.depth = 'Year';
@@ -8130,7 +8165,7 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-end-btn').innerHTML).toBe('Jun 30, 2012');
         });
         it('start and Depth as year on property', () => {
-            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('1/10/2020')] },true);
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('1/10/2020')] }, true);
             expect(daterangepicker.start).toBe('Month');
             expect(daterangepicker.depth).toBe('Month');
             expect(document.querySelector('.e-content').classList.contains('e-month')).toBe(true);
@@ -8171,7 +8206,7 @@ describe('DateRangePicker', () => {
         //     expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
         // });
         it('start and Depth as year with mindays and maxdays', () => {
-            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year',minDays:65,maxDays:159 });
+            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year', minDays: 65, maxDays: 159 });
             expect(daterangepicker.start).toBe('Year');
             expect(daterangepicker.depth).toBe('Year');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
@@ -8184,7 +8219,7 @@ describe('DateRangePicker', () => {
             expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
         });
         it('start and Depth as Decade ,no rangehover for same start and end date', () => {
-            daterangepicker = createControl({ value: [new Date('1/1/2016'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade' },true);
+            daterangepicker = createControl({ value: [new Date('1/1/2016'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade' }, true);
             expect(daterangepicker.start).toBe('Decade');
             expect(daterangepicker.depth).toBe('Decade');
             expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
@@ -8497,69 +8532,69 @@ describe('DateRangePicker', () => {
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
         });
         // it('error class for invalid date(Date) in desktop mode', () => {
-            // daterangepicker.appendTo('#date');
-            // daterangepicker.strictMode = true;
-            // daterangepicker.inputBlurHandler();
-            // if (!daterangepicker.isPopupOpen()) {
-                // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
-            // }
-            // daterangepicker.navigateTo("Year", new Date("23/3/2017"));
-            // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
-            // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // daterangepicker.appendTo('#date');
+        // daterangepicker.strictMode = true;
+        // daterangepicker.inputBlurHandler();
+        // if (!daterangepicker.isPopupOpen()) {
+        // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+        // }
+        // daterangepicker.navigateTo("Year", new Date("23/3/2017"));
+        // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+        // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
         // });
         // it('error class for invalid date(string) in desktop mode', () => {
-            // daterangepicker.appendTo('#date');
-            // daterangepicker.inputBlurHandler();
-            // if (!daterangepicker.isPopupOpen()) {
-                // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
-            // }
-            // daterangepicker.navigateTo('Year', new Date('date'));
-            // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
-            // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // daterangepicker.appendTo('#date');
+        // daterangepicker.inputBlurHandler();
+        // if (!daterangepicker.isPopupOpen()) {
+        // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+        // }
+        // daterangepicker.navigateTo('Year', new Date('date'));
+        // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+        // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
         // });
         // it('error class for empty date in desktop mode', () => {
-            // daterangepicker.appendTo('#date');
-            // daterangepicker.inputBlurHandler();
-            // if (!daterangepicker.isPopupOpen()) {
-                // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
-            // }
-            // daterangepicker.navigateTo("Year", new Date(' '));
-            // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
-            // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // daterangepicker.appendTo('#date');
+        // daterangepicker.inputBlurHandler();
+        // if (!daterangepicker.isPopupOpen()) {
+        // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+        // }
+        // daterangepicker.navigateTo("Year", new Date(' '));
+        // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+        // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
         // });
         // it('error class for invalid date in strict mode', () => {
-            // daterangepicker.appendTo('#date');
-            // daterangepicker.strictMode = true;
-            // daterangepicker.inputBlurHandler();
-            // if (!daterangepicker.isPopupOpen()) {
-                // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
-            // }
-            // daterangepicker.navigateTo("Year", new Date("23/3/2017"));
-            // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
-            // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
-            // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // daterangepicker.appendTo('#date');
+        // daterangepicker.strictMode = true;
+        // daterangepicker.inputBlurHandler();
+        // if (!daterangepicker.isPopupOpen()) {
+        // <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+        // }
+        // daterangepicker.navigateTo("Year", new Date("23/3/2017"));
+        // expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+        // expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        // expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
         // });
-        
+
         it('current date is less then min value in Rtl mode', () => {
             daterangepicker = new DateRangePicker({ min: new Date('1/1/1900'), max: new Date("11/31/2099") });
             daterangepicker.appendTo('#date');
             daterangepicker.refreshControl();
-            daterangepicker.enableRtl=true;
+            daterangepicker.enableRtl = true;
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
             }
@@ -8589,7 +8624,7 @@ describe('DateRangePicker', () => {
             daterangepicker = new DateRangePicker({ min: new Date('1/1/1900'), max: new Date("11/31/2099") });
             daterangepicker.appendTo('#date');
             daterangepicker.refreshControl();
-            daterangepicker.enableRtl=true;
+            daterangepicker.enableRtl = true;
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
             }
@@ -8616,7 +8651,7 @@ describe('DateRangePicker', () => {
             expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
         });
     });
-    it('memory leak', () => {     
+    it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB
@@ -8626,7 +8661,7 @@ describe('DateRangePicker', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
     describe('DateRangePicker', function () {
-        let daterangepicker:any;
+        let daterangepicker: any;
         beforeEach(function () {
             let ele: HTMLElement = createElement('input', { id: 'date' });
             document.body.appendChild(ele);
@@ -8640,9 +8675,9 @@ describe('DateRangePicker', () => {
         it('focus event checking on document click when the calendar is open test case', function () {
             daterangepicker = new DateRangePicker();
             daterangepicker.appendTo('#date');
-            let e ={
-                preventDefault : () => {},
-                target:document.getElementById('date')
+            let e = {
+                preventDefault: () => { },
+                target: document.getElementById('date')
             };
             document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0].dispatchEvent(clickEvent);
             expect(daterangepicker.popupObj != null).toBe(true);
@@ -8667,13 +8702,14 @@ describe('DateRangePicker', () => {
             document.body.innerHTML = '';
             changeCount = 0;
         });
-        
+
         it('Format is MM yyyy', function () {
-            daterangepicker = new DateRangePicker({ 
-                format : "MM yyyy",
-                change : function onChange() {
-                changeCount++;
-            } });
+            daterangepicker = new DateRangePicker({
+                format: "MM yyyy",
+                change: function onChange() {
+                    changeCount++;
+                }
+            });
             daterangepicker.appendTo('#date');
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
@@ -8689,11 +8725,12 @@ describe('DateRangePicker', () => {
             expect(changeCount).toBe(1);
         });
         it('Format is M yyyy', function () {
-            daterangepicker = new DateRangePicker({ 
-                format : "M yyyy",
-                change : function onChange() {
-                changeCount++;
-            } });
+            daterangepicker = new DateRangePicker({
+                format: "M yyyy",
+                change: function onChange() {
+                    changeCount++;
+                }
+            });
             daterangepicker.appendTo('#date');
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
@@ -8709,11 +8746,12 @@ describe('DateRangePicker', () => {
             expect(changeCount).toBe(1);
         });
         it('Format is yyyy MM', function () {
-            daterangepicker = new DateRangePicker({ 
-                format : "yyyy MM",
-                change : function onChange() {
-                changeCount++;
-            } });
+            daterangepicker = new DateRangePicker({
+                format: "yyyy MM",
+                change: function onChange() {
+                    changeCount++;
+                }
+            });
             daterangepicker.appendTo('#date');
             if (!daterangepicker.isPopupOpen()) {
                 <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
@@ -8729,19 +8767,19 @@ describe('DateRangePicker', () => {
             expect(changeCount).toBe(1);
         });
     });
-    describe('Dynamic CssClass testcase', function (){
+    describe('Dynamic CssClass testcase', function () {
         let daterangepicker: any;
-        beforeEach(function() {
-            let inputElement: HTMLElement = createElement('input', { id: 'daterangepicker'});
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'daterangepicker' });
             document.body.appendChild(inputElement);
         });
-        afterEach(function() {
+        afterEach(function () {
             if (daterangepicker) {
                 daterangepicker.destroy();
                 document.body.innerHTML = '';
             }
         });
-        it('single css class',function() {
+        it('single css class', function () {
             daterangepicker = new DateRangePicker({
                 cssClass: 'e-custom'
             });
@@ -8752,7 +8790,7 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.classList.contains('e-custom')).toBe(false);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
         });
-        it('more than one css class',function() {
+        it('more than one css class', function () {
             daterangepicker = new DateRangePicker({
                 cssClass: 'e-custom e-secondary'
             });
@@ -8767,37 +8805,37 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
         });
     });
-    describe('Popup hide testing when crosses view port', function (){
+    describe('Popup hide testing when crosses view port', function () {
         let daterangepicker: any;
         let divElement: HTMLElement;
-        beforeEach(function() {
-            let inputElement: HTMLElement = createElement('input', { id: 'datepicker'});
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker' });
             document.body.appendChild(inputElement);
-            divElement = createElement('div', { id: 'divElement'});
+            divElement = createElement('div', { id: 'divElement' });
             divElement.style.height = '900px';
         });
-        afterEach(function() {
+        afterEach(function () {
             if (daterangepicker) {
                 daterangepicker.destroy();
                 document.body.innerHTML = '';
             }
         });
-        it('Popup hide testing',function() {
+        it('Popup hide testing', function () {
             daterangepicker = new DateRangePicker({});
             daterangepicker.appendTo('#datepicker');
             (<HTMLInputElement>document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(daterangepicker.popupWrapper !== null).toBe(true);
             document.body.appendChild(divElement);
-            scrollBy({top: 500, behavior: 'smooth'});
+            scrollBy({ top: 500, behavior: 'smooth' });
             daterangepicker.popupObj.trigger('targetExitViewport');
         });
     });
 
     describe('Cleared event test case', function () {
-        let dateRangePicker:any;
+        let dateRangePicker: any;
         beforeEach(function () {
             let ele: HTMLElement = createElement('input', { id: 'date' });
-                document.body.appendChild(ele);
+            document.body.appendChild(ele);
         });
         afterEach(function () {
             if (dateRangePicker) {
@@ -8808,7 +8846,7 @@ describe('DateRangePicker', () => {
         it('check value after button click', function () {
             dateRangePicker = new DateRangePicker({
                 value: [new Date('02/11/2017'), new Date('03/11/2017')],
-                cleared: function(args: any) {
+                cleared: function (args: any) {
                     expect(args.name).toBe("cleared");
                     expect(dateRangePicker.value).toBe(null);
                 }
@@ -9052,7 +9090,7 @@ describe('DateRangePicker', () => {
             daterangepicker.appendTo('#daterangepicker');
             let AfterAddClass = daterangepicker.inputWrapper.container.classList.length;
             expect(beforeAddClass == AfterAddClass).toBe(true);
-        }); 
+        });
         it('Keep input as empty without entering any class Name', function () {
             daterangepicker = new DateRangePicker({
             });
@@ -9065,8 +9103,8 @@ describe('DateRangePicker', () => {
         });
         it('Giving class name with underscore in the beginning', function () {
             daterangepicker = new DateRangePicker({
-                htmlAttributes : { class : '  _custom-class-one  '},
-                cssClass : '   _custom-class-two  '
+                htmlAttributes: { class: '  _custom-class-one  ' },
+                cssClass: '   _custom-class-two  '
             });
             daterangepicker.appendTo('#daterangepicker');
             expect(daterangepicker.inputWrapper.container.classList.contains('_custom-class-one')).toBe(true);
@@ -9074,32 +9112,32 @@ describe('DateRangePicker', () => {
         });
         it('Giving class name with empty space in both cases seperatly', function () {
             daterangepicker = new DateRangePicker({
-                htmlAttributes : { class : '  custom-class-one  '},
-                cssClass : '   custom-class-two  '
+                htmlAttributes: { class: '  custom-class-one  ' },
+                cssClass: '   custom-class-two  '
             });
             daterangepicker.appendTo('#daterangepicker');
             expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
-        });   
+        });
     });
-    describe('popup open while focus the component',function(){
-        let dateRangePicker:any;
-        let keyEventArgs:any={
-            action:'tab'
+    describe('popup open while focus the component', function () {
+        let dateRangePicker: any;
+        let keyEventArgs: any = {
+            action: 'tab'
         };
-        beforeEach(function(){
-            let element: HTMLElement = createElement('input',{id:'daterange'});
+        beforeEach(function () {
+            let element: HTMLElement = createElement('input', { id: 'daterange' });
             document.body.appendChild(element);
         });
-        afterEach(function(){
-            if(dateRangePicker){
+        afterEach(function () {
+            if (dateRangePicker) {
                 dateRangePicker.destroy();
             }
             document.body.innerHTML = '';
         });
-        it('check the popup open',function(){
+        it('check the popup open', function () {
             dateRangePicker = new DateRangePicker({
-                openOnFocus:true
+                openOnFocus: true
             });
             dateRangePicker.appendTo('#daterange');
             keyEventArgs.action = 'tab';
@@ -9112,7 +9150,7 @@ describe('DateRangePicker', () => {
         beforeEach(() => {
             let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
             document.body.appendChild(ele);
-            ele.setAttribute('data-val','true');
+            ele.setAttribute('data-val', 'true');
         });
         afterEach(() => {
             if (daterangepicker) {
@@ -9148,7 +9186,7 @@ describe('DateRangePicker', () => {
             daterangepicker = new DateRangePicker({
                 minDays: 2,
                 maxDays: 4,
-                select: function() {
+                select: function () {
                     daterangepicker.minDays = 3;
                     daterangepicker.maxDays = 6;
                 }
@@ -9272,19 +9310,19 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.endDate).toBe(null);
         });
     });
-    describe('EJ2-45532 - DateRangepicker popup closing when updating value dynamically',function(){
-        let daterangePicker:any;
-        beforeEach(function(){
-            let element: HTMLElement = createElement('input',{id:'date'});
+    describe('EJ2-45532 - DateRangepicker popup closing when updating value dynamically', function () {
+        let daterangePicker: any;
+        beforeEach(function () {
+            let element: HTMLElement = createElement('input', { id: 'date' });
             document.body.appendChild(element);
         });
-        afterEach(function(){
-            if(daterangePicker){
+        afterEach(function () {
+            if (daterangePicker) {
                 daterangePicker.destroy();
             }
             document.body.innerHTML = '';
         });
-        it('check the popup open',function(){
+        it('check the popup open', function () {
             daterangePicker = new DateRangePicker({
             });
             daterangePicker.appendTo('#date');
@@ -9295,27 +9333,29 @@ describe('DateRangePicker', () => {
             expect(daterangePicker.inputElement.value === "1/1/2020 - 2/2/2020").toBe(true)
         });
     });
-    describe('EJ2-47722 - If openOnFocus property is enabled then DateRangePicker popup does not closed properly',function(){
-        let dateRangePicker:any;
-        beforeEach(function(){
-            let element: HTMLElement = createElement('input',{id:'date'});
+    describe('EJ2-47722 - If openOnFocus property is enabled then DateRangePicker popup does not closed properly', function () {
+        let dateRangePicker: any;
+        beforeEach(function () {
+            let element: HTMLElement = createElement('input', { id: 'date' });
             document.body.appendChild(element);
             dateRangePicker = new DateRangePicker({
-                openOnFocus : true,
+                openOnFocus: true,
                 presets: [{
-                    label: 'Today', start: new Date(), end: new Date() },
-                    { label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()
+                    label: 'Today', start: new Date(), end: new Date()
+                },
+                {
+                    label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()
                 }],
             });
             dateRangePicker.appendTo('#date');
         });
-        afterEach(function(){
-            if(dateRangePicker){
+        afterEach(function () {
+            if (dateRangePicker) {
                 dateRangePicker.destroy();
             }
             document.body.innerHTML = '';
         });
-        it('check the popup open by focus the control',function(){
+        it('check the popup open by focus the control', function () {
             dateRangePicker.inputFocusHandler();
             expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
             expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
@@ -9342,7 +9382,7 @@ describe('DateRangePicker', () => {
             expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
             document.getElementsByClassName('e-day')[15].dispatchEvent(clickEvent);
             document.getElementsByClassName('e-day')[16].dispatchEvent(clickEvent);
-            dateRangePicker.applyButton.element.click();           
+            dateRangePicker.applyButton.element.click();
             dateRangePicker.preventFocus = false;
             dateRangePicker.inputFocusHandler();
             expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
@@ -9350,7 +9390,7 @@ describe('DateRangePicker', () => {
             <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
             expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
         });
-        it('check the popup open by focus the control as well as by click the date range icon',function(){
+        it('check the popup open by focus the control as well as by click the date range icon', function () {
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
             expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
@@ -9384,24 +9424,24 @@ describe('DateRangePicker', () => {
             expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
         });
     });
-    describe('EJ2-48804- Preset ranges with time value', function() {
-        let dateRangePicker:any;
-        beforeEach(function(){
-            let element: HTMLElement = createElement('input',{id:'date'});
+    describe('EJ2-48804- Preset ranges with time value', function () {
+        let dateRangePicker: any;
+        beforeEach(function () {
+            let element: HTMLElement = createElement('input', { id: 'date' });
             document.body.appendChild(element);
-            
+
         });
-        afterEach(function(){
-            if(dateRangePicker){
+        afterEach(function () {
+            if (dateRangePicker) {
                 dateRangePicker.destroy();
             }
             document.body.innerHTML = '';
         });
-        it('Checking preset item is selected when popup is opened', function() {
+        it('Checking preset item is selected when popup is opened', function () {
             dateRangePicker = new DateRangePicker({
                 presets: [
-                    {   label: 'Custom Date', start: new Date(2020,1,1,10,10,50), end: new Date(2020,3,1,9,30,40) },
-                    {   label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()}
+                    { label: 'Custom Date', start: new Date(2020, 1, 1, 10, 10, 50), end: new Date(2020, 3, 1, 9, 30, 40) },
+                    { label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date() }
                 ],
             });
             dateRangePicker.appendTo('#date');
@@ -9415,14 +9455,14 @@ describe('DateRangePicker', () => {
             dateRangePicker.show();
             expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
         })
-        it('Checking preset item is selected when popup is opened with predefined value', function() {
+        it('Checking preset item is selected when popup is opened with predefined value', function () {
             dateRangePicker = new DateRangePicker({
-                value: [new Date(2020,1,1,10,10,50), new Date(2020,3,1,9,30,40)],
+                value: [new Date(2020, 1, 1, 10, 10, 50), new Date(2020, 3, 1, 9, 30, 40)],
                 presets: [
-                    {   label: 'Custom Date', start: new Date(2020,1,1,10,10,50), end: new Date(2020,3,1,9,30,40) },
-                    {   label: 'My Date', start: new Date('1/1/2020'), end:  new Date('3/2/2020') },
-                    {   label: 'Today', start: new Date(), end: new Date() },
-                    {   label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()}
+                    { label: 'Custom Date', start: new Date(2020, 1, 1, 10, 10, 50), end: new Date(2020, 3, 1, 9, 30, 40) },
+                    { label: 'My Date', start: new Date('1/1/2020'), end: new Date('3/2/2020') },
+                    { label: 'Today', start: new Date(), end: new Date() },
+                    { label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date() }
                 ],
             });
             dateRangePicker.appendTo('#date');
@@ -9436,15 +9476,15 @@ describe('DateRangePicker', () => {
             dateRangePicker.show();
             expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
         })
-        it('Checking preset item is selected when popup is opened with predefined startdate and enddate', function() {
+        it('Checking preset item is selected when popup is opened with predefined startdate and enddate', function () {
             dateRangePicker = new DateRangePicker({
-                startDate: new Date(2020,1,1,10,10,50),
-                endDate: new Date(2020,3,1,9,30,40),
+                startDate: new Date(2020, 1, 1, 10, 10, 50),
+                endDate: new Date(2020, 3, 1, 9, 30, 40),
                 presets: [
-                    {   label: 'Custom Date', start: new Date(2020,1,1,10,10,50), end: new Date(2020,3,1,9,30,40) },
-                    {   label: 'My Date', start: new Date('1/1/2020'), end:  new Date('3/2/2020') },
-                    {   label: 'Today', start: new Date(), end: new Date() },
-                    {   label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()}
+                    { label: 'Custom Date', start: new Date(2020, 1, 1, 10, 10, 50), end: new Date(2020, 3, 1, 9, 30, 40) },
+                    { label: 'My Date', start: new Date('1/1/2020'), end: new Date('3/2/2020') },
+                    { label: 'Today', start: new Date(), end: new Date() },
+                    { label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date() }
                 ],
             });
             dateRangePicker.appendTo('#date');
@@ -9459,26 +9499,26 @@ describe('DateRangePicker', () => {
             expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
         })
     })
-    describe('EJ2-56196 - Component get freeze if we enter invalid value',function(){
-        let daterangePicker:any;
-        beforeEach(function(){
-            let element: HTMLElement = createElement('input',{id:'date'});
+    describe('EJ2-56196 - Component get freeze if we enter invalid value', function () {
+        let daterangePicker: any;
+        beforeEach(function () {
+            let element: HTMLElement = createElement('input', { id: 'date' });
             document.body.appendChild(element);
         });
-        afterEach(function(){
-            if(daterangePicker){
+        afterEach(function () {
+            if (daterangePicker) {
                 daterangePicker.destroy();
             }
             document.body.innerHTML = '';
         });
-        it('Check the performance issue while entering invalid start or end date',function(){
+        it('Check the performance issue while entering invalid start or end date', function () {
             daterangePicker = new DateRangePicker({
             });
             daterangePicker.appendTo('#date');
             daterangePicker.startDate = new Date('1/1/2020');
             daterangePicker.endDate = new Date('2/2/20201');
             daterangePicker.dataBind();
-            daterangePicker.show(); 
+            daterangePicker.show();
             expect((daterangePicker.popupObj) !== null).toBe(true);
             expect(daterangePicker.inputElement.value === "1/1/2020 - 2/2/20201").toBe(true)
         });

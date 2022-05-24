@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#F173974` - The issue with "Cut and paste files from a parent folder to a sub folder using the toolbar doesn't show any alert for users in File Manager" has been resolved.
+
 ## 20.1.56 (2022-05-17)
 
 ### File Manager

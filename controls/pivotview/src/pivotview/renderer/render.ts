@@ -195,6 +195,7 @@ export class Render {
     public bindGrid(parent: PivotView, isEmpty: boolean): void {
         this.injectGridModules(parent);
         this.parent.grid = new Grid({
+            cssClass: this.parent.cssClass,
             frozenColumns: 1,
             frozenRows: 0,
             enableHover: false,
@@ -402,9 +403,6 @@ export class Render {
     }
     /* eslint-disable */
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        if (args.element && this.parent.cssClass) {
-            addClass([args.element.parentElement], this.parent.cssClass);
-        }
         for (let item of args.items) {
             let cellTarget: Element = this.parent.lastCellClicked;
             let elem: Element = null;

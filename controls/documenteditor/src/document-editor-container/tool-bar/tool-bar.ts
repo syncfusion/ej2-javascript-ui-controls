@@ -308,18 +308,26 @@ export class Toolbar {
     public reInitToolbarItems(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
         for (let i: number = 0; i < items.length; i++) {
             switch (items[i]) {
-            case 'RestrictEditing':
-                this.restrictDropDwn.destroy();
-                break;
-            case 'Break':
-                this.breakDropDwn.destroy();
-                break;
-            case 'Image':
-                this.imgDropDwn.destroy();
-                break;
-            case 'FormFields':
-                this.formFieldDropDown.destroy();
-                break;
+                case 'RestrictEditing':
+                    if (!isNullOrUndefined(this.restrictDropDwn)) {
+                        this.restrictDropDwn.destroy();
+                    }
+                    break;
+                case 'Break':
+                    if (!isNullOrUndefined(this.breakDropDwn)) {
+                        this.breakDropDwn.destroy();
+                    }
+                    break;
+                case 'Image':
+                    if (!isNullOrUndefined(this.imgDropDwn)) {
+                        this.imgDropDwn.destroy();
+                    }
+                    break;
+                case 'FormFields':
+                    if (!isNullOrUndefined(this.formFieldDropDown)) {
+                        this.formFieldDropDown.destroy();
+                    }
+                    break;
             }
         }
         this.toolbarItems = items;

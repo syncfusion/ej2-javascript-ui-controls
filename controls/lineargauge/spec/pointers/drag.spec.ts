@@ -153,7 +153,7 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
                 let x: string = svg.getAttribute('cx');
-                trigger.dragAndDropEvent(svg, 511.5, 63.75, 600.5, 63.75, '', gauge);
+                trigger.dragAndDropEvent(svg, 136, 652, 300, 652, '', gauge);
                 expect(x != svg.getAttribute('cx')).toBe(true);
                 done();
             };

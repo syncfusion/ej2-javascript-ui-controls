@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I359884` - Accessibility of Grid component has been improved.
+- `#I376539` - Sorting issue on URL Adaptor `DataManagerRequest` has been fixed.
+- `#I365726` - Image and Text overlap issue in excel image has been fixed.
+
 ## 20.1.56 (2022-05-17)
 
 ### Grid

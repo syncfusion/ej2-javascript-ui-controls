@@ -14,6 +14,7 @@ import { GroupedData } from '../services/group-model-generator';
  */
 export class GroupCaptionCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
+    public cellUid : number = 0;
     public element: HTMLElement = this.parent
         .createElement('TD', { className: 'e-groupcaption',
             attrs: { id: this.parent.element.id + 'captioncell', role: 'gridcell', tabindex: '-1' } });
@@ -26,6 +27,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
      * @returns {Element} returns the element
      */
     public render(cell: Cell<Column>, data: GroupedData): Element {
+        this.element.id = this.parent.element.id + 'captioncell' + this.cellUid++;
         const node: Element = this.element.cloneNode() as Element;
         const gObj: IGrid = this.parent;
         let result: Element[];

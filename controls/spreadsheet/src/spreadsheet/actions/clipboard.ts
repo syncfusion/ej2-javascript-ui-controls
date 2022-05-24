@@ -836,8 +836,7 @@ export class Clipboard {
     }
 
     private setExternalCells(args: ClipboardEvent, isCut?: boolean): void {
-        let cell: CellModel;
-        let text: string = '';
+        let cell: CellModel; let val: string; let text: string = '';
         const range: number[] = getSwapRange(this.copiedInfo.range);
         const sheet: SheetModel = this.parent.getActiveSheet();
         let data: string = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml"><tbody>';
@@ -867,24 +866,19 @@ export class Clipboard {
                 }
                 data += '"';
                 if (!isNullOrUndefined(cell.value)) {
-                    const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-                        formattedText: cell.value,
-                        value: cell.value,
-                        format: cell.format,
-                        onLoad: true,
-                        cell: cell,
-                        rowIndex: i,
-                        colIndex: j
-                    };
+                    val = cell.value;
                     if (cell.format && cell.format !== 'General') {
                         // eslint-disable-next-line
-                        data += cell.value.toString().includes('"') ? " cell-value='" + cell.value + "'" : ' cell-value="' + cell.value +
+                        data += cell.value.toString().includes('"') ? " cell-value='" + val + "'" : ' cell-value="' + cell.value +
                             '"';
+                        const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: val, value: val,
+                            format: cell.format, onLoad: true, cell: cell, rowIndex: i, colIndex: j };
                         this.parent.notify(getFormattedCellObject, eventArgs);
+                        val = <string>eventArgs.formattedText;
                     }
                     data += '>';
-                    data += eventArgs.formattedText;
-                    text += eventArgs.formattedText;
+                    data += val;
+                    text += val;
                     data += '</td>';
                 } else {
                     data += '></td>';

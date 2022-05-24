@@ -2,19 +2,33 @@
 
 ## [Unreleased]
 
-## 20.1.56 (2022-05-17)
+## 20.1.57 (2022-05-24)
 
-### AutoComplete
+### Dropdown Tree
 
 #### Bug Fixes
 
-- `I372269` - Issue with "value is displayed instead of text while binding beyond the initial loading data values" has been resolved.
+- `#I374653` - The issue with "The filtering was not working properly when using a hierarchical data source for the Dropdown Tree component" has been resolved.
 
 ### DropDownList
 
 #### Bug Fixes
 
 - `I375107` - Issue with "cascading dropdown list doesn't display the updated data while binding the remote data and filtering enabled" has been resolved.
+
+## 20.1.56 (2022-05-17)
+
+### ListBox
+
+#### Bug Fixes
+
+- `F174682` - Issue with "Drag and Drop not working properly while using item template in listbox" has been resolved.
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `I372269` - Issue with "value is displayed instead of text while binding beyond the initial loading data values" has been resolved.
 
 ## 20.1.52 (2022-05-04)
 

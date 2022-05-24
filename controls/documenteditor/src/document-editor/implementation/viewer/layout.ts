@@ -7556,7 +7556,7 @@ export class Layout {
                     if (footWidget.length > 0) {
                         if (prevBodyWidget.page.footnoteWidget) {
                             for (let k: number = 0; k < footWidget.length; k++) {
-                                if(prevBodyWidget.page.footnoteWidget.bodyWidgets.indexOf(footWidget[k])===-1){
+                                if(prevBodyWidget.page.footnoteWidget.bodyWidgets.indexOf(footWidget[k])===-1 && widget.bodyWidget.page.index != footWidget[k].page.index){
                                     prevBodyWidget.page.footnoteWidget.bodyWidgets.push(footWidget[k]);
                                     prevBodyWidget.page.footnoteWidget.height += footWidget[k].height;
                                 }
@@ -7566,7 +7566,7 @@ export class Layout {
                 }
                 if (widget.isEndsWithPageBreak && this.viewer instanceof PageLayoutViewer) {
                     let nextBodyWidget: BodyWidget = this.createOrGetNextBodyWidget(prevBodyWidget, this.viewer);
-                    nextBodyWidget = this.moveBlocksToNextPage(widget, false);
+                    nextBodyWidget = this.moveBlocksToNextPage(widget, true);
                     viewer.updateClientArea(nextBodyWidget.sectionFormat, nextBodyWidget.page);
                 }
             } else {

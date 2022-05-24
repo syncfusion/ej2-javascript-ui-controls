@@ -2275,6 +2275,8 @@ export class ListBox extends DropDownBase {
             this.list.parentElement.insertBefore(this.element, this.list);
         }
         super.destroy();
+        this.enableRtlElements = []; this.liCollections = null; this.list = null; this.ulElement = null;
+        this.mainList = null; this.spinner = null; this.rippleFun = null;
         if (this.itemTemplate) { this.clearTemplate(); }
     }
 

@@ -356,6 +356,7 @@ export class DrillThroughDialog {
             createElement('div', { id: this.parent.element.id + '_drillthroughgrid', className: cls.DRILLTHROUGH_GRID_CLASS });
         Grid.Inject(Selection, Reorder, Resize, Toolbar, ColumnChooser);
         this.drillThroughGrid = new Grid({
+            cssClass: this.parent.cssClass,
             gridLines: 'Default',
             allowResizing: true,
             allowReordering: true,

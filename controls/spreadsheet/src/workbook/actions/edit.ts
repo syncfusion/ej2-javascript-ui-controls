@@ -149,6 +149,9 @@ export class WorkbookEdit {
                 if (isFormula) {
                     cell.formula = <string>eventArgs.value;
                     value = cell.value;
+                    if (cell.formula === '=NOW()' && cell.format !== 'M/d/yyyy h:mm') {
+                        cell.format = 'M/d/yyyy h:mm';
+                    }
                 } else if (cell.value && typeof cell.value === 'string' && (cell.value.indexOf('www.') === 0 ||
                     cell.value.indexOf('https://') === 0 || cell.value.indexOf('http://') === 0 || cell.value.indexOf('ftp://') === 0)) {
                     this.parent.notify(

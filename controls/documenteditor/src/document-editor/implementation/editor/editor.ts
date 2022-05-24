@@ -6111,7 +6111,7 @@ export class Editor {
         }
         for (let i: number = 0; i < rowCount; i++) {
             let cellCountInfo: CellCountInfo = this.updateRowspan(row, rowPlacement === 'Below' ? endCell : startCell, rowPlacement);
-            let newRow: TableRowWidget = this.createRowAndColumn(cellCountInfo.count, i, index, table);
+            let newRow: TableRowWidget = this.createRowAndColumn(cellCountInfo.count, i, index, table, true);
             newRow.rowFormat.copyFormat(row.rowFormat);
             if (this.owner.enableTrackChanges) {
                 this.insertRevision(newRow.rowFormat, 'Insertion');
@@ -6405,7 +6405,7 @@ export class Editor {
         }
         return table;
     }
-    private createRowAndColumn(columns: number, rowIndex: number, index?: number, table?: TableWidget): TableRowWidget {
+    private createRowAndColumn(columns: number, rowIndex: number, index?: number, table?: TableWidget, isNewRow?: boolean): TableRowWidget {
         let tableWidget: TableWidget = table;
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         let tableRow: TableRowWidget = new TableRowWidget();
@@ -6420,7 +6420,7 @@ export class Editor {
                     startPara = ((tableWidget.childWidgets[index] as TableRowWidget).childWidgets[i] as TableCellWidget).childWidgets[0] as ParagraphWidget;
                 }
             }
-            let tableCell: TableCellWidget = this.createColumn(startPara,true);
+            let tableCell: TableCellWidget = this.createColumn(startPara, isNewRow);
             tableCell.index = i;
             tableCell.rowIndex = rowIndex;
             tableCell.containerWidget = tableRow;
@@ -6431,15 +6431,15 @@ export class Editor {
     private createColumn(paragraph: ParagraphWidget, isNewRow?: boolean): TableCellWidget {
         let tableCell: TableCellWidget = new TableCellWidget();
         let para: ParagraphWidget = new ParagraphWidget();
-        if(isNewRow){
+        let textElementBox: TextElementBox = (paragraph.childWidgets[0] as LineWidget).children[0] as TextElementBox;
+        if (!isNullOrUndefined(textElementBox)) {
+            para.characterFormat.copyFormat(textElementBox.characterFormat);
+        } else {
+            para.characterFormat.copyFormat(paragraph.characterFormat);
+        }
+        if (isNewRow) {
             para.paragraphFormat.copyFormat(paragraph.paragraphFormat);
             para.paragraphFormat.leftIndent = 0;
-            let textElementBox: TextElementBox=(paragraph.childWidgets[0] as LineWidget).children[0] as TextElementBox;
-            if(!isNullOrUndefined(textElementBox)){
-                para.characterFormat.copyFormat(textElementBox.characterFormat);
-            } else{
-                para.characterFormat.copyFormat(paragraph.characterFormat);
-            }
         }
         para.containerWidget = tableCell;
         tableCell.childWidgets.push(para);
@@ -7038,6 +7038,12 @@ export class Editor {
                 inline.ischangeDetected = true;
             }
             if (endOffset <= count + endIndex - startIndex) {
+                let textBox: TextElementBox = new TextElementBox();
+                textBox.line = new LineWidget(lineWidget.paragraph);
+                lineWidget.children.splice(0, 0, textBox);
+                for(let i : number = 0; i < lineWidget.children.length; i++ ) {
+                    textBox.line.children[i] = lineWidget.children[i];
+                }
                 break;
             }
             count += endIndex - startIndex;
@@ -17765,8 +17771,18 @@ export class Editor {
             }
         }
         if (textElement instanceof TextElementBox) {
-            textElement.text = value;
-            textElement = textElement.nextNode;
+            if (isNullOrUndefined(textElement.nextNode)) {
+                let line: LineWidget = textElement.line.paragraph.nextWidget.childWidgets[0] as LineWidget;
+                textElement = line.children[0];
+                if(textElement instanceof TextElementBox) {
+                    textElement.text = value;
+                    textElement = textElement.nextNode;
+                }
+            }
+            else {
+                textElement.text = value;
+                textElement = textElement.nextNode;
+            }
             do {
                 const index: number = field.line.children.indexOf(textElement);
                 if (textElement instanceof TextElementBox) {
