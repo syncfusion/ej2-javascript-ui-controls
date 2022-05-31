@@ -138,6 +138,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     getCollection?(items: string | string[]): string[]
     getRange(): Range
     getID(): string
+    getText(): string
     updateValueData?(): void
     getBaseToolbarObject(): BaseToolbar
     setContentHeight(target?: string, isExpand?: boolean): void
@@ -246,6 +247,8 @@ export interface IItemCollectionArgs {
     selectParent?: Node[]
     /** Defines the URL action details for link element */
     url?: string
+    /** Defines the Display Text action details for link element */
+    text?: string
     /** Defines the title of the link action details */
     title?: string
     /** Defines the target as string for link element */

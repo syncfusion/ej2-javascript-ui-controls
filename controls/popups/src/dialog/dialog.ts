@@ -2132,6 +2132,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         /* eslint-enable */
         if (args) {
             addClass([this.element], FULLSCREEN);
+            this.element.style.top = document.scrollingElement.scrollTop + 'px';
             const display: string = this.element.style.display;
             this.element.style.display = 'none';
             this.element.style.maxHeight = (!isNullOrUndefined(this.target)) ?

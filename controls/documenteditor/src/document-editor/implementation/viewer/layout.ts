@@ -1064,6 +1064,19 @@ export class Layout {
                         element = this.nextElementToLayout;
                     } else {
                         element = element.nextElement;
+                        if(element instanceof TextElementBox && element.text.indexOf(" ") == 0 && element.text.length > 2){
+                            if(isNullOrUndefined(element.nextElement) && element.text.trim().length > 0){
+                                element.text = element.text.substring(1,element.text.length);
+                                let elementIndex = element.line.children.indexOf(element);
+                                element.line.children.splice(elementIndex,1);
+                                let textElement = new TextElementBox();
+                                textElement.text = " ";
+                                textElement.line = element.line;
+                                element.line.children.splice(elementIndex, 0 , textElement);
+                                element.line.children.splice(elementIndex+1, 0 , element);
+                                element = textElement;
+                            }
+                        }
                     }
                     this.nextElementToLayout = undefined;
                 }
@@ -1346,7 +1359,7 @@ export class Layout {
         }
         if (this.isYPositionUpdated) {
             if (element.line.isFirstLine()) {
-                element.line.paragraph.y += (this.viewer.clientActiveArea.y - previousTop);
+                element.line.paragraph.y = this.viewer.clientActiveArea.y;
             } else {
                 element.line.marginTop += (this.viewer.clientActiveArea.y - previousTop)
             }
@@ -2909,19 +2922,14 @@ export class Layout {
                 const currentRevision: Revision = item.revisions[i];
                 if (isSplitted) {
                     splittedElement.revisions.push(currentRevision);
-                    let rangeIndex: number = currentRevision.range.length - 1;
-                    if (currentRevision.range[rangeIndex] instanceof WCharacterFormat) {
+                    let rangeIndex: number = currentRevision.range.indexOf(item);
+                    if (rangeIndex < 0) {
                         currentRevision.range.push(splittedElement);
                     } else {
-                        rangeIndex = currentRevision.range.indexOf(item);
-                        if (rangeIndex < 0) {
-                            currentRevision.range.push(splittedElement);
+                        if (isJustify) {
+                            currentRevision.range.splice(rangeIndex, 0, splittedElement);
                         } else {
-                            if (isJustify) {
-                                currentRevision.range.splice(rangeIndex, 0, splittedElement);
-                            } else {
-                                currentRevision.range.splice(rangeIndex + 1, 0, splittedElement);
-                            }
+                            currentRevision.range.splice(rangeIndex + 1, 0, splittedElement);
                         }
                     }
                 } else {
@@ -3354,9 +3362,6 @@ export class Layout {
         if (this.isFootNoteLayoutStart) {
             return;
         }
-        if (this.isRelayoutOverlap && this.endOverlapWidget !== line.paragraph) {
-            line = this.endOverlapWidget.childWidgets[0] as LineWidget;
-        }
         let paragraphWidget: ParagraphWidget = line.paragraph;
         let startBlock: BlockWidget;
         let startIndex: number = 0;
@@ -3557,6 +3562,9 @@ export class Layout {
         if (this.isRelayoutOverlap && this.endOverlapWidget) {
             let block: BlockWidget = this.endOverlapWidget.previousRenderedWidget as BlockWidget;
             let para: BlockWidget = line.paragraph;
+            this.startOverlapWidget = para;
+            line = this.endOverlapWidget.childWidgets[0] as LineWidget;
+            para = line.paragraph;
             while (para) {
                 (para as ParagraphWidget).floatingElements.forEach((shape: ShapeBase) => {
                     if (block.bodyWidget.floatingElements.indexOf(shape) !== -1) {
@@ -7247,6 +7255,30 @@ export class Layout {
                 }
             }
         }
+        let cellHeight: number = 0;
+        for (var i = 0; i < cell.childWidgets.length; i++) {
+            let child: any = cell.childWidgets[i];
+            cellHeight = cellHeight + child.height;
+            if (cell.childWidgets[i - 1] != undefined && (cell.childWidgets[i - 1] as any).y + (cell.childWidgets[i - 1] as any).height > (cell.childWidgets[i] as any).y) {
+                cellHeight = cellHeight - child.y;
+            }
+        }
+        let height: number = 0;
+        if (cellHeight > cell.height) {
+            for (var i = 0; i < cell.childWidgets.length; i++) {
+                let child: any = cell.childWidgets[i];
+                if (i == 0) {
+                    height = child.y + child.height;
+                } else {
+                    if (height <= child.y) {
+                        height = height + child.height;
+                    }
+                }
+            }
+            cell.height = height;
+            cellHeight = undefined;
+            height = undefined;
+        }
         this.updateWidgetToRow(cell);
         viewer.updateClientAreaForCell(cell, false);
     }
@@ -9343,7 +9375,7 @@ export class Layout {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
                         } else if (position.verticalAlignment === 'Inside') {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
-                        } else if (isNullOrUndefined(position.verticalAlignment)) {
+                        } else if (isNullOrUndefined(position.verticalAlignment) || position.verticalAlignment === 'None') {
                             this.viewer.clientActiveArea.y = (HelperMethods.convertPointToPixel(sectionFormat.topMargin) + HelperMethods.convertPointToPixel(position.verticalPosition));
                         }
                     } else if (position.verticalOrigin === 'Paragraph') {
@@ -9396,7 +9428,12 @@ export class Layout {
                     } else if (position.verticalOrigin === 'Margin') {
                         this.viewer.clientActiveArea.y = ownerCell.y;
                         this.viewer.clientActiveArea.y += ownerCell.topMargin;
+                        let clientActiveArea_y: number = this.viewer.clientActiveArea.y;
                         this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
+                        if (this.viewer.clientActiveArea.y < 0) {
+                            this.viewer.clientActiveArea.y = clientActiveArea_y;
+                            clientActiveArea_y = undefined;
+                        }
                     } else {
                         if (this.viewer.clientActiveArea.y + HelperMethods.convertPointToPixel(position.verticalPosition) < ownerCell.y) {
                             this.viewer.clientActiveArea.y = ownerCell.y;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.58 (2022-05-31)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#F34768` - Issue with "change event argument `IsInteracted` returns wrong value while rendering component with disabled custom value" has been resolved
+
 ## 20.1.57 (2022-05-24)
 
 ### Dropdown Tree

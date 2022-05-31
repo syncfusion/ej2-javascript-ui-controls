@@ -33,6 +33,7 @@ export class EnterKeyAction {
         this.endNode = this.range.endContainer.nodeName === '#text' ? this.range.endContainer.parentElement :
             this.range.endContainer as Element;
     }
+
     private enterHandler(e?: NotifyArgs): void {
         this.getRangeNode();
         let isTableEnter: boolean = true;

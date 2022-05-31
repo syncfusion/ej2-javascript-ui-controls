@@ -139,6 +139,7 @@
 
     .e-columnmenu {
       bottom: $grid-column-menu-top-touch;
+      top: $grid-column-menu-bottom-touch;
     }
 
     &.e-device.e-noselect {
@@ -1443,7 +1444,7 @@
           float: right;
           & .e-firstsummarycell {
             border-left: 1px solid;
-            border-color: #e0e0e0;
+            border-color: $grid-cell-border-color;
           }
       }
 

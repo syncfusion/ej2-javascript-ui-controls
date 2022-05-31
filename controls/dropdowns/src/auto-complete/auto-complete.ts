@@ -469,8 +469,8 @@ export class AutoComplete extends ComboBox {
      *
      * @returns {void}
      */
-    public hidePopup(): void {
-        super.hidePopup();
+    public hidePopup(e?: KeyboardEventArgs): void {
+        super.hidePopup(e);
         this.activeIndex = -1;
     }
     /**

@@ -148,7 +148,7 @@ export type TextAlignment = 'Left' | 'Right' | 'Center' | 'Justify';
 /**
  * Enum unit for Visibility
  */
-export type VisibilityState = 'visible' | 'hidden';
+export type Visibility = 'visible' | 'hidden';
 
 /**
  * Enum for annotation selector shapes

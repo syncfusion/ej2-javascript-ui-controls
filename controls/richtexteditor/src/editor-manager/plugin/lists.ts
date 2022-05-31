@@ -1,7 +1,7 @@
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { NodeSelection } from './../../selection';
-import { createElement, detach, prepend, append, attributes, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { createElement, detach, prepend, append, attributes, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
 import { IHtmlSubCommands } from './../base/interface';
 import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import { DOMNode, markerClassName } from './dom-node';
@@ -184,7 +184,30 @@ export class Lists {
                 parentList.parentElement.insertBefore(startNode.children[1], parentList);
             }
         }
+        this.removeList(range, e);
     }
+
+    private removeList(range: Range, e: IHtmlKeyboardEvent) {
+        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
+        endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
+        if (((range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'LI') &&
+        isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset &&
+        isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||
+        (Browser.userAgent.indexOf('Firefox') != -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
+        range.startOffset === 0 && range.endOffset === 1)) {
+            if (Browser.userAgent.indexOf('Firefox') != -1) {
+                detach(range.commonAncestorContainer.childNodes[0]);
+            } else if (range.commonAncestorContainer.nodeName === 'LI') {
+                detach(range.commonAncestorContainer.parentElement);
+            } else {
+                detach(range.commonAncestorContainer);
+            }
+            e.event.preventDefault();
+        }
+    }
+
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
         if (e.event.which === 13) {
             this.enterList(e);
@@ -208,6 +231,7 @@ export class Lists {
                 && ((commonAncestor as HTMLElement).lastElementChild === closest(endNode, 'li')) && !range.collapsed) {
                 detach(commonAncestor);
             }
+            this.removeList(range, e);
         }
         if (e.event.which === 9) {
             const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
@@ -417,6 +441,19 @@ export class Lists {
 
     private applyListsHandler(e: IHtmlSubCommands): void {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        if (Browser.userAgent.indexOf('Firefox') != -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement) {
+            const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
+            let startNode: Element = <Element>((startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) : range.startOffset]) || range.startContainer);
+            let endNode: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset] || range.endContainer);
+            let lastSelectionNode: any = endNode.lastChild.nodeName === 'BR' ? (isNOU(endNode.lastChild.previousSibling) ? endNode
+                : endNode.lastChild.previousSibling) : endNode.lastChild;
+            while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
+            lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') {
+                lastSelectionNode = lastSelectionNode.lastChild;
+            }
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, lastSelectionNode, 0, lastSelectionNode.textContent.length);
+            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        }
         if (range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
         range.startOffset === range.endOffset && range.startOffset === 0 &&
         this.parent.editableElement.textContent.length === 0 && (this.parent.editableElement.childNodes[0].nodeName != 'TABLE' &&

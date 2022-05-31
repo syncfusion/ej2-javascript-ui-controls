@@ -416,5 +416,30 @@ describe('Protect sheet ->', () => {
                 });
             });
         });
+        describe('EJ2-60129 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [],
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.protectSheet('Sheet1', { selectCells: false}, "syncfusion");
+                    }
+                 }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to consider the password when selecting the unprotect sheet option in the sheet tab context menu', (done: Function) => {
+                let sheetTabEle: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-item.e-active');
+                let coords: DOMRect = <DOMRect>sheetTabEle.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, sheetTabEle);
+                setTimeout(() => {
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(6)');
+                    setTimeout(() => {
+                        expect(helper.getElementFromSpreadsheet('.e-dlg-container .e-unprotectworksheet-dlg')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

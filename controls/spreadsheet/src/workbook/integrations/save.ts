@@ -1,10 +1,9 @@
-import { Workbook, CellModel, getCell } from '../base/index';
+import { Workbook, CellModel, getCell, SheetModel } from '../base/index';
 import { executeTaskAsync } from '../common/worker';
 import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, getRangeIndexes } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
-import { SaveCompleteEventArgs, isInRange } from '../common/index';
-import { checkUniqueRange } from '../../workbook/index';
+import { SaveCompleteEventArgs } from '../common/index';
 import { detach } from '@syncfusion/ej2-base';
 
 /**
@@ -276,36 +275,36 @@ export class WorkbookSave extends SaveWorker {
                 if (value && value.cells) {
                     for (let i: number = 0, len: number = (value.cells as CellModel[]).length; i < len; i++) {
                         const cell: CellModel = value.cells[i];
-                        const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = {
-                            cellIdx: [Number(key), i], isUnique: false, uniqueRange: ''
-                        };
-                        this.parent.notify(checkUniqueRange, args);
+                        const cellIdx: number[] = [Number(key), i];
                         if (cell) {
-                            const uniqueArgs: { range: string[] } = { range: [] };
-                            this.parent.notify(events.getUniqueRange, uniqueArgs);
-                            if ((cell.formula && (cell.formula.indexOf('=UNIQUE(') > -1)) || args.isUnique) {
-                                delete cell.value;
-                                continue;
-                            }
-                            if (!cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
-                                this.parent.notify(
-                                    workbookFormulaOperation, { action: 'refreshCalculate', value: cell.formula, rowIndex: args.cellIdx[0],
-                                    colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true });
-                                cell.value = getCell(args.cellIdx[0], i, model).value;
-                            }
-                            if (cell.value) {
+                            if ((cell.formula && (cell.formula.indexOf('=UNIQUE(') > -1)) && cell.value) {
+                                const uniqueArgs: { range: string[] } = { range: [] };
+                                this.parent.notify(events.getUniqueRange, uniqueArgs);
                                 const uniqueColl: string[] = uniqueArgs.range;
-                                for (let uniqueIdx = 0; uniqueIdx < uniqueColl.length; uniqueIdx++) {
-                                    const uniqueSheet: string = uniqueColl[uniqueIdx].split('!')[0];
-                                    if (uniqueSheet === this.parent.sheets[sheetIdx].name) {
-                                        const uniqueRange: string = uniqueColl[uniqueIdx].split('!')[1];
-                                        const uniqueIndex: number[] = getRangeIndexes(uniqueRange);
-                                        if (isInRange(uniqueIndex, [args.cellIdx[0], args.cellIdx[1], args.cellIdx[0], args.cellIdx[1]])) {
-                                            delete cell.value;
-                                            continue;
+                                const sheets: SheetModel[] = this.parent.sheets;
+                                const sheetsNameColl: string[] = [];
+                                for (let sheetIdx: number = 0; sheetIdx < sheets.length; sheetIdx++) {
+                                    sheetsNameColl.push(sheets[sheetIdx].name);
+                                }
+                                for (let uniqueIdx: number = 0; uniqueIdx < uniqueColl.length; uniqueIdx++) {
+                                    const uniqueSheet: SheetModel =
+                                     this.parent.sheets[sheetsNameColl.indexOf(uniqueColl[uniqueIdx].split('!')[0])];
+                                    const uniqueIndex: number[] = getRangeIndexes(uniqueColl[uniqueIdx].split('!')[1]);
+                                    for (let rowIdx: number = uniqueIndex[0]; rowIdx <= uniqueIndex[2]; rowIdx++) {
+                                        for (let colIdx: number = uniqueIndex[1]; colIdx <= uniqueIndex[3]; colIdx++) {
+                                            let uniqueRangeCell: CellModel = getCell(rowIdx, colIdx, uniqueSheet);
+                                            if (uniqueRangeCell && uniqueRangeCell.value) {
+                                                delete uniqueRangeCell.value;
+                                            }
                                         }
                                     }
                                 }
+                            }
+                            if (!cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
+                                this.parent.notify(
+                                    workbookFormulaOperation, { action: 'refreshCalculate', value: cell.formula, rowIndex: cellIdx[0],
+                                    colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true });
+                                cell.value = getCell(cellIdx[0], i, model).value;
                             }
                         }
                     }

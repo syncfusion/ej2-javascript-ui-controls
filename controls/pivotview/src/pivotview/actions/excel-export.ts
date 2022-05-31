@@ -3,7 +3,7 @@ import { ExcelRow, ExcelCell, ExcelColumn, BeforeExportEventArgs } from '../../c
 import * as events from '../../common/base/constant';
 import { PivotView } from '../base/pivotview';
 import { IAxisSet, IPivotValues, PivotEngine } from '../../base/engine';
-import { IPageSettings } from '../../base/engine';
+import { IPageSettings, IMatrix2D } from '../../base/engine';
 import { OlapEngine } from '../../base/olap/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotExportUtil } from '../../base/export-util';
@@ -122,7 +122,7 @@ export class ExcelExport {
                     for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
                         if (pivotValues[rCnt][cCnt]) {
                             let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
-                            if(pivotCell && pivotCell.axis === 'value' && pivotCell.formattedText === ""){
+                            if (pivotCell && pivotCell.axis === 'value' && pivotCell.formattedText === "") {
                                 pivotCell.value = pivotCell.formattedText as any;
                             }
                             let field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&
@@ -133,7 +133,8 @@ export class ExcelExport {
                             let styles: ExcelStyle = (pivotCell.axis == 'row') ? { hAlign: 'Left', bold: true, wrapText: true } : { numberFormat: formatList[field], bold: false, wrapText: true };
                             let headerStyle: ExcelStyle = { bold: true, vAlign: 'Center', wrapText: true, indent: cCnt === 0 ? pivotCell.level * 10 : 0 };
                             if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
-                                let cellValue: string | number = pivotCell.axis === 'value' ? pivotCell.value : pivotCell.formattedText;
+                                let aggMatrix: IMatrix2D = this.parent.engineModule.aggregatedValueMatrix;
+                                let cellValue: string | number = pivotCell.axis === 'value' ? ((aggMatrix[rCnt] && aggMatrix[rCnt][cCnt]) ? aggMatrix[rCnt][cCnt] : (pivotCell.formattedText === '#DIV/0!' ? pivotCell.formattedText : pivotCell.value)) : pivotCell.formattedText;
                                 let isgetValuesHeader: boolean = ((this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row')
                                     || (this.parent.dataSourceSettings.columns.length === 0 && this.parent.dataSourceSettings.valueAxis === 'column'));
                                 if (pivotCell.type === 'grand sum' && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.valueAxis === 'row' && pivotCell.axis === 'column')) {

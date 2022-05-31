@@ -4222,6 +4222,7 @@ export class PivotEngine {
             isNaN(value) && !isNullOrUndefined(value) &&
             (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {
             formattedText = '#DIV/0!';
+            value = 0;
         }
         //dln = data[tnum].length;
         formattedText = (cellDetails.skipFormatting ? isNullOrUndefined(value) ?

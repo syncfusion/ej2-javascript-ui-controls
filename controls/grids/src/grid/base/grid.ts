@@ -2987,6 +2987,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (hasGridChild) { super.destroy(); }
         this.toolTipObj.destroy();
+        if ((<{ isReact?: boolean }>this).isReact && !Browser.isIE) {
+            this.element.innerHTML = '';
+        }
         const modules: string[] = ['renderModule', 'headerModule', 'contentModule', 'valueFormatterService',
             'serviceLocator', 'ariaService', 'keyboardModule', 'widthService', 'searchModule', 'showHider',
             'scrollModule', 'printModule', 'clipboardModule', 'focusModule'];

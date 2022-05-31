@@ -397,6 +397,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.isBottom = true;
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 2];
         }
+        if (this.parent.isFrozenGrid() && (this.parent.pageSettings.currentPage === lastPage - 1) && info.direction === "up") {
+            this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 3];
+        }
         if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.parent.notify(events.autoCol, {});
         }

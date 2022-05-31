@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.1.58 (2022-05-31)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-377034`- Now, the existing form fields value can be retrieved using the `retrieveFormFields()` method.
+- `#SF-367416`- The radio buttons on the iPad are displayed properly after zooming in and out.
+- `#SF-374726`- Signatures will appear in the PDF viewer for the provided document.
+
 ## 20.1.57 (2022-05-24)
 
 ### PDF Viewer

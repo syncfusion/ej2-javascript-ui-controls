@@ -13,7 +13,7 @@ import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, Slider, TextBox, NumericTextBox } from "@syncfusion/ej2-inputs";
 import { DropDownList } from "@syncfusion/ej2-dropdowns";
 import { Button, ChangeEventArgs, CheckBox } from "@syncfusion/ej2-buttons";
-import { DisplayMode, FontStyle, FormFieldType, VisibilityState } from '../base/types';
+import { DisplayMode, FontStyle, FormFieldType, Visibility } from '../base/types';
 import { cloneObject } from '../drawing/drawing-util';
 
 /* eslint-disable */
@@ -750,22 +750,42 @@ export class FormDesigner {
                 (spanElement as any)[i].style.height = Math.floor(bounds.height - 10) + "px";
                  if(bounds.width <= 14 && parseInt((spanElement as any)[i].style.width, 10) >= 2) {
                      if( parseInt((spanElement as any)[i].style.width, 10) <= 5) {
-                        (spanElement as any)[i].style.width = Math.round(bounds.width / 3) + "px";
-                        (spanElement as any)[i].style.height = Math.round(bounds.height / 3) + "px";
-                     }
-                        (spanElement as any)[i].style.margin = Math.round(bounds.width / 3) + "px";        
+                        if(bounds.width>10){
+                            (spanElement as any)[i].style.width = Math.floor(bounds.width / (1+zoomValue)) + "px";
+                            (spanElement as any)[i].style.height = Math.floor(bounds.height / (1+zoomValue)) + "px";
+                            (spanElement as any)[i].style.margin = Math.round(bounds.width / 4) + "px";  
+                         }
+                         else if(bounds.width<10 && bounds.width>5){
+                            (spanElement as any)[i].style.width = (bounds.width / 1.85) + "px";
+                            (spanElement as any)[i].style.height = (bounds.height / 1.85) + "px";
+                         }
+                         else if(bounds.width<=5){
+                            (spanElement as any)[i].style.width = (bounds.width / 1.85) + "px";
+                            (spanElement as any)[i].style.height = (bounds.height / 1.85) + "px";
+                            (spanElement as any)[i].style.margin = (bounds.width / 3.5) + "px";  
+                         }
+                     }      
                  }
                  if (parseInt((spanElement as any)[i].style.width, 10) <= 1 || parseInt((spanElement as any)[i].style.height, 10) <= 1) {
                      if((bounds.width * zoomValue) >= 2) {
-                        (spanElement as any)[i].style.width = Math.round(bounds.width / 2) + "px";
-                        (spanElement as any)[i].style.height = Math.round(bounds.height / 2) + "px";
-                        (spanElement as any)[i].style.margin = Math.round((parseInt((spanElement as any)[i].style.width, 10) / 3)) + "px";
+                        (spanElement as any)[i].style.width = Math.round(bounds.width / 1.65) + "px";
+                        (spanElement as any)[i].style.height = Math.round(bounds.height / 1.65) + "px";
+                        (spanElement as any)[i].style.margin = bounds.width/3.8 + "px";;
                      } else {
                         (spanElement as any)[i].style.width = "1px";
                         (spanElement as any)[i].style.height = "1px";
                         (spanElement as any)[i].style.margin = "1px";    
                      }
                  }
+                 if(bounds.width>14){
+                    (spanElement as any)[i].style.width = (bounds.width /2) + "px";
+                    (spanElement[i] as any).style.height = (bounds.height /2) + "px";
+                 }
+                 if(zoomValue <=1 && zoomValue>0.70){
+                    (spanElement as any)[i].style.width = (bounds.width /1.85) + "px";
+                    (spanElement[i] as any).style.height = (bounds.height /1.85) + "px"; 
+                 }
+              
              }
     }
     /**
@@ -1268,9 +1288,9 @@ export class FormDesigner {
             innerSpan.style.width = Math.floor(bounds.width/2) + "px";
             innerSpan.style.height = Math.floor(bounds.height/2) + "px";
             if(zoomValue < 1 && bounds.width <= 20 && bounds.height <= 20) {
-                innerSpan.style.margin = Math.round((parseInt(labelElement.style.width)/3.5)) + "px";
+                innerSpan.style.margin = Math.round(parseInt(labelElement.style.width) / 3.5) + "px";
             } else {
-                    innerSpan.style.margin = "5px";
+                innerSpan.style.margin = Math.round(parseInt(labelElement.style.width) / 4) + "px";
             }
             labelElement.addEventListener('click', this.setRadioButtonState.bind(this));
             labelElement.id =  drawingObject.id + "_input_label";
@@ -3853,7 +3873,7 @@ export class FormDesigner {
         }
         if (!this.pdfViewer.designerMode) {
             if (this.formFieldVisibility && this.formFieldVisibility.value) {
-                selectedItem.visibility = this.formFieldVisibility.value as VisibilityState;
+                selectedItem.visibility = this.formFieldVisibility.value as Visibility;
                 let visibleItem: any = document.getElementById(selectedItem.id + '_content_html_element').firstElementChild.firstElementChild;
                 visibleItem.style.visibility = selectedItem.visibility;
             }
@@ -4218,7 +4238,7 @@ export class FormDesigner {
         }
 
         if(!isUndoRedo) {
-            selectedItem.visibility = this.formFieldVisibility.value as VisibilityState;
+            selectedItem.visibility = this.formFieldVisibility.value as Visibility;
         } 
 
         element.style.visibility = selectedItem.visibility;
@@ -4230,7 +4250,7 @@ export class FormDesigner {
             signElement.style.visibility = selectedItem.visibility;
             signElement.parentElement.style.visibility = selectedItem.visibility;
             let annotation: any = (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0] + "_content"];
-            if (selectedItem.visibility as VisibilityState === "hidden") {
+            if (selectedItem.visibility as Visibility === "hidden") {
                 if (annotation) {
                     this.hideSignatureValue(selectedItem, annotation, index, formFieldsData);
                  }  

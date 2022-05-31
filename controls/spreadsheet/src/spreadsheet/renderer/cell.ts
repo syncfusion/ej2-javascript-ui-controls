@@ -145,10 +145,10 @@ export class CellRenderer implements ICellRenderer {
         if (args.cell && args.cell.formula) {
             this.calculateFormula(args);
         }
-        const formatArgs: { [key: string]: string | boolean | number | CellModel } = { value: args.cell && args.cell.value,
+        const formatArgs: { [key: string]: string | boolean | number | CellModel | HTMLElement } = { value: args.cell && args.cell.value,
             type: args.cell && getTypeFromFormat(args.cell.format), format: args.cell && args.cell.format,
             formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell, rowIndex: args.rowIdx,
-            colIndex: args.colIdx, isRowFill: false };
+            colIndex: args.colIdx, isRowFill: false, td: args.td };
         if (args.cell) { this.parent.notify(getFormattedCellObject, formatArgs); }
         this.parent.refreshNode(
             args.td, { type: formatArgs.type as string, result: formatArgs.formattedText as string, curSymbol:

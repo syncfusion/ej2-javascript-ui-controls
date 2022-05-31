@@ -705,6 +705,31 @@ describe('EJ2-59075 - The font name is not getting properly while loading custom
     });
 });
 
+describe('EJ2-60277 - Formatting is not maintained properly while unselecting the strikethrough style', () => {
+    let innervalue: string = `<p><span style="text-decoration: underline;">​<span style="text-decoration: line-through;" class="focusNode">RTE Content</span></span></p>`;
+    let rteObj: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['StrikeThrough']
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Formatting is not maintained properly while unselecting the strikethrough style', (done) => {
+        let focusNode = rteObj.inputElement.querySelector('.focusNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 11, 11);
+        SelectionCommands.applyFormat(document, 'strikethrough', rteObj.inputElement, 'P');
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="text-decoration: underline;">​<span style="text-decoration: line-through;" class="focusNode">RTE Content</span>​</span></p>`);
+        done();
+    });
+});
+
 describe('EJ2-58803 - Styles format not maintain properly when applied different formats Xamarin reported', () => {
     let innervalue: string = `<p><strong>​<em>​<span style="text-decoration: underline;">​<span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span class="focusNode" style="background-color: rgb(255, 255, 0);">RTE Content</span></span></span></em></strong></p>`;
     let rteObj: any;

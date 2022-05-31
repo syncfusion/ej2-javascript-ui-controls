@@ -2944,6 +2944,28 @@ describe('RTE base module', () => {
             expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
         });
 
+        it('EJ2-59978 - Insert image after Max char count - Execute Command Module', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                maxLength: 20,
+                showCharCount: true
+            });
+            
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(curDocument, focusNode, focusNode, 0, 0);
+            let el = document.createElement("img"); 
+            el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"; 
+            (rteObj as any).inputElement.focus();
+            rteObj.executeCommand("insertImage", el);
+            expect(rteObj.inputElement.querySelectorAll('img').length === 0).toBe(true);
+        });
+
 
         it('ensure insert image on execute command with arguments', () => {
             destroy(rteObj);
@@ -3031,6 +3053,34 @@ describe('RTE base module', () => {
             expect((rteObj as any).inputElement.querySelector('table').getAttribute('style')).toBe('width: 40px; min-width: 20px; max-width: 100px;');
         });
 
+        it('EJ2-59978 - Insert table after Max char count - Execute Command Module', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                maxLength: 20,
+                showCharCount: true
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(curDocument, focusNode, focusNode, 0, 0);
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            rteObj.executeCommand('insertTable', {
+                rows: 2,
+                columns: 5,
+                width: { minWidth: '20px', maxWidth: '100px', width: 40 },
+                selection: saveSelection
+            } as ITableCommandsArgs);
+            expect((rteObj as any).inputElement.querySelector('table')).toBe(null);
+        });
+
         it('ensure create link on execute command with all the arguments', () => {
             destroy(rteObj);
             rteObj = renderRTE({
@@ -3056,6 +3106,36 @@ describe('RTE base module', () => {
             expect(linkElm.getAttribute('title')).toBe('facebook');
             expect(linkElm.getAttribute('target')).toBe('_self');
             expect(linkElm.innerText).toBe('hello this is facebook link');
+        });
+
+        it('EJ2-59978 - Insert link after Max char count - Execute Command Module', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                maxLength: 20,
+                showCharCount: true
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(curDocument, focusNode, focusNode, 0, 0);
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            rteObj.executeCommand('createLink', {
+                url: 'https://www.facebook.com',
+                title: 'facebook',
+                selection: saveSelection,
+                text: 'hello this is facebook link',
+                target: '_self'
+            });
+            let linkElm: HTMLElement = rteObj.inputElement.querySelector('a');
+            expect(linkElm).toBe(null);
         });
 
         it('ensure edit link on execute command with all the arguments', () => {
@@ -4108,6 +4188,73 @@ describe("EJ2-58355 - RTE insert HTML", () => {
         nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
         rteObj.executeCommand('insertHTML', `<div>inserted</div><p><input type="checkbox" id="lname" name="lname"></p>`);
         expect(rteObj.inputElement.querySelectorAll('input').length === 1).toBe(true);
+    });
+});
+
+describe("EJ2-59978 - Insert HTML and Text after Max char count - Execute Command", () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: '<p class="focusNode">RTE Content with RTE</p>',
+            toolbarSettings: {
+                items: ['CreateTable']
+            },
+            maxLength: 20,
+            showCharCount: true
+        });
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Insert HTML after Max char count - Execute Command', () => {
+        let nodeSelection: NodeSelection = new NodeSelection();
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertHTML', `<div>inserted</div>`);
+        expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
+    });
+
+    it('Insert Text & insert horizontal ruler and insert BR after Max char count - Execute Command', () => {
+        destroy(rteObj);
+        rteObj = renderRTE({
+            value: '<p class="focusNode">RTE Content with RTE</p>',
+            toolbarSettings: {
+                items: ['CreateTable']
+            },
+            maxLength: 20,
+            showCharCount: true
+        });
+        let nodeSelection: NodeSelection = new NodeSelection();
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertText', `Hello`);
+        expect(rteObj.inputElement.textContent === `RTE Content with RTE`).toBe(true);
+    });
+
+    it('insert horizontal ruler and insert BR after Max char count - Execute Command', () => {
+        destroy(rteObj);
+        rteObj = renderRTE({
+            value: '<p class="focusNode">RTE Content with RTE</p>',
+            toolbarSettings: {
+                items: ['CreateTable']
+            },
+            maxLength: 20,
+            showCharCount: true
+        });
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertHorizontalRule');
+        expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
+
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        focusNode = rteObj.inputElement.childNodes[0].childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertBrOnReturn');
+        expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
     });
 });
 
@@ -5187,7 +5334,7 @@ describe('Value property when xhtml is enabled', function () {
         destroy(rteObj);
     });
     it("value property checking when xhtml is enabled", function () {
-        expect(rteObj.value).toBe('<div><p>ad<br/></p><hr/>asd<p></p></div>');
+        expect(rteObj.value).toBe('<div><p>ad<br/></p><hr/>asd<p><br/></p></div>');
         rteObj.value = '<p>value changeded <br/></p>';
         rteObj.dataBind();
         expect(rteObj.value).toBe("<div><p>value changeded <br/></p></div>");
@@ -5583,6 +5730,46 @@ describe('EJ2-47075: Applying heading to the content in the Rich Text Editor app
         done();
     });
     afterEach(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-60047 - typing by selecting 3 empty p tag elements which is prefix of other element with content in firefox', () => {
+    let rteObj: RichTextEditor;
+    let defaultUserAgent= navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            value: `<p class="startNode"></br></p><p></br></p><p class="endNode"></br></p><div>
+            <h2>sssssssss</h2>
+            <div>
+            <h5>
+            aaaaaaaaaaaaaaaaaaaaaaaaaa
+            </h5>
+            </div>
+            </div><p></p>`
+        });
+    });
+
+    it('EJ2-60047 - typing by selecting 3 empty p tag elements which is prefix of other element with content in firefox', () => {
+        let keyBoardEvent: any = { preventDefault: () => { }, key: 'KeyA', stopPropagation: () => { }, shiftKey: false, which: 65 };
+        let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+        editNode.focus();
+        keyBoardEvent.which = 65;
+        keyBoardEvent.code = 'KeyA';
+        keyBoardEvent.type = 'keydown';
+        rteObj.contentModule.getEditPanel().innerHTML = `a<div><h2>sssssssss</h2><div><h5>aaaaaaaaaaaaaaaaaaaaaaaaaa</h5></div></div><p></p>`;
+        let sel1 = new NodeSelection().setSelectionText(document, editNode.childNodes[0], editNode.childNodes[0], 1, 1);
+        (rteObj as any).keyDown(keyBoardEvent);
+        keyBoardEvent.type = 'keyup';
+        (rteObj as any).keyUp(keyBoardEvent);
+        expect((editNode.childNodes[0] as HTMLElement).outerHTML === `<p>a</p>`).toBe(true);
+    });
+
+    afterAll(() => {
+        Browser.userAgent =defaultUserAgent;
         destroy(rteObj);
     });
 });

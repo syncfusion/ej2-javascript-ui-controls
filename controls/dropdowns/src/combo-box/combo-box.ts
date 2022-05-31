@@ -688,7 +688,7 @@ export class ComboBox extends DropDownList {
         } else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
             this.customValue(e);
         }
-        this.hidePopup();
+        this.hidePopup(e);
     }
 
     protected setHoverList(li: Element): void {

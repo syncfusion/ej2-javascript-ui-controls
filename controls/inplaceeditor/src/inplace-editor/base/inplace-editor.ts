@@ -850,7 +850,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (Object.keys(args.model).length > 0) {
             const btnEle: HTMLButtonElement = <HTMLButtonElement>this.createElement('button', {
                 className: args.className,
-                attrs: { 'type': args.type, 'title': this.getLocale(args.title, args.constant) }
+                attrs: { 'type': args.type, 'title': (args.constant=="save")? (isNOU(this.saveButton.content)?this.getLocale(args.title, args.constant):this.saveButton.content): (isNOU(this.cancelButton.content)?this.getLocale(args.title, args.constant):this.cancelButton.content)}
             });
             args.container.appendChild(btnEle);
             btnObj = new Button(args.model, btnEle);

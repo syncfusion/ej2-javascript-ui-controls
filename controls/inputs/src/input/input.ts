@@ -241,8 +241,8 @@ export namespace Input {
         return inputObject;
     }
 
-    function updateIconState(value: string | number, button: HTMLElement): void {
-        if (value) {
+    function updateIconState(value: string | number, button: HTMLElement, readonly?: boolean): void {
+        if (value && !readonly) {
             removeClass([button], CLASSNAMES.CLEARICONHIDE);
         } else {
             addClass([button], CLASSNAMES.CLEARICONHIDE);
@@ -321,7 +321,7 @@ export namespace Input {
         });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         element.addEventListener('focus', (event: FocusEvent) => {
-            updateIconState(element.value, button);
+            updateIconState(element.value, button, element.readOnly);
         });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         element.addEventListener('blur', (event: FocusEvent) => {

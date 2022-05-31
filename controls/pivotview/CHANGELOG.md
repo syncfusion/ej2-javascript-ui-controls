@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.58 (2022-05-31)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I380533` - When using value fields with advanced aggregate options, the pivot table can now be properly exported to Excel and CSV formats.
+
 ## 20.1.57 (2022-05-24)
 
 ### Pivot Table

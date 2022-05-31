@@ -2774,8 +2774,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (elementCln.length < 1) {
                 elementCln = valueContainer.querySelectorAll('.e-template');
             }
+            eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
             for (let i: number = 0; i < elementCln.length; i++) {
-                eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
                 if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
                     rule.rules[index].value = null;
                     continue;

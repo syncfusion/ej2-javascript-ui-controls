@@ -13,7 +13,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // eslint-disable-next-line max-len
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, VisibilityState } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -184,7 +184,7 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
      
     /**
      * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
@@ -250,7 +250,7 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
@@ -2979,7 +2979,7 @@ export class FormField extends ChildProperty<FormField> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * Get or set the maximum character length.
@@ -3136,7 +3136,7 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * Get or set the maximum character length.
@@ -3256,7 +3256,7 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * Get or set the maximum character length.
@@ -3334,7 +3334,7 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * Get or set the boolean value to print the check box field. TRUE by default.
@@ -3424,7 +3424,7 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * Get or set the boolean value to print the radio button field. TRUE by default.
@@ -3526,7 +3526,7 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
@@ -3640,7 +3640,7 @@ export class ListBoxFieldSettings extends ChildProperty<ListBoxFieldSettings> {
      * Gets or set the visibility of the form field.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * If it is set as true, consider as mandatory field in the PDF document. By default it is false.

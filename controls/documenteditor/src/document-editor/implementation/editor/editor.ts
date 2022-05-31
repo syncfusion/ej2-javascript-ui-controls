@@ -9100,6 +9100,11 @@ export class Editor {
         let currentPara: ParagraphWidget = selection.start.paragraph;
         let previousPara: ParagraphWidget = currentPara.previousWidget as ParagraphWidget;
         let listId: number;
+        if (value <= 0) {
+            let x: number = HelperMethods.convertPointToPixel(value as number);
+            if ((currentPara.x + x) == this.viewer.clientArea.x)
+                return;
+        }
         if (previousPara instanceof ParagraphWidget && !isNullOrUndefined(previousPara)) {
             listId = previousPara.paragraphFormat.listFormat.listId;
         }
@@ -9120,7 +9125,7 @@ export class Editor {
                     if (level.paragraphFormat.leftIndent <= 0) {
                         level.paragraphFormat.leftIndent = -level.paragraphFormat.firstLineIndent;
                     }
-                    this.onApplyListInternal(list, selection.paragraphFormat.listLevelNumber);
+                    this.onApplyListInternal(list, currentPara.paragraphFormat.listFormat.listLevelNumber);
                 }
                 else {
                     this.updateListLevel(value > 0);
@@ -9129,7 +9134,7 @@ export class Editor {
             }
         }
         let isSkipSelection = !((value instanceof WCharacterStyle) && property == 'styleName' && selection.isEmpty);
-        if (isSkipSelection && selection.isEmpty) {
+        if (isSkipSelection && selection.isEmpty || isSkipSelection && selection.paragraphFormat.listId !== -1) {
             this.setOffsetValue(selection);
             let isBidiList: boolean = selection.paragraphFormat.bidi &&
                 (property === 'listFormat' || selection.paragraphFormat.listId !== -1);
@@ -13691,7 +13696,7 @@ export class Editor {
         //     selection.end.setPositionParagraph(inline.line, offset);
         //     isCommentDelete = true;
         // }
-        if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+        if (inline instanceof FieldElementBox && inline.fieldType === 1 && !this.selection.isInlineFormFillMode()) {
             let prevInline: ElementBox = selection.getPreviousValidElement(inline);
             if (prevInline instanceof FieldElementBox) {
                 inline = (prevInline as FieldElementBox).fieldBegin;
@@ -14640,7 +14645,7 @@ export class Editor {
             removeOffset = removeOffset - lineLength;
         }
         this.removeAtOffset(lineWidget, selection, removeOffset);
-        if (this.owner.enableTrackChanges && !isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Delete') {
+        if (this.owner.enableTrackChanges && !isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Delete' && lineLength !== selection.getLineLength(selection.start.currentWidget)) {
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset, false);
         } else if (this.owner.enableTrackChanges && !this.skipTracking()) {
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + 1, false);

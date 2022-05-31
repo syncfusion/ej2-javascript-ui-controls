@@ -139,6 +139,7 @@
 
     .e-columnmenu {
       bottom: $grid-column-menu-top-touch;
+      top: $grid-column-menu-bottom-touch;
     }
 
     &.e-device.e-noselect {

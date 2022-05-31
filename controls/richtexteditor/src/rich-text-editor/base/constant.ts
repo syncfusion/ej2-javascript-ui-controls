@@ -606,3 +606,16 @@ export const closeTableDialog: string = 'closeTableDialog';
  * @deprecated
  */
 export const bindCssClass: string = 'closeTableDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const blockInlineEmptyNodes: string = `address:empty, article:empty, aside:empty, blockquote:empty,
+details:empty, dd:empty, div:empty, dl:empty, dt:empty, fieldset:empty, footer:empty,form:empty, h1:empty,
+h2:empty, h3:empty, h4:empty, h5:empty, h6:empty, header:empty, hgroup:empty, hr:empty, li:empty, main:empty, nav:empty,
+noscript:empty, output:empty, p:empty, pre:empty, section:empty, td:empty, th:empty,
+a:empty, abbr:empty, acronym:empty, b:empty, bdi:empty, bdo:empty, big:empty, button:empty,
+canvas:empty, cite:empty, code:empty, data:empty, datalist:empty, del:empty, dfn:empty, em:empty, font:empty, i:empty, iframe:empty,
+ins:empty, kbd:empty, label:empty, map:empty, mark:empty, meter:empty, noscript:empty, object:empty, output:empty, picture:empty, progress:empty,
+q:empty, ruby:empty, s:empty, samp:empty, script:empty, select:empty, slot:empty, small:empty, span:empty, strong:empty, strike:empty, sub:empty, sup:empty, svg:empty,
+template:empty, textarea:empty, time:empty, u:empty, tt:empty, var:empty, wbr:empty`;

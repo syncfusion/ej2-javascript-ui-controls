@@ -1,5 +1,5 @@
 import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings } from '../../base/engine';
-import { PivotEngine, IFieldOptions, IFormatSettings } from '../../base/engine';
+import { PivotEngine, IFieldOptions, IFormatSettings, IMatrix2D } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
 import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs } from '@syncfusion/ej2-grids';
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
@@ -1845,6 +1845,11 @@ export class Render {
                     format = fString.indexOf('#') > -1 ? fString : (fString[0] + '2');
                 }
             } else {
+                if ((['PercentageOfDifferenceFrom', 'PercentageOfRowTotal', 'PercentageOfColumnTotal', 'PercentageOfGrandTotal', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal']).indexOf(field.type) > -1) {
+                    format = 'P2';
+                } else if (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar', 'Index'].indexOf(field.type) > -1) {
+                    format = undefined;
+                }
                 if (this.parent.dataSourceSettings.formatSettings.length > 0) {
                     for (let fCnt: number = 0; fCnt < this.parent.dataSourceSettings.formatSettings.length; fCnt++) {
                         let formatSettings: IFormatSettings = this.parent.dataSourceSettings.formatSettings[fCnt];
@@ -1938,11 +1943,16 @@ export class Render {
         } else {
             this.colPos++;
             /* eslint-disable-next-line */
-            if (isNullOrUndefined((<any>args.data)[this.colPos].value) || isNullOrUndefined((<any>args.data)[this.colPos].formattedText) || (<any>args.data)[this.colPos].formattedText === "") {
+            let pivotValue: IAxisSet = (<any>args.data)[this.colPos];
+            if (isNullOrUndefined(pivotValue.value) || isNullOrUndefined(pivotValue.formattedText) || pivotValue.formattedText === "") {
                 args.value = this.parent.exportType === 'Excel' ? null : '';
             } else {
-                /* eslint-disable-next-line */
-                args.value = !isNullOrUndefined((<any>args.data)[this.colPos].value) ? (<any>args.data)[this.colPos].value : (<any>args.data)[this.colPos].formattedText;
+                let aggMatrix: IMatrix2D = this.parent.engineModule.aggregatedValueMatrix;
+                if (aggMatrix[pivotValue.rowIndex] && aggMatrix[pivotValue.rowIndex][pivotValue.colIndex]) {
+                    args.value = aggMatrix[pivotValue.rowIndex][pivotValue.colIndex];
+                } else {
+                    args.value = !isNullOrUndefined(pivotValue.value) ? (pivotValue.formattedText === '#DIV/0!' ? pivotValue.formattedText : pivotValue.value) : pivotValue.formattedText;
+                }
             }
         }
         args = this.exportContentEvent(args);

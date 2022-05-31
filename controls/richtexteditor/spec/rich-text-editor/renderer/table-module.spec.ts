@@ -3985,4 +3985,43 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
+    describe('EJ2-59978 - Insert table after Max char count - Table Module', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                maxLength: 20,
+                showCharCount: true
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Insert table after Max char count', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[1],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let tar: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(tar).toBe(null);
+            done();
+        });
+    });
 });

@@ -8911,7 +8911,7 @@ export class Selection {
                     end = this.start;
                 }
                 let startParagraph: ParagraphWidget = start.paragraph as ParagraphWidget;
-                let fieldParagraph: ParagraphWidget = formField.fieldSeparator.line.paragraph as ParagraphWidget;
+                let fieldParagraph: ParagraphWidget = formField.fieldEnd.line.paragraph as ParagraphWidget;
                 if (fieldParagraph != startParagraph) {
                     continue;
                 }

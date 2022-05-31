@@ -1076,8 +1076,8 @@ describe('Track changes Pane in RTL Validation', () => {
     });
     it('Track Changes Pane close button validation', function () {
         console.log('Track Changes Pane close button validation');
-        let left: string = container.commentReviewPane.closeButton.style.left;
-        let right: string = container.commentReviewPane.closeButton.style.right;
+        let left: string = container.trackChangesPane.closeButton.style.left;
+        let right: string = container.trackChangesPane.closeButton.style.right;
         expect(left).toBe('1px');
         expect(right).toBe('');
     });

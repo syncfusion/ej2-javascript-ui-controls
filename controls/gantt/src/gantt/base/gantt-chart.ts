@@ -635,8 +635,12 @@ export class GanttChart {
      * @private
      */
     public getChartRows(): NodeListOf<Element> {
-        return document.getElementById(this.parent.element.id + 'GanttTaskTableBody').querySelectorAll('.e-chart-row');
-    }
+        if(document.getElementById(this.parent.element.id + 'GanttTaskTableBody') != null){
+            return document.getElementById(this.parent.element.id + 'GanttTaskTableBody').querySelectorAll('.e-chart-row');
+            } else {
+                return null;
+            }
+        }
 
     /**
      * Expand Collapse operations from gantt chart side

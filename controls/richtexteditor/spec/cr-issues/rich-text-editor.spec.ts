@@ -1331,4 +1331,34 @@ describe('RTE CR issues', () => {
             expect(rteObj.getText()==="").toBe(true);
         });
     });
+    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({ value: '<div><p></p></div>'});
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check content div element', () => {
+            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
+        });
+    });
+    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<div><p></p></div>',
+                iframeSettings: {
+                    enable: true
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check content div element', () => {
+            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
+        });
+
+    });
 });

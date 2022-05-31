@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- `I379818` - Issue with Getting change event as undefined for fields having custom value template of query builder has been fixed.
+
+### QueryBuilder
+
+#### Bug Fixes
+
 - `I375944` - Issue with Null value is not available in IN operator of query builder has been fixed.
 
 ## 20.1.51 (2022-04-26)

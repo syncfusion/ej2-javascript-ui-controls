@@ -1,6 +1,6 @@
 import { isNullOrUndefined, remove, extend } from '@syncfusion/ej2-base';
 import { Query, Predicate } from '@syncfusion/ej2-data';
-import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, CellFocusArgs, KeyboardEventArgs, IModelGenerator, SaveEventArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, CellFocusArgs, KeyboardEventArgs, IModelGenerator, SaveEventArgs, AddEventArgs } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { FreezeRowModelGenerator } from '../services/freeze-row-model-generator';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -71,6 +71,7 @@ export class InfiniteScroll implements IAction {
     private parentCapUid: string;
     private groupCaptionAction: string;
     protected widthService: ColumnWidthService;
+    private addRowIndex: number;
 
     /**
      * Constructor for the Grid infinite scrolling.
@@ -316,7 +317,15 @@ export class InfiniteScroll implements IAction {
             const isDelete: boolean = e.args.requestType === 'delete';
             if (!cache && (isAdd || isDelete)) {
                 if (isAdd) {
-                    this.infiniteCurrentViewData[1] = e.data.concat(this.infiniteCurrentViewData[1]);
+                    let indexCount: number = 0;
+                    for (let i: number = 1; i <= keys.length; i++) {
+                        indexCount += this.infiniteCurrentViewData[i].length - 1;
+                        if ((e.args as AddEventArgs).index <= indexCount) {
+                            this.resetCurrentViewData(i);
+                            this.infiniteCurrentViewData[i].splice((e.args as AddEventArgs).index, 0, (e.args as AddEventArgs).data);
+                            break;
+                        }
+                    }
                 } else {
                     this.infiniteCurrentViewData[keys[keys.length - 1]].push(e.data[0]);
                 }
@@ -330,6 +339,17 @@ export class InfiniteScroll implements IAction {
         }
     }
 
+    private resetCurrentViewData(startIndex: number): void {
+        const keys: string[] = Object.keys(this.infiniteCurrentViewData);
+        for (let i: number = startIndex; i <= keys.length; i++) {
+            const lastViewData: Object = this.infiniteCurrentViewData[i][this.infiniteCurrentViewData[i].length - 1];
+            if (this.infiniteCurrentViewData[i + 1]) {
+                this.infiniteCurrentViewData[i + 1].splice(0, 0, lastViewData);
+            }
+            this.infiniteCurrentViewData[i].pop();
+        }
+    }
+
     private deleteComplate(): void {
         if (this.parent.isFrozenGrid() && !this.parent.infiniteScrollSettings.enableCache) {
             (<{ refreshScrollOffset?: Function }>this.parent.contentModule).refreshScrollOffset();
@@ -338,6 +358,9 @@ export class InfiniteScroll implements IAction {
 
     private modelChanged(args: InfiniteScrollArgs): void {
         const rows: Element[] = this.parent.getRows();
+        if (args.requestType === 'save' && (args as AddEventArgs).index && (args as AddEventArgs).data) {
+            this.addRowIndex = (args as AddEventArgs).index;
+        }
         if (rows && rows.length && args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
             this.firstIndex = getRowIndexFromElement(rows[0]);
             this.firstBlock = Math.ceil((this.firstIndex + 1) / this.parent.pageSettings.pageSize);
@@ -380,7 +403,7 @@ export class InfiniteScroll implements IAction {
             const rowElms: Element[] = this.parent.getRows();
             const rows: Row<Column>[] = this.parent.getRowsObject();
             if (this.ensureRowAvailability(rows, args.result[0])) {
-                if (rowElms.length) {
+                if (rowElms.length && !(this.addRowIndex && this.addRowIndex >= rowElms.length)) {
                     this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add', true);
                     if (frozenCols) {
                         const rows: Row<Column>[] = this.parent.getMovableRowsObject();
@@ -431,6 +454,11 @@ export class InfiniteScroll implements IAction {
         isMovable?: boolean, isFrozenRows?: boolean, isFrozenRight?: boolean): void {
         const row: Row<Column>[] = !isFrozenRows ? this.generateRows(args.result, args.e) : rows;
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+        if ((args.e as AddEventArgs).requestType === 'save' && (args.e as AddEventArgs).index && (args.e as AddEventArgs).data) {
+            row[0].index = this.addRowIndex;
+            this.addRowIndex = null;
+            if (row[0].index >= rows.length) { return; }
+        }
         let tbody: HTMLElement;
         if (isFrozenRight) {
             tbody = this.parent.element.querySelector('.e-frozen-right-content').querySelector( literals.tbody);
@@ -459,7 +487,8 @@ export class InfiniteScroll implements IAction {
                 if (this.requestType === 'delete') {
                     tbody.appendChild(rowRenderer.render(row[i], this.parent.getColumns()));
                 } else {
-                    tbody.insertBefore(rowRenderer.render(row[i], this.parent.getColumns()), tbody.firstElementChild);
+                    tbody.insertBefore(rowRenderer.render(row[i], this.parent.getColumns()),
+                                       (tbody as HTMLTableElement).rows[((args.e as AddEventArgs).index)]);
                 }
             }
         }
@@ -538,8 +567,8 @@ export class InfiniteScroll implements IAction {
                 }
             });
         }
-        const startIndex: number = isAdd ? 1 : 0;
-        resetRowIndex(this.parent, rows, rowElms as HTMLTableRowElement[], startIndex);
+        const startIndex: number = isAdd ? this.addRowIndex ? this.addRowIndex + 1 : 1 : 0;
+        resetRowIndex(this.parent, rows, rowElms as HTMLTableRowElement[], startIndex, this.addRowIndex ? this.addRowIndex : 0);
     }
 
     private resetInfiniteCurrentViewData(page: number, index: number): void {
@@ -586,6 +615,42 @@ export class InfiniteScroll implements IAction {
 
     private refreshInfiniteCache(args: { data: Object }): void {
         this.getEditedRowObject().data = args.data;
+    }
+
+    private refreshInfiniteCacheRowVisibleLength(args: {[x: number]: Row<Column>[]}, currentPage: number): number {
+        let cPageRowArray: Row<Column>[] = args[currentPage];
+        if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
+            let length: number = 0;
+            let vRowLen: number = 0;
+            let hRowLen: number = 0;
+            for(let i: number = 0; i < cPageRowArray.length; i++) {
+                if(cPageRowArray[i].visible || isNullOrUndefined(cPageRowArray[i].visible)) {
+                    vRowLen++;
+                }
+                else {
+                    hRowLen++;
+                }
+            }
+            if (hRowLen > vRowLen) {
+                length = hRowLen - vRowLen;
+                if (length > vRowLen) {
+                    length = vRowLen;
+                }
+            }
+            else {
+                length = vRowLen - hRowLen;
+                if (length > hRowLen) {
+                    length = hRowLen;
+                }
+            }
+            if (length === 0) {
+                length = 1;
+            }
+            return length;
+        }
+        else {
+            return cPageRowArray.length;
+        }
     }
 
     private refreshInfiniteEditrowindex(args: { index: number }): void {
@@ -801,7 +866,7 @@ export class InfiniteScroll implements IAction {
             if (this.parent.editSettings.mode === 'Dialog') {
                 this.parent.clearSelection();
             }
-            const index: number = this.requestType === 'delete' ? this.lastIndex : this.firstIndex;
+            const index: number = this.requestType === 'delete' ? this.lastIndex : this.addRowIndex ? this.addRowIndex : this.firstIndex;
             query.skip(index);
             query.take(1);
         }
@@ -1133,7 +1198,8 @@ export class InfiniteScroll implements IAction {
 
         if (args.direction === 'up') {
             if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && !this.isInitialCollapse) {
-                top = this.infiniteCache[this.parent.pageSettings.currentPage].length * this.parent.getRowHeight();
+                let len: number = this.refreshInfiniteCacheRowVisibleLength(this.infiniteCache, this.parent.pageSettings.currentPage);
+                top = len * this.parent.getRowHeight();
             } else if (this.isInitialCollapse) {
                 const groupedData: Row<Column>[] = this.infiniteCache[this.parent.pageSettings.currentPage];
                 let count: number = 0;

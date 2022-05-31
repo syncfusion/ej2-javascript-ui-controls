@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.58 (2022-05-31)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#F34697` - Issue with "able to clear the input value using clear button when component in readonly mode" has been resolved.
+
 ## 20.1.57 (2022-05-24)
 
 ### DateRangePicker

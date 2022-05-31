@@ -245,6 +245,9 @@ export class FormFields {
                                             }
                                         }
                                     }
+                                    if (isNullOrUndefined(currentData.Value)) {
+                                        currentData.Value = currentData['Text']
+                                    }
                                     this.applyCommonProperties(inputField, pageIndex, i, currentData, isFieldRotated);
                                     this.checkIsReadonly(currentData, inputField);
                                     this.applyTabIndex(currentData, inputField, pageIndex);
@@ -1759,6 +1762,12 @@ export class FormFields {
                 currentField = this.createButtonField(currentData, pageIndex);
                 break;
             case 'ink':
+                if(this.pdfViewer.formDesignerModule){
+                    if (currentData.Value && currentData.Value !== '' && !this.isSignatureRendered) {
+                        this.renderExistingAnnnot(currentData, index, printContainer);
+                    }
+                }
+                break;
             case 'SignatureText':
             case 'SignatureImage':
                 if (currentData.Value && currentData.Value !== '' && !this.isSignatureRendered) {

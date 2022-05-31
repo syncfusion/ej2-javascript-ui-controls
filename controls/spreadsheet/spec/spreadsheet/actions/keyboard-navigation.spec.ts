@@ -118,5 +118,28 @@ describe('Spreadsheet cell navigation module ->', () => {
                 }, 10);
             });
         });
+        describe('EJ2-59905 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rowCount: 10, colCount: 26, rows: [{ index: 4, hidden: true }, { index: 5, hidden: true }, { index: 6, hidden: true }] }], height: 300, scrollSettings: { isFinite: true }} , done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Keyboard selection issue in finite mode', (done: Function) => {
+                helper.getElement().focus();
+                const instance: any = helper.getInstance();
+                helper.invoke('selectRange', ['A10:A10']);
+                const selectionEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-selection');
+                helper.triggerKeyEvent('keydown', 39, null, false, false);
+                setTimeout(() => {
+                    helper.triggerKeyEvent('keydown', 39, null, false, false);
+                    setTimeout(() => {
+                        expect(instance.sheets[0].selectedRange).toBe('C10:C10');
+                        done();
+                    }, 10);
+                }, 10);
+            });
+        });
     });
 });

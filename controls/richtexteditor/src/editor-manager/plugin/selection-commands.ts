@@ -304,8 +304,15 @@ export class SelectionCommands {
             for ( ; nodeTraverse && nodeTraverse.parentElement && nodeTraverse.parentElement !== endNode;
                 // eslint-disable-next-line
                 nodeTraverse = nodeTraverse ) {
-                if (nodeTraverse.parentElement && nodeTraverse.parentElement.tagName.toLocaleLowerCase()
-                    === (formatNode as HTMLElement).tagName.toLocaleLowerCase() &&
+                let nodeTraverseCondition: boolean;
+                if (formatNode.nodeName === 'SPAN') {
+                    nodeTraverseCondition = nodeTraverse.parentElement.tagName.toLocaleLowerCase()
+                    === (formatNode as HTMLElement).tagName.toLocaleLowerCase() && nodeTraverse.parentElement.getAttribute('style') === formatNodeStyles;
+                } else {
+                    nodeTraverseCondition = nodeTraverse.parentElement.tagName.toLocaleLowerCase()
+                    === (formatNode as HTMLElement).tagName.toLocaleLowerCase();
+                }
+                if (nodeTraverse.parentElement && nodeTraverseCondition &&
                     (nodeTraverse.parentElement.childElementCount > 1 || range.startOffset > 1)) {
                     if (textNode.parentElement && textNode.parentElement.tagName.toLocaleLowerCase()
                         === (formatNode as HTMLElement).tagName.toLocaleLowerCase()) {

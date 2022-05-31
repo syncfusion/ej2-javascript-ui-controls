@@ -1721,4 +1721,33 @@ describe('IE 11 insert link', () => {
             }, 100);
         });
     });
+
+    describe('EJ2-59978 - Insert link after Max char count - Link Module', function() {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(function() {
+            rteObj = renderRTE({
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                },
+                maxLength: 20,
+                showCharCount: true
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function() {
+            destroy(rteObj);
+        });
+        it(' - Insert link after Max char count - ', function() {
+            rteObj.contentModule.getEditPanel().focus();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            expect(rteObj.inputElement.textContent === `RTE Content with RTE`).toBe(true);
+        });
+    });
 });

@@ -20,7 +20,7 @@ import { DiagramHtmlElement } from './html-element';
 import { IFormField, IFormFieldBound } from '../form-designer';
 import { FormFieldModel } from '../pdfviewer-model';
 import { FontStyle, FormFieldType } from '../base';
-import { VisibilityState } from '../base/types';
+import { Visibility } from '../base/types';
 
 /**
  * Renderer module is used to render basic diagram elements

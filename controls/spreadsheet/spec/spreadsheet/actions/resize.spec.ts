@@ -125,4 +125,28 @@ describe('Resize ->', () => {
             });
         });
     });
+    describe('EJ2-60189 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.hideColumn(1);
+                }
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Selection misalignment occurs while performing autofit when the column is hidden', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.autoFit("A:C");
+            let cellEle: HTMLElement = helper.getElements('.e-active-cell')[0];
+            let selectionEle: HTMLElement = helper.getElements('.e-selection')[0];
+            setTimeout((): void => {
+                expect(cellEle.style.width).toEqual(selectionEle.style.width);
+                expect(cellEle.style.left).toEqual(selectionEle.style.left);
+                done();
+            });
+        });
+    });
 });

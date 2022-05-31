@@ -950,7 +950,14 @@ export class SfdtExport {
         let chartDataFormat: any = {};
         chartDataFormat.fill = {};
         chartDataFormat.line = {};
-        chartDataFormat.fill.foreColor = format.fill.color;
+        if (!isNullOrUndefined(format.fill.color)) {
+            if (format.fill.color.length > 6) {
+                chartDataFormat.fill.foreColor = format.fill.color.substring(2);
+            }
+            else {
+                chartDataFormat.fill.foreColor = format.fill.color;
+            }
+        }
         chartDataFormat.fill.rgb = format.fill.rgb;
         chartDataFormat.line.color = format.line.color;
         chartDataFormat.line.rgb = format.line.rgb;

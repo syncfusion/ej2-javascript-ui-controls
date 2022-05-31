@@ -961,6 +961,90 @@ describe('Self reference data', () => {
         triggerMouseEvent(dragElement, 'mouseup');
     });
   });
-
+     describe('Update end date using recource unit', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: normalResourceData,
+        resources: resourceCollection,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            resourceInfo: 'resources',
+            work: 'work',
+            child: 'subtasks'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+            unit: 'resourceUnit',
+            group: 'resourceGroup'
+        },
+        showOverAllocation: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resources', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        splitterSettings: { columnIndex: 3 },
+        labelSettings: {
+            rightLabel: 'resources',
+            taskLabel: 'Progress'
+        },
+        allowResizing: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        height: '450px',
+        projectStartDate: new Date('03/28/2019'),
+        projectEndDate: new Date('05/18/2019')
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('update resource unit', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save') {
+                expect(ganttObj.getFormatedDate(args.data.EndDate, 'M/dd/yyyy')).toBe('4/02/2019');
+            }
+        };
+        ganttObj.dataBind();
+        let data: Object = {
+            TaskID: 3,
+            TaskName: 'Updated by index value',
+            resources: [
+                {
+                    resourceId: 2,
+                    resourceName: 'Rose Fuller',
+                    resourceUnit: 100,
+                },
+            ],
+        };
+        ganttObj.updateRecordByID(data);
+    });
+});
 
 });

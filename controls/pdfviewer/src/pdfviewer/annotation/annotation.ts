@@ -342,6 +342,29 @@ export class Annotation {
         if (this.textMarkupAnnotationModule) {
             this.textMarkupAnnotationModule.deleteTextMarkupAnnotation();
         }
+        let selectedAnnotation:any = this.pdfViewer.selectedItems.annotations[0];
+        if(selectedAnnotation){
+            let data : any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+            let formFieldsData : any = JSON.parse(data);
+            let newFormFieldsData : any = [];
+            if(formFieldsData){
+                for(let x=0;x<formFieldsData.length;x++){
+                    if(formFieldsData[x].uniqueID==selectedAnnotation.id){
+                        formFieldsData[x].Value='';
+                        for(let y=0;y<formFieldsData.length;y++){
+                            if(formFieldsData[x].FieldName===formFieldsData[y].FieldName&&formFieldsData[y].Name==='ink'){
+                                formFieldsData.splice(y,1);
+                            }
+                        }
+                        newFormFieldsData.push(formFieldsData[x]);
+                    }
+                    else{
+                        newFormFieldsData.push(formFieldsData[x]);
+                    }
+                }
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields',JSON.stringify(newFormFieldsData));    
+            }
+        }
         let isLock: boolean = false;
         let isReadOnly: boolean = false;
         if (this.pdfViewer.selectedItems.annotations.length > 0) {

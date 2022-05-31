@@ -2452,3 +2452,81 @@ describe("EJ2-58827 - pasting only content which is contenteditable as false", (
       destroy(rteObj);
     });
 });
+
+describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: false
+        },
+        showCharCount: true,
+        maxLength: 30
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("pasting content which exceeds the max char count", (done) => {
+      let localElem: string = `<p>Content1</p>`;
+      keyBoardEvent.clipboardData = {
+        getData: () => {
+          return localElem;
+        },
+        items: []
+      };
+      rteObj.value = '<p>.NEt core application.&nbsp;</p>';
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement.firstElementChild.childNodes[0], 23);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;</p>`).toBe(true)
+        done();
+      }, 100);
+    });
+
+    it("EJ2-60239 - pasting content with exact content the max char count", (done) => {
+        keyBoardEvent.clipboardData = {
+        getData: (e: any) => {
+            if (e === "text/plain") {
+                return 'content';
+            } else {
+                return '';
+            }
+        },
+          items: []
+        };
+        rteObj.value = '<p>.NEt core application.&nbsp;</p>';
+        rteObj.pasteCleanupSettings.deniedTags = [];
+        rteObj.pasteCleanupSettings.deniedAttrs = [];
+        rteObj.pasteCleanupSettings.allowedStyleProps = [];
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        setCursorPoint((rteObj as any).inputElement.firstElementChild.childNodes[0], 23);
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+          expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;</p><p>content</p>`).toBe(true)
+          expect((rteObj as any).element.querySelector('.e-rte-character-count').innerHTML === `30 / 30`).toBe(true)
+          done();
+        }, 100);
+      });
+
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});

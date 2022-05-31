@@ -1125,7 +1125,13 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (event.which === 0 || event.metaKey || event.ctrlKey || event.keyCode === 8 || event.keyCode === 13) {
             return true;
         }
-        const currentChar: string = String.fromCharCode(event.which);
+        let currentChar: string = String.fromCharCode(event.which);
+        let decimalSeparator: string = getValue('decimal', getNumericObject(this.locale));
+        let isAlterNumPadDecimalChar: boolean = event.code === "NumpadDecimal" && currentChar !== decimalSeparator;
+        //EJ2-59813-replace the culture decimal separator with numberpad decimal separator when culture decimal separator and numberpad decimal separator are different
+        if (isAlterNumPadDecimalChar) {
+            currentChar = decimalSeparator;
+        }
         let text: string = this.element.value;
         text = text.substring(0, this.element.selectionStart) + currentChar + text.substring(this.element.selectionEnd);
         if (!this.numericRegex().test(text)) {
@@ -1133,6 +1139,14 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             event.stopPropagation();
             return false;
         } else {
+            //EJ2-59813-update the numberpad decimal separator and update the cursor position
+            if (isAlterNumPadDecimalChar) {
+            const start: number = this.element.selectionStart + 1;
+            this.element.value = text;
+            this.element.setSelectionRange(start, start);
+            event.preventDefault();
+            event.stopPropagation();
+            }
             return true;
         }
     }

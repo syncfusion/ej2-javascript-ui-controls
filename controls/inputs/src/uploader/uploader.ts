@@ -1803,6 +1803,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /* istanbul ignore next */
     private onPasteFile(event: ClipboardEvent): void {
         const item: DataTransferItemList = event.clipboardData.items;
+        if (event.type == 'paste' && this.browserName !== 'msie' && this.browserName !== 'edge' && this.browserName !== 'safari') {
+            this.element.files = event.clipboardData.files;
+        }
         if (item.length !== 1) {
             return;
         }

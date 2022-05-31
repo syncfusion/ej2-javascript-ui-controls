@@ -355,9 +355,13 @@ export class WorkbookNumberFormat {
 
     private processDigits(cell: CellModel): string {
         const custFormat: string = cell.format.split('?').join('0');
+        const cellValue: string = cell.value;
         cell.value = this.getFormattedNumber(custFormat, parseFloat(cell.value));
-        if (!isNullOrUndefined(cell.value)) {
+        if (!isNullOrUndefined(cell.value) && cell.value.includes('.')) {
             cell.value = cell.value.split('.')[0] + '.' + cell.value.split('.')[1].split('0').join('  ');
+        }
+        if (cell.value === '' && cellValue === '0') {
+            cell.value = cellValue;
         }
         return cell.value;
     }
@@ -401,6 +405,7 @@ export class WorkbookNumberFormat {
             }
             if (customFormat.indexOf('?') > -1) {
                 isFormatted = true;
+                customFormat = cell.format.split('?').join('');
                 formattedText = this.processDigits(cell);
             }
             if (customFormat.indexOf('_') > -1) {

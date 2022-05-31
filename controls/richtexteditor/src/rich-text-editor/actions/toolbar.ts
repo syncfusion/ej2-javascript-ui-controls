@@ -485,9 +485,7 @@ export class Toolbar {
      * @deprecated
      */
     public refreshToolbarOverflow(): void {
-        if( !this.parent.inlineMode.enable){
-            this.baseToolbar.toolbarObj.refreshOverflow();
-        }
+        this.baseToolbar.toolbarObj.refreshOverflow();
     }
 
     private isToolbarDestroyed(): boolean {
@@ -680,7 +678,9 @@ export class Toolbar {
     }
 
     private onRefresh(): void {
-        this.refreshToolbarOverflow();
+        if( !this.parent.inlineMode.enable){
+            this.refreshToolbarOverflow();
+        }
         this.parent.setContentHeight('', true);
     }
     /**

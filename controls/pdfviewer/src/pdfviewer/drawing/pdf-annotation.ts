@@ -5,7 +5,7 @@ import { Size } from '@syncfusion/ej2-drawings';
 import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-annotation-model';
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationType, FormFieldAnnotationType } from './enum';
-import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel, VisibilityState } from '../index';
+import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel, Visibility } from '../index';
 /**
  * The `PdfBounds` is base for annotation bounds.
  *
@@ -883,7 +883,7 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
      * If it is set as Hidden, Html element will be hide in the UI. By default it is visible.
      */
     @Property('visible')
-    public visibility: VisibilityState;
+    public visibility: Visibility;
 
     /**
      * specifies whether the form field are included or not in print actions.

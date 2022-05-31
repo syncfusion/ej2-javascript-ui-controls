@@ -78,8 +78,8 @@ export class Print {
         // tslint: disable-next-line:max-line-length
         // set default zoomFactor value.
         const jsonObject: object = {
-            pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
-            hashId: this.pdfViewerBase.hashId, zoomFactor: 2,
+            pageNumber: pageIndex.toString(), documentId: this.pdfViewerBase.documentId,
+            hashId: this.pdfViewerBase.hashId, zoomFactor: "2",
             action: 'PrintImages',
             elementId: this.pdfViewer.element.id,
             uniqueId: this.pdfViewerBase.documentId
