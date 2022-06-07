@@ -1222,6 +1222,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     protected getQuery(query: Query): Query {
         const filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
+        if (this.isFiltered) {
+            return filterQuery;
+        }
         if (this.filterAction) {
             if (this.targetElement() !== null) {
                 const dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object }[]).typeof;

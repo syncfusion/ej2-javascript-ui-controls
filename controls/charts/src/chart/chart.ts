@@ -2170,8 +2170,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         if (!this.stockChart && this.visibleSeries.length > 0) {
             for (const series of this.visibleSeries) {
-                this.maxPointCount = Math.max(prevPointCount, series.points.length);
-                prevPointCount = series.points.length;
+                if (!isNullOrUndefined(series.points)) {
+                    this.maxPointCount = Math.max(prevPointCount, series.points.length);
+                    prevPointCount = series.points.length;
+                }
             }
         }
     }
@@ -2186,8 +2188,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             dataSource = series.dataSource || this.dataSource;
         }
         series.dataModule = new Data(dataSource, series.query);
-        series.points = [];
-        (series as TechnicalIndicator).refreshDataManager(this);
+        (series as TechnicalIndicator).refreshDataManager(this, series);
     }
 
     private calculateBounds(): void {

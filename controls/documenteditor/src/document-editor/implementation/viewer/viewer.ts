@@ -1878,7 +1878,7 @@ export class DocumentHelper {
             const textPosition: TextPosition = this.owner.selection.end;
             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                 || this.owner.imageResizerModule.isShapeResize) {
-                this.owner.selection.moveTextPosition(touchPoint, textPosition);
+                this.owner.selection.moveTextPosition(touchPoint, textPosition, true);
             }
         }
     }
@@ -1889,7 +1889,7 @@ export class DocumentHelper {
             const textPosition: TextPosition = this.owner.selection.end;
             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                 || this.owner.imageResizerModule.isShapeResize) {
-                this.owner.selection.moveTextPosition(touchPoint, textPosition);
+                this.owner.selection.moveTextPosition(touchPoint, textPosition, true);
             }
     }
     /**
@@ -3615,6 +3615,7 @@ export abstract class LayoutViewer {
                 }
             }
             let bottom: number = 0.667 + bottomMargin;
+            bottomMargin -= 1.5;
             if (!isNullOrUndefined(page.footerWidget)) {
                 isEmptyWidget = page.footerWidget.isEmpty;
                 let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;

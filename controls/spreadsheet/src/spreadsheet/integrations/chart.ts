@@ -15,7 +15,7 @@ import { L10n, isNullOrUndefined, getComponent, closest, detach, isUndefined } f
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
-import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart } from '../common/index';
+import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart, insertDesignChart } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
 import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol, beginAction } from '../../workbook/index';
 
@@ -722,6 +722,9 @@ export class SpreadsheetChart {
             this.chart.appendTo(chartContent);
         }
         element.appendChild(chartContent);
+        if (element.classList.contains('e-ss-overlay-active')) {
+            this.parent.notify(insertDesignChart, { id: element.id });
+        }
         if (argsOpt.triggerEvent) {
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
         }

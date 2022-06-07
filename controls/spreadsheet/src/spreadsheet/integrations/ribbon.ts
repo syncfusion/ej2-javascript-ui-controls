@@ -324,13 +324,13 @@ export class Ribbon {
 
     private insertDesignChart(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let tabIdx: number = this.ribbon.items.length - 1;
-        this.preTabIdx = this.ribbon.selectedTab;
-        if (this.parent.allowChart && this.ribbon.items[tabIdx] && this.ribbon.items[tabIdx].header.text !==
-            l10n.getConstant('ChartDesign')) {
+        const tabIdx: number = this.ribbon.items.length - 1;
+        const chartTabHeader: string = l10n.getConstant('ChartDesign');
+        if (this.parent.allowChart && this.ribbon.items[tabIdx] && this.ribbon.items[tabIdx].header.text !== chartTabHeader) {
+            this.preTabIdx = this.ribbon.selectedTab;
             const id: string = this.parent.element.id;
             const items: RibbonItemModel[] = [{
-                header: { text: l10n.getConstant('ChartDesign') },
+                header: { text: chartTabHeader },
                 content: [
                     {
                         template: this.getAddChartEleDBB(id),
@@ -351,9 +351,8 @@ export class Ribbon {
 
                 ]
             }];
-            this.parent.addRibbonTabs(items);
-            tabIdx = this.ribbon.items.length;
-            this.ribbon.tabObj.select(tabIdx);
+            this.addRibbonTabs({ items: items });
+            this.ribbon.tabObj.select(this.ribbon.items.length);
         }
     }
 
@@ -2538,7 +2537,7 @@ export class Ribbon {
         this.ribbon.hideTabs(args.tabs, args.hide);
     }
 
-    private addRibbonTabs(args: { items: RibbonItemModel[], insertBefore: string }): void {
+    private addRibbonTabs(args: { items: RibbonItemModel[], insertBefore?: string }): void {
         this.ribbon.addTabs(args.items, args.insertBefore);
         const nextTab: HTMLElement = <HTMLElement>select(
             '.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab).e-hide', this.parent.element);

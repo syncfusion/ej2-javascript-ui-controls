@@ -66,7 +66,7 @@ export class InlineEditRender {
                 mTbody.appendChild(mEle);
             }
             args.row.querySelector('.e-normaledit').setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
-            mEle.setAttribute('colspan', '' + (this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns()));
+            mEle.querySelector('.e-normaledit').setAttribute('colspan', '' + (this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns()));
             if (frTbody) {
                 const frEle: Element = this.renderFrozenRightForm(args.row, args);
                 if (this.parent.editSettings.newRowPosition === 'Top') {

@@ -533,6 +533,8 @@ $grid-group-drop-area-border-width: 1px !default;
 $grid-sortnumber-font-size: 12px !default;
 $grid-reorderarrow-margin-top: -1.4px !default;
 $grid-reorderdownarrow-margin-top: $grid-reorderarrow-margin-top !default;
+$grid-reorder-arrow-top-margin: 0 !default;
+$grid-reorder-downarrow-top-margin: $grid-reorderarrow-margin-top !default;
 $grid-bigger-toolbar-icon-size: $grid-bigger-icons-font-size !default;
 $grid-reorderarrow-margin-left: -2px !default;
 $grid-column-chooser-cancel-icon-size: 10px !default;

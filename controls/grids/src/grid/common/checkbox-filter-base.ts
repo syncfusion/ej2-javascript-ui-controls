@@ -696,7 +696,7 @@ export class CheckBoxFilterBase {
         const foreignColumn: Column[] = isGrid ? this.parent.getForeignKeyColumns() : [];
         for (const prop of Object.keys(predicates)) {
             let col: Column;
-            if (isGrid && this.parent.getColumnByField(prop).isForeignColumn()) {
+            if (isGrid && !this.parent.getColumnByField(prop)) {
                 col = getColumnByForeignKeyValue(prop, foreignColumn);
             }
             if (col) {

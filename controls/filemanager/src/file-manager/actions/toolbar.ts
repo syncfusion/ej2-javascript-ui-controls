@@ -237,7 +237,12 @@ export class Toolbar {
                 } else if (items[itemCount].id === this.getPupupId('size')) {
                     items[itemCount].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
                 } else if (items[itemCount].id === this.getPupupId('date')) {
-                    items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
+                    if (this.parent.sortBy === 'dateModified' || this.parent.sortBy === 'dateCreated') {
+                        items[itemCount].iconCss = this.parent.sortBy === this.parent.sortBy ? CLS.TB_OPTION_DOT : '';
+                    }
+                    else {
+                        items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
+                    }
                 } else if (items[itemCount].id === this.getPupupId('ascending')) {
                     items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
                 } else if (items[itemCount].id === this.getPupupId('descending')) {

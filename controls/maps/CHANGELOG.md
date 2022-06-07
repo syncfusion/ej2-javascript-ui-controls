@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### Maps
+
+#### Bug Fixes
+
+- "Maps throws script error while resizing the window in React 18 sample" issue has been resolved.
+
 ## 20.1.48 (2022-04-12)
 
 ### Maps

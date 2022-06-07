@@ -345,9 +345,12 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
                 const attributeName: string = this.element.attributes[index].nodeName;
-                if (attributeName !== 'id') {
+                if (attributeName !== 'id' && attributeName !== 'class') {
                     input.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
                     input.innerHTML = this.element.innerHTML;
+                }
+                else if (attributeName === 'class') {
+                    input.setAttribute(attributeName, this.element.className.split(' ').filter((item: string)=> item.indexOf('ng-') !== 0).join(' '));
                 }
             }
             if (this.element.hasAttribute('name')) {

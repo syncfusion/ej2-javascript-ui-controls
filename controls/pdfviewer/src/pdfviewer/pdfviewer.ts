@@ -6062,54 +6062,207 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         // eslint-disable-next-line
         let target: any = document.getElementById(fieldValue.id);
         let isformDesignerModuleListBox: boolean = false;
-        target= target? target: document.getElementById(fieldValue.id+'_content_html_element').children[0].children[0];
-        if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
-            target.value = fieldValue.value;
-        } else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
-            if (fieldValue.type === 'CheckBox') {
-                target.style.appearance = 'auto';
-            }
-            if (this.formDesignerModule) {
-                if (fieldValue.type === 'RadioButton') {
-                    let radioButtonOption: any = {isSelected: fieldValue.isSelected};
-                    this.formDesignerModule.updateFormField(fieldValue, radioButtonOption);
-                } else {
-                    let checkBoxOption: any = {isChecked: fieldValue.isChecked};
-                    this.formDesignerModule.updateFormField(fieldValue, checkBoxOption);
+        if (target) {
+            target = target ? target : document.getElementById(fieldValue.id + '_content_html_element').children[0].children[0];
+            if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
+                target.value = fieldValue.value;
+            } else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
+                if (fieldValue.type === 'CheckBox') {
+                    target.style.appearance = 'auto';
                 }
+                if (this.formDesignerModule) {
+                    if (fieldValue.type === 'RadioButton') {
+                        let radioButtonOption: any = { isSelected: fieldValue.isSelected };
+                        this.formDesignerModule.updateFormField(fieldValue, radioButtonOption);
+                    } else {
+                        let checkBoxOption: any = { isChecked: fieldValue.isChecked };
+                        this.formDesignerModule.updateFormField(fieldValue, checkBoxOption);
+                    }
+                } else {
+                    if (fieldValue.type === 'RadioButton') {
+                        target.selected = fieldValue.isSelected
+                    }
+                    else {
+                        target.checked = fieldValue.isChecked;
+                    }
+                }
+            } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
+                if (this.formDesignerModule) {
+                    isformDesignerModuleListBox = true;
+                    let dropDownListOption: any = { options: fieldValue.value };
+                    this.formDesignerModule.updateFormField(fieldValue, dropDownListOption);
+                } else {
+                    target.value = fieldValue.value;
+                }
+            }
+            if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
+                if (typeof fieldValue.signatureType === 'string') {
+                    fieldValue.signatureType = fieldValue.signatureType;
+                }
+                else {
+                    fieldValue.signatureType = fieldValue.signatureType[0];
+                }
+                fieldValue.fontName = fieldValue.fontName ? fieldValue.fontName : fieldValue.fontFamily;
+                if ((target as any).classList.contains('e-pdfviewer-signatureformfields-signature')) {
+                    if (this.formDesignerModule)
+                        this.annotation.deleteAnnotationById(fieldValue.id.split('_')[0] + '_content');
+                    else
+                        this.annotation.deleteAnnotationById(fieldValue.id);
+                }
+                if (!fieldValue.signatureType)
+                    fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
+                this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
             } else {
-                target.checked = fieldValue.value;
+                if (!isformDesignerModuleListBox) {
+                    this.formFieldsModule.updateDataInSession(target);
+                }
             }
-        } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
-            if (this.formDesignerModule) {
-                isformDesignerModuleListBox = true;
-                let dropDownListOption: any = { options: fieldValue.value };
-                this.formDesignerModule.updateFormField(fieldValue, dropDownListOption);
-            } else {
-                target.options[target.selectedIndex].text = fieldValue.value;
-            }
-        }
-        if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
-            if (fieldValue.signatureType) {
-                fieldValue.signatureType = fieldValue.signatureType[0];
-            }
-            fieldValue.fontName = fieldValue.fontName ? fieldValue.fontName: fieldValue.fontFamily;
-            if ((target as any).classList.contains('e-pdfviewer-signatureformfields-signature')) {
-                if (this.formDesignerModule)
-                    this.annotation.deleteAnnotationById(fieldValue.id.split('_')[0] + '_content');
-                else
-                    this.annotation.deleteAnnotationById(fieldValue.id);
-            }
-            if (!fieldValue.signatureType)
-                fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
-            this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
         } else {
-            if (!isformDesignerModuleListBox) {
-                this.formFieldsModule.updateDataInSession(target);
+            let data: any = this.viewerBase.getItemFromSessionStorage('_formfields');
+            if (data) {
+                var FormFieldsData = JSON.parse(data);
+                for (var m = 0; m < FormFieldsData.length; m++) {
+                    let currentData: any = FormFieldsData[m];
+                    let fieldName: string;
+                    if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
+                        fieldName = currentData.GroupName;
+                    } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
+                        fieldName = currentData.Text;
+                    } else {
+                        fieldName = currentData.FieldName;
+                    }
+                    if (fieldName === fieldValue.name) {
+                        if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
+                            if (fieldValue.value) {
+                                currentData.Text = fieldValue.value;
+                                currentData.Value = fieldValue.value;
+                            }
+                        }
+                        else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
+                            fieldValue.isSelected || fieldValue.isChecked ? currentData.Selected = true : currentData.Selected = false;
+                        }
+                        else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox' || fieldValue.type === 'DropdownList') {
+                            currentData.SelectedValue = fieldValue.value;
+                            let index: number = currentData.TextList ? currentData.TextList.indexOf(fieldValue.value) : 0
+                            currentData.selectedIndex = index > -1 ? index : 0;
+                            fieldValue.type === 'ListBox' ? currentData.SelectedListed = [currentData.selectedIndex] : [];
+                        }
+                        else if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
+                            if (fieldValue.value) {
+                                currentData.Value = fieldValue.value;
+                                currentData = this.updateSignatureValue(currentData, fieldValue);
+                            }
+                        }
+                        this.formFieldsModule.updateFormFieldsCollection(currentData);
+                    }
+                }
             }
+            window.sessionStorage.removeItem(this.viewerBase.documentId + '_formfields');
+            this.viewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
         }
     }
 
+    /**
+     * @param number
+     */
+    // eslint-disable-next-line
+    private ConvertPointToPixel(number: any): any {
+        return (number * (96 / 72));
+    }
+
+    /**
+     * @param currentData - Current form field data.
+     * @param fieldValue - Form Field.
+     * @returns - Returns the updated the current Data.
+     */
+    // eslint-disable-next-line
+    private updateSignatureValue(currentData: any, fieldValue: any): any {
+        if (fieldValue.signatureType) {
+            fieldValue.signatureType = fieldValue.signatureType[0];
+        }
+        if (!fieldValue.signatureType) {
+            fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
+        }
+        let bound: any = currentData.LineBounds;
+        const left: any = this.ConvertPointToPixel(bound.X);
+        const top: any = this.ConvertPointToPixel(bound.Y);
+        const width: any = this.ConvertPointToPixel(bound.Width);
+        const height: any = this.ConvertPointToPixel(bound.Height);
+        let bounds: any;
+        if (fieldValue.signatureType === 'Type') {
+            if (!currentData.FontFamily) {
+                currentData.FontFamily = 'Helvetica';
+            }
+            // eslint-disable-next-line
+            bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+            if (this.signatureFitMode === 'Default') {
+                bounds = this.formFieldsModule.getDefaultBoundsforSign(bounds);
+            }
+            currentData.Bounds = bounds;
+            var fontSize: number = bounds.height / 2;
+            let textWidth: number = this.formFieldsModule.getTextWidth(currentData.value, fontSize, currentData.FontFamily);
+            let widthRatio: number = 1;
+            if (textWidth > bounds.width)
+                widthRatio = bounds.width / textWidth;
+            currentData.FontSize = this.formFieldsModule.getFontSize(Math.floor((fontSize * widthRatio)));
+        }
+        else if (fieldValue.signatureType === 'Image') {
+            // eslint-disable-next-line
+            bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+            let image: HTMLImageElement = new Image();
+            image.src = currentData.Value;
+            if (this.signatureFitMode === 'Default') {
+                // To check whether the image shape is square or rectangle
+                let difference: number = 20;
+                let hightDifference: number = 4;
+                let heightRatio: number = 2;
+                if (Math.abs(image.height - image.width) < difference) {
+                    if (bounds.width > bounds.height) {
+                        bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / heightRatio);
+                        bounds.width = bounds.height;
+                    }
+                    else {
+                        bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
+                        bounds.height = bounds.width;
+                    }
+                }
+                else {
+                    if (bounds.width > bounds.height) {
+                        bounds.y = bounds.y + (bounds.height / hightDifference);
+                        bounds.x = bounds.x + (bounds.height / hightDifference);
+                        let height: number = bounds.height / heightRatio;
+                        bounds = { x: bounds.x, y: bounds.y, width: bounds.width - height, height: bounds.height - height };
+                    }
+                    else {
+                        bounds.y = bounds.y + (bounds.height / hightDifference);
+                        bounds.height = bounds.height / heightRatio;
+                    }
+                }
+                currentData.Bounds = bounds;
+            }
+        } else {
+            if ((currentData.Value.indexOf('base64')) !== -1) {
+                // eslint-disable-next-line
+                bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+                if (this.signatureFitMode === 'Default') {
+                    bounds = this.formFieldsModule.getDefaultBoundsforSign(bounds);
+                }
+            } else {
+                if (this.signatureFitMode === 'Default') {
+                    // eslint-disable-next-line
+                    let signBounds: any = this.formFieldsModule.updateSignatureAspectRatio(currentData.Value, false, null, currentData);
+                    // eslint-disable-next-line
+                    bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, signBounds.width, signBounds.height, true);
+                    bounds.x = bounds.x + signBounds.left;
+                    bounds.y = bounds.y + signBounds.top;
+                } else {
+                    bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, width, height);
+                }
+            }
+            currentData.Bounds = bounds;
+        }
+        return currentData;
+    }
     /**
      * Perform undo action for the edited annotations
      *

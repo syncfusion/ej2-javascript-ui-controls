@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, classList, L10n } from '@syncfusion/ej2-base';
-import { DocumentEditor } from '../../document-editor/index';
+import { DocumentEditor, WAbstractList, WListLevel } from '../../document-editor/index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -208,7 +208,19 @@ export class Paragraph {
             cssClass: this.splitButtonClass,
             beforeOpen: (): void => {
                 div.style.display = 'block';
-                this.updateSelectedNumberedListType(this.documentEditor.selection.paragraphFormat.listText);
+                let levelPattern: string = 'None';
+                if (!isNullOrUndefined(this.documentEditor.selection.paragraphFormat)) {
+                    if (this.documentEditor.selection.paragraphFormat.listId == -1) {
+                        levelPattern = 'None';
+                    }
+                    else {
+                        let list = this.documentEditor.documentHelper.getListById(this.documentEditor.selection.paragraphFormat.listId);
+                        let abstractList: WAbstractList = this.documentEditor.documentHelper.getAbstractListById(list.abstractListId);
+                        let level: WListLevel = abstractList.levels[this.documentEditor.selection.paragraphFormat.listLevelNumber];
+                        levelPattern = level.listLevelPattern;
+                    }
+                }
+                this.updateSelectedNumberedListType(levelPattern);
             },
             beforeClose: (): void => {
                 div.style.display = 'none';
@@ -249,19 +261,19 @@ export class Paragraph {
     }
     private updateSelectedNumberedListType(listText: string): void {
         switch (listText) {
-            case '1.':
+            case 'Arabic':
                 this.numberList.classList.add('de-list-item-selected');
                 break;
-            case 'I.':
+            case 'UpRoman':
                 this.upRoman.classList.add('de-list-item-selected');
                 break;
-            case 'A.':
+            case 'UpLetter':
                 this.upLetter.classList.add('de-list-item-selected');
                 break;
-            case 'a.':
+            case 'LowLetter':
                 this.lowLetter.classList.add('de-list-item-selected');
                 break;
-            case 'i.':
+            case 'LowRoman':
                 this.lowRoman.classList.add('de-list-item-selected');
                 break;
             default:

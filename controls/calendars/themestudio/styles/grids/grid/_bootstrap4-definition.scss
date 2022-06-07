@@ -541,6 +541,8 @@ $grid-frozen-mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
 $grid-rowcell-color: $grid-content-font-color;
 $grid-reorderarrow-margin-top: 0 !default;
 $grid-reorderdownarrow-margin-top: $grid-reorderarrow-margin-top !default;
+$grid-reorder-arrow-top-margin: -1px !default;
+$grid-reorder-downarrow-top-margin: -3px !default;
 $grid-sortnumber-font-size: 9px;
 $grid-header-text-transform: none;
 $grid-bigger-toolbar-icon-size: 18px !default;

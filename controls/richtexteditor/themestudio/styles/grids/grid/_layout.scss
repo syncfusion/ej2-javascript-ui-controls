@@ -3480,6 +3480,14 @@
         user-select: none;
       }
 
+      .e-gridheader .e-headercontent .e-reorderuparrow {
+        margin-top: $grid-reorder-arrow-top-margin;
+      }
+
+      .e-gridheader .e-headercontent .e-reorderdownarrow {
+        margin-top: $grid-reorder-downarrow-top-margin;
+      }
+
       .e-masked-cell.e-rowcell .e-virtualcell {
         background-color: $grid-maskedcell-virtual-background-color;
         display: inline-block;

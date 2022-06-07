@@ -824,7 +824,7 @@ export function removeClassNames(elements: HTMLCollection, type: string, treemap
     for (let j: number = 0; j < elements.length; j++) {
         element = isNullOrUndefined(elements[j].childNodes[0] as SVGPathElement) ? elements[j] as SVGPathElement :
             elements[j].childNodes[0] as SVGPathElement;
-        options = treemap.layout.renderItems[element.id.split('_')[6]]['options'];
+        options = treemap.layout.renderItems[parseFloat(element.id.split('_Item_Index_')[1])]['options'];
         applyOptions(element, options);
         elements[j].classList.remove(type);
         j -= 1;

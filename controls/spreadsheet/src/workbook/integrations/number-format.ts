@@ -95,11 +95,13 @@ export class WorkbookNumberFormat {
                     args.value = args.result = this.processCustomConditions(cell);
                 } else {
                     args.value = args.result = this.processCustomAccounting(cell, range[0], range[1], args.td, currencySymbol);
-                    isCustomText = (!isNumber(cell.value) ||  cell.format && cell.format.indexOf('@') > -1) ? true : false;
+                    isCustomText = (!isNumber(cell.value) || cell.format && cell.format.indexOf('@') > -1) ? true : false;
                 }
                 cell.format = orgFormat;
             } else if (isCustomDateTime(cell, true)) {
-                args.value = args.result = this.processCustomDate(args, cell);
+                args.result = this.processCustomDate(args, cell);
+                isCustomText = args.result === '';
+                args.value = args.result = args.result|| cell.value;
             } else if (cell.format.indexOf('/') > -1) {
                 args.value = args.result = this.processCustomFraction(cell);
             } else if (cell.format.indexOf('@') > -1) {
@@ -120,25 +122,24 @@ export class WorkbookNumberFormat {
             result = this.processFormats(args, fResult, rightAlign, cell, intl, currencySymbol, option.currency);
         }
         args.isRowFill = this.isRowFill;
-        if (!args.onLoad && sheet.id === this.parent.getActiveSheet().id) {
-            this.parent.notify(
-                refreshCellElement, { isRightAlign: args.type === 'Custom' ? args.isRightAlign : result.rightAlign,
-                result: args.type === 'Custom' ? args.value as string : result.fResult || args.value as string, rowIndex: args.rowIndex,
-                colIndex: args.colIndex, sheetIndex: args.sheetIndex, type: args.type, curSymbol: currencySymbol,
-                value: args.type === 'Custom' ? args.value : args.value || '', isRowFill: this.isRowFill });
-            this.isRowFill = false;
-        }
-        if (!args.onLoad && (args.rowIndex > sheet.usedRange.rowIndex || args.colIndex > sheet.usedRange.colIndex)) {
+        if (!args.onLoad) {
+            if (sheet.id === this.parent.getActiveSheet().id) {
+                this.parent.notify(
+                    refreshCellElement, { isRightAlign: args.type === 'Custom' ? args.isRightAlign : result.rightAlign,
+                    result: args.type === 'Custom' ? args.value as string : result.fResult || args.value as string, rowIndex: args.rowIndex,
+                    colIndex: args.colIndex, sheetIndex: args.sheetIndex, type: args.type, curSymbol: currencySymbol,
+                    value: args.type === 'Custom' ? args.value : args.value || '', isRowFill: this.isRowFill });
+                this.isRowFill = false;
+            }
             this.parent.setUsedRange(args.rowIndex, args.colIndex);
         }
         if (args.type === 'Custom') {
-            args.formattedText = args.value as string;
-            args.curSymbol = currencySymbol;
+            args.formattedText = args.value === undefined || args.value === null ? '' : args.value.toString();
         } else {
-            args.formattedText = result.fResult || args.value as string;
+            args.formattedText = result.fResult || (args.value === undefined || args.value === null ? '' : args.value.toString());
             args.isRightAlign = result.rightAlign;
-            args.curSymbol = currencySymbol;
         }
+        args.curSymbol = currencySymbol;
         return args.formattedText;
     }
 
@@ -194,18 +195,22 @@ export class WorkbookNumberFormat {
         const intl: Internationalization = new Internationalization();
         const formatDateTime: Function = (checkDate?: boolean): string => {
             let isValidDate: boolean;
-            if (cell.value.includes('/') || cell.value.includes('-')) {
+            if (cell.value.toString().includes('/') || cell.value.toString().includes('-')) {
                 dateValue = toDate(cell.value, new Internationalization(), this.parent.locale, custFormat, cell).dateObj;
                 if (isValidDate = dateValue && dateValue.toString() !== 'Invalid Date') {
-                    cell.value = dateToInt(dateValue).toString();
+                    if (dateValue.getFullYear() < 1900) {
+                        return '';
+                    } else {
+                        cell.value = dateToInt(dateValue).toString();
+                    }
                 }
             } else {
                 isValidDate = dateValue && dateValue.toString() !== 'Invalid Date';
             }
-            if (checkDate) {
+            if (checkDate && isValidDate) {
                 args.dateObj = dateValue;
             }
-            return (isValidDate && intl.formatDate(dateValue, { type: type, format: custFormat })) || cell.value || '';
+            return (isValidDate && intl.formatDate(dateValue, { type: type, format: custFormat })) || '';
         }
         if (cell.format.indexOf('h') > -1) {
             custFormat = custFormat.split('h').join('H');
@@ -713,6 +718,9 @@ export class WorkbookNumberFormat {
                 }
                 const obj: Date = toDate(args.value, new Internationalization(), this.parent.locale, format, <CellModel>args.cell).dateObj;
                 if (obj && obj.toString() !== 'Invalid Date') {
+                    if (obj.getFullYear() < 1900) {
+                        return '';
+                    }
                     args.value = dateToInt(obj).toString();
                     if (args.cell) {
                         (args.cell as CellModel).value = args.value;
@@ -817,7 +825,8 @@ export class WorkbookNumberFormat {
         const props: { val: string, format: string } = this.checkCustomDateFormat(args.value.toString(), cell);
         if (props.val !== 'Invalid') {
             const dateObj: ToDateArgs = toDate(props.val, new Internationalization(), this.parent.locale, props.format, cell);
-            if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
+            if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date' &&
+                dateObj.dateObj.getFullYear() >= 1900) {
                 props.val = dateToInt(dateObj.dateObj, props.val.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
                 if (!cell.format) {
                     if (dateObj.type === 'time') {

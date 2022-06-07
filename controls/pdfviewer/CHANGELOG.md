@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#F174154`- Now, the signature value for all signature fields in the PDF document will be updated programmatically using the `updateFormFieldsValue()` method.
+- `#SF-376222`- Now, Annotation selector binds correctly to annotations when dragging.
+- `#SF-367416`- The `FindText()` method of PDF Base allows for finding the number.
+- `#SF-372876`- The `annotationSelect` and `commentAdd` events are triggered properly for the sticky notes annotation.
+
 ## 20.1.58 (2022-05-31)
 
 ### PDF Viewer

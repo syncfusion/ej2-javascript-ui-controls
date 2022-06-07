@@ -249,16 +249,16 @@ describe('Kanban base module', () => {
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
                 expect(contentCells.item(index).getAttribute('data-key')).toBe(column.keyField as string);
                 expect(contentCells.item(index).getAttribute('data-role')).toBe('kanban-column');
-                expect(contentCells.item(index).firstElementChild.classList.contains('e-card-wrapper')).toBe(true);
+                expect(contentCells.item(index).lastElementChild.classList.contains('e-card-wrapper')).toBe(true);
             });
         });
 
         it('Card count testing', () => {
             const contentCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells');
-            expect(contentCells.item(0).firstElementChild.childElementCount).toBe(14);
-            expect(contentCells.item(1).firstElementChild.childElementCount).toBe(13);
-            expect(contentCells.item(2).firstElementChild.childElementCount).toBe(15);
-            expect(contentCells.item(3).firstElementChild.childElementCount).toBe(22);
+            expect(contentCells.item(0).lastElementChild.childElementCount).toBe(14);
+            expect(contentCells.item(1).lastElementChild.childElementCount).toBe(13);
+            expect(contentCells.item(2).lastElementChild.childElementCount).toBe(15);
+            expect(contentCells.item(3).lastElementChild.childElementCount).toBe(22);
         });
 
         it('First column card class and inner layout testing', () => {

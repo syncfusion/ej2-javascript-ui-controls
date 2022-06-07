@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### File Manager
+
+#### Bug Fixes
+
+- '#I368438' - The issue with "Copy/paste MAC keyboard shortcuts doesn't work for File Manager" has been resolved.
+
+## 20.1.58 (2022-05-31)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#F174002` - The issue with "Toolbar sorting throws an error for the date-modified column of the File Manager" has been resolved.
+
 ## 20.1.57 (2022-05-24)
 
 ### File Manager

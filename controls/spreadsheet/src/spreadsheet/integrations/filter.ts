@@ -790,7 +790,7 @@ export class Filter {
                 this.filterSuccessHandler(new DataManager(args.dataSource), { action: 'clear-filter', field: args.column.field });
             } else {
                 this.generatePredicate(
-                    treeViewObj.checkedNodes, args.type, args.column.field, excelFilter, allNodes,
+                    treeViewObj.checkedNodes, otherData.length ? 'string' : args.type, args.column.field, excelFilter, allNodes,
                     treeViewObj.checkedNodes.length > groupedData.length / 2);
             }
         };

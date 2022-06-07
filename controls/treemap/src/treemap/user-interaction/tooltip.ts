@@ -47,7 +47,7 @@ export class TreeMapTooltip {
         let location: Location; let toolTipHeader: string; let toolTipData: any = {};
         let tooltipContent: string[] = []; let markerFill: string;
         if (targetId.indexOf('_Item_Index') > -1) {
-            item = this.treemap.layout.renderItems[parseFloat(targetId.split('_')[6])];
+            item = this.treemap.layout.renderItems[parseFloat(targetId.split('_Item_Index_')[1])];
             if (!isNullOrUndefined(item)) {
                 toolTipHeader = item['name'];
                 value = item['weight'];

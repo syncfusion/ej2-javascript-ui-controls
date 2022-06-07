@@ -96,9 +96,9 @@ export class LargeIconsView {
             altEnter: 'alt+enter',
             esc: 'escape',
             del: 'delete',
-            ctrlX: 'ctrl+x',
-            ctrlC: 'ctrl+c',
-            ctrlV: 'ctrl+v',
+            ctrlX: this.parent.isMac ? 'cmd+x' : 'ctrl+x',
+            ctrlC: this.parent.isMac ? 'cmd+c' : 'ctrl+c',
+            ctrlV: this.parent.isMac ? 'cmd+v' : 'ctrl+v',
             f2: 'f2',
             shiftdel: 'shift+delete',
             back: 'backspace',
@@ -1513,7 +1513,7 @@ export class LargeIconsView {
         } else {
             for (let i: number = 0, len: number = this.items.length; i < len; i++) {
                 const name: string = getValue('filterPath', this.items[i]) + getValue('name', this.items[i]);
-                if ((items.indexOf(name) !== -1) || (items.indexOf(getValue(filterName, this.items[i])) !== -1)) {
+                if ((items.indexOf(name) !== -1) || (items.indexOf(getValue(filterName, this.items[i])) !== -1))  {
                     indexes.push(i);
                 }
             }

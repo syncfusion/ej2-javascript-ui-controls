@@ -47,6 +47,7 @@ export class NavigationPane {
      * @param {IFileManager} parent - specifies the parent element.
      * @hidden
      */
+     /* istanbul ignore next */
     constructor(parent?: IFileManager) {
         this.parent = parent;
         this.addEventListener();
@@ -54,9 +55,9 @@ export class NavigationPane {
             altEnter: 'alt+enter',
             esc: 'escape',
             del: 'delete',
-            ctrlX: 'ctrl+x',
-            ctrlC: 'ctrl+c',
-            ctrlV: 'ctrl+v',
+            ctrlX: this.parent.isMac ? 'cmd+x' : 'ctrl+x',
+            ctrlC: this.parent.isMac ? 'cmd+c' : 'ctrl+c',
+            ctrlV: this.parent.isMac ? 'cmd+v' : 'ctrl+v',
             ctrlShiftN: 'ctrl+shift+n',
             shiftF10: 'shift+F10',
             f2: 'f2'

@@ -2444,3 +2444,82 @@ describe('Bezier connector annotation does not render properly in canvas issue',
           done();
     });
 })
+
+describe('Distribute command not working properly issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+              id: 'node1',
+              width: 50,
+              height: 50,
+              offsetX: 50,
+              offsetY: 100,
+              style: { fill: '#ff0000' },
+            },
+            {
+              id: 'node2',
+              width: 50,
+              height: 50,
+              offsetX: 150,
+              offsetY: 150,
+              style: { fill: '#ffff00' },
+            },
+            {
+              id: 'node3',
+              width: 50,
+              height: 50,
+              offsetX: 320,
+              offsetY: 250,
+              style: { fill: '#ff00ff' },
+            },
+            {
+              id: 'node4',
+              width: 50,
+              height: 50,
+              offsetX: 340,
+              offsetY: 180,
+              style: { fill: '#00ff00' },
+            },
+            {
+              id: 'node5',
+              width: 50,
+              height: 50,
+              offsetX: 450,
+              offsetY: 200,
+              style: { fill: '#00ffff' },
+            },
+          ];
+        diagram = new Diagram({
+            width: '1000px', height: '500px', nodes: nodes
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Check node does not get changed position while use distribute command again', (done: Function) => {
+        diagram.distribute('RightToLeft', diagram.nodes);
+        expect(diagram.nodes[1].offsetX === 150 && diagram.nodes[1].offsetY === 150 && diagram.nodes[2].offsetX === 250 && diagram.nodes[2].offsetY === 250).toBe(true);
+        diagram.distribute('RightToLeft', diagram.nodes);
+        expect(diagram.nodes[1].offsetX === 150 && diagram.nodes[1].offsetY === 150 && diagram.nodes[2].offsetX === 250 && diagram.nodes[2].offsetY === 250).toBe(true);
+        done();
+    });
+})

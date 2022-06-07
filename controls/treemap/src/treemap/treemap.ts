@@ -1097,7 +1097,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.trigger(click, clickArgs);
         if (targetId.indexOf('_Item_Index') > -1) {
             e.preventDefault();
-            itemIndex = parseFloat(targetId.split('_')[6]);
+            itemIndex = parseFloat(targetId.split('_Item_Index_')[1]);
             eventArgs = {
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
                 groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name'],
@@ -1175,7 +1175,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let childItems: any[];
         if (targetId.indexOf('_Item_Index') > -1) {
-            item = this.layout.renderItems[parseFloat(targetId.split('_')[6])];
+            item = this.layout.renderItems[parseFloat(targetId.split('_Item_Index_')[1])];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             childItems = findChildren(item)['values'] as any[];
             this.element.style.cursor = (!item['isLeafItem'] && childItems && childItems.length > 0 && this.enableDrillDown) ?
@@ -1288,7 +1288,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             if (e.cancelable) {
                 e.preventDefault();
             }
-            index = parseFloat(targetId.split('_')[6]); item = this.layout.renderItems[index]; const labelText: string = targetEle.innerHTML;
+            index = parseFloat(targetId.split('_Item_Index_')[1]);
+            item = this.layout.renderItems[index];
+            const labelText: string = targetEle.innerHTML;
             if (this.enableBreadcrumb) {
                 drillLevelValues = this.calculateSelectedTextLevels(labelText, item);
                 drillLevel = drillLevelValues['drillLevel'];

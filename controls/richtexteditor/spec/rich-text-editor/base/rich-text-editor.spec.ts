@@ -111,6 +111,28 @@ L10n.load({
     }
 });
 
+describe('EJ2-60422: Removed nested bullet list when press ctrl+B on two times', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'b', stopPropagation: () => { }, shiftKey: false, which: 66};
+    it('pressing the ctrl+b on the parent list with nested list', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<ul><li><strong class="focusNode">List parent</strong><ul><li>Nested List</li><li>Nested List﻿﻿<br></li></ul></li></ul>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[1];
+        let startNode = rteObj.inputElement.querySelector('.focusNode');
+        let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], startNode.childNodes[0], 0, 11);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 66;
+        keyBoardEvent.code = 'b';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.innerHTML === `<ul><li><strong class="focusNode">List parent</strong><ul><li>Nested List</li><li>Nested List﻿﻿<br></li></ul></li></ul>`).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};

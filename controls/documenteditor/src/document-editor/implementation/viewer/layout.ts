@@ -1306,7 +1306,11 @@ export class Layout {
                 }
             } while (element.line !== line && this.cutClientWidth(element));
         }
-        if (text === '\v' || text === '\f') {
+        let contentControl: ContentControl;
+        if(!isNullOrUndefined(element.nextNode) && element.nextNode instanceof ContentControl){
+            contentControl = element.nextNode;
+        }
+        if ((text === '\v' || text === '\f') && !contentControl) {
             let elementIndex: number = line.children.indexOf(element);
             if (elementIndex > -1) {
                 this.addSplittedLineWidget(line, elementIndex);
@@ -1321,7 +1325,7 @@ export class Layout {
             if (text === '\v' && isNullOrUndefined(element.nextNode)) {
                 this.layoutEmptyLineWidget(paragraph, true, line, true);
             } else if (text === '\f' && this.viewer instanceof PageLayoutViewer) {
-                if (isNullOrUndefined(element.nextNode)) {
+                if (isNullOrUndefined(element.nextNode) || element.nextNode instanceof ContentControl) {
                     this.moveToNextPage(this.viewer, element.line, true);
                 } else if (!isNullOrUndefined(element.line.nextLine)) {
                     this.moveToNextPage(this.viewer, element.line.nextLine, false);
@@ -1701,10 +1705,49 @@ export class Layout {
                                         //     }
                                         // }
                                         if (!isPositionsUpdated) {
-                                            this.isYPositionUpdated = true;
-                                            rect.width = this.viewer.clientArea.width;
-                                            rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
-                                            rect.y = textWrappingBounds.bottom + topMarginValue;
+                                            if (this.viewer.clientArea.right - textWrappingBounds.right < 0 && textWrappingStyle === 'Square' && bodyWidget.floatingElements.length >= 2) {
+                                                let height: number = floatingItem.height;
+                                                let element: any;
+                                                let elementRect: any;
+                                                let ele_position: number;
+                                                for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
+                                                    if (((bodyWidget.floatingElements[i] as ShapeElementBox).textWrappingStyle) === 'Square' && bodyWidget.floatingElements[i] instanceof ShapeElementBox) {
+                                                        if (height > bodyWidget.floatingElements[i].height && bodyWidget.floatingElements[i+1] != undefined && bodyWidget.floatingElements[i].x != bodyWidget.floatingElements[i+1].x) {
+                                                            height = bodyWidget.floatingElements[i].height;
+                                                            element = bodyWidget.floatingElements[i];
+                                                            isPositionsUpdated = true;
+                                                            ele_position = i;
+                                                        }
+                                                    } else {
+                                                        isPositionsUpdated = false;
+                                                        break;
+                                                    }
+                                                }if(isPositionsUpdated) {
+                                                    this.isYPositionUpdated = true;
+                                                    rect.width = this.viewer.clientArea.width;
+                                                    let ele_textWrappingBounds: Rect = new Rect(element.x - distanceLeft, element.y - distanceTop, element.width + distanceLeft + distanceRight, element.height + distanceTop + distanceBottom);
+                                                    rect.height -= (ele_textWrappingBounds.bottom + topMarginValue - rect.y);
+                                                    rect.y = height + element.y;
+                                                    elementRect = bodyWidget.floatingElements[ele_position-1];
+                                                    if (elementRect != undefined && elementRect instanceof ShapeElementBox) {
+                                                        let prev_textWrappingBounds: Rect = new Rect(elementRect.x - distanceLeft, elementRect.y - distanceTop, elementRect.width + distanceLeft + distanceRight, elementRect.height + distanceTop + distanceBottom);
+                                                         rect.x =  prev_textWrappingBounds.right  ;
+                                                    } else {
+                                                        rect.x = elementBox.paragraph.x;
+                                                    }
+                                                }
+                                                height = undefined;
+                                                element = undefined;
+                                                elementRect = undefined;
+                                                ele_position = undefined;
+                                            }
+                                        
+                                            if(!isPositionsUpdated) {
+                                                this.isYPositionUpdated = true;
+                                                rect.width = this.viewer.clientArea.width;
+                                                rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
+                                                rect.y = textWrappingBounds.bottom + topMarginValue;                                                
+                                            }
                                         }
                                     }
                                     this.viewer.updateClientAreaForTextWrap(rect);
@@ -1856,9 +1899,13 @@ export class Layout {
                                     && Math.round(rect.width) <= Math.round(minwidth)
                                     && ownerPara.containerWidget === containerWidget) {
                                     rect.x = clientLayoutArea.x;
+                                    let prev_bottom: number = rect.bottom;
                                     rect.y = textWrappingBounds.bottom;
                                     rect.width = clientLayoutArea.width;
                                     rect.height -= (textWrappingBounds.bottom - rect.y);
+                                    if (prev_bottom < rect.bottom) {
+                                        rect.height = rect.height + (prev_bottom - rect.bottom);
+                                    }
                                     this.isYPositionUpdated = true;
                                 } else if (Math.round(rect.width) <= Math.round(minwidth) && Math.round(rect.x - leftIndent) !== Math.round(this.viewer.clientArea.x)) {
                                     rect.width = 0;
@@ -5355,7 +5402,7 @@ export class Layout {
                         this.updateClientPositionForBlock(removeTable ? curretTable : block, row);
                     }
                     moveRowToNextTable = false;
-                    if (rowToMove.ownerTable.header && tableRowWidget.height < viewer.clientArea.bottom) {
+                    if (rowToMove.ownerTable.header && tableRowWidget.height < viewer.clientArea.bottom && !keepNext) {
                         if (viewer instanceof PageLayoutViewer) {
                             (viewer as PageLayoutViewer).documentHelper.currentRenderingPage.repeatHeaderRowTableWidget = true;
                         }
@@ -7254,30 +7301,6 @@ export class Layout {
                     }
                 }
             }
-        }
-        let cellHeight: number = 0;
-        for (var i = 0; i < cell.childWidgets.length; i++) {
-            let child: any = cell.childWidgets[i];
-            cellHeight = cellHeight + child.height;
-            if (cell.childWidgets[i - 1] != undefined && (cell.childWidgets[i - 1] as any).y + (cell.childWidgets[i - 1] as any).height > (cell.childWidgets[i] as any).y) {
-                cellHeight = cellHeight - child.y;
-            }
-        }
-        let height: number = 0;
-        if (cellHeight > cell.height) {
-            for (var i = 0; i < cell.childWidgets.length; i++) {
-                let child: any = cell.childWidgets[i];
-                if (i == 0) {
-                    height = child.y + child.height;
-                } else {
-                    if (height <= child.y) {
-                        height = height + child.height;
-                    }
-                }
-            }
-            cell.height = height;
-            cellHeight = undefined;
-            height = undefined;
         }
         this.updateWidgetToRow(cell);
         viewer.updateClientAreaForCell(cell, false);
@@ -9375,7 +9398,7 @@ export class Layout {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
                         } else if (position.verticalAlignment === 'Inside') {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
-                        } else if (isNullOrUndefined(position.verticalAlignment) || position.verticalAlignment === 'None') {
+                        } else if (isNullOrUndefined(position.verticalAlignment)) {
                             this.viewer.clientActiveArea.y = (HelperMethods.convertPointToPixel(sectionFormat.topMargin) + HelperMethods.convertPointToPixel(position.verticalPosition));
                         }
                     } else if (position.verticalOrigin === 'Paragraph') {
@@ -9428,12 +9451,7 @@ export class Layout {
                     } else if (position.verticalOrigin === 'Margin') {
                         this.viewer.clientActiveArea.y = ownerCell.y;
                         this.viewer.clientActiveArea.y += ownerCell.topMargin;
-                        let clientActiveArea_y: number = this.viewer.clientActiveArea.y;
                         this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
-                        if (this.viewer.clientActiveArea.y < 0) {
-                            this.viewer.clientActiveArea.y = clientActiveArea_y;
-                            clientActiveArea_y = undefined;
-                        }
                     } else {
                         if (this.viewer.clientActiveArea.y + HelperMethods.convertPointToPixel(position.verticalPosition) < ownerCell.y) {
                             this.viewer.clientActiveArea.y = ownerCell.y;

@@ -122,6 +122,8 @@ export const DROPPED_CLONE_CLASS: string = 'e-target-dropped-clone';
 /** @private */
 export const DROPPING_CLASS: string = 'e-dropping';
 /** @private */
+export const BORDER_CLASS: string = 'e-kanban-border';
+/** @private */
 export const TOGGLE_VISIBLE_CLASS: string = 'e-toggle-visible';
 /** @private */
 export const MULTI_CLONE_CONTENT_CELL_CLASS: string = 'e-multi-content-cell';

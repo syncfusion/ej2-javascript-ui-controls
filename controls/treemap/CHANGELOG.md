@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### TreeMap
+
+#### Bug Fixes
+
+- `#I380447` - Exceptions will no longer be thrown if the TreeMap's id name contains an underscore character.
+
 ## 20.1.55 (2022-05-12)
 
 ### TreeMap

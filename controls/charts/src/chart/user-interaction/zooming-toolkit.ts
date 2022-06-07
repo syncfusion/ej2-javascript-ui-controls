@@ -212,7 +212,7 @@ export class Toolkit {
      * @private
      */
     public wireEvents(element: Element, process: Function): void {
-        EventHandler.add(element, 'mousedown touchstart', process, this);
+        EventHandler.add(element, 'touchend mousedown', process, this);
         EventHandler.add(element, 'mouseover', this.showTooltip, this);
         EventHandler.add(element, 'mouseout', this.removeTooltip, this);
     }

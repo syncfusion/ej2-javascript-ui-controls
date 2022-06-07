@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### DropDownList
+
+#### Bug Fixes
+
+- "Dropdown List template sample is not working in React 18" issue has been resolved.
+
 ## 20.1.58 (2022-05-31)
 
 ### AutoComplete

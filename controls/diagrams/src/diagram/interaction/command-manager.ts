@@ -1818,7 +1818,7 @@ export class CommandHandler {
             state: 'Changing', type: 'Addition', cancel: false
         };
         // EJ2-57157 - Added to consider the lane header at selection change when selecting a lane.
-        if (obj.length > 0 && (obj[0] as SwimLaneModel).isLane) {
+        if (obj.length > 0 &&(obj[0] &&(obj[0] as SwimLaneModel).isLane)) {
             let swimlaneNode: NodeModel = this.diagram.getObject((obj[0] as Node).parentId);
             (obj[0].shape as any).header = [];
             let laneId: string = '';

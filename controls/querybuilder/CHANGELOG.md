@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 20.1.55 (2022-05-12)
+## 20.1.59 (2022-06-07)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `I379818` - Issue with Getting change event as undefined for fields having custom value template of query builder has been fixed.
+
+## 20.1.55 (2022-05-12)
 
 ### QueryBuilder
 

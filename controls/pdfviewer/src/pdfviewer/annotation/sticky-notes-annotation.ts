@@ -1034,6 +1034,7 @@ export class StickyNotesAnnotation {
         let commentsContainer: HTMLElement;
         let titleContainer: HTMLElement;
         // eslint-disable-next-line
+        this.commentsContainer.addEventListener('mousedown', this.modifyTextProperty.bind(this));
         let newCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + '_newcommentdiv' + this.commentsCount, className: 'e-pv-new-comments-div' });
         if (args.localName) {
             commentsContainer = args;

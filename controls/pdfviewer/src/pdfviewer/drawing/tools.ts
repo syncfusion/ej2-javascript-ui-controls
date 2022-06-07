@@ -657,11 +657,11 @@ export class MoveTool extends ToolBase {
                 this.commandHandler.annotation.stickyNotesAnnotationModule.updateStickyNotes(args.source, null);
             }
         }
-        let shapeAnnotationType : any = this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0 ? this.commandHandler.selectedItems.annotations[0].shapeAnnotationType : null;
+        let shapeAnnotationType : any = this.commandHandler && this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0 ? this.commandHandler.selectedItems.annotations[0].shapeAnnotationType : null;
         if (shapeAnnotationType && shapeAnnotationType !== 'Image' && shapeAnnotationType !== 'SignatureImage') {
             super.mouseUp(args);
         }
-        else if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
+        else if (this.commandHandler && this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
             super.mouseUp(args);
         }
     }

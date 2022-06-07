@@ -305,7 +305,7 @@ export class InfiniteScroll {
                 if (getValue('selectedIndex', this.parent.editModule) !== -1 && this.parent.editSettings.newRowPosition !== 'Top') {
                     if (this.parent.editSettings.newRowPosition === 'Below' || this.parent.editSettings.newRowPosition === 'Child') {
                         position = 'after';
-                        newRowIndex += findChildrenRecords(currentData[newRowIndex + 1]).length;
+                        newRowIndex += findChildrenRecords(currentData[newRowIndex]).length;
                         if (this.parent.editSettings.newRowPosition === 'Child') {
                             newRowIndex -= 1;    //// for child position already child record is added in childRecords so subtracting 1
                         }

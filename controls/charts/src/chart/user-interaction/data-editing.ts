@@ -87,7 +87,9 @@ export class DataEditing {
      */
     private getCursorStyle(pointData: PointData): void {
         const chart: Chart = this.chart;
-        if (pointData.series.type === 'Bar' && chart.isTransposed) {
+        if (pointData.series.type.indexOf('Stacking') > -1) {
+            (chart.svgObject as SVGElement).style.cursor = '';
+        } else if (pointData.series.type === 'Bar' && chart.isTransposed) {
             (chart.svgObject as SVGElement).style.cursor = 'ns-resize';
         } else if (chart.isTransposed || pointData.series.type === 'Bar') {
             (chart.svgObject as SVGElement).style.cursor = 'ew-resize';

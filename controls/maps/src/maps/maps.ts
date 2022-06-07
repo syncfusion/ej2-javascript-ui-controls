@@ -1995,6 +1995,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         this.refreshing = true;
                         this.wireEVents();
                         this.render();
+                        this.refreshing = false;
                     },
                     500);
             }

@@ -198,6 +198,9 @@ export class Timeline {
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
         }
         this.parent.dataOperation.calculateProjectDates();
+        if(this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate){
+            this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ? this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
+        }
         const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
         const totalDays: number = (timeDifference / (1000 * 3600 * 24));
         const chartWidth: number = this.parent.ganttChartModule.chartElement.offsetWidth;

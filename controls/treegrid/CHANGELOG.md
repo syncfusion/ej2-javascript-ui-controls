@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I376155` - Freeze direction works properly when enabled dynamically.
+
 ## 20.1.56 (2022-05-17)
 
 ### Tree Grid

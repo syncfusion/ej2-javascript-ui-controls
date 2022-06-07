@@ -3783,7 +3783,9 @@ export class Selection implements IAction {
         this.isHeaderCheckboxClicked = false;
         const isInfinitecroll: boolean = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
-            this.disableUI = !this.parent.enableImmutableMode;
+            if (this.parent.enableImmutableMode) {      
+                this.disableUI = true;
+            }
             this.clearSelection();
             this.setCheckAllState();
             this.disableUI = false;

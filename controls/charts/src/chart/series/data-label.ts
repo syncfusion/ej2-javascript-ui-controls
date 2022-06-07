@@ -447,6 +447,12 @@ export class DataLabel {
                 - (clipRect.y + clipRect.height) + padding : 0;
             this.fontBackground = this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground;
         }
+        
+        let dataLabelOutRegion: boolean;
+        if (this.inverted && series.isRectSeries && (rect.x + rect.width > labelRegion.x + labelRegion.width)) {
+            dataLabelOutRegion = true;
+        }
+        this.fontBackground = dataLabelOutRegion ? this.chartBackground : this.fontBackground;
 
         return rect;
     }

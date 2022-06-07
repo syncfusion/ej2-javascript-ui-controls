@@ -1503,6 +1503,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public swimlaneChildTable: {} = {};
     /** @private */
     public swimlaneZIndexTable: {} = {};
+    /** @private */
+    public canExpand: boolean = true;
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
     private previousNodeCollection: NodeModel[] = [];
@@ -5324,7 +5326,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateNodeExpand(layout.rootNode as Node, layout.rootNode.isExpanded);
                 }
                 // EJ2-58221 - added to render the layout properly based on parent node isExpanded property.
-                else if (!this.layoutAnimateModule && layout.rootNode && !layout.rootNode.isExpanded) {
+                else if (!this.layoutAnimateModule && layout.rootNode && !layout.rootNode.isExpanded && !this.canExpand) {
                     this.updateNodeExpand(layout.rootNode as Node, layout.rootNode.isExpanded);
                 }
             } else if (this.mindMapChartModule) {
@@ -9519,8 +9521,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (node.expandIcon !== undefined || node.collapseIcon !== undefined || node.isExpanded !== undefined) {
             this.updateIcon(actualObject); this.updateDefaultLayoutIcons(actualObject);
-            if (node.isExpanded !== undefined) { this.commandHandler.expandNode(actualObject, this); }
+            if (node.isExpanded !== undefined) { this.canExpand = true;  this.commandHandler.expandNode(actualObject, this); }
             update = true;
+            this.canExpand = false;
         }
         if (node.fixedUserHandles !== undefined) {
             let index: number;

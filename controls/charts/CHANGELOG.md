@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I378097` - `zooomComplete` event is now properly triggered for device.
+
 ## 20.1.56 (2022-05-17)
 
 ### Chart

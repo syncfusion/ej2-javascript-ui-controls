@@ -4861,3 +4861,42 @@ describe('EJ2-59308 Preventing keyboard actions when allow keyboard set to false
         destroy(gridObj);
     });
 });
+
+describe('EJ2-60026 Row selection is not updated properly inside the rowDeselected event while data actions', () => {
+    let gridObj: Grid;
+    let rowSelected: () => void;
+    let rowDeselected: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: data,
+            allowPaging: true,
+            allowSorting: true,
+            columns: [
+                { field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' }],
+            rowSelected: rowSelected
+        }, done);
+    });
+    it('Selecting a row', (done: Function) => {
+        rowSelected = (): void => {
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.getRows()[0].querySelector('.e-rowcell') as HTMLElement).click();
+    });
+    it('EJ2-60026 - Ensuring Selected records to be null in rowDeselected event', (done: Function) => {
+        rowDeselected = (e: any) => {
+            expect(gridObj.getSelectedRecords().length).toBe(0);
+            done();
+        };
+        gridObj.rowDeselected = rowDeselected;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[4].querySelector('.e-rowcell')).click();
+        (gridObj.getHeaderContent().querySelectorAll('.e-headercell')[0] as HTMLElement).click();
+
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

@@ -170,6 +170,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public destinationPath: string;
     public uploadingCount: number = 0;
     public uploadedCount: number = 0;
+    //Specifies whether the operating system is MAC or not
+    public isMac : boolean = false;
 
     /**
      * Specifies the AJAX settings of the file manager.
@@ -719,6 +721,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             this.allowMultiSelection ? this.selectedItems : this.selectedItems.slice(this.selectedItems.length - 1);
         this.setProperties({ selectedItems: slItems }, true);
         this.fileView = this.view;
+        this.isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0; 
         this.setRtl(this.enableRtl);
         this.addEventListeners();
         read(this, (this.path !== this.originalPath) ? events.initialEnd : events.finalizeEnd, this.path);

@@ -99,7 +99,7 @@ export class Selection {
     }
 
     private getCheckboxcolumnIndex(): number {
-        let mappingUid: string; let columnIndex: number; const stackedHeader: string = "stackedHeader";
+        let mappingUid: string; let columnIndex: number; const stackedHeader: string = 'stackedHeader';
         const columnModel: string = 'columnModel';
         const columns: ColumnModel[] = this.parent[stackedHeader] ? this.parent[columnModel] :  <ColumnModel[]>(this.parent.columns);
         for (let col: number = 0; col < columns.length; col++) {

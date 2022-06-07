@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I380999` - Date with year less than 1900 is considered as invalid date like excel and handled properly during filtering.
+
 ## 20.1.58 (2022-05-31)
 
 ### Spreadsheet

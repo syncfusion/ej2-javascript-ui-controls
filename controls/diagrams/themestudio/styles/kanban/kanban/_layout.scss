@@ -206,6 +206,15 @@
             position: relative;
           }
 
+          .e-kanban-border {
+            display: none;
+          }
+
+          .e-kanban-border.e-dropping {
+            display: block;
+            position: absolute;
+          }
+
           .e-limits .e-min-count,
           .e-limits .e-max-count {
             font-size: $kanban-header-min-max-count-font-size;
@@ -554,6 +563,10 @@
           .e-card-wrapper,
           .e-card-container {
             min-height: 50px;
+          }
+
+          .e-dropping {
+            border: 1px dashed $kanban-border-color;
           }
         }
 

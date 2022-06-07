@@ -291,6 +291,7 @@ export class LayoutRender extends MobileLayout {
         const cardRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
         const swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-row.e-swimlane-row'));
         const removeTrs: HTMLElement[] = [];
+        let columnTransition: boolean = false;
         cardRows.forEach((tr: HTMLElement, index: number) => {
             let dataCount: number = 0;
             for (const column of this.parent.columns) {
@@ -302,6 +303,13 @@ export class LayoutRender extends MobileLayout {
                     const cardWrapper: HTMLElement = createElement('div', {
                         className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox' }
                     });
+                    if (column.transitionColumns.length > 0) {
+                        columnTransition = true;
+                    }
+                    if (!columnTransition && isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
+                        const borderElem: HTMLElement = createElement('div', { className: cls.BORDER_CLASS });
+                        columnWrapper.appendChild(borderElem);
+                    }
                     columnWrapper.appendChild(cardWrapper);
                     if (columnData.length > 0) {
                         for (const data of columnData as Record<string, string>[]) {

@@ -1327,7 +1327,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * @returns {void}
      * @private
      */
-    public refreshDataManager(chart: Chart): void {
+    public refreshDataManager(chart: Chart, series: SeriesBase): void {
         this.chart = chart;
         let dataSource: Object | DataManager;
         const isAngular: string = 'isAngular';
@@ -1337,11 +1337,16 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             dataSource = this.dataSource || chart.dataSource;
         }
         if (!(dataSource instanceof DataManager) && isNullOrUndefined(this.query)) {
+            series.points = [];
             this.dataManagerSuccess({ result: dataSource, count: (dataSource as Object[]).length }, false);
             return;
         }
-        const dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
-        dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e));
+        if (isNullOrUndefined(series.points)) {
+            const dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
+            dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e));
+        } else {
+            chart.visibleSeriesCount++;
+        }
     }
 
     private dataManagerSuccess(e: { result: Object, count: number }, isRemoteData: boolean = true): void {

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#379229` - Pdf export is not working when using custom date format issue has been fixed.
+- `#381109` - Issue when Zoom To Fit with unscheduled tasks has been fixed.
+
 ## 20.1.58 (2022-05-31)
 
 ### Gantt

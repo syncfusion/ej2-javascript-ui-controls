@@ -257,6 +257,7 @@ export class ExportUtils {
             id: 'Svg_Export_Element',
             width: 200, height: 200
         });
+        let backgroundColor: string;
         controls.map((control: Chart | RangeNavigator | AccumulationChart | BulletChart | StockChart) => {
             const svg: Node = control.svgObject.cloneNode(true);
             const groupEle: Element = control.renderer.createGroup({
@@ -264,10 +265,11 @@ export class ExportUtils {
                     'transform: translateX(' + width + 'px)'
 
             });
-            const backgroundColor: string = (svg.childNodes[0] as HTMLElement) ? (svg.childNodes[0] as HTMLElement).getAttribute('fill') : 'transparent';
+            backgroundColor = (svg.childNodes[0] as HTMLElement) ? (svg.childNodes[0] as HTMLElement).getAttribute('fill') : 'transparent';
             if ((control.theme === 'Tailwind' || control.theme === 'TailwindDark' || control.theme === "Fluent")
                 && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                 (svg.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+                backgroundColor = 'rgba(255,255,255, 1)';
             }
             if (!isCanvas) {
                 groupEle.appendChild(svg);
@@ -294,6 +296,7 @@ export class ExportUtils {
         if (!isCanvas) {
             svgObject.setAttribute('width', width + '');
             svgObject.setAttribute('height', height + '');
+            svgObject.setAttribute('style', 'background-color: ' + backgroundColor + ';');
         }
         return {
             'width': width,

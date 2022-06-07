@@ -144,7 +144,7 @@ export class Page {
         return newResults;
     }
 
-	private updatePageSize(pageingDetails: {result: ITreeData[], count: number}) : void {
+    private updatePageSize(pageingDetails: {result: ITreeData[], count: number}) : void {
         const updateSize: number = pageingDetails.result.length;
         const gridPagerModule: GridPage = this.parent.grid.pagerModule;
         if (this.parent.pageSettings.pageSizes === true) {
@@ -189,7 +189,7 @@ export class Page {
             pageingDetails.count = visualData.length;
             let query: Query = new Query();
             const size: number = this.parent.grid.pageSettings.pageSize;
-			this.updatePageSize(pageingDetails);
+            this.updatePageSize(pageingDetails);
             let current: number = this.parent.grid.pageSettings.currentPage;
             if (visualData.length < (current * size)) {
                 current = (Math.floor(visualData.length / size)) + ((visualData.length % size) ? 1 : 0);

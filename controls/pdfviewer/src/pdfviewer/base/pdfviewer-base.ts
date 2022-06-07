@@ -7880,6 +7880,9 @@ export class PdfViewerBase {
      * @returns {void}
      */
     public diagramMouseDown(evt: MouseEvent | TouchEvent): void {
+        if((evt as MouseEvent).which===3){
+            this.diagramMouseUp(evt);
+        }
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);
         let touches: TouchList = null;

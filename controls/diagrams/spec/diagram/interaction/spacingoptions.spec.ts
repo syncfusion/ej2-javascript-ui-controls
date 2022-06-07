@@ -250,9 +250,9 @@ describe('SpacingOptions Commands', () => {
         it('Checking diagram instance creation', (done: Function) => {
             expect((diagram.nodes[1].offsetX === 100 && diagram.nodes[1].offsetY === 100) &&
                 (diagram.nodes[2].offsetX === 500 && diagram.nodes[2].offsetY === 500) &&
-                (Math.round(diagram.nodes[0].offsetX) === 200 && Math.round(diagram.nodes[0].offsetY) === 367) &&
-                (diagram.connectors[0].sourcePoint.x === 250 && Math.round(diagram.connectors[0].sourcePoint.y) === 233) &&
-                (diagram.connectors[0].targetPoint.x === 400 && Math.round(diagram.connectors[0].targetPoint.y) === 233)).toBe(true);
+                (Math.round(diagram.nodes[0].offsetX) === 200 && Math.round(diagram.nodes[0].offsetY) === 233) &&
+                (diagram.connectors[0].sourcePoint.x === 250 && Math.round(diagram.connectors[0].sourcePoint.y) === 367) &&
+                (diagram.connectors[0].targetPoint.x === 400 && Math.round(diagram.connectors[0].targetPoint.y) === 367)).toBe(true);
             done();
         });
     });
@@ -403,8 +403,8 @@ describe('SpacingOptions Commands', () => {
         it('Checking diagram instance creation', (done: Function) => {
             expect((diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100) &&
                 (diagram.nodes[1].offsetX === 300 && diagram.nodes[1].offsetY === 400) &&
-                (diagram.connectors[0].sourcePoint.x === 100 && diagram.connectors[0].sourcePoint.y === 212.5) &&
-                (diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 312.5)).toBe(true);
+                (diagram.connectors[0].sourcePoint.x === 100 && diagram.connectors[0].sourcePoint.y === 187.5) &&
+                (diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 287.5)).toBe(true);
             done();
         });
     });

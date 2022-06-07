@@ -1507,8 +1507,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             range.endContainer as Element;
         let closestLI: Element = closest(endNode, 'LI');
         if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
-        !range.collapsed) {
-                       closestLI.textContent = closestLI.textContent.trim();
+        !range.collapsed && isNOU(endNode.nextElementSibling)) {
+            closestLI.textContent = closestLI.textContent.trim();
             currentEndOffset = closestLI.textContent.length - 1;
             let currentLastElem: Element = closestLI;
             while(currentLastElem.nodeName !== '#text') {

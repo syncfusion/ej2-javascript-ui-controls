@@ -336,6 +336,51 @@ describe('Filter ->', () => {
                 });
             });
         });
+        it('Invalid date rendering and filtering check', (done: Function) => {
+            helper.edit('B12', '10/10/202');
+            const cell: HTMLElement = helper.invoke('getCell', [11, 1]);
+            expect(cell.classList.contains('e-right-align')).toBeFalsy();
+            expect(cell.textContent).toBe('10/10/202');
+            helper.invoke('selectRange', ['B1']);
+            helper.invoke('getCell', [0, 1]).focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                checkboxList = helper.getElement('.e-checkboxlist');
+                expect(checkboxList.childElementCount).toBe(0);
+                setTimeout(() => {
+                    ulList = checkboxList.lastElementChild.querySelector('.e-ul');
+                    expect(ulList.children[2].querySelector('.e-icon-expandable')).toBeNull();
+                    expect(ulList.children[2].querySelector('.e-list-text').textContent).toBe('10/10/202');
+                    treeObj = getComponent(checkboxList.lastElementChild as HTMLElement, 'treeview');
+                    expect(treeObj.fields.dataSource[11]['B']).toBe('10/10/202');
+                    expect(treeObj.fields.dataSource[11]['__rowIndex']).toBe('text 10/10/202');
+                    const list: HTMLElement = ulList.children[1].querySelector('.e-frame');
+                    let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                    list.dispatchEvent(e);
+                    e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                    list.dispatchEvent(e);
+                    e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                    list.dispatchEvent(e);
+                    expect(list.parentElement.querySelector('.e-check')).not.toBeNull();
+                    helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary').click();
+                    const filterCol: any[] = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(filterCol.length).toBe(3);
+                    expect(filterCol[0].type).toBe('number');
+                    expect(filterCol[0].value).toBe(300);
+                    expect(filterCol[0].operator).toBe('notequal');
+                    expect(filterCol[0].predicate).toBe('and');
+                    expect(filterCol[1].type).toBe('string');
+                    expect(filterCol[1].value.getFullYear()).toBe(2016);
+                    expect(filterCol[1].operator).toBe('notequal');
+                    expect(filterCol[1].predicate).toBe('and');
+                    expect(filterCol[2].type).toBe('string');
+                    expect(filterCol[2].value).toBe('');
+                    expect(filterCol[2].operator).toBe('notequal');
+                    expect(filterCol[2].predicate).toBe('and');
+                    done();
+                });
+            });
+        });
     });
     describe('CR-Issues ->', () => {
         describe('I289560, FB22087, FB24231 ->', () => {

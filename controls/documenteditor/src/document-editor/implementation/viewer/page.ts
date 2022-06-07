@@ -5747,6 +5747,20 @@ export class ShapeElementBox extends ShapeBase {
         if (this.margin) {
             shape.margin = this.margin.clone();
         }
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    shape.revisions.push(revision.clone());
+                }
+            }
+        } else {
+            if (this.revisions.length > 0) {
+                shape.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                shape.removedIds = this.removedIds.slice();
+            }
+        }
         return shape;
     }
 }

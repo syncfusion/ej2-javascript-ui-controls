@@ -148,5 +148,56 @@ describe('Gantt pdfexport support', () => {
                 }
             });
         });
+         describe('Gantt PDF Export', () => {
+            Gantt.Inject(Toolbar, PdfExport);
+            let ganttObj: Gantt;
+            beforeAll((done: Function) => {
+                ganttObj = createGantt(
+                    {
+                        dataSource: exportData,
+                        allowPdfExport: true,
+                        taskFields: {
+                            id: 'TaskID',
+                            name: 'TaskName',
+                            startDate: 'StartDate',
+                            endDate: 'EndDate',
+                            duration: 'Duration',
+                            progress: 'Progress',
+                            child: 'subtasks',
+                            dependency: 'Predecessor'
+                        },
+                        toolbar: ['PdfExport'],
+                        projectStartDate: new Date('03/25/2019'),
+                        projectEndDate: new Date('05/30/2019'),
+                        rowHeight: 40,
+                        taskbarHeight: 30,
+                        pdfExportComplete: (args: any) => {
+                            expect(args.name).toBe("pdfExportComplete");
+                        },
+                        columns: [
+                            {
+                                field: 'TaskName',
+                                headerText: 'Task Name',
+                                width: '250',
+                                clipMode: 'EllipsisWithTooltip',
+                            },
+                            { field: 'StartDate', headerText: 'Start Date', format:'dd-MMM-yy' },
+                            { field: 'Duration', headerText: 'Duration' },
+                            { field: 'EndDate', headerText: 'End Date' },
+                            { field: 'Predecessor', headerText: 'Predecessor' },
+                        ],
+                        treeColumnIndex: 0,                       
+                        height: '450px',
+                    }, done);
+            });
+            afterAll(() => {
+                if (ganttObj) {
+                    destroyGantt(ganttObj);
+                }
+            });
+            it('Export with custom date format', () => {
+                ganttObj.pdfExport();
+            });
+        });
         });
     });

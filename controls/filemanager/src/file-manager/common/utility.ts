@@ -7,6 +7,7 @@ import { closest, DragEventArgs, detach } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { createDialog } from '../pop-up/dialog';
+import { ColumnModel } from '../models';
 
 /**
  * Utility file for common actions
@@ -686,7 +687,7 @@ export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): v
         tick = false;
     }
     if (!tick) {
-        parent.sortBy = getSortField(args.item.id);
+        parent.sortBy = getSortField(args.item.id, parent);
     } else {
         parent.sortOrder = <SortOrder>getSortField(args.item.id);
     }
@@ -711,12 +712,24 @@ export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): v
  * @returns {string} - returns the sorted fields
  * @private
  */
-export function getSortField(id: string): string {
+export function getSortField(id: string, parent?: IFileManager): string {
     const text: string = id.substring(id.lastIndexOf('_') + 1);
     let field: string = text;
+    let column: ColumnModel[];
+    if (parent) {
+        column = parent.detailsViewSettings.columns;
+    }
     switch (text) {
     case 'date':
-        field = '_fm_modified';
+                for(var i=0; i<column.length; i++) {
+                    if (column[i].field==='dateModified' || column[i].field==='dateCreated') {
+                        field = column[i].field;
+                        break;
+                    }
+                    else {
+                        field = '_fm_modified';
+                    }
+                }
         break;
     case 'ascending':
         field = 'Ascending';

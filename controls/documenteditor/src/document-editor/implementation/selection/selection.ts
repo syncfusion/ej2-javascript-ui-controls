@@ -2030,7 +2030,7 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public moveTextPosition(cursorPoint: Point, textPosition: TextPosition): void {
+    public moveTextPosition(cursorPoint: Point, textPosition: TextPosition, isMouseLeave?: boolean): void {
         if (isNullOrUndefined(this.start)) {
             return;
         }
@@ -2043,7 +2043,7 @@ export class Selection {
         this.upDownSelectionLength = textPosition.location.x;
         const selectionStartIndex: string = this.start.getHierarchicalIndexInternal();
         const selectionEndIndex: string = this.end.getHierarchicalIndexInternal();
-        if (selectionStartIndex !== selectionEndIndex) {
+        if (selectionStartIndex !== selectionEndIndex && !isMouseLeave) {
             // Extends selection end to field begin or field end.
             if (TextPosition.isForwardSelection(selectionStartIndex, selectionEndIndex)) {
                 textPosition.validateForwardFieldSelection(selectionStartIndex, selectionEndIndex);

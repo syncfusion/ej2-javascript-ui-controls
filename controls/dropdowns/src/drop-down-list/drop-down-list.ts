@@ -1384,13 +1384,21 @@ export class DropDownList extends DropDownBase implements IInput {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.clearTemplate(['valueTemplate']);
+            if (this.valueTempElement) {
+                detach(this.valueTempElement);
+                this.inputElement.style.display = 'block';
+                this.valueTempElement = null;
+            }
         }
         if (!this.valueTempElement) {
             this.valueTempElement = this.createElement('span', { className: dropDownListClasses.value });
             this.inputElement.parentElement.insertBefore(this.valueTempElement, this.inputElement);
             this.inputElement.style.display = 'none';
         }
-        this.valueTempElement.innerHTML = '';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!(this as any).isReact) {
+            this.valueTempElement.innerHTML = '';
+        }
         const valuecheck: boolean = this.dropdownCompiler(this.valueTemplate);
         if (valuecheck) {
             compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
