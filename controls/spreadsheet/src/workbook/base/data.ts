@@ -1,6 +1,6 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes, isFilterHidden } from '../index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel, getFormattedCellObject, NumberFormatArgs } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel, getFormattedCellObject, NumberFormatArgs, isNumber } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setCell } from './../index';
@@ -75,16 +75,17 @@ export function getData(
                                 key = getColumnHeaderText(i + 1);
                                 if (valueOnly) {
                                     cells[key] = row ? getValueFromFormat(context, getCell(sRow, i, sheet)) : '';
-                                    if (typeof cells[key] === 'string' && !!Number(cells[key])) {
-                                        cells[key] = Number(cells[key]);
+                                    if (typeof cells[key] === 'string' && isNumber(Number(cells[key]))) {
+                                        cells[key] = parseFloat(<string>cells[key]);
                                     }
                                 } else {
                                     const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
                                             cells[key] = extend({}, cell, { value: getValueFromFormat(context, cell, true) });
-                                            if (typeof (cells[key] as CellModel).value === 'string' && !!Number((cells[key] as CellModel).value)) {
-                                                cells[key]['value'] = Number((cells[key] as CellModel).value);
+                                            if (typeof (cells[key] as CellModel).value === 'string' &&
+                                                isNumber(Number((cells[key] as CellModel).value))) {
+                                                cells[key]['value'] = parseFloat((cells[key] as CellModel).value);
                                             }
                                         } else {
                                             cells[key] = cell;

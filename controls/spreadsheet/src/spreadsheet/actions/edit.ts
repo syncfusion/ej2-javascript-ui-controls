@@ -5,7 +5,7 @@ import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, compl
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getSheet, selectionComplete, beforeCellUpdate, BeforeCellUpdateArgs } from '../../workbook/index';
+import { getSheetNameFromAddress, getSheet, selectionComplete, beforeCellUpdate, BeforeCellUpdateArgs, isHiddenRow, isHiddenCol } from '../../workbook/index';
 import { beginAction, updateCell, checkCellValid } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
@@ -1000,13 +1000,16 @@ export class Edit {
             rowIdx--; colIdx--;
             if (((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
                 && this.parent.activeSheetIndex === sheetIdx) || (this.uniqueCell && this.parent.activeSheetIndex === sheetIdx)) {
-                const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+                const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
+                let td: HTMLElement;
+                if (!isHiddenRow(sheet, rowIdx) && !isHiddenCol(sheet, colIdx)) {
+                    td = this.parent.getCell(rowIdx, colIdx);
+                }
                 if (td) {
                     if (td.parentElement) {
                         const curRowIdx: string = td.parentElement.getAttribute('aria-rowindex');
                         if (curRowIdx && Number(curRowIdx) - 1 !== rowIdx) { return; }
                     }
-                    const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     const actCell: number[] = getRangeIndexes(sheet.activeCell);
                     if (actCell[0] === rowIdx && actCell[1] === colIdx) {

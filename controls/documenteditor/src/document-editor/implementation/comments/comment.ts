@@ -642,6 +642,9 @@ export class CommentPane {
     public deleteComment(comment: CommentElementBox): void {
         const commentView: CommentView = this.comments.get(comment);
         if (!isNullOrUndefined(commentView)) {
+            if(commentView.comment.commentId == this.currentEditingComment.comment.commentId){
+                this.isEditMode = false;
+            }
             if (commentView.parentElement && commentView.parentElement.parentElement) {
                 commentView.parentElement.parentElement.removeChild(commentView.parentElement);
             }

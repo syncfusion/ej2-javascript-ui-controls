@@ -28,9 +28,9 @@ describe('Spreadsheet cell navigation module ->', () => {
             });
         });
 
-        describe('I348582 ->', () => {
+        describe('I348582, EJ2-60424 ->', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({}, done);
+                helper.initializeSpreadsheet({ sheets: [{ isProtected: true, protectSettings: { selectCells: true } }] }, done);
             });
 
             afterAll(() => {
@@ -42,6 +42,15 @@ describe('Spreadsheet cell navigation module ->', () => {
                 helper.getElement().focus();
                 helper.triggerKeyEvent('keydown', 40, null, false, true);
                 expect(helper.getContentElement().parentElement.scrollLeft).toBe(0);
+                done();
+            });
+
+            it('Pressing left/up key on 0th column/row throws script error on protected sheet', (done: Function) => {
+                helper.invoke('selectRange', ['A1']);
+                helper.triggerKeyEvent('keydown', 37);
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                helper.triggerKeyEvent('keydown', 38);
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
                 done();
             });
         });

@@ -8,7 +8,7 @@ import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, ge
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
-import { isFilterHidden } from '../../workbook/index';
+import { isFilterHidden, isNumber } from '../../workbook/index';
 import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass, detach } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -392,8 +392,12 @@ export class Filter {
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         range[1] = range[3] = cell[1];
         const field: string = getColumnHeaderText(cell[1] + 1);
+        let cellVal: string | number | Date = getValueFromFormat(this.parent, getCell(cell[0], cell[1], sheet));
+        if (isNumber(<string>cellVal)) {
+            cellVal = parseFloat(<string>cellVal);
+        }
         const predicates: PredicateModel[] = [{ field: field, operator: 'equal', type: this.getColumnType(sheet, cell[1], cell).type,
-            matchCase: false, value: getValueFromFormat(this.parent, getCell(cell[0], cell[1], sheet)) }];
+            matchCase: false, value: cellVal }];
         const addr: string = `${sheet.name}!${this.getPredicateRange(range, this.filterCollection.get(sheetIdx))}`;
         const fullAddr: string = getRangeAddress(range);
         getData(this.parent, addr, true, true, null, true, null, null, false, fullAddr).then((jsonData: { [key: string]: CellModel }[]) => {
@@ -828,7 +832,7 @@ export class Filter {
         };
         const setDate: () => void = (): void => {
             date = new Date(Number(valArr[0]), months[valArr[1]], Number(valArr[2]));
-            if (date.getDay()) {
+            if (date.getDate()) {
                 predicates.push(Object.assign({ value: date, type: type }, predicate));
             } else {
                 updateOtherPredicate();
@@ -1303,6 +1307,8 @@ export class Filter {
                     default:
                         if (isCustomDateTime(cell)) {
                             date++;
+                        } else if (isNumber(cell.value)) {
+                            num++;
                         } else {
                             str++;
                         }
@@ -1317,7 +1323,7 @@ export class Filter {
                 str++;
             }
         }
-        return { type: (num > str && num > date && num > time) ? 'number' : (str > num && str > date && str > time) ? 'string'
+        return { type: (num > str && num > date && num > time) ? 'number' : (str >= num && str >= date && str >= time) ? 'string'
             : (date > num && date > str && date > time) ? 'date' : 'datetime', isDateAvail: !!date };
     }
 

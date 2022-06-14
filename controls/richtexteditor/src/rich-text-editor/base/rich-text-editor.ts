@@ -78,6 +78,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
+    public currentTarget: HTMLElement;
+    /**
+     * @hidden
+     * @deprecated
+     */
     public isFocusOut: boolean = false;
     /**
      * @hidden
@@ -3135,6 +3140,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private onIframeMouseDown(e: MouseEvent): void {
         this.isBlur = false;
+        this.currentTarget = <HTMLElement>e.target;
         this.notify(events.iframeMouseDown, e);
     }
 

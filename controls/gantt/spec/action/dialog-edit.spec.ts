@@ -134,9 +134,9 @@
                 textObj.value = '5 days';
                 textObj.dataBind();
                 let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
-                expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('3/29/2019');
+                expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/4/2019');
                 let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
-                expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/4/2019');
+                expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/11/2019');
                 let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
                 triggerMouseEvent(cancelRecord, 'click');
             }
@@ -173,9 +173,9 @@
                 textObj.value = '5 days';
                 textObj.dataBind();
                 let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
-                expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('3/29/2019');
+                expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/4/2019');
                 let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
-                expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/4/2019');
+                expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/11/2019');
                 let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
                 triggerMouseEvent(saveRecord, 'click');
             }
@@ -1573,6 +1573,140 @@
              ED.dataBind();
              expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/9/2019');
          });
-     }); 
+     });
+     describe('Edit Duration of milestone', function () {
+        let ganttObj: Gantt;
+        let data: Object[] =[ {TaskID: 1, TaskName: 'New Task 1', Duration: 1, Progress: 0, StartDate: new Date('03/26/2019')},
+        {TaskID: 2, TaskName: 'New Task 2', StartDate: new Date('03/26/2019'), Duration: 0, Progress: 0}
+        ];
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: data,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' }, 
+                    { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                   // columnIndex: 4
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                    from: "03/24/2019",
+                    to: "03/25/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+                
+                },
+                {
+                    from: "04/12/2019",
+                    to: "04/12/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+                
+                }],
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),            
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(2);
+        });
+        it('Edit duration of milestone', () => {
+            let durationField: any = document.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
+            if (durationField) {
+                let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+                textObj.value = '1 days';
+                textObj.dataBind();
+                let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+                expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('3/26/2019');
+            }
+        });
+    });  
  });
  

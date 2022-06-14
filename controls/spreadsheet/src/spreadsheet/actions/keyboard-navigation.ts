@@ -54,7 +54,7 @@ export class KeyboardNavigation {
             }
             if ((!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)))
                 || (e.shiftKey && e.keyCode === 9)) { //left key
-                if (actIdxes[1] > 0 || sheet.isProtected) {
+                if (actIdxes[1] > 0) {
                     if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
                         actIdxes[1] -= 1;
                     } else {
@@ -69,7 +69,7 @@ export class KeyboardNavigation {
                 }
             } else if (e.shiftKey && e.keyCode === 13) {    // Up key
                 if (!this.parent.element.querySelector('.e-find-toolbar')) {
-                    if (actIdxes[0] > 0 || sheet.isProtected) {
+                    if (actIdxes[0] > 0) {
                         if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
                             actIdxes[0] -= 1;
                         } else {
@@ -84,7 +84,7 @@ export class KeyboardNavigation {
                     }
                 }
             } else if (!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 38) {    // Up key
-                if (sheet.isProtected || actIdxes[0] > 0) {
+                if (actIdxes[0] > 0) {
                     if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
                         actIdxes[0] -= 1;
                     } else {

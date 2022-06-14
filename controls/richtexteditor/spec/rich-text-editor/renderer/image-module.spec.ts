@@ -2413,7 +2413,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
                 done();
-            }, 4000);
+            }, 3500);
         });
     });
     describe(' EJ2-20297: RTE Image insert link  - ', () => {

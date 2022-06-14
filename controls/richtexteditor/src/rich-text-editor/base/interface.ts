@@ -167,6 +167,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enableHtmlSanitizer?: boolean
     getInsertImgMaxWidth?(): string | number
     getSelection(): string
+    currentTarget: HTMLElement
 }
 /**
  * @deprecated

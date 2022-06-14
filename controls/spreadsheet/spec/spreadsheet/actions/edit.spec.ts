@@ -251,8 +251,8 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I309407 ->', () => {
-            beforeEach((done: Function) => {
+        describe('I309407, EJ2-60617 ->', () => {
+            beforeAll((done: Function) => {
                 model = {
                     sheets: [{ ranges: [{ dataSource: defaultData }] }], height: 1000,
                     created: (): void => {
@@ -261,7 +261,7 @@ describe('Editing ->', () => {
                 };
                 helper.initializeSpreadsheet(model, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('curser is moving to the 4th cell when click on the second cell after entering value in first cell', (done: Function) => {
@@ -274,6 +274,13 @@ describe('Editing ->', () => {
                     expect(spreadsheet.sheets[0].selectedRange).toEqual('A2:A2');
                     done();
                 });
+            });
+
+            it('Edit dot(.) in a cell changes to NaN issue', (done: Function) => {
+                helper.edit('A2', '.');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('.')
+                expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('.');
+                done();
             });
         });
         describe('I290629 ->', () => {
@@ -370,7 +377,7 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I267737, I267730, FB21561, EJ2-56562 ->', () => {
+        describe('I267737, I267730, FB21561, EJ2-56562, EJ2-60404 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     actionBegin: (args) => {
@@ -417,6 +424,18 @@ describe('Editing ->', () => {
                     expect(helper.invoke('getCell', [0, 1]).textContent).toBe('25%');
                     done();
                 });
+            });
+            it('Adjacent column cells getting updated with the formula results for hidden formula cells', (done: Function) => {
+                helper.invoke('numberFormat', ['General', 'A1:B1']);
+                helper.edit('A1', '1');
+                helper.edit('B1', '2');
+                helper.edit('C1', '=A1+B1');
+                helper.edit('D1', '=C1');
+                helper.getInstance().hideColumn(2, 2, true);
+                helper.edit('A1', '11');
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('2');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('2');
+                done();
             });
         });
         describe('I301868, I301863 ->', () => {

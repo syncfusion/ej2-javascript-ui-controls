@@ -178,7 +178,7 @@ export function toDate(
  * @returns { string | number} - ReturnsparseIntValue.
  */
 export function parseIntValue(value: string): string | number {
-    return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
+    return (value && value !== '.' && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
 }
 
 export interface ToDateArgs {

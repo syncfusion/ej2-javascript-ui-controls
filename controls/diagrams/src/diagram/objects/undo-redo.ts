@@ -827,9 +827,16 @@ export class UndoRedo {
         diagram.rotate(node, obj.rotateAngle - node.rotateAngle);
     }
 
-    private recordConnectionChanged(obj: SelectorModel, diagram: Diagram):
+    private recordConnectionChanged(obj: SelectorModel | ConnectorModel, diagram: Diagram):
         void {
-        const connector: ConnectorModel = (obj as SelectorModel).connectors[0];
+            var connector: ConnectorModel;
+            if((obj as SelectorModel) && (obj as SelectorModel).connectors)
+            {
+                connector = (obj as SelectorModel).connectors[0]; 
+            }else
+            {
+                connector  = (obj as ConnectorModel)
+            }
         if (connector.sourceID && diagram.nameTable[connector.sourceID]) {
             diagram.insertValue(diagram.nameTable[connector.sourceID], true);
         }

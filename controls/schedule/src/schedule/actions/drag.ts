@@ -1216,7 +1216,7 @@ export class DragAndDrop extends ActionBase {
             const cursorElement: HTMLElement = this.getCursorElement(e);
             if (cursorElement) {
                 top = cursorElement.classList.contains(cls.WORK_CELLS_CLASS) ? cursorElement.offsetTop :
-                    cursorElement.offsetParent.classList.contains(cls.APPOINTMENT_CLASS) ?
+                    (cursorElement.offsetParent && cursorElement.offsetParent.classList.contains(cls.APPOINTMENT_CLASS)) ?
                         (cursorElement.offsetParent as HTMLElement).offsetTop : top;
             }
         }

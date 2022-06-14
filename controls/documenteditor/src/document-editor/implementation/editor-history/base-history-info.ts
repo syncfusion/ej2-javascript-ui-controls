@@ -1005,17 +1005,7 @@ export class BaseHistoryInfo {
                 return;
             }
             this.owner.editor.setPreviousBlockToLayout();
-            let selection: Selection = this.owner.documentHelper.selection;
-            let isBidiList: boolean = (selection.paragraphFormat.bidi ||
-                (this.modifiedProperties[0] instanceof WParagraphFormat && this.modifiedProperties[0] as WParagraphFormat).bidi
-            ) && (selection.paragraphFormat.listId !== -1 || property === 'listFormat');
-            if (!isBidiList) {
-                this.owner.documentHelper.layout.isBidiReLayout = true;
-            }
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
-            if (!isBidiList) {
-                this.owner.documentHelper.layout.isBidiReLayout = false;
-            }
         } else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
         } else if (this.action === 'RestartNumbering') {

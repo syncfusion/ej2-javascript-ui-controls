@@ -279,6 +279,8 @@ export class Render {
                         const cellRenderer: CellRenderer = new CellRenderer(this.parent.grid as IGrid, this.parent.grid.serviceLocator);
                         const td: Element = this.parent.getCellFromIndex(rowsObj[j].index, cellIndex - indent);
                         cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                        const treecell: Element = this.parent.getRows()[j].cells[cellIndex];
+                        this.cellRender({data: rowsObj[j].data, cell: treecell, column: cell.column });
                     }
                 }
             });

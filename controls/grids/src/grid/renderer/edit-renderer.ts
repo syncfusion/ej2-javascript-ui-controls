@@ -164,7 +164,7 @@ export class EditRender {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private focusElement(elem: HTMLInputElement, type?: string): void {
         const chkBox: HTMLInputElement = this.parent.element.querySelector('.e-edit-checkselect') as HTMLInputElement;
-        if (!isNullOrUndefined(chkBox)) {
+        if (!isNullOrUndefined(chkBox) && chkBox.nextElementSibling) {
             chkBox.nextElementSibling.classList.add('e-focus');
         }
         if (this.parent.editSettings.mode === 'Batch') {

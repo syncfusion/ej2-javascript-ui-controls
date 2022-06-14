@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.1.59 (2022-06-07)
+## 20.1.60 (2022-06-14)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#F175215` - The issue with "Sidebar showBackdrop property is not working properly while setting the target property" has been resolved.
+
+## 20.1.58 (2022-05-31)
 
 ### Tab
 

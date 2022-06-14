@@ -2720,7 +2720,7 @@ describe('RTE base module', () => {
             });
             done();
         });
-        it('Ensure cssClass property in inline toolbar', () => {
+        it('Ensure cssClass property in inline toolbar', (done) => {
             rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
             rteObj.inlineMode.enable = true;
             rteObj.dataBind();
@@ -2731,11 +2731,14 @@ describe('RTE base module', () => {
             expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('myClass')).toBe(true);
             let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
             for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                setTimeout(() => {
                 expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
+                done();
+                }, 100);
             }
             rteObj.hideInlineToolbar();
         });
-        it('through onproperty change cssClass property in inline toolbar', () => {
+        it('through onproperty change cssClass property in inline toolbar', (done) => {
             rteObj.hideInlineToolbar();
             rteObj.cssClass = 'textClass';
             rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
@@ -2747,8 +2750,11 @@ describe('RTE base module', () => {
             expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('textClass')).toBe(true);
             let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
             for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                setTimeout(() => {
                 expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
                 expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
+                done();
+                }, 100);
             }
         });
         afterAll(() => {
@@ -5272,13 +5278,17 @@ describe('EJ2-26545 Empty P tag create while give the value with empty space in 
         done();
     });
 
-    it("don't create the p tag to empty text node ", () => {
+    it("don't create the p tag to empty text node ", (done) => {
        let emptyNode:NodeListOf<Element> = <NodeListOf<Element>>rteObj.inputElement.querySelectorAll("p:empty");
+       setTimeout(() => {
         expect(emptyNode.length === 0).toBe(true);
+        done();
+       }, 100);
     });
     afterAll(() => {
         destroy(rteObj);
     });
+
 });
 
 describe('To change the keyconfig API property', () => {

@@ -389,10 +389,18 @@ export class Selection {
         this.parent.notify(activeCellMergedRange, mergeArgs);
         if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
         const frozenRow: number = this.parent.frozenRowCount(sheet);
-        const isScrollDown: boolean = clientY > bottom && rowIdx < sheet.rowCount;
-        const isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected && !!verticalContent.scrollTop;
-        const isScrollRight: boolean = clientX > right && colIdx < sheet.colCount;
-        const isScrollLeft: boolean = clientX < left && colIdx >= 0 && !this.isRowSelected && !!horizontalContent.scrollLeft;
+        let isScrollDown: boolean = (clientY > bottom ? (frozenCol? clientX < left : true) : false) && rowIdx < sheet.rowCount;
+        let isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected && !!verticalContent.scrollTop;
+        if (frozenRow > rowIdx) {
+            isScrollDown = false;
+            isScrollUp = false;
+        }
+        let isScrollRight: boolean = clientX > right && colIdx < sheet.colCount;
+        let isScrollLeft: boolean = clientX < left && colIdx >= 0 && !this.isRowSelected && !!horizontalContent.scrollLeft;
+        if (frozenCol > colIdx) {
+            isScrollRight = false;
+            isScrollLeft = false;
+        }
         this.clearInterval(); let scrollUpRowIdx: number; let scrollUpColIdx: number;
         if (!isFormulaEdit && !this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
@@ -553,7 +561,12 @@ export class Selection {
             left += this.parent.viewport.beforeFreezeWidth;
             if (!e.target || (!closest(e.target, '.e-row-header') && !closest(e.target, '.e-selectall-container')) ||
                 this.isScrollableArea(e.clientX, e.target, true)) {
-                left += this.getScrollLeft();
+                if (this.parent.frozenColCount(sheet)) {
+                    const frozenColumn: HTMLElement = this.parent.element.querySelector('.e-frozen-column');
+                    left = parseInt(frozenColumn.style.left) > left ? left : (left + this.getScrollLeft());
+                } else {
+                    left += this.getScrollLeft();
+                }
             }
         }
         for (let i: number = 0; ; i++) {
@@ -626,6 +639,7 @@ export class Selection {
             ele = this.getSelectionElement(e, selectedRowColIdx);
         }
         const sheet: SheetModel = this.parent.getActiveSheet();
+        var topLeftIdx = getRangeIndexes(sheet.topLeftCell);
         const formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
         const mergeArgs: MergeArgs = { range: [].slice.call(range), isActiveCell: false, skipChecking: skipChecking };
         let isMergeRange: boolean;
@@ -718,6 +732,12 @@ export class Selection {
         }
         const eArgs: { action: string, sheetIndex: number } = { action: 'getCurrentEditSheetIdx', sheetIndex: null };
         this.parent.notify(editOperation, eArgs);
+        if (sheet.frozenColumns && range[1] > 0 && range[1] === topLeftIdx[1] && range[3] === sheet.colCount - 1) {
+            range[1] = 0;
+        }
+        if (sheet.frozenRows && range[0] > 0 && range[0] === topLeftIdx[0] && range[2] === sheet.rowCount - 1) {
+            range[0] = 0;
+        }
         let selRange: string = getRangeAddress(range);
         if (e && e.ctrlKey && (isMouseMove(e) || isMouseUp(e))) {
             selRange = sheet.selectedRange.slice(0, sheet.selectedRange.lastIndexOf(' ')) + ' ' + selRange;

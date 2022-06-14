@@ -690,28 +690,52 @@ describe('Filter ->', () => {
         });
         describe('SF-367021 ->', () => {
             let spreadsheet: any;
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
-                    { sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B4:B4' }],
+                    { sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'D4:D4' }],
                     created: (): void => {
                         spreadsheet = helper.getInstance()
                         for (let i: number = 1; i < 11; i++) {
+                            spreadsheet.updateCell({ format: '0.00' }, 'D' + (i + 1));
                             spreadsheet.updateCell({ format: 'dd/MM/yyyy' }, 'B' + (i + 1));
                         }
                     }
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
+            });
+            it('Filter by custom formatted (0.00) cell value not working', (done: Function) => {
+                helper.openAndClickCMenuItem(3, 3, [6, 4]);
+                setTimeout(() => {
+                    const predicates: any[] = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(predicates.length).toBe(1);
+                    expect(predicates[0].field).toBe('D');
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[1].isFiltered).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[2].isFiltered).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].isFiltered).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].isFiltered).toBeUndefined();
+                    expect(helper.invoke('getContentTable').rows[1].cells[3].textContent).toBe('20.00');
+                    helper.invoke('selectRange', ['B4']);
+                    done();
+                });
             });
             it('Filter by date cell value not working', (done: Function) => {
                 spreadsheet.notify(filterByCellValue, null);
                 setTimeout(() => {
                     const predicates: any[] = spreadsheet.filterModule.filterCollection.get(0);
-                    expect(predicates.length).toBe(1);
-                    expect(predicates[0].field).toBe('B');
-                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
-                    expect(spreadsheet.sheets[0].rows[1].isFiltered).toBeTruthy();
+                    expect(predicates.length).toBe(2);
+                    expect(predicates[1].field).toBe('B');
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[2].isFiltered).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].isFiltered).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[7].isFiltered).toBeTruthy();
                     expect(helper.invoke('getContentTable').rows[1].cells[1].textContent).toBe('27/07/2014');
                     done();
                 });

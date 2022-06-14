@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Common
+
+#### Bug Fixes
+
+- `SF-372767`, `SF-370308` - The empty space issue in `Treeview` component while dragging the element has been resolved.
+
 ## 20.1.56 (2022-05-17)
 
 ### Common

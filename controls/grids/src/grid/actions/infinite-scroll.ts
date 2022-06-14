@@ -313,7 +313,9 @@ export class InfiniteScroll implements IAction {
         const keys: string[] = Object.keys(this.infiniteCurrentViewData);
         const cache: boolean = this.parent.infiniteScrollSettings.enableCache;
         if (!this.parent.groupSettings.columns.length) {
-            const isAdd: boolean = e.args.requestType === 'save';
+            const isAdd: boolean = e.args.requestType === 'save' && !(this.parent.sortSettings.columns.length
+                || this.parent.filterSettings.columns.length || this.parent.groupSettings.columns.length
+                || this.parent.searchSettings.key);
             const isDelete: boolean = e.args.requestType === 'delete';
             if (!cache && (isAdd || isDelete)) {
                 if (isAdd) {
@@ -1298,7 +1300,9 @@ export class InfiniteScroll implements IAction {
     private resetInfiniteBlocks(args: InfiniteScrollArgs, isDataModified?: boolean): void {
         const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && args.requestType !== 'infiniteScroll';
         if (!this.initialRender && !isNullOrUndefined((this.parent as Grid).infiniteScrollModule) && isInfiniteScroll) {
-            if (this.actions.some((value: string) => value === args.requestType) || isDataModified) {
+            if (this.actions.some((value: string) => value === args.requestType) || isDataModified || (args.requestType === 'save'
+                && (this.parent.sortSettings.columns.length || this.parent.filterSettings.columns.length
+                || this.parent.groupSettings.columns.length || this.parent.searchSettings.key))) {
                 const scrollEle: Element = this.parent.getContent().firstElementChild;
                 this.initialRender = true;
                 scrollEle.scrollTop = 0;

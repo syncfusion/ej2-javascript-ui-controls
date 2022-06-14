@@ -232,6 +232,10 @@ export class Revision {
             this.isContentRemoved = true;
             tableWidget.removeChild(tableWidget.childWidgets.indexOf(currentRow));
             this.canSkipTableItems = true;
+            // Before destroying the table row widget, delete the bookmark element from the row.
+            this.owner.editor.removeFieldInBlock(currentRow, true);
+            // Before destroying the table row widget, delete the content control element from the row.
+            this.owner.editor.removeFieldInBlock(currentRow, undefined, true);
             currentRow.destroy();
             if (tableWidget.childWidgets.length === 0) {
                 this.owner.selection.editPosition = this.owner.selection.getHierarchicalIndex(tableWidget, '0');

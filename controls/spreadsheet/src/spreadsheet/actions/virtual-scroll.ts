@@ -474,7 +474,7 @@ export class VirtualScroll {
         const start: number = this.parent.viewport.topIndex + frozenRow;
         const end: number = (start + threshold) - 1;
         if (endReached || isInit || end < start) {
-            this.translateY = getRowsHeight(sheet, frozenRow, start - 1, true);
+            this.translateY = start <= frozenRow ? 0 : getRowsHeight(sheet, frozenRow, start - 1, true);
         } else {
             this.translateY = scrollHeight - getRowsHeight(sheet, start, end, true);
         }
@@ -485,7 +485,7 @@ export class VirtualScroll {
         const start: number = this.parent.viewport.leftIndex + frozenCol;
         const end: number = (start + threshold) - 1;
         if (endReached || isInit || end < start) {
-            this.translateX = getColumnsWidth(sheet, frozenCol, start - 1, true);
+            this.translateX = start <= frozenCol ? 0 : getColumnsWidth(sheet, frozenCol, start - 1, true);
         } else {
             this.translateX = scrollWidth - getColumnsWidth(sheet, start, end, true);
         }

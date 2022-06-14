@@ -781,7 +781,18 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             draEleTop -= this.parentScrollY;
             draEleLeft -= this.parentScrollX;
         }
-
+        if (this.helperElement.classList.contains('e-treeview')) {
+            let body = document.body;
+            let html = document.documentElement;
+            let tempHeight = Math.max( body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+            let tempWidth = Math.max( body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
+            if (draEleTop > tempHeight) {
+                draEleTop = tempHeight;
+            }
+            if (draEleLeft > tempWidth) {
+                draEleLeft = tempWidth;
+            }
+        }
         let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
         if (!this.elementInViewport(helperElement) && this.enableAutoScroll) {

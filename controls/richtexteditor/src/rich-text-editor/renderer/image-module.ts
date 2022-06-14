@@ -1421,6 +1421,9 @@ export class Image {
         if (target.nodeName === 'IMG') {
             this.imgEle = target as HTMLImageElement;
         }
+        if (target.nodeName !== '#document') {
+            this.parent.currentTarget = <HTMLElement>e.target;
+        }
         if (!isNullOrUndefined(this.dialogObj) && ((
             // eslint-disable-next-line
             !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" + ']') && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
@@ -1438,12 +1441,12 @@ export class Image {
             }
             /* eslint-enable */
         }
-        if ((e.target as HTMLElement).tagName !== 'IMG' && this.imgResizeDiv && !(this.quickToolObj &&
+        if (!(this.parent.iframeSettings.enable && this.parent.currentTarget.nodeName === 'IMG') && (e.target as HTMLElement).tagName !== 'IMG' && this.imgResizeDiv && !(this.quickToolObj &&
             this.quickToolObj.imageQTBar && this.quickToolObj.imageQTBar.element.contains(e.target as HTMLElement)) &&
             this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
             this.cancelResizeAction();
         }
-        if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+        if (this.contentModule.getEditPanel().querySelector('.e-img-resize') && !(this.parent.iframeSettings.enable && this.parent.currentTarget.nodeName === 'IMG')) {
             if (target.tagName !== 'IMG') { this.removeResizeEle(); }
             if (target.tagName !== 'IMG' && !isNOU(this.imgEle)) {
                 this.imgEle.style.outline = '';

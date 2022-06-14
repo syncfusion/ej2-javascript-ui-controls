@@ -841,7 +841,8 @@ console.log('Apply bidi for the paragraphs with list');
         editor.open(JSON.stringify(listJson));
         editor.selection.selectAll();
         editor.editorModule.onApplyParagraphFormat('bidi', true, false, false);
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('welcome');
+        expect((editor.selection.start.currentWidget.children[editor.selection.start.currentWidget.children.length - 1] as TextElementBox).text).toBe('welcome');
+        expect((editor.selection.start.currentWidget.layoutedElements[0] as TextElementBox).text).toBe('welcome');
     });
     it('Test undo for the list with para', () => {
 console.log('Test undo for the list with para');
@@ -851,7 +852,8 @@ console.log('Test undo for the list with para');
     it('Test redo for the list with para', () => {
 console.log('Test redo for the list with para');
         editor.editorHistory.redo();
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('welcome');
+        expect((editor.selection.start.currentWidget.children[editor.selection.start.currentWidget.children.length - 1] as TextElementBox).text).toBe('welcome');
+        expect((editor.selection.start.currentWidget.layoutedElements[0] as TextElementBox).text).toBe('welcome');
     });
     it('Apply tab to move to next line', () => {
 console.log('Apply tab to move to next line');

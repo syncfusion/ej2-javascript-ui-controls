@@ -87,6 +87,14 @@ export class WCharacterFormat {
         this.setPropertyValue('bidi', value);
     }
 
+    public get localeIdBidi(): number {
+        return this.getPropertyValue('localeIdBidi') as number;
+    }
+
+    public set localeIdBidi(value: number) {
+        this.setPropertyValue('localeIdBidi', value);
+    }
+
     public get bdo(): BiDirectionalOverride {
         return this.getPropertyValue('bdo') as BiDirectionalOverride;
     }
@@ -268,6 +276,7 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('allCaps', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('localeIdBidi', property, propValue, uniqueCharFormatTemp);
 
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
@@ -332,6 +341,9 @@ export class WCharacterFormat {
         case 'allCaps':
             value = false;
             break;
+        case 'localeIdBidi':
+            value = 0;
+            break;
         }
         return value;
     }
@@ -346,7 +358,8 @@ export class WCharacterFormat {
             && this.strikethrough === format.strikethrough
             && this.highlightColor === format.highlightColor && this.bidi === format.bidi
             && this.bdo === format.bdo)
-            && this.allCaps === format.allCaps;
+            && this.allCaps === format.allCaps
+            && this.localeIdBidi === format.localeIdBidi;
     }
     public isSameFormat(format: WCharacterFormat): boolean {
         return this.baseCharStyle === format.baseCharStyle &&
@@ -457,6 +470,9 @@ export class WCharacterFormat {
         }
         if (isNullOrUndefined(this.getValue('allCaps'))) {
             this.allCaps = format.getValue('allCaps') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('localeIdBidi'))) {
+            this.localeIdBidi = format.getValue('localeIdBidi') as number;
         }
     }
 }

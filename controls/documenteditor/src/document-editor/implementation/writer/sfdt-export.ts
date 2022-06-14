@@ -591,12 +591,8 @@ export class SfdtExport {
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         this.contentInline = [];
-        let lineWidget: LineWidget = line.clone();
+        let lineWidget: LineWidget = line;
         let isformField: boolean = false;
-        let bidi: boolean = paragraph.paragraphFormat.bidi;
-        if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
-            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
-        }
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
             if (this.isExport && this.checkboxOrDropdown) {
@@ -1131,11 +1127,7 @@ export class SfdtExport {
         let isContentStarted: boolean = false;
         let contentControl: boolean = false;
         let isEnd: boolean = line === this.endLine;
-        let lineWidget: LineWidget = line.clone();
-        let bidi: boolean = line.paragraph.paragraphFormat.bidi;
-        if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
-            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
-        }
+        let lineWidget: LineWidget = line;
         let started: boolean = false;
         let ended: boolean = false;
         let length: number = 0;

@@ -8,6 +8,15 @@
 
 #### Bug Fixes
 
+- `#I380532` - An issue with Multiple appointments dragged while performing drag action with a single appointment has been fixed.
+- `#I380576` - An issue with drag appointment clone position with enabled `rowAutoHeight` has been fixed.
+
+## 20.1.57 (2022-05-24)
+
+### Schedule
+
+#### Bug Fixes
+
 - `#I379346` - An issue with appointments rendered in start and end hour range in vertical views has been fixed.
 - `#I379197` - An issue with normal appointment rendered in all day row in DST time zone has been fixed.
 

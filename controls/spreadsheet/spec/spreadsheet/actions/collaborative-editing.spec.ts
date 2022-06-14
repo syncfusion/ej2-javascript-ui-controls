@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { getCell, HyperlinkModel, SheetModel } from "../../../src/index";
-import { EventHandler } from "@syncfusion/ej2-base";
+import { EventHandler, getComponent } from "@syncfusion/ej2-base";
 
 describe('Collaborative Editing ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -806,6 +806,9 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Chart Insert - Undo & Redo', (done: Function) => {
+            const tabObj: any = getComponent(helper.getElementFromSpreadsheet('.e-tab'), 'tab');
+            tabObj.selectedItem = 1;
+            tabObj.dataBind();
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
                 expect(getCell(5, 3, sheets2[0]).chart.length).toBe(0);
@@ -838,6 +841,9 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                const tabObj: any = getComponent(helper.getElementFromSpreadsheet('.e-tab'), 'tab');
+                tabObj.selectedItem = 1;
+                tabObj.dataBind();
                 helper.click('#spreadsheet_redo');
                 setTimeout(() => {
                     expect(getCell(5, 3, sheets2[0]).chart.length).toBe(0);

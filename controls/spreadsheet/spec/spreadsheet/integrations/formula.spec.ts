@@ -467,7 +467,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('FB23112 ->', () => {
+        describe('FB23112, EJ2-60666 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -480,6 +480,19 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.invoke('getCell', [2, 8]).textContent).toBe('7');
                 expect(helper.getInstance().sheets[0].rows[2].cells[8].value).toBe(7);
                 done();
+            });
+
+            it('Editing formula is not working after sheets updated dynamically', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.sheets = [{}, {}];
+                spreadsheet.dataBind();
+                setTimeout(() => {
+                    helper.edit('B1', '=A1');
+                    expect(spreadsheet.sheets[0].rows[0].cells[1].value).toBe('0');
+                    expect(spreadsheet.sheets[0].rows[0].cells[1].formula).toBe('=A1');
+                    expect(helper.invoke('getCell', [0, 1]).textContent).toBe('0');
+                    done();
+                });
             });
         });
         describe('fb23644, fb23650 ->', () => {
@@ -683,7 +696,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-58254, EJ2-59388, EJ2-59734 ->', () => {
+        describe('EJ2-58254, EJ2-59388, EJ2-59734, EJ2-60324 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     {
@@ -732,6 +745,14 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('I2', '=IF(H2 = 0,"It is true", "It is false")');
                 expect(helper.invoke('getCell', [1, 8]).textContent).toBe('It is false');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8].value)).toBe('"It is false"');
+                done();
+            });
+            it('Sum of decimal numbers with three decimal places is formatted to two decimal places', (done: Function) => {
+                helper.edit('J1', '1.001');
+                helper.edit('J2', '2.002');
+                helper.edit('J3', '=SUM(J1:J2)');
+                expect(helper.invoke('getCell', [2, 9]).textContent).toBe('3.003');
+                expect(getCell(2, 9, helper.getInstance().sheets[0]).value).toBe('3.003');
                 done();
             });
         });

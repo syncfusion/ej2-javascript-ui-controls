@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Toast
+
+#### Bug Fixes
+
+- `I382879` - Now, the close event will be triggered only once when the toast is closed by swiping on the mobile devices.
+
 ## 20.1.47 (2022-04-04)
 
 ### Toast

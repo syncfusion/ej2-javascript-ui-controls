@@ -218,8 +218,14 @@ export class BasicFormulas {
         let sum: number = 0;
         let val: string;
         let orgValue: number | string;
+        let maxDecimalLength: number = 0;
         if (!isNullOrUndefined(args)) {
             const argArr: string[] = args;
+            const setMaxDecimalLength: Function = (val: string): void => {
+                if (val.toString().indexOf('.') > - 1) {
+                    maxDecimalLength = Math.max(maxDecimalLength, val.split('.')[1].length);
+                }
+            };
             for (let i: number = 0; i < argArr.length; i++) {
                 const argValue: string = argArr[i].toString();
                 if (argValue.indexOf(':') > -1 && this.parent.isCellReference(argValue)) {
@@ -232,6 +238,7 @@ export class BasicFormulas {
                         if (isNullOrUndefined(val[0]) || isNaN(this.parent.parseFloat(val))) {
                             continue;
                         }
+                        setMaxDecimalLength(val);
                         sum = sum + this.parent.parseFloat(val);
                     }
                 } else {
@@ -249,12 +256,13 @@ export class BasicFormulas {
                         continue;
                     }
                     if (orgValue.length > 0) {
+                        setMaxDecimalLength(orgValue);
                         sum = sum + this.parent.parseFloat(orgValue + '');
                     }
                 }
             }
         }
-        return sum.toString().indexOf('.') > - 1 ? sum.toFixed(2) : sum;
+        return sum.toString().indexOf('.') > - 1 ? sum.toFixed(maxDecimalLength) : sum;
     }
 
     /**

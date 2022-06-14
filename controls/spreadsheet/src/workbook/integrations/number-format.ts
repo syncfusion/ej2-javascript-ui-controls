@@ -876,7 +876,7 @@ export class WorkbookNumberFormat {
                 }
             };
             const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-            dateArr[0] = dateArr[0].toLowerCase(); dateArr[1] = dateArr[1].toLowerCase();
+            dateArr[0] = dateArr[0].toLowerCase().trim(); dateArr[1] = dateArr[1].toLowerCase().trim();
             if (firstVal = !Number(dateArr[0]) && months.find((month: string) => dateArr[0].includes(month))) {
                 updateSecValue(dateArr[1]);
             } else if (firstVal = !Number(dateArr[1]) && months.find((month: string) => dateArr[1].includes(month))) {

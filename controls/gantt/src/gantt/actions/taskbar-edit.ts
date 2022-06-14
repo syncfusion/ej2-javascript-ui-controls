@@ -351,10 +351,8 @@ export class TaskbarEdit extends DateProcessor {
                     addClass([element], [cls.activeParentTask]);
                 }
             }
-            if (isShowProgressResizer) {
-                addClass(
-                    this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + cls.connectorLineContainer), [cls.connectorLineZIndex]);
-            }
+            addClass(
+                this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + cls.connectorLineContainer), [cls.connectorLineZIndex]);
             if (!isNullOrUndefined(this.parent.taskFields.dependency)
                 && (element.querySelector('.' + cls.connectorPointLeft)
                     || element.parentElement.querySelector('.' + cls.connectorPointLeft))

@@ -2596,6 +2596,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     } else if (prop === 'columns' && !isNullOrUndefined(column[i][prop])) {
                         gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[], false, index);
                         treeGridColumn[prop] = column[i][prop];
+                    } else if (this.initialRender && !isNullOrUndefined(treeColumn) && this.enablePersistence && prop === 'edit') {
+                        gridColumn[prop] = treeGridColumn[prop]  = treeColumn[prop];
                     } else if (!(treeColumn) || prop !== 'sortComparer') {
                         gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                     }

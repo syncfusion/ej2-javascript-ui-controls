@@ -167,7 +167,15 @@ export class WParagraphFormat {
         this.setPropertyValue('lineSpacingType', value);
     }
     public get textAlignment(): TextAlignment {
-        return this.getPropertyValue('textAlignment') as TextAlignment;
+        let value: TextAlignment = this.getPropertyValue('textAlignment') as TextAlignment;
+        if (this.bidi) {
+            if (value === 'Left') {
+                value = 'Right'
+            } else if (value === 'Right') {
+                value = 'Left';
+            }
+        }
+        return value;
     }
     public set textAlignment(value: TextAlignment) {
         this.setPropertyValue('textAlignment', value);
@@ -209,13 +217,6 @@ export class WParagraphFormat {
     }
 
     public set bidi(value: boolean) {
-        if (this.bidi !== value) {
-            if (this.textAlignment === 'Left') {
-                this.textAlignment = 'Right';
-            } else if (this.textAlignment === 'Right') {
-                this.textAlignment = 'Left';
-            }
-        }
         this.setPropertyValue('bidi', value);
     }
     public get contextualSpacing(): boolean {

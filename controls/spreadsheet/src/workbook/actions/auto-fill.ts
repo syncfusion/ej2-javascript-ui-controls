@@ -194,7 +194,7 @@ export class WorkbookAutoFill {
                                 val += '#REF!';
                             }
                             else {
-                                val += isVFill ? temp['c'] + (temp['b'] ? tot : '$' + tot) : (temp['b'] ? getColumnHeaderText(tot) : '$' + getColumnHeaderText(tot)) + temp['c'];
+                                val += isVFill ? temp['c'] + (temp['b'] ? tot : '$' + tot) : (temp['b'] ? getColumnHeaderText(tot) : (temp['c'] as string).substring(0, (temp['c'] as string).search(/\d/)) + '$' + getColumnHeaderText(tot)) + (temp['c'] as string).trim();
                             }
                         }
                         else {
@@ -589,7 +589,7 @@ export class WorkbookAutoFill {
                 j = patrn.length;
                 while (j--) {
                     temp = patrn[j];
-                    cRfrType = this.isCellReference(temp) as string;
+                    cRfrType = this.isCellReference(temp.trim()) as string;
                     if (cRfrType && (cRfrType !== 'absolute'))
                     {patrns[i][j] = this.getCellRefPrediction(temp, options, len, cRfrType); }
                 }
@@ -615,9 +615,19 @@ export class WorkbookAutoFill {
         const aRegx: RegExp = new RegExp('[a-z$]', 'gi'); const nRegx: RegExp = new RegExp('[0-9$]', 'g');
         let str: string = options.isVFill ? text.replace(nRegx, eStr) : text.replace(aRegx, eStr);
         let temp: number[] | number | object = options.isVFill ? Number(text.replace(aRegx, eStr)) :
-            this.generateColCount(text.replace(nRegx, eStr));
+            this.generateColCount(text.replace(nRegx, eStr).trim());
+        let dollarPosition: number = null;
         const arr: number[] = [temp];
-        const isColAbslt: boolean = text[0] === '$';
+        let isColAbslt: boolean = text[0] === '$';
+        if(!isColAbslt && text.includes('$') && text.trim()[0] === '$') {  
+            for (let idx: number = 1; idx < text.length; idx++) {
+                if (text[idx] === '$') {
+                    dollarPosition = idx;
+                    isColAbslt = true;
+                    break;
+                }
+            }
+        }
         if (length && length !== 1)
         {arr.push(temp + length); }
         else
@@ -625,7 +635,13 @@ export class WorkbookAutoFill {
         temp = this.getPredictionValue(arr);
         if (rfrType && (rfrType === 'mixed')) {
             if (isColAbslt === options.isVFill)
-            {str = '$' + str; }
+            {
+                if (dollarPosition) {
+                 str = str.substring(0, dollarPosition) + '$' + str.substring(dollarPosition);
+                } else {
+                str = '$' + str;
+                }
+            }
             else
             {temp['b'] = 0; }
         }

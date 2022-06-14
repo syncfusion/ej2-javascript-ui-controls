@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I379177`,`#I379023` - Now, the `GetTargetDetailsAsync` method doesn't display 'null' on an empty Kanban board.
+
 ## 20.1.58 (2022-05-31)
 
 ### Kanban

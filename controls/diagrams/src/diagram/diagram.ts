@@ -4911,6 +4911,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.clearSelection();
         }
+        if (!(obj && (canDelete(obj) || (this.diagramActions & DiagramAction.Clear)))) {
+            if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
+            (obj instanceof Node || obj instanceof Connector)) {
+            const entry: HistoryEntry = {
+                type: 'ConnectionChanged', undoObject: cloneObject(obj),
+                redoObject: cloneObject(obj), category: 'Internal'
+            };
+            if (!(obj as Node).isLane && !(obj as Node).isPhase) {
+                if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj as Node)) {
+                    this.addHistoryEntry(entry);
+                }
+            }
+        }
+        }
         this.tooltipObject.close();
         if (isBlazor() && selectedItems && selectedItems.length > 0) {
             let check: boolean = true;

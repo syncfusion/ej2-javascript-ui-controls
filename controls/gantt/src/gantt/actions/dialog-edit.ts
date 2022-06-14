@@ -943,7 +943,7 @@ export class DialogEdit {
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
             } else if (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate)) {
                 if (ganttData.ganttProperties.isMilestone && ganttData.ganttProperties.duration !== 0) {
-                    this.parent.dateValidationModule.calculateStartDate(ganttData);
+		   this.parent.dateValidationModule.checkStartDate(ganttProp.startDate);
                 }
                 this.parent.dateValidationModule.calculateEndDate(ganttData);
             } else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {

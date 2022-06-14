@@ -1779,3 +1779,39 @@ describe('Delete column with comments ', () => {
         }
     });
 });
+describe('Check the insert comment functionality after undo', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true, enableComment: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    beforeEach((): void => {
+        editor.openBlank();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Check the insert comment functionality after undo', () => {
+        editor.openBlank();
+        editor.editor.insertComment('hello');
+        editor.editorHistory.undo();
+        editor.editor.insertComment('hello');
+        expect(editor.documentHelper.comments.length).toBe(1);
+
+    });
+});

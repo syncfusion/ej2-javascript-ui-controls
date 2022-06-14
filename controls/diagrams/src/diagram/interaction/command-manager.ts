@@ -4718,7 +4718,42 @@ Remove terinal segment in initial
         const intermediatePoints: PointModel[] = object.intermediatePoints;
         let prev: PointModel; let pointLength: number = 0; let totalLength: number = 0;
         let intersectingOffset: PointModel;
-        const currentPosition: PointModel = (newPosition) ? newPosition : { x: offsetX + tx, y: offsetY + ty };
+        let currentPosition:PointModel;
+        switch(label.verticalAlignment){
+            case "Center":
+                if(label.horizontalAlignment == 'Center'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY +ty};
+                }
+                else if(label.horizontalAlignment == 'Right'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX+(textWrapper.outerBounds.width)/2  +tx, y: offsetY +ty};
+                }
+                else if(label.horizontalAlignment == 'Left'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX-(textWrapper.outerBounds.width)/2  +tx, y: offsetY +ty};
+                }
+                break;
+            case "Top":
+                if(label.horizontalAlignment == 'Center'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY-(textWrapper.outerBounds.height)/2  +ty};
+                }
+                else if(label.horizontalAlignment == 'Right'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.outerBounds.width)/2 +tx, y: offsetY-(textWrapper.outerBounds.height)/2  +ty};
+                }
+                else if(label.horizontalAlignment == 'Left'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.outerBounds.width)/2 +tx, y: offsetY-(textWrapper.outerBounds.height)/2  +ty};
+                }
+                break;
+            case "Bottom":
+                if(label.horizontalAlignment == 'Center'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY+ (textWrapper.outerBounds.height)/2 +ty};
+                }
+                else if(label.horizontalAlignment == 'Right'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.outerBounds.width)/2 +tx, y: offsetY+ (textWrapper.outerBounds.height)/2 +ty};
+                }
+                else if(label.horizontalAlignment == 'Left'){
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.outerBounds.width)/2 +tx, y: offsetY+ (textWrapper.outerBounds.height)/2 +ty};
+                }
+                break;
+        }
         const intersetingPts: PointModel[] = this.getInterceptWithSegment(currentPosition, intermediatePoints);
         let newOffset: PointModel = intermediatePoints[intermediatePoints.length - 1];
         totalLength = Point.getLengthFromListOfPoints(intermediatePoints);
@@ -4960,12 +4995,9 @@ Remove terinal segment in initial
         }
         angle = (angle + 360) % 360;
         label.rotateAngle += angle - (label.rotateAngle + labelWrapper.parentTransform);
-        label.margin.bottom += (labelWrapper.verticalAlignment === 'Top') ? (-label.height / 2) : (
-            (labelWrapper.verticalAlignment === 'Bottom') ? (label.height / 2) : 0);
-        label.margin.right += (labelWrapper.horizontalAlignment === 'Left') ? (-label.width / 2) : (
-            (labelWrapper.horizontalAlignment === 'Right') ? (label.width / 2) : 0);
         if (label instanceof PathAnnotation) {
             label.alignment = 'Center';
+            label.horizontalAlignment = label.verticalAlignment = 'Center';
         } else {
             label.horizontalAlignment = label.verticalAlignment = 'Center';
         }
@@ -4992,7 +5024,42 @@ Remove terinal segment in initial
             rotateMatrix(matrix, -rotateAngle, pivot.x, pivot.y);
             scaleMatrix(matrix, deltaWidth, deltaHeight, pivot.x, pivot.y);
             rotateMatrix(matrix, rotateAngle, pivot.x, pivot.y);
-            let newPosition: PointModel = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
+            let newPosition: PointModel;
+            switch (label.verticalAlignment) {
+                case "Center":
+                    if (label.horizontalAlignment == 'Center') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
+                    }
+                    else if (label.horizontalAlignment == 'Right') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY });
+                    }
+                    else if (label.horizontalAlignment == 'Left') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY });
+                    }
+                    break;
+                case "Top":
+                    if (label.horizontalAlignment == 'Center') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
+                    }
+                    else if (label.horizontalAlignment == 'Right') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
+                    }
+                    else if (label.horizontalAlignment == 'Left') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
+                    }
+                    break;
+                case "Bottom":
+                    if (label.horizontalAlignment == 'Center') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY+(textElement.outerBounds.height)/2 });
+                    }
+                    else if (label.horizontalAlignment == 'Right') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
+                    }
+                    else if (label.horizontalAlignment == 'Left') {
+                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
+                    }
+                    break;
+            }
             const height: number = textElement.actualSize.height * deltaHeight;
             const width: number = textElement.actualSize.width * deltaWidth;
             const shape: ShapeAnnotationModel | PathAnnotationModel = this.findTarget(textElement, node as IElement) as ShapeAnnotation;
@@ -5003,11 +5070,6 @@ Remove terinal segment in initial
                 newPosition = transformPointByMatrix(newMat, newPosition);
                 newPosition.x = newPosition.x - textElement.margin.left + textElement.margin.right;
                 newPosition.y = newPosition.y - textElement.margin.top + textElement.margin.bottom;
-
-                newPosition.y += (shape.verticalAlignment === 'Top') ? (-height / 2) : (
-                    (shape.verticalAlignment === 'Bottom') ? (height / 2) : 0);
-                newPosition.x += (shape.horizontalAlignment === 'Left') ? (-width / 2) : (
-                    (shape.horizontalAlignment === 'Right') ? (width / 2) : 0);
                 const offsetx: number = bounds.width / (newPosition.x - bounds.x);
                 const offsety: number = bounds.height / (newPosition.y - bounds.y);
                 if (width > 1) {

@@ -699,9 +699,7 @@ export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): v
             parent.notify(events.sortColumn, { module: 'detailsview' });
         }
     }
-    if (parent.view === 'LargeIcons') {
-        updateLayout(parent, 'LargeIcons');
-    }
+    updateLayout(parent, parent.view);
     parent.notify(events.sortByChange, {});
 }
 

@@ -639,6 +639,7 @@ export class EventBase {
             }
         } else if (!closest(element as Element, '.' + cls.POPUP_OPEN)) {
             this.removeSelectedAppointmentClass();
+            this.parent.selectedElements = [];
         }
     }
 
@@ -742,6 +743,7 @@ export class EventBase {
             this.parent.trigger(event.eventClick, args, (eventClickArgs: EventClickArgs) => {
                 if (eventClickArgs.cancel) {
                     this.removeSelectedAppointmentClass();
+                    this.parent.selectedElements = [];
                     if (this.parent.quickPopup) {
                         this.parent.quickPopup.quickPopupHide();
                     }
@@ -772,6 +774,7 @@ export class EventBase {
             this.activeEventData(e, true);
         }
         this.removeSelectedAppointmentClass();
+        this.parent.selectedElements = [];
         if ((this.parent.activeEventData.element as HTMLElement).classList.contains(cls.INLINE_APPOINTMENT_CLASS) ||
             (this.parent.activeEventData.element as HTMLElement).querySelector('.' + cls.INLINE_SUBJECT_CLASS)) {
             return;

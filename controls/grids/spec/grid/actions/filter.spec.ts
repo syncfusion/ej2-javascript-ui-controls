@@ -2987,3 +2987,39 @@ describe('EJ2-59364 custom component in filterBarTemplate => ', () => {
         gridObj = actionBegin = actionComplete = null;
     });
 });
+
+describe('EJ2-60560 - Scroller thumb is shown when empty record displayed in the Virtualization Grid => ', () => {
+    let gridObj: Grid;
+    let actionComplete: (args?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 100),
+                enableVirtualization: true,
+                allowFiltering: true,
+                columns: [
+                    { type: "checkbox", width: "60" },
+                    { field: "OrderID", isPrimaryKey: true, headerText: "Order ID", width: "110" },
+                    { field: "ShipName", headerText: "Ship Name", width: "140" },
+                    { field: "Freight", headerText: "Freight", width: "110" },
+                    { field: "OrderDate", headerText: "Order Date", width: "180", type: "date", format: "yMd" }
+                ],
+                height: 350,
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('filter invalid data', (done: Function) => {
+        actionComplete = (args: any): void => {
+            expect(gridObj.element.querySelectorAll(".e-virtualtrack")[0].clientHeight).toBe(0);
+            done();
+        };
+        gridObj.actionComplete = actionComplete;            
+        gridObj.filterModule.filterByColumn('ShipName', 'contains', 'jhgj');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

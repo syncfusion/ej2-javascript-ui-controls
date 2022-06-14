@@ -1361,4 +1361,61 @@ describe('RTE CR issues', () => {
         });
 
     });
+    describe('EJ2-60381 - Image resize icon not shown properly when enabled iframe', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        let innerHTML: string = `<p style="cursor: auto;"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize e-img-focus" alt="employee-icon.jpg" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px; width: 247px; height: 247px;"> </p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value:innerHTML
+            });
+        });
+        afterAll(()=>{
+            destroy(rteObj);
+        })
+        it('check resize element when click image in iframe mode', () => {
+            let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+            let trg = (iframeBody.querySelector('.e-rte-image') as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-img-resize')).not.toBe(null);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
+        });
+    });
+    describe('EJ2-60406 - Image alignment not maintained with iframe mode when focus out the component', () => {
+        let rteObj: RichTextEditor;
+        const innerHTML: string = '<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png">';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value: innerHTML
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('apply the align items in iframe image while check the added new class applied or not ', () => {
+            const className: HTMLStyleElement = document.querySelector('iframe').contentWindow.document.head.querySelector('style');
+            expect(className.innerHTML.indexOf('.e-rte-image.e-imginline') > 0).toBe(true);
+            expect(className.innerHTML.indexOf('.e-rte-image.e-imgcenter') > 0).toBe(true);
+            expect(className.innerHTML.indexOf('.e-rte-image.e-imgleft') > 0).toBe(true);
+            expect(className.innerHTML.indexOf('.e-rte-image.e-imgright') > 0).toBe(true);
+        });
+    });
 });

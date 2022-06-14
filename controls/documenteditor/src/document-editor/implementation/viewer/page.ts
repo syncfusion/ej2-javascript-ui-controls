@@ -3,7 +3,7 @@ import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
     HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
-    TextWrappingStyle, TextWrappingType
+    TextWrappingStyle, TextWrappingType, CharacterRangeType
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
@@ -1193,6 +1193,119 @@ export class ParagraphWidget extends BlockWidget {
         }
         return width;
     }
+
+    /**
+     * @private
+     */
+    public splitLtrAndRtlText(lineIndex: number): void {
+        let isPrevLTRText: boolean = null;
+        let iIncrementer: number = 1;
+        let hasRTLCharacter: boolean = false;
+        let characterRangeTypes: CharacterRangeType[] = [];
+        let isField: boolean = false;
+        let documentHelper: DocumentHelper = this.bodyWidget.page.documentHelper;
+        let textHelper: TextHelper = documentHelper.textHelper;
+        if (this.childWidgets.length > 0) {
+            let lineWidget: LineWidget = this.childWidgets[lineIndex] as LineWidget;
+            for (let i = lineIndex + 1; i < this.childWidgets.length; i++) {
+                let nextLineWidget: LineWidget = this.childWidgets[i] as LineWidget;
+                for (let m: number = 0; m < nextLineWidget.children.length; m++) {
+                    let element: ElementBox = nextLineWidget.children[m];
+                    lineWidget.children.push(element);
+                    element.line = lineWidget;
+                }
+                this.childWidgets.splice(i, 1);
+                i--;
+            }
+            for (let i: number = 0; i < lineWidget.children.length; i += iIncrementer) {
+                let elementBox: ElementBox = lineWidget.children[i];
+                iIncrementer = 1;
+                ////Gets the span to split.
+                let textElement: TextElementBox = undefined;
+                if (elementBox instanceof TextElementBox) {
+                    textElement = elementBox as TextElementBox;
+                }
+                if (elementBox instanceof FieldElementBox && elementBox.fieldType == 0) {
+                    isField = true;
+                } else if (elementBox instanceof FieldElementBox && elementBox.fieldType === 2) {
+                    isField = false;
+                }
+
+                if (textElement != undefined && !isField) {
+                    let text: string = textElement.text;
+                    let isTextBidi: boolean = textElement.characterFormat.bidi;
+                    let isRTLLang: boolean = false;
+                    let charTypeIndex: number = characterRangeTypes.length;
+
+                    if (isTextBidi) {
+                        isRTLLang = textHelper.isRightToLeftLanguage(elementBox.characterFormat.localeIdBidi);
+                    }
+
+                    ////Split the text as consicutive LTR and RTL
+                    let splitedTextCollection: string[] = textHelper.splitTextByConsecutiveLtrAndRtl(text, isTextBidi, isRTLLang, characterRangeTypes, isPrevLTRText, hasRTLCharacter);
+
+                    if (splitedTextCollection.length > 1) {
+                        for (let j = 0; j < splitedTextCollection.length; j++) {
+                            text = splitedTextCollection[j];
+                            if (j > 0) {
+                                ////Clone the source span.
+                                let clonedTextElement: TextElementBox = textElement.clone();
+                                clonedTextElement.text = text;
+                                clonedTextElement.characterRange = characterRangeTypes[j + charTypeIndex];
+                                ////Inert the splitted span in order.
+                                lineWidget.children.splice(i + j, 0, clonedTextElement);
+                                clonedTextElement.line = lineWidget;
+                                iIncrementer++;
+                            } else {
+                                ////Replace the source span with splitted text.
+                                textElement.text = text;
+                                textElement.characterRange = characterRangeTypes[charTypeIndex];
+                            }
+                        }
+                    } else if (splitedTextCollection.length > 0) {
+                        textElement.characterRange = characterRangeTypes[charTypeIndex];
+                    }
+                }
+            }
+            characterRangeTypes.length = 0;
+        }
+
+    }
+
+    /**
+     * Combine the spans by consecutive LTR and RTL texts.
+     * @private
+     */
+    public combineconsecutiveRTL(lineIndex: number) {
+        let isField: boolean = false;
+        let documentHelper: DocumentHelper = this.bodyWidget.page.documentHelper;
+        let textHelper: TextHelper = documentHelper.textHelper;
+        for (let j: number = lineIndex; j < this.childWidgets.length; j++) {
+            let lineWidget: LineWidget = this.childWidgets[j] as LineWidget;
+            for (let i: number = 0; i <= lineWidget.children.length - 2; i++) {
+                let elementBox: ElementBox = lineWidget.children[i];
+                if (elementBox instanceof FieldElementBox && elementBox.fieldType === 0) {
+                    isField = true;
+                } else if (elementBox instanceof FieldElementBox && elementBox.fieldType === 2) {
+                    isField = false;
+                }
+                if (!isField && elementBox instanceof TextElementBox && lineWidget.children[i + 1] instanceof TextElementBox) {
+                    let currentTxtRange: TextElementBox = elementBox;
+                    let nextTxtRange: TextElementBox = lineWidget.children[i + 1] as TextElementBox;
+
+                    if (currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft &&
+                        currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
+                        textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && textHelper.isWordSplitChar(nextTxtRange.text[0])
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat)) {
+                        currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
+                        lineWidget.children.splice(i + 1, 1);
+                        i--;
+                    }
+                }
+            }
+        }
+    }
+
     public clone(): ParagraphWidget {
         let paragraph: ParagraphWidget = new ParagraphWidget();
         paragraph.paragraphFormat.copyFormat(this.paragraphFormat);
@@ -2601,12 +2714,11 @@ export class TableRowWidget extends BlockWidget {
 
     /**
      * Shift the widgets for RTL table.
-     * @param clientArea 
      * @param tableWidget 
-     * @param rowWidget 
      * @private
      */
-    public shiftWidgetForRtlTable(clientArea: Rect, tableWidget: TableWidget, rowWidget: TableRowWidget): void {
+    public shiftWidgetForRtlTable(): void {
+        let tableWidget: TableWidget = this.ownerTable;
         let clientAreaX: number = tableWidget.x;
         let cellSpace: number = 0;
         let tableWidth: number = 0;
@@ -2616,11 +2728,11 @@ export class TableRowWidget extends BlockWidget {
         }
         tableWidth = HelperMethods.convertPointToPixel(tableWidget.getTableWidth());
 
-        let rowX: number = rowWidget.x;
+        let rowX: number = this.x;
         let clientAreaRight: number = clientAreaX + tableWidth;
         let left: number = clientAreaRight - (rowX - clientAreaX);
-        for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
-            let cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+        for (let j: number = 0; j < this.childWidgets.length; j++) {
+            let cellWidget: TableCellWidget = this.childWidgets[j] as TableCellWidget;
             left = left - (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right - cellWidget.rightBorderWidth + cellSpace);
             cellWidget.updateWidgetLeft(left + cellWidget.margin.left);
         }
@@ -3527,6 +3639,10 @@ export class LineWidget implements IWidget {
     /**
      * @private
      */
+    public layoutedElements: ElementBox[];
+    /**
+     * @private
+     */
     public paragraph: ParagraphWidget;
     /**
      * @private
@@ -3548,6 +3664,17 @@ export class LineWidget implements IWidget {
      * @private
      */
     public marginTop: number = 0;
+
+    /**
+     * Rendered elements contains reordered element for RTL layout 
+     */
+    get renderedElements(): ElementBox[] {
+        if (!isNullOrUndefined(this.layoutedElements)) {
+            return this.layoutedElements;
+        }
+        return this.children;
+    }
+
     /**
      * @private
      */
@@ -3652,7 +3779,6 @@ export class LineWidget implements IWidget {
         let lineIndex: number = inline.line.paragraph.childWidgets.indexOf(inline.line);
         let bidi: boolean = line.paragraph.bidi;
         let isContainsRtl: boolean = this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
-        if (!bidi && !isContainsRtl) {
             for (let i: number = 0; i < line.children.length; i++) {
                 let inlineElement: ElementBox = line.children[i] as ElementBox;
                 if (inline === inlineElement) {
@@ -3663,13 +3789,6 @@ export class LineWidget implements IWidget {
                 }
                 textIndex += inlineElement.length;
             }
-        } else if (bidi) {
-            let elementInfo: ElementInfo = this.getInlineForOffset(textIndex, true, inline);
-            textIndex = elementInfo.index;
-        } else {
-            let elementInfo: ElementInfo = this.getInlineForRtlLine(textIndex, true, inline);
-            textIndex = elementInfo.index;
-        }
         return textIndex;
     }
     /**
@@ -3680,8 +3799,8 @@ export class LineWidget implements IWidget {
         let count: number = 0;
         // let line: LineWidget = this.line as LineWidget;
         // let lineIndex: number = thtis.line.paragraph.childWidgets.indexOf(inline.line);
-        let bidi: boolean = this.paragraph.bidi || this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
-        if (!bidi) {
+        //let bidi: boolean = this.paragraph.bidi || this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
+        //if (!bidi) {
             for (let i: number = 0; i < this.children.length; i++) {
                 let inlineElement: ElementBox = this.children[i] as ElementBox;
                 if (inlineElement.length === 0) {
@@ -3699,10 +3818,11 @@ export class LineWidget implements IWidget {
                 }
                 count += inlineElement.length;
             }
-        } else {
-            let elementInfo: ElementInfo = this.getInlineForOffset(startOffset, false, this.children[0], true);
-            startOffset = elementInfo.index;
-        }
+        //} 
+        // else {
+        //     let elementInfo: ElementInfo = this.getInlineForOffset(startOffset, false, this.children[0], true);
+        //     startOffset = elementInfo.index;
+        // }
         return startOffset;
     }
 
@@ -3929,8 +4049,6 @@ export class LineWidget implements IWidget {
                 }
             }
         }
-        let isContainsRtl: boolean = this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
-        if (!bidi && !isContainsRtl) {
             for (let i: number = 0; i < this.children.length; i++) {
                 inlineElement = this.children[i] as ElementBox;
                 if (inlineElement instanceof ListTextElementBox) {
@@ -3966,15 +4084,6 @@ export class LineWidget implements IWidget {
             }
             if (offset > count) {
                 indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
-            }
-        } else if (bidi) {
-            let elementInfo: ElementInfo = this.getInlineForOffset(offset);
-            inlineElement = elementInfo.element;
-            indexInInline = elementInfo.index;
-        } else {
-            let elementInfo: ElementInfo = this.getInlineForRtlLine(offset);
-            inlineElement = elementInfo.element;
-            indexInInline = elementInfo.index;
         }
         return { 'element': inlineElement, 'index': indexInInline };
     }
@@ -4120,6 +4229,11 @@ export abstract class ElementBox {
      * @private
      */
     public contentControlProperties: ContentControlProperties;
+
+    /**
+     * @private
+     */
+     public characterRange: CharacterRangeType = undefined;
 
     /**
      * @private
@@ -4459,7 +4573,10 @@ export class FieldElementBox extends ElementBox {
      * @private
      */
     public formFieldData: FormField;
-    private fieldBeginInternal: FieldElementBox = undefined;
+    /**
+     * @private
+     */
+    public fieldBeginInternal: FieldElementBox = undefined;
     private fieldSeparatorInternal: FieldElementBox = undefined;
     private fieldEndInternal: FieldElementBox = undefined;
 

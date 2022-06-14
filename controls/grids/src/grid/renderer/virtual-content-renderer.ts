@@ -1466,7 +1466,7 @@ export class VirtualElementHandler {
     }
 
     public setVirtualHeight(height?: number, width?: string): void {
-        this.placeholder.style.height = `${height}px`;
+        this.placeholder.style.height =  !isNullOrUndefined(height) ? `${height}px` : '0px';
         this.placeholder.style.width = width;
     }
 

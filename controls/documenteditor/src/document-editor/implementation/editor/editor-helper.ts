@@ -288,6 +288,7 @@ export class HelperMethods {
         characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
         characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
         characterFormat.allCaps = isInline ? format.allCaps : format.getValue('allCaps');
+        characterFormat.localeIdBidi = isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
     }
     public static toWriteInline(format: WCharacterFormat, propertyName: string): any {
         if (!isNullOrUndefined(format.ownerBase) && (format.ownerBase instanceof ElementBox)) {

@@ -347,6 +347,9 @@ export class WUniqueFormat {
         if (property === 'allCaps') {
             return 16;
         }
+        if (property === 'localeIdBidi') {
+            return 17;
+        }
         return 0;
     }
     private static getParaFormatPropertyType(property: string): number {
@@ -546,6 +549,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('allCaps', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('localeIdBidi', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         return true;

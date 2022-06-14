@@ -93,7 +93,7 @@ console.log('Hebrew text after arabic text insert');
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('דשצפךק')
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمثדשצפךק')
     });
     it('arabic and english text insert', () => {
 console.log('arabic and english text insert');
@@ -102,7 +102,7 @@ console.log('arabic and english text insert');
         editor.editor.insertText('سشةحمث');
         editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[1].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('דשצפךק')
+        expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('سشةحمثדשצפךק')
     });
     it('space after arabic text-consider as single text element box-2', () => {
 console.log('space after arabic text-consider as single text element box-2');
@@ -111,7 +111,7 @@ console.log('space after arabic text-consider as single text element box-2');
         editor.editor.insertText('    ');
         editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
-        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('דשצפךק')
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
     });
     it('space after hebrew text followed by arabic text and normal text', () => {
 console.log('space after hebrew text followed by arabic text and normal text');

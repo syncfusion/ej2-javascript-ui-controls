@@ -287,9 +287,11 @@ export class Sort {
             }
         }
         const fields: { [key: string]: string }[] = [];
-        let text: string; const value: string = 'Column ' + getColumnHeaderText(range[1] + 1);
+        let text: string;
+        let value: string
         for (range[1]; range[1] <= range[3]; range[1]++) {
             const cell: CellModel = getCell(range[0], range[1], sheet);
+            value = 'Column ' + getColumnHeaderText(range[1] + 1);
             if (cell && cell.value) {
                 text = cell.value;
                 if (cell.format) {

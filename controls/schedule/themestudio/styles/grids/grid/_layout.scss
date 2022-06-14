@@ -139,6 +139,7 @@
 
     .e-columnmenu {
       bottom: $grid-column-menu-top-touch;
+      top: $grid-column-menu-bottom-touch;
     }
 
     &.e-device.e-noselect {
@@ -3477,6 +3478,14 @@
 
       .e-content.e-freezeline-moving {
         user-select: none;
+      }
+
+      .e-gridheader .e-headercontent .e-reorderuparrow {
+        margin-top: $grid-reorder-arrow-top-margin;
+      }
+
+      .e-gridheader .e-headercontent .e-reorderdownarrow {
+        margin-top: $grid-reorder-downarrow-top-margin;
       }
 
       .e-masked-cell.e-rowcell .e-virtualcell {

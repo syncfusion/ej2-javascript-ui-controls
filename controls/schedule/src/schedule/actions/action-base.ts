@@ -24,6 +24,7 @@ export class ActionBase {
     public verticalEvent: VerticalEvent;
     public yearEvent: YearEvent;
     public daysVariation: number = 0;
+    private scrollEventArgs: MouseEvent & TouchEvent;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -318,6 +319,7 @@ export class ActionBase {
     }
 
     public updateScrollPosition(e: MouseEvent & TouchEvent): void {
+        this.scrollEventArgs = e;
         if (this.actionObj.scroll.enable && isNullOrUndefined(this.actionObj.scrollInterval)) {
             this.actionObj.scrollInterval = window.setInterval(
                 () => {
@@ -328,9 +330,9 @@ export class ActionBase {
                         }
                         this.autoScroll();
                         if (this.actionObj.action === 'drag') {
-                            this.parent.dragAndDropModule.updateDraggingDateTime(e);
+                            this.parent.dragAndDropModule.updateDraggingDateTime(this.scrollEventArgs);
                         } else {
-                            this.parent.resizeModule.updateResizingDirection(e);
+                            this.parent.resizeModule.updateResizingDirection(this.scrollEventArgs);
                         }
                     }
                 },

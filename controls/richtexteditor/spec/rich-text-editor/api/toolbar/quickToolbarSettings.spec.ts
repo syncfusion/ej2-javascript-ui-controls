@@ -35,8 +35,9 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                 setTimeout(function () {
                     expect(!isNullOrUndefined(document.querySelector(".e-rte-quick-toolbar"))).toBe(true);
                     done();
-                }, 100);
-            }, 100);
+                }, 500);
+                done();
+            }, 500);
         });
     });
     describe(' quickToolbarSettings property - actionOnScroll - hide ', () => {
@@ -66,8 +67,9 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                 setTimeout(function () {
                     expect(isNullOrUndefined(document.querySelector(".e-rte-quick-toolbar"))).toBe(true);
                     done();
-                }, 100);
-            }, 100);
+                }, 500);
+                done();
+            }, 500);
         });
     });
 });

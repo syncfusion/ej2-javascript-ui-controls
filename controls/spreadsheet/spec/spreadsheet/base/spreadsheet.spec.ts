@@ -1,7 +1,7 @@
 /**
  *  Spreadsheet base spec
  */
-import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, BasicModule, onContentScroll } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -1498,6 +1498,30 @@ describe('Spreadsheet base module ->', () => {
                 expect(td.style.borderLeft).toBe('');
                 expect(td.style.borderBottom).toBe(''); 
                 done();
+            });
+        });
+        describe('SF-380690, SF-380608 ->', () => {
+            beforeEach((done: Function) => {
+                const rows: RowModel[] = [];
+                for (let i: number = 0; i < 67; i++) {
+                    rows.push({ height: 84 });
+                }
+                helper.initializeSpreadsheet({ showRibbon: false, showFormulaBar: false, showSheetTabs: false, height: 750,
+                    scrollSettings: { isFinite: true },
+                    sheets: [{ rows: rows, frozenColumns: 1, frozenRows: 1, rowCount: 68 }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Selection issue and row is not visible when scrolled down to bottom in finite mode', (done: Function) => {
+                helper.invoke('getMainContent').parentElement.scrollTop = 4750;
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.notify(onContentScroll, { scrollTop: 4750, scrollLeft: 0 });
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('B58');
+                    expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                    done();
+                });
             });
         });
     });

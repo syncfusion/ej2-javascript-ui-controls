@@ -532,6 +532,7 @@ export class QuickPopups {
             this.updateTapHoldEventPopup(closest(<HTMLElement>events.element, '.' + cls.APPOINTMENT_CLASS));
         } else {
             const isSameTarget: boolean = this.isSameEventClick(events);
+            this.parent.selectedElements = [];
             if (isSameTarget) {
                 return;
             }

@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { DefineNameModel } from '../../../src';
+import { CellModel, DefineNameModel } from '../../../src';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -64,6 +64,14 @@ describe('Spreadsheet formula bar module ->', () => {
                 expect(helper.hasClass('e-expanded', helper.getFormulaBarElement())).toBeFalsy();
                 done();
             }, 20);
+        });
+        it('Formula bar update for updateCell', (done: Function) => {
+            helper.getInstance().updateCell({ value: "updated value" }, helper.getInstance().getActiveSheet().activeCell);
+            expect(helper.getElement('#' + helper.id + '_formula_input').value).toBe("updated value");
+            helper.invoke('selectRange', ['A2']);
+            helper.getInstance().updateCell({ formula: "=sum(1+1)" }, helper.getInstance().getActiveSheet().activeCell);
+            expect(helper.getElement('#' + helper.id + '_formula_input').value).toBe("=sum(1+1)");
+            done();
         });
     });
 });

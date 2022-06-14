@@ -427,6 +427,8 @@ export class Toolbar {
             disableItems.push(gID + '_edit');
             disableItems.push(gID + '_update');
             disableItems.push(gID + '_cancel');
+            disableItems.push(gID + '_indent');
+            disableItems.push(gID + '_outdent');
         }
         for (let e: number = 0; e < enableItems.length; e++) {
             let index: number;

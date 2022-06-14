@@ -614,6 +614,18 @@ export class Toolbar {
         this.container.restrictEditing = !this.container.restrictEditing;
         this.container.showPropertiesPane = !this.container.restrictEditing;
     }
+    /**
+    * @private
+    * @param {boolean} enable - Enable/Disable restrictEditing changes toolbar item.
+    * @returns {void}
+    */
+    public toggleRestrictEditing(enable: boolean): void {
+        const restrictEditingId: string = this.container.element.id + TOOLBAR_ID + RESTRICT_EDITING_ID;
+        const element: HTMLElement = document.getElementById(restrictEditingId);
+        if (element) {
+            this.toggleButton(restrictEditingId, enable);
+        }
+    }
     private toggleButton(id: string, toggle: boolean): void {
         const element: HTMLElement = document.getElementById(id);
         if (toggle) {

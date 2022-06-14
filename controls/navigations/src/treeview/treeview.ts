@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';
@@ -4511,9 +4511,33 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             dropUl = dropEle;
         }
         let refNode: Node = dropUl.childNodes[index];
-        for (let i: number = 0; i < li.length; i++) {
-            dropUl.insertBefore(li[i], refNode);
+        if(refNode || this.sortOrder === 'None'){
+            for (let i: number = 0; i < li.length; i++) {
+                dropUl.insertBefore(li[i], refNode);
+            }
         }
+        if(!refNode && ((this.sortOrder === 'Ascending')||(this.sortOrder ==='Descending')))
+        {
+            let cNodes:  NodeListOf<ChildNode> = dropUl.childNodes;
+            for (let i:number = 0; i < li.length; i++) 
+            {
+                for(let j:number=0; j<cNodes.length;j++)
+                {        
+                    let returnValue:boolean = (this.sortOrder === 'Ascending')?cNodes[j].textContent.toUpperCase()>li[i].innerText.toUpperCase():cNodes[j].textContent.toUpperCase()<li[i].innerText.toUpperCase();
+                    if(returnValue)
+                    {
+                        refNode = cNodes[j];
+                        dropUl.insertBefore(li[i], refNode);
+                        break;
+                    }
+                    else
+                    {
+                        refNode = cNodes[cNodes.length];
+                        dropUl.insertBefore(li[i], refNode);
+                    }                     
+                }
+            }
+        } 
         let id: string = this.getId(dropLi);
         if (this.dataType === 1) {
             this.updateField(this.treeData, this.fields, id, 'hasChildren', true);

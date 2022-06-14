@@ -3,7 +3,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import {
     HeaderFooterType, HorizontalAlignment, VerticalAlignment, HorizontalOrigin, HeightType, LineSpacingType, ListLevelPattern,
-    TextAlignment, VerticalOrigin, TextWrappingStyle, FootEndNoteNumberFormat, FootnoteType
+    TextAlignment, VerticalOrigin, TextWrappingStyle, FootEndNoteNumberFormat, CharacterRangeType, FootnoteType
 } from '../../base/types';
 import { BodyWidgetInfo, HelperMethods, LineElementInfo, SubWidthInfo, Point, FootNoteWidgetsInfo, WrapPosition, BlockInfo, SizeInfo } from '../editor/editor-helper';
 import { WBorder, WBorders, WCharacterFormat, WListFormat, WParagraphFormat, WTabStop, WSectionFormat, WCellFormat } from '../format/index';
@@ -22,6 +22,7 @@ import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
 import { Revision } from '../track-changes/track-changes';
 import { TabPositionInfo } from '../editor';
+import { TextHelper } from './text-helper';
 
 // Check box character is rendered smaller when compared to MS Word
 // So, mutiplied the font side by below factor to render check box character large.
@@ -510,6 +511,8 @@ export class Layout {
     private layoutBlock(block: BlockWidget, index: number): BlockWidget {
         let nextBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
+            block.splitLtrAndRtlText(0);
+            block.combineconsecutiveRTL(0);
             nextBlock = this.layoutParagraph(block, index);
             const nextBlockToLayout: BlockWidget = this.checkAndRelayoutPreviousOverlappingBlock(block);
             if (nextBlockToLayout) {
@@ -952,9 +955,9 @@ export class Layout {
                     }
                 }
                 line.marginTop = 0;
-                if (!this.isInitialLoad && !this.isBidiReLayout && this.isContainsRtl(line)) {
-                    this.reArrangeElementsForRtl(line, paragraph.paragraphFormat.bidi);
-                }
+                // if (!this.isInitialLoad && !this.isBidiReLayout && this.isContainsRtl(line)) {
+                //     this.reArrangeElementsForRtl(line, paragraph.paragraphFormat.bidi);
+                // }
                 line = this.layoutLine(line, 0);
                 paragraph = line.paragraph;
                 line = line.nextLine;
@@ -1193,10 +1196,11 @@ export class Layout {
             }
         } else if (element instanceof TextElementBox) {
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
-            if (element.text.length > 1 && element.line.paragraph.bidi) {
-                let splittedText: string[] = this.splitTextByConsecutiveLtrAndRtl(element);
-                this.updateSplittedText(element, splittedText);
-            }
+            //TODO: Need to update revision
+            // if (element.text.length > 1 && element.line.paragraph.bidi) {
+            //     let splittedText: string[] = this.splitTextByConsecutiveLtrAndRtl(element);
+            //     this.updateSplittedText(element, splittedText);
+            // }
             text = element.text;
         }
         // Here field code width and height update need to skipped based on the hidden property.
@@ -1286,7 +1290,12 @@ export class Layout {
                 //Splits the text and arrange line by line, till end of text.
                 do {
                     line = element.line;
-                    this.splitTextForClientArea(line, element, element.text, element.width, element.characterFormat);
+                    //Added the condition to skip line split while layouting dropDownFormField 
+                    if (!(element.previousElement instanceof FieldElementBox && element.previousElement.fieldType == 2
+                        && !isNullOrUndefined(element.previousElement.fieldBeginInternal)
+                        && element.previousElement.fieldBeginInternal.formFieldData instanceof DropDownFormField)) {
+                        this.splitTextForClientArea(line, element, element.text, element.width, element.characterFormat);
+                    } 
                     this.checkLineWidgetWithClientArea(line, element);
                     if (element instanceof FieldTextElementBox) {
                         this.updateFieldText(element);
@@ -2261,7 +2270,7 @@ export class Layout {
         let charTypeIndex: number = 0;
         let splittedText: string[] = [];
         let hasRTLCharacter: boolean = false;
-        let characterRangeTypes: string[] = [];
+        let characterRangeTypes: CharacterRangeType[] = [];
         let lastLtrIndex: number = -1;
         let ltrText: string = '';
         let rtlText: string = '';
@@ -2289,47 +2298,47 @@ export class Layout {
             }
             if (numberText !== '' && currentCharacterType !== 4) {
                 splittedText.push(numberText);
-                characterRangeTypes.push('Number');
+                characterRangeTypes.push(CharacterRangeType.Number);
                 numberText = '';
             }
             if (rtlText !== '' && currentCharacterType !== 1) {
                 splittedText.push(rtlText);
-                characterRangeTypes.push('RTL');
+                characterRangeTypes.push(CharacterRangeType.RightToLeft);
                 rtlText = '';
             }
             if (ltrText !== '' && currentCharacterType !== 0) {
                 splittedText.push(ltrText);
                 lastLtrIndex = splittedText.length - 1;
-                characterRangeTypes.push('LTR');
+                characterRangeTypes.push(CharacterRangeType.LeftToRight);
                 ltrText = '';
             }
             if (wordSplitChars !== '' && (currentCharacterType !== 2 || separateEachWordSplitChars)) {
                 splittedText.push(wordSplitChars);
-                characterRangeTypes.push('WordSplit');
+                characterRangeTypes.push(CharacterRangeType.WordSplit);
                 wordSplitChars = '';
             }
         }
         if (numberText !== '') {
             splittedText.push(numberText);
-            characterRangeTypes.push('Number');
+            characterRangeTypes.push(CharacterRangeType.Number);
         } else if (rtlText !== '') {
             splittedText.push(rtlText);
-            characterRangeTypes.push('RTL');
+            characterRangeTypes.push(CharacterRangeType.RightToLeft);
         } else if (ltrText !== '') {
             splittedText.push(ltrText);
             lastLtrIndex = splittedText.length - 1;
-            characterRangeTypes.push('LTR');
+            characterRangeTypes.push(CharacterRangeType.LeftToRight);
         } else if (wordSplitChars !== '') {
             splittedText.push(wordSplitChars);
-            characterRangeTypes.push('WordSplit');
+            characterRangeTypes.push(CharacterRangeType.WordSplit);
         }
         if (hasRTLCharacter) {
             for (let i: number = 1; i < splittedText.length; i++) {
                 //Combines the consecutive LTR,RTL,and Number(Number get combined only if it's splitted by non reversing characters (.,:)) 
                 //along with single in-between word split character.
-                let charType: string = characterRangeTypes[i + charTypeIndex];
-                if (charType === 'WordSplit' && splittedText[i].length === 1 && i + charTypeIndex + 1 < characterRangeTypes.length
-                    && characterRangeTypes[i + charTypeIndex - 1] !== 'WordSplit' && (characterRangeTypes[i + charTypeIndex - 1] !== 'Number'
+                let charType: CharacterRangeType = characterRangeTypes[i + charTypeIndex];
+                if (charType === CharacterRangeType.WordSplit && splittedText[i].length === 1 && i + charTypeIndex + 1 < characterRangeTypes.length
+                    && characterRangeTypes[i + charTypeIndex - 1] !== CharacterRangeType.WordSplit && (characterRangeTypes[i + charTypeIndex - 1] !== CharacterRangeType.Number
                         //Else handled to combine consecutive number 
                         //when text bidi is false and middle word split character is not white space.
                         || this.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
@@ -2344,9 +2353,9 @@ export class Layout {
             if (isTextBidi) {
                 for (let i: number = 1; i < lastLtrIndex; i++) {
                     //Combines the first and last LTR along with all in-between splited text's.
-                    const charType: string = characterRangeTypes[i + charTypeIndex];
-                    if (charType === 'WordSplit' && i < lastLtrIndex
-                        && characterRangeTypes[i + charTypeIndex - 1] === 'LTR') {
+                    const charType: CharacterRangeType = characterRangeTypes[i + charTypeIndex];
+                    if (charType === CharacterRangeType.WordSplit && i < lastLtrIndex
+                        && characterRangeTypes[i + charTypeIndex - 1] === CharacterRangeType.LeftToRight) {
                         ltrText = '';
                         for (let j: number = i + 1; j <= lastLtrIndex; j++) {
                             ltrText += splittedText[j];
@@ -2378,10 +2387,10 @@ export class Layout {
                 //Combines the consecutive LTR, RTL, and Number(Number get combined only if it's splitted by non reversing characters (.,:)
                 //or if it's lang attribute is represent a RTL language)
                 //along with single in-between number non reversing word split character.
-                const characterType: string = characterRangeTypes[j + charTypeIndex];
-                if (characterType === 'WordSplit' && splittedText[j].length === 1
-                    && j + charTypeIndex + 1 < characterRangeTypes.length && characterRangeTypes[j + charTypeIndex - 1] !== 'WordSplit'
-                    && (characterRangeTypes[j + charTypeIndex - 1] !== 'Number' || this.isNumberNonReversingCharacter(splittedText[j], isTextBidi))
+                const characterType: CharacterRangeType = characterRangeTypes[j + charTypeIndex];
+                if (characterType === CharacterRangeType.WordSplit && splittedText[j].length === 1
+                    && j + charTypeIndex + 1 < characterRangeTypes.length && characterRangeTypes[j + charTypeIndex - 1] !== CharacterRangeType.WordSplit
+                    && (characterRangeTypes[j + charTypeIndex - 1] !== CharacterRangeType.Number || this.isNumberNonReversingCharacter(splittedText[j], isTextBidi))
                     && characterRangeTypes[j + charTypeIndex - 1] === characterRangeTypes[j + charTypeIndex + 1]) {
                     splittedText[j - 1] = splittedText[j - 1] + splittedText[j] + splittedText[j + 1];
                     splittedText.splice(j, 1);
@@ -2390,18 +2399,18 @@ export class Layout {
                     characterRangeTypes.splice(j + charTypeIndex);
                     j--;
                     // //Combines the Number along with single non-word split characters (% $ #).
-                    // else if (charType=='WordSplit'
-                    //     && characterRangeTypes[i + charTypeIndex - 1]=='Number') {
+                    // else if (charType==CharacterRangeType.WordSplit
+                    //     && characterRangeTypes[i + charTypeIndex - 1]==CharacterRangeType.Number) {
                     //     splittedText[i - 1] = splittedText[i - 1] + splittedText[i];
                     //     splittedText.splice(i, 1);
                     //     characterRangeTypes.splice(i + charTypeIndex, 1);
                     //     i--;
                     // }
                     //Combines the consecutive LTR and Number
-                } else if (characterType === 'LTR' && (characterRangeTypes[j + charTypeIndex - 1] === 'Number'
-                    || characterRangeTypes[j + charTypeIndex - 1] === 'LTR')) {
+                } else if (characterType === CharacterRangeType.LeftToRight && (characterRangeTypes[j + charTypeIndex - 1] === CharacterRangeType.Number
+                    || characterRangeTypes[j + charTypeIndex - 1] === CharacterRangeType.LeftToRight)) {
                     splittedText[j - 1] = splittedText[j - 1] + splittedText[j];
-                    characterRangeTypes[j + charTypeIndex - 1] = 'LTR';
+                    characterRangeTypes[j + charTypeIndex - 1] = CharacterRangeType.LeftToRight;
                     splittedText.splice(j, 1);
                     characterRangeTypes.splice(j + charTypeIndex, 1);
                     j--;
@@ -2580,9 +2589,8 @@ export class Layout {
         if (paragraph.childWidgets.length > 0 && !isShiftEnter) {
             lineWidget = paragraph.childWidgets[0] as LineWidget;
             if (lineWidget.children.length > 0) {
-                if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(lineWidget))) {
-                    this.reArrangeElementsForRtl(lineWidget, paraFormat.bidi);
-                    this.isRTLLayout = true;
+                if ((paraFormat.bidi || this.isContainsRtl(lineWidget))) {
+                    this.shiftElementsForRTLLayouting(lineWidget, paraFormat.bidi)
                 }
                 const isParagraphStart: boolean = lineWidget.isFirstLine();
                 const isParagraphEnd: boolean = lineWidget.isLastLine();
@@ -2677,6 +2685,7 @@ export class Layout {
             lineWidget.height = 0;
         }
         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + lineWidget.height);
+        this.wrapPosition = [];
         //Clears the previous line elements from collection.
     }
 
@@ -3143,8 +3152,9 @@ export class Layout {
             afterSpacing = HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         }
 
-        if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(line))) {
-            this.reArrangeElementsForRtl(line, paraFormat.bidi);
+        if ((paraFormat.bidi || this.isContainsRtl(line))) {
+            this.shiftElementsForRTLLayouting(line, paraFormat.bidi)
+            // this.reArrangeElementsForRtl(line, paraFormat.bidi);
             this.isRTLLayout = true;
         }
 
@@ -3213,11 +3223,12 @@ export class Layout {
         let wrapIndex: number = 0;
         let lineSpacingType: LineSpacingType = paraFormat.lineSpacingType;
         let isStarted: boolean = false;
-        for (let i: number = 0; i < line.children.length; i++) {
+        let children: ElementBox[] = line.renderedElements;
+        for (let i: number = 0; i < children.length; i++) {
             let topMargin: number = 0;
             let bottomMargin: number = 0;
             let leftMargin: number = 0;
-            let elementBox: ElementBox = line.children[i];
+            let elementBox: ElementBox = children[i];
             if (!isNullOrUndefined(getWidthAndSpace) && isStarted && elementBox.padding.left > 0 &&
                 (getWidthAndSpace.length > wrapIndex + 1)) {
                 let previousWidth: number = subWidth;
@@ -3235,7 +3246,7 @@ export class Layout {
                 continue;
             }
             isStarted = true;
-            let alignElements: LineElementInfo = this.alignLineElements(elementBox, topMargin, bottomMargin, maxDescent, addSubWidth, subWidth, textAlignment, whiteSpaceCount, i === line.children.length - 1);
+            let alignElements: LineElementInfo = this.alignLineElements(elementBox, topMargin, bottomMargin, maxDescent, addSubWidth, subWidth, textAlignment, whiteSpaceCount, i === children.length - 1);
             topMargin = alignElements.topMargin;
             bottomMargin = alignElements.bottomMargin;
             addSubWidth = alignElements.addSubWidth;
@@ -3849,6 +3860,15 @@ export class Layout {
         this.isOverlapFloatTable = true;
         this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - startBlock.y;
         this.viewer.clientActiveArea.y = startBlock.y;
+        let startParagaraph: ParagraphWidget;
+        if (startBlock instanceof TableWidget) {
+            startParagaraph = this.documentHelper.selection.getFirstParagraphInFirstCell(startBlock as TableWidget);
+        } else {
+            startParagaraph = startBlock as ParagraphWidget;
+        }
+        if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
+            this.viewer.owner.editorModule.updateWholeListItems(startParagaraph);
+        }
         while (block) {
             this.viewer.updateClientAreaForBlock(block, true);
             if (block instanceof ParagraphWidget) {
@@ -4428,7 +4448,7 @@ export class Layout {
         } else {
             let tabWidth: number = HelperMethods.convertPointToPixel(tab.position) - position;
             let width: number = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
-            if (width < tabWidth) {
+            if (width < tabWidth && tab.tabJustification != 'Decimal') {
                 if (tab.tabJustification === 'Right') {
                     defaultTabWidth = tabWidth - width;
                     let rightIndent: number = HelperMethods.convertPointToPixel(paragraph.rightIndent);
@@ -4444,6 +4464,22 @@ export class Layout {
                 }
             } else if (tab.tabJustification === 'Center' && (width / 2) < tabWidth) {
                 defaultTabWidth = tabWidth - width / 2;
+            } else if (tab.tabJustification === 'Decimal') {
+                if(!isNullOrUndefined(element.nextElement) && element.nextElement instanceof TextElementBox){
+                    let nextElement: TextElementBox = element.nextElement as TextElementBox;
+                    if(nextElement.text.indexOf(".") != -1){
+                        let index: number = nextElement.text.indexOf(".");
+                        let text: string = nextElement.text.substring(0,index);
+                        let textWidth: number = this.documentHelper.textHelper.getWidth(text, nextElement.characterFormat)
+                        defaultTabWidth = tabWidth - textWidth;
+                    } else if ( width < tabWidth) {
+                        defaultTabWidth = tabWidth - width;
+                    } else {
+                        defaultTabWidth = tabWidth ;
+                    }
+                } else {
+                    defaultTabWidth = tabWidth;
+                }
             } else {
                 defaultTabWidth = tab.tabJustification === 'Right' ? 0 : elementWidth;
             }
@@ -4972,10 +5008,7 @@ export class Layout {
         }
         row.containerWidget = tableWidget;
             tableWidget.height = tableWidget.height + row.height;
-        // Shift the widgets for Right to left directed table.
-        if (tableWidget.isBidiTable) {
-            row.shiftWidgetForRtlTable(this.viewer.clientArea, tableWidget, row);
-        }
+
         if (this.viewer instanceof PageLayoutViewer) {
             if (!isNullOrUndefined(tableWidget.containerWidget)
                 && tableWidget.containerWidget.childWidgets.indexOf(tableWidget) >= 0 &&
@@ -7020,6 +7053,16 @@ export class Layout {
             // tableWidget.containerWidget = viewer.renderedElements.get(table.associatedCell)[viewer.renderedElements.get(table.associatedCell).length - 1] as BodyWidget;
             // (viewer.renderedElements.get(table.associatedCell)[viewer.renderedElements.get(table.associatedCell).length - 1] as TableCellWidget).height = (viewer.renderedElements.get(table.associatedCell)[viewer.renderedElements.get(table.associatedCell).length - 1] as TableCellWidget).height + tableWidget.height;
         }
+        // Shift the widgets for Right to left directed table.
+        if (table.isBidiTable) {
+            for (let i: number = 0; i < tables.length; i++) {
+                let layoutedTable: TableWidget = tables[i];
+                for (let j: number = 0; j < layoutedTable.childWidgets.length; j++) {
+                    let layoutedRow: TableRowWidget = layoutedTable.childWidgets[j] as TableRowWidget;
+                    layoutedRow.shiftWidgetForRtlTable();
+                }
+            }
+        }
         if (table.tableFormat.cellSpacing > 0) {
             /* eslint-disable-next-line max-len */
             if (tableWidget.y + tableWidget.height + HelperMethods.convertPointToPixel(table.tableFormat.cellSpacing) > viewer.clientArea.bottom && viewer instanceof WebLayoutViewer) {
@@ -8470,25 +8513,12 @@ export class Layout {
         } else {
             lineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
         }
-        if (!this.isBidiReLayout && (paragraph.paragraphFormat.bidi || this.isContainsRtl(lineWidget))) {
-            let newLineIndex: number = lineIndex <= 0 ? 0 : lineIndex - 1;
-            for (let i: number = newLineIndex; i < paragraph.childWidgets.length; i++) {
-                if (isBidi || !(paragraph.paragraphFormat.bidi && this.isContainsRtl(lineWidget)) && !isSkip) {
-                    if (i === lineIndex) {
-                        if (this.viewer.owner.editor.isPaste) {
-                            this.reArrangeElementsForRtl(paragraph.childWidgets[i] as LineWidget, paragraph.paragraphFormat.bidi);
-                        }
-                        continue;
-                    }
-                }
-                this.reArrangeElementsForRtl(paragraph.childWidgets[i] as LineWidget, paragraph.paragraphFormat.bidi);
-            }
-        }
         let lineToLayout: LineWidget = lineWidget.previousLine;
         if (isNullOrUndefined(lineToLayout)) {
             lineToLayout = lineWidget;
         }
-        let currentParagraph: ParagraphWidget = lineToLayout.paragraph;
+        paragraph.splitLtrAndRtlText(lineToLayout.indexInOwner);
+        paragraph.combineconsecutiveRTL(lineToLayout.indexInOwner);
         let bodyWidget: BodyWidget = paragraph.containerWidget as BlockContainer;
         bodyWidget.height -= paragraph.height;
         if ((this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) && !(bodyWidget instanceof TextFrame)) {
@@ -8589,145 +8619,495 @@ export class Layout {
     }
     // Re arranges the elements for Right to left layotuing.
     /* eslint-disable  */
-    public reArrangeElementsForRtl(line: LineWidget, isParaBidi: boolean): void {
-        if (line.children.length === 0) {
-            return;
-        }
+    // public reArrangeElementsForRtl(line: LineWidget, isParaBidi: boolean): void {
+    //     if (line.children.length === 0) {
+    //         return;
+    //     }
 
-        let lastAddedElementIsRtl: boolean = false;
-        let lastAddedRtlElementIndex: number = -1;
-        let tempElements: ElementBox[] = [];
+    //     let lastAddedElementIsRtl: boolean = false;
+    //     let lastAddedRtlElementIndex: number = -1;
+    //     let tempElements: ElementBox[] = [];
 
+    //     for (let i: number = 0; i < line.children.length; i++) {
+    //         let element: ElementBox = line.children[i];
+    //         let elementCharacterFormat: WCharacterFormat = undefined;
+    //         if (element.characterFormat) {
+    //             elementCharacterFormat = element.characterFormat;
+    //         }
+    //         let isRtl: boolean = false;
+    //         let text: string = '';
+    //         let containsSpecchrs: boolean = false;
+    //         if (element instanceof BookmarkElementBox) {
+    //             if (isParaBidi) {
+    //                 if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
+    //                     && element.nextElement.nextElement instanceof TextElementBox
+    //                     && this.documentHelper.textHelper.isRTLText(element.nextElement.nextElement.text)
+    //                     || element.bookmarkType === 1 && element.nextElement instanceof TextElementBox
+    //                     && this.documentHelper.textHelper.isRTLText(element.nextElement.text)) {
+    //                     tempElements.splice(0, 0, element);
+    //                 } else {
+    //                     tempElements.splice(lastAddedElementIsRtl ? lastAddedRtlElementIndex : lastAddedRtlElementIndex + 1, 0, element);
+    //                 }
+    //                 lastAddedRtlElementIndex = tempElements.indexOf(element);
+    //             } else {
+    //                 tempElements.push(element);
+    //             }
+    //             continue;
+    //         }
+
+    //         if (element instanceof TextElementBox) {
+    //             text = (element as TextElementBox).text;
+    //             containsSpecchrs = this.documentHelper.textHelper.containsSpecialCharAlone(text.trim());
+    //             if (containsSpecchrs) {
+    //                 if (elementCharacterFormat.bidi && isParaBidi) {
+    //                     text = HelperMethods.reverseString(text);
+    //                     for (let k: number = 0; k < text.length; k++) {
+    //                         let ch: string = this.documentHelper.textHelper.inverseCharacter(text.charAt(k));
+    //                         text = text.replace(text.charAt(k), ch);
+    //                     }
+    //                     element.text = text;
+    //                 }
+    //             }
+    //             let textElement: ElementBox = element.nextElement;
+    //             if (element instanceof TextElementBox && this.documentHelper.textHelper.containsNumberAlone(element.text.trim())) {
+    //                 while (textElement instanceof TextElementBox && textElement.text.trim() !== '' && (this.documentHelper.textHelper.containsNumberAlone(textElement.text.trim()) || this.documentHelper.textHelper.containsSpecialCharAlone(textElement.text.trim()))) {
+    //                     element.text = element.text + textElement.text;
+    //                     element.line.children.splice(element.line.children.indexOf(textElement), 1);
+    //                     textElement = element.nextElement;
+    //                 }
+    //                 element.width = this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
+    //             }
+    //         }
+    //         let isRTLText: boolean = false;
+    //         // let isNumber: boolean = false;
+    //         // The list element box shold be added in the last position in line widget for the RTL paragraph 
+    //         // and first in the line widget for LTR paragrph.
+    //         if (element instanceof ListTextElementBox) {
+    //             isRtl = isParaBidi;
+    //         } else { // For Text element box we need to check the character format and unicode of text to detect the RTL text. 
+    //             isRTLText = this.documentHelper.textHelper.isRTLText(text);
+    //             isRtl = isRTLText || elementCharacterFormat.bidi
+    //                 || elementCharacterFormat.bdo === 'RTL';
+
+    //         }
+    //         if (element instanceof FieldElementBox || this.isRtlFieldCode) {
+    //             if ((element as FieldElementBox).fieldType === 0) {
+    //                 this.isRtlFieldCode = true;
+    //             } else if ((element as FieldElementBox).fieldType === 1) {
+    //                 this.isRtlFieldCode = false;
+    //             }
+    //             isRtl = false;
+    //         }
+
+    //         // If the text element box contains only whitespaces, then need to check the previous and next elements.
+    //         if (!isRtl && !isNullOrUndefined(text) && text !== '' && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
+    //             let elements: ElementBox[] = line.children;
+    //             //Checks whether the langugae is RTL.
+    //             if (elementCharacterFormat.bidi) {
+    //                 // If the last added element is rtl then current text element box also considered as RTL for WhiteSpaces.
+    //                 if (lastAddedElementIsRtl) {
+    //                     isRtl = true;
+    //                     // Else, Check for next element.
+    //                 } else if (i + 1 < line.children.length && line.children[i + 1] instanceof TextElementBox) {
+    //                     text = (elements[i + 1] as TextElementBox).text;
+    //                     isRtl = this.documentHelper.textHelper.isRTLText(text) || elements[i + 1].characterFormat.bidi
+    //                         || elements[i + 1].characterFormat.bdo === 'RTL';
+    //                 }// If the last added element is rtl then current text element box also considered as RTL for WhiteSpaces.
+    //             } else if (lastAddedElementIsRtl) {
+    //                 isRtl = true;
+    //             }
+    //         }
+    //         // Preserve the isRTL value, to reuse it for navigation and selection.
+    //         element.isRightToLeft = isRtl;
+    //         //Adds the text element to the line
+    //         if (isRtl && elementCharacterFormat.bdo !== 'LTR') {
+    //             if (lastAddedElementIsRtl) {
+    //                 tempElements.splice(lastAddedRtlElementIndex, 0, element);
+    //             } else {
+    //                 if (!isParaBidi) {
+    //                     tempElements.push(element);
+    //                 } else {
+    //                     tempElements.splice(0, 0, element);
+    //                 }
+    //                 lastAddedElementIsRtl = true;
+    //                 lastAddedRtlElementIndex = tempElements.indexOf(element);
+    //             }
+    //         } else {
+    //             if (lastAddedElementIsRtl && element instanceof ImageElementBox) {
+    //                 if (elementCharacterFormat.bidi) {
+    //                     tempElements.splice(lastAddedRtlElementIndex + 1, 0, element);
+    //                 } else {
+    //                     tempElements.splice(lastAddedRtlElementIndex, 0, element);
+    //                 }
+    //             } else {
+    //                 if (!isParaBidi) {
+    //                     tempElements.push(element);
+    //                 } else {
+    //                     if (lastAddedElementIsRtl) {
+    //                         tempElements.splice(0, 0, element);
+    //                     } else {
+    //                         tempElements.splice(lastAddedRtlElementIndex + 1, 0, element);
+    //                     }
+    //                     lastAddedRtlElementIndex = tempElements.indexOf(element);
+    //                 }
+    //                 lastAddedElementIsRtl = false;
+    //             }
+    //         }
+    //     }
+    //     // Clear the elemnts and reassign the arranged elements.
+    //     line.children = [];
+    //     line.children = tempElements;
+    // }
+    private shiftElementsForRTLLayouting(line: LineWidget, paraBidi: boolean): boolean {
+        ////Check whether span has bidi value
+        let textRangeBidi: boolean = this.hasTextRangeBidi(line);
+
+        if (this.isContainsRTLText(line) || paraBidi || textRangeBidi) {
+            ////Splits the child elements of a line by consecutive RTL, LTR text and word breaking characters.
+            let characterRangeTypes: CharacterRangeType[] = [];
+            let lineElementsBidiValues: boolean[] = [];
         for (let i: number = 0; i < line.children.length; i++) {
             let element: ElementBox = line.children[i];
-            let elementCharacterFormat: WCharacterFormat = undefined;
-            if (element.characterFormat) {
-                elementCharacterFormat = element.characterFormat;
-            }
-            let isRtl: boolean = false;
-            let text: string = '';
-            let containsSpecchrs: boolean = false;
-            if (element instanceof BookmarkElementBox) {
-                if (isParaBidi) {
-                    if (lastAddedElementIsRtl || element.bookmarkType === 0 && element.nextElement
-                        && element.nextElement.nextElement instanceof TextElementBox
-                        && this.documentHelper.textHelper.isRTLText(element.nextElement.nextElement.text)
-                        || element.bookmarkType === 1 && element.nextElement instanceof TextElementBox
-                        && this.documentHelper.textHelper.isRTLText(element.nextElement.text)) {
-                        tempElements.splice(0, 0, element);
+                if (element instanceof TextElementBox && element.height > 0 && !(element.isPageBreak)) {
+                    let textRange: TextElementBox = element as TextElementBox;
+                    lineElementsBidiValues.push(textRange.characterFormat.bidi);
+                    if (textRange.text == "\t") {
+                        characterRangeTypes.push(CharacterRangeType.Tab);
                     } else {
-                        tempElements.splice(lastAddedElementIsRtl ? lastAddedRtlElementIndex : lastAddedRtlElementIndex + 1, 0, element);
+                        characterRangeTypes.push((textRange as TextElementBox).characterRange);
                     }
-                    lastAddedRtlElementIndex = tempElements.indexOf(element);
-                } else {
-                    tempElements.push(element);
-                }
-                continue;
-            }
-
-            if (element instanceof TextElementBox) {
-                text = (element as TextElementBox).text;
-                containsSpecchrs = this.documentHelper.textHelper.containsSpecialCharAlone(text.trim());
-                if (containsSpecchrs) {
-                    if (elementCharacterFormat.bidi && isParaBidi) {
-                        text = HelperMethods.reverseString(text);
-                        for (let k: number = 0; k < text.length; k++) {
-                            let ch: string = this.documentHelper.textHelper.inverseCharacter(text.charAt(k));
-                            text = text.replace(text.charAt(k), ch);
-                        }
-                        element.text = text;
-                    }
-                }
-                let textElement: ElementBox = element.nextElement;
-                if (element instanceof TextElementBox && this.documentHelper.textHelper.containsNumberAlone(element.text.trim())) {
-                    while (textElement instanceof TextElementBox && textElement.text.trim() !== '' && (this.documentHelper.textHelper.containsNumberAlone(textElement.text.trim()) || this.documentHelper.textHelper.containsSpecialCharAlone(textElement.text.trim()))) {
-                        element.text = element.text + textElement.text;
-                        element.line.children.splice(element.line.children.indexOf(textElement), 1);
-                        textElement = element.nextElement;
-                    }
-                    element.width = this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
-                }
-            }
-            let isRTLText: boolean = false;
-            // let isNumber: boolean = false;
-            // The list element box shold be added in the last position in line widget for the RTL paragraph 
-            // and first in the line widget for LTR paragrph.
-            if (element instanceof ListTextElementBox) {
-                isRtl = isParaBidi;
-            } else { // For Text element box we need to check the character format and unicode of text to detect the RTL text. 
-                isRTLText = this.documentHelper.textHelper.isRTLText(text);
-                isRtl = isRTLText || elementCharacterFormat.bidi
-                    || elementCharacterFormat.bdo === 'RTL';
-
-            }
-            if (element instanceof FieldElementBox || this.isRtlFieldCode) {
-                if ((element as FieldElementBox).fieldType === 0) {
-                    this.isRtlFieldCode = true;
-                } else if ((element as FieldElementBox).fieldType === 1) {
-                    this.isRtlFieldCode = false;
-                }
-                isRtl = false;
-            }
-
-            // If the text element box contains only whitespaces, then need to check the previous and next elements.
-            if (!isRtl && !isNullOrUndefined(text) && text !== '' && ((text !== '' && text.trim() === '') || containsSpecchrs)) {
-                let elements: ElementBox[] = line.children;
-                //Checks whether the langugae is RTL.
-                if (elementCharacterFormat.bidi) {
-                    // If the last added element is rtl then current text element box also considered as RTL for WhiteSpaces.
-                    if (lastAddedElementIsRtl) {
-                        isRtl = true;
-                        // Else, Check for next element.
-                    } else if (i + 1 < line.children.length && line.children[i + 1] instanceof TextElementBox) {
-                        text = (elements[i + 1] as TextElementBox).text;
-                        isRtl = this.documentHelper.textHelper.isRTLText(text) || elements[i + 1].characterFormat.bidi
-                            || elements[i + 1].characterFormat.bdo === 'RTL';
-                    }// If the last added element is rtl then current text element box also considered as RTL for WhiteSpaces.
-                } else if (lastAddedElementIsRtl) {
-                    isRtl = true;
-                }
-            }
-            // Preserve the isRTL value, to reuse it for navigation and selection.
-            element.isRightToLeft = isRtl;
-            //Adds the text element to the line
-            if (isRtl && elementCharacterFormat.bdo !== 'LTR') {
-                if (lastAddedElementIsRtl) {
-                    tempElements.splice(lastAddedRtlElementIndex, 0, element);
-                } else {
-                    if (!isParaBidi) {
-                        tempElements.push(element);
-                    } else {
-                        tempElements.splice(0, 0, element);
-                    }
-                    lastAddedElementIsRtl = true;
-                    lastAddedRtlElementIndex = tempElements.indexOf(element);
-                }
-            } else {
-                if (lastAddedElementIsRtl && element instanceof ImageElementBox) {
-                    if (elementCharacterFormat.bidi) {
-                        tempElements.splice(lastAddedRtlElementIndex + 1, 0, element);
-                    } else {
-                        tempElements.splice(lastAddedRtlElementIndex, 0, element);
-                    }
-                } else {
-                    if (!isParaBidi) {
-                        tempElements.push(element);
-                    } else {
-                        if (lastAddedElementIsRtl) {
-                            tempElements.splice(0, 0, element);
+                    element.isRightToLeft = characterRangeTypes[characterRangeTypes.length - 1] == CharacterRangeType.RightToLeft;
+                } else if (element instanceof CommentCharacterElementBox
+                    || element instanceof BookmarkElementBox || element instanceof EditRangeStartElementBox
+                    || element instanceof EditRangeEndElementBox || element instanceof ContentControl
+                    || element instanceof FieldElementBox) {
+                    let isStartMark: boolean = this.isStartMarker(element);
+                    let isEndMark: boolean = this.isEndMarker(element);
+                    if (isStartMark && i < line.children.length - 1) {
+                        let nextltWidget: ElementBox = this.getNextValidWidget(i + 1, line);
+                        if (!isNullOrUndefined(nextltWidget) && (nextltWidget instanceof TextElementBox)
+                            && nextltWidget.height > 0) {
+                            let textRange: TextElementBox = nextltWidget;
+                            lineElementsBidiValues.push(textRange.characterFormat.bidi);
+                            //Since tab-stop in the line changes the reordering, here we consider an tab-stop widget as Tab.
+                            if (nextltWidget.text === '\t') {
+                                characterRangeTypes.push(CharacterRangeType.Tab);
+                            } else {
+                                characterRangeTypes.push(textRange.characterRange);
+                            }
                         } else {
-                            tempElements.splice(lastAddedRtlElementIndex + 1, 0, element);
-                        }
-                        lastAddedRtlElementIndex = tempElements.indexOf(element);
+                            lineElementsBidiValues.push(false);
+                            characterRangeTypes.push(CharacterRangeType.LeftToRight);
+            }
+                    } else if (!isEndMark && i > 0) {
+                        lineElementsBidiValues.push(lineElementsBidiValues[lineElementsBidiValues.length - 1]);
+                        characterRangeTypes.push(characterRangeTypes[characterRangeTypes.length - 1]);
+                    } else {
+                        lineElementsBidiValues.push(false);
+                        characterRangeTypes.push(CharacterRangeType.LeftToRight);
                     }
-                    lastAddedElementIsRtl = false;
+                } else if (element instanceof ListTextElementBox && paraBidi) {
+                    lineElementsBidiValues.push(paraBidi);
+                    characterRangeTypes.push(CharacterRangeType.RightToLeft);
+                } else {
+                    lineElementsBidiValues.push(false);
+                    characterRangeTypes.push(CharacterRangeType.LeftToRight);
+                }
+            }
+
+            ////Sets CharacterRangeType of word split characters as (WordSplit | RTL), if word split characters are present between splitted RTL text in the same layouted line.
+            ////This code handles for both single and multiple Text Ranges of a line (Special case for ordering elements)
+            let rtlStartIndex: number = -1;
+            let isPrevLTRText: boolean = undefined;
+            for (let i: number = 0; i < characterRangeTypes.length; i++) {
+                if (i + 1 < lineElementsBidiValues.length
+                    && lineElementsBidiValues[i] != lineElementsBidiValues[i + 1]) {
+                    if (rtlStartIndex != -1) {
+                        this.updateCharacterRange(line, i, rtlStartIndex, lineElementsBidiValues, characterRangeTypes);
+                        rtlStartIndex = -1;
+                    }
+
+                    isPrevLTRText = null;
+                    continue;
+                }
+
+                if (characterRangeTypes[i] == CharacterRangeType.RightToLeft || characterRangeTypes[i] == CharacterRangeType.LeftToRight
+                    || characterRangeTypes[i] == CharacterRangeType.Number && rtlStartIndex != -1
+                    || (isNullOrUndefined(isPrevLTRText) || !isPrevLTRText) && lineElementsBidiValues[i]) {
+                    if (rtlStartIndex == -1 && characterRangeTypes[i] != CharacterRangeType.LeftToRight) {
+                        rtlStartIndex = i;
+                    } else if (rtlStartIndex == -1) {
+                        if (characterRangeTypes[i] == CharacterRangeType.LeftToRight) {
+                            isPrevLTRText = true;
+                        } else if (characterRangeTypes[i] == CharacterRangeType.RightToLeft) {
+                            isPrevLTRText = false;
+                        }
+
+                        continue;
+                    } else if (characterRangeTypes[i] == CharacterRangeType.LeftToRight) {
+                        this.updateCharacterRange(line, i, rtlStartIndex, lineElementsBidiValues, characterRangeTypes);
+                        rtlStartIndex = characterRangeTypes[i] == CharacterRangeType.RightToLeft
+                            || characterRangeTypes[i] == CharacterRangeType.Number && rtlStartIndex != -1 ? i : -1;
+                    }
+                }
+                if (characterRangeTypes[i] == CharacterRangeType.LeftToRight) {
+                    isPrevLTRText = true;
+                } else if (characterRangeTypes[i] == CharacterRangeType.RightToLeft) {
+                    isPrevLTRText = false;
+                }
+            }
+
+            if (rtlStartIndex != -1 && rtlStartIndex < characterRangeTypes.length - 1) {
+                this.updateCharacterRange(line, characterRangeTypes.length - 1, rtlStartIndex, lineElementsBidiValues, characterRangeTypes);
+                rtlStartIndex = -1;
+            }
+
+            if (characterRangeTypes.length != line.children.length) {
+                ////This exception is thrown to avoid, unhandled exception in RTL/LTR reordering logic.
+                throw new Error("Splitted Widget count mismatch while reordering layouted child widgets of a line");
+            }
+
+            let reorderedWidgets: ElementBox[] = this.reorderElements(line, characterRangeTypes, lineElementsBidiValues, paraBidi);
+            lineElementsBidiValues.length = 0;
+            characterRangeTypes.length = 0;
+
+            if (line.children.length > 0) {
+                line.layoutedElements = reorderedWidgets;
+                //elements.Clear();
+                //line.children = reorderedWidgets;
+                ////ReCalculate the height and baseline offset once again.
+                //UpdateMaxElement();
+            }
+        }
+        return paraBidi;
+    }
+    private isStartMarker(element: ElementBox): boolean {
+        if (element instanceof CommentCharacterElementBox) {
+            return element.commentType === 0;
+        } else if (element instanceof BookmarkElementBox) {
+            return element.bookmarkType === 0;
+        } else if (element instanceof EditRangeStartElementBox) {
+            return true;
+        } else if (element instanceof ContentControl) {
+            return element.type === 0;
+        } else if (element instanceof FieldElementBox) {
+           return element.fieldType === 0;
+        }
+        return false;
+    }
+    private isEndMarker(element: ElementBox): boolean {
+        if (element instanceof CommentCharacterElementBox) {
+            return element.commentType === 1;
+        } else if (element instanceof BookmarkElementBox) {
+            return element.bookmarkType === 1;
+        } else if (element instanceof EditRangeStartElementBox) {
+            return true;
+        } else if (element instanceof ContentControl) {
+            return element.type === 1;
+        } else if (element instanceof FieldElementBox) {
+            return element.fieldType === 1;
+        }
+        return false;
+    }
+
+    private getNextValidWidget(startIndex: number, layoutedWidgets: LineWidget): ElementBox {
+        for (let i: number = startIndex; i < layoutedWidgets.children.length; i++) {
+            let element: ElementBox = layoutedWidgets.children[i];
+            if (element instanceof CommentCharacterElementBox
+                || element instanceof BookmarkElementBox || element instanceof EditRangeStartElementBox
+                || element instanceof EditRangeEndElementBox || element instanceof ContentControl
+                || element instanceof FieldElementBox) {
+                continue;
+            } else {
+                return element[i];
+            }
+        }
+        return null;
+    }
+
+    private hasTextRangeBidi(line: LineWidget): boolean {
+        for (let i: number = 0; i < line.children.length; i++) {
+            let elementBox: ElementBox = line.children[i];
+            if (elementBox instanceof TextElementBox) {
+                let textRange: TextElementBox = elementBox as TextElementBox;
+                if (textRange.characterFormat.bidi) {
+                    return true;
                 }
             }
         }
-        // Clear the elemnts and reassign the arranged elements.
-        line.children = [];
-        line.children = tempElements;
+        return false;
     }
+
+    private isContainsRTLText(line: LineWidget): boolean {
+        let documentHelper: DocumentHelper = line.paragraph.bodyWidget.page.documentHelper;
+        let textHelper: TextHelper = documentHelper.textHelper;
+        let isContainsRTL: boolean = false;
+        for (let i = 0; i < line.children.length; i++) {
+            if (line.children[i] instanceof TextElementBox) {
+                isContainsRTL = line.children[i].characterFormat.bidi || line.children[i].characterFormat.bidi == true
+                    || textHelper.isRTLText((line.children[i] as TextElementBox).text);
+                if (isContainsRTL)
+                    break;
+            }
+        }
+
+        return isContainsRTL;
+    }
+
+    private updateCharacterRange(line: LineWidget, i: number, rtlStartIndex: number, lineElementsBidiValues: boolean[], characterRangeTypes: CharacterRangeType[]) {
+        let endIndex: number = i;
+        if (!lineElementsBidiValues[i]) {
+            if (characterRangeTypes[i] === CharacterRangeType.LeftToRight) {
+                endIndex--;
+            }
+
+            for (let j: number = endIndex; j >= rtlStartIndex; j--) {
+                if (characterRangeTypes[j] != CharacterRangeType.WordSplit) {
+                    endIndex = j;
+                    break;
+                }
+            }
+                        }
+
+        for (let j: number = rtlStartIndex; j <= endIndex; j++) {
+            if (characterRangeTypes[j] == CharacterRangeType.WordSplit) {
+                characterRangeTypes[j] = CharacterRangeType.RightToLeft | CharacterRangeType.WordSplit;
+                let previousIndex: number = j - 1;
+                let nextIndex: number = j + 1;
+                //// Handled a special behavior, When a EastAsia font is "Times New Roman" for text range.
+                //// Group of word split character is exist in between a RTL characters, MS Word reverse a corresponding word split characters.
+                //// So, that we have reverse the word split characters.
+                if (previousIndex >= 0 && nextIndex < characterRangeTypes.length
+                    && characterRangeTypes[previousIndex] == CharacterRangeType.RightToLeft
+                    && (characterRangeTypes[nextIndex] == CharacterRangeType.RightToLeft || characterRangeTypes[nextIndex] == CharacterRangeType.Number)
+                    && line.children[j] instanceof TextElementBox) {
+                    let textRange: TextElementBox = line.children[j] as TextElementBox;
+                    if (textRange.characterFormat.fontFamilyBidi == "Times New Roman") {
+                        let charArray: string[] = textRange.text.split("");
+                        let reverseArray: string[] = charArray.reverse();
+                        let joinArray: string = reverseArray.join("");
+                        textRange.text = joinArray;
+                    }
+                }
+                    }
+                }
+            }
+
+    private reorderElements(line: LineWidget, characterRangeTypes: CharacterRangeType[], listElementsBidiValues: boolean[], paraBidi: boolean): ElementBox[] {
+        let insertIndex: number = 0, lastItemIndexWithoutRTLFlag = -1, consecutiveRTLCount = 0, consecutiveNumberCount = 0;
+        let reorderedElements: ElementBox[] = [];
+        let prevCharType: CharacterRangeType = CharacterRangeType.LeftToRight;
+        let prevBidi: boolean = false;
+        for (let i = 0; i < line.children.length; i++) {
+            let element: ElementBox = line.children[i];
+            let textElement = element as TextElementBox;
+            textElement.characterRange = characterRangeTypes[i];
+
+            let isRTLText: boolean = (textElement.characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft || textElement.characterRange == CharacterRangeType.Number;
+            let isBidi: boolean = listElementsBidiValues[i];
+
+            ////If tab-stop is exist with in the line then we have to consider the below behaviours
+            if (characterRangeTypes[i] == CharacterRangeType.Tab) {
+                if (paraBidi) {
+                    ////When para bidi is true, reordering is performed until tab stop position and break the reordering and then again reordering is performed for the remaining contents which exist after the tab-stop. 
+                    ////Assume if we have an tab stop in center of the line, then the reordering is performed until the tab stop position and stop and place a tab stop and starts reordering for the remaining contents. 
+                    insertIndex = 0;
+                    lastItemIndexWithoutRTLFlag = -1;
+                    consecutiveRTLCount = 0;
+                    prevCharType = CharacterRangeType.LeftToRight;
+                    prevBidi = false;
+                    reorderedElements.splice(insertIndex, 0, element);
+                    continue;
+                }
+                else if (isBidi) {
+                    ////If text range bidi is true for the tab stop widget, MS Word does not consider this tab-stop bidi as LTR Bidi and does not shift it as per our reordering. 
+                    ////Instead its consider this widget as non-bidi LTR and do the reordering.
+                    isBidi = false;
+                }
+            }
+            if (i > 0 && prevBidi != isBidi) {
+                if (paraBidi) {
+                    ////If Bidi of paragraph is true, then start inserting widgets from first (index 0).
+                    insertIndex = 0;
+                    lastItemIndexWithoutRTLFlag = -1;
+                    consecutiveRTLCount = 0;
+                }
+                else {
+                    ////If Bidi of paragraph is false, then start inserting widgets from last (reorderedWidgets.Count).
+                    lastItemIndexWithoutRTLFlag = reorderedElements.length - 1;
+            }
+
+                ////If Bidi for previous and next widget differs, we have to reset consecutive number to 0.
+                consecutiveNumberCount = 0;
+                }
+            if (!isBidi && !isRTLText) {
+                if (paraBidi) {
+                    if (consecutiveRTLCount > 0 && prevBidi == isBidi) {
+                        insertIndex += consecutiveRTLCount;
+            }
+                    reorderedElements.splice(insertIndex, 0, element);
+                    insertIndex++;
+                    } else {
+                    reorderedElements.push(element);
+                    insertIndex = i + 1;
+                }
+                consecutiveRTLCount = 0;
+                lastItemIndexWithoutRTLFlag = paraBidi ? insertIndex - 1 : reorderedElements.length - 1;
+            }
+            else if (isRTLText || (isBidi && textElement.characterRange == CharacterRangeType.WordSplit
+                && (prevCharType == CharacterRangeType.RightToLeft || this.isInsertWordSplitToLeft(characterRangeTypes, listElementsBidiValues, i)))) {
+                consecutiveRTLCount++;
+                insertIndex = lastItemIndexWithoutRTLFlag + 1;
+                if (textElement.characterRange == CharacterRangeType.Number) {
+                    if (prevCharType == CharacterRangeType.Number) {
+                        ////Moves the insertIndex to the right after the previous consecutive number.
+                        insertIndex += consecutiveNumberCount;
+                    }
+
+                    ////Increments consecutive number counter, to decide how much position the next number text range (widget) has to be moved and inserted towards right of insertIndex.
+                    consecutiveNumberCount++;
+                }
+
+                reorderedElements.splice(insertIndex, 0, element);
+            }
+            else {
+                reorderedElements.splice(insertIndex, 0, element);
+                insertIndex++;
+                consecutiveRTLCount = 0;
+                    }
+
+            if (textElement.characterRange != CharacterRangeType.Number) {
+                ////Resets the consecutive number counter when character range is not a number.
+                consecutiveNumberCount = 0;
+                }
+
+            if (textElement.characterRange != CharacterRangeType.WordSplit) {
+                ////Note: Handled to set only CharacterRangeType.RightToLeft and CharacterRangeType.LeftToRight
+                ////For CharacterRangeType.WordSplit | CharacterRangeType.RightToLeft case, the IsInsertWordSplitToLeft method will return true.
+                prevCharType = textElement.characterRange;
+                    }
+
+            prevBidi = isBidi;
+                        }
+        return reorderedElements;
+                    }
+
+    private isInsertWordSplitToLeft(characterRangeTypes: CharacterRangeType[], lineElementsBidiValues: boolean[], elementIndex: number): boolean {
+        for (let i: number = elementIndex + 1; i < characterRangeTypes.length; i++) {
+            if ((characterRangeTypes[i] & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft) {
+                return true;
+            } else if (characterRangeTypes[i] == CharacterRangeType.LeftToRight) {
+                if (lineElementsBidiValues[i]) {
+                    return false;
+                } else {
+                    ////If bidi is true for previous LTR and bidi is false for next LTR, then insert Word split to before previous inserted widget.
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
+
     private shiftLayoutFloatingItems(paragraph: ParagraphWidget): void {
         for (let i: number = 0; i < (paragraph as ParagraphWidget).floatingElements.length; i++) {
             let element: ShapeBase = (paragraph as ParagraphWidget).floatingElements[i];

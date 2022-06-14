@@ -202,7 +202,6 @@ export class Toolbar {
                 cssClass: getCssClass(this.parent, 'e-caret-hide ' + CLS.ROOT_POPUP),
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl,
-                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>'
             });
             this.layoutBtnObj.isStringTemplate = true;

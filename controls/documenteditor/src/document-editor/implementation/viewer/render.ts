@@ -13,7 +13,7 @@ import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader,
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo } from '../editor/editor-helper';
-import { SearchWidgetInfo, WColor } from '../../index';
+import { SearchWidgetInfo, WColor, CharacterRangeType } from '../../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
@@ -709,8 +709,10 @@ export class Renderer {
         // EditRegion highlight 
         this.renderEditRegionHighlight(page, lineWidget, top);
         let isCommentMark: boolean = false;
-        for (let i: number = 0; i < lineWidget.children.length; i++) {
-            let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
+        
+        let children: ElementBox[] = lineWidget.renderedElements;
+        for (let i: number = 0; i < children.length; i++) {
+            let elementBox: ElementBox = children[i] as ElementBox;
             if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
                 continue;
             }
@@ -799,7 +801,7 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(left, 1);
                 let shapeTop: number = this.getScaledValue(top, 2);
                 this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
-            }  else {
+            } else {
                 elementBox.isVisible = true;
                 left += elementBox.padding.left;
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);
@@ -876,10 +878,10 @@ export class Renderer {
         let baselineOffset: number = elementBox.baselineOffset;
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         let text: string = elementBox.text;
-        let followCharacter: boolean = text === '\t' || text === ' ';
-        if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
-            let index: number = text.indexOf('.');
-            text = text.substr(index) + text.substring(0, index);
+        let isParaBidi: boolean = elementBox.paragraph.paragraphFormat.bidi;
+        if (isParaBidi) {
+            this.pageContext.direction = 'rtl';
+            left += elementBox.width;
         }
         // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
         if (color === "empty" || color === '#00000000') {
@@ -890,7 +892,10 @@ export class Renderer {
         }
 
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
-
+        if (isParaBidi) {
+            this.pageContext.direction = 'ltr';
+            left -= elementBox.width;
+        }
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
             this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, baselineAlignment);
         }
@@ -970,6 +975,12 @@ export class Renderer {
         if (format.allCaps) {
             text = text.toUpperCase();
         }
+        let characterRange: CharacterRangeType = elementBox.characterRange;
+        if (((characterRange == CharacterRangeType.WordSplit) ||
+            (((characterRange & CharacterRangeType.WordSplit) == CharacterRangeType.WordSplit) &&
+                ((characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft))) && format.bidi) {
+            text = this.inverseCharacter(text);
+        }
 
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
 
@@ -1008,6 +1019,53 @@ export class Renderer {
         }
         if (isHeightType) {
             this.pageContext.restore();
+        }
+    }
+
+
+    private inverseCharacter(ch: string): string {
+        switch (ch) {
+            //Specify the '('
+            case String.fromCharCode(40):
+                //Specify the ')'
+                return String.fromCharCode(41);
+            //Specify the ')'
+            case String.fromCharCode(41):
+                //Specify the '('
+                return String.fromCharCode(40);
+
+            //Specify the '<'
+            case String.fromCharCode(60):
+                //Specify the '>'
+                return String.fromCharCode(62);
+
+            //Specify the '>'
+            case String.fromCharCode(62):
+                //Specify the '<'
+                return String.fromCharCode(60);
+
+            //Specify the '{'
+            case String.fromCharCode(123):
+                //Specify the '}'
+                return String.fromCharCode(125);
+
+            //Specify the '}'
+            case String.fromCharCode(125):
+                //Specify the '{'
+                return String.fromCharCode(123);
+
+            //Specify the '['
+            case String.fromCharCode(91):
+                //Specify the ']'
+                return String.fromCharCode(93);
+
+            //Specify the ']'
+            case String.fromCharCode(93):
+                //Specify the '['
+                return String.fromCharCode(91);
+
+            default:
+                return ch;
         }
     }
 
@@ -1607,7 +1665,8 @@ export class Renderer {
                 this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width + (lineWidth * 2)), this.getScaledValue(height));
                 this.pageContext.closePath();
             }
-        }
+        }    
+        
     }
     private drawTextureStyle(textureStyle: TextureStyle, foreColor: string, backColor: string): string {
         if (textureStyle.indexOf('Percent') > -1) {

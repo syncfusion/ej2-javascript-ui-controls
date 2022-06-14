@@ -1699,6 +1699,9 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.allCaps)) {
                 characterFormat.allCaps = sourceFormat.allCaps;
             }
+            if (!isNullOrUndefined(sourceFormat.localeIdBidi)) {
+                characterFormat.localeIdBidi = sourceFormat.localeIdBidi;
+            }
         }
     }
     private getColor(color: string): string {

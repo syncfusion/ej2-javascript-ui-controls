@@ -2723,6 +2723,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 if (newProp.sheets === this.sheets) {
                     this.renderModule.refreshSheet();
                     this.notify(refreshSheetTabs, null);
+                    this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
                     break;
                 }
                 let sheetTabsRefreshed: boolean;

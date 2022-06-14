@@ -21,6 +21,10 @@ const IFRAMEHEADER: string = `
                 body{color:#333;word-wrap:break-word;padding: 8px;box-sizing: border-box;}
                 .e-rte-image {border: 0;cursor: pointer;display:
                     block;float: none;height: auto;margin: 5px auto;max-width: 100%;position: relative;}
+                .e-rte-image.e-imginline {display: inline-block;float: none;max-width: calc(100% - (2 * 5px));padding: 1px;vertical-align: bottom;}
+                .e-rte-image.e-imgcenter {cursor: pointer;display: block;float: none;margin: 5px auto;max-width: 100%;position: relative;}
+                .e-rte-image.e-imgright { float: right; margin: 0 auto;margin-left: 5px;text-align: right;}
+                .e-rte-image.e-imgleft {float: left;margin: 0 auto;margin-right: 5px;text-align: left;}
                 .e-img-caption { display: inline-block; float: none; margin: 5px auto; max-width: 100%;position: relative;}
                 .e-img-caption.e-caption-inline {display: inline-block;float: none;
                     margin: 5px auto;margin-left: 5px;margin-right: 5px;max-width: calc(100% - (2 * 5px));

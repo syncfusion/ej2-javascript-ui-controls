@@ -5,7 +5,7 @@ import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
 import { SheetModel, CellModel, ColumnModel, RowModel, getData, RangeModel } from './index';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType, getSheetIndexFromAddress } from '../common/index';
+import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, BorderType, getSheetIndexFromAddress, inRange } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
@@ -23,7 +23,7 @@ import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, Wo
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
 import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell } from '../common/index';
-import { deleteChart } from '../../spreadsheet/common/event';
+import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
@@ -1380,6 +1380,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         if (sheetIdx === this.activeSheetIndex) {
             this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true);
             this.notify(activeCellChanged, null);
+            if (inRange(getRangeIndexes(this.sheets[sheetIdx].activeCell), range[0], range[1])) {
+                this.notify(formulaBarOperation, { action: 'refreshFormulabar', value: this.getDisplayText(cell) || cell.formula });
+            }
         }
     }
 

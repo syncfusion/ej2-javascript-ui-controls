@@ -82,6 +82,10 @@
 
       }
 
+      .e-tab .e-content {
+        height: $gantt-bigger-add-dialog-content-height;
+      }
+
       .e-gantt-tree-grid-pane {
         .e-columnheader {
           .e-headercell {
@@ -257,10 +261,6 @@
       .e-dlg-header {
         line-height: 28px;
       }
-    }
-
-    .e-tab .e-content {
-      height: $gantt-bigger-add-dialog-content-height;
     }
 
     .e-filter-popup {
