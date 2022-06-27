@@ -3332,7 +3332,7 @@ export class DocumentHelper {
             this.selectionCanvasIn.innerHTML = '';
         }
         this.selectionCanvasIn = undefined;
-        if (!isNullOrUndefined(this.editableDiv)) {
+        if (!isNullOrUndefined(this.editableDiv) && !isNullOrUndefined(this.editableDiv.parentElement)) {
             this.editableDiv.innerHTML = '';
             this.editableDiv.parentElement.removeChild(this.editableDiv);
         }
