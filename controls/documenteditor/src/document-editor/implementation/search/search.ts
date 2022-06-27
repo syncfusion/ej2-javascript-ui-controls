@@ -147,7 +147,12 @@ export class Search {
         this.owner.editorModule.insertTextInternal(replaceText, true);
         const endTextPosition: TextPosition = result.end;
         const startPosition: TextPosition = new TextPosition(this.viewer.owner);
-        startPosition.setPositionParagraph(endTextPosition.currentWidget, endPosition.offset - replaceText.length);
+        if (endTextPosition.currentWidget.children.length === 0) {
+            const linewidget: LineWidget = endTextPosition.currentWidget.paragraph.childWidgets[0] as LineWidget;
+            startPosition.setPositionParagraph(linewidget, endPosition.offset - replaceText.length);
+        } else {
+            startPosition.setPositionParagraph(endTextPosition.currentWidget, endPosition.offset - replaceText.length);
+        }
         this.documentHelper.selection.selectRange(endPosition, startPosition);
         const eventArgs: SearchResultsChangeEventArgs = { source: this.viewer.owner };
         this.viewer.owner.trigger(searchResultsChangeEvent, eventArgs);
@@ -203,15 +208,21 @@ export class Search {
         }
         const count: number = results.length;
         this.viewer.owner.isLayoutEnabled = false;
+        let text: string = results.innerList[0].text;
         for (let i: number = count - 1; i >= 0; i--) {
             const result: TextSearchResult = results.innerList[i];
-            this.navigate(results.innerList[i]);
-            this.owner.editorModule.insertTextInternal(replaceText, true);
+            if (result.start.currentWidget.children.length === 0) {
+                results = this.textSearch.findAll(text);
+                i = results.length;
+             } else {
+                 this.navigate(results.innerList[i]);
+                 this.owner.editorModule.insertTextInternal(replaceText, true);
+                 results.innerList[i].destroy();
+             }
             //if (result.isHeader || result.isFooter) {
-                /* eslint-disable-next-line max-len */
+                // eslint-disable-next-line max-len
                 //this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             //}
-            results.innerList[i].destroy();
         }
         if (this.owner.editorHistory && !isNullOrUndefined(this.owner.editorHistory.currentHistoryInfo)) {
             this.owner.editorHistory.updateComplexHistory();

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase, TileRenderingSettingsModel } from '../index';
-import { getDiagramElement, PointModel } from '@syncfusion/ej2-drawings';
+import { getDiagramElement, Point, PointModel, Rect } from '@syncfusion/ej2-drawings';
 
 /**
  * Magnification module
@@ -23,7 +23,7 @@ export class Magnification {
     private lowerZoomLevel: number;
     private zoomPercentages: number[] = [10, 25, 50, 75, 100, 125, 150, 200, 400];
     private isNotPredefinedZoom: boolean = false;
-    private pinchStep: number = 0.02;
+    private pinchStep: number = 0;
     private reRenderPageNumber: number = 0;
     // eslint-disable-next-line
     private magnifyPageRerenderTimer: any = null;
@@ -100,10 +100,13 @@ export class Magnification {
      * @returns void
      */
     public zoomTo(zoomValue: number): void {
-        if (zoomValue < 10) {
-            zoomValue = 10;
-        } else if (zoomValue > 400) {
-            zoomValue = 400;
+        let MaximumZoomPercentage: number = 400;
+        let MinmumZoomPercentage: number = 10;
+        if (zoomValue < MinmumZoomPercentage) {
+            zoomValue = MinmumZoomPercentage;
+        }
+        else if (zoomValue > MaximumZoomPercentage) {
+            zoomValue = MaximumZoomPercentage;
         }
         this.fitType = null;
         this.isNotPredefinedZoom = false;
@@ -474,6 +477,35 @@ export class Magnification {
         this.topValue = 0;
         for (let i: number = 1; i < this.pdfViewerBase.pageSize.length; i++) {
             this.topValue += (this.pdfViewerBase.pageSize[i].height + this.pdfViewerBase.pageGap) * this.zoomFactor;
+        }
+        let limit: number = this.pdfViewerBase.pageCount < 10 ? this.pdfViewerBase.pageCount : 10;
+        for (let i: number = 0; i < limit; i++) {    
+            this.updatePageContainer(i, this.pdfViewerBase.getPageWidth(i), this.pdfViewerBase.getPageHeight(i), this.pdfViewerBase.getPageTop(i), true);
+        }
+    }
+
+    private updatePageContainer(pageNumber: number, pageWidth: number, pageHeight: number, topValue: number, isReRender?: true): void {
+        // eslint-disable-next-line
+        let pageDiv: any = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber);
+        if (pageDiv) {
+            pageDiv.style.width = pageWidth + 'px';
+            pageDiv.style.height = pageHeight + 'px';
+            // eslint-disable-next-line
+            let textLayerDiv: any = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
+            if (textLayerDiv) {
+                textLayerDiv.style.width = pageWidth + 'px';
+                textLayerDiv.style.height = pageHeight + 'px';
+            }
+            pageDiv.style.width = pageWidth + 'px';
+            pageDiv.style.height = pageHeight + 'px';
+            if (this.pdfViewer.enableRtl) {
+                pageDiv.style.right = this.pdfViewerBase.updateLeftPosition(pageNumber) + 'px';
+            } else {
+                pageDiv.style.left = this.pdfViewerBase.updateLeftPosition(pageNumber) + 'px';
+            }
+            pageDiv.style.top = topValue + 'px';
+            this.pdfViewerBase.pageContainer.style.width = this.pdfViewerBase.viewerContainer.clientWidth + 'px';
+            this.pdfViewerBase.renderPageCanvas(pageDiv, pageWidth, pageHeight, pageNumber, 'block');
         }
     }
 
@@ -1015,8 +1047,10 @@ export class Magnification {
         let currentDifference = Math.sqrt(Math.pow((pointX1 - pointX2), 2) + Math.pow((pointY1 - pointY2), 2));
         if (this.previousTouchDifference > -1) {
             if (currentDifference > this.previousTouchDifference) {
+                this.pinchStep = this.getPinchStep(currentDifference, this.previousTouchDifference);
                 this.pinchOut();
             } else if (currentDifference < this.previousTouchDifference) {
+                this.pinchStep = this.getPinchStep(this.previousTouchDifference, currentDifference);
                 this.pinchIn();
             }
         }
@@ -1206,5 +1240,64 @@ export class Magnification {
      */
     public getModuleName(): string {
         return 'Magnification';
+    }
+    
+    /**
+    * Returns the pinch step value.
+    * @param higherValue
+    * @param lowerValue
+    */
+    private getPinchStep(higherValue: number, lowerValue: number): number {
+        let defaultPinchStep: number = 0.02; // Default pinch step value.
+        let higherPinchStep: number = 1; // higher pinch step value.
+        let pinchstep: number = (higherValue - lowerValue) / 100;
+        if (pinchstep < defaultPinchStep) {
+            pinchstep = defaultPinchStep;
+        } else if (pinchstep > higherPinchStep) {
+            pinchstep = 0.1; // set the pinch step as 0.1 if the pinch reaches the higher pinch step value.
+        }
+        return pinchstep;
+    }
+
+    /**
+    * @private
+    * Brings the given rectangular region to view and zooms in the document to fit the region in client area (view port).
+    *
+    * @param {Rect} zoomRect - Specifies the region in client coordinates that is to be brought to view.
+    */
+    public zoomToRect(zoomRect: Rect): void {
+        let desiredScaleFactor: number;
+        let pdfViewerBase: any = this.pdfViewerBase;
+        let viewerContainer : any = pdfViewerBase.viewerContainer;
+        let pdfViewer: any = this.pdfViewer;
+        if (zoomRect.width > 0 && zoomRect.height > 0) {
+            let location: any = { x: zoomRect.x, y: zoomRect.y };
+            var pageNumber = pdfViewer.getPageNumberFromClientPoint(location);
+            if (pageNumber > 0) {
+                let desiredHorizontalScale: any = viewerContainer.getBoundingClientRect().width / zoomRect.width;
+                let desiredVerticalScale: any = viewerContainer.getBoundingClientRect().height / zoomRect.height;
+                if (desiredHorizontalScale < desiredVerticalScale) {
+                    desiredScaleFactor = desiredHorizontalScale;
+                } else {
+                    desiredScaleFactor = desiredVerticalScale;
+                }
+                let zoomValue: number = 100; // default zoom value
+                let zoomPercentage: number = pdfViewerBase.getZoomFactor() * 100;
+                zoomValue = zoomPercentage * desiredScaleFactor;
+                let prevScrollTop : number = viewerContainer.scrollTop;
+                // Zoom to desired zoom value.
+                this.zoomTo(zoomValue);
+                viewerContainer.scrollTop = prevScrollTop;
+                let zoomFactor: number = pdfViewerBase.getZoomFactor();
+                let pagepoint : any = { x: zoomRect.x, y: zoomRect.y };
+                // Convert the client point to page point.
+                pagepoint = pdfViewer.convertClientPointToPagePoint(pagepoint, pageNumber);
+                pdfViewerBase.updateScrollTop(pageNumber - 1);
+                // To adjust the container to the left position.
+                viewerContainer.scrollLeft = pagepoint.x * zoomFactor;
+                // To adjust the container to the top position.
+                viewerContainer.scrollTop = (pagepoint.y + pdfViewerBase.pageSize[pageNumber - 1].top) * zoomFactor;
+            }
+        }
     }
 }

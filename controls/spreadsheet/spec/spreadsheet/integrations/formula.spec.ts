@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel } from '../../../src';
+import { CellModel, getCell } from '../../../src/index';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -317,9 +317,6 @@ describe('Spreadsheet formula module ->', () => {
                 helper.setAnimationToNone(`#${helper.id}_contextmenu`);
                 helper.openAndClickCMenuItem(0, 5, [7], null, true);
                 setTimeout(() => {
-                    expect(document.querySelectorAll('.e-dialog').length).toBe(1);
-                    helper.setAnimationToNone('.e-dialog');
-                    helper.click('.e-dialog .e-primary');
                     expect(document.querySelectorAll('.e-dialog').length).toBe(0);
                     done();
                 });
@@ -561,19 +558,22 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
         describe('SF-362961 ->', () => {
+            let spreadsheet: any;
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{ name: 'Report Output', rows: [{ index: 1, cells:
-                        [{ index: 3, formula: '=IFS(ClientData!E1=0,"",ClientData!E1="Others","",TRUE,ClientData!E1)' },
+                        [{ formula: '=IFS(NonOtherUQE!A1=0,"",NonOtherUQE!A1="Others","",TRUE,NonOtherUQE!A1)' }, { index: 3, formula: '=IFS(ClientData!E1=0,"",ClientData!E1="Others","",TRUE,ClientData!E1)' },
                             { formula: '=IF($D2="","",IFERROR(IF(SUMIF(ClientData!D1:D3,$A4,ClientData!C1:C3)=0,"0",SUMIF(ClientData!D1:D3,$A4,ClientData!C1:C3)),"0"))' }] }] },
-                    { name: 'ClientData', rows: [{ cells: [{ index: 2, value: '100' }, { value: 'EY Adj 1' }, { formula: '=UNIQUE(ClientData!D1:D3)' }] },
-                        { cells: [{ index: 2, value: '150' }, { value: 'EY Adj 2' }] }, { cells: [{ index: 2, value: '200' }, { value: 'Others' }] }] }] }, done);
+                        { name: 'ClientData', rows: [{ cells: [{ index: 2, value: '100' }, { value: 'EY Adj 1' }, { formula: '=UNIQUE(ClientData!D1:D3)' }] },
+                        { cells: [{ value: 'EY Adj 2' }, { value: '1,000.00' }, { value: '150' }, { value: 'EY Adj 2' }] }, { cells: [{ index: 1, value: '-2,000.00' }, { value: '200' }, { value: 'Others' }] },
+                        { index: 5, cells: [{ index: 6, formula: '=C6' }] }, { cells: [{ index: 6, formula: '=D5' }] }, { index: 100, cells: [{ formula: '=SUM(C1:C2)' }] }] },
+                        { name: 'NonOtherUQE' }] }, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Inserting row not properly updated the cell references in other sheets', (done: Function) => {
-                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet = helper.getInstance();
                 expect(spreadsheet.sheets[0].rows[1].cells[3].value).toEqual('EY Adj 1');
                 expect(spreadsheet.sheets[0].rows[1].cells[4].value).toEqual('0');
                 spreadsheet.activeSheetIndex = 1;
@@ -590,6 +590,36 @@ describe('Spreadsheet formula module ->', () => {
                         done();
                     });
                 });
+            });
+            it('saveAsJson formula calculation for not calculated formula cell and #value error checking', (done: Function) => {
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('');
+                expect(spreadsheet.sheets[1].rows[101].cells[0].value).toBeNull();
+                // saveAsJson operation codes are used to replicate the case, since CI will not compatible with Worker task so invoking getStringifyObject method directly.
+                const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader'];
+                for (let i: number = 0, sheetCount: number = spreadsheet.sheets.length; i < sheetCount; i++) {
+                    spreadsheet.workbookSaveModule.getStringifyObject(spreadsheet.sheets[i], skipProps, i);
+                }
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('');
+                expect(spreadsheet.sheets[1].rows[101].cells[0].value).toEqual(250);
+                done();
+            });
+            it('External copy/paste and SUMIF formula calculation value is not proper', (done: Function) => {
+                expect(getCell(4, 2, spreadsheet.sheets[1])).toBeNull();
+                helper.invoke('updateCell', [{ formula: '=SUMIF(ClientData!$D$2:$D$4,$A3,ClientData!$B$2:$B$4)' }, 'C5']);
+                expect(spreadsheet.sheets[1].rows[4].cells[2].value).toEqual(1000);
+                done();
+            });
+            it('Referenced cells are not updated while updating the UNIQUE formula value', (done: Function) => {
+                expect(getCell(5, 2, spreadsheet.sheets[1])).toBeNull();
+                expect(spreadsheet.sheets[1].rows[6].cells[6].formula).toEqual('=C7');
+                expect(spreadsheet.sheets[1].rows[6].cells[6].value).toEqual('0');
+                expect(spreadsheet.sheets[1].rows[7].cells[6].formula).toEqual('=D6');
+                expect(spreadsheet.sheets[1].rows[7].cells[6].value).toEqual('0');
+                helper.invoke('updateCell', [{ formula: '=UNIQUE(C2:D4)' }, 'C6']);
+                expect(spreadsheet.sheets[1].rows[5].cells[2].value).toEqual('100');
+                expect(spreadsheet.sheets[1].rows[6].cells[6].value).toEqual('150');
+                expect(spreadsheet.sheets[1].rows[7].cells[6].value).toEqual('EY Adj 1');
+                done();
             });
         });
         describe('EJ2-57075 ->', () => {

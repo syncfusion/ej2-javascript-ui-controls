@@ -9,6 +9,7 @@ import { Reorder } from '../../../src/grid/actions/reorder';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
+import { filterData } from '../base/datasource.spec';
 
 Grid.Inject(Page, Group, LazyLoadGroup, Reorder, ColumnChooser, Aggregate);
 
@@ -409,6 +410,51 @@ describe('LazyLoadGroup module', () => {
             gridObj.lazyLoadGroupCollapse = lazyLoadGroupCollapse;
             gridObj.groupModule.expandCollapseRows(expandElem[0]);
         });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Group caption 1st column template with lazyloading =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    groupSettings: { showDropArea: true, enableLazyLoading: true, columns: ['OrderID'] },
+                    columns: [
+                        { field: 'Freight', headerText: 'Freight', width: 150, format: 'C2' },
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ],
+                    height: 290,
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            format: 'C2',
+                            groupFooterTemplate: 'Sum: ${Sum}'
+                        }]
+                    },
+                    {
+                        columns: [{
+                            type: 'Max',
+                            field: 'Freight',
+                            format: 'C2',
+                            groupCaptionTemplate: 'Max: ${Max}'
+                        }]
+                    }]
+                }, done);
+        });
+    
+        it('check 1st column template', () => {
+            expect(gridObj.getContent().querySelectorAll('.e-groupcaption')[0].innerHTML).toBe('Order ID: 10248   Max: $32.38');
+        });
+    
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

@@ -1,4 +1,4 @@
-import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex } from '../base/index';
+import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex, getSheetName } from '../base/index';
 import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange, ConditionalFormatModel } from '../../workbook/common/index';
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
 import { beforeInsert, ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
@@ -206,6 +206,8 @@ export class WorkbookInsert {
         } else {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
             const sheetModel: SheetModel[] = model as SheetModel[];
+            const sheetName: string = getSheetName(this.parent);
+            const isFromUpdateAction: boolean = (args as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction;
             for (let i: number = 0; i < sheetModel.length; i++) {
                 if (sheetModel[i].name) {
                     for (let j: number = 0; j < this.parent.sheets.length; j++) {
@@ -219,11 +221,12 @@ export class WorkbookInsert {
             delete model[0].index; this.parent.createSheet(index, model); let id: number;
             if (args.activeSheetIndex) {
                 eventArgs.activeSheetIndex = args.activeSheetIndex;
-                if (!(args as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction) {
-                    this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true);
-                }
+                this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true);
             } else if (!args.isAction && args.start < this.parent.activeSheetIndex) {
                 this.parent.setProperties({ activeSheetIndex: this.parent.skipHiddenSheets(this.parent.activeSheetIndex) }, true);
+            }
+            if (isFromUpdateAction) {
+                this.parent.setProperties({ activeSheetIndex: getSheetIndex(this.parent, sheetName) }, true);
             }
             model.forEach((sheet: SheetModel): void => {
                 if (isModel) { this.updateRangeModel(sheet.ranges); }

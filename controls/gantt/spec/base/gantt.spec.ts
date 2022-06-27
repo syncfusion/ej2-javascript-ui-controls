@@ -523,4 +523,108 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
+    describe('CollapseAll tasks', () => {
+        let ganttObj: Gantt;
+        let projectNewData = [
+            {
+              TaskID: 1,
+              TaskName: 'Product concept',
+              StartDate: new Date('04/02/2019'),
+              EndDate: new Date('04/21/2019'),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: 'Defining the product and its usage',
+                  StartDate: new Date('04/02/2019'),
+                  EndDate: new Date('04/02/2019'),
+                  Progress: 30,
+                  Milestone: false,
+                },
+                {
+                  TaskID: 3,
+                  TaskName: 'Defining target audience',
+                  StartDate: new Date('04/02/2019'),
+                  EndDate: new Date('04/02/2019'),
+                  Milestone: false,
+                },
+                {
+                  TaskID: 4,
+                  TaskName: 'Prepare product sketch and notes',
+                  StartDate: new Date('04/02/2019'),
+                  EndDate: new Date('04/02/2019'),
+                  Progress: 30,
+                  Milestone: true,
+                },
+              ],
+            },       
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        child: 'subtasks',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        milestone: 'Milestone',                       
+                    },                   
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    dayWorkingTime : [{
+                        from: 0,
+                        to: 24
+                    }],                    
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        { field: 'TaskName', headerText: 'Task Name', width: '180' },                      
+                        { field: 'Duration', width: '100' },                     
+                    ],
+                    height: 'auto',                 
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        it('CollapseAll tasks in auto height', () => {
+            let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+            triggerMouseEvent(collapseallToolbar, 'click');
+            expect(ganttObj.ganttChartModule.chartElement.offsetHeight).toBe(115);
+        
+        });
+        
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
 });

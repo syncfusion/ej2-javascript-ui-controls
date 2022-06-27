@@ -1934,10 +1934,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (typeof (templateProp) === 'string' || !isComponent) {
             let templateFn: Function;
             let val: Str = <Str>templateProp;
+            const regEx: RegExp = new RegExp(/<(?=.*? .*?\/ ?>|br|hr|input|!--|wbr)[a-z]+.*?>|<([a-z]+).*?<\/\1>/i);
             val = (typeof (templateProp) === 'string') ? <Str>templateProp.trim() : <Str>templateProp;
             try {
                 if (typeof (templateProp) === 'object' && !isNOU((templateProp as HTEle).tagName)) {
                     innerEle.appendChild(templateProp as HTEle);
+                } else if (typeof (templateProp) === 'string' && regEx.test(val)) {
+                    innerEle.innerHTML = val;
                 } else if (document.querySelectorAll(val).length) {
                     const ele: Element = document.querySelector(val);
                     const tempStr: Str = ele.outerHTML.trim();

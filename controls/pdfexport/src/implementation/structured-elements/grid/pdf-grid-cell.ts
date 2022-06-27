@@ -739,7 +739,7 @@ export class PdfGridCell {
         }
     }
     // private setTransparency(graphics : PdfGraphics, pen : PdfPen) : void {
-    //     let alpha : number = (pen.color.a / 255)as number;
+    //     let alpha : number = (pen.color.a / 255) as number;
     //     graphics.save();
     //     graphics.setTransparency(alpha);
     // }

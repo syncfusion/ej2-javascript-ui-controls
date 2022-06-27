@@ -11,7 +11,7 @@ describe('UTC-01: DrawImage(overload-2)', () => {
         let text: string;
         fileReader = new FileReader();
         fileReader.onload = (): void => {
-            text = fileReader.result as string;
+           text = fileReader.result as string;
         }
         let sampleText : string = '';
         //Create a new PDF document.
@@ -46,7 +46,7 @@ describe('UTC-02: DrawImage(overload-1)', () => {
         let text: string;
         fileReader = new FileReader();
         fileReader.onload = (): void => {
-            text = fileReader.result as string;
+           text = fileReader.result as string;
         }
         let sampleText : string = '';
         //Create a new PDF document.
@@ -81,7 +81,7 @@ describe('UTC-03: image rotation', () => {
         let text: string;
         fileReader = new FileReader();
         fileReader.onload = (): void => {
-            text = fileReader.result as string;
+           text = fileReader.result as string;
         }
         let sampleText : string = '';
         //Create a new PDF document.
@@ -121,7 +121,7 @@ describe('UTC-04: image clipping', () => {
         let text: string;
         fileReader = new FileReader();
         fileReader.onload = (): void => {
-            text = fileReader.result as string;
+           text = fileReader.result as string;
         }
         let sampleText : string = '';
         //Create a new PDF document.
@@ -161,7 +161,7 @@ describe('UTC-05: image with graphics state', () => {
         let text: string;
         fileReader = new FileReader();
         fileReader.onload = (): void => {
-            text = fileReader.result as string;
+           text = fileReader.result as string;
         }
         let sampleText : string = '';
         //Create a new PDF document.
@@ -401,7 +401,7 @@ describe('UTC-05: table events', () => {
         let text: string;
         fileReader = new FileReader();
         fileReader.onload = (): void => {
-            text = fileReader.result as string;
+           text = fileReader.result as string;
         }
         let sampleText : string = '';
         // create a new PDF document

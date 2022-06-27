@@ -235,7 +235,12 @@
             .e-de-pane-rtl {
                 .e-de-ctnr-group-btn .e-btn .e-btn-icon {
                     margin-left: 0px;
-                    margin-right: $de-btn-icon-margin;
+                    @if $skin-name=='tailwind' {
+                        margin-right: -5px;
+                    }
+                    @else {
+                        margin-right: $de-btn-icon-margin;
+                    }
                 }
             }
         }
@@ -775,7 +780,7 @@
     .e-de-panel-right-width {
         width: $de-right-panel-width;
     }
-    @if $skin-name=='bootstrap5' or $skin-name=='FluentUI' { 
+    @if $skin-name=='bootstrap5' or $skin-name=='FluentUI' or $skin-name=='tailwind' { 
         .e-bigger {
             .e-de-panel-right-width {
                 width: $de-right-font-size-width-big;
@@ -1243,7 +1248,12 @@
 
     .e-de-grp-btn-ctnr .e-de-ctnr-group-btn>button {
         height: 38px;
-        width: 38px;
+        @if $skin-name =='bootstrap5' { 
+          width: 39px;
+        }
+        @else {
+          width: 38px;
+        }   
     }
     .e-bigger .e-de-grp-btn-ctnr .e-de-ctnr-group-btn>button {
         height: 42px;
@@ -1362,7 +1372,7 @@
         .e-de-ctnr-segment {
             margin-bottom: $de-ctnr-margin-bottom-big;
         }
-        @if $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='tailwind' {
+        @if $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='tailwind' or $skin-name=='bootstrap5' {
             .e-de-font-clr-picker .e-colorpicker-wrapper:first-child,
             .e-de-font-clr-picker>.e-split-btn-wrapper {
                 margin-right: $de-pane-margin-right-big;
@@ -1931,11 +1941,17 @@
 .e-de-ctn {
     .e-de-ctnr-toolbar {
         .e-de-bzr-button {
+            @if $skin-name == 'FluentUI' {
+                font-size: 14px;
+            }
             .e-btn-icon {
                font-size: $e-de-bzr-btn-font-size; 
                @if $skin-name=='tailwind' or  $skin-name=='tailwind-dark' {  
                    padding-bottom: 4px !important;
                }
+               @if $skin-name == 'FluentUI' {
+                    padding-bottom: 2px;
+                }
             }
         }
 
@@ -1956,6 +1972,9 @@
                     margin-top: -11px;
                 }
             }
+            @if $skin-name == 'FluentUI' {
+                padding-top: 0 !important;
+            }
         }
     }
 }
@@ -1964,17 +1983,23 @@
     .e-de-ctn {
         .e-de-ctnr-toolbar {
             .e-de-bzr-button {
+                @if $skin-name == 'FluentUI' {
+                    font-size: 16px;
+                }
                 .e-btn-icon {
                    font-size:  $e-de-bzr-btn-font-size-big;
-                   @if $skin-name =='bootstrap5' {
+                   @if $skin-name =='bootstrap5' or $skin-name == 'FluentUI'{
                      padding-bottom: 4px;
-                   } 
+                   }
                 }
             }
 
             .e-de-bzr-break.e-de-bzr-button {
                 @if  $skin-name == 'material' or  $skin-name == 'material-dark' {
                     padding-top: 11px !important;
+                }
+                @if $skin-name == 'FluentUI' {
+                    padding-top: 4px !important;
                 }
             }
         }

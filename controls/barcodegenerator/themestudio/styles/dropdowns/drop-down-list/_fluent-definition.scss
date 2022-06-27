@@ -17,7 +17,7 @@ $ddl-back-icon-padding: 0 8px !default;
 $ddl-popup-shadow: $shadow-lg !default;
 $ddl-readonly-bg-color: $content-bg-color !default;
 $ddl-filter-parent-border: 1px solid $flyout-border !default;
-
+$ddl-filter-margin: 0 !default;
 // Small Size
 $ddl-small-list-font-size: $text-xs !default;
 
@@ -85,16 +85,6 @@ $ddl-filter-box-shadow: none !default;
         line-height: 32px;
         padding-left: 0;
         text-indent: 16px;
-      }
-
-      #{if(&, '&', '*')} .e-dd-group .e-list-item {
-        padding-left: 0;
-      }
-
-      #{if(&, '&', '*')} .e-input-group input,
-      #{if(&, '&', '*')} .e-input-group input.e-input {
-        font-size: 16px;
-        height: 36px;
       }
     }
   }
@@ -177,9 +167,9 @@ $ddl-filter-box-shadow: none !default;
         text-indent: 16px;
       }
 
-      #{if(&, '&', '*')} .e-dd-group .e-list-item {
-        padding-left: 4px;
-      }
+      // #{if(&, '&', '*')} .e-dd-group .e-list-item {
+      //   padding-left: 4px;
+      // }
 
       #{if(&, '&', '*')} .e-input-group input,
       #{if(&, '&', '*')} .e-input-group input.e-input {

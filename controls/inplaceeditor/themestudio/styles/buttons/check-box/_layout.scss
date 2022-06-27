@@ -247,8 +247,10 @@
       width: $cbox-bigger-small-width;
 
       &:hover {
-        background-color: $cbox-hover-bgcolor;
-        border-color: $cbox-hover-border-color;
+        @if $skin-name != 'FluentUI' {
+          background-color: $cbox-hover-bgcolor;
+          border-color: $cbox-hover-border-color;
+        }
         @if $skin-name == 'FluentUI' {
           &:not(.e-check),
           &:not(.e-stop)::before {

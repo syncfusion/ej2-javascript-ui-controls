@@ -30,7 +30,7 @@ $ddl-input-height: 30px !default;
 $ddl-input-bigger-height: 36px !default;
 $ddl-input-mob-height: 30px !default;
 $ddl-control-height: 30px !default;
-$ddl-control-bigger-height: 36px !default;
+$ddl-control-bigger-height: 38px !default;
 $ddl-delimviewheight: 28px !default;
 $ddl-delimviewheight-bigger: 36px !default;
 $ddl-delimview-bigger-padding-left: 12px !default;
@@ -38,9 +38,10 @@ $ddl-closer-hooker-font: $text-xxs !default;
 $ddl-chip-font-family: $font-family !default;
 $ddl-closer-margin-top: -2.4em !default;
 $ddl-closer-margin-top-bigger: -2.7em !default;
-$ddl-icon-margin-top: -2.1em !default;
+$ddl-icon-margin-top: -1.68em !default;
 $ddl-clear-margin-top: -2em !default;
-$ddl-icon-margin-top-bigger: -2.25em !default;
+$ddl-bigger-clear-margin-top: -2.25em !default;
+$ddl-icon-margin-top-bigger: -1.68em !default;
 $ddl-chip-mobile-radius: 2px !default;
 $ddl-chip-sel-mobile-height: 40px !default;
 $ddl-chip-selected-padding: 12px 4px 11px 0 !default;
@@ -87,7 +88,7 @@ $ddl-back-icon-margin: 2.5px 10px 0 -52px !default;
 $ddl-back-icon-padding: 0 8px !default;
 $ddl-filterbar-padding: 8px !default;
 $ddl-bigger-filterbar-padding: 0 !default;
-$ddl-delimviewheight-check-bigger: 34px !default;
+$ddl-delimviewheight-check-bigger: 36px !default;
 $ddl-popup-reorder-border: $border-light !default;
 $ddl-check-right-margin: 8px !default;
 $ddl-bigger-check-right-margin: 12px !default;
@@ -133,6 +134,7 @@ $ddl-multiselect-filled-floatlabel-fontsize-small: 10px !default;
 $ddl-multiselect-filled-chip-clear-icon-size-small: 10px !default;
 $ddl-chip-close-small-left: 6px !default;
 $ddl-chip-close-small-top: 2px !default;
+$ddl-small-down-icon-left: -2px !default;
 
 // Touch
 $ddl-multiselect-filled-input-min-height-bigger: 52px !default;
@@ -140,6 +142,7 @@ $ddl-multiselect-filled-float-input-min-height-bigger: 36px !default;
 $ddl-multiselect-filled-floatlabel-fontsize-bigger: 12px !default;
 $ddl-bigger-chip-close-font: 14px !default;
 $ddl-bigger-chip-close-square: 14px !default;
+$ddl-bigger-chip-down-icon-font: 14px !default;
 
 // Touch Small size
 $ddl-select-all-height-bigger-small: 40px !default;
@@ -152,6 +155,8 @@ $ddl-bigger-small-input-height: 32px !default;
 $ddl-delim-bigger-small-font-size: 13px !default;
 $ddl-delimviewheight-bigger-small: 28px !default;
 $ddl-closer-margin-top-bigger-small: -2.4em !default;
+$ddl-biggersmall-chip-down-icon-font: 12px !default;
+$ddl-close-icon-bigger-right: 42px !default;
 
 // color
 
@@ -182,6 +187,9 @@ $ddl-close-icon-color: $content-text-color !default;
 $ddl-clear-icon-right: 2px !default;
 $ddl-clear-icon-top: 80% !default;
 $ddl-list-header-font-color: $primary-outline !default;
+$ddl-closer-hooker-font-small: 8px !default;
+$ddl-small-clear-icon-height: 12px !default;
+$ddl-small-clear-icon-width: 12px !default;
 
 @include export-module('multiselect-bootstrap5') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {

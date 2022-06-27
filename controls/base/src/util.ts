@@ -133,7 +133,7 @@ export function deleteObject(obj: any, key: string): void {
 /**
  *@private 
  */
- export const containerObject: Window = window;
+ export const containerObject: any = typeof window !== "undefined" ? window : {};
 /**
  * Check weather the given argument is only object.
  *

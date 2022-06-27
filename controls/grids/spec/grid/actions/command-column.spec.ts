@@ -611,4 +611,41 @@ describe('Command Column ', () => {
             gridObj = commandClick = null;
         });
     });
+
+    describe('EJ2-58294 - command column not working properly for default action => ', function () {
+        let gridObj: Grid;
+        let row: HTMLTableRowElement;
+        let commandClick: () => void;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data,
+                height: 300,
+                allowPaging:true,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right'},
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { headerText: 'Add', width: 80,
+                    commands: [{ buttonOption: { content: 'Details', cssClass: 'e-flat'} }]},
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    { headerText: 'Manage Records', width: 160,
+                    commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } }]}
+                ],
+                commandClick: commandClick
+            }, done);
+        });
+        it('Multiple command columns', function (done: Function) {
+            commandClick = (args?: any): void => {
+                done();
+            };
+            gridObj.commandClick = commandClick;
+            row = <HTMLTableRowElement>gridObj.getRows()[0];
+            (<HTMLElement>row.querySelector('.e-delete')).click();
+        });
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = commandClick = null;
+        });
+    });
 });

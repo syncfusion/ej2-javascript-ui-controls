@@ -83,9 +83,11 @@ export function compile(template: string, helper?: Object, ignorePrefix?: boolea
             var str1 = str;
             for (var i=0; i < check.length; i++) {
                 var check1 = str.match(hrefRegex)[i].split('href=')[1];
-                var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
-                change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
-                str1 = str1.replace(check1, change);
+                if (check1) {
+                    var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
+                    change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
+                    str1 = str1.replace(check1, change);
+                }
             }
             str = str.replace(str, str1);
         }

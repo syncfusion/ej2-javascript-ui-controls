@@ -243,6 +243,9 @@ function dailyType(startDate: Date, endDate: Date, data: number[], ruleObject: R
             }
         }
         tempDate.setDate(tempDate.getDate() + interval);
+        if (tempDate.getHours() !== startDate.getHours()) {
+            tempDate.setHours(startDate.getHours());
+        }
     }
 }
 
@@ -288,6 +291,9 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
                     break;
                 }
                 tempDate.setDate(tempDate.getDate() + 1);
+                if (tempDate.getHours() !== startDate.getHours()) {
+                    tempDate.setHours(startDate.getHours());
+                }
                 compareTempDate = new Date(tempDate.getTime());
                 compareTempDate = resetTime(compareTempDate);
             }
@@ -1173,7 +1179,7 @@ function insertDateCollection(state: boolean, startDate: Date, endDate: Date, da
 function weekCount(year: number, startDayOfWeek: number, monthCollection: number[][], week: number, ruleObject: RecRule): number {
     const firstDayOfWeek: number = startDayOfWeek || 0;
     const firstOfMonth: Date = new Date(year, ruleObject.month[0] - 1, 1);
-    const lastOfMonth: Date = new Date(year, ruleObject.month[0] - 1, 0);
+    const lastOfMonth: Date = new Date(year, ruleObject.month[0], 0);
     const numberOfDaysInMonth: number = lastOfMonth.getDate();
     const firstWeekDay: number = (firstOfMonth.getDay() - firstDayOfWeek + 7) % 7;
     const used: number = firstWeekDay + numberOfDaysInMonth;

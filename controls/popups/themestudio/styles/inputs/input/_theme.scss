@@ -1240,6 +1240,9 @@
   .e-input-group .e-clear-icon:hover,
   .e-input-group.e-control-wrapper .e-clear-icon:hover {
     color: $input-clear-icon-hover-color;
+    @if ($input-skin-name == 'FluentUI') {
+      background: $input-clear-icon-hover-bg-color;
+    }
   }
 
   .e-float-input:not(.e-disabled) .e-clear-icon:hover,
@@ -1248,6 +1251,9 @@
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       color: $input-clear-icon-hover-color;
+    }
+    @if ($input-skin-name == 'FluentUI') {
+      background: $input-clear-icon-hover-bg-color;
     }
   }
 

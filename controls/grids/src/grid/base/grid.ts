@@ -1811,6 +1811,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggered every time a request is made to access cell information, element, or data.
      * This will be triggered before the cell element is appended to the Grid element.
+     * Rendering a template in a Grid cell using the QueryCellInfo event is not the preferred/recommended way. Instead, use the [column template](../../grid/columns/column-template/) feature.
      *
      * @event queryCellInfo
      */

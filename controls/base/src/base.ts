@@ -1,8 +1,7 @@
 import { isUndefined, isNullOrUndefined, merge, setImmediate, setValue, isBlazor, getValue, extend } from './util';
 import { addClass, removeClass } from './dom';
 import { Observer } from './observer';
-
-
+import {validateLicense} from './validate-lic';
 export interface DomElements extends HTMLElement {
     // eslint-disable-next-line
     ej2_instances: Object[];

@@ -1,5 +1,5 @@
 import { Property, ChildProperty, Complex, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { LinearGradient } from '@syncfusion/ej2-svg-base';
+import { LinearGradient, TooltipTheme } from '@syncfusion/ej2-svg-base';
 import { HeatMap } from '../heatmap';
 import { DrawSvgCanvas, TextOption, TextBasic, PathOption, Line, LineOption, GradientPointer, textTrim } from '../utils/helper';
 import { Size, measureText, getTitle, getElement, CanvasTooltip, formatValue, LegendRange, ToggleVisibility, sum } from '../utils/helper';
@@ -1487,7 +1487,7 @@ export class Legend {
         this.tooltipObject = new tool(
             {
                 offset: offset,
-                theme: heatMap.theme,
+                theme: heatMap.theme as TooltipTheme,
                 content: tempTooltipText,
                 location: {
                     x: currentLegendRect.x + (currentLegendRect.width / 2),

@@ -100,6 +100,7 @@ export class PdfGridRow {
     public repeatFlag : boolean = false;
     public repeatRowNumber : number;
     public rowFontSplit : boolean = false;
+    public isHeaderRow: boolean = false;
     //Constructor
     /**
      * Initializes a new instance of the `PdfGridRow` class with the parent grid.
@@ -285,10 +286,10 @@ export class PdfGridRow {
             this.rowMergeComplete = false;
             if (cell.rowSpan > 1) {
                 let cellIn : number = i;
-                let rowin : number = this.grid.rows.rowCollection.indexOf(this);
+                let rowin : number = this.isHeaderRow ? this.grid.headers.indexOf(this) : this.grid.rows.rowCollection.indexOf(this);
                 for (let j : number = 0; j < cell.rowSpan; j++ ) {
                     if ( (j + 1) < cell.rowSpan) {
-                        this.grid.rows.getRow(rowin + j + 1).cells.getCell(cellIn).hasRowSpan = true;
+                        (this.isHeaderRow ? this.grid.headers.getHeader(rowin + j + 1) : this.grid.rows.getRow(rowin + j + 1)).cells.getCell(cellIn).hasRowSpan = true;
                     }
                 }
                 if (maxHeight < cell.height) {
@@ -452,6 +453,7 @@ export class PdfGridHeaderCollection {
             let row : PdfGridRow;
             for (let i : number = 0; i < arg; i++) {
                 row = new PdfGridRow(this.grid);
+                row.isHeaderRow = true;
                 for (let j : number = 0; j < this.grid.columns.count; j++) {
                     row.cells.add(new PdfGridCell());
                 }

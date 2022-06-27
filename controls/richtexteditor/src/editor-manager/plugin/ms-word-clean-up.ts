@@ -116,7 +116,13 @@ export class MsWordPaste {
 
     private imageConversion(elm: HTMLElement, rtfData: string): void {
         this.checkVShape(elm);
-        const imgElem: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
+        let imgElem: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
+        for (let i: number = 0; i < imgElem.length; i++) {
+            if (!isNOU(imgElem[i].getAttribute('v:shapes')) && imgElem[i].getAttribute('v:shapes').indexOf('Picture') < 0) {
+                detach(imgElem[i]);
+            }
+        }
+        imgElem = elm.querySelectorAll('img');
         const imgSrc: string[] = [];
         const base64Src: string[] = [];
         const imgName: string[] = [];

@@ -103,3 +103,10 @@ export const INSERT_TEXT_TYPE: string = 'insert-text-type';
  * @hidden
  */
 export const CLEAR_TYPE: string = 'clear-type';
+
+/**
+ * Self closing tags
+ *
+ * @hidden
+ */
+export const SELF_CLOSING_TAGS: string[] = ['area', 'base' ,'br', 'embed', 'hr', 'img', 'input', 'param', 'source', 'track', 'wbr', 'iframe', 'td'];

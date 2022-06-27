@@ -7,7 +7,7 @@ import { BatchAddArgs, CellEditArgs, CellSaveArgs, CellFocusArgs, BatchCancelArg
 import { CellType, freezeTable } from '../base/enum';
 import { parentsUntil, inArray, refreshForeignData, getObject, alignFrozenEditForm, gridActionHandler, addRemoveEventListener } from '../base/util';
 import { splitFrozenRowObjectCells, getGridRowElements } from '../base/util';
-import { sliceElements, getCellByColAndRowIndex, getMovableTbody, getFrozenRightTbody } from '../base/util';
+import { sliceElements, getCellByColAndRowIndex } from '../base/util';
 import { getGridRowObjects } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
@@ -438,27 +438,38 @@ export class BatchEdit {
 
     /**
      * @param {Row<Column>} row - specifies the row object
+     * @param {freezeTable} newTableName - specifies the table name
      * @returns {void}
      * @hidden
      */
-    public addRowObject(row: Row<Column>): void {
+    public addRowObject(row: Row<Column>, newTableName?: freezeTable): void {
         const gObj: IGrid = this.parent;
         const isTop: boolean = gObj.editSettings.newRowPosition === 'Top';
         gridActionHandler(
             this.parent,
             (tableName: freezeTable, rows: Row<Column>[]) => {
                 const rowClone: Row<Column> = row.clone();
-                rowClone.cells = splitFrozenRowObjectCells(gObj, rowClone.cells, tableName);
-                if (isTop) {
-                    rows.unshift(rowClone);
-                } else {
-                    rows.push(rowClone);
+                if (gObj.isFrozenGrid()) {
+                    if (newTableName === tableName) {
+                        if (isTop) {
+                            rows.unshift(rowClone);
+                        }
+                        else {
+                            rows.push(rowClone);
+                        }
+                    }
                 }
-            },
-            getGridRowObjects(this.parent), true
+                else {
+                    if (isTop) {
+                        rows.unshift(rowClone);
+                    }
+                    else {
+                        rows.push(rowClone);
+                    }
+                }
+            }, getGridRowObjects(this.parent), true
         );
     }
-
     // tslint:disable-next-line:max-func-body-length
     private bulkDelete(fieldname?: string, data?: Object): void {
         this.removeSelectedData = [];
@@ -622,97 +633,227 @@ export class BatchEdit {
             }
             this.isAdded = true;
             gObj.clearSelection();
-            let mTr: Element;
-            let frTr: Element;
-            const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
-            const model: IModelGenerator<Column> = new RowModelGenerator(this.parent);
-            const modelData: Row<Column>[] = model.generateRows([beforeBatchAddArgs.defaultData]);
-            let tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
-            let col: Column;
-            let index: number;
-            for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
-                tr.insertBefore(this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
-                modelData[0].cells.unshift(new Cell<Column>({ cellType: CellType.Indent }));
-            }
-            let tbody: Element = gObj.getContentTable().querySelector( literals.tbody);
-            tr.classList.add('e-insertedrow');
-            if (tbody.querySelector('.e-emptyrow')) {
-                const emptyRow: Element = tbody.querySelector('.e-emptyrow');
-                emptyRow.parentNode.removeChild(emptyRow);
-                this.removeFrozenTbody();
-            }
             if (gObj.isFrozenGrid()) {
-                frTr = tr.cloneNode(true) as Element;
-                mTr = this.renderMovable(tr, frTr);
-                tr = gObj.getFrozenMode() === 'Right' ? frTr as HTMLTableRowElement : tr;
-                this.renderFrozenAddRow(tr, mTr, frTr);
-            }
-            if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-                tbody = gObj.getHeaderTable().querySelector( literals.tbody);
-            } else {
-                tbody = gObj.getContentTable().querySelector( literals.tbody);
-            }
-            if (this.parent.editSettings.newRowPosition === 'Top') {
-                tbody.insertBefore(tr, tbody.firstChild);
-            } else {
-                tbody.appendChild(tr);
-            }
-            addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
-            modelData[0].isDirty = true;
-            modelData[0].changes = extend({}, {}, modelData[0].data, true);
-            modelData[0].edit = 'add';
-            this.addRowObject(modelData[0]);
-            this.refreshRowIdx();
-            this.focus.forgetPrevious();
-            gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject(), args: { isFrozen: this.parent.isFrozenGrid() } });
-            const changes: Object = this.getBatchChanges();
-            const btmIdx: number = this.getBottomIndex();
-            if (this.parent.editSettings.newRowPosition === 'Top') {
-                gObj.selectRow(0);
-            } else {
-                gObj.selectRow(btmIdx);
-            }
-            if (!data) {
-                index = this.findNextEditableCell(0, true);
-                col = (gObj.getColumns()[index] as Column);
-                if (this.parent.editSettings.newRowPosition === 'Top') {
-                    this.editCell(0, col.field, true);
-                } else {
-                    this.editCell(btmIdx, col.field, true);
+                let movableCnt: number = this.parent.getMovableColumnsCount();
+                let leftCnt: number = this.parent.getFrozenLeftCount();
+                let rightCnt: number = this.parent.getFrozenRightColumnsCount();
+                let tbody$$1: Element = gObj.getContentTable().querySelector(literals.tbody);
+                let totCount: number = movableCnt + leftCnt + rightCnt;
+                let tableTanName: freezeTable;
+                const selectedRowAdd: HTMLTableRowElement[] = [];
+                const selectedRowAddCells: HTMLCollection[] = [];
+                let col: Column;
+                let index: number;
+                let tr: HTMLTableRowElement;
+                let mTr: HTMLTableRowElement;
+                let frTr: HTMLTableRowElement;
+                for (let i: number = 0; i < totCount;) {
+                    const row: RowRenderer<Column> = new RowRenderer(this.serviceLocator, null, this.parent);
+                    const model: IModelGenerator<Column> = new RowModelGenerator(this.parent);
+                    const modelData: Row<Column>[] = model.generateRows([beforeBatchAddArgs.defaultData]);
+                    if (leftCnt > 0) {
+                        leftCnt = 0;
+                        tableTanName = 'frozen-left';
+                        totCount = leftCnt + rightCnt + movableCnt;
+                    }
+                    else if (movableCnt > 0) {
+                        movableCnt = 0;
+                        tableTanName = 'movable';
+                        totCount = leftCnt + rightCnt + movableCnt;
+                    }
+                    else {
+                        rightCnt = 0;
+                        tableTanName = 'frozen-right';
+                        totCount = leftCnt + rightCnt + movableCnt;
+                    }
+                    for (let i: number = 0; i < modelData.length; i++) {
+                        modelData[i].cells = splitFrozenRowObjectCells(this.parent, modelData[i].cells, tableTanName);
+                    }
+                    if (tableTanName === 'frozen-left') {
+                        tr = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
+                        tr.classList.add('e-insertedrow');
+                    }
+                    else if (tableTanName === 'movable') {
+                        mTr = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
+                        mTr.classList.add('e-insertedrow');
+                    }
+                    else {
+                        frTr = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
+                        frTr.classList.add('e-insertedrow');
+                    }
+                    for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
+                        tr.insertBefore(this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
+                        modelData[0].cells.unshift(new Cell({ cellType: CellType.Indent }));
+                    }
+                    if (tbody$$1.querySelector('.e-emptyrow')) {
+                        const emptyRow: Element = tbody$$1.querySelector('.e-emptyrow');
+                        emptyRow.parentNode.removeChild(emptyRow);
+                        this.removeFrozenTbody();
+                    }
+                    if (tableTanName === 'frozen-left') {
+                        if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
+                            tbody$$1 = gObj.getHeaderTable().querySelector(literals.tbody);
+                        }
+                        else {
+                            tbody$$1 = gObj.getContentTable().querySelector(literals.tbody);
+                        }
+                        if (this.parent.editSettings.newRowPosition === 'Top') {
+                            tbody$$1.insertBefore(tr, tbody$$1.firstChild);
+                            addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
+                        }
+                        else {
+                            tbody$$1.appendChild(tr);
+                            addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
+                        }
+                    }
+                    if (tableTanName === 'movable' || tableTanName === 'frozen-right') {
+                        this.renderFrozenAddRow(mTr, frTr, tableTanName);
+                    }
+                    modelData[0].isDirty = true;
+                    modelData[0].changes = extend({}, {}, modelData[0].data, true);
+                    modelData[0].edit = 'add';
+                    this.addRowObject(modelData[0], tableTanName);
                 }
+                this.refreshRowIdx();
+                this.focus.forgetPrevious();
+                gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject(), args: { isFrozen: this.parent.isFrozenGrid() } });
+                const changes: Object = this.getBatchChanges();
+                const btmIdx: number = this.getBottomIndex();
+                if (this.parent.editSettings.newRowPosition === 'Top') {
+                    gObj.selectRow(0);
+                }
+                else {
+                    gObj.selectRow(btmIdx);
+                }
+                if (!data) {
+                    index = this.findNextEditableCell(0, true);
+
+                    col = gObj.getColumns()[index];
+                    if (this.parent.editSettings.newRowPosition === 'Top') {
+                        this.editCell(0, col.field, true);
+                    }
+                    else {
+                        this.editCell(btmIdx, col.field, true);
+                    }
+                }
+                if (this.parent.aggregates.length > 0 && (data || changes[literals.addedRecords].length)) {
+                    this.parent.notify(events.refreshFooterRenderer, {});
+                }
+                if (tr) {
+                    alignFrozenEditForm(mTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
+                    selectedRowAdd.push(tr);
+                    selectedRowAddCells.push(tr.cells);
+                }
+                selectedRowAdd.push(mTr);
+                selectedRowAddCells.push(mTr.cells);
+                if (frTr) {
+                    selectedRowAdd.push(frTr);
+                    selectedRowAddCells.push(frTr.cells);
+                }
+                const args1: BatchAddArgs = {
+                    defaultData: beforeBatchAddArgs.defaultData, row: selectedRowAdd,
+                    columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: selectedRowAddCells
+                };
+                gObj.trigger(events.batchAdd, args1);
             }
-            if (this.parent.aggregates.length > 0 && (data || changes[literals.addedRecords].length)) {
-                this.parent.notify(events.refreshFooterRenderer, {});
-            }
-            const args1: BatchAddArgs = {
-                defaultData: beforeBatchAddArgs.defaultData, row: tr,
-                columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
-            };
-            gObj.trigger(events.batchAdd, args1);
-            if (gObj.isFrozenGrid()) {
-                alignFrozenEditForm(mTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
+            else {
+                const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+                const model: IModelGenerator<Column> = new RowModelGenerator(this.parent);
+                const modelData: Row<Column>[] = model.generateRows([beforeBatchAddArgs.defaultData]);
+                const tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
+                let col: Column;
+                let index: number;
+                for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
+                    tr.insertBefore(this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
+                    modelData[0].cells.unshift(new Cell<Column>({ cellType: CellType.Indent }));
+                }
+                let tbody: Element = gObj.getContentTable().querySelector(literals.tbody);
+                tr.classList.add('e-insertedrow');
+                if (tbody.querySelector('.e-emptyrow')) {
+                    const emptyRow: Element = tbody.querySelector('.e-emptyrow');
+                    emptyRow.parentNode.removeChild(emptyRow);
+                    this.removeFrozenTbody();
+                }
+                if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
+                    tbody = gObj.getHeaderTable().querySelector(literals.tbody);
+                } else {
+                    tbody = gObj.getContentTable().querySelector(literals.tbody);
+                }
+                if (this.parent.editSettings.newRowPosition === 'Top') {
+                    tbody.insertBefore(tr, tbody.firstChild);
+                } else {
+                    tbody.appendChild(tr);
+                }
+                addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
+                modelData[0].isDirty = true;
+                modelData[0].changes = extend({}, {}, modelData[0].data, true);
+                modelData[0].edit = 'add';
+                this.addRowObject(modelData[0]);
+                this.refreshRowIdx();
+                this.focus.forgetPrevious();
+                gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject(), args: { isFrozen: this.parent.isFrozenGrid() } });
+                const changes: Object = this.getBatchChanges();
+                const btmIdx: number = this.getBottomIndex();
+                if (this.parent.editSettings.newRowPosition === 'Top') {
+                    gObj.selectRow(0);
+                } else {
+                    gObj.selectRow(btmIdx);
+                }
+                if (!data) {
+                    index = this.findNextEditableCell(0, true);
+                    col = (gObj.getColumns()[index] as Column);
+                    if (this.parent.editSettings.newRowPosition === 'Top') {
+                        this.editCell(0, col.field, true);
+                    } else {
+                        this.editCell(btmIdx, col.field, true);
+                    }
+                }
+                if (this.parent.aggregates.length > 0 && (data || changes[literals.addedRecords].length)) {
+                    this.parent.notify(events.refreshFooterRenderer, {});
+                }
+                const args1: BatchAddArgs = {
+                    defaultData: beforeBatchAddArgs.defaultData, row: tr,
+                    columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
+                };
+                gObj.trigger(events.batchAdd, args1);
             }
         });
     }
 
-    private renderFrozenAddRow(tr: Element, mTr: Element, frTr: Element): void {
+    private renderFrozenAddRow(mTr: Element, frTr: Element, tableName$$1: freezeTable): void {
         const gObj: IGrid = this.parent;
-        const mTbody: Element = getMovableTbody(this.parent);
-        const frTbody: Element = getFrozenRightTbody(this.parent);
-        if (gObj.editSettings.newRowPosition === 'Top') {
-            mTbody.insertBefore(mTr, mTbody.firstChild);
-        } else {
-            mTbody.appendChild(mTr);
+        let mTbody: Element;
+        let frTbody: Element;
+        if (tableName$$1 === 'movable') {
+            if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
+                mTbody = this.parent.getMovableHeaderTbody();
+            }
+            else {
+                mTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector(literals.tbody);
+            }
+            if (gObj.editSettings.newRowPosition === 'Top') {
+                mTbody.insertBefore(mTr, mTbody.firstChild);
+            }
+            else {
+                mTbody.appendChild(mTr);
+            }
+            addClass([].slice.call(mTr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
         }
-        addClass([].slice.call(mTr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
-        if (frTbody && frTr) {
+        if (tableName$$1 === 'frozen-right') {
+            if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
+                frTbody = this.parent.getFrozenRightHeaderTbody();
+            }
+            else {
+                frTbody = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector(literals.tbody);
+            }
             if (gObj.editSettings.newRowPosition === 'Top') {
                 frTbody.insertBefore(frTr, frTbody.firstChild);
-            } else {
+            }
+            else {
                 frTbody.appendChild(frTr);
             }
             addClass([].slice.call(frTr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
-            alignFrozenEditForm(frTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
+            alignFrozenEditForm(frTr.querySelector('td:not(.e-hide)'), mTr.querySelector('td:not(.e-hide)'));
         }
         if (gObj.height === 'auto') {
             gObj.notify(events.frozenHeight, {});

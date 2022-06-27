@@ -262,7 +262,16 @@
         }
       }
     }
-
+    @if ($skin-name == 'FluentUI') {
+      & .e-text-content.e-checkbox .e-list-text {
+        width: calc(100% - 60px);
+      }
+    }
+    @else {
+      & .e-text-content.e-checkbox .e-list-text {
+        width: calc(100% - 40px);
+        }
+      }
     @if ($skin-name == 'FluentUI') {
       &.e-list-template {
         .e-list-wrapper {
@@ -345,6 +354,9 @@
         }
         @else {
           margin-top: $listview-icon-back-margin;
+        }
+        @if ($skin-name == 'FluentUI') {
+          margin-right: $listview-icon-back-margin-right;
         }
       }
 

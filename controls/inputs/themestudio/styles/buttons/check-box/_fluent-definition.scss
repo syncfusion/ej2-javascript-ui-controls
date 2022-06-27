@@ -41,7 +41,7 @@ $cbox-small-font-size: 12px !default;
 $cbox-small-height: 16px !default;
 $cbox-small-indeterminate-fontsize: 10px !default;
 $cbox-small-indeterminate-lineheight: 16px !default;
-$cbox-small-lineheight: 16px !default;
+$cbox-small-lineheight: 14px !default;
 $cbox-small-width: 16px !default;
 $cbox-width: 20px !default;
 $cbox-focus-outline-offset: 0 !default;
@@ -86,3 +86,4 @@ $cbox-border-style: solid !default;
 //enddefault
 // fluent theme
 $cbox-check-content: '\e774' !default;
+$cbox-icon-color: $icon-color !default;

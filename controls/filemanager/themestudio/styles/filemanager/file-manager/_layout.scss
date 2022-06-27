@@ -267,6 +267,9 @@
         @else {
           padding: 5px;
         }
+        @if $fm-skin-name == 'FluentUI' {
+          font-size: 16px;
+        }
         position: absolute;
         z-index: 1;
 
@@ -1585,11 +1588,17 @@
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
           font-size: 16px;
         }
+        @else if $fm-skin-name == 'FluentUI' {
+          font-size: 18px;
+        }
         @if $fm-skin-name == 'tailwind' {
           margin: 7px 4px;
         }
-        @else if $fm-skin-name == 'bootstrap5' or $fm-skin-name == 'FluentUI' {
+        @else if $fm-skin-name == 'bootstrap5' {
           margin: 4px;
+        }
+        @else if $fm-skin-name == 'FluentUI' {
+          margin: 3px;
         }
         @else {
           margin: 7px 0;

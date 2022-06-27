@@ -532,7 +532,7 @@
       padding: 1px;
 
       & .e-selectall {
-        border-style:  solid;
+        border-style: solid;
         border-width: $select-all-size / 2;
         cursor: cell;
         float: right;
@@ -622,6 +622,9 @@
 
     & .e-sheet .e-datavisualization-chart.e-ss-overlay {
       border: 1px solid $find-popup-border-color;
+      @if $skin-name == 'FluentUI' or $skin-name == 'tailwind' {
+        background-color: $white;
+      }
     }
 
     & .e-sheet .e-ss-overlay.e-ss-overlay-active {
@@ -2982,12 +2985,6 @@
       &::before {
         cursor: pointer;
       }
-    }
-  }
-
-  .e-excelfilter.e-dialog .e-dlg-content {
-    @if $skin-name == 'FluentUI' {
-      padding: 0;
     }
   }
 }

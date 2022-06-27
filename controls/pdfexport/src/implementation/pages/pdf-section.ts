@@ -261,35 +261,36 @@ export class PdfSection implements IPdfWrapper {
      * @private
      * @param document The parent document.
      * @param page The parent page.
+     * @param headers If true - return headers/footers, if false - return simple templates.
      * @param foreground If true - return foreground templates, if false - return background templates.
      * @returns Returns array of the document templates.
      */
     /* tslint:disable */
     private getDocumentTemplates(document : PdfDocument, page : PdfPage, foreground : boolean) : PdfPageTemplateElement[] {
         let templates : PdfPageTemplateElement[] = [];
-        if (this.template.applyDocumentTopTemplate && document.template.getTop(page) != null) {
+		if (this.template.applyDocumentTopTemplate && document.template.getTop(page) != null) {
             if ((!(document.template.getTop(page).foreground || foreground)) || (document.template.getTop(page).foreground && foreground)) {
                 templates.push(document.template.getTop(page));
-            }
-        }
-        if (this.template.applyDocumentBottomTemplate && document.template.getBottom(page) != null) {
-            if ((!(document.template.getBottom(page).foreground || foreground)) || (document.template.getBottom(page).foreground && foreground)) {
-                templates.push(document.template.getBottom(page));
-            }
-        }
-        if (this.template.applyDocumentLeftTemplate && document.template.getLeft(page) != null) {
-            if ((!(document.template.getLeft(page).foreground || foreground)) || (document.template.getLeft(page).foreground && foreground)) {
-                templates.push(document.template.getLeft(page));
-            }
-        }
-        if (this.template.applyDocumentRightTemplate && document.template.getRight(page) != null) {
-            if ((!(document.template.getRight(page).foreground || foreground)) || (document.template.getRight(page).foreground && foreground)) {
-                templates.push(document.template.getRight(page));
-            }
-        }
+			}
+		}
+		if (this.template.applyDocumentBottomTemplate && document.template.getBottom(page) != null) {
+			if ((!(document.template.getBottom(page).foreground || foreground)) || (document.template.getBottom(page).foreground && foreground)) {
+				templates.push(document.template.getBottom(page));
+			}
+		}
+		if (this.template.applyDocumentLeftTemplate && document.template.getLeft(page) != null) {
+			if ((!(document.template.getLeft(page).foreground || foreground)) || (document.template.getLeft(page).foreground && foreground)) {
+				templates.push(document.template.getLeft(page));
+			}
+		}
+		if (this.template.applyDocumentRightTemplate && document.template.getRight(page) != null) {
+			if ((!(document.template.getRight(page).foreground || foreground)) || (document.template.getRight(page).foreground && foreground)) {
+				templates.push(document.template.getRight(page));
+			}
+		}
         return templates;
     }
-    /**
+	/**
      * Returns array of the section templates.
      * @private
      * @param page The parent page.
@@ -303,14 +304,14 @@ export class PdfSection implements IPdfWrapper {
             let pageTemplate : PdfPageTemplateElement = this.template.getTop(page);
             if ((!(pageTemplate.foreground || foreground)) || (pageTemplate.foreground && foreground)) {
                 templates.push(pageTemplate);
-            }
-        }
+			}
+		}
         if (this.template.getBottom(page) != null) {
             let pageTemplate : PdfPageTemplateElement = this.template.getBottom(page);
             if ((!(pageTemplate.foreground || foreground)) || (pageTemplate.foreground && foreground)) {
                 templates.push(pageTemplate);
             }
-        }
+		}
         if (this.template.getLeft(page) != null) {
             let pageTemplate : PdfPageTemplateElement = this.template.getLeft(page);
             if ((!(pageTemplate.foreground || foreground)) || (pageTemplate.foreground && foreground)) {
@@ -324,7 +325,7 @@ export class PdfSection implements IPdfWrapper {
             }
         }
         return templates;
-    }
+	}
     /* tslint:enable */
     /**
      * `Adds` the specified page.

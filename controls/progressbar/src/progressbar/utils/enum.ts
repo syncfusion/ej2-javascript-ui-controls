@@ -48,7 +48,11 @@ export type ProgressTheme =
     /** Bootstrap5 */
     'Bootstrap5' |
     /** Bootstrap5Dark */
-    'Bootstrap5Dark';
+    'Bootstrap5Dark'|
+    /** Fluent */
+    'Fluent' |
+    /** FluentDark */
+    'FluentDark';
 
 /**
  * Text alignment

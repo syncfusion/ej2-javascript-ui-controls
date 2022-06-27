@@ -415,9 +415,7 @@ export class InsertHtml {
     private static removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
-            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
-            emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
-            emptyElements[i].tagName !== 'SOURCE' && emptyElements[i].tagName !== 'HR') {
+            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(emptyElements[i].tagName.toLowerCase()) < 0) {
                 const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);

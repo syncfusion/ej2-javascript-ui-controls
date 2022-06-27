@@ -263,7 +263,7 @@ export class ProgressAnimation {
                         if (labelText === '') {
                             labelPath.setAttribute('visibility', 'visible');
                             value = effect(args.timeStamp, start, end, args.duration, false);
-                            valueChanged = parseInt(((value / progress.progressRect.width) * percentage).toString(), 10);
+                            valueChanged = parseInt((((Math.round(value)) / progress.progressRect.width) * percentage).toString(), 10);
                             labelPath.innerHTML = valueChanged.toString() + '%';
                             if (labelPos === 'Far' || labelPos === 'Center') {
                                 xPos = effect(args.timeStamp, startPos, endPos, args.duration, progress.enableRtl);
@@ -275,7 +275,7 @@ export class ProgressAnimation {
                     if (labelText === '') {
                         labelPath.setAttribute('visibility', 'visible');
                         value = effect(args.timeStamp, start, end - start, args.duration, false);
-                        valueChanged = parseInt(((value / progress.totalAngle) * percentage).toString(), 10);
+                        valueChanged = parseInt((((Math.round(value)) / progress.totalAngle) * percentage).toString(), 10);
                         labelPath.innerHTML = valueChanged.toString() + '%';
                     }
                 }

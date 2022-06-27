@@ -92,6 +92,13 @@ export class TooltipBorder extends ChildProperty<TooltipBorder> {
     @Property(1)
     public width: number;
 
+    /**
+     * The dash-array of the border.
+     * @default ''
+     */
+     @Property('')
+     public dashArray: string;
+
 }
 
 /**
@@ -768,8 +775,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             defElement.innerHTML = shadow;
         }
 
-        let borderColor: string = this.theme === "Fluent" ? "FFFFFF" : this.theme === "FluentDark" ? "323130" : this.border.color;
+        let borderColor: string = this.theme === "Fluent" ? "#FFFFFF" : this.theme === "FluentDark" ? "#323130" : this.border.color;
         pathElement.setAttribute('stroke', borderColor);
+        if (!isNullOrUndefined(this.border.dashArray)) {
+            pathElement.setAttribute('stroke-dasharray', this.border.dashArray);
+        }
 
         this.changeText(new TooltipLocation(x, y), isBottom, !isLeft && !isTop && !isBottom);
 

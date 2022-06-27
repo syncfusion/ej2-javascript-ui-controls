@@ -69,8 +69,7 @@ $ddl-small-list-font-color: $flyout-text-color !default;
 // Touch Small color
 $ddl-bigger-small-list-font-color: $flyout-text-color !default;
 $ddl-list-icon-color: $icon-color !default;
-$ddl-list-item-box-shadow: inset 0 0 0 1px $content-text-color !default;
-$ddl-group-list-item-text-intent: -2px !default;
+$ddl-group-list-item-text-intent: 0 !default;
 
 @include export-module('dropdownbase-bootstrap5') {
 

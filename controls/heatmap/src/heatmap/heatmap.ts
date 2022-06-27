@@ -501,6 +501,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.setProperties({ yAxis : textSettings }, true);
             this.setProperties({ cellSettings : { textStyle : { fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}}, true);
         }
+        if (this.theme === 'Fluent' || this.theme === 'FluentDark') {
+            const textSettings: LegendSettingsModel =  { title : { textStyle : { size : '12px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif', fontWeight : '500' }}, textStyle : { size : '12px', fontFamily : 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }};
+            this.setProperties({ titleSettings : { textStyle : { size : '16px', fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' }}}, true);
+            this.setProperties({ legendSettings : textSettings }, true);
+            this.setProperties({ xAxis : textSettings }, true);
+            this.setProperties({ yAxis : textSettings }, true);
+            this.setProperties({ cellSettings : { textStyle : { fontFamily : '"Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif' }}}, true);
+        }
         this.initAxis();
         this.processInitData();
         this.setTheme();

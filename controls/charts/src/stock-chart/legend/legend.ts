@@ -516,7 +516,7 @@ export class StockLegend extends BaseLegend {
             this.changePage(event, true);
         }
         legendRegion = this.legendRegions.filter((region: ILegendRegions) => {
-            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage(null, 1, 2) : 0)),
+            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage(false, null, 1, 2) : 0)),
                 region.rect));
         });
     }

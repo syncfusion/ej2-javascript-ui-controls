@@ -31,7 +31,7 @@ $fe-tb-ddb-caret-size: 8px !default;
 $fe-upload-overlay-border: 2px !default;
 $fe-search-padding: 4px 8px 5px 0 !default;
 $fe-search-height: 32px !default;
-$fe-search-icon-margin: 5px !default;
+$fe-search-icon-margin: 4px !default;
 $fe-search-clear-icon-margin: 10px !default;
 $fe-search-clear-icon-padding: 0 !default;
 $fe-search-input-margin: 0 0 0 38px !default;
@@ -68,7 +68,7 @@ $fe-lg-icon-margin: 18px 25px 8px !default;
 $fe-lg-img-height: 40px !default;
 $fe-lg-text-padding: 2px 0 0 0 !default;
 $fe-cm-separator-margin: 0 0 !default;
-$fe-cb-line-height: 12px !default;
+$fe-cb-line-height: 16px !default;
 $fe-dd-popup-blank-icon-padding-left: 40px !default;
 $fe-tv-fullrow-height: 38px !default;
 $fe-address-height: 40px !default;
@@ -97,13 +97,13 @@ $fe-big-lg-item-inner-height: 100px !default;
 $fe-big-lg-item-inner-width: 94px !default;
 $fe-big-lg-icon-height: 52px !default;
 $fe-big-lg-icon-width: 52px !default;
-$fe-big-lg-icon-margin: 11px auto !default;
+$fe-big-lg-icon-margin: 0 auto !default;
 $fe-big-lg-img-height: 79px !default;
 $fe-big-lg-text-padding: 4px 2px 2px !default;
 $fe-big-grid-header-font-size: 14px !default;
 $fe-big-grid-content-font-size: 14px !default;
 $fe-big-grid-content-name-font-size: 16px !default;
-$fe-big-cb-line-height: 14px !default;
+$fe-big-cb-line-height: 21px !default;
 
 $fe-rtl-grid-icon-margin: 0 0 0 8px !default;
 
@@ -208,6 +208,7 @@ $fe-bc-icon-padding: 5px !default;
 
 // color variables
 $fe-border-color: $border-light !default;
+$fe-search-border-color: $gray90 !default;
 $fe-background: transparent;
 $fe-icon-color: $icon-color !default;
 $fe-label-color: $content-text-color-alt2 !default;

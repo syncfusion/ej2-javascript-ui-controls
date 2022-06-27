@@ -420,6 +420,20 @@ export class PdfGrid extends PdfLayoutElement {
      * @private
      */
     protected layout(param : PdfLayoutParams) : PdfLayoutResult {
+        let width: number = param.bounds.width;
+        let height: number = param.bounds.height;
+        let hasChanged: boolean = false;
+        if (typeof param.bounds.width === 'undefined' || param.bounds.width === 0) {
+            width = param.page.getClientSize().width - param.bounds.x;
+            hasChanged = true;
+        }
+        if (typeof param.bounds.height === 'undefined' || param.bounds.height === 0) {
+            height = param.page.getClientSize().height - param.bounds.y;
+            hasChanged = true;
+        }
+        if (hasChanged) {
+            param.bounds = new RectangleF(param.bounds.x, param.bounds.y, width, height);
+        }
         if (this.rows.count !== 0) {
             let currentRow : PdfGridCellStyle = this.rows.getRow(0).cells.getCell(0).style;
             if (currentRow.borders != null && (( currentRow.borders.left != null && currentRow.borders.left.width !== 1) ||

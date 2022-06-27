@@ -686,6 +686,21 @@ export class Edit {
                 focussedElement.focus();
             }
         }
+        if (this.parent.editSettings.mode === 'Batch' && !isNullOrUndefined(this.addRowIndex) && this.addRowIndex !== -1) {
+            index = this.batchEditModule.getAddRowIndex();
+            this.selectedIndex = this.batchEditModule.getSelectedIndex();
+            if (this.parent.editModule['isAddedRowByMethod']) {
+                const args: Object = {
+                    action : "add",
+                    data: this.parent.getBatchChanges()['addedRecords'][0],
+                    index: index,
+                    seletedRow: 0
+                }
+                this.parent.editModule.beginAddEdit(args);
+                this.parent.editModule.batchEditModule['batchAddRowRecord'].push(this.parent.editModule.batchEditModule['addRowRecord']);
+                this.parent.editModule.batchEditModule['batchAddedRecords'].push(args['data']);
+            }
+        }
     }
     // private beforeDataBound(args: BeforeDataBoundArgs): void {
     //   if (this.parent.grid.isEdit && this.parent.dataSource instanceof DataManager &&

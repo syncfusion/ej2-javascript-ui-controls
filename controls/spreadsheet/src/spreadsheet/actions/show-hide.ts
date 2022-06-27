@@ -34,6 +34,7 @@ export class ShowHide {
         }
         let actionArgs: ActionEventArgs;
         if (args.actionUpdate) {
+            args.sheetIndex = sheetIndex;
             actionArgs = { eventArgs: args, action: 'hideShow' };
             this.parent.notify(beginAction, actionArgs);
             if (args.cancel) {

@@ -11,7 +11,6 @@ Spreadsheet.Inject(BasicModule);
 describe('Spreadsheet sorting module ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
-    let instance: Spreadsheet;
     describe('UI interaction checking ->', () => {
         beforeAll((done: Function) => {
             model = {
@@ -21,8 +20,7 @@ describe('Spreadsheet sorting module ->', () => {
                     }
                 ],
                 created: (): void => {
-                    instance = helper.getInstance();
-                    instance.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                    helper.getInstance().cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
                 }
             };
             helper.initializeSpreadsheet(model, done);
@@ -72,6 +70,7 @@ describe('Spreadsheet sorting module ->', () => {
         // });
 
         it('sort redo testing', (done: Function) => {
+            const instance: Spreadsheet = helper.getInstance();
             helper.invoke('redo', null);
             setTimeout(() => {
                 expect(getCell(1, 3, instance.getActiveSheet()).value.toString()).toEqual('10');

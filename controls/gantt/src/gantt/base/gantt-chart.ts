@@ -242,7 +242,7 @@ export class GanttChart {
         const emptydivHeight: number = 36;
         const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 : this.parent.contentHeight;
         let contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
-        if (emptyHeight >= contentElement['offsetHeight']) {
+        if (emptyHeight >= contentElement['offsetHeight'] || this.parent.height === 'auto') {
             this.chartBodyContent.style.height = formatUnit(emptyHeight);
         } else {
             let scrollHeight: number =  this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];

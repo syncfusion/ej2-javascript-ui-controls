@@ -598,7 +598,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * @private
      */
-    public isReset: boolean;
+    public isReset: boolean = false;
     /**
      * @private
      */
@@ -2403,7 +2403,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         if (!isNullOrUndefined(newProp.layers[x])) {
                             const collection: string[] = Object.keys(newProp.layers[x]);
                             for (const collectionProp of collection) {
-                                if (collectionProp === 'markerSettings') {
+                                if (collectionProp === 'layerType' && newProp.layers[x].layerType === 'OSM') {
+                                    this.isReset = true;
+                                } else if (collectionProp === 'markerSettings') {
                                     isMarker = true;
                                 } else if (collectionProp === 'staticMapType') {
                                     isStaticMapType = true;

@@ -404,89 +404,6 @@ describe('Resoure editing using Edit dialog', () => {
         triggerMouseEvent(saveButton, 'click');
 
     });
-
-    it('Left resizing the added record', () => {
-        ganttObj.actionComplete = (args: any): void => {
-            if (args.requestType === 'save' && args.taskBarEditAction === 'LeftResizing') {
-
-                expect(ganttObj.currentViewData[4].ganttProperties.startDate).toEqual(ganttObj.currentViewData[6].ganttProperties.startDate);
-                expect(ganttObj.currentViewData[4].ganttProperties.resourceInfo.length).toBe(4);
-                expect(ganttObj.currentViewData[6].ganttProperties.sharedTaskUniqueIds.length).toBe(4);
-            }
-        };
-        ganttObj.dataBind();
-        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-collapse-parent > div:nth-child(4) > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
-        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-        triggerMouseEvent(dragElement, 'mousemove', -80, 0);
-        triggerMouseEvent(dragElement, 'mouseup');
-    });
-    it('Right resizing the added record', () => {
-        ganttObj.actionComplete = (args: any): void => {
-            if (args.requestType === 'save' && args.taskBarEditAction === 'RightResizing') {
-                expect(ganttObj.currentViewData[4].ganttProperties.startDate).toEqual(ganttObj.currentViewData[6].ganttProperties.startDate);
-                expect(ganttObj.currentViewData[4].ganttProperties.endDate).toEqual(ganttObj.currentViewData[6].ganttProperties.endDate);
-                expect(ganttObj.currentViewData[6].ganttProperties.resourceInfo.length).toBe(4);
-            }
-        };
-        ganttObj.dataBind();
-        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-collapse-parent > div:nth-child(4) > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
-        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-        triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
-        triggerMouseEvent(dragElement, 'mouseup');
-    });
-    it('Taskbar drag action', () => {
-        ganttObj.actionComplete = (args: any): void => {
-            if (args.requestType === 'save' && args.taskBarEditAction === 'ChildDrag') {
-                expect(ganttObj.currentViewData[4].ganttProperties.startDate).toEqual(ganttObj.currentViewData[6].ganttProperties.startDate);
-                expect(ganttObj.currentViewData[4].ganttProperties.endDate).toEqual(ganttObj.currentViewData[6].ganttProperties.endDate);
-                expect(ganttObj.currentViewData[6].ganttProperties.resourceInfo.length).toBe(4);
-            }
-        };
-        ganttObj.dataBind();
-        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-collapse-parent > div:nth-child(4)') as HTMLElement;
-        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
-        triggerMouseEvent(dragElement, 'mouseup');
-    });
-    it('Changing datasource dynamically', () => {
-        ganttObj.collapseAllParentTasks = true;
-        var datasource: object[] = [
-            {
-                TaskID: 1,
-                TaskName: 'Project initiation',
-                StartDate: new Date('03/29/2019'),
-                EndDate: new Date('04/21/2019'),
-                subtasks: [
-                    {
-                        TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
-                        Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
-                    },
-                    {
-                        TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
-                        resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
-                    },
-                    {
-                        TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
-                        resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
-                    },
-                ]
-            }];
-        ganttObj.dataSource = datasource;
-        ganttObj.timelineSettings = {
-            timelineViewMode: "Day",
-            topTier: {
-                unit: "Day",
-                format: "EEEE MMMM dd, yyyy"
-            },
-            bottomTier: {
-                unit: "Hour",
-                format: "h a",
-                count: 4
-            }
-        };
-        ganttObj.dataBind();
-        expect(ganttObj.flatData.length).toBe(8);
-    });
 });
 describe('Self reference data', () => {
     let ganttObj: Gantt;
@@ -908,5 +825,120 @@ describe('Self reference data', () => {
         expect(ganttObj.flatData.length).toBe(12);
     });
   });
+     describe("CR issues", () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: multiTaskbarData,
+            resources: multiResources,
+            enableMultiTaskbar: true,
+            viewType: 'ResourceView',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                expandState: 'isExpand',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            labelSettings: {
+                taskLabel: 'TaskName'
+            },
+            splitterSettings: {
+                columnIndex: 2
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1500);
+    });
+
+    it("Left resizing the added record", () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save' && args.taskBarEditAction === 'LeftResizing') {
+
+                expect(ganttObj.currentViewData[4].ganttProperties.startDate).toEqual(ganttObj.currentViewData[5].ganttProperties.startDate);
+                expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo.length).toBe(1);
+                expect(ganttObj.currentViewData[5].ganttProperties.sharedTaskUniqueIds.length).toBe(1);
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-collapse-parent > div:nth-child(3) > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -80, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+      });
+    it('Right resizing the added record', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save' && args.taskBarEditAction === 'RightResizing') {
+                expect(ganttObj.currentViewData[4].ganttProperties.startDate).toEqual(ganttObj.currentViewData[5].ganttProperties.startDate);
+                expect(ganttObj.currentViewData[4].ganttProperties.endDate).toEqual(ganttObj.currentViewData[7].ganttProperties.endDate);
+                expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo.length).toBe(1);
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-collapse-parent > div:nth-child(3) > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+    it('Taskbar drag action', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save' && args.taskBarEditAction === 'ChildDrag') {
+                expect(ganttObj.currentViewData[4].ganttProperties.startDate).toEqual(ganttObj.currentViewData[5].ganttProperties.startDate);
+                expect(ganttObj.currentViewData[4].ganttProperties.endDate).toEqual(ganttObj.currentViewData[7].ganttProperties.endDate);
+                expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo.length).toBe(1);
+            }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-collapse-parent > div:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+  });
+
 
 });

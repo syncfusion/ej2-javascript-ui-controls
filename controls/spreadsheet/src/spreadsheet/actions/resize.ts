@@ -110,7 +110,8 @@ export class Resize {
         this.event = e;
         this.trgtEle = <HTMLElement>e.target;
         if (this.trgtEle.parentElement.classList.contains('e-hide-end') || this.trgtEle.classList.contains('e-hide-end')) {
-            const offsetSize: number = this.trgtEle.offsetHeight; const offset: number = e.offsetY;
+            const offsetSize: number = this.trgtEle.offsetHeight;
+            const offset: number = e.offsetY;
             if ((offsetSize >= 10 && offset < 5) || (offsetSize - 2 < 8 && offset < Math.ceil((offset - 2) / 2))) {
                 this.trgtEle.classList.add('e-skip-resize');
             }
@@ -288,10 +289,6 @@ export class Resize {
         const contentClone: HTMLElement[] = [];
         let oldHeight: number = 0;
         const contentTable: HTMLElement = mainContent.getElementsByClassName('e-content-table')[0] as HTMLElement;
-        if (this.parent.getActiveSheet().showHeaders) {
-            const headerTable: HTMLElement = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
-            headerTable.getElementsByTagName('tr') as HTMLCollectionOf<HTMLTableRowElement>;
-        }
         let isWrap: boolean = false; let wrapCount: number = 0;
         if (isCol) {
             const rowLength: number = sheet.rows.length;
@@ -461,7 +458,7 @@ export class Resize {
                 this.showHiddenColumns(index, width);
                 this.parent.notify(completeAction, {
                     eventArgs: {
-                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetIndex, oldWidth: `${curWidth}px`,
+                        index: index, width: `${0}px`, isCol: true, sheetIndex: this.parent.activeSheetIndex, oldWidth: `${curWidth}px`,
                         hide: false
                     }, action: 'resize'
                 });
@@ -476,7 +473,7 @@ export class Resize {
                 this.showHideCopyIndicator();
                 this.parent.notify(completeAction, {
                     eventArgs: {
-                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetIndex, oldWidth: `${curWidth}px`,
+                        index: index, width: `${0}px`, isCol: true, sheetIndex: this.parent.activeSheetIndex, oldWidth: `${curWidth}px`,
                         hide: true
                     }, action: 'resize'
                 });
@@ -586,7 +583,7 @@ export class Resize {
                 setRow(sheet, actualIdx, { height: 0, customHeight: true });
                 this.parent.notify(completeAction, {
                     eventArgs:
-                        { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData },
+                        { index: actualIdx, height: '0px', isCol: false, sheetIndex: this.parent.activeSheetIndex, oldHeight: prevData },
                     action: 'resize'
                 });
                 return;
@@ -617,7 +614,7 @@ export class Resize {
                             eventArgs:
                             {
                                 index: i, height: `${rowHeight}px`, isCol: false,
-                                sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData
+                                sheetIndex: this.parent.activeSheetIndex, oldHeight: prevData
                             },
                             action: 'resize'
                         });
@@ -666,10 +663,10 @@ export class Resize {
         let eventArgs: object;
         let isAction: boolean;
         if (isCol) {
-            eventArgs = { index: idx, width: value, isCol: isCol, sheetIdx: this.parent.activeSheetIndex, oldWidth: prevData };
+            eventArgs = { index: idx, width: value, isCol: isCol, sheetIndex: this.parent.activeSheetIndex, oldWidth: prevData };
             isAction = prevData !== value;
         } else {
-            eventArgs = { index: idx, height: value, isCol: isCol, sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData };
+            eventArgs = { index: idx, height: value, isCol: isCol, sheetIndex: this.parent.activeSheetIndex, oldHeight: prevData };
             isAction = prevData !== value;
         }
         if (isAction) {

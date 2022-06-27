@@ -592,7 +592,7 @@ export class Paragraph {
             } else if (this.localObj.getConstant('Normal') === args.itemData.StyleName) {
                 args.itemData.StyleName = 'Normal';
             }
-            this.documentEditor.editor.applyStyle(args.itemData.StyleName, true);
+            this.documentEditor.editor.applyStyle(args.itemData.StyleName);
         }
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */

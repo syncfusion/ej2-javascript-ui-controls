@@ -176,6 +176,9 @@
         font-size: 12px !important;
         padding: 15px;
       }
+      @if ($skin-name == 'FluentUI') {
+        font-size: 14px !important;
+      }
 
       &.e-value-sort-icon {
         margin: 0px !important;
@@ -192,6 +195,9 @@
           font-size: 12px !important;
           padding-bottom: 4px !important;
           padding-top: 4px !important;
+        }
+        @if ($skin-name == 'FluentUI') {
+          font-size: 14px !important;
         }
       }
     }
@@ -278,9 +284,10 @@
       @if($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') {
         text-transform: none;
         padding-left: 12px !important;
+
       }
 
-      @if($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+      @if($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') or ($skin-name == 'tailwind') {
         padding-top: 0px !important;
         padding-bottom: 0px !important;
       }
@@ -295,8 +302,8 @@
       padding-right: 8px !important;
     }
 
-    .sf-grid .e-headercelldiv,
-    .sf-grid .e-stackedheadercelldiv {
+    .e-grid .e-headercelldiv,
+    .e-grid .e-stackedheadercelldiv {
       line-height: normal;
     }
 

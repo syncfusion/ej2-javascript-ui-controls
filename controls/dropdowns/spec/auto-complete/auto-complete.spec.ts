@@ -2316,4 +2316,50 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
             expect(isNullOrUndefined(dropDowns.liCollections)).toBe(true);
         });
     });
+    describe('EJ2-59078', () => {
+        let dropDowns: any;
+        let e: any = { preventDefault: function () { }, target: null, type: null };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let countries: { [key: string]: Object }[] = [
+            { "Name": "*Australia", "Code": "AU" },
+            { "Name": "Bermuda", "Code": "BM" },
+            { "Name": "Canada.", "Code": "CA" },
+            { "Name": "Cameroon", "Code": "CM" },
+            { "Name": "Denmark", "Code": "DK" },
+            { "Name": "France", "Code": "FR" },
+            { "Name": "Finland", "Code": "FI" },
+            { "Name": "Germany", "Code": "DE" },
+            { "Name": "Greenland", "Code": "GL" },
+            { "Name": "Hong Kong", "Code": "HK" },
+            { "Name": "Switzerland", "Code": "CH" },
+            { "Name": "United Kingdom", "Code": "GB" },
+            { "Name": "United States", "Code": "US" }
+        ];
+        beforeEach(() => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            dropDowns.destroy();
+            element.remove();
+        });
+        it('Auto complete throws error when * is used in the search string', () => {
+           dropDowns = new AutoComplete({
+                dataSource: countries,
+                fields: { value: 'Name' },
+            });
+            dropDowns.appendTo(element);
+            dropDowns.inputElement.value = "*";
+            e.keyCode = 56;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe("*");
+            expect(dropDowns.ulElement.children[0].textContent).toBe("*Australia");
+            dropDowns.inputElement.value = ".";
+            e.keyCode = 190;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe(".");
+            expect(dropDowns.ulElement.children[0].textContent).toBe("Canada.");
+        });
+    });
 });

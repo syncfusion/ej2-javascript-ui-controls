@@ -273,64 +273,64 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             info: '#0DCAF0'
         };
         break;
-    // case 'Fluent':
-    //     style = {
-    //         linearTrackColor: '#F3F2F1',
-    //         linearProgressColor: '#0D6EFD',
-    //         circularTrackColor: '#F3F2F1',
-    //         circularProgressColor: '#0D6EFD',
-    //         backgroundColor: 'transparent',
-    //         fontColor: '#0D6EFD',
-    //         linearFontFamily: 'Helvetica Neue',
-    //         linearFontStyle: 'Normal',
-    //         linearFontSize: '12',
-    //         circularFontFamily: 'Helvetica Neue',
-    //         circularFontStyle: 'Normal',
-    //         circularFontSize: '14',
-    //         progressOpacity: 1,
-    //         trackOpacity: 1,
-    //         bufferOpacity: 0.45,
-    //         linearGapWidth: 4,
-    //         circularGapWidth: 4,
-    //         linearTrackThickness: 16,
-    //         linearProgressThickness: 16,
-    //         circularTrackThickness: 4,
-    //         circularProgressThickness: 4,
-    //         success: '#0B6A0B',
-    //         danger: '#D13438',
-    //         warning: '#CA5010',
-    //         info: '#038387'
-    //     };
-    //     break;
-    // case 'FluentDark':
-    //     style = {
-    //         linearTrackColor: '#3B4248',
-    //         linearProgressColor: '#0D6EFD',
-    //         circularTrackColor: '#3B4248',
-    //         circularProgressColor: '#0D6EFD',
-    //         backgroundColor: 'transparent',
-    //         fontColor: '#0D6EFD',
-    //         linearFontFamily: 'Helvetica Neue',
-    //         linearFontStyle: 'Normal',
-    //         linearFontSize: '12',
-    //         circularFontFamily: 'Helvetica Neue',
-    //         circularFontStyle: 'Normal',
-    //         circularFontSize: '14',
-    //         progressOpacity: 1,
-    //         trackOpacity: 1,
-    //         bufferOpacity: 0.35,
-    //         linearGapWidth: 4,
-    //         circularGapWidth: 4,
-    //         linearTrackThickness: 16,
-    //         linearProgressThickness: 16,
-    //         circularTrackThickness: 4,
-    //         circularProgressThickness: 4,
-    //         success: '#0B6A0B',
-    //         danger: '#D13438',
-    //         warning: '#CA5010',
-    //         info: '#038387'
-    //     };
-    //     break;
+    case 'Fluent':
+        style = {
+            linearTrackColor: '#F3F2F1',
+            linearProgressColor: '#0D6EFD',
+            circularTrackColor: '#F3F2F1',
+            circularProgressColor: '#0D6EFD',
+            backgroundColor: 'transparent',
+            fontColor: '#0D6EFD',
+            linearFontFamily: 'Helvetica Neue',
+            linearFontStyle: 'Normal',
+            linearFontSize: '12',
+            circularFontFamily: 'Helvetica Neue',
+            circularFontStyle: 'Normal',
+            circularFontSize: '14',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.45,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: 16,
+            linearProgressThickness: 16,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            success: '#0B6A0B',
+            danger: '#D13438',
+            warning: '#CA5010',
+            info: '#038387'
+        };
+        break;
+    case 'FluentDark':
+        style = {
+            linearTrackColor: '#3B4248',
+            linearProgressColor: '#0D6EFD',
+            circularTrackColor: '#3B4248',
+            circularProgressColor: '#0D6EFD',
+            backgroundColor: 'transparent',
+            fontColor: '#0D6EFD',
+            linearFontFamily: 'Helvetica Neue',
+            linearFontStyle: 'Normal',
+            linearFontSize: '12',
+            circularFontFamily: 'Helvetica Neue',
+            circularFontStyle: 'Normal',
+            circularFontSize: '14',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.35,
+            linearGapWidth: 4,
+            circularGapWidth: 4,
+            linearTrackThickness: 16,
+            linearProgressThickness: 16,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            success: '#0B6A0B',
+            danger: '#D13438',
+            warning: '#CA5010',
+            info: '#038387'
+        };
+        break;
     default:
         style = {
             linearTrackColor: '#EAEAEA',

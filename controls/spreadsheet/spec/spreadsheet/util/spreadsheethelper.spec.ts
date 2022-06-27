@@ -195,7 +195,7 @@ export class SpreadsheetHelper extends TestHelper {
         (document.querySelector(selector) as any).ej2_instances[0].animationSettings.effect = 'None';
     }
 
-    public openAndClickCMenuItem(rowIdx: number, colIdx: number, children: number[], isRowHdr?: boolean, isColHdr?: boolean, checkFn?: Function): void {
+    public openAndClickCMenuItem(rowIdx: number, colIdx: number, children: number[], isRowHdr?: boolean, isColHdr?: boolean, checkFn?: Function, isSheetTab?: boolean, tabEle?: HTMLElement): void {
         let td: HTMLElement;
         let item: HTMLElement;
         const cMenu: HTMLElement = this.getElement('.e-spreadsheet-contextmenu');
@@ -203,6 +203,8 @@ export class SpreadsheetHelper extends TestHelper {
             td = this.invoke('getRowHeaderTable').rows[rowIdx].cells[colIdx];
         } else if(isColHdr) {
             td = this.invoke('getColHeaderTable').rows[rowIdx].cells[colIdx];
+        } else if(isSheetTab) {
+            td = tabEle;
         } else {
             td = this.invoke('getCell', [rowIdx, colIdx]);
         }

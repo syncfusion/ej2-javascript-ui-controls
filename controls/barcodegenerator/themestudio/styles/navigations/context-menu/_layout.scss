@@ -42,6 +42,10 @@
             pointer-events: none;
           }
         }
+
+        .e-menu-item .e-checkbox-wrapper {
+          width: max-content;
+        }
       }
     }
 

@@ -520,8 +520,12 @@ export class RowDD {
                 }
             }
         }
-        if (args.target.classList.contains('e-rowcelldrag')) {
+        if (args.target.classList.contains('e-rowcelldrag') || args.target.classList.contains('e-dtdiagonalright')
+            || args.target.classList.contains('e-dtdiagonaldown') ) {
             args.target = args.target.parentElement;
+        }
+        if (!args.target.classList.contains('e-rowcell') && parentsUntil(args.target, 'e-rowcell')) {
+            args.target = parentsUntil(args.target, 'e-rowcell');
         }
         if (this.parent.frozenRows) {
             this.updateFrozenRowreOrder(args);

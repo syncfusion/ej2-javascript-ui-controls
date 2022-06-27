@@ -359,8 +359,8 @@ export class FreeTextAnnotation {
                             let rotationWidth: number = width;
                             height = rotationWidth;
                             width = rotationHeight;
-                            annotationBoundsX = (annotationBoundsX - (width / 2));
-                            annotationBoundsY = (annotationBoundsY) + (width / 2 - height / 2);
+                            annotationBoundsX = (annotationBoundsX - (width / 2)) + (height/2);
+                            annotationBoundsY = (annotationBoundsY) + (width / 2 - height / 2) + (leftPadding + topPadding);
                         }
                         let isPrint: boolean = true;
                         if (annotation.annotationAddMode === 'Imported Annotation') {
@@ -610,8 +610,8 @@ export class FreeTextAnnotation {
         let rotateValue: number = this.getRotationValue(pageIndex)
         annotation.rotateAngle = rotateAngle - rotateValue;
         if (rotateAngle === 90 || rotateAngle === -90 || rotateAngle === 270 || rotateAngle === -270) {
-            let x: number = bounds.x + (bounds.width / 2);
-            let y: number = bounds.y - (bounds.width / 2 - bounds.height / 2);
+            let x: number = bounds.x + (bounds.width / 2) - (bounds.height / 2);
+            let y: number = bounds.y - (bounds.width / 2 - bounds.height / 2) - (leftPadding + topPadding);
             return { x: x + leftPadding, y: y + topPadding, left: x + leftPadding, top: y + topPadding, width: bounds.height, height: bounds.width };
         } else {
             return { x: bounds.left + leftPadding, y: bounds.top + topPadding, left: bounds.left + leftPadding, top: bounds.top + topPadding, width: bounds.width, height: bounds.height };

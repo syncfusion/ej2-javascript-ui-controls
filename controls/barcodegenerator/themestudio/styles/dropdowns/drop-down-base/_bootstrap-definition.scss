@@ -58,6 +58,7 @@ $ddl-bigger-small-line-height: 34px !default;
 $ddl-bigger-small-list-font-color: $grey-light-font !default;
 $ddl-bigger-small-list-text-indent: 16px !default;
 $ddl-bigger-small-list-header-font-size: 14px !default;
+$ddl-group-list-item-text-intent: 0 !default;
 
 @include export-module('dropdownbase-bootstrap') {
   .e-dropdownbase .e-list-item .e-list-icon {

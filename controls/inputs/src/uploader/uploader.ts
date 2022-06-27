@@ -2489,6 +2489,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private createFormInput(fileData: FileInfo[]): void {
+        if (this.browserName !== 'safari') {
         const inputElement: HTMLInputElement = this.element.cloneNode(true) as HTMLInputElement;
         inputElement.classList.add(HIDDEN_INPUT);
         for (const listItem of fileData) {
@@ -2497,7 +2498,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         inputElement.setAttribute('name', this.uploaderName);
         this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
         if (this.browserName !== 'msie' && this.browserName !== 'edge') {
-            this.element.value = '';
+            this.element.value = ''; }
         }
     }
 

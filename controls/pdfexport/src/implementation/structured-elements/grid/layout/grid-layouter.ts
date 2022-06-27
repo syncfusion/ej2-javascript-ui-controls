@@ -19,7 +19,7 @@ import { PdfGridStyle, PdfGridCellStyle } from '../styles/style';
 import { PdfGridRowCollection, PdfGridHeaderCollection } from '../pdf-grid-row';
 import { PdfHorizontalOverflowType } from '../styles/style';
 import { TemporaryDictionary } from './../../../collections/object-object-pair/dictionary';
-import { PdfStringLayoutResult } from './../../../graphics/fonts/string-layouter';
+import { PdfStringLayoutResult, PdfStringLayouter } from './../../../graphics/fonts/string-layouter';
 import { PdfDocument } from './../../../document/pdf-document';
 import { PdfSection } from './../../../pages/pdf-section';
 /**
@@ -233,6 +233,9 @@ export class PdfGridLayouter extends ElementLayouter {
      * @private
      */
     private rowBreakPageHeightCellIndex : number;
+    private slr: PdfStringLayoutResult = null;
+    private remainderText: string = null;
+    private isPaginate: boolean = false;
     //constructor
     /**
      * Initialize a new instance for `PdfGrid` class.
@@ -409,9 +412,13 @@ export class PdfGridLayouter extends ElementLayouter {
             this.hType = this.Grid.style.horizontalOverflowType;
         }
         if (!this.Grid.style.allowHorizontalOverflow) {
-                this.columnRanges = [];
+            this.columnRanges = [];
+            if (typeof this.Grid.isChildGrid !== 'undefined' && typeof this.Grid.isChildGrid) {
                 this.Grid.measureColumnsWidth(this.currentBounds);
-                this.columnRanges.push([ 0, this.Grid.columns.count - 1 ]);
+            } else {
+                this.Grid.measureColumnsWidth(new RectangleF(this.currentBounds.x, this.currentBounds.y, this.currentBounds.x + this.currentBounds.width, this.currentBounds.height));
+            }
+            this.columnRanges.push([0, this.Grid.columns.count - 1]);
         } else {
             this.Grid.measureColumnsWidth();
             this.determineColumnDrawRanges();
@@ -695,6 +702,10 @@ export class PdfGridLayouter extends ElementLayouter {
                                 this.currentBounds.x += this.startLocation.x;
                                 this.currentBounds.y += this.startLocation.y;
                             }
+                            if (this.isPaginate) {
+                                this.startLocation.y = this.currentBounds.y;
+                                this.isPaginate = false;
+                            }
                             if (this.Grid.isChildGrid && row.grid.ParentCell != null)
                             {
                                 if (this.Grid.ParentCell.row.grid.style.cellPadding != null)
@@ -808,7 +819,7 @@ export class PdfGridLayouter extends ElementLayouter {
                                 }
                                 row.grid.splitChildRowIndex = -1;
                                 row.grid.isGridSplit = false;
-                                rowResult.isFinish = true;
+                                rowResult.isFinish = this.checkIsFisished(row);
                                 //row.NestedGridLayoutResult.bounds.height = row.rowBreakHeightValue;
                                 //this.currentBounds.y = rowResult.bounds.y;
                                 for(let i : number = 0; i<row.cells.count;i++){
@@ -868,15 +879,26 @@ export class PdfGridLayouter extends ElementLayouter {
                         {
                             this.currentBounds.y = format == null ? 0 : format.paginateBounds.y;
                             
-                        }
-                        if (this.raiseBeforePageLayout(this.currentPage, this.currentBounds, this.currentRowIndex))
-                            break;*/
+                        }*/
+					if (this.raiseBeforePageLayout(this.currentPage, this.currentBounds, this.currentRowIndex).returnValue) {
+                        break;
+                    }
                     if ((param.format !== null) && !param.format.usePaginateBounds && param.bounds !== null  &&
                          param.bounds.height > 0 && !this.Grid.isChildGrid) {
                         this.currentBounds.height = param.bounds.height;
                     }
-                    if ((param.format !== null) && !param.format.usePaginateBounds && param.bounds !== null  &&
-                         param.bounds.y > 0 && !this.Grid.isChildGrid) {
+                    if (typeof param.format !== 'undefined' && param.format != null && typeof param.format.usePaginateBounds !== 'undefined' && !param.format.usePaginateBounds && !(param.format.paginateBounds.x === 0 && param.format.paginateBounds.y === 0 && param.format.paginateBounds.width === 0 && param.format.paginateBounds.height === 0) && param.format.paginateBounds.y === 0) {
+                        this.currentBounds.y = PdfBorders.default.top.width / 2;
+                    } else {
+                        this.currentBounds.y = format == null ? 0 : format.paginateBounds.y;
+						if (format != null && (format.paginateBounds.x !== 0 || format.paginateBounds.y !== 0 || format.paginateBounds.height !== 0 || format.paginateBounds.width !== 0)) {
+                            this.currentBounds.x = format.paginateBounds.x;
+                            this.currentBounds.width = format.paginateBounds.width;
+                            this.currentBounds.height = format.paginateBounds.height;
+                        }
+                    }
+                    if (typeof param.format !== 'undefined' && (param.format !== null) && typeof param.format.usePaginateBounds !== 'undefined' && !param.format.usePaginateBounds && param.bounds !== null &&
+                        param.bounds.y > 0 && !this.Grid.isChildGrid) {
                         this.currentBounds.y = param.bounds.y;
                     }
                     this.startLocation.y = this.currentBounds.y;
@@ -1041,6 +1063,15 @@ export class PdfGridLayouter extends ElementLayouter {
         this.raisePageLayouted(result);
         return result;
     }
+    private checkIsFisished(row: PdfGridRow): boolean {
+        let result: boolean = true;
+        for (let i: number = 0; i < row.cells.count; i++) {
+            if (!row.cells.getCell(i).FinishedDrawingCell) {
+                result = false;
+            }
+        }
+        return result;
+    }
     /* tslint:enable */
     /**
      * Gets the `next page`.
@@ -1124,7 +1155,7 @@ export class PdfGridLayouter extends ElementLayouter {
             let count : number = 0;
             for (let j : number = i, count = (layoutedPages.size() / this.columnRanges.length); j < layoutedPages.size(); j += count) {
                 let page : PdfPage = pages[j];
-                if (document.pages.indexOf(page) === -1) {
+                if (typeof page !== 'undefined' && document.pages.indexOf(page) === -1) {
                     document.pages.add(page);
                 }
             }
@@ -1188,7 +1219,7 @@ export class PdfGridLayouter extends ElementLayouter {
             //                                                  new SizeF(args.Bounds.width + args.Bounds.x ,
             //                                                                 args.Bounds.height)));
             // }
-            cancel = args.cancel;
+            cancel = (typeof args.cancel === 'undefined' ? false : args.cancel);
             currentBounds = args.bounds;
             currentRow = args.startRowIndex;
         }
@@ -1253,7 +1284,7 @@ export class PdfGridLayouter extends ElementLayouter {
                 // }                
             }
             let calculatedHeight : number = row.rowBreakHeight > 0.0 ? row.rowBreakHeight : row.height;
-            if (this.Grid.isChildGrid && this.Grid.ParentCell != null) {
+            if (typeof this.Grid.isChildGrid !== 'undefined' && this.Grid.isChildGrid && typeof this.Grid.ParentCell !== 'undefined' && this.Grid.ParentCell != null) {
                 //Split row only if row height exceeds page height and AllowRowBreakAcrossPages is true.
                 // if (calculatedHeight + this.Grid.ParentCell.row.grid.style.cellPadding.bottom +
                 //             this.Grid.ParentCell.row.grid.style.cellPadding.top > this.currentPageBounds.height) {
@@ -1284,7 +1315,7 @@ export class PdfGridLayouter extends ElementLayouter {
                             + calculatedHeight > this.currentBounds.height || this.currentBounds.y +
                             this.Grid.ParentCell.row.grid.style.cellPadding.bottom + rowHeightWithSpan > this.currentPageBounds.height) {
                    //If a row is repeated and still cannot fit in page, proceed draw.
-                    if (this.Grid.ParentCell.row.grid.LayoutFormat.break === PdfLayoutBreakType.FitPage ) {
+                    if (typeof this.Grid.ParentCell.row.grid.LayoutFormat !== 'undefined' && this.Grid.ParentCell.row.grid.LayoutFormat.break === PdfLayoutBreakType.FitPage ) {
                         PdfGridLayouter.repeatRowIndex = this.Grid.rows.rowCollection.indexOf(row);
                         this.Grid.splitChildRowIndex = this.Grid.rows.rowCollection.indexOf(row);
                     }
@@ -1348,10 +1379,29 @@ export class PdfGridLayouter extends ElementLayouter {
                     this.currentBounds.y + calculatedHeight > (this.currentBounds.height + this.startLocation.y) ||
                     this.currentBounds.y + rowHeightWithSpan > this.currentPageBounds.height) {
                     // If a row is repeated and still cannot fit in page, proceed draw.
-                    if (this.Grid.LayoutFormat.break === PdfLayoutBreakType.FitPage ) {
-                        PdfGridLayouter.repeatRowIndex = this.Grid.rows.rowCollection.indexOf(row);
+                    let isFit: boolean = false;
+                    if ((this.Grid.allowRowBreakAcrossPages && !this.Grid.repeatHeader && !row.isRowHeightSet && !row.rowMergeComplete)) {
+                        if (this.Grid.LayoutFormat !== null && this.Grid.LayoutFormat.paginateBounds.height > 0) {
+                            isFit = this.isFitToCell((this.currentBounds.height + this.startLocation.y) - this.currentBounds.y, this.Grid, row);
+                        }
+                        else
+                            isFit = this.isFitToCell(this.currentPageBounds.height - this.currentBounds.y, this.Grid, row);
+                        if (isFit) {
+                            this.isPaginate = true;
+                        }
                     }
-                    if (PdfGridLayouter.repeatRowIndex > -1 && PdfGridLayouter.repeatRowIndex === row.rowIndex) {
+                    else if (this.Grid.allowRowBreakAcrossPages && this.Grid.LayoutFormat != null && this.Grid.LayoutFormat.layout == PdfLayoutType.Paginate && this.Grid.LayoutFormat.break != PdfLayoutBreakType.FitElement && row.isRowHeightSet && this.currentBounds.y + height > this.currentPageBounds.height) {
+                        isFit = this.isFitToCell(this.currentPageBounds.height - this.currentBounds.y, this.Grid, row);
+                        if (!isFit)
+                            isFit = !(this.slr !== null && this.slr.actualSize.height == 0 && this.slr.remainder != null && this.slr.remainder.length > 0 && this.remainderText == this.slr.remainder);
+
+                        if (isFit && this.slr != null && this.slr.lineCount > 1) {
+                            //It may text cutoff issue
+                            isFit = false;
+                        }
+                        this.remainderText = null;
+                    }
+                    if (PdfGridLayouter.repeatRowIndex > -1 && PdfGridLayouter.repeatRowIndex === row.rowIndex || isFit) {
                         if (this.Grid.allowRowBreakAcrossPages) {
                             result.isFinish = true;
                             this.drawRowWithBreak(result, row, calculatedHeight);
@@ -1361,10 +1411,10 @@ export class PdfGridLayouter extends ElementLayouter {
                                 result.isFinish = false;
                             }
                         }
-                        // else {
-                        //     result.isFinish = false;
-                        //     this.drawRow(row, result, calculatedHeight);
-                        // }
+                        else {
+                            result.isFinish = false;
+                            this.drawRow(row, result, calculatedHeight);
+                        }
                     } else {
                         result.isFinish = false;
                     }
@@ -1460,6 +1510,54 @@ export class PdfGridLayouter extends ElementLayouter {
             result.bounds = new RectangleF(new PointF(result.bounds.x, result.bounds.y), new SizeF(location.x, location.y));
         }
     }
+
+    private isFitToCell(currentHeight: number, grid: PdfGrid, gridRow: PdfGridRow): boolean {
+        let isFit: boolean = false;
+        let layouter: PdfStringLayouter = new PdfStringLayouter();
+        for (let i: number = 0; i < gridRow.cells.count; i++) {
+            let cell: PdfGridCell = gridRow.cells.getCell(i);
+            if (typeof cell.value !== 'undefined' && cell.value !== null && typeof cell.value === 'string') {
+                let font: PdfFont = null;
+                if (typeof cell.style.font !== 'undefined' && cell.style.font != null) {
+                    font = cell.style.font;
+                } else if (typeof cell.row.style.font !== 'undefined' && cell.row.style.font != null) {
+                    font = cell.row.style.font;
+                } else if (typeof cell.row.grid.style.font !== 'undefined' && cell.row.grid.style.font != null) {
+                    font = cell.row.grid.style.font;
+                } else {
+                    font = PdfDocument.defaultFont;
+                }
+                this.remainderText = gridRow.cells.getCell(i).value as string;
+                let width: number = gridRow.cells.getCell(i).width;
+                if (grid.columns.getColumn(i).isCustomWidth && gridRow.cells.getCell(i).width > grid.columns.getColumn(i).width) {
+                    width = grid.columns.getColumn(i).width;
+                }
+                this.slr = layouter.layout(gridRow.cells.getCell(i).value as string, font, gridRow.cells.getCell(i).stringFormat, new SizeF(width, currentHeight), false, this.currentPageBounds);
+                let height: number = this.slr.actualSize.height;
+                if (height == 0) {
+                    isFit = false;
+                    break;
+                }
+                if (gridRow.cells.getCell(i).style != null && gridRow.cells.getCell(i).style.borders != null && gridRow.cells.getCell(i).style.borders.top != null && gridRow.cells.getCell(i).style.borders.bottom != null)
+                    height += (gridRow.cells.getCell(i).style.borders.top.width + gridRow.cells.getCell(i).style.borders.bottom.width) * 2;
+                if (this.slr.lineCount > 1 && gridRow.cells.getCell(i).stringFormat != null && gridRow.cells.getCell(i).stringFormat.lineSpacing != 0)
+                    height += (this.slr.lineCount - 1) * (gridRow.cells.getCell(i).style.stringFormat.lineSpacing);
+
+                if (gridRow.cells.getCell(i).style.cellPadding == null) {
+                    height += (grid.style.cellPadding.top + grid.style.cellPadding.bottom);
+                }
+                else {
+                    height += (grid.style.cellPadding.top + grid.style.cellPadding.bottom);
+                }
+                height += grid.style.cellSpacing;
+                if (currentHeight > height || (typeof this.slr.remainder !== 'undefined' && this.slr.remainder !== null)) {
+                    isFit = true;
+                    break;
+                }
+            }
+        }
+        return isFit;
+    }
     /**
      * `Draws row`
      * @private
@@ -1518,12 +1616,10 @@ export class PdfGridLayouter extends ElementLayouter {
             }
             //If still row is to be drawn, set cell finished drawing cell as false and update the text to be drawn.
             if (row.rowBreakHeight > 0.0) {
-                if (stringResult != null) {
+                if (stringResult != null && typeof stringResult.remainder !== 'undefined') {
                     row.cells.getCell(i).FinishedDrawingCell = false;
                     row.cells.getCell(i).remainingString = stringResult.remainder == null ? ' ' : stringResult.remainder;
-                    if (row.grid.isChildGrid) {
-                        row.rowBreakHeight = calculateHeight - stringResult.actualSize.height;
-                    }
+                    row.rowBreakHeight = calculateHeight - stringResult.actualSize.height;
                 }
             }
             result.isFinish = (!result.isFinish) ? result.isFinish : row.cells.getCell(i).FinishedDrawingCell;

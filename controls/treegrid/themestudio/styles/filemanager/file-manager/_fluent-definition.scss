@@ -31,7 +31,7 @@ $fe-tb-ddb-caret-size: 8px !default;
 $fe-upload-overlay-border: 2px !default;
 $fe-search-padding: 4px 8px 5px 0 !default;
 $fe-search-height: 32px !default;
-$fe-search-icon-margin: 5px !default;
+$fe-search-icon-margin: 4px !default;
 $fe-search-clear-icon-margin: 10px !default;
 $fe-search-clear-icon-padding: 0 !default;
 $fe-search-input-margin: 0 0 0 38px !default;
@@ -208,6 +208,7 @@ $fe-bc-icon-padding: 5px !default;
 
 // color variables
 $fe-border-color: $border-light !default;
+$fe-search-border-color: $gray90 !default;
 $fe-background: transparent;
 $fe-icon-color: $icon-color !default;
 $fe-label-color: $content-text-color-alt2 !default;

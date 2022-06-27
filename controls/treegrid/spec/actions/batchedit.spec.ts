@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData } from '../base/datasource.spec';
+import { sampleData, projectData, projectData2 } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Page } from '../../src/treegrid/actions/page';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
@@ -8,6 +8,7 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { ITreeData } from '../../src';
 
 /**
  * Grid Batch Edit spec 
@@ -1243,6 +1244,67 @@ describe('Batch Edit module', () => {
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
       done();
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-58264 - Addrecord through method in Batch Editing', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition: 'Below' },
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right'},
+              { field: 'TaskName', headerText: 'Task Name', width: 180 },
+              {
+               field: 'StartDate', headerText: 'Start Date', width: 90, editType: 'datepickeredit', textAlign: 'Right', type: 'date',format: 'yMd'
+              },
+              { field: 'Duration', headerText: 'Duration', width: 80, textAlign: 'Right' }
+          ],
+        },
+        done
+      );
+    });
+    it('Addrecordmethod - add as child', (done: Function) => {
+      actionComplete = (args?: any): void => {
+          expect((gridObj.flatData[3] as any).childRecords[0].TaskID).toBe(111);
+          expect((gridObj.flatData[4] as any).TaskID).toBe(111);
+          done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.addRecord({TaskID:111,TaskName: 'Child record'}, 3, 'Child');
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+    it('Addrecordmethod - add To Below', (done: Function) => {
+      actionComplete = (args?: any): void => {
+          expect((gridObj.flatData[2] as any).TaskID).toBe(123);
+          done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.addRecord({TaskID:123,TaskName: 'Below record'}, 1, 'Below');
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+    it('Addrecordmethod - add as Above', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        expect((gridObj.flatData[1] as any).TaskID).toBe(124);
+          done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.addRecord({TaskID:124, taskName: 'Above record'}, 1, 'Above');
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
 
     afterAll(() => {

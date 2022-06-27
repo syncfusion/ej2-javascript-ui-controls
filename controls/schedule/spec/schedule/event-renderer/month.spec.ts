@@ -9,6 +9,7 @@ import {
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { DatePicker } from '@syncfusion/ej2-calendars';
 import { triggerMouseEvent } from '../util.spec';
 import { testData, moreIndicatorData } from '../base/datasource.spec';
 import * as util from '../util.spec';
@@ -494,6 +495,8 @@ describe('Month Event Render Module', () => {
                 (editor.querySelector('.e-recurrenceeditor') as EJ2Instance).ej2_instances[0] as RecurrenceEditor;
             expect(recEditor.getRecurrenceRule()).toEqual('FREQ=WEEKLY;BYDAY=MO;INTERVAL=1;UNTIL=20220506T090000Z;');
             util.triggerMouseEvent(editor.querySelector('.e-end-on-date .e-clear-icon'), 'mousedown');
+            const dp: DatePicker = (editor.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DatePicker;
+            dp.value = new Date(2022, 2, 1);
             async function openUntil(done: DoneFn) {
                 util.triggerMouseEvent(editor.querySelector('.e-end-on-date .e-date-icon'), 'mousedown');
                 done();

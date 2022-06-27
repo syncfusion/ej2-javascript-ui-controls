@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.1.50 (2022-04-19)
+
+### Radio Button
+
+#### Bug Fixes
+
+- `F171644` - Issue with Name attribute not updated properly in radio button and checkbox for components has been resolved.
+
+### Checkbox
+
+#### Bug Fixes
+
+- `F173431` - Issue with Checkbox validation state is incorrect issue has been resolved.
+
 ## 19.2.47 (2021-07-13)
 
 ### Checkbox

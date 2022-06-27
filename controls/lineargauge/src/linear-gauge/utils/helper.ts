@@ -367,6 +367,7 @@ export class RectOption {
     public stroke: string;
     public fill: string;
     public ['stroke-width']: number;
+    public ['stroke-dasharray']: string;
     constructor(
         id: string, fill: string, border: BorderModel, opacity: number, rect: Rect, transform?: string,
         dashArray?: string) {
@@ -377,6 +378,7 @@ export class RectOption {
         this.fill = fill;
         this.stroke = border.color;
         this['stroke-width'] = border.width;
+        this['stroke-dasharray'] = border.dashArray;
         this.height = rect.height;
         this.width = rect.width;
     }

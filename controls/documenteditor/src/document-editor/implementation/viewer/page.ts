@@ -5907,8 +5907,8 @@ export class ImageElementBox extends ShapeBase {
             if (this.bottom !== 0) {
                 bottom = (this.bottom * this.cropHeightScale) / 100;
             }
-            this.cropWidth = (this.cropWidthScale - (this.x + right));
-            this.cropHeight = (this.cropHeightScale - (this.y + bottom));
+            this.cropWidth = (this.cropWidthScale - (this.cropX + right));
+            this.cropHeight = (this.cropHeightScale - (this.cropY + bottom));
         }
     }
     /**

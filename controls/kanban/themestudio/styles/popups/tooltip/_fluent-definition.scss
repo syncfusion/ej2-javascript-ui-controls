@@ -1,6 +1,8 @@
 //layout variables
 $tooltip-close-icon-border: 1px solid $icon-color !default;
 $tooltip-drop-shadow: $shadow-lg !default;
+$tooltip-shadow-color: rgba(0, 0, 0, .25) !default;
+$tooltip-drop-shadow-filter: drop-shadow(1px 1px 3px $tooltip-shadow-color) !default;
 $tooltip-font-size: $text-xs !default;
 $tooltip-border-radius: 2px !default;
 $border-size: 1px !default;

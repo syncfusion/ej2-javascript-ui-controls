@@ -8,6 +8,8 @@ import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, Bat
 import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
+import { classList } from '@syncfusion/ej2-base';
+import * as literals from '@syncfusion/ej2-grids';
 
 /**
  * `BatchEdit` module is used to handle batch editing actions.
@@ -239,9 +241,17 @@ export class BatchEdit {
             this.parent.editModule[isTabLastRow] = false;
             return;
         }
-        this.selectedIndex = this.parent.grid.selectedRowIndex;
-        this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
-        this.addRowRecord = this.parent.getSelectedRecords()[0];
+        if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) && this.parent.grid.selectedRowIndex === -1) {
+            this.selectedIndex = this.parent.editModule['selectedIndex'];
+            this.addRowIndex = this.parent.editModule['addRowIndex'];
+            this.addRowRecord = this.parent.getCurrentViewRecords()[this.selectedIndex];
+        }
+        else {
+            this.selectedIndex = this.parent.grid.selectedRowIndex;
+            this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+            this.parent.editModule['addRowIndex'] = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+            this.addRowRecord = this.parent.getSelectedRecords()[0];
+        }
     }
 
     private batchAdd(e: BatchAddArgs): void {
@@ -251,6 +261,9 @@ export class BatchEdit {
                 this.batchAddedRecords = [];
                 this.batchRecords = extendArray(this.parent.grid.getCurrentViewRecords());
                 this.currentViewRecords = extendArray(this.parent.grid.getCurrentViewRecords());
+            }
+            if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex'])) {
+                classList(this.parent.grid.getDataRows()[0], ['e-batchrow'], []);
             }
             if (this.parent.editSettings.newRowPosition !== 'Top') {
                 let records: Object[] = this.parent.grid.getCurrentViewRecords();
@@ -462,6 +475,10 @@ export class BatchEdit {
             }
             if (this.parent.editSettings.newRowPosition !== 'Bottom' && !Object.hasOwnProperty.call(args, 'updatedRecords')) {
                 data.splice(data.length - addRecords.length, addRecords.length);
+                if (this.parent.editModule['isAddedRowByMethod'] && addRecords.length && !isNullOrUndefined(this.parent.editModule['addRowIndex'])) {
+                    const index: number = parseInt((this.parent.getContentTable().getElementsByClassName('e-insertedrow')[0] as any).ariaRowIndex);
+                    data.splice(index, 0, addRecords[0]);
+                }
                 if (!this.parent.allowPaging && data.length !== currentViewRecords.length) {
                     if (currentViewRecords.length > addRecords.length) {
                         currentViewRecords.splice(currentViewRecords.length - addRecords.length, addRecords.length);
@@ -506,7 +523,8 @@ export class BatchEdit {
                 editAction({ value: addRecords[i], action: 'add' }, this.parent,
                            this.isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord);
                 selectedIndex = null;
-                if (this.parent.editSettings.newRowPosition === 'Child' && !isNullOrUndefined(addRecords[i][parentItem])) {
+                if (this.parent.editSettings.newRowPosition === 'Child' && !isNullOrUndefined(addRecords[i][parentItem]) &&
+                (isNullOrUndefined(this.parent.editModule['addRowIndex']) || this.isSelfReference)) {
                     const indexValue: number = currentViewRecords.map((e: Object) => { return e[primarykey]; })
                         .indexOf(addRecords[i][parentItem][primarykey]);
                     const children: Object[] = currentViewRecords[indexValue][childRecords];

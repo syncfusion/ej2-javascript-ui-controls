@@ -257,6 +257,35 @@
         }
       }
 
+      @if ($skin-name == 'FluentUI') {
+        .e-slider-button {
+          height: 20px;
+          width: 20px;
+        }
+
+        &.e-horizontal {
+          .e-first-button,
+          .e-second-button {
+            margin-top: $slider-touch-btn-center-align;
+
+            .e-button-icon::before {
+              font-size: 17px;
+            }
+          }
+        }
+
+        &.e-vertical {
+          .e-first-button,
+          .e-second-button {
+            margin-right: $slider-touch-btn-center-align;
+
+            .e-button-icon::before {
+              font-size: 17px;
+            }
+          }
+        }
+      }
+
       @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
         .e-slider-button {
           height: 18px;

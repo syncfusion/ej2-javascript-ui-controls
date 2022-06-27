@@ -263,14 +263,10 @@
       height: $calendar-normal-year-decade-height;
       line-height: $calendar-normal-year-decade-height;
       width: $calendar-normal-year-decade-width;
-}#{if(&, '&', '*')} .e-content.e-year td.e-focused-date > span.e-day,
-    #{if(&, '&', '*')} .e-content.e-decade td.e-focused-date > span.e-day,
-    #{if(&, '&', '*')} .e-content.e-year td.e-selected > span.e-day,
-    #{if(&, '&', '*')} .e-content.e-decade td.e-selected > span.e-day,
-    #{if(&, '&', '*')} .e-content.e-year td.e-selected:hover > span.e-day,
-    #{if(&, '&', '*')} .e-content.e-decade td.e-selected:hover > span.e-day,
-    #{if(&, '&', '*')} .e-content.e-year td.e-focused-date:hover > span.e-day,
-    #{if(&, '&', '*')} .e-content.e-decade td.e-focused-date:hover > span.e-day {
+}#{if(&, '&', '*')} .e-content.e-year td.e-selected:not(.e-focused-date) > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td.e-selected:not(.e-focused-date) > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-year td.e-selected:not(.e-focused-date):hover > span.e-day,
+    #{if(&, '&', '*')} .e-content.e-decade td.e-selected:not(.e-focused-date):hover > span.e-day {
       @if ($skin-name == 'FluentUI') {
         box-shadow: $calendar-none-style;
       }

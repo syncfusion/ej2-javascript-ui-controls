@@ -407,7 +407,12 @@
         border: $cpicker-preview-container-border;
         cursor: pointer;
         display: inline-block;
-        height: 32px;
+        @if $skin-name == 'FluentUI' {
+          height: 50px;
+        }
+        @else {
+          height: 32px;
+        }
         margin-left: $cpicker-preview-margin-left;
         position: relative;
         top: $cpicker-preview-container-top;
@@ -429,7 +434,12 @@
 
           &.e-previous {
             height: $cpicker-previous-height;
-            top: $cpicker-preview-height;
+            @if $skin-name == 'FluentUI' {
+              top: 25px;
+            }
+            @else {
+              top: $cpicker-preview-height;
+            }
           }
         }
       }
@@ -848,6 +858,9 @@
 
           @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
             top: 5px;
+          }
+          @else if $skin-name == 'FluentUI' {
+            top: $cpicker-preview-container-top;
           }
           @else {
             top: 0;

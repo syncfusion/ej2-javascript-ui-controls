@@ -883,6 +883,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     } else if (isOpen && this.isMenu && e && e.target &&
                         this.navIdx.length !== 0 && closest(e.target as Element, '.e-menu-parent.e-control')) {
                         this.closeMenu(0, e);
+                    } else if(isOpen && !this.isMenu && selectAll('.e-menu-parent', wrapper)[ulIndex - 1] && e.which === 3) {
+                        this.closeMenu(null, e);
                     } else {
                         if (isOpen && (this.keyType === 'right' || this.keyType === 'click')) {
                             this.afterCloseMenu(e as MouseEvent);
@@ -1871,8 +1873,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private removeItem(item: MenuItemModel[], navIdx: number[], idx: number): void {
         item.splice(idx, 1);
         const uls: HTMLCollection = this.getWrapper().children;
-        if (navIdx.length < uls.length) {
-            detach(uls[navIdx.length].children[idx]);
+        const uls_length: number = this.hamburgerMode? 1 : uls.length;
+        if (navIdx.length < uls_length) {
+            detach(uls[this.hamburgerMode ? 1 : navIdx.length].children[idx]);
         }
     }
 

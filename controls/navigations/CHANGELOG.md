@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 20.1.48 (2022-04-12)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I371293` - Resolved the "Context menu not closed properly when the two separate context menu binded in the DOM" in menu component.
+- `#I369007` - An issue with "Script error throws when we remove items with hamburger mode in mobile view" has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I372768` - An issue with the toolbar scrollable buttons accessibility issue has been fixed.
+
 ## 20.1.47 (2022-04-04)
 
 ### Carousel

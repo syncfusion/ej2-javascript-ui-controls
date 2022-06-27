@@ -813,7 +813,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.containerObject = this.renderer.createGroup({ id: this.element.id + '_Container_Group', transform: 'translate( 0, 0)' });
             if (this.container.type === 'Normal') {
                 let containerBorder: BorderModel = { color: this.container.border.color || this.themeStyle.containerBorderColor,
-                    width: this.container.border.width };
+                    width: this.container.border.width, dashArray: this.container.border.dashArray };
                 rect = new RectOption(
                     this.element.id + '_' + this.container.type + '_Layout', fill, containerBorder, 1,
                     new Rect(x, y, width, height));
@@ -824,7 +824,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     new Size(this.container.height, this.container.width), 'container', null, null, this.container.roundedCornerRadius);
                 options = new PathOption(
                     this.element.id + '_' + this.container.type + '_Layout', fill,
-                    this.container.border.width, this.container.border.color || this.themeStyle.containerBorderColor, 1, '', path);
+                    this.container.border.width, this.container.border.color || this.themeStyle.containerBorderColor, 1, this.container.border.dashArray, path);
                 this.containerObject.appendChild(this.renderer.drawPath(options) as SVGAElement);
             }
             this.svgObject.appendChild(this.containerObject);
@@ -1181,7 +1181,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer')) {
             options = new PathOption(
                 'pointerID', pointer.color || this.themeStyle.pointerColor,
-                pointer.border.width, pointer.border.color, pointer.opacity, null, null, '');
+                pointer.border.width, pointer.border.color, pointer.opacity, pointer.border.dashArray, null, '');
             if (this.orientation === 'Vertical') {
                 pointer.bounds.y = this.mouseY;
             } else {

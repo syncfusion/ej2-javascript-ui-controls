@@ -9,6 +9,7 @@ import { appendChildren } from '../base/util';
 import { InputArgs }  from '@syncfusion/ej2-inputs';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import * as events from '../base/constant';
+import { PredicateModel } from '../base/grid-model';
 
 /**
  * FilterCellRenderer class which responsible for building filter cell.
@@ -154,12 +155,29 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
 
     private operatorIconRender(innerDIV: HTMLElement, column: Column, cell: Cell<Column>): void {
         const gObj: IGrid = this.parent;
+        let operators: string;
         const fbicon: HTMLElement = this.parent.createElement('input', {
             className: ' e-filterbaroperator e-icons e-icon-filter',
             id: cell.column.uid
         });
         innerDIV.querySelector('span').appendChild(fbicon);
-        let operators: string = (column.filter && column.filter.operator) ? column.filter.operator as string : 'equal';
+        if (column.filter && column.filter.operator) {
+            operators = column.filter.operator;
+        }
+        else if (gObj.filterSettings.columns.length) {
+            for (let i: number = 0, a: PredicateModel[] = gObj.filterSettings.columns; i < a.length; i++) {
+                let col: PredicateModel = a[i];
+                if (col.field === column.field){
+                    operators = col.operator;
+                }
+                else{
+                    operators = 'equal';
+                }
+            }
+        }
+        else {
+            operators = 'equal';
+        }
         if (!isNullOrUndefined(gObj.filterModule.operators[column.field])) {
             operators = gObj.filterModule.operators[column.field];
         }

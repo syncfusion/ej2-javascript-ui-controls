@@ -198,11 +198,13 @@ export class Filter {
         // ...
     }
     public closeFilterOnContextClick(element: Element): void {
+        let datePickerElement : Element = document.querySelector('body > div.e-datepicker') as HTMLElement;
+        let dateTimePickerElement : Element = document.querySelector('body > div.e-datetimepicker') as HTMLElement;
         if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
             const ganttElement: Element = closest(element, '#' + this.parent.element.id)
                 || element.querySelector('#' + this.parent.element.id);
-            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || element.nodeName === 'HTML'
-                || ((element.nodeName === 'DIV') && (!element.classList.contains('e-day')))) {
+            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || (!(this.filterMenuElement.contains(element)) && (isNullOrUndefined(datePickerElement)) 
+                && (isNullOrUndefined(dateTimePickerElement)) && ((element.nodeName === 'DIV') || (element.nodeName === 'HTML')))) {
                 remove(this.filterMenuElement);
                 this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
                 this.filterMenuElement = null;

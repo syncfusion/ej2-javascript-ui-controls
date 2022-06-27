@@ -30,12 +30,27 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         const gObj: IGrid = this.parent;
         let result: Element[];
         let fKeyValue: string;
+        let gTemplateValue: string;
         data.headerText = cell.column.headerText;
         if (cell.isForeignKey) {
             fKeyValue = this.format(cell.column, (cell.column.valueAccessor as Function)('foreignKey', data, cell.column));
         }
         const value: string = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
+        for (var j = 0; j < gObj.aggregates.length; j++){
+            for (var i = 0; i < gObj.aggregates[j].columns.length; i++){
+                if (gObj.getVisibleColumns()[0].field == gObj.aggregates[j].columns[i].field && gObj.aggregates[j].columns[i].groupCaptionTemplate) {
+                    if (gObj.aggregates[j].columns[i].groupCaptionTemplate.includes("$")) {
+                        gTemplateValue = gObj.aggregates[j].columns[i].groupCaptionTemplate.split("$")[0] + data[gObj.getVisibleColumns()[0].field][gObj.aggregates[j].columns[i].type] +
+                        gObj.aggregates[j].columns[i].groupCaptionTemplate.split("}")[1];
+                    }
+                    else {
+                        gTemplateValue = gObj.aggregates[j].columns[i].groupCaptionTemplate;
+                    }
+                    break;
+                }
+            }
+        }
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
             const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
             if (isReactCompiler) {
@@ -52,10 +67,11 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             }
         } else {
             if (gObj.groupSettings.enableLazyLoading) {
-                node.innerHTML = cell.column.headerText + ': ' + value;
+                node.innerHTML = cell.column.headerText + ': ' + value + (gTemplateValue ? '   ' + gTemplateValue : '');
             } else {
                 node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +
-                    (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'));
+                (data.count < 2 ? this.localizer.getConstant('Item') : this.localizer.getConstant('Items'))
+                + (gTemplateValue ? '   ' + gTemplateValue : '');
             }
         }
         node.setAttribute('colspan', cell.colSpan.toString());

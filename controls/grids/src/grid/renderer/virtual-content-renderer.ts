@@ -934,6 +934,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private actionComplete(args: NotifyArgs): void {
+        if (!this.parent.enableVirtualization) {
+            return;
+        }
         const editRequestTypes: string[] = ['delete', 'save', 'cancel'];
         const dataActionRequestTypes: string[] = ['sorting', 'filtering', 'grouping', 'refresh', 'searching', 'ungrouping', 'reorder'];
         if (editRequestTypes.some((value: string) => value === args.requestType)) {
