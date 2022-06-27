@@ -7,13 +7,13 @@ import {
     Page, Rect, IWidget, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox
+    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase, FootnoteElementBox, TextFrame
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo } from '../editor/editor-helper';
-import { SearchWidgetInfo, WColor } from '../../index';
+import { SearchWidgetInfo, WColor, CharacterRangeType } from '../../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
@@ -108,11 +108,11 @@ export class Renderer {
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             this.render(page, page.bodyWidgets[i]);
             if (page.footnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
-                this.renderfootNoteWidget(page, page.footnoteWidget);
+                this.renderfootNoteWidget(page, page.footnoteWidget, width);
             }
         }
         if (page.endnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
-            this.renderfootNoteWidget(page, page.endnoteWidget);
+            this.renderfootNoteWidget(page, page.endnoteWidget, width);
         }
         if (this.documentHelper.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidgetIn);
@@ -161,10 +161,16 @@ export class Renderer {
             }
         } else {
             const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
-
-            const footerHeight: number = page.boundingRectangle.height -
+            let footerHeight: number;
+            if (isNullOrUndefined(page.footerWidget.sectionFormat)) {
+                footerHeight = page.boundingRectangle.height -
+                /* eslint-disable-next-line max-len */
+                Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
+            } else {
+                footerHeight = page.boundingRectangle.height -
                 /* eslint-disable-next-line max-len */
                 Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+            }
             height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
             pageHt = page.boundingRectangle.height - footerDistance;
         }
@@ -221,6 +227,15 @@ export class Renderer {
             ctx.restore();
         }
     }
+
+    private getFooterHeight(page: Page): number {
+        const footerWidgetHeight: number = ((page.boundingRectangle.height) / 100) * 40;
+        const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
+        let actualHeight: number = page.boundingRectangle.height -
+            Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+        return Math.max((page.boundingRectangle.height) - footerWidgetHeight, actualHeight);
+    }
+
     private getHeaderFooterType(page: Page, isHeader: boolean): string {
         let type: string;
         let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
@@ -453,9 +468,19 @@ export class Renderer {
             top += widget.height;
         }
     }
-    private renderfootNoteWidget(page: Page, footnote: FootNoteWidget): void {
+
+    private renderfootNoteWidget(page: Page, footnote: FootNoteWidget, width: number): void {
         let isEmptyPage: boolean = footnote.page.bodyWidgets.length === 1 && ((footnote.page.bodyWidgets[0].childWidgets.length === 1
-            && (footnote.page.bodyWidgets[0].childWidgets[0] as ParagraphWidget).isEmpty()) || footnote.page.bodyWidgets[0].childWidgets.length === 0);
+            && (footnote.page.bodyWidgets[0].childWidgets[0] as ParagraphWidget).isEmpty != undefined && (footnote.page.bodyWidgets[0].childWidgets[0] as ParagraphWidget).isEmpty()) || footnote.page.bodyWidgets[0].childWidgets.length === 0);
+        let footerY: number = this.getFooterHeight(page);
+        let height: number = footnote.y + footnote.height;
+        if (height > footerY) {
+            height = (footerY - footnote.y);
+        }
+        this.pageContext.beginPath();
+        this.pageContext.save();
+        this.pageContext.rect(this.pageLeft, this.getScaledValue(footnote.y, 2), this.getScaledValue(width), this.getScaledValue(height));
+        this.pageContext.clip();
         for (let i: number = 0; i < footnote.bodyWidgets.length; i++) {
             let bodyWidget: BodyWidget = footnote.bodyWidgets[i];
             let footNoteReference: FootnoteElementBox = bodyWidget.footNoteReference;
@@ -473,6 +498,7 @@ export class Renderer {
                 this.renderWidget(page, widget);
             }
         }
+        this.pageContext.restore();
     }
     private renderTableWidget(page: Page, tableWidget: TableWidget): void {
         if (this.isFieldCode) {
@@ -633,7 +659,6 @@ export class Renderer {
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
         let isTOCHeading: boolean = false;
         this.renderSelectionHighlight(page, lineWidget, top);
-
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
         if (!isNullOrUndefined(lineWidget.paragraph.nextRenderedWidget)) {
             let para: ParagraphWidget = lineWidget.paragraph.nextRenderedWidget as ParagraphWidget;
@@ -684,8 +709,10 @@ export class Renderer {
         // EditRegion highlight 
         this.renderEditRegionHighlight(page, lineWidget, top);
         let isCommentMark: boolean = false;
-        for (let i: number = 0; i < lineWidget.children.length; i++) {
-            let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
+        
+        let children: ElementBox[] = lineWidget.renderedElements;
+        for (let i: number = 0; i < children.length; i++) {
+            let elementBox: ElementBox = children[i] as ElementBox;
             if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
                 continue;
             }
@@ -774,7 +801,7 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(left, 1);
                 let shapeTop: number = this.getScaledValue(top, 2);
                 this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
-            }  else {
+            } else {
                 elementBox.isVisible = true;
                 left += elementBox.padding.left;
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);
@@ -851,10 +878,10 @@ export class Renderer {
         let baselineOffset: number = elementBox.baselineOffset;
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         let text: string = elementBox.text;
-        let followCharacter: boolean = text === '\t' || text === ' ';
-        if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
-            let index: number = text.indexOf('.');
-            text = text.substr(index) + text.substring(0, index);
+        let isParaBidi: boolean = elementBox.paragraph.paragraphFormat.bidi;
+        if (isParaBidi) {
+            this.pageContext.direction = 'rtl';
+            left += elementBox.width;
         }
         // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
         if (color === "empty" || color === '#00000000') {
@@ -865,7 +892,10 @@ export class Renderer {
         }
 
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
-
+        if (isParaBidi) {
+            this.pageContext.direction = 'ltr';
+            left -= elementBox.width;
+        }
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
             this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, baselineAlignment);
         }
@@ -945,12 +975,19 @@ export class Renderer {
         if (format.allCaps) {
             text = text.toUpperCase();
         }
+        let characterRange: CharacterRangeType = elementBox.characterRange;
+        if (((characterRange == CharacterRangeType.WordSplit) ||
+            (((characterRange & CharacterRangeType.WordSplit) == CharacterRangeType.WordSplit) &&
+                ((characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft))) && format.bidi) {
+            text = this.inverseCharacter(text);
+        }
 
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
 
-        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
-            && (!this.documentHelper.selection.isSelectionInsideElement(elementBox) || this.documentHelper.triggerElementsOnLoading || this.documentHelper.owner.editor.triggerPageSpellCheck))) {
-            elementBox.canTrigger = true;
+        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || !elementBox.canTrigger || elementBox.isSpellChecked) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
+            && (!this.documentHelper.selection.isSelectionInsideElement(elementBox)))) {
+                if(!elementBox.canTrigger)
+                elementBox.canTrigger = true;
             this.leftPosition = this.pageLeft;
             this.topPosition = this.pageTop;
             let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
@@ -963,7 +1000,7 @@ export class Renderer {
                         this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
-            } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
+            } else if (elementBox.ischangeDetected || elementBox.line.paragraph.isChangeDetected) {
                 elementBox.ischangeDetected = false;
                 this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
             }
@@ -985,6 +1022,53 @@ export class Renderer {
         }
     }
 
+
+    private inverseCharacter(ch: string): string {
+        switch (ch) {
+            //Specify the '('
+            case String.fromCharCode(40):
+                //Specify the ')'
+                return String.fromCharCode(41);
+            //Specify the ')'
+            case String.fromCharCode(41):
+                //Specify the '('
+                return String.fromCharCode(40);
+
+            //Specify the '<'
+            case String.fromCharCode(60):
+                //Specify the '>'
+                return String.fromCharCode(62);
+
+            //Specify the '>'
+            case String.fromCharCode(62):
+                //Specify the '<'
+                return String.fromCharCode(60);
+
+            //Specify the '{'
+            case String.fromCharCode(123):
+                //Specify the '}'
+                return String.fromCharCode(125);
+
+            //Specify the '}'
+            case String.fromCharCode(125):
+                //Specify the '{'
+                return String.fromCharCode(123);
+
+            //Specify the '['
+            case String.fromCharCode(91):
+                //Specify the ']'
+                return String.fromCharCode(93);
+
+            //Specify the ']'
+            case String.fromCharCode(93):
+                //Specify the '['
+                return String.fromCharCode(91);
+
+            default:
+                return ch;
+        }
+    }
+
     private getBackgroundColorHeirachy(element: ElementBox): string {
         let bgColor: string;
         // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
@@ -999,6 +1083,9 @@ export class Renderer {
                     return bgColor;
                 }
             }
+        }else if(element.paragraph.containerWidget instanceof TextFrame
+            && (element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat.color  === '#000000FF'){
+                return (element.paragraph.containerWidget.containerShape as ShapeElementBox).fillFormat.color;
         }
         return this.documentHelper.backgroundColor;
     }
@@ -1042,7 +1129,7 @@ export class Renderer {
                                 let hasSpellingError: boolean = this.spellChecker.isErrorWord(retrievedText) ? true : false;
                                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                                 this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
-                            } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                            } else {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
                                 this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1073,7 +1160,7 @@ export class Renderer {
                     let hasSpellingError: boolean = this.spellChecker.isErrorWord(currentText) ? true : false;
                     let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                     this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                } else {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1578,7 +1665,8 @@ export class Renderer {
                 this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width + (lineWidth * 2)), this.getScaledValue(height));
                 this.pageContext.closePath();
             }
-        }
+        }    
+        
     }
     private drawTextureStyle(textureStyle: TextureStyle, foreColor: string, backColor: string): string {
         if (textureStyle.indexOf('Percent') > -1) {

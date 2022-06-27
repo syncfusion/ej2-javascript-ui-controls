@@ -4,6 +4,7 @@ import { LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
+import { WBorder } from '../format';
 
 /**
  * @private
@@ -390,7 +391,7 @@ export class HtmlExport {
                 cellHtml += ('padding-bottom:' + cell.cellFormat.bottomMargin.toString() + 'pt;');
             }
             if (!isNullOrUndefined(cell.cellFormat.borders)) {
-                cellHtml += this.serializeCellBordersStyle();
+                cellHtml += this.serializeCellBordersStyle(cell);
             }
         }
         if (cellHtml.length !== 0) {
@@ -494,10 +495,10 @@ export class HtmlExport {
         }
         return borderStyle;
     }
-    private serializeCellBordersStyle(): string {
+    private serializeCellBordersStyle(WCell:any): string {
         let borderStyle: string = '';
 
-        borderStyle = 'border:solid 1px;';
+        //borderStyle = 'border:solid 1px;';
         // if (borders.left.color) {
         //     borderStyle += ('border-left-color:' + HelperMethods.getColor(borders.left.color));
         //     borderStyle += ';';
@@ -521,36 +522,44 @@ export class HtmlExport {
         // }
         // borderStyle += this.serializeBorderStyle(borders.bottom, 'bottom');
 
-        // Todo: handle
-        // let border: WBorder = undefined;
-        // //LeftBorder
-        // border = WCell.getCellLeftBorder(WCell.getCellOf(borders));
-        // if (!isNullOrUndefined(border) && border.lineStyle !== 'None') {
-        //     borderStyle += this.serializeBorderStyle(border, 'left');
-        // } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
-        //     borderStyle += ('border-left-style:none;');
-        // }
-        // //RightBorder
-        // border = WCell.getCellRightBorder(WCell.getCellOf(borders));
-        // if (!isNullOrUndefined(border) && border.lineStyle !== 'None') {
-        //     borderStyle += this.serializeBorderStyle(border, 'right');
-        // } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
-        //     borderStyle += ('border-right-style:none');
-        // }
-        // //TopBorder
-        // border = WCell.getCellTopBorder(WCell.getCellOf(borders));
-        // if (!isNullOrUndefined(border) && border.lineStyle !== 'None') {
-        //     borderStyle += this.serializeBorderStyle(border, 'top');
-        // } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
-        //     borderStyle += ('border-top-style:none');
-        // }
-        // //BottomBorder
-        // border = WCell.getCellBottomBorder(WCell.getCellOf(borders));
-        // if (!isNullOrUndefined(border) && border.lineStyle !== 'None') {
-        //     borderStyle += this.serializeBorderStyle(border, 'bottom');
-        // } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
-        //     borderStyle += ('border-bottom-style:none');
-        // }
+        let border: WBorder = undefined;
+        let borders: any = WCell.cellFormat.borders;
+        //LeftBorder
+        border = borders.left;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'left');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-left-style:none;');
+        }
+        //TopBorder
+        border = borders.top;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'top');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-top-style:none');
+        }
+        //RightBorder
+        border = borders.right;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'right');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-right-style:none');
+        }
+        //BottomBorder
+        border = borders.bottom;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'bottom');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-bottom-style:none');
+        }
         return borderStyle;
     }
     private serializeBorderStyle(border: any, borderPosition: string): string {
@@ -784,7 +793,7 @@ export class HtmlExport {
         let blockStyle: string = '';
         let tableStyle: string = '';
         const tagAttributes: string[] = [];
-        tagAttributes.push('border="' + '1"');
+        //tagAttributes.push('border="' + '1"');
         if (!isNullOrUndefined(table.tableFormat)) {
             //if (table.tableFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
             if (!isNullOrUndefined(table.tableFormat.shading) && !isNullOrUndefined(table.tableFormat.shading.backgroundColor) && table.tableFormat.shading.backgroundColor !== 'empty' ) {
@@ -800,9 +809,9 @@ export class HtmlExport {
                 tableStyle += ('border-collapse:collapse;');
             }
             tagAttributes.push('cellpadding="' + '0"');
-            if (!isNullOrUndefined(table.tableFormat.borders)) {
-                tableStyle += this.serializeTableBorderStyle(table.tableFormat.borders);
-            }
+            // if (!isNullOrUndefined(table.tableFormat.borders)) {
+            //     tableStyle += this.serializeTableBorderStyle(table.tableFormat.borders);
+            // }
         }
         if (tableStyle.length !== 0) {
             tagAttributes.push('style="', tableStyle.toString() + '"');

@@ -2206,12 +2206,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public skipHidden(startIdx: number, endIdx: number, layout: string = 'rows', finite: boolean = this.scrollSettings.isFinite): number[] {
         const sheet: SheetModel = this.getActiveSheet(); let totalCount: number;
-        if (finite) { totalCount = (layout === 'rows' ? sheet.rowCount : sheet.colCount) - 1; }
+        if (this.scrollSettings.isFinite) { totalCount = (layout === 'rows' ? sheet.rowCount : sheet.colCount) - 1; }
         for (let i: number = startIdx; i <= endIdx; i++) {
             if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
                 if (startIdx === i) { startIdx++; }
                 endIdx++;
-                if (totalCount && endIdx > totalCount) { endIdx = totalCount; break; }
+                if (finite && endIdx > totalCount) { endIdx = totalCount; break; }
+            } else if (!finite && this.scrollSettings.isFinite && endIdx > totalCount) {
+                if ((sheet[layout])[i - 1] && (sheet[layout])[i - 1].hidden) {
+                    endIdx--;
+                    break;
+                }
             }
         }
         return [startIdx, endIdx];
@@ -2718,6 +2723,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 if (newProp.sheets === this.sheets) {
                     this.renderModule.refreshSheet();
                     this.notify(refreshSheetTabs, null);
+                    this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
                     break;
                 }
                 let sheetTabsRefreshed: boolean;

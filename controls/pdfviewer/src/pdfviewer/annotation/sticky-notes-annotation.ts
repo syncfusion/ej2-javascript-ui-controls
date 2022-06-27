@@ -8,7 +8,7 @@ import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { cloneObject } from '../drawing/drawing-util';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
-
+import { BeginEditEventArgs } from '@syncfusion/ej2-inplace-editor';
 /**
  * @hidden
  */
@@ -364,11 +364,11 @@ export class StickyNotesAnnotation {
         }
         if (!this.isCommentsRendered) {
             // eslint-disable-next-line max-len
-            jsonObject = { pageStartIndex: startIndex, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+            jsonObject = { pageStartIndex: startIndex.toString(), pageEndIndex: pageCount.toString(), hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
             proxy.isCommentsRendered = true;
         } else {
             // eslint-disable-next-line max-len
-            jsonObject = { pageStartIndex: pageLimit, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+            jsonObject = { pageStartIndex: pageLimit.toString(), pageEndIndex: pageCount.toString(), hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments', elementId: this.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
         }
         if (this.pdfViewerBase.jsonDocumentId) {
             // eslint-disable-next-line
@@ -633,7 +633,7 @@ export class StickyNotesAnnotation {
         }
         if (isInitialRender) {
             for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
-                this.pdfViewerBase.renderAnnotations(this.pdfViewerBase.renderedPagesList[i]);
+                this.pdfViewerBase.renderAnnotations(this.pdfViewerBase.renderedPagesList[i],false);
             }
         }
     }
@@ -892,6 +892,8 @@ export class StickyNotesAnnotation {
             const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox', className: 'e-pv-comment-textbox' });
             // eslint-disable-next-line
             let editObj: any = new InPlaceEditor({
+                created: created,
+                beginEdit: beginEdit,
                 mode: 'Inline',
                 type: 'Text',
                 model: { placeholder: this.pdfViewer.localeObj.getConstant('Add a comment') + '..' },
@@ -968,6 +970,14 @@ export class StickyNotesAnnotation {
             commentTextBox.addEventListener('focusin', this.commentDivFocus.bind(this));
             return (this.commentsContainer.id);
         }
+        function created(): void {
+            setTimeout(() => {
+            this.element.querySelector('.e-editable-value').innerText = data ? data.Note : '';
+            }); 
+        }    
+        function beginEdit(e: BeginEditEventArgs): void {   
+            this.value = this.valueEle.innerText;   
+        }
         return '';
     }
     // eslint-disable-next-line
@@ -1024,6 +1034,7 @@ export class StickyNotesAnnotation {
         let commentsContainer: HTMLElement;
         let titleContainer: HTMLElement;
         // eslint-disable-next-line
+        this.commentsContainer.addEventListener('mousedown', this.modifyTextProperty.bind(this));
         let newCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + '_newcommentdiv' + this.commentsCount, className: 'e-pv-new-comments-div' });
         if (args.localName) {
             commentsContainer = args;
@@ -1135,6 +1146,8 @@ export class StickyNotesAnnotation {
             replyCommentDiv.style.zIndex = 1002;
             // eslint-disable-next-line
             let saveObj: any = new InPlaceEditor({
+                created: created,
+                beginEdit: beginEdit,
                 mode: 'Inline',
                 type: 'Text',
                 emptyText: '',
@@ -1170,6 +1183,14 @@ export class StickyNotesAnnotation {
             this.createCommentDiv(replyCommentDiv.parentElement);
             this.modifyCommentsProperty(commentValue, replyCommentDiv.id, commentsContainer.id);
         }
+        function created(): void {
+            setTimeout(() => {
+            this.element.querySelector('.e-editable-value').innerText = commentValue;
+            });
+            }
+        function beginEdit(e: BeginEditEventArgs): void {
+            this.value = this.valueEle.innerText;
+            }
     }
 
     // eslint-disable-next-line
@@ -1205,6 +1226,8 @@ export class StickyNotesAnnotation {
         replyTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
         // eslint-disable-next-line
         let saveObj: any = new InPlaceEditor({
+            created: created,
+            beginEdit: beginEdit,
             mode: 'Inline',
             type: 'Text',
             emptyText: '',
@@ -1227,6 +1250,14 @@ export class StickyNotesAnnotation {
         }
         saveObj.appendTo(replyTextBox);
         replyDiv.appendChild(replyTextBox);
+        function created(): void {
+            setTimeout(() => {
+            this.element.querySelector('.e-editable-value').innerText = data ? data.Note : '';
+            });
+            }
+        function beginEdit(e: BeginEditEventArgs): void { 
+            this.value = this.valueEle.innerText; 
+            }
         if (undoRedoAction) {
             data.State = data.state;
         }
@@ -1435,7 +1466,7 @@ export class StickyNotesAnnotation {
     }
 
     // eslint-disable-next-line
-    private createTitleContainer(commentsDivElement: HTMLElement, type: string, subType?: string, modifiedDate?: string, author?: string): any {
+    private createTitleContainer(commentsDivElement: HTMLElement, type: string, subType?: string, modifiedDate?: string, author?: string, note?: string): any {
         let annotationType: string = this.getAnnotationType(type);
         // eslint-disable-next-line max-len
         const commentTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitleConatiner', className: 'e-pv-comment-title-container' });
@@ -1964,8 +1995,18 @@ export class StickyNotesAnnotation {
                     }
                 }
             }
-            if (event.currentTarget && event.currentTarget.id && event.currentTarget.childNodes[1].ej2_instances[0]) {
+            let editModule : any;
+            if(event && event.currentTarget && event.currentTarget.childNodes[1])
+               {
+                editModule = event.currentTarget.childNodes[1].ej2_instances[0];
+               }
+            if (event.currentTarget && event.currentTarget.id && editModule) {
                 // eslint-disable-next-line
+                if(annotation && annotation.isCommentLock)
+                {
+                     editModule.enableEditMode = false;
+                     this.createCommentDiv(event.currentTarget);
+                }
                 this.pdfViewer.fireCommentSelect(event.currentTarget.id, event.currentTarget.childNodes[1].ej2_instances[0].value, annotation);
             }
             this.commentDivOnSelect(event);
@@ -2370,7 +2411,8 @@ export class StickyNotesAnnotation {
     private modifyTextProperty(text: string, previousValue: any, annotationName?: any): void {
         // eslint-disable-next-line
         let currentAnnotation: any;
-        if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+        let module: any = this.pdfViewer.annotationModule.textMarkupAnnotationModule;
+        if (module && module.currentTextMarkupAnnotation) {
             currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
         }
         if (currentAnnotation) {

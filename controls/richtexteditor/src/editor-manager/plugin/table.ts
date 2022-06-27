@@ -113,11 +113,11 @@ export class TableCommand {
         for (let i: number = 0; i < emptyUl.length; i++) {
             detach(emptyUl[i]);
         }
-        let emptyLiChild: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty');
+        let emptyLiChild: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty:not(img)');
         for (let i: number = 0; i < emptyLiChild.length; i++) {
             detach(emptyLiChild[i]);
             if (emptyLiChild.length === i + 1) {
-                emptyLiChild = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty');
+                emptyLiChild = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty:not(img)');
                 i = -1;
             }
         }

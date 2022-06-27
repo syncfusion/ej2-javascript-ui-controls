@@ -564,7 +564,12 @@ export class DOMNode {
                 const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
                 markerStart.appendChild(start);
             } else {
-                this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
+                if (start.nodeType != 3 && start.nodeName != '#text') {
+                    const marker: string = this.marker(markerClassName.startSelection, '');
+                    append([this.parseHTMLFragment(marker)], start);
+                } else {
+                    this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
+                }
             }
             if (end.nodeType !== Node.TEXT_NODE && end.tagName === 'BR' &&
                 CONSTANT.IGNORE_BLOCK_TAGS.indexOf((end.parentNode as Element).tagName.toLocaleLowerCase()) >= 0) {

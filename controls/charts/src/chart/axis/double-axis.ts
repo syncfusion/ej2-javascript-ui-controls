@@ -144,7 +144,9 @@ export class Double {
                     continue;
                 }
                 this.paddingInterval = 0;
-                axis.maxPointLength = series.points.length;
+                if (!isNullOrUndefined(series.points)) {
+                    axis.maxPointLength = series.points.length;
+                }
                 if (((series.type.indexOf('Column') > -1 || series.type.indexOf('Histogram') > -1) && axis.orientation === 'Horizontal')
                     || (series.type.indexOf('Bar') > -1 && axis.orientation === 'Vertical')) {
                     if ((series.xAxis.valueType === 'Double' || series.xAxis.valueType === 'DateTime')
@@ -206,7 +208,7 @@ export class Double {
             const interval: number = axis.actualRange.interval;
             const padding: string = axis.getRangePadding(this.chart);
             if (padding === 'Additional' || padding === 'Round') {
-                this.findAdditional(axis, start, end, interval);
+                this.findAdditional(axis, start, end, interval, size);
             } else if (padding === 'Normal') {
                 this.findNormal(axis, start, end, interval, size);
             } else {
@@ -227,7 +229,7 @@ export class Double {
         };
     }
 
-    private findAdditional(axis: Axis, start: number, end: number, interval: number): void {
+    private findAdditional(axis: Axis, start: number, end: number, interval: number, size: Size): void {
         let minimum: number; let maximum: number;
         minimum = Math.floor(start / interval) * interval;
         maximum = Math.ceil(end / interval) * interval;
@@ -235,6 +237,12 @@ export class Double {
             minimum -= interval;
             maximum += interval;
         }
+
+        if (!isNullOrUndefined(axis.desiredIntervals)) {
+            let delta: number = maximum - minimum;
+            interval = this.calculateNumericNiceInterval(axis, delta, size);
+        }
+        
         this.updateActualRange(axis, minimum, maximum, interval);
     }
 

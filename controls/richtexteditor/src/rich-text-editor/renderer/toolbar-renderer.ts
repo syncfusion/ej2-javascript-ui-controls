@@ -137,7 +137,8 @@ export class ToolbarRenderer implements IRenderer {
             created: this.toolbarCreated.bind(this),
             clicked: this.toolbarClicked.bind(this),
             enablePersistence: args.enablePersistence,
-            enableRtl: args.enableRtl
+            enableRtl: args.enableRtl,
+            cssClass: args.cssClass
         });
         args.rteToolbarObj.toolbarObj.isStringTemplate = true;
         args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;

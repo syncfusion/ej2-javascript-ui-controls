@@ -495,6 +495,10 @@ export interface IEndChangeEventArgs {
     targetNode: string;
     /** returns the target port of the element */
     targetPort: string;
+    /** returns the source node of the element */
+    sourceNode?: string;
+    /** returns the source port of the element */
+    sourcePort?: string;
     /** returns the state of connection end point dragging(starting, dragging, completed) */
     state: State;
     /** returns whether to cancel the change or not */

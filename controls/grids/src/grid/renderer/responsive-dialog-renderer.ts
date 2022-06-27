@@ -95,7 +95,7 @@ export class ResponsiveDialogRenderer implements IAction {
                 const span: HTMLElement = this.parent.createElement('span', { className: 'e-btn-icon e-resfilterback e-icons' });
                 backBtn.appendChild(span);
                 this.backBtn = new Button({
-                    cssClass: 'e-res-back-btn'
+                    cssClass: this.parent.cssClass ? 'e-res-back-btn' + ' ' + this.parent.cssClass : 'e-res-back-btn'
                 });
                 this.backBtn.appendTo(backBtn);
                 text.parentElement.insertBefore(backBtn, text);
@@ -163,7 +163,7 @@ export class ResponsiveDialogRenderer implements IAction {
                     clone.appendChild(button);
                     cDiv.appendChild(clone);
                     const btnObj: Button = new Button({
-                        cssClass: 'e-ressortbutton'
+                        cssClass: this.parent.cssClass ? 'e-ressortbutton' + ' ' + this.parent.cssClass : 'e-ressortbutton'
                     });
                     btnObj.appendTo(button);
                     button.innerHTML = index > -1 ? this.parent.sortSettings.columns[index].direction : 'None';
@@ -343,7 +343,8 @@ export class ResponsiveDialogRenderer implements IAction {
             close: this.beforeDialogClose.bind(this),
             width: '100%',
             height: '100%',
-            animationSettings: { effect: 'None' }
+            animationSettings: { effect: 'None' },
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         const isStringTemplate: string = 'isStringTemplate';
         options[isStringTemplate] = true;
@@ -474,7 +475,8 @@ export class ResponsiveDialogRenderer implements IAction {
         const saveBtn: HTMLElement = gObj.createElement('button');
         if (!isCustomFilter) {
             this.saveBtn = new Button({
-                cssClass: 'e-primary e-flat e-res-apply-btn'
+                cssClass: this.parent.cssClass ?
+                    'e-primary e-flat e-res-apply-btn' + ' ' + this.parent.cssClass : 'e-primary e-flat e-res-apply-btn'
             });
             saveBtn.innerHTML = gObj.localeObj.getConstant(this.getButtonText(this.action));
             this.saveBtn.appendTo(saveBtn);
@@ -489,7 +491,8 @@ export class ResponsiveDialogRenderer implements IAction {
             const id: string = isSort ? 'sort' : 'filter';
             const clearBtn: HTMLElement = gObj.createElement('button');
             this.filterClearBtn = new Button({
-                cssClass: 'e-primary e-flat e-res-' + id + '-clear-btn'
+                cssClass: this.parent.cssClass ? 'e-primary e-flat e-res-' + id + '-clear-btn' + ' ' + this.parent.cssClass
+                    : 'e-primary e-flat e-res-' + id + '-clear-btn'
             });
             if (isFilter) {
                 const span: HTMLElement = gObj.createElement('span', { className: 'e-btn-icon e-icon-filter-clear e-icons' });

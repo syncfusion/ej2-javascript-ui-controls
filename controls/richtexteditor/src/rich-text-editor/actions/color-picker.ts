@@ -1,4 +1,4 @@
-import { select, detach, extend } from '@syncfusion/ej2-base';
+import { select, detach, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { RenderType, ToolbarItems } from '../base/enum';
 import * as events from '../base/constant';
@@ -6,7 +6,7 @@ import * as classes from '../base/classes';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { getIndex, toObjectLowerCase } from '../base/util';
 import { templateItems, tools } from '../models/items';
-import { IRichTextEditor, IRenderer, IColorPickerModel, IColorPickerRenderArgs, IToolsItems } from '../base/interface';
+import { IRichTextEditor, IRenderer, IColorPickerModel, IColorPickerRenderArgs, IToolsItems, ICssClassArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -100,6 +100,9 @@ export class ColorPickerInput {
                 }
             }
         });
+        if(this.parent.inlineMode.enable) {
+            this.setCssClass({cssClass: this.parent.cssClass});
+        }
     }
 
     private destroy(): void {
@@ -149,12 +152,30 @@ export class ColorPickerInput {
         }
     }
 
+    private setCssClass(e: ICssClassArgs): void {
+        this.updateCss(this.fontColorPicker, this.fontColorDropDown, e);
+        this.updateCss(this.backgroundColorPicker, this.backgroundColorDropDown, e);
+    }
+
+    private updateCss(colorPickerObj:  ColorPicker, dropDownObj: DropDownButton, e: ICssClassArgs) : void {
+        if (colorPickerObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                colorPickerObj.setProperties({ cssClass: (colorPickerObj.cssClass + ' ' + e.cssClass).trim() });
+                dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                colorPickerObj.setProperties({ cssClass: (colorPickerObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+                dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
+    }
+
     protected addEventListener(): void {
         this.parent.on(events.toolbarRenderComplete, this.renderColorPickerInput, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.destroyColorPicker, this.destroyColorPicker, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
     }
 
     private onPropertyChanged(model: { [key: string]: Object }): void {
@@ -225,6 +246,7 @@ export class ColorPickerInput {
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.destroyColorPicker, this.destroyColorPicker);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
+        this.parent.off(events.bindCssClass, this.setCssClass);
     }
 
 }

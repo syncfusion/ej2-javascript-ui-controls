@@ -587,7 +587,7 @@ export class Selection implements IAction {
                 args = {
                     cancel: false,
                     data: selectedData.length ? selectedData : rowObj.data, rowIndex: rowIndex, row: selectedRows.length ? selectedRows :
-                    selectedRow, target: this.actualTarget, prevRow: gObj.getRows()[this.prevRowIndex],
+                        selectedRow, target: this.actualTarget, prevRow: gObj.getRows()[this.prevRowIndex],
                     previousRowIndex: this.prevRowIndex, isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
                     foreignKeyData: foreignKeyData.length ? foreignKeyData : rowObj.foreignKeyData, isInteracted: this.isInteracted,
                     isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
@@ -607,7 +607,7 @@ export class Selection implements IAction {
             if (!isUnSelected) {
                 args = {
                     data: selectedData.length ? selectedData : rowObj.data, rowIndex: rowIndex, row: selectedRows.length ? selectedRows :
-                    selectedRow, target: this.actualTarget, prevRow: gObj.getRows()[this.prevRowIndex],
+                        selectedRow, target: this.actualTarget, prevRow: gObj.getRows()[this.prevRowIndex],
                     previousRowIndex: this.prevRowIndex, foreignKeyData:  foreignKeyData.length ? foreignKeyData : rowObj.foreignKeyData,
                     isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
                 };
@@ -2386,6 +2386,10 @@ export class Selection implements IAction {
         if (this.isMacOS) {
             EventHandler.add(this.parent.element, 'keydown', this.keyDownHandler, this);
             EventHandler.add(this.parent.element, 'keyup', this.keyUpHandler, this);
+        }else {
+            if (!this.parent.allowKeyboard) {
+                EventHandler.add(this.parent.element, 'keydown', this.keyDownHandler, this);
+            }
         }
     }
 
@@ -2393,6 +2397,10 @@ export class Selection implements IAction {
         if (this.isMacOS) {
             EventHandler.remove(this.parent.element, 'keydown', this.keyDownHandler);
             EventHandler.remove(this.parent.element, 'keyup', this.keyUpHandler);
+        }else {
+            if (!this.parent.allowKeyboard) {
+                EventHandler.remove(this.parent.element, 'keydown', this.keyDownHandler);
+            }
         }
     }
 
@@ -2930,6 +2938,9 @@ export class Selection implements IAction {
             (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
             this.cmdKeyPressed = true;
         }
+        if (e.keyCode === 32) {
+            e.preventDefault();
+        }
     }
 
     private keyUpHandler(e: KeyboardEvent): void {
@@ -2951,7 +2962,12 @@ export class Selection implements IAction {
         }
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch ||
             (this.isMacOS && this.cmdKeyPressed);
-        this.isMultiShiftRequest = e.shiftKey;
+        if (!this.parent.allowKeyboard) {
+            this.isMultiShiftRequest = false;
+            this.isMultiCtrlRequest = false;
+        } else {
+            this.isMultiShiftRequest = e.shiftKey;
+        }
         this.popUpClickHandler(e);
         let chkSelect: boolean = false;
         this.preventFocus = true;
@@ -3767,7 +3783,9 @@ export class Selection implements IAction {
         this.isHeaderCheckboxClicked = false;
         const isInfinitecroll: boolean = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
-            this.disableUI = !this.parent.enableImmutableMode;
+            if (this.parent.enableImmutableMode) {      
+                this.disableUI = true;
+            }
             this.clearSelection();
             this.setCheckAllState();
             this.disableUI = false;

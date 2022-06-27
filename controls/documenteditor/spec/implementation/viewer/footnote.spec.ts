@@ -10539,4 +10539,16 @@ describe("Footnote relayout validation", () => {
 		let paragraph: IWidget = bodyWidget.childWidgets.length as IWidget;
 		expect(paragraph).toBe(6);
 	});
+	it('Footnote splitting validation', () => {
+		editor.openBlank();
+		editor.editor.insertPageNumber();
+		for (let i = 0; i < 20; i++) {
+			editor.editor.onEnter();
+		}
+		editor.editor.insertFootnote();
+		for (let i = 0; i < 60; i++) {
+			editor.editor.onEnter();
+		}
+		expect(editor.documentHelper.pages.length).toBe(2);
+	});
 });

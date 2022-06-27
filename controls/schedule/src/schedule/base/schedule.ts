@@ -1494,7 +1494,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
-                        this.uiStateValues.isInitial = ['TimelineMonth', 'TimelineYear', 'Year'].indexOf(view) > -1 ? true : this.uiStateValues.isInitial;
+                        this.uiStateValues.isInitial = view.indexOf('Timeline') > -1 || this.currentView.indexOf('Timeline') > -1 ? true : this.uiStateValues.isInitial;
                         this.viewIndex = navigationArgs.viewIndex;
                         this.setProperties({ currentView: view }, true);
                         if (this.headerModule) {
@@ -2342,8 +2342,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     this.refreshEvents(false);
                 }
                 break;
-            case 'showWeekend':
             case 'workDays':
+                if (JSON.stringify(oldProp.workDays) !== JSON.stringify(newProp.workDays)) {
+                    state.isLayout = true;
+                }
+                break;
+            case 'showWeekend':
             case 'startHour':
             case 'endHour':
             case 'workHours':

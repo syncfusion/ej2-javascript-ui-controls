@@ -1702,6 +1702,284 @@ describe('Check annotation horizontalAlignment value ', () => {
     });
 });
 
+
+describe('Check Connector annotation Alignment value ', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement; let left: number; let top: number;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'CheckingConnectorAnnotationAlignment' });
+        document.body.appendChild(ele);
+        let connector1:ConnectorModel = {
+            id: 'connector1', type: 'Straight', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 300, y: 100 }, annotations: [{ content: 'ramkumar', verticalAlignment: 'Bottom', horizontalAlignment: 'Right', constraints:AnnotationConstraints.Interaction | AnnotationConstraints.Drag }]
+        };
+        let connector2:ConnectorModel = {
+            id: 'connector2', type: 'Straight', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 300, y: 200 }, annotations: [{ content: 'ramkumar', verticalAlignment: 'Bottom', horizontalAlignment: 'Left', constraints: AnnotationConstraints.Interaction |AnnotationConstraints.Drag }]
+        };
+        let  connector3:ConnectorModel = {
+            id: 'connector3', type: 'Straight', sourcePoint: { x: 100, y: 300 }, targetPoint: { x: 300, y: 300 }, annotations: [{ content: 'BOTTOMSIDE', verticalAlignment: 'Bottom', horizontalAlignment: 'Center', constraints:AnnotationConstraints.Interaction | AnnotationConstraints.Drag }]
+        };
+        let  connector4:ConnectorModel = {
+            id: 'connector4', type: 'Straight',sourcePoint: { x: 100, y: 400 }, targetPoint: { x: 300, y: 400 },annotations: [{ content: 'RIGHTSIDE', verticalAlignment: 'Center', horizontalAlignment: 'Right', constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag }]
+        };
+        let connector5:ConnectorModel = {
+            id: 'connector5', type: 'Straight',sourcePoint: { x: 100, y: 500 }, targetPoint: { x: 300, y: 500 }, annotations: [{ content: 'LEFTSIDE', verticalAlignment: 'Center', horizontalAlignment: 'Left', constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag }]
+        };
+        let  connector6:ConnectorModel = {
+            id: 'connector6', type: 'Straight',sourcePoint: { x: 100, y: 600 }, targetPoint: { x: 300, y: 600 }, annotations: [{ content: 'TOPSIDE', verticalAlignment: 'Top', horizontalAlignment: 'Center', constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag }]
+        };
+        let  connector7:ConnectorModel = {
+            id: 'connector7', type: 'Straight', sourcePoint: { x: 100, y: 700 }, targetPoint: { x: 300, y: 700 },annotations: [{ content: 'BOTHCENTER', verticalAlignment: 'Center', horizontalAlignment: 'Center', constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag }]
+        };
+        let  connector8:ConnectorModel = {
+            id: 'connector8', type: 'Straight', sourcePoint: { x: 500, y: 100 },
+            targetPoint: { x: 800, y: 100 },
+            annotations: [
+                {
+                    content: 'Left', offset: 0.1, verticalAlignment: 'Top', horizontalAlignment: 'Right', constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                },
+                {
+                    content: 'Right', offset: 0.5, verticalAlignment: 'Center', horizontalAlignment: 'Center', constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                }
+            ]
+        };
+        diagram = new Diagram({
+            width: 1100, height: 1000,
+            connectors: [connector1, connector2, connector3, connector4, connector5, connector6,connector7,connector8]
+        });
+        diagram.appendTo('#CheckingConnectorAnnotationAlignment');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 1, 1);
+        left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    //Connector Annotation Interaction
+    it('Select', (done: Function) => {
+        let connector: ConnectorModel = (diagram.connectors[0] as ConnectorModel);
+        let annotation: DiagramElement = connector.wrapper.children[3];
+        mouseEvents.clickEvent(diagramCanvas,annotation.offsetX + left,annotation.offsetY + top);
+        expect((diagram.selectedItems as Selector).connectors.length == 1 &&
+            (diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
+        done();
+    });
+    it('Drag', (done: Function) => {
+        drag(diagram);
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 171 && Math.round(label.offsetY) == 103 ).toBe(true);
+        done();
+    });
+    it('Resize North', (done: Function) => {
+        resize(diagram, 'resizeNorth');
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 171 && Math.round(label.offsetY) == 113 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 14 ).toBe(true);
+        done();
+    });
+    it('Resize South', (done: Function) => {
+        resize(diagram, 'resizeSouth');
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 171 && Math.round(label.offsetY) == 123 &&  Math.round(label.width) ==57 &&  Math.round(label.height) == 34 ).toBe(true);
+        done();
+    });
+    it('Resize East', (done: Function) => {
+        resize(diagram, 'resizeEast');
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 181 && Math.round(label.offsetY) == 123 &&  Math.round(label.width) == 77 &&  Math.round(label.height) == 34 ).toBe(true);
+        done();
+    });
+    it('Resize West', (done: Function) => {
+        resize(diagram, 'resizeWest');
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 191 && Math.round(label.offsetY) == 123 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 34).toBe(true);
+        done();
+    });
+    it('Rotate', (done: Function) => {
+        rotate(diagram, 15, undefined);
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 220 && Math.round(label.offsetY) == 140 &&  Math.round(label.width) ==57 &&  Math.round(label.height) == 34 && label.rotateAngle == 345).toBe(true);
+        done();
+    });
+    it('Select after annotation rotation', (done: Function) => {
+        diagram.connectors[0].annotations[0].height = 60;
+        diagram.dataBind();
+        mouseEvents.clickEvent(diagramCanvas, 1, 1);
+        let label = diagram.connectors[0].wrapper.children[3];
+        mouseEvents.clickEvent(diagramCanvas, label.offsetX + left, label.offsetY + top);
+        expect((diagram.selectedItems as Selector).annotation != undefined).toBe(true);
+        done();
+    });
+    it('Drag after annotation rotation', (done: Function) => {
+        drag(diagram);
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 223 && Math.round(label.offsetY) == 152 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 59).toBe(true);
+        done();
+    });
+    it('Resize East after annotation rotation', (done: Function) => {
+        resize(diagram, 'resizeEast');
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 230 && Math.round(label.offsetY) == 150 &&  Math.round(label.width) == 71 &&  Math.round(label.height) == 59).toBe(true);
+        done();
+    });
+    it('Resize West after annotation rotation', (done: Function) => {
+        resize(diagram, 'resizeWest');
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 237 && Math.round(label.offsetY) == 148 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 59).toBe(true);
+        done();
+    });
+    it('Rotate', (done: Function) => {
+        rotate(diagram, 15, undefined);
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        expect(Math.round(label.offsetX) == 237 && Math.round(label.offsetY) == 148 &&  Math.round(label.width) ==57 &&  Math.round(label.height) == 59 && label.rotateAngle == 10).toBe(true);
+        done();
+    });
+});
+describe('Check Node annotation Alignment value ', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement; let left: number; let top: number;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'CheckingNodeAnnotationAlignment' });
+        document.body.appendChild(ele);
+        
+        let node1:NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 100,
+            annotations: [{ offset: { x: 0.5, y: 0.5 },verticalAlignment:'Center',horizontalAlignment:'Right',width: 100, height: 150,content: 'Text Element' }]
+        };
+       
+        let node2:NodeModel  = {
+            id: 'node2', width: 150, height: 60, offsetX: 200, offsetY: 200,
+            shape: { type: 'Flow', shape: 'Process' },
+            annotations: [{
+                    id: 'label2', content: 'start transaction', offset: { x: 0.5, y: 0.5 },
+                    verticalAlignment: 'Center', horizontalAlignment: 'Left',
+                    constraints:AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                }]
+        };
+        let node3:NodeModel  = {
+            id: 'node3', width: 150, height: 60, offsetX: 200, offsetY: 300,
+            shape: { type: 'Flow', shape: 'Decision' },
+            annotations: [{
+                    id: 'label3', content: 'Verification', offset: { x: 0.5, y: 0.5 },
+                    verticalAlignment: 'Bottom', horizontalAlignment: 'Center',
+                    constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                }]
+        };
+        let node4:NodeModel  = {
+            id: 'node4', width: 150, height: 100, offsetX: 200, offsetY: 400,
+            shape: { type: 'Flow', shape: 'Decision' },
+            annotations: [{
+                    id: 'label4', content: 'Credit card Valid', offset: { x: 0.5, y: 0.5 },
+                    verticalAlignment: 'Top', horizontalAlignment: 'Center',
+                    constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                }]
+        };
+        let node5:NodeModel  = {
+            id: 'node5', width: 150, height: 60, offsetX: 200, offsetY: 500,
+            shape: { type: 'Flow', shape: 'Process' },
+            annotations: [{
+                    id: 'label5', content: 'Complete Transaction', offset: { x: 0.5, y: 0.5 },
+                    verticalAlignment: 'Top', horizontalAlignment: 'Right',
+                    constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                }]
+        };
+        let node6:NodeModel  = {
+            id: 'node6', width: 250, height: 60, offsetX: 500, offsetY: 300,
+            shape: { type: 'Flow', shape: 'Card' },
+            annotations: [{
+                    id: 'label6', content: 'Email', offset: { x: 0.5, y: 0.5 },
+                    verticalAlignment: 'Top', horizontalAlignment: 'Left',
+                    constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                }]
+        };
+        let node7:NodeModel  = {
+            id: 'node7', width: 150, height: 60, offsetX: 500, offsetY: 400,
+            shape: { type: 'Flow', shape: 'Process' },
+            annotations: [{
+                    id: 'label7', content: 'Custom Database', offset: { x: 0.5, y: 0.5 },
+                    verticalAlignment: 'Bottom', horizontalAlignment: 'Right',
+                    constraints: AnnotationConstraints.Interaction | AnnotationConstraints.Drag
+                }]
+        };
+        let node8:NodeModel  = {
+            id: 'node8', width: 150, height: 60, offsetX: 500, offsetY: 500,
+            shape: { type: 'Flow', shape: 'Process' },
+            annotations: [{
+                    id: 'label8', content: 'Log Transaction', offset: { x: 0.5, y: 0.5 },
+                    verticalAlignment: 'Bottom', horizontalAlignment: 'Left',
+                    constraints: AnnotationConstraints.Interaction |AnnotationConstraints.Drag
+                }]
+        };
+        diagram = new Diagram({
+            width: 1100, height: 1000, nodes: [node1, node2, node3, node4, node5, node6, node7, node8],
+        });
+        diagram.appendTo('#CheckingNodeAnnotationAlignment');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 1, 1);
+        left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Without and with select constraints', (done: Function) => {
+        let node: NodeModel = (diagram.nodes[0] as NodeModel);
+        let annotation: DiagramElement = node.wrapper.children[1];
+        mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
+        expect((diagram.selectedItems as Selector).annotation == undefined).toBe(true);
+        (node as Node).annotations[0].constraints = AnnotationConstraints.Select;
+        mouseEvents.clickEvent(diagramCanvas, 1, 1);
+        mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
+        expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
+        done();
+    });
+    it('Without and with drag constraints', (done: Function) => {
+        drag(diagram);
+        expect((diagram.selectedItems as Selector).annotation == undefined).toBe(true);
+        let node: NodeModel = (diagram.nodes[0] as NodeModel);
+        let label: DiagramElement = node.wrapper.children[1];
+        diagram.nodes[0].annotations[0].constraints =  AnnotationConstraints.Interaction  | AnnotationConstraints.Drag;
+        mouseEvents.clickEvent(diagramCanvas, label.offsetX + left, label.offsetY + top);
+        drag(diagram);
+        expect(label.offsetX == 170 && label.offsetY == 120 && label.width == 100 && label.height == 150 && label.rotateAngle == 0).toBe(true);
+        done();
+    });
+    it('Without and with resize constraints', (done: Function) => {
+        resize(diagram, 'resizeNorth');
+        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        diagram.nodes[0].annotations[0].constraints =  AnnotationConstraints.Interaction  | AnnotationConstraints.Resize;
+        resize(diagram, 'resizeNorth');
+        expect(label.offsetX == 170 && label.offsetY == 140  && label.rotateAngle == 0).toBe(true);
+        done();
+    });
+    it('Without and with rotate constraints', (done: Function) => {
+        rotate(diagram, 20, undefined);
+        diagram.nodes[0].annotations[0].constraints = AnnotationConstraints.Interaction  | AnnotationConstraints.Rotate;
+        let node: NodeModel = (diagram.nodes[0] as NodeModel);
+        let label: DiagramElement = node.wrapper.children[1];
+        mouseEvents.clickEvent(diagramCanvas, label.offsetX + left, label.offsetY + top);
+        rotate(diagram, 20, undefined);
+        expect(diagram.nodes[0].annotations[0].rotateAngle != 0).toBe(true);
+        done();
+    });
+});
+
+
 describe('Hyperlink Link target',()=>{
     let diagram: Diagram;
     let ele: HTMLElement;

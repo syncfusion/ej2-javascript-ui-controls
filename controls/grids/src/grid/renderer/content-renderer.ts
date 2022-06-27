@@ -899,7 +899,7 @@ export class ContentRender implements IRenderer {
             if (!needFullRefresh) {
                 this.setDisplayNone(tr, colIdx, displayVal, contentrows);
                 if (isFrozenGrid) {
-                    this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
+                    this.parent.notify(events.freezeRender, { case: 'refreshHeight', isModeChg: true });
                 }
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {

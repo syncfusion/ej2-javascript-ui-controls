@@ -10,6 +10,7 @@ export class NonWorkingDay {
     public nonworkingContainer: HTMLElement;
     private holidayContainer: HTMLElement;
     private weekendContainer: HTMLElement;
+    private weekendWidthUpdated: boolean = false;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.nonworkingContainer = null;
@@ -145,6 +146,14 @@ export class NonWorkingDay {
                     tempEnd.setHours(0, 0, 0, 0);
                     width = this.parent.dataOperation.getTaskWidth(start, tempEnd);
                     isFirstCell = false;
+                }
+                let sDate: Date = new Date(startDate);
+                sDate.setDate(sDate.getDate() +1);
+                if (sDate.getTimezoneOffset() != this.parent.timelineModule.timelineStartDate.getTimezoneOffset() && !this.weekendWidthUpdated) {
+                    if (this.parent.timelineModule.bottomTier == 'Hour' && this.parent.timelineSettings.bottomTier.count === 1) {
+                        width = width - this.parent.timelineSettings.timelineUnitSize;
+                        this.weekendWidthUpdated = true;
+                    }
                 }
                 const weekendDiv: HTMLElement = createElement('div', {
                     className: cls.weekend, styles: `left:${left}px;width:${width}px;height:100%;`

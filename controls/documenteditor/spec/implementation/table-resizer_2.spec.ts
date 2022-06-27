@@ -262,4 +262,45 @@ console.log(' Table Row Resizing validation header');
         expect(documentHelper.pages[0].headerWidget.height).toBeGreaterThan(height);
     });
 });
-
+describe('Check the minimum width for cell', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', {
+            id: 'container',
+            styles: 'width:100%;height:100%'
+        });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check the minimum width for cell', () => {
+        console.log('Check the minimum width for cell');
+        documentHelper = editor.documentHelper;
+        editor.openBlank();
+        editor.editor.insertTable(1, 1);
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleUpKey();
+        editor.editorModule.tableResize.currentResizingTable = documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget
+        editor.editorModule.tableResize.resizeNode = 0;
+        documentHelper.isRowOrCellResizing = true;
+        editor.editorModule.tableResize.resizerPosition = 1;
+        editor.editorModule.tableResize.startingPoint = new Point(1075, 124);
+        editor.editorModule.tableResize.resizeTableCellColumn(-608);
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).width).toBe(5.9);
+    });
+});

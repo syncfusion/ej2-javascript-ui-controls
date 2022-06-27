@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-gantt/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-gantt)
-
 # ej2-gantt
 
 The Gantt component is designed to visualize and edit the project schedule, and track the project progress. It helps to organize and schedule the projects and also you can update the project schedule through interactions like editing, dragging and resizing.

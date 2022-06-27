@@ -1,10 +1,10 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs, ImageSuccessEventArgs } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs, ImageSuccessEventArgs, ICssClassArgs } from '../base/interface';
 import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass, removeClass } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
@@ -32,6 +32,10 @@ export class PasteCleanup {
     private dialogRenderObj: DialogRenderer;
     private popupObj: Popup;
     private uploadObj: Uploader;
+    private dialogObj: Dialog;
+    private keepRadioButton :RadioButton
+    private cleanRadioButton :RadioButton
+    private plainTextRadioButton :RadioButton
     private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
         'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
         'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
@@ -59,6 +63,7 @@ export class PasteCleanup {
             return;
         }
         this.parent.on(events.pasteClean, this.pasteClean, this);
+        this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
 
@@ -70,6 +75,7 @@ export class PasteCleanup {
             return;
         }
         this.parent.off(events.pasteClean, this.pasteClean);
+        this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
     }
 
@@ -251,7 +257,7 @@ export class PasteCleanup {
             id: this.parent.element.id + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
         const offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
-        const popupObj: Popup = new Popup(popupEle, {
+        this.popupObj = new Popup(popupEle, {
             relateTo: imgElem as HTMLElement,
             height: '85px',
             width: '300px',
@@ -264,19 +270,22 @@ export class PasteCleanup {
             // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
-                popupObj.destroy();
-                detach(popupObj.element);
+                this.popupObj.destroy();
+                detach(this.popupObj.element);
             }
         });
-        popupObj.element.style.display = 'none';
-        addClass([popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
+        this.popupObj.element.style.display = 'none';
+        addClass([this.popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
+        if (!isNOU(this.parent.cssClass)) {
+            addClass([this.popupObj.element], this.parent.cssClass);
+        }
         const timeOut: number = fileList.size > 1000000 ? 300 : 100;
         setTimeout(() => {
-            this.refreshPopup(imgElem as HTMLElement, popupObj);
+            this.refreshPopup(imgElem as HTMLElement, this.popupObj);
         }, timeOut);
         let rawFile: FileInfo[];
         let beforeUploadArgs: ImageUploadingEventArgs;
-        const uploadObj: Uploader = new Uploader({
+        this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
                 removeUrl: this.parent.insertImageSettings.removeUrl
@@ -286,7 +295,7 @@ export class PasteCleanup {
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: (e: ImageSuccessEventArgs) => {
                 setTimeout(() => {
-                    this.popupClose(popupObj, uploadObj, imgElem, e);
+                    this.popupClose(this.popupObj, this.uploadObj, imgElem, e);
                 }, 900);
             },
             uploading: (e: UploadingEventArgs) => {
@@ -296,8 +305,8 @@ export class PasteCleanup {
                             if (!isNullOrUndefined(imgElem)) {
                                 detach(imgElem);
                             }
-                            if (!isNullOrUndefined(popupObj.element)) {
-                                detach(popupObj.element);
+                            if (!isNullOrUndefined(this.popupObj.element)) {
+                                detach(this.popupObj.element);
                             }
                         } else {
                             this.parent.inputElement.contentEditable = 'false';
@@ -316,11 +325,11 @@ export class PasteCleanup {
                         }
                         this.toolbarEnableDisable(true);
                         /* eslint-disable */
-                    (uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
-                        beforeUploadArgs.currentRequest : (uploadObj as any).currentRequestHeader;
-                    (uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
-                        beforeUploadArgs.customFormData : (uploadObj as any).customFormDatas;
-                    (uploadObj as any).uploadFiles(rawFile, null);
+                    (this.uploadObj as any).currentRequestHeader = beforeUploadArgs.currentRequest ?
+                        beforeUploadArgs.currentRequest : (this.uploadObj as any).currentRequestHeader;
+                    (this.uploadObj as any).customFormDatas = beforeUploadArgs.customFormData && beforeUploadArgs.customFormData.length > 0 ?
+                        beforeUploadArgs.customFormData : (this.uploadObj as any).customFormDatas;
+                    (this.uploadObj as any).uploadFiles(rawFile, null);
                     /* eslint-enable */
                     });
                 } else {
@@ -331,7 +340,7 @@ export class PasteCleanup {
             // eslint-disable-next-line
                 failure: (e: Object) => {
                 setTimeout(() => {
-                    this.uploadFailure(imgElem, uploadObj, popupObj, e);
+                    this.uploadFailure(imgElem, this.uploadObj, this.popupObj, e);
                 }, 900);
             },
             canceling: () => {
@@ -340,7 +349,7 @@ export class PasteCleanup {
                     detach(imgElem.nextSibling);
                 }
                 detach(imgElem);
-                popupObj.close();
+                this.popupObj.close();
             },
             selected: (e: SelectedEventArgs) => {
                 e.cancel = true;
@@ -354,10 +363,10 @@ export class PasteCleanup {
                     detach(imgElem.nextSibling);
                 }
                 detach(imgElem);
-                popupObj.close();
+                this.popupObj.close();
             }
         });
-        uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
+        this.uploadObj.appendTo(this.popupObj.element.childNodes[0] as HTMLElement);
 
         /* eslint-disable */
   let fileData: any = [{
@@ -368,13 +377,13 @@ export class PasteCleanup {
     validationMessages: { minSize: "", maxSize: "" },
     statusCode: '1'
   }];
-  (uploadObj as any).createFileList(fileData);
-  (uploadObj as any).filesData.push(fileData[0]);
+  (this.uploadObj as any).createFileList(fileData);
+  (this.uploadObj as any).filesData.push(fileData[0]);
   /* eslint-enable */
         rawFile = fileData;
-        uploadObj.upload(fileData);
-        (popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
-        detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
+        this.uploadObj.upload(fileData);
+        (this.popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
+        detach(this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
     }
     private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
         this.parent.inputElement.contentEditable = 'true';
@@ -462,19 +471,19 @@ export class PasteCleanup {
     }
 
     private radioRender(): void {
-        const keepRadioButton: RadioButton = new RadioButton({ label: this.i10n.getConstant('keepFormat'),
+        this.keepRadioButton = new RadioButton({ label: this.i10n.getConstant('keepFormat'),
             name: 'pasteOption', checked: true });
-        keepRadioButton.isStringTemplate = true;
+            this.keepRadioButton .isStringTemplate = true;
         const keepFormatElement: HTMLElement = this.parent.element.querySelector('#keepFormating');
-        keepRadioButton.appendTo(keepFormatElement);
-        const cleanRadioButton: RadioButton = new RadioButton({ label: this.i10n.getConstant('cleanFormat'), name: 'pasteOption' });
-        cleanRadioButton.isStringTemplate = true;
+        this.keepRadioButton.appendTo(keepFormatElement);
+        this.cleanRadioButton = new RadioButton({ label: this.i10n.getConstant('cleanFormat'), name: 'pasteOption' });
+        this.cleanRadioButton.isStringTemplate = true;
         const cleanFormatElement: HTMLElement = this.parent.element.querySelector('#cleanFormat');
-        cleanRadioButton.appendTo(cleanFormatElement);
-        const plainTextRadioButton: RadioButton = new RadioButton({ label: this.i10n.getConstant('plainText'), name: 'pasteOption' });
-        plainTextRadioButton.isStringTemplate = true;
+        this.cleanRadioButton.appendTo(cleanFormatElement);
+        this.plainTextRadioButton = new RadioButton({ label: this.i10n.getConstant('plainText'), name: 'pasteOption' });
+        this.plainTextRadioButton.isStringTemplate = true;
         const plainTextElement: HTMLElement = this.parent.element.querySelector('#plainTextFormat');
-        plainTextRadioButton.appendTo(plainTextElement);
+        this.plainTextRadioButton.appendTo(plainTextElement);
     }
 
     private selectFormatting(value: string, args: Object, keepChecked: boolean, cleanChecked: boolean): void {
@@ -493,15 +502,15 @@ export class PasteCleanup {
             buttons: [
                 {
                     click: () => {
-                        if (!dialog.isDestroyed) {
+                        if (!this.dialogObj.isDestroyed) {
                             const keepChecked: boolean = (this.parent.element.querySelector('#keepFormating') as HTMLInputElement).checked;
                             const cleanChecked: boolean = (this.parent.element.querySelector('#cleanFormat') as HTMLInputElement).checked;
-                            dialog.hide();
+                            this.dialogObj.hide();
                             this.parent.height = isHeight ? preRTEHeight : this.parent.height;
                             isHeight = false;
-                            const argument: Dialog = dialog;
+                            const argument: Dialog = this.dialogObj;
                             this.dialogRenderObj.close(argument);
-                            dialog.destroy();
+                            this.dialogObj.destroy();
                             this.selectFormatting(value, args, keepChecked, cleanChecked);
                         }
                     },
@@ -513,13 +522,13 @@ export class PasteCleanup {
                 },
                 {
                     click: () => {
-                        if (!dialog.isDestroyed) {
-                            dialog.hide();
+                        if (!this.dialogObj.isDestroyed) {
+                            this.dialogObj.hide();
                             this.parent.height = isHeight ? preRTEHeight : this.parent.height;
                             isHeight = false;
-                            const args: Dialog = dialog;
+                            const args: Dialog = this.dialogObj;
                             this.dialogRenderObj.close(args);
-                            dialog.destroy();
+                            this.dialogObj.destroy();
                         }
                     },
                     buttonModel: {
@@ -542,7 +551,7 @@ export class PasteCleanup {
             isModal: true,
             visible: false
         };
-        const dialog: Dialog = this.dialogRenderObj.render(dialogModel);
+        this.dialogObj = this.dialogRenderObj.render(dialogModel);
         let rteDialogWrapper: HTMLElement = this.parent.element.querySelector('#' + this.parent.getID()
             + '_pasteCleanupDialog');
         if (rteDialogWrapper !== null && rteDialogWrapper.innerHTML !== '') {
@@ -554,15 +563,42 @@ export class PasteCleanup {
             }) as HTMLElement;
             this.parent.element.appendChild(rteDialogWrapper);
         }
-        dialog.appendTo(rteDialogWrapper);
+        this.dialogObj.appendTo(rteDialogWrapper);
         this.radioRender();
         /* eslint-disable */
-        if (this.parent.element.offsetHeight < parseInt((dialog.height as string).split('px')[0], null)) {
-            this.parent.height = parseInt((dialog.height as string).split('px')[0], null) + 40;
+        if (this.parent.element.offsetHeight < parseInt((this.dialogObj.height as string).split('px')[0], null)) {
+            this.parent.height = parseInt((this.dialogObj.height as string).split('px')[0], null) + 40;
             /* eslint-enable */
             isHeight = true;
         }
-        dialog.show();
+        this.dialogObj.show();
+        this.setCssClass({cssClass: this.parent.cssClass});
+    }
+
+    private updateCss(currentObj: Dialog | Uploader | RadioButton, e: ICssClassArgs) : void {
+        if (currentObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass + ' ' + e.cssClass).trim() });
+            } else {
+                currentObj.setProperties({ cssClass: (currentObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+            }
+        }
+    }
+
+    private setCssClass(e: ICssClassArgs) {
+        if (this.popupObj && e.cssClass) {
+            if (isNullOrUndefined(e.oldCssClass)) {
+                addClass([this.popupObj.element], e.cssClass);
+            } else {
+                removeClass([this.popupObj.element], e.oldCssClass);
+                addClass([this.popupObj.element], e.cssClass);
+            }
+        }
+        this.updateCss(this.dialogObj, e);
+        this.updateCss(this.uploadObj, e);
+        this.updateCss(this.plainTextRadioButton, e);
+        this.updateCss(this.cleanRadioButton, e);
+        this.updateCss(this.keepRadioButton, e);
     }
 
     private destroyDialog(rteDialogWrapper: HTMLElement): void {

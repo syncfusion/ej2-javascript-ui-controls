@@ -1,23 +1,28 @@
 @include export-module('toast-bootstrap4-icons') {
   .e-toast {
     .e-toast-close-icon::before {
-      content: $toast-close-icon;
+      content: '\e745';
+      font-family: 'e-icons';
     }
 
     .e-toast-success-icon::before {
-      content: $toast-success-icon;
+      content: '\e7d9';
+      font-family: 'e-icons';
     }
 
     .e-toast-error-icon::before {
-      content: $toast-error-icon;
+      content: '\e761';
+      font-family: 'e-icons';
     }
 
     .e-toast-info-icon::before {
-      content: $toast-info-icon;
+      content: '\e729';
+      font-family: 'e-icons';
     }
 
     .e-toast-warning-icon::before {
-      content: $toast-warning-icon;
+      content: '\e92f';
+      font-family: 'e-icons';
     }
   }
 }

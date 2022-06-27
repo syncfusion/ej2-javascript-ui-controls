@@ -416,7 +416,7 @@ export class PolarRadarPanel extends LineBase {
             y1 = this.centerY + radius * vector.y;
             x2 = this.centerX + radius * vector2.x;
             y2 = this.centerY + radius * vector2.y;
-            majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + ' ' + x1 + ' ' + y1 + ' ' + 'L ' + ' ' + x2 + ' ' + y2 + ' ');
+            majorGrid = majorGrid.concat((i ? 'L ' : 'M ') + x1 + ' ' + y1 + ' ' + 'L ' + x2 + ' ' + y2 + ' ');
         }
         return majorGrid;
     }

@@ -3,7 +3,6 @@ import { TreeGrid, ITreeData } from '../base';
 import * as events from '../base/constant';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations/src/toolbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { TreeActionEventArgs } from '..';
 /**
  * Toolbar Module for TreeGrid
  *
@@ -16,7 +15,6 @@ export class Toolbar {
         this.parent = parent;
         this.addEventListener();
     }
-
     /**
      * For internal use only - Get the module name.
      *
@@ -49,46 +47,56 @@ export class Toolbar {
     }
 
     private refreshToolbar(args: RowSelectEventArgs): void {
-        const tObj: TreeGrid = this.parent;
-        if ((args.row as HTMLTableRowElement).rowIndex === 0 || tObj.getSelectedRecords().length > 1) {
-            this.enableItems([tObj.element.id + '_gridcontrol_indent', tObj.element.id + '_gridcontrol_outdent'], false);
+        const tObj: TreeGrid = this.parent; let indentElement: HTMLElement; let outdentElement: HTMLElement;
+        const indentID: string = tObj.element.id + '_gridcontrol_indent';
+        const outdentID: string = tObj.element.id + '_gridcontrol_outdent';
+        const toolbarElement: Element = this.parent.grid.toolbarModule.getToolbar();
+        const indentEle: HTMLElement = toolbarElement.querySelector('#' + indentID);
+        const outdentEle: HTMLElement = toolbarElement.querySelector('#' + outdentID);
+        let row: HTMLTableRowElement = args.row as HTMLTableRowElement;
+        const selectedrow: HTMLTableRowElement = tObj.getSelectedRows()[0] as HTMLTableRowElement;
+        if (!isNullOrUndefined(row[0])) {
+            row = row[0];
         }
-        else if (args['name'] !== 'rowDeselected') {
-            if (!isNullOrUndefined((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData))) {
-                if (!isNullOrUndefined((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData)) &&
-                    ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level >
-                (tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex - 1] as ITreeData).level)) {
-                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], false);
-                } else {
-                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
-                }
-                if ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level ===
-                (tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex - 1] as ITreeData).level) {
-                    this.enableItems([tObj.element.id + '_gridcontrol_indent'], true);
-                }
-                if ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level === 0) {
-                    this.enableItems([tObj.element.id + '_gridcontrol_outdent'], false);
-                }
-                if ((tObj.getCurrentViewRecords()[(args.row as HTMLTableRowElement).rowIndex] as ITreeData).level !== 0) {
-                    this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
+        row = (!isNullOrUndefined(selectedrow) && selectedrow.rowIndex !== row.rowIndex) ? selectedrow : row;
+        if (indentEle !== null && outdentEle !== null) {
+            indentElement = toolbarElement.querySelector('#' + indentID).parentElement;
+            outdentElement  = toolbarElement.querySelector('#' + outdentID).parentElement;
+            if (row.rowIndex === 0 || tObj.getSelectedRowIndexes().length > 1) {
+                indentElement.classList.add('e-hidden');
+                outdentElement.classList.add('e-hidden');
+            }
+            else if (args['name'] !== 'rowDeselected' || (!isNullOrUndefined(selectedrow) && tObj.grid.isCheckBoxSelection)) {
+                const selectedItem: ITreeData = tObj.getCurrentViewRecords()[row.rowIndex];
+                if (!isNullOrUndefined(selectedItem)) {
+                    if ((selectedItem.level > (tObj.getCurrentViewRecords()[row.rowIndex - 1] as ITreeData).level)) {
+                        indentElement.classList.add('e-hidden');
+                    } else {
+                        indentElement.classList.remove('e-hidden');
+                    }
+                    if (selectedItem.level === (tObj.getCurrentViewRecords()[row.rowIndex - 1] as ITreeData).level) {
+                        indentElement.classList.remove('e-hidden');
+                    }
+                    if (selectedItem.level === 0) {
+                        outdentElement.classList.add('e-hidden');
+                    }
+                    if (selectedItem.level !== 0) {
+                        outdentElement.classList.remove('e-hidden');
+                    }
                 }
             }
-        }
-        if (args['name'] === 'rowDeselected') {
-            if (this.parent.toolbar['includes']('Indent')) {
-                this.enableItems([tObj.element.id + '_gridcontrol_indent'], false);
+            if (args['name'] === 'rowDeselected' && isNullOrUndefined(selectedrow) && !tObj.grid.isCheckBoxSelection) {
+                if (this.parent.toolbar['includes']('Indent')) {
+                    indentElement.classList.add('e-hidden');
+                }
+                if (this.parent.toolbar['includes']('Outdent')) {
+                    outdentElement.classList.add('e-hidden');
+                }
             }
-            if (this.parent.toolbar['includes']('Outdent')) {
-                this.enableItems([tObj.element.id + '_gridcontrol_outdent'], false);
-            }
-        }
-        if ((args.row as HTMLTableRowElement).rowIndex === 0 && !isNullOrUndefined((args.data as ITreeData).parentItem)) {
-            this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
         }
     }
     private toolbarClickHandler(args: ClickEventArgs): void {
-        const tObj: TreeGrid = this.parent;
-        const action: string = 'action';
+        const tObj: TreeGrid = this.parent; const indentOutdentAction: string = 'indentOutdentAction';
         if (this.parent.editSettings.mode === 'Cell' && this.parent.grid.editSettings.mode === 'Batch' &&
             args.item.id === this.parent.grid.element.id + '_update') {
             args.cancel = true;
@@ -100,54 +108,16 @@ export class Toolbar {
         if (args.item.id === this.parent.grid.element.id + '_collapseall') {
             this.parent.collapseAll();
         }
-        if (args.item.id === tObj.grid.element.id + '_indent' && tObj.getSelectedRecords().length) {
-            const record: ITreeData = tObj.getCurrentViewRecords()[tObj.getSelectedRowIndexes()[0] - 1];
-            let dropIndex: number;
-            if (record.level > (tObj.getSelectedRecords()[0] as ITreeData).level) {
-                for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
-                    if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === record.parentItem.taskData) {
-                        dropIndex = i;
-                    }
-                }
-            } else {
-                dropIndex = tObj.getSelectedRowIndexes()[0] - 1;
-            }
-            this.parent[action] = 'indenting';
-            this.eventTrigger('indenting', dropIndex);
+        if (args.item.id === tObj.grid.element.id + '_indent' && tObj.getSelectedRecords().length
+         && !isNullOrUndefined(tObj.rowDragAndDropModule)) {
+            this.parent.rowDragAndDropModule[indentOutdentAction](null, 'indent');
         }
-        if (args.item.id === tObj.grid.element.id + '_outdent' && tObj.getSelectedRecords().length) {
-            let dropIndex: number; const parentItem: ITreeData = (tObj.getSelectedRecords()[0] as ITreeData).parentItem;
-            for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
-                if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === parentItem.taskData) {
-                    dropIndex = i;
-                }
-            }
-            this.parent[action] = 'outdenting';
-            this.eventTrigger('outdenting', dropIndex);
+        if (args.item.id === tObj.grid.element.id + '_outdent' && tObj.getSelectedRecords().length
+         && !isNullOrUndefined(tObj.rowDragAndDropModule)) {
+            this.parent.rowDragAndDropModule[indentOutdentAction](null, 'outdent');
         }
     }
 
-    private eventTrigger(action: string, dropIndex: number): void {
-        const selectedRecords: string = 'selectedRecords';
-        const selectedRows: string = 'selectedRows';
-        this.parent[selectedRows] = this.parent.getSelectedRows();
-        this.parent[selectedRecords] = this.parent.getSelectedRecords();
-        const actionArgs: TreeActionEventArgs = {
-            requestType: action,
-            data: this.parent.getSelectedRecords(),
-            row: this.parent.getSelectedRows(),
-            cancel: false
-        };
-        this.parent.trigger(events.actionBegin, actionArgs, (actionArgs: TreeActionEventArgs) => {
-            if (!actionArgs.cancel) {
-                if (actionArgs.requestType === 'indenting'){
-                    this.parent.reorderRows([this.parent.getSelectedRowIndexes()[0]], dropIndex, 'child');
-                } else if (actionArgs.requestType === 'outdenting') {
-                    this.parent.reorderRows([this.parent.getSelectedRowIndexes()[0]], dropIndex, 'below');
-                }
-            }
-        });
-    }
     /**
      * Gets the toolbar of the TreeGrid.
      *

@@ -218,8 +218,14 @@ export class BasicFormulas {
         let sum: number = 0;
         let val: string;
         let orgValue: number | string;
+        let maxDecimalLength: number = 0;
         if (!isNullOrUndefined(args)) {
             const argArr: string[] = args;
+            const setMaxDecimalLength: Function = (val: string): void => {
+                if (val.toString().indexOf('.') > - 1) {
+                    maxDecimalLength = Math.max(maxDecimalLength, val.split('.')[1].length);
+                }
+            };
             for (let i: number = 0; i < argArr.length; i++) {
                 const argValue: string = argArr[i].toString();
                 if (argValue.indexOf(':') > -1 && this.parent.isCellReference(argValue)) {
@@ -232,6 +238,7 @@ export class BasicFormulas {
                         if (isNullOrUndefined(val[0]) || isNaN(this.parent.parseFloat(val))) {
                             continue;
                         }
+                        setMaxDecimalLength(val);
                         sum = sum + this.parent.parseFloat(val);
                     }
                 } else {
@@ -249,12 +256,13 @@ export class BasicFormulas {
                         continue;
                     }
                     if (orgValue.length > 0) {
+                        setMaxDecimalLength(orgValue);
                         sum = sum + this.parent.parseFloat(orgValue + '');
                     }
                 }
             }
         }
-        return sum.toString().indexOf('.') > - 1 ? sum.toFixed(2) : sum;
+        return sum.toString().indexOf('.') > - 1 ? sum.toFixed(maxDecimalLength) : sum;
     }
 
     /**
@@ -1308,9 +1316,8 @@ export class BasicFormulas {
         }
         const date: Date = new Date(Date.now());
         const intl: Internationalization = new Internationalization();
-        const dFormatter: Function = intl.getDateFormat({ skeleton: 'short', type: 'dateTime' });
-        const formattedString: string = dFormatter(date);
-        return formattedString;
+        const dFormatter: Function = intl.getDateFormat({ format: 'M/d/yyyy h:mm a' });
+        return dFormatter(date);
     }
 
     /**
@@ -1797,6 +1804,9 @@ export class BasicFormulas {
      */
     public ComputeDOLLAR(...args: string[]): string | number  {
         let value: string;
+        if (args.length === 1) {
+            args.push("2");
+        }
         if (isNullOrUndefined(args) || args.length !== 2 || args[0] === '') {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
@@ -1807,7 +1817,12 @@ export class BasicFormulas {
         if (val === '#NAME?') { return this.parent.getErrorStrings()[CommonErrors.name]; }
         if (val.toUpperCase().match(/^[0-9.]+$/) && val2.toUpperCase().match(/^[0-9.]+$/)) {
             const intl: Internationalization = new Internationalization();
-            value = intl.formatNumber(parseFloat(parseFloat(val).toFixed(parseInt(val2, 10))), { format: '$#,##.00' });
+            const decimalCount: number = parseInt(val2, 10);
+            let decimalValue: string = "";
+            for (let decimalIdx: number = 1; decimalIdx <= decimalCount; decimalIdx++) {
+                decimalValue += "0";
+            }
+            value = intl.formatNumber(parseFloat(parseFloat(val).toFixed(parseInt(val2, 10))), { format: '$#,##.' + decimalValue });
         } else {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }

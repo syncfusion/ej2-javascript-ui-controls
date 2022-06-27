@@ -30,7 +30,8 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
             {
                 element: args.element as HTMLInputElement, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
                 enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element),
-                placeholder: isInline ? '' : args.column.headerText
+                placeholder: isInline ? '' : args.column.headerText,
+                cssClass: this.parent.cssClass ? this.parent.cssClass : ''
             },
             col.edit.params));
         this.obj.appendTo(args.element as HTMLElement);

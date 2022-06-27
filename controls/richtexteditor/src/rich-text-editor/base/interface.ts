@@ -100,6 +100,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enabled?: boolean
     readonly?: boolean
     placeholder?: string
+    cssClass?: string
     valueContainer?: HTMLTextAreaElement
     editorMode?: EditorMode
     enableHtmlEncode?: boolean
@@ -137,6 +138,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     getCollection?(items: string | string[]): string[]
     getRange(): Range
     getID(): string
+    getText(): string
     updateValueData?(): void
     getBaseToolbarObject(): BaseToolbar
     setContentHeight(target?: string, isExpand?: boolean): void
@@ -165,6 +167,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enableHtmlSanitizer?: boolean
     getInsertImgMaxWidth?(): string | number
     getSelection(): string
+    currentTarget: HTMLElement
 }
 /**
  * @deprecated
@@ -226,6 +229,14 @@ export interface NotifyArgs {
 }
 
 /**
+ * Provides information about the current and previous cssClass property .
+ */
+export interface ICssClassArgs {
+    cssClass?: string
+    oldCssClass?: string
+}
+
+/**
  * @deprecated
  */
 export interface IItemCollectionArgs {
@@ -237,6 +248,8 @@ export interface IItemCollectionArgs {
     selectParent?: Node[]
     /** Defines the URL action details for link element */
     url?: string
+    /** Defines the Display Text action details for link element */
+    text?: string
     /** Defines the title of the link action details */
     title?: string
     /** Defines the target as string for link element */
@@ -480,6 +493,7 @@ export interface IToolbarOptions {
     rteToolbarObj: BaseToolbar
     enablePersistence: boolean
     overflowMode?: OverflowMode
+    cssClass?: string
 }
 
 /**
@@ -500,6 +514,7 @@ export interface IToolbarRenderOptions {
     items?: (string | IToolbarItems)[]
     mode?: OverflowMode
     container?: string
+    cssClass?: string
 }
 
 /**
@@ -681,7 +696,8 @@ export interface IQuickToolbarOptions {
     popupType: string
     mode: OverflowMode
     renderType: RenderType
-    toolbarItems: (string | IToolbarItems)[]
+    toolbarItems: (string | IToolbarItems)[],
+    cssClass: string
 }
 
 /**

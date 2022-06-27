@@ -2,6 +2,82 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I379616` - Script error when checkbox in last column while editing issue has been fixed.
+- `#I379762` - Insert action issue with `InfiniteScrolling` in URL Adaptor has been fixed.
+- `#F175233` - Scroller thumb is shown when empty record displayed in the Virtualization Grid has been fixed.
+
+## 20.1.59 (2022-06-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I367001` - Alignment issue while adding new row with frozen grid and `rowDragandDrop` is fixed
+- `#I378140` - Combination of Excel and Menu filter with `foreignkey` column throws script error is fixed
+- `#I377994` - Row selection is not updated properly inside the `rowDeselected` event while performing data actions in grid has been fixed.
+
+## 20.1.58 (2022-05-31)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I357493` - An issue with the grid throws a `NotFoundError` on Unmount in IE11 when using the custom template has been resolved.
+- `#I372485` - Adding new rows in-between with infinite scrolling issue has been fixed.
+- `#I375336` - Scrolling is not working fine with Virtualization Grid when having frozen column has been fixed.
+- `#I374913` - Collapsing Group row is not working properly when cache mode enabled in `InfiniteScrolling` has been fixed.
+
+## 20.1.57 (2022-05-24)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I359884` - Accessibility of Grid component has been improved.
+- `#I376539` - Sorting issue on URL Adaptor `DataManagerRequest` has been fixed.
+- `#I365726` - Image and Text overlap issue in excel image has been fixed.
+
+## 20.1.56 (2022-05-17)
+
+### Grid
+
+#### Bug Fixes
+
+- `#F174681` - Provided support for Column dragging when dynamically enabling the Group drop area.
+- `#I375458` - Column read as draggable after disabling column reorder for Particular column has been fixed.
+- `#I376011` - Styling issue on grouping all the columns in grid is fixed.
+- `#I352445` - Changed the title and read message of three dot icon in Page container.
+- `#I366376` - column template does not destroyed while using `setRowData` method has been fixed.
+
+## 20.1.52 (2022-05-04)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I366094` - Need to consider validation when multiple records are added in batch edit mode has been fixed.
+- `#I374850` - When `allowKeyboard` was set to false the selection was not prevented correctly has been fixed.
+- `#F141605` - Provide support get distinct value from server when open the Excel/Checkbox filter has been fixed.
+
+## 20.1.51 (2022-04-26)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I367001` - Script error thrown when adding rows with template has been fixed.
+- `#I375273` - Grid is not rendering properly with row height and frozen columns properties has been fixed.
+- `#FB29914` - `GroupCaptiontemplate` is not shown when applied it to first column has been fixed.
+- `#I367596` - Default filter value is not displayed when no records match the filer is fixed.
+- `#I370329,#I373234` - Command column not working properly for default action is fixed.
+- `#I372528` - The custom component in the filter bar template throws a script error when it is focused is fixed.
+
 ## 20.1.48 (2022-04-12)
 
 ### Grid

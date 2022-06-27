@@ -129,17 +129,19 @@ export class FilterMenuRenderer {
             buttons: [{
                 click: this.filterBtnClick.bind(this, column),
                 buttonModel: {
-                    content: this.l10n.getConstant('FilterButton'), isPrimary: true, cssClass: 'e-flmenu-okbtn'
+                    content: this.l10n.getConstant('FilterButton'), isPrimary: true,
+                    cssClass: this.parent.cssClass ? 'e-flmenu-okbtn' + ' ' + this.parent.cssClass : 'e-flmenu-okbtn'
                 }
             },
             {
                 click: this.clearBtnClick.bind(this, column),
-                buttonModel: { content: this.l10n.getConstant('ClearButton'), cssClass: 'e-flmenu-cancelbtn' }
+                buttonModel: { content: this.l10n.getConstant('ClearButton'),
+                cssClass: this.parent.cssClass ? 'e-flmenu-cancelbtn' + ' ' + this.parent.cssClass : 'e-flmenu-cancelbtn' }
             }],
             content: mainDiv,
             width: (!isNullOrUndefined(parentsUntil(target, 'e-bigger'))) || this.parent.element.classList.contains('e-device') ? 260 : 250,
             animationSettings: { effect: 'None' },
-            cssClass: 'e-filter-popup'
+            cssClass: this.parent.cssClass ? 'e-filter-popup' + ' ' + this.parent.cssClass : 'e-filter-popup'
         });
         const isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[isStringTemplate] = true;

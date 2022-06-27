@@ -44,18 +44,24 @@ export class Print {
         if (isNullOrUndefined(printWindow)) {
             printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
         }
+        let pageSize: string = width.toString() + 'px ' + height.toString() + 'px';
+        if (width > height) {
+            pageSize = 'landscape';
+        }
+
         if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Firefox')) !== -1) {
             // Chrome and Firefox
             printWindow.document.write('<!DOCTYPE html>');
-            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100 %; } img { height: 100 %; width: 100 %; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + width.toString() + 'px ' + height.toString() + 'px; }@media print{ body { margin: 0cm; }</style></head> <body><center>');
+            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100 %; } img { height: 100 %; width: 100 %; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
         } else {
             // Internet Explorer and Edge
-            printWindow.document.write('<html><head><style>@page{margin:0;size:' + width.toString() + 'px ' + height.toString() + 'px;}</style></head><body><center>');
+            printWindow.document.write('<html><head><style>@page{margin:0;size:' + pageSize + ';}</style></head><body><center>');
         }
         printWindow.document.write(printElement.innerHTML + '</center><script> (function() { window.ready = true; })(); </script></body></html>');
         printElement = undefined;
         printWindow.document.close();
         printWindow.focus();
+
         const interval: number = setInterval(
             () => {
                 // eslint-disable-next-line
@@ -79,11 +85,11 @@ export class Print {
     public exportAsImage(documentHelper: DocumentHelper, pageNumber: number, imageType: string): HTMLImageElement {
         let image: HTMLImageElement;
         if (!isNullOrUndefined(pageNumber) && pageNumber <= documentHelper.pages.length && pageNumber >= 1) {
-            const prntPage: Page = documentHelper.pages[(pageNumber - 1)];
-            const pgHeight: number = prntPage.boundingRectangle.height;
-            const pgWidth: number = prntPage.boundingRectangle.width;
+            const printPage: Page = documentHelper.pages[(pageNumber - 1)];
+            const pgHeight: number = printPage.boundingRectangle.height;
+            const pgWidth: number = printPage.boundingRectangle.width;
             documentHelper.render.isPrinting = true;
-            documentHelper.render.renderWidgets(prntPage, 0, 0, 0, 0);
+            documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
             //get the image data from the canvas
             const imageData: string = documentHelper.render.pageCanvas.toDataURL(imageType, 1);
             documentHelper.render.isPrinting = false;

@@ -747,6 +747,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.isReadOnly = restrictEditing;
         if (this.toolbarModule) {
             this.toolbarModule.enableDisableToolBarItem(!restrictEditing, false);
+            this.toolbarModule.toggleRestrictEditing(restrictEditing);
         }
         this.showPropertiesPane = !restrictEditing;
         this.showHidePropertiesPane(!restrictEditing);

@@ -19,9 +19,9 @@ export const ICON_HIDDEN: string = 'e-hide';
 /** @hidden */
 export const AXISFIELD_ICON_CLASS: string = 'e-dropdown-icon';
 /** @hidden */
-export const WRAPPER_CLASS: string = 'e-pivotfieldlist-wrapper';
+export const WRAPPER_CLASS: string = 'e-pivotfieldlist-container';
 /** @hidden */
-export const OLAP_WRAPPER_CLASS: string = 'e-olapfieldlist-wrapper';
+export const OLAP_WRAPPER_CLASS: string = 'e-olapfieldlist-container';
 /** @hidden */
 export const CONTAINER_CLASS: string = 'e-field-list-container';
 /** @hidden */
@@ -107,7 +107,7 @@ export const INDICATOR_HOVER_CLASS: string = 'e-drop-hover';
 /** @hidden */
 export const MEMBER_EDITOR_DIALOG_CLASS: string = 'e-member-editor-dialog';
 /** @hidden */
-export const EDITOR_TREE_WRAPPER_CLASS: string = 'e-member-editor-wrapper';
+export const EDITOR_TREE_WRAPPER_CLASS: string = 'e-member-editor-outer-container';
 /** @hidden */
 export const EDITOR_TREE_CONTAINER_CLASS: string = 'e-member-editor-container';
 /** @hidden */
@@ -125,7 +125,7 @@ export const DRILLTHROUGH_BODY_HEADER_VALUE_CLASS: string = 'e-drillthrough-body
 /** @hidden */
 export const DRILLTHROUGH_DIALOG: string = 'e-drillthrough-dialog';
 /** @hidden */
-export const EDITOR_LABEL_WRAPPER_CLASS: string = 'e-editor-label-wrapper';
+export const EDITOR_LABEL_WRAPPER_CLASS: string = 'e-editor-label-container';
 /** @hidden */
 export const EDITOR_LABEL_CLASS: string = 'e-editor-label';
 /** @hidden */
@@ -235,9 +235,9 @@ export const BETWEEN_TEXT_DIV_CLASS: string = 'e-between-text-div';
 /** @hidden */
 export const SEPARATOR_DIV_CLASS: string = 'e-separator-div';
 /** @hidden */
-export const FILTER_OPTION_WRAPPER_1_CLASS: string = 'e-filter-option-wrapper-1';
+export const FILTER_OPTION_WRAPPER_1_CLASS: string = 'e-filter-option-container-1';
 /** @hidden */
-export const FILTER_OPTION_WRAPPER_2_CLASS: string = 'e-filter-option-wrapper-2';
+export const FILTER_OPTION_WRAPPER_2_CLASS: string = 'e-filter-option-container-2';
 /** @hidden */
 export const FILTER_INPUT_DIV_1_CLASS: string = 'e-filter-input-div-1';
 /** @hidden */
@@ -300,7 +300,7 @@ export const NEXTSPAN: string = 'e-nextspan';
 /** @hidden */
 export const LASTSPAN: string = 'e-lastspan';
 /** @hidden */
-export const EDITOR_SEARCH_WRAPPER_CLASS: string = 'e-editor-search-wrapper';
+export const EDITOR_SEARCH_WRAPPER_CLASS: string = 'e-editor-search-container';
 /** @hidden */
 export const EDITOR_SEARCH_CLASS: string = 'e-editor-search';
 /* eslint-disable */
@@ -308,7 +308,7 @@ export const EDITOR_SEARCH_CLASS: string = 'e-editor-search';
 export const EDITOR_SEARCH__INPUT_CLASS: string = 'e-editor-search-input';
 /* eslint-enable */
 /** @hidden */
-export const SELECT_ALL_WRAPPER_CLASS: string = 'e-select-all-wrapper';
+export const SELECT_ALL_WRAPPER_CLASS: string = 'e-select-all-container';
 /** @hidden */
 export const SELECT_ALL_CLASS: string = 'e-select-all';
 /** @hidden */
@@ -382,9 +382,9 @@ export const AXIS_FILTER_CLASS: string = 'e-axis-filter';
 /** @hidden */
 export const AXIS_NAVIGATE_WRAPPER_CLASS: string = 'e-axis-nav-div';
 /** @hidden */
-export const LEFT_NAVIGATE_WRAPPER_CLASS: string = 'e-left-nav-wrapper';
+export const LEFT_NAVIGATE_WRAPPER_CLASS: string = 'e-left-nav-container';
 /** @hidden */
-export const RIGHT_NAVIGATE_WRAPPER_CLASS: string = 'e-right-nav-wrapper';
+export const RIGHT_NAVIGATE_WRAPPER_CLASS: string = 'e-right-nav-container';
 /** @hidden */
 export const LEFT_NAVIGATE_CLASS: string = 'e-left-nav-icon';
 /** @hidden */

@@ -221,7 +221,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 onClose: this.destroyCMenu.bind(this),
                 enableRtl: this.parent.enableRtl,
                 beforeClose: this.preventClose.bind(this),
-                cssClass: this.options.isResponsiveFilter ? 'e-res-contextmenu-wrapper' : ''
+                cssClass: this.options.isResponsiveFilter && this.parent.cssClass ?
+                    'e-res-contextmenu-wrapper' + ' ' + this.parent.cssClass : this.options.isResponsiveFilter ?
+                    'e-res-contextmenu-wrapper' : this.parent.cssClass ? this.parent.cssClass : ''
             };
             this.parent.element.appendChild(this.cmenu);
             this.menuObj = new ContextMenu(menuOptions, this.cmenu);
@@ -384,16 +386,19 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             buttons: [{
                 click: this.filterBtnClick.bind(this, column),
                 buttonModel: {
-                    content: this.getLocalizedLabel('OKButton'), isPrimary: true, cssClass: 'e-xlfl-okbtn'
+                    content: this.getLocalizedLabel('OKButton'), isPrimary: true,
+                    cssClass: this.parent.cssClass ? 'e-xlfl-okbtn' + ' ' + this.parent.cssClass : 'e-xlfl-okbtn'
                 }
             },
             {
                 click: this.removeDialog.bind(this),
-                buttonModel: { content: this.getLocalizedLabel('CancelButton'), cssClass: 'e-xlfl-cancelbtn' }
+                buttonModel: { content: this.getLocalizedLabel('CancelButton'),
+                cssClass: this.parent.cssClass ? 'e-xlfl-cancelbtn' + ' ' + this.parent.cssClass : 'e-xlfl-cancelbtn' }
             }],
             content: mainDiv,
             width: 430,
-            animationSettings: { effect: 'None' }
+            animationSettings: { effect: 'None' },
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         const isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[isStringTemplate] = true;
@@ -599,7 +604,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 dataSource: dropDatasource,
                 fields: { text: 'text', value: 'value' },
                 text: selectedValue,
-                enableRtl: this.parent.enableRtl
+                enableRtl: this.parent.enableRtl,
+                cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             col.filter.params));
         this.childRefs.push(dropOptr);
@@ -717,11 +723,21 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
 
         // Initialize AND RadioButton component.
-        const andRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', checked: true, enableRtl: this.parent.enableRtl });
+        const andRadio: RadioButton = new RadioButton({
+            label: this.getLocalizedLabel('AND'),
+            name: 'default', checked: true,
+            enableRtl: this.parent.enableRtl,
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
+        });
         this.childRefs.push(andRadio);
 
         // Initialize OR RadioButton component.
-        const orRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', enableRtl: this.parent.enableRtl });
+        const orRadio: RadioButton = new RadioButton({
+            label: this.getLocalizedLabel('OR'),
+            name: 'default',
+            enableRtl: this.parent.enableRtl,
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
+        });
         this.childRefs.push(orRadio);
 
         const flValue: string = predicates && predicates.length === 2 ? predicates[1].predicate as string : 'and';
@@ -849,7 +865,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         // Initialize Match Case check box.
         const checkbox: CheckBox = new CheckBox({
             label: this.getLocalizedLabel('MatchCase'),
-            enableRtl: this.parent.enableRtl, checked: flValue
+            enableRtl: this.parent.enableRtl, checked: flValue,
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         this.childRefs.push(checkbox);
 
@@ -863,7 +880,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         const datePicker: DatePicker = new DatePicker(extend(
             {
                 format: format,
-                cssClass: 'e-popup-flmenu',
+                cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
                 width: '100%',
                 enableRtl: isRtl,
@@ -881,7 +898,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         const dateTimePicker: DateTimePicker = new DateTimePicker(extend(
             {
                 format: format,
-                cssClass: 'e-popup-flmenu',
+                cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 placeholder: this.getLocalizedLabel('CustomFilterDatePlaceHolder'),
                 width: '100%',
                 enableRtl: isRtl,
@@ -905,7 +922,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
                 enableRtl: isRtl,
                 value: fValue as number,
-                locale: this.parent.locale
+                locale: this.parent.locale,
+                cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             options.column.filter.params));
         this.childRefs.push(numericTextBox);
@@ -925,7 +943,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 query: this.getQuery(),
                 sortOrder: 'Ascending',
                 locale: this.parent.locale,
-                cssClass: 'e-popup-flmenu',
+                cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 autofill: true,
                 placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
                 enableRtl: isRtl,

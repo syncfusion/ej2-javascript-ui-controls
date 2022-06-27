@@ -390,7 +390,9 @@ export class Render {
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
         const isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
-            && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
+            && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'
+            && !(gObj.sortSettings.columns.length || gObj.filterSettings.columns.length || this.parent.groupSettings.columns.length
+            || gObj.searchSettings.key)));
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {

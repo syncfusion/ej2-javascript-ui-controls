@@ -1,12 +1,12 @@
 /**
  *  Spreadsheet base spec
  */
-import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, BasicModule, onContentScroll } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell } from '../../../src/workbook/index';
-import { EmitType, setCurrencyCode } from '@syncfusion/ej2-base';
+import { EmitType, setCurrencyCode, L10n } from '@syncfusion/ej2-base';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -722,7 +722,7 @@ describe('Spreadsheet base module ->', () => {
         it('addCustomFunction', (done: Function) => {
             (window as any).CustomFuntion = (str: string) => {
                 let num: number;
-                if (formula === '=SQRT(D2)') {
+                if (formula === '=SQRT(D2)' || formula === '=SQRT(D2:D2)') {
                     expect(str).toBe('10');
                     num = Number(str);
                 } else {
@@ -743,11 +743,18 @@ describe('Spreadsheet base module ->', () => {
             const cell: HTMLElement = helper.invoke('getCell', [4, 9]);
             const sheet: SheetModel = helper.getInstance().sheets[0];
             expect(cell.textContent).toBe('3.162278');
-            expect(sheet.rows[4].cells[9].value).toBe("3.162278");
+            expect(sheet.rows[4].cells[9].value).toBe('3.162278');
             formula = '=SQRT(D2:D5)';
             helper.edit('J5', formula);
             expect(cell.textContent).toBe('8.062258');
-            expect(sheet.rows[4].cells[9].value).toBe("8.062258");
+            expect(sheet.rows[4].cells[9].value).toBe('8.062258');
+            helper.edit('D3', '30');
+            expect(cell.textContent).toBe('8.660254');
+            expect(sheet.rows[4].cells[9].value).toBe('8.660254');
+            formula = '=SQRT(D2:D2)';
+            helper.edit('J5', formula);
+            expect(cell.textContent).toBe('3.162278');
+            expect(sheet.rows[4].cells[9].value).toBe('3.162278');
             done();
         });
     });
@@ -1413,6 +1420,108 @@ describe('Spreadsheet base module ->', () => {
                 expect(spreadsheet.sheets[0].name).toBe('Changed');
                 expect(helper.getElement().querySelector('.e-sheet-tabs-items').children[1].textContent).toBe('Changed');
                 done();
+            });
+        });
+        describe('EJ2-59578 ->', () => {
+            L10n.load({
+                'de-DE': {
+                    'spreadsheet': {
+                        'Cut': 'Schneiden',
+                        'TopBorders': 'Top dzdsfsd Borders',
+                        'LeftBorders': 'Left sasd Borders',
+                        'RightBorders': 'Right asd Borders',
+                        'BottomBorders': 'BottomBorders asd  ',
+                        'AllBorders': 'AllBorders asd ',
+                        'HorizontalBorders': 'Horizontal asdasd Borders',
+                        'VerticalBorders': 'Vertical asdasd Borders',
+                        'OutsideBorders': 'Outside asdasd Borders',
+                        'InsideBorders': 'Inside asdasd Borders',
+                        'NoBorders': 'No asdsad Borders',
+                        'BorderColor': 'Border asdasdsa Color',
+                        'BorderStyle': 'Border sdfsdf Style'
+                    }
+                }
+            });
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], locale: 'de-DE' }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Border not applied properly when using locale text in spreadsheet', (done: Function) => {
+                helper.invoke('setBorder', [{ borderLeft: '1px solid red' }, 'B2:B2']);
+                var td = helper.invoke('getCell', [1, 0]);
+                expect(td.style.borderRight).toBe('1px solid red');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                expect(td.style.borderBottom).toBe('');
+                helper.invoke('setBorder', [{ borderTop: '1px solid red' }, 'B4:B4']);
+                var td = helper.invoke('getCell', [2, 1]);
+                expect(td.style.borderRight).toBe('');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                expect(td.style.borderBottom).toBe('1px solid red');
+                helper.invoke('setBorder', [{ borderRight: '1px solid red' }, 'D2:D2']);
+                td = helper.invoke('getCell', [1, 3]);
+                expect(td.style.borderRight).toBe('1px solid red');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                expect(td.style.borderBottom).toBe('');
+                helper.invoke('setBorder', [{ borderBottom: '1px solid red' }, 'D2:D2']);
+                td = helper.invoke('getCell', [1, 3]);
+                expect(td.style.borderBottom).toBe('1px solid red');
+                expect(td.style.borderRight).toBe('1px solid red');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                helper.invoke('setBorder', [{ border: '1px solid #000000' }, 'C2:D3', 'Outer']);
+                td = helper.invoke('getCell', [2, 3]);
+                expect(td.style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(td.style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                helper.invoke('setBorder', [{ border: '1px solid #000000' }, 'F2:G4', 'Inner']);
+                td = helper.invoke('getCell', [1, 5]);
+                expect(td.style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(td.style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                helper.invoke('setBorder', [{ border: '1px solid #000000' }, 'C5:E8', 'Horizontal']);
+                td = helper.invoke('getCell', [5, 2]);
+                expect(td.style.borderRight).toBe('');
+                expect(td.style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                helper.invoke('setBorder', [{ border: '1px solid #000000' }, 'G5:I8', 'Vertical']);
+                td = helper.invoke('getCell', [5, 8]);
+                expect(td.style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(td.style.borderTop).toBe('');
+                expect(td.style.borderLeft).toBe('');
+                expect(td.style.borderBottom).toBe(''); 
+                done();
+            });
+        });
+        describe('SF-380690, SF-380608 ->', () => {
+            beforeEach((done: Function) => {
+                const rows: RowModel[] = [];
+                for (let i: number = 0; i < 67; i++) {
+                    rows.push({ height: 84 });
+                }
+                helper.initializeSpreadsheet({ showRibbon: false, showFormulaBar: false, showSheetTabs: false, height: 750,
+                    scrollSettings: { isFinite: true },
+                    sheets: [{ rows: rows, frozenColumns: 1, frozenRows: 1, rowCount: 68 }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Selection issue and row is not visible when scrolled down to bottom in finite mode', (done: Function) => {
+                helper.invoke('getMainContent').parentElement.scrollTop = 4750;
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.notify(onContentScroll, { scrollTop: 4750, scrollLeft: 0 });
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('B58');
+                    expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 0px)');
+                    done();
+                });
             });
         });
     });

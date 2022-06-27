@@ -494,7 +494,7 @@ export class CartesianAxisLayoutPanel {
 
                 if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
                     this.drawAxisLine(
-                        axis, i, axis.plotOffset, 0, isInside ? outsideElement : this.element, axis.updatedRect
+                        axis, i, axis.plotOffset, 0, 0, 0, axis.plotOffsetLeft, axis.plotOffsetRight, isInside ? outsideElement : this.element, axis.updatedRect
                     );
                 }
                 if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0) {
@@ -518,7 +518,7 @@ export class CartesianAxisLayoutPanel {
             } else {
                 axis.updateCrossValue();
                 if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
-                    this.drawAxisLine(axis, i, 0, axis.plotOffset, isInside ? outsideElement : this.element, axis.updatedRect);
+                    this.drawAxisLine(axis, i, 0, axis.plotOffset, axis.plotOffsetBottom, axis.plotOffsetTop, 0, 0, isInside ? outsideElement : this.element, axis.updatedRect);
                 }
                 if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0) {
                     this.drawYAxisGridLine(
@@ -661,7 +661,7 @@ export class CartesianAxisLayoutPanel {
      * @returns {void}
      */
     private drawAxisLine(
-        axis: Axis, index: number, plotX: number, plotY: number, parent: Element, rect: Rect
+        axis: Axis, index: number, plotX: number, plotY: number, plotBottom: number, plotTop: number, plotLeft: number, plotRight: number, parent: Element, rect: Rect
     ): void {
         const chart: Chart = this.chart;
         let optionsLine: Object = {};
@@ -670,8 +670,8 @@ export class CartesianAxisLayoutPanel {
         element = null;
         optionsLine = {
             'id': chart.element.id + 'AxisLine_' + index,
-            'd': 'M ' + (rect.x - plotX) + ' ' + (rect.y - plotY) +
-                ' L ' + (rect.x + rect.width + plotX) + ' ' + (rect.y + rect.height + plotY),
+            'd': 'M ' + (rect.x - plotX - plotLeft) + ' ' + (rect.y - plotY - plotTop) +
+                    ' L ' + (rect.x + rect.width + plotX + plotRight) + ' ' + (rect.y + rect.height + plotY + plotBottom),
             'stroke-dasharray': axis.lineStyle.dashArray,
             'stroke-width': axis.lineStyle.width,
             'stroke': axis.lineStyle.color || chart.themeStyle.axisLine
@@ -807,6 +807,8 @@ export class CartesianAxisLayoutPanel {
         const tickSpace: number = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
         let padding: number = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         const angle: number = axis.angle % 360;
+        const isVerticalAngle: boolean = (angle === -90 || angle === 90 || angle === 270 || angle === -270);
+        padding += (isVerticalAngle) ? (isLabelInside ? 5 : -5) : 0;
         padding = (isOpposed) ? padding : -padding;
         const labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         const scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
@@ -862,6 +864,9 @@ export class CartesianAxisLayoutPanel {
                 yAxisLabelX = labelPadding - ((angle === 0 ? elementSize.width : (isAxisBreakLabel ? breakLabelMaxWidth : LabelMaxWidth)) / 2);
             }
             pointX = isOpposed ? (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
+            if (isVerticalAngle) {
+                pointX += 10;
+            }
             yAxisLabelX = labelPadding;
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, 'middle', label.text, '', 'middle');
             switch (axis.edgeLabelPlacement) {
@@ -1340,7 +1345,7 @@ export class CartesianAxisLayoutPanel {
                 anchor = (chart.enableRtl) ? ((isEndAnchor) ? '': 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
-            if (axis.edgeLabelPlacement && (angle === 0)) {
+            if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
                 case 'None':
                     break;

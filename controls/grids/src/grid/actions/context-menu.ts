@@ -150,7 +150,7 @@ export class ContextMenu implements IAction {
             beforeOpen: this.contextMenuBeforeOpen.bind(this),
             onOpen: this.contextMenuOpen.bind(this),
             onClose: this.contextMenuOnClose.bind(this),
-            cssClass: 'e-grid-menu'
+            cssClass: this.parent.cssClass ? 'e-grid-menu' + ' ' + this.parent.cssClass : 'e-grid-menu'
         });
         this.contextMenu.appendTo(this.element);
     }

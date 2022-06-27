@@ -69,7 +69,7 @@ export class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, true) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
                     const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && this.isImgElm(fragment) && fragment.textContent.trim() === '') ? true : false;
+                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node, true);
@@ -114,7 +114,7 @@ export class NodeCutter {
             this.spliceEmptyNode(fragment.childNodes[len], isStart);
         } else if (len > -1) {
             this.spliceEmptyNode(fragment.childNodes[0], isStart);
-        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11) {
+        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11 && fragment.nodeName !== 'IMG') {
             fragment.parentNode.removeChild(fragment);
         }
         return fragment;

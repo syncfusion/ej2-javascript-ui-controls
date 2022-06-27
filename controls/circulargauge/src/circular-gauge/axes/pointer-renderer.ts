@@ -157,7 +157,7 @@ export class PointerRenderer {
             new PathOption(
                 gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, gradientColor ? gradientColor :
                     pointer.color || this.gauge.themeStyle.needleColor,
-                pointer.border.width, pointer.border.color, null, '0', direction
+                pointer.border.width, pointer.border.color, null, pointer.border.dashArray, direction
             ),
             parentElement, gauge)
         );
@@ -185,7 +185,7 @@ export class PointerRenderer {
                 new PathOption(
                     gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index,
                     gradientTailColor ? gradientTailColor : pointer.needleTail.color || this.gauge.themeStyle.needleTailColor,
-                    pointer.needleTail.border.width, pointer.needleTail.border.color, null, '0', direction
+                    pointer.needleTail.border.width, pointer.needleTail.border.color, null, pointer.needleTail.border.dashArray, direction
                 ),
                 parentElement, gauge)
             );
@@ -202,7 +202,7 @@ export class PointerRenderer {
                     '', new PathOption(
                         gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index,
                         gradientCapColor ? gradientCapColor : pointer.cap.color || this.gauge.themeStyle.capColor, pointer.cap.border.width,
-                        pointer.cap.border.color, null, '0', '', ''
+                        pointer.cap.border.color, null, pointer.cap.border.dashArray, '', ''
                     )
                 ),
                 parentElement, gauge, 'Ellipse')
@@ -351,7 +351,7 @@ export class PointerRenderer {
                     (
                         gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index,
                         gradientMarkerColor ? gradientMarkerColor : pointer.color || this.gauge.themeStyle.pointerColor,
-                        pointer.border.width, pointer.border.color, null, '0', '', ''
+                        pointer.border.width, pointer.border.color, null, pointer.border.dashArray, '', ''
                     )
                 ),
                 parentElement, gauge,
@@ -382,7 +382,7 @@ export class PointerRenderer {
                 gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, gradientBarColor ? gradientBarColor :
                     pointer.color || this.gauge.themeStyle.pointerColor,
                 pointer.border.width, pointer.border.color,
-                1, '0', ''
+                1, pointer.border.dashArray, ''
             ),
             parentElement, gauge
         ));

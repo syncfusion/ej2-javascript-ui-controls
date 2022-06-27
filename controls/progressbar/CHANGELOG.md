@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I378263` - Progress bar is now working properly on resize.
+
+## 20.1.52 (2022-05-04)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I368371` - Progress bar label fading out on animation is resolved now.
+
 ## 19.1.54 (2021-03-30)
 
 ### ProgressBar

@@ -198,6 +198,8 @@ export type ChartSeriesType =
     'StackingArea' |
     /**  Allows to display the pivot chart with stacked bar series. */
     'StackingBar' |
+     /**  Allows to display the pivot chart with stacked line series. */
+     'StackingLine' |
     /**  Allows to display the pivot chart with step line series. */
     'StepLine' |
     /**  Allows to display the pivot chart with step area series. */
@@ -214,6 +216,8 @@ export type ChartSeriesType =
     'StackingBar100' |
     /** Allows to display the pivot chart with 100% stacked area series. */
     'StackingArea100' |
+    /**  Allows to display the pivot chart with 100% stacked line series. */
+    'StackingLine100' |
     /** Allows to display the pivot chart with bubble series. */
     'Bubble' |
     /** Allows to display the pivot chart with pareto series. */

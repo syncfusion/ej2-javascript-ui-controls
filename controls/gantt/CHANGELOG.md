@@ -2,6 +2,74 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#367483` - Indent Outdent toolbar options appearing when edit settings is not defined issue has been been fixed.
+- `#384296` - Unable to draw dependency when progress mapping is disabled issue has been been fixed.
+- `#381374` - Editing milestone duration varies the start date issue has been been fixed.
+
+## 20.1.59 (2022-06-07)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#379229` - Pdf export is not working when using custom date format issue has been fixed.
+- `#381109` - Issue when Zoom To Fit with unscheduled tasks has been fixed.
+- `#382884` - work value calculation issue for parent task has been fixed.
+
+## 20.1.58 (2022-05-31)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#380136` - End date is not updated when we update the resource unit via `updateRecordByID` method.
+- `#378491` - Data is not displayed when we frequently move between different tabs has been fixed.
+- `#379660` - Script error thrown when switching between tabs has been fixed.
+
+## 20.1.56 (2022-05-17)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#F174816` - Landscape page orientation is not working when exporting Pdf has been fixed.
+- `#377857` - Task not assigned to resources when dynamically changes from project view into resource view has been fixed.
+
+## 20.1.55 (2022-05-12)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#376228` - Duration is not updated while updating resource units using `updateRecordByID` method issue has been fixed.
+- `#370224` - Filtering issue when rendering Gantt inside the modal has been fixed.
+- `#376455` - Tab key navigation not working properly when moving from grid to timeline issue has been fixed.
+
+## 20.1.52 (2022-05-04)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#372661` - Data not properly updated in the Gantt Chart when switching between list view issue has been fixed.
+
+## 20.1.51 (2022-04-26)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#373529` - Task label is not properly displayed in pdf export issue has been fixed.
+- `#373829` - Top tier and bottom tier partitioning issue in quarterly mode has been fixed.
+- `#374212, #372614` - Timeline is not rendered properly when using hour format in `DST` issue has been fixed.
+- `#367794` - Cell editing issue in internet explorer has been fixed.
+
 ## 20.1.50 (2022-04-19)
 
 ### Gantt

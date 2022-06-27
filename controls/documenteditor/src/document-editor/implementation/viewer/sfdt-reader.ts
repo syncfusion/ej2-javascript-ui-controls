@@ -1051,6 +1051,7 @@ export class SfdtReader {
                 let field: FieldElementBox = undefined;
                 if (inline.fieldType === 2) {
                     field = new FieldElementBox(2);
+                    this.parseCharacterFormat(inline.characterFormat, field.characterFormat, writeInlineFormat);
                     this.fieldSeparator = field;
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
@@ -1233,15 +1234,16 @@ export class SfdtReader {
                 if (inline.hasOwnProperty('textFrame')) {
                     let textFrame: TextFrame = new TextFrame();
                     textFrame.textVerticalAlignment = inline.textFrame.textVerticalAlignment;
-                    textFrame.marginLeft = inline.textFrame.leftMargin;
-                    textFrame.marginRight = inline.textFrame.rightMargin;
-                    textFrame.marginTop = inline.textFrame.topMargin;
-                    textFrame.marginBottom = inline.textFrame.bottomMargin;
+                    textFrame.marginLeft = HelperMethods.convertPointToPixel(inline.textFrame.leftMargin);
+                    textFrame.marginRight = HelperMethods.convertPointToPixel(inline.textFrame.rightMargin);
+                    textFrame.marginTop = HelperMethods.convertPointToPixel(inline.textFrame.topMargin);
+                    textFrame.marginBottom = HelperMethods.convertPointToPixel(inline.textFrame.bottomMargin);
                     this.parseBody(inline.textFrame.blocks, textFrame.childWidgets as BlockWidget[], textFrame);
                     shape.textFrame = textFrame;
                     textFrame.containerShape = shape;
                 }
                 shape.line = lineWidget;
+                this.checkAndApplyRevision(inline, shape);
                 lineWidget.children.push(shape);
                 if (shape.textWrappingStyle !== 'Inline') {
                     paragraph.floatingElements.push(shape);
@@ -1697,6 +1699,9 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.allCaps)) {
                 characterFormat.allCaps = sourceFormat.allCaps;
             }
+            if (!isNullOrUndefined(sourceFormat.localeIdBidi)) {
+                characterFormat.localeIdBidi = sourceFormat.localeIdBidi;
+            }
         }
     }
     private getColor(color: string): string {
@@ -1834,6 +1839,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(data.initialEndNoteNumber)) {
             sectionFormat.initialEndNoteNumber = data.initialEndNoteNumber;
+        }
+        if (!isNullOrUndefined(data.pageNumberStyle)) {
+            sectionFormat.pageNumberStyle = data.pageNumberStyle;
         }
     }
 

@@ -16,11 +16,11 @@ export class DatePickerEditCell extends EditCellBase implements IEditCell {
         if (args.column.editType === 'datepickeredit') {
             this.obj = new DatePicker(
                 extend(
-                    dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl),
+                    dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl, this.parent.cssClass),
                     args.column.edit.params));
         } else if (args.column.editType === 'datetimepickeredit') {
             this.obj = new DateTimePicker(
-                extend(dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl),
+                extend(dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl, this.parent.cssClass),
                        args.column.edit.params));
         }
         this.obj.appendTo(args.element as HTMLElement);
@@ -31,7 +31,7 @@ export class DatePickerEditCell extends EditCellBase implements IEditCell {
 function dateanddatetimerender(args: {
     rowData: Object, element: Element, column: Column, type: string, row: HTMLElement,
     requestType: string
-}, mode: string, rtl: boolean): Object {
+}, mode: string, rtl: boolean, css: string): Object {
     const isInline: boolean = mode !== 'Dialog';
     const format: string = getCustomDateFormat(args.column.format, args.column.type);
     let value: Date = getObject(args.column.field, args.rowData);
@@ -42,6 +42,7 @@ function dateanddatetimerender(args: {
         format: format,
         placeholder: isInline ?
             '' : args.column.headerText, enableRtl: rtl,
-        enabled: isEditable(args.column, args.requestType, args.element)
+        enabled: isEditable(args.column, args.requestType, args.element),
+        cssClass: css ? css : null
     };
 }

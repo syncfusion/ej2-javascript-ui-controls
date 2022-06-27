@@ -279,7 +279,7 @@ export class Column {
      * * ui.write - It is used to apply component model as dynamically.
      * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
      *
-     * > Check the [`Filter UI`](../../grid/filtering/#custom-component-in-filter-menu) for its customization.
+     * > Check the [`Filter UI`](../../grid/filtering/filter-menu/#custom-component-in-filter-menu) for its customization.
      *
      *  @default {}
      */

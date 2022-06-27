@@ -931,12 +931,18 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             .split(this.getParseArgumentSeparator());
                         let j: number = 0;
                         const customArgs: string[] = [];
+                        let cellCol: string[];
                         for (j = 0; j < args.length; j++) {
                             if (args[j].includes(':') && this.isCellReference(args[j])) {
-                                customArgs.push(args[j]);
-                                (this.getCellCollection(args[j]) as string[]).forEach((cell: string): void => {
-                                    this.updateDependentCell(cell);
-                                });
+                                cellCol = this.getCellCollection(args[j]) as string[];
+                                if (cellCol.length > 1) {
+                                    customArgs.push(args[j]);
+                                    cellCol.forEach((cell: string): void => {
+                                        this.updateDependentCell(cell);
+                                    });
+                                } else {
+                                    customArgs.push(this.getValueFromArg(args[j]));
+                                }
                             } else {
                                 customArgs.push(this.getValueFromArg(args[j]));
                             }

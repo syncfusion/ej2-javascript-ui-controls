@@ -167,7 +167,15 @@ export class WParagraphFormat {
         this.setPropertyValue('lineSpacingType', value);
     }
     public get textAlignment(): TextAlignment {
-        return this.getPropertyValue('textAlignment') as TextAlignment;
+        let value: TextAlignment = this.getPropertyValue('textAlignment') as TextAlignment;
+        if (this.bidi) {
+            if (value === 'Left') {
+                value = 'Right'
+            } else if (value === 'Right') {
+                value = 'Left';
+            }
+        }
+        return value;
     }
     public set textAlignment(value: TextAlignment) {
         this.setPropertyValue('textAlignment', value);
@@ -209,13 +217,6 @@ export class WParagraphFormat {
     }
 
     public set bidi(value: boolean) {
-        if (this.bidi !== value) {
-            if (this.textAlignment === 'Left') {
-                this.textAlignment = 'Right';
-            } else if (this.textAlignment === 'Right') {
-                this.textAlignment = 'Left';
-            }
-        }
         this.setPropertyValue('bidi', value);
     }
     public get contextualSpacing(): boolean {
@@ -274,8 +275,9 @@ export class WParagraphFormat {
                 }
                 if (!isNullOrUndefined(baseStyle)) {
                     if (!isNullOrUndefined(formatInList) && this.listFormat.listId !== -1
-                        && currentFormat.listFormat.listId === -1
-                        || !isNullOrUndefined(formatInList) && this.listFormat.listId !== currentFormat.listFormat.listId) {
+                        && currentFormat.listFormat.listId === -1 && currentFormat.listFormat.listLevelNumber <= 1
+                        || !isNullOrUndefined(formatInList) && this.listFormat.listId !== currentFormat.listFormat.listId
+                        && currentFormat.listFormat.listLevelNumber <= 1) {
                         return formatInList;
                     }
                     const propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
@@ -302,7 +304,7 @@ export class WParagraphFormat {
                 this.ownerBase.containerWidget instanceof TableCellWidget;
         }
         let isPaste: boolean = !isNullOrUndefined(this.ownerBase) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)
-            && (this.ownerBase as ParagraphWidget).bodyWidget.page && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor
+            && (this.ownerBase as ParagraphWidget).bodyWidget.page && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper) && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor
             && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor.isPaste;
         if (isInsideBodyWidget && !isPaste
             && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
@@ -317,7 +319,7 @@ export class WParagraphFormat {
         let docParagraphFormat: WParagraphFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
             const bodyWidget: BlockContainer = (this.ownerBase as ParagraphWidget).bodyWidget;
-            if (!isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page)) {
+            if (!isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.documentHelper)) {
                 docParagraphFormat = bodyWidget.page.documentHelper.paragraphFormat;
             }
         }

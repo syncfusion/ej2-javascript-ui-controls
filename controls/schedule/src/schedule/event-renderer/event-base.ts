@@ -512,6 +512,9 @@ export class EventBase {
             this.parent.removeSelectedClass();
         }
         addClass(cells, cls.APPOINTMENT_BORDER);
+        if (cells.length > 0) {
+            (cells[cells.length - 1] as HTMLElement).focus();
+        }
     }
 
     public getSelectedAppointments(): Element[] {
@@ -615,7 +618,7 @@ export class EventBase {
     public isAllDayAppointment(event: Record<string, any>): boolean {
         const fieldMapping: EventFieldsMapping = this.parent.eventFields;
         const isAllDay: boolean = event[fieldMapping.isAllDay] as boolean;
-        const isFullDay: boolean = (((<Date>event[fieldMapping.endTime]).getTime() - (<Date>event[fieldMapping.startTime]).getTime())
+        const isFullDay: boolean = ((util.getUniversalTime(<Date>event[fieldMapping.endTime]) - util.getUniversalTime(<Date>event[fieldMapping.startTime]))
             / util.MS_PER_DAY) >= 1;
         return (isAllDay || (this.parent.eventSettings.spannedEventPlacement !== 'TimeSlot' && isFullDay)) ? true : false;
     }
@@ -636,6 +639,7 @@ export class EventBase {
             }
         } else if (!closest(element as Element, '.' + cls.POPUP_OPEN)) {
             this.removeSelectedAppointmentClass();
+            this.parent.selectedElements = [];
         }
     }
 
@@ -739,6 +743,7 @@ export class EventBase {
             this.parent.trigger(event.eventClick, args, (eventClickArgs: EventClickArgs) => {
                 if (eventClickArgs.cancel) {
                     this.removeSelectedAppointmentClass();
+                    this.parent.selectedElements = [];
                     if (this.parent.quickPopup) {
                         this.parent.quickPopup.quickPopupHide();
                     }
@@ -769,6 +774,7 @@ export class EventBase {
             this.activeEventData(e, true);
         }
         this.removeSelectedAppointmentClass();
+        this.parent.selectedElements = [];
         if ((this.parent.activeEventData.element as HTMLElement).classList.contains(cls.INLINE_APPOINTMENT_CLASS) ||
             (this.parent.activeEventData.element as HTMLElement).querySelector('.' + cls.INLINE_SUBJECT_CLASS)) {
             return;
@@ -1190,16 +1196,18 @@ export class EventBase {
     }
 
     public updateEventMinimumDuration(startEndHours: Record<string, Date>, startTime: Date, endTime: Date): Record<string, Date> {
-        const eventDuration: number = (util.getUniversalTime(endTime) - util.getUniversalTime(startTime)) / util.MS_PER_MINUTE;
-        if (eventDuration < this.parent.eventSettings.minimumEventDuration) {
-            const tempEnd: Date = new Date(startTime);
-            tempEnd.setMinutes(tempEnd.getMinutes() + this.parent.eventSettings.minimumEventDuration);
-            endTime = tempEnd;
-            if (endTime.getTime() > startEndHours.endHour.getTime()) {
-                const tempStart: Date = new Date(startEndHours.endHour.getTime());
-                tempStart.setMinutes(tempStart.getMinutes() - this.parent.eventSettings.minimumEventDuration);
-                startTime = tempStart;
-                endTime = startEndHours.endHour;
+        if (startTime.getTime() < endTime.getTime()) {
+            const eventDuration: number = (util.getUniversalTime(endTime) - util.getUniversalTime(startTime)) / util.MS_PER_MINUTE;
+            if (eventDuration < this.parent.eventSettings.minimumEventDuration) {
+                const tempEnd: Date = new Date(startTime);
+                tempEnd.setMinutes(tempEnd.getMinutes() + this.parent.eventSettings.minimumEventDuration);
+                endTime = tempEnd;
+                if (endTime.getTime() > startEndHours.endHour.getTime()) {
+                    const tempStart: Date = new Date(startEndHours.endHour.getTime());
+                    tempStart.setMinutes(tempStart.getMinutes() - this.parent.eventSettings.minimumEventDuration);
+                    startTime = tempStart;
+                    endTime = startEndHours.endHour;
+                }
             }
         }
         return { startDate: startTime, endDate: endTime };

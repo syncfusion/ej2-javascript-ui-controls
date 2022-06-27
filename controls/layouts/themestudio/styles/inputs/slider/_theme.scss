@@ -112,9 +112,6 @@
         @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'bootstrap5' or $skin-name != 'FluentUI') {
           border-color: $slider-normal-handle-border-color;
         }
-        // @if $skin-name == 'bootstrap4' {
-        //   box-shadow: #fff 0px 0px 1px, rgba(#007bff, 0.25) 0px 0px 0px 3px;
-        // }
 
         &.e-material-tooltip {
           background-color: transparent;

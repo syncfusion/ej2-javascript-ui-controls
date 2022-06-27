@@ -1545,6 +1545,18 @@ export type CompatibilityMode =
  */
 'Word2013';
 
+
+/**
+ * @private
+ */
+export enum CharacterRangeType {
+    LeftToRight = 0,
+    RightToLeft = 1,
+    WordSplit = 2,
+    Number = 4,
+    Tab = 6
+}
+
 /**
  * Specifies the server action types.
  */

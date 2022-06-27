@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData } from './../common/index';
-import { Cell, duplicateSheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
+import { Cell, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
@@ -10,8 +10,8 @@ import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress
 import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow, updateCell } from '../../workbook/index';
 import { getCell, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
-import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, ExtendedRowModel } from '../../workbook/index';
-import { checkUniqueRange, checkConditionalFormat, ActionEventArgs, skipHiddenIdx } from '../../workbook/index';
+import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat } from '../../workbook/index';
+import { checkUniqueRange, checkConditionalFormat, ActionEventArgs, skipHiddenIdx, isFilterHidden } from '../../workbook/index';
 import { applyProtect, chartDesignTab, copy, cut, freeze, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet, updateToggleItem } from './event';
 
 /**
@@ -1201,6 +1201,8 @@ export function updateAction(
     let clipboardPromise: Promise<Object>;
     let model: RowModel[];
     let sheet: SheetModel;
+    let column: ColumnModel;
+    let row: RowModel;
     let addressInfo: { indices: number[], sheetIndex: number };
     let isFromUpdateAction: boolean = (options as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction || isUndefined(isRedo);
     if ((options as unknown as { isUndoRedo: boolean }).isUndoRedo) {
@@ -1213,7 +1215,7 @@ export function updateAction(
         const address: string = eventArgs.address || eventArgs.range || eventArgs.pastedRange
             || (eventArgs.addressCollection && eventArgs.addressCollection[0]) || eventArgs.dataRange;
         const sheetIndex: number = isUndefined(eventArgs.sheetIndex) ? isUndefined(eventArgs.sheetIdx)
-            ? isUndefined(eventArgs.activeSheetIndex) ? address ? spreadsheet.getAddressInfo(address).sheetIndex
+            ? isUndefined(eventArgs.activeSheetIndex) ? address ? getSheetIndexFromAddress(spreadsheet, address)
                 : spreadsheet.activeSheetIndex : eventArgs.activeSheetIndex : eventArgs.sheetIdx : eventArgs.sheetIndex;
         if (sheetIndex !== spreadsheet.activeSheetIndex) {
             const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, resolveAfterFullDataLoaded?: boolean } = {
@@ -1297,13 +1299,24 @@ export function updateAction(
     case 'gridLines':
         spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showGridLines', eventArgs.isShow);
         (spreadsheet.serviceLocator.getService('sheet') as IRenderer).toggleGridlines();
+        spreadsheet.notify(refreshRibbonIcons, null);
         break;
     case 'headers':
         spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[eventArgs.sheetIdx], 'showHeaders', eventArgs.isShow);
         (spreadsheet.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
+        spreadsheet.notify(refreshRibbonIcons, null);
         break;
     case 'resize':
     case 'resizeToFit':
+        if (isFromUpdateAction) {
+            sheet = spreadsheet.sheets[eventArgs.sheetIndex];
+            column = getColumn(sheet, eventArgs.index);
+            row = getRow(sheet, eventArgs.index);
+            if ((eventArgs.isCol && column && column.hidden) || (row && row.hidden)) {
+                spreadsheet.notify(hideShow, { startIndex: eventArgs.index, endIndex: eventArgs.index, hide: false, isCol: eventArgs.isCol,
+                    sheetIndex: eventArgs.sheetIndex });
+            }
+        }
         if (eventArgs.isCol) {
             if (eventArgs.hide === undefined) {
                 spreadsheet.setColWidth(isFromUpdateAction && !isUndefined(isRedo) ? eventArgs.oldWidth : eventArgs.width, eventArgs.index, eventArgs.sheetIndex);
@@ -1357,12 +1370,11 @@ export function updateAction(
         }
         break;
     case 'replace':
-        spreadsheet.updateCell({ value: eventArgs.replaceValue }, eventArgs.address);
+        spreadsheet.notify(replace, { value: eventArgs.compareValue, replaceValue: eventArgs.replaceValue,
+            sheetIndex: eventArgs.sheetIndex, address: eventArgs.address });
         break;
     case 'replaceAll':
-        eventArgs.addressCollection.forEach((address: string) => {
-            spreadsheet.updateCell({ value: eventArgs.replaceValue }, address);
-        });
+        spreadsheet.notify(replaceAll, eventArgs);
         break;
     case 'filter':
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1476,13 +1488,12 @@ export function updateAction(
         }
         break;
     case 'clearCF':
-        if (isRedo) {
-            spreadsheet.notify(
-                clearCFRule, { range: eventArgs.selectedRange, sheetIdx: eventArgs.sheetIdx, isClearCF: true, isUndoRedo: true });
+        if (isRedo === false) {
+            spreadsheet.notify(clearCells,
+                { conditionalFormats: eventArgs.cFormats, oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange });
         } else {
-            spreadsheet.notify(
-                clearCells, { conditionalFormats: eventArgs.cFormats, oldRange: eventArgs.oldRange,
-                    selectedRange: eventArgs.selectedRange });
+            spreadsheet.notify(clearCFRule,
+                { range: eventArgs.selectedRange, sheetIdx: eventArgs.sheetIdx, isClearCF: true, isUndoRedo: true, isFromUpdateAction: isFromUpdateAction });
         }
         break;
     case 'insertImage':
@@ -2012,7 +2023,7 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
     let skip: boolean; let cell: CellModel; let newCell: CellModel; let td: HTMLElement;
     const uiRefresh: boolean = sheetIdx === context.activeSheetIndex;
     for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
-        if (((getRow(sheet, sRIdx) || {}) as ExtendedRowModel).isFiltered) { continue; }
+        if (isFilterHidden(sheet, sRIdx)) { continue; }
         for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
             const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [sRIdx, sCIdx], isUnique: false ,
                 uniqueRange: '' };

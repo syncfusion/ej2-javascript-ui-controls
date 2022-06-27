@@ -630,6 +630,50 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
         });
     });
+
+
+    describe('EJ2-59865 - css class dependency component - Link Module', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion</p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                },
+                cssClass: 'customClass'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' css class dependency initial load and dynamic change ', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(document.querySelector('.e-rte-link-dialog').classList.contains('customClass')).toBe(true);
+            expect(document.querySelector('.e-checkbox-wrapper').classList.contains('customClass')).toBe(true);
+            rteObj.cssClass = 'changedClass';
+            rteObj.dataBind();
+            expect(document.querySelector('.e-rte-link-dialog').classList.contains('changedClass')).toBe(true);
+            expect(document.querySelector('.e-checkbox-wrapper').classList.contains('changedClass')).toBe(true);
+        });
+    });
     
     describe('EJ2-57822 - insert link to the content before link content issue', () => {
         let rteEle: HTMLElement;
@@ -656,6 +700,34 @@ describe('IE 11 insert link', () => {
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
             expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'Customer ').toBe(true);
+        });
+    });
+
+    describe('EJ2-59194 - More space between the text and Inserting a new link removes the space between the words issue', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class="focusNode">The Rich Text Editor (RTE) control is an easy to render in the client side.&nbsp;&nbsp;&nbsp;&nbsp;<a class="e-rte-anchor" href="http://fdbdfbdb" title="http://fdbdfbdb" target="_blank">Customer</a>easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`,
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('More space between the text and Inserting a new link removes the space between the words issue', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let focusNode = rteObj.element.querySelector('.focusNode');
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), focusNode.childNodes[0], focusNode.childNodes[0], 70, 75);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'side.').toBe(true);
         });
     });
 
@@ -1647,6 +1719,35 @@ describe('IE 11 insert link', () => {
                     done();
                 }, 100);
             }, 100);
+        });
+    });
+
+    describe('EJ2-59978 - Insert link after Max char count - Link Module', function() {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(function() {
+            rteObj = renderRTE({
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                },
+                maxLength: 20,
+                showCharCount: true
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function() {
+            destroy(rteObj);
+        });
+        it(' - Insert link after Max char count - ', function() {
+            rteObj.contentModule.getEditPanel().focus();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            expect(rteObj.inputElement.textContent === `RTE Content with RTE`).toBe(true);
         });
     });
 });

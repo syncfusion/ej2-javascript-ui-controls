@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType, FormFieldAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel, VisibilityState } from '../index';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType, FormFieldAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel, Visibility } from '../index';
 
 /**
  * Interface for a class PdfBounds
@@ -763,7 +763,7 @@ export interface PdfFormFieldBaseModel {
     /**
      * If it is set as Hidden, Html element will be hide in the UI. By default it is visible.
      */
-    visibility?: VisibilityState;
+    visibility?: Visibility;
 
     /**
      * specifies whether the form field are included or not in print actions.

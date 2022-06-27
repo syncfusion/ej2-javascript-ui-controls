@@ -1717,7 +1717,7 @@ export class Gantt extends Component<HTMLElement>
                 const count: number = getValue('count', this.dataSource);
                 this.treeGrid.dataSource = {result: this.flatData, count: count};
             } else {
-                this.treeGrid.dataSource = this.flatData;
+                this.treeGrid.setProperties({ dataSource: this.flatData }, false);
             }
         } else {
             if (this.enableValidation) {
@@ -1834,7 +1834,7 @@ export class Gantt extends Component<HTMLElement>
             const expandedRecords: IGanttData[] = this.virtualScrollModule && this.enableVirtualization ?
                 this.currentViewData : this.getExpandedRecords(this.currentViewData);
             let height: number;
-            const chartRow: Element = this.ganttChartModule.getChartRows()[0];
+            const chartRow: Element = !isNullOrUndefined(this.ganttChartModule.getChartRows()) ? this.ganttChartModule.getChartRows()[0] : null;
             if (!isNullOrUndefined(chartRow) && chartRow.getBoundingClientRect().height > 0) {
                 height = chartRow.getBoundingClientRect().height;
             } else {

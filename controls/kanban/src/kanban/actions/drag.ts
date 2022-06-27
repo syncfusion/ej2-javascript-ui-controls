@@ -16,6 +16,7 @@ export class DragAndDrop {
     public isDragging: boolean;
     private kanbanObj: Kanban;
     private isExternalDrop: boolean;
+    private borderElm: NodeListOf<HTMLElement>;
 
     /**
      * Constructor for drag and drop module
@@ -76,6 +77,7 @@ export class DragAndDrop {
 
     private dragStart(e: MouseEvent & TouchEvent): void {
         this.dragObj.selectedCards = this.dragObj.element;
+        this.borderElm = this.parent.element.querySelectorAll('.' + cls.BORDER_CLASS);
         if (this.dragObj.element.classList.contains(cls.CARD_SELECTION_CLASS)) {
             const className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS + ':not(.' + cls.CLONED_CARD_CLASS + ')';
             const closestEle: Element = closest(this.dragObj.element, '.' + cls.CONTENT_ROW_CLASS);
@@ -176,7 +178,8 @@ export class DragAndDrop {
                     && contentCell.querySelectorAll('.' + cls.CARD_CLASS).length === 0) {
                     target.appendChild(this.dragObj.targetClone);
                 }
-            } else if (keys.length > 1 && contentCell.classList.contains(cls.DROPPING_CLASS)) {
+            } else if (keys.length > 1 && (contentCell.classList.contains(cls.DROPPING_CLASS)  ||
+            contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.DROPPING_CLASS))) {
                 this.multiCloneCreate(keys, contentCell);
             }
             this.kanbanObj.notify(events.contentReady, {});
@@ -209,8 +212,10 @@ export class DragAndDrop {
                 }
             }
         }
-        document.body.style.cursor = (contentCell && contentCell.classList.contains(cls.DROPPING_CLASS)) ? '' : 'not-allowed';
-        if (cardElement && !(closest(cardElement, '.' + cls.CONTENT_CELLS_CLASS)).classList.contains(cls.DROPPING_CLASS)) {
+        document.body.style.cursor = (contentCell && contentCell.classList.contains(cls.DROPPING_CLASS) ||
+        (contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.BORDER_CLASS))) ? '' : 'not-allowed';
+        if (cardElement && !(closest(cardElement, '.' + cls.CONTENT_CELLS_CLASS)).classList.contains(cls.DROPPING_CLASS) &&
+        !(contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.BORDER_CLASS))) {
             cardElement.style.cursor = 'not-allowed';
             document.body.style.cursor = 'not-allowed';
         }
@@ -310,10 +315,10 @@ export class DragAndDrop {
     private cellDropping(): void {
         const dragCell: HTMLTableCellElement = (<HTMLTableCellElement>closest(this.dragObj.draggedClone, '.' + cls.CONTENT_CELLS_CLASS));
         const dragRow: HTMLTableRowElement = (<HTMLTableRowElement>closest(this.dragObj.draggedClone, '.' + cls.CONTENT_ROW_CLASS));
-        this.addDropping(dragRow, dragCell);
         if (dragCell && dragCell.classList.contains(cls.DROP_CLASS)) {
             addClass([dragCell], cls.DROPPING_CLASS);
         }
+        this.addDropping(dragRow, dragCell);
         if (this.kanbanObj.swimlaneSettings.keyField && this.kanbanObj.swimlaneSettings.allowDragAndDrop) {
             const className: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + '):not(.' + cls.COLLAPSED_CLASS + ')';
             const rows: HTMLTableRowElement[] = [].slice.call(this.kanbanObj.element.querySelectorAll(className));
@@ -326,7 +331,17 @@ export class DragAndDrop {
     }
 
     private addDropping(dragRow: HTMLTableRowElement, dragCell: HTMLTableCellElement): void {
-        if (dragCell && dragRow) {
+        if (dragCell && this.borderElm && this.borderElm.length !== 0) {
+            if (dragCell.classList.contains(cls.DROPPING_CLASS)) {
+                removeClass([dragCell], cls.DROPPING_CLASS);
+            }
+            const cellDimension : ClientRect  = dragCell.getBoundingClientRect();
+            [].slice.call(this.borderElm).forEach((element: HTMLElement) => {
+                addClass([element], cls.DROPPING_CLASS);
+                element.style.height = parseInt(cellDimension.height.toString()) + 'px';
+                element.style.width = parseInt(cellDimension.width.toString()) + 'px' ;
+            });
+        } else if (dragCell && dragRow) {
             [].slice.call(dragRow.children).forEach((cell: Element) => {
                 const transition: string[] = this.kanbanObj.columns[dragCell.cellIndex].transitionColumns;
                 if (cell !== dragCell && cell.classList.contains(cls.DROP_CLASS) &&
@@ -351,6 +366,9 @@ export class DragAndDrop {
         let columnKey: Element;
         let dropIndex: number;
         EventHandler.remove(document.body, 'keydown', this.keydownHandler);
+        [].slice.call(this.borderElm).forEach((element: HTMLElement) => {
+            element.classList.remove(cls.DROPPING_CLASS);
+        });
         if (this.dragObj.targetClone.parentElement) {
             const className: string = '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS;
             const element: HTMLElement[] = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
@@ -504,7 +522,7 @@ export class DragAndDrop {
     }
 
     private multiCloneRemove(): void {
-        const cloneMulti: HTMLElement[] = [].slice.call(this.kanbanObj.element.querySelectorAll('.' + cls.TARGET_MULTI_CLONE_CLASS));
+        const cloneMulti: HTMLElement[] = !isNullOrUndefined(this.kanbanObj) ? [].slice.call(this.kanbanObj.element.querySelectorAll('.' + cls.TARGET_MULTI_CLONE_CLASS)) : [];
         if (cloneMulti.length > 0) {
             const columnKey: HTMLElement[] = [].slice.call(this.kanbanObj.element.querySelectorAll('.' + cls.MULTI_COLUMN_KEY_CLASS));
             columnKey.forEach((node: Element) => remove(node));

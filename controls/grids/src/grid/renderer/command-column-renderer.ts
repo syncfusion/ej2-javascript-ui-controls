@@ -86,6 +86,8 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
             'data-uid': uid
         });
         button.onclick = buttonOption.buttonOption.click;
+        buttonOption.buttonOption.cssClass = this.parent.cssClass ?
+            buttonOption.buttonOption.cssClass + ' ' + this.parent.cssClass : buttonOption.buttonOption.cssClass;
         const buttonObj: Button = new Button(buttonOption.buttonOption, button);
         this.childRefs.push(buttonObj);
         (<{ commandType?: CommandButtonType }>buttonObj).commandType = buttonOption.type;

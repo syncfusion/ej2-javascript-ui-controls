@@ -55,7 +55,7 @@ export class Overlay {
     public insertOverlayElement(id: string, range: string, sheetIndex: number): HTMLElement {
         const div: HTMLElement = this.parent.createElement('div', {
             id: id,
-            attrs: { 'class': 'e-ss-overlay' },
+            attrs: { 'class': 'e-ss-overlay e-ss-overlay-active' },
             styles: 'width: ' + this.minWidth + ';  height: ' + this.minHeight
         });
         const indexes: number[] = getRangeIndexes(range);

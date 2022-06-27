@@ -128,6 +128,12 @@ export class WSectionFormat {
     public set initialEndNoteNumber(value: number) {
         this.setPropertyValue('initialEndNoteNumber', value);
     }
+    public get pageNumberStyle(): FootEndNoteNumberFormat {
+        return this.getPropertyValue('pageNumberStyle') as FootEndNoteNumberFormat;
+    }
+    public set pageNumberStyle(value: FootEndNoteNumberFormat) {
+        this.setPropertyValue('pageNumberStyle', value);
+    }
     public constructor(node?: Object) {
         this.ownerBase = node;
     }
@@ -211,6 +217,9 @@ export class WSectionFormat {
             case 'initialEndNoteNumber':
                 value = 1;
                 break;
+            case 'pageNumberStyle' :
+                value = 'Arabic';
+                break;
 
         }
         return value;
@@ -264,6 +273,7 @@ export class WSectionFormat {
         this.addUniqueSectionFormat('restartIndexForFootnotes', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('initialFootNoteNumber', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('initialEndNoteNumber', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('pageNumberStyle', property, propValue, uniqueSectionFormatTemp);
 
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     }

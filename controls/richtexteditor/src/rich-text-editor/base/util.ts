@@ -4,6 +4,7 @@
 import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement } from '@syncfusion/ej2-base';
 import { Browser, detach, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
+import * as CONSTANT from '../base/constant';
 import * as model from '../models/items';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { DropDownButtons } from '../actions/dropdown-buttons';
@@ -408,6 +409,10 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
         let previousParent: HTMLElement;
         let insertElem: HTMLElement;
         while (tempNode.firstChild) {
+            const emptyElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.blockInlineEmptyNodes);
+            for (let i: number = 0; i < emptyElem.length; i++) {
+                emptyElem[i].innerHTML = '<br>';
+            }
             if (rteObj.enterKey !== 'BR' && ((tempNode.firstChild.nodeName === '#text' &&
             (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
             inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {

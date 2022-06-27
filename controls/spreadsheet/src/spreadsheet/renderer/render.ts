@@ -54,7 +54,7 @@ export class Render {
         this.checkTopLeftCell(!(this.parent as any).refreshing);
     }
 
-    private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean, scrollTop?: number, scrollLeft?: number): void {
+    private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean, scrollTop?: number, scrollLeft?: number, checkModelChange?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.showSpinner();
         let isTopLeftCell: boolean = sheet.topLeftCell === 'A1';
@@ -81,7 +81,7 @@ export class Render {
         const frozenRow: number = this.parent.frozenRowCount(sheet);
         const frozenCol: number = this.parent.frozenColCount(sheet);
         if (!this.parent.scrollSettings.enableVirtualization || isTopLeftCell) {
-            this.refreshUI({ rowIndex: indexes[0], colIndex: indexes[1], refresh: 'All' }, null, initLoad, isRefreshing);
+            this.refreshUI({ rowIndex: indexes[0], colIndex: indexes[1], refresh: 'All' }, null, initLoad, isRefreshing, checkModelChange);
             if (isFreezeScrolled) {
                 this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenRow, true) - frozenRow;
                 this.parent.viewport.leftIndex = skipHiddenIdx(sheet, frozenCol, true, 'columns') - frozenCol;
@@ -112,7 +112,7 @@ export class Render {
             }
             this.refreshUI(
                 { rowIndex: rowIndex, colIndex: colIndex, refresh: 'All', top: eventArgs.scrollTop, left: eventArgs.scrollLeft,
-                    frozenIndexes: frozenIndexes }, null, initLoad, isRefreshing);
+                    frozenIndexes: frozenIndexes }, null, initLoad, isRefreshing, checkModelChange);
             if (isFreezeScrolled) {
                 if (frozenRow && frozenIndexes[0] >= frozenRow) {
                     this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenIndexes[0], true) - frozenRow;
@@ -139,7 +139,7 @@ export class Render {
      * @returns {void}
      */
     // tslint:disable-next-line:max-func-body-length
-    public refreshUI(args: RefreshArgs, address?: string, initLoad?: boolean, isRefreshing?: boolean): void {
+    public refreshUI(args: RefreshArgs, address?: string, initLoad?: boolean, isRefreshing?: boolean, checkModelChange?: boolean): void {
         if (args.refresh !== 'All') { this.parent.showSpinner(); }
         const sheetModule: IRenderer = <IRenderer>this.parent.serviceLocator.getService('sheet');
         const sheet: SheetModel = this.parent.getActiveSheet(); const sheetName: string = getSheetName(this.parent as Workbook);
@@ -154,9 +154,18 @@ export class Render {
                     lastRow += (args.frozenIndexes[0] - frozenRow);
                     lastCol += (args.frozenIndexes[1] - frozenCol);
                 }
-                lastRow += sheet.frozenRows;
-                lastCol += sheet.frozenColumns;
-                const rowIdx: number = args.frozenIndexes[0] > frozenRow ? args.frozenIndexes[0] : args.rowIndex + frozenRow;
+                if (args.refresh === 'Row') {
+                    lastRow += frozenRow;
+                } else {
+                    lastRow += sheet.frozenRows;
+                }
+                if (args.refresh === 'Column') {
+                    lastCol += frozenCol;
+                } else {
+                    lastCol += sheet.frozenColumns;
+                }
+                const rowIdx: number = args.frozenIndexes[0] > frozenRow ? args.frozenIndexes[0] : args.rowIndex + (args.refresh === 'Row' ?
+                    frozenRow : sheet.frozenRows);
                 let indexes: number[] = this.parent.skipHidden(rowIdx, lastRow, 'rows', false);
                 lastRow = indexes[1];
                 if (rowIdx !== indexes[0]) {
@@ -190,7 +199,8 @@ export class Render {
                 } else {
                     startRow = args.rowIndex = frozenRow ? skipHiddenIdx(sheet, startRow, true) : indexes[0];
                 }
-                const colIdx: number = args.frozenIndexes[1] > frozenCol ? args.frozenIndexes[1] : args.colIndex + frozenCol;
+                const colIdx: number = args.frozenIndexes[1] > frozenCol ? args.frozenIndexes[1] : args.colIndex + (args.refresh ===
+                    'Column' ? frozenCol : sheet.frozenColumns);
                 indexes = this.parent.skipHidden(colIdx, lastCol, 'columns', false);
                 lastCol = indexes[1];
                 if (colIdx !== indexes[0]) {
@@ -260,7 +270,7 @@ export class Render {
         getData(this.parent as Workbook, `${sheetName}!${address}`, null, null, args.frozenIndexes).then((values: Map<string, CellModel>): void => {
             if (!this.parent || sheetsLen < this.parent.sheets.length) { return; }
             const sheetIdx: number = this.parent.sheets.indexOf(sheet);
-            if (sheetIdx === -1 || sheetIdx !== this.parent.activeSheetIndex) {
+            if ( checkModelChange && (sheetIdx === -1 || sheetIdx !== this.parent.activeSheetIndex)) {
                 if (sheetIdx > -1) { this.checkTopLeftCell(); }
                 return;
             }
@@ -338,7 +348,7 @@ export class Render {
      * @param {boolean} focusEle - Specify the focusEle.
      * @returns {void}
      */
-    public refreshSheet(isOpen?: boolean, resize?: boolean, focusEle?: boolean): void {
+    public refreshSheet(isOpen?: boolean, resize?: boolean, focusEle?: boolean, checkModelChange?: boolean): void {
         let scrollTop: number = 0; let scrollLeft: number = 0;
         if (resize) {
             const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
@@ -353,7 +363,7 @@ export class Render {
         this.removeSheet();
         this.renderSheet();
         this.parent.notify(deInitProperties, {});
-        this.checkTopLeftCell(false, isOpen, scrollTop, scrollLeft);
+        this.checkTopLeftCell(false, isOpen, scrollTop, scrollLeft, checkModelChange);
         if (focusEle) {
             focus(this.parent.element);
         }

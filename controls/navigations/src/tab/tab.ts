@@ -596,7 +596,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.tbObj = null;
         }
         this.unWireEvents();
-        ['role', 'aria-disabled', 'aria-activedescendant', 'tabindex', 'aria-orientation'].forEach((val: string): void => {
+        ['role', 'aria-disabled', 'aria-activedescendant', 'tabindex', 'aria-orientation', 'aria-owns'].forEach((val: string): void => {
             this.element.removeAttribute(val);
         });
         this.expTemplateContent();
@@ -679,7 +679,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const css: Str = (name === 'msie') ? 'e-ie' : (name === 'edge') ? 'e-edge' : (name === 'safari') ? 'e-safari' : '';
         setStyle(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
         this.setCssClass(this.element, this.cssClass, true);
-        attributes(this.element, { role: 'tablist', 'aria-disabled': 'false', 'aria-activedescendant': '' });
+        attributes(this.element, { role: 'tablist', 'aria-disabled': 'false', 'aria-activedescendant': '', 'aria-owns': this.element.id + '_' + 'tab_header_items' });
         this.setCssClass(this.element, css, true);
         this.updatePopAnimationConfig();
     }
@@ -873,6 +873,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         attributes(this.hdrEle, { 'aria-label': 'tab-header' });
         this.updateOrientationAttribute();
         this.setCloseButton(this.showCloseButton);
+        const toolbarHeader: HTEle = this.tbObj.element.querySelector('.' + CLS_TB_ITEMS);
+        if (!isNOU(toolbarHeader)) {
+            toolbarHeader.id = this.element.id + '_' +  'tab_header_items';
+        }
     }
     private renderContent(): void {
         this.cntEle = <HTEle>select('.' + CLS_CONTENT, this.element);
@@ -1592,10 +1596,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private bindDraggable(): void {
         if (this.allowDragAndDrop) {
             const tabHeader: Element = this.element.querySelector('.' + CLS_HEADER);
-            const items: NodeList = tabHeader.querySelectorAll('.' + CLS_TB_ITEM);
-            items.forEach((element: HTMLElement) => {
-                this.initializeDrag(element as HTMLElement);
-            });
+            if (tabHeader){
+                const items: NodeList = tabHeader.querySelectorAll('.' + CLS_TB_ITEM);
+                items.forEach((element: HTMLElement) => {
+                    this.initializeDrag(element as HTMLElement);
+                });
+            }
         }
     }
     private wireEvents(): void {
@@ -2147,6 +2153,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (isNOU(this.hdrEle)) {
             this.items = items;
             this.reRenderItems();
+            this.bindDraggable();
         } else {
             const itemsCount: number = selectAll('.e-tab-header .' + CLS_TB_ITEM, this.element).length;
             if (itemsCount !== 0) {
@@ -2172,8 +2179,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             let textValue: string | HTEle;
             items.forEach((item: TabItemModel, place: number) => {
                 textValue = item.headerTemplate || item.header.text;
-                if (!(isNOU(item.headerTemplate || item.header) ||
-                    isNOU(textValue) || ((<string>textValue).length === 0) && isNOU(item.header.iconCss))) {
+                if (!(isNOU(item.headerTemplate || item.header) || isNOU(textValue) ||
+                    ((<string>textValue).length === 0) && !isNOU(item.header) && isNOU(item.header.iconCss))) {
                     this.items.splice((index + i), 0, item);
                     i++;
                 }

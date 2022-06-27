@@ -569,7 +569,7 @@ export class ConditionalFormatting {
                             }
                         }
                     }
-                } else if (('BlueDataBar' + 'GreenDataBar' + 'RedDataBar' + 'OrangeDataBar' + 'LightBlueDataBar' + 'PurpleColorScale' +
+                } else if (('BlueDataBar' + 'GreenDataBar' + 'RedDataBar' + 'OrangeDataBar' + 'LightBlueDataBar' + 'PurpleDataBar' +
                     'GYRColorScale' + 'RYGColorScale' + 'GWRColorScale' + 'RWGColorScale' + 'BWRColorScale' + 'RWBColorScale' +
                     'WRColorScale' + 'RWColorScale' + 'GWColorScale' + 'WGColorScale' + 'GYColorScale' + 'YGColorScale' + 'ThreeArrows' +
                     'ThreeArrowsGray' + 'FourArrowsGray' + 'FourArrows' + 'FiveArrowsGray' + 'FiveArrows' + 'ThreeTrafficLights1' +
@@ -972,7 +972,7 @@ export class ConditionalFormatting {
         let negArr: number[] = [];
         let topVal: number;
         let leftStandardWidth: number = 0;
-        const value: number = parseInt(val, 10);
+        const value: number = !isNullOrUndefined(val)? parseInt(val, 10) : null;
         const rangeArr: string[] = cFRule.range.split(',');
         for (let rIdx: number = 0; rIdx < rangeArr.length; rIdx++) {
             const selIndexes: number[] = getRangeIndexes(rangeArr[rIdx]);
@@ -998,8 +998,6 @@ export class ConditionalFormatting {
             leftStandardWidth = (Math.abs((negArr[0] / topVal) * 100));
         } else if (negArr.length || posArr.length) {
             topVal = negArr.length ? negArr[0] : posArr[0];
-        } else {
-            return;
         }
         if (td) {
             if (isNullOrUndefined(value) || val === '') {

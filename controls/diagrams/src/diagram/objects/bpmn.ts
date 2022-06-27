@@ -1748,7 +1748,6 @@ export class BpmnDiagrams {
         if (task.type !== undefined) {
             const bpmnshapeTaskdata: string = getBpmnTaskShapePathData(task.type);
             (elementWrapper.children[1] as PathModel).data = bpmnshapeTaskdata;
-            if (task.type === 'Service') {
                 for (let i: number = 0; i < elementWrapper.children.length; i++) {
                     if (elementWrapper.children[i].id === node.id + '_1_tasktType') {
                         elementWrapper.children.splice(i, 1);
@@ -1762,6 +1761,22 @@ export class BpmnDiagrams {
                 taskTypeNode.data = bpmnshapeTaskdata;
                 taskTypeNode.style.fill = 'transparent';
                 taskTypeNode.style.opacity = node.style.opacity;
+                /**
+                 * Used to update the Bpmn activity task type at runtime
+                 * EJ2-60586 
+                 */
+                if(task.type === 'Receive' || task.type === 'Send')
+                {
+                    taskTypeNode.width = 18;
+                    taskTypeNode.height = 16;
+                    elementWrapper.children.splice(1, 0, taskTypeNode);
+                }
+                else if(task.type !== 'Service')
+                {
+                    taskTypeNode.width = 20; taskTypeNode.height = 20;
+                    elementWrapper.children.splice(1, 0, taskTypeNode);
+                }
+                else{
                 taskTypeNode.width = 20; taskTypeNode.height = 20;
                 elementWrapper.children.splice(1, 0, taskTypeNode);
                 const taskTypeNodeService: PathElement = new PathElement();
@@ -1772,8 +1787,8 @@ export class BpmnDiagrams {
                 taskTypeNodeService.style.fill = 'white';
                 taskTypeNodeService.style.opacity = node.style.opacity;
                 elementWrapper.children.splice(2, 0, taskTypeNodeService);
+                }
             }
-        }
         if (bpmnShape.activity.task.call !== undefined) {
             if (bpmnShape.activity.task.call !== false) { elementWrapper.children[0].style.strokeWidth = 4; } else {
                 elementWrapper.children[0].style.strokeWidth = 1;

@@ -254,8 +254,8 @@ describe('TreeGrid Toolbar module', () => {
       });
 
     it('Checking Indent/Outdent Toolbar on Initial rendering', (done: Function) => {
-      expect(TreeGridObj.grid.toolbarModule['getItems']()[0].disabled).toBe(true);
-      expect(TreeGridObj.grid.toolbarModule['getItems']()[1].disabled).toBe(true);
+      expect(TreeGridObj.toolbarModule.getToolbar().querySelector("#" + TreeGridObj.element.id + '_gridcontrol_indent').parentElement.classList.contains("e-hidden")).toBe(true);
+      expect(TreeGridObj.toolbarModule.getToolbar().querySelector("#" + TreeGridObj.element.id + '_gridcontrol_outdent').parentElement.classList.contains("e-hidden")).toBe(true);
       done();
     });
     it('Checking Indent/Outdent Toolbar when selecting the row', (done: Function) => {
@@ -269,11 +269,11 @@ describe('TreeGrid Toolbar module', () => {
     });
     it('Checking Indent/Outdent Toolbar when deselecting the row', (done: Function) => {
       rowDeselected = (): void => {
-        expect(TreeGridObj.grid.toolbarModule['getItems']()[0].disabled).toBe(true);
-        expect(TreeGridObj.grid.toolbarModule['getItems']()[1].disabled).toBe(true);
+        expect(TreeGridObj.toolbarModule.getToolbar().querySelector("#" + TreeGridObj.element.id + '_gridcontrol_indent').parentElement.classList.contains("e-hidden")).toBe(true);
+        expect(TreeGridObj.toolbarModule.getToolbar().querySelector("#" + TreeGridObj.element.id + '_gridcontrol_outdent').parentElement.classList.contains("e-hidden")).toBe(true);
         done();
       };
-      TreeGridObj.rowSelected = rowDeselected;
+      TreeGridObj.rowDeselected = rowDeselected;
       TreeGridObj.selectRow(2);
       TreeGridObj.clearSelection();
     });

@@ -169,7 +169,7 @@ export class SanitizeHtmlHelper {
         this.removeXssAttrs();
         const tempEleValue: string = this.wrapElement.innerHTML;
         this.removeElement();
-        return tempEleValue;
+        return tempEleValue.replace('&amp;', '&');
     }
 
     private static removeElement(): void {

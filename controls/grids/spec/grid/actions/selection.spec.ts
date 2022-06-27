@@ -4802,3 +4802,101 @@ describe('EJ2-56885 - Previously selected data is not returned in selection even
         gridObj = null;
     });
 });
+
+describe('EJ2-59308 Preventing keyboard actions when allow keyboard set to false', () =>{
+    let gridObj: Grid;
+    let rowSelected: () => void;
+    let rows: Element[];
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+                dataSource: data,
+                allowKeyboard: false,
+                columns: [
+                { type: 'checkbox', width: 50 },
+                { field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' }],
+                allowPaging: true,
+                rowSelected: rowSelected
+        }, done);
+    });
+    it('checkbox selection through ctrl click testing', (done: Function) => {
+        rowSelected = (): void => {
+            expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+        (gridObj.selectionModule as any).clickHandler({target: gridObj.element.querySelectorAll('.e-row')[3]
+        .querySelectorAll('.e-rowcell')[2], ctrlKey: true});
+    });
+    it('Selecting First row', (done: Function) => {
+        gridObj.rowSelected = rowSelected;
+        gridObj.isCheckBoxSelection = false;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+        done();
+    });
+    it('checkbox selection through Shift click testing', (done: Function) => {
+        rowSelected = (): void => {
+            expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.selectionModule as any)
+        .clickHandler({target: gridObj.element.querySelectorAll('.e-row')[3].querySelectorAll('.e-rowcell')[2], shiftKey: true});
+    });
+    it('checkbox selection through space key testing', () => {
+        let args: any = { action: 'space', preventDefault: preventDefault };
+        rows = gridObj.getRows();
+        let chkBox: HTMLElement = (rows[2].querySelector('.e-checkselect') as HTMLElement);
+        chkBox.click();
+        args.target = chkBox;
+        gridObj.keyboardModule.keyAction(args);
+        expect(chkBox.nextElementSibling.classList.contains('e-check')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-60026 Row selection is not updated properly inside the rowDeselected event while data actions', () => {
+    let gridObj: Grid;
+    let rowSelected: () => void;
+    let rowDeselected: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: data,
+            allowPaging: true,
+            allowSorting: true,
+            columns: [
+                { field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' }],
+            rowSelected: rowSelected
+        }, done);
+    });
+    it('Selecting a row', (done: Function) => {
+        rowSelected = (): void => {
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.getRows()[0].querySelector('.e-rowcell') as HTMLElement).click();
+    });
+    it('EJ2-60026 - Ensuring Selected records to be null in rowDeselected event', (done: Function) => {
+        rowDeselected = (e: any) => {
+            expect(gridObj.getSelectedRecords().length).toBe(0);
+            done();
+        };
+        gridObj.rowDeselected = rowDeselected;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[4].querySelector('.e-rowcell')).click();
+        (gridObj.getHeaderContent().querySelectorAll('.e-headercell')[0] as HTMLElement).click();
+
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

@@ -540,6 +540,9 @@ export class ExcelExport {
                     gObj.trigger(events.excelQueryCellInfo, excelCellArgs);
                     if (!isNullOrUndefined(excelCellArgs.image) && !isNullOrUndefined(excelCellArgs.image.base64)) {
                         templateRowHeight = this.setImage(excelCellArgs, idx);
+                        if (excelCellArgs.image.height && excelCellArgs.value !== '') {
+                            templateRowHeight += 30;
+                        }
                     }
 
                     if (!isNullOrUndefined(excelCellArgs.hyperLink)) {
@@ -612,6 +615,10 @@ export class ExcelExport {
             image: args.image.base64, row: this.rowLength, column: idx,
             lastRow: this.rowLength, lastColumn: idx
         };
+        if (args.image.width && args.image.height) {
+            excelImage.width = args.image.width;
+            excelImage.height = args.image.height;
+        }
         this.sheet.images.push(excelImage);
         this.columns[idx - 1].width = args.image.width || this.columns[idx - 1].width;
         return args.image.height || 50;

@@ -2,6 +2,97 @@
 
 ## [Unreleased]
 
+## 20.1.59 (2022-06-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#F174154`- Now, the signature value for all signature fields in the PDF document will be updated programmatically using the `updateFormFieldsValue()` method.
+- `#SF-376222`- Now, Annotation selector binds correctly to annotations when dragging.
+- `#SF-367416`- The `FindText()` method of PDF Base allows for finding the number.
+- `#SF-372876`- The `annotationSelect` and `commentAdd` events are triggered properly for the sticky notes annotation.
+
+## 20.1.58 (2022-05-31)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-377034`- Now, the existing form fields value can be retrieved using the `retrieveFormFields()` method.
+- `#SF-367416`- The radio buttons on the iPad are displayed properly after zooming in and out.
+- `#SF-374726`- Signatures will appear in the PDF viewer for the provided document.
+
+## 20.1.57 (2022-05-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-376240`- Multiple words in the typed handwritten signature and signature fields are preserved correctly in the downloaded document.
+- `#F174506`- Improved the printing quality of the PDF viewer.
+- `#SF-372853`- Now, ink annotation will be added programmatically with path data available in the annotationAdd event.
+
+## 20.1.56 (2022-05-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-371824`- The properties of form fields will be updated properly using the `updateFormField` method while scrolling over pages.
+
+## 20.1.55 (2022-05-12)
+
+### PDF Viewer
+
+#### New Features
+
+- `#SF-368647`, `#SF-366041`- Exposed a method to focus form fields on a document.
+- `#SF-362221`, `#SF-364814`, `#SF-368380`, `#SF-363379`- Provided the support for field Id and field Name for the Form Fields events.
+- `#SF-353301`- Implemented the `GetPageNumberFromClientPoint`, `ConvertClientPointToPagePoint`, `ConvertPagePointToClientPoint`, `ConvertPagePointToScrollingPoint` and `zoomToRect` methods.
+
+#### Bug Fixes
+
+- `#SF-372732`- A signature in the signature field will be displayed in the downloaded document when the form field properties have been updated using the `updateFormFields` method.
+- `#SF-361979`- Now, signature fields with the same value for the name property will be visible when the document is downloaded and reloaded.
+- `#SF-367560`, `#SF-367313`- Improved the pinch-zoom in and out responsiveness in the mobile device.
+- `#SF-368770`, `#SF-373344`, `#SF-372215`- Now, the properties of text box fields are changed properly using the `textFieldSettings` property.
+- `#SF-369002`- A signature will be downloaded in the correct position for rotated and scanned documents.
+- `#SF-369554`- The form fields are now added horizontally to the page, even for rotated documents.
+- `#SF-371560`- Form fields in a rotated document will be rendered according to the field rotation.
+- `#SF-373137`- The `ArgumentOutOfRangeException` exception will no longer occur when extracting the text for the provided document.
+- `#SF-375548`, `#SF-374826`, `#SF-375215`, `#SF-376171`, `#SF-376531`- The `Microsoft.Extensions.Caching.Memory` was changed into a stable version.
+- `#SF-364871`- Now, the handwritten signature images and custom stamps will be resized proportionally.
+- `#SF-368168`- PDF Viewer toolbar appeared properly from view on zooming in mobile mode.
+- `#SF-370140`- The label content of calibrating annotations is correctly updated when their properties are edited programmatically.
+- `#SF-370758`- The Script error will no longer be thrown while downloading the document after adding the handwritten type signature on a mobile device.
+- `#SF-370904`- The signature collection and some signature properties are properly defined in the `addSignature` event on a mobile device.
+- `#SF-377746`- The PDF Viewer download button no longer opens the blob URL in Firefox for downloading the document.
+- `#SF-367878`- The Script error will no longer be thrown while clicking the form field for the second time.
+- `#SF-373785`- The initial field will no longer be undefined after filling the field.
+- `#SF-363381`- The `formFieldPropertiesChange` event triggers on removing the signature from the signature field.
+- `#SF-371825`- Now, the form fields will appear while scrolling through the different pages.
+- `#SF-371838`- The Custom stamp annotation will be rendered correctly for the PDF document provided.
+- `#SF-365736`, `#SF-366420`- In mobile devices, the Script error will no longer occur when adding the signature.
+
+## 20.1.52 (2022-05-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-361979`- Now, signature fields with the same value for the name property will be visible when the document is downloaded and reloaded.
+
+## 20.1.51 (2022-04-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-369554`- The form fields are now added horizontally to the page, even for rotated documents.
+- `#SF-369733`- The free text annotation is no longer rotated when it is added programmatically to rotated documents.
+- `#SF-371560`- Form fields in a rotated document will be rendered according to the field rotation.
+
 ## 20.1.50 (2022-04-19)
 
 ### PDF Viewer

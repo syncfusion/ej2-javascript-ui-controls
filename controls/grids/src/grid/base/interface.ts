@@ -501,6 +501,13 @@ export interface IGrid extends Component<HTMLElement> {
      */
     allowSearching?: boolean;
 
+    /**
+     * Defines the own class for the grid element.
+     * 
+     * @default ''
+     */
+    cssClass?: string;
+
     isEdit?: boolean;
 
     commonQuery?: Query;

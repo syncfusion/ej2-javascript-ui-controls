@@ -178,7 +178,7 @@ describe('Selection ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I316931, I31444 ->', () => {
+        describe('I316931, I31444, EJ2-60472, EJ2-60423 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 2, cells: [{ value: 'Welcome to Spreadsheet!!!', wrap: true }] }], selectedRange: 'D4' }] }, done);
             });
@@ -217,6 +217,47 @@ describe('Selection ->', () => {
                             done();
                         }, 10);
                     }, 10);
+                });
+            });
+            it('Selected range not updated properly when the frozen column not in the view port', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('goTo', ['AB1']);
+                setTimeout((): void => {
+                    spreadsheet.freezePanes(5,5);
+                    setTimeout((): void => {
+                        let rowHdrCell: HTMLElement = spreadsheet.element.querySelector('.e-selectall-container').querySelector('.e-row').querySelector('.e-header-cell');
+                        let offset: DOMRect = rowHdrCell.getBoundingClientRect() as DOMRect;
+                        helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, rowHdrCell);
+                        helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 1 }, document, rowHdrCell);
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].selectedRange).toBe('A1:CV1');
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Unfrozen columns getting scrolled while selecting the frozen column cells', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.freezePanes(0,3);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['Z1']);
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['C1']);
+                        var startCell = helper.invoke('getCell', [0, 2]);
+                        var endCell = helper.invoke('getCell', [5, 2]);
+                        var startOffset = startCell.getBoundingClientRect() as DOMRect;
+                        var endOffset = endCell.getBoundingClientRect() as DOMRect;
+                        let sheetContentLeft: number = spreadsheet.getMainContent().scrollLeft;
+                        helper.triggerMouseAction('mousedown', { x: startOffset.left + 1, y: startOffset.top + 1 }, null, startCell);
+                        helper.getInstance().selectionModule.mouseMoveHandler({ target: startCell, clientX: startOffset.left + 1, clientY: startOffset.top + 1 });
+                        helper.getInstance().selectionModule.mouseMoveHandler({ target: endCell, clientX: endOffset.left + 1, clientY: endOffset.top + 1 });
+                        helper.triggerMouseAction('mouseup', { x: endOffset.left + 1, y: endOffset.top + 1 }, document, endCell);
+                        setTimeout((): void => {
+                            expect(spreadsheet.getMainContent().scrollLeft).toBe(sheetContentLeft);
+                            expect(spreadsheet.sheets[0].selectedRange).toBe('C1:C6');
+                            done();
+                        });
+                    });
                 });
             });
         });

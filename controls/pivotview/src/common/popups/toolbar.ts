@@ -485,7 +485,8 @@ export class Toolbar {
             height: 'auto',
             zIndex: 1000001,
             closeOnEscape: true,
-            target: document.body
+            target: document.body,
+            cssClass: this.parent.cssClass
         });
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
@@ -522,7 +523,8 @@ export class Toolbar {
             height: 'auto',
             zIndex: 1000001,
             closeOnEscape: true,
-            target: document.body
+            target: document.body,
+            cssClass: this.parent.cssClass
         });
         this.mdxDialog.isStringTemplate = true;
         this.mdxDialog.appendTo('#' + this.parent.element.id + 'mdx-dialog');
@@ -694,6 +696,7 @@ export class Toolbar {
             visible: true,
             closeOnEscape: true,
             target: document.body,
+            cssClass: this.parent.cssClass,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
@@ -869,7 +872,7 @@ export class Toolbar {
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
-                    cssClass: cls.TOOLBAR_MENU,
+                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this),
                     beforeOpen: this.whitespaceRemove.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {    /* eslint-disable-line */
@@ -926,7 +929,7 @@ export class Toolbar {
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
-                    cssClass: cls.TOOLBAR_MENU,
+                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {
                         this.focusToolBar();
@@ -965,7 +968,7 @@ export class Toolbar {
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
-                    cssClass: cls.TOOLBAR_MENU,
+                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {
                         this.focusToolBar();
@@ -1024,7 +1027,7 @@ export class Toolbar {
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
-                    cssClass: cls.TOOLBAR_MENU,
+                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {
                         this.focusToolBar();
@@ -1053,7 +1056,7 @@ export class Toolbar {
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
                     locale: this.parent.locale,
-                    cssClass: cls.TOOLBAR_MENU,
+                    cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     select: this.menuItemClick.bind(this)
                 });
             this.formattingMenu.isStringTemplate = true;
@@ -1074,7 +1077,7 @@ export class Toolbar {
                 placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
-                cssClass: cls.REPORT_LIST_DROP,
+                cssClass: cls.REPORT_LIST_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 select: this.reportChange.bind(this),
                 value: this.currentReport
             });
@@ -1167,8 +1170,8 @@ export class Toolbar {
         return this.showLableState;
     }
     private getAllChartItems(): string[] {
-        return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
-            'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto',
+        return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar','StackingLine', 'StepLine', 'StepArea',
+            'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100','Bubble', 'Pareto',
             'Polar', 'Radar', 'Pie', 'Pyramid', 'Funnel', 'Doughnut'] as ChartSeriesType[];
     }
     private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
@@ -1526,6 +1529,7 @@ export class Toolbar {
             ],
             closeOnEscape: true,
             target: this.parent.element,
+            cssClass: this.parent.cssClass,
             close: this.removeDialog.bind(this)
         });
         this.chartTypesDialog.isStringTemplate = true;
@@ -1578,8 +1582,8 @@ export class Toolbar {
     }
     private getDialogContent(): HTMLElement {
         let mainWrapper: HTMLElement = createElement('div', { className: 'e-chart-type-div-content' });
-        let optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-wrapper' });
-        let axisModeWrapperDiv: HTMLElement = createElement('div', { className: 'e-multiple-axes-mode-wrapper' });
+        let optionWrapperDiv: HTMLElement = createElement('div', { className: 'e-chart-type-option-container' });
+        let axisModeWrapperDiv: HTMLElement = createElement('div', { className: 'e-multiple-axes-mode-container' });
         let optionTextDiv: HTMLElement = createElement('div', {
             className: 'e-chart-type-option-text', innerHTML: this.parent.localeObj.getConstant('ChartType')
         });
@@ -1604,7 +1608,8 @@ export class Toolbar {
             fields: { value: 'value', text: 'text' },
             value: this.parent.chartSettings.chartSeries.type ? this.parent.chartSettings.chartSeries.type : this.getValidChartType()[0],
             width: '100%',
-            change: this.changeDropDown.bind(this)
+            change: this.changeDropDown.bind(this),
+            cssClass: this.parent.cssClass
         });
         optionWrapper.isStringTemplate = true;
         optionWrapper.appendTo(dropOptionDiv);
@@ -1628,7 +1633,8 @@ export class Toolbar {
             fields: { value: 'value', text: 'text' },
             value: this.parent.chartSettings.multipleAxisMode ? this.parent.chartSettings.multipleAxisMode : 'Stacked',
             width: '100%',
-            enabled: this.parent.chartSettings.enableMultipleAxis
+            enabled: this.parent.chartSettings.enableMultipleAxis,
+            cssClass: this.parent.cssClass
         });
         axisModeWrapper.isStringTemplate = true;
         axisModeWrapper.appendTo(dropModeOptionDiv);

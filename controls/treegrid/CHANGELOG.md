@@ -2,7 +2,49 @@
 
 ## [Unreleased]
 
-## 20.1.50 (2022-04-19)
+## 20.1.59 (2022-06-07)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I376155` - Freeze direction works properly when enabled dynamically.
+
+## 20.1.56 (2022-05-17)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I376335` - Tree Grid locales are updated dynamically.
+
+## 20.1.52 (2022-05-04)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F174245` - Checkbox column works properly with stacked header.
+
+## 20.1.51 (2022-04-26)
+
+### Tree Grid
+
+#### New Features
+
+- `#I367483` - Improved the usability of the Indent/Outdent feature.
+
+#### Bug Fixes
+
+- `#F174014` - Expand/Collapse icon updated properly while adding new record in Batch Edit mode.
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I372618` - Resolved searching after scroll shows no records to display in case of Virtualization enabled.
+
+## 20.1.48 (2022-04-12)
 
 ### Tree Grid
 

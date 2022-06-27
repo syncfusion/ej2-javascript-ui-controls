@@ -229,7 +229,7 @@ describe('Conditional formatting ->', () => {
             //     });
             // });
         });
-        describe('fb24298 ->', () => {
+        describe('fb24298, EJ2-58351 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{ rows: [{ cells: [{ value: '7' }] }, { cells: [{ value: '35' }] }, { cells: [{ value: '20' }] }],
@@ -264,6 +264,18 @@ describe('Conditional formatting ->', () => {
                         done();
                     });
                 });
+            });
+            it('Conditional formatting DataBars do not have cleared after clearing content', (done: Function) => {
+                helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'A1:A3' }]);
+                expect(helper.invoke('getCell', [0, 0]).getElementsByClassName('e-databar')[1].style.width).toBe('20%');
+                expect(helper.invoke('getCell', [1, 0]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                expect(helper.invoke('getCell', [2, 0]).getElementsByClassName('e-databar')[1].style.width).toBe('58%');
+                helper.click('#spreadsheet_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(3)');
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 0]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [2, 0]).querySelector('.e-databar')).toBeNull();
+                done();
             });
         });
 

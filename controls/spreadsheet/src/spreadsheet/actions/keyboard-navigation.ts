@@ -54,7 +54,7 @@ export class KeyboardNavigation {
             }
             if ((!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)))
                 || (e.shiftKey && e.keyCode === 9)) { //left key
-                if (actIdxes[1] > 0 || sheet.isProtected) {
+                if (actIdxes[1] > 0) {
                     if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
                         actIdxes[1] -= 1;
                     } else {
@@ -69,7 +69,7 @@ export class KeyboardNavigation {
                 }
             } else if (e.shiftKey && e.keyCode === 13) {    // Up key
                 if (!this.parent.element.querySelector('.e-find-toolbar')) {
-                    if (actIdxes[0] > 0 || sheet.isProtected) {
+                    if (actIdxes[0] > 0) {
                         if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
                             actIdxes[0] -= 1;
                         } else {
@@ -84,7 +84,7 @@ export class KeyboardNavigation {
                     }
                 }
             } else if (!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 38) {    // Up key
-                if (sheet.isProtected || actIdxes[0] > 0) {
+                if (actIdxes[0] > 0) {
                     if (sheet.isProtected && !sheet.protectSettings.selectUnLockedCells || !sheet.isProtected) {
                         actIdxes[0] -= 1;
                     } else {
@@ -370,6 +370,9 @@ export class KeyboardNavigation {
             if (noHidden) {
                 selectedRange[2] = selectedRange[2] + 1;
             }
+            if (sheet.rowCount <= selectedRange[2]) {
+                selectedRange[2] = sheet.rowCount - 1;
+            }
         }
         if (e.keyCode === 39) { // shift + right arrow
             for (let i: number = swapRange[0]; i <= swapRange[2]; i++) {
@@ -382,6 +385,9 @@ export class KeyboardNavigation {
             }
             if (noHidden) {
                 selectedRange[3] = selectedRange[3] + 1;
+            }
+            if (sheet.colCount <= selectedRange[3]) {
+                selectedRange[3] = sheet.colCount - 1;
             }
         }
         if (e.keyCode === 37) { // shift + left arrow
@@ -484,7 +490,9 @@ export class KeyboardNavigation {
         }
         if (this.getBottomIdx(topIdx) <= actIdxes[0] || isScroll) {
             cont.scrollTop = offsetTopSize + getRowHeight(sheet, skipHiddenIdx(sheet, paneTopLeftIdxes[0], true), true);
-            this.parent.scrollModule.isKeyScroll = false;
+            if (actIdxes[0] < skipHiddenIdx(sheet, sheet.rowCount - 1, false)) {
+                this.parent.scrollModule.isKeyScroll = false;
+            }
         } else if (topIdx > actIdxes[0]) {
             cont.scrollTop = offsetTopSize - Math.ceil(getRowHeight(sheet, actIdxes[0], true));
             this.parent.scrollModule.isKeyScroll = false;
@@ -492,7 +500,9 @@ export class KeyboardNavigation {
         const scrollLeftIdx: number = this.getRightIdx(leftIdx);
         if ((scrollLeftIdx <= actIdxes[1] || isScroll) && hCont) {
             hCont.scrollLeft += getColumnWidth(sheet, scrollLeftIdx, null, true) * x;
-            this.parent.scrollModule.isKeyScroll = false;
+            if (actIdxes[1] < scrollLeftIdx) {
+                this.parent.scrollModule.isKeyScroll = false;
+            }
         } else if (leftIdx > actIdxes[1] && hCont) {
             hCont.scrollLeft -= getColumnWidth(sheet, actIdxes[1], null, true) * x;
             this.parent.scrollModule.isKeyScroll = false;

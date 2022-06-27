@@ -52,8 +52,8 @@ describe('Diagram Control', () => {
                 done();
             }
             events.mouseWheelEvent(document.getElementById('diagramcontent'), 500, 250, true);
-            expect(diagram.scroller.currentZoom).toBe(0.9411764705882352);
-            expect(diagram.scroller.horizontalOffset == 29.25 && diagram.scroller.verticalOffset == 14.55).toBe(true);
+            expect(diagram.scroller.currentZoom).toBe(0.8);
+            expect(diagram.scroller.horizontalOffset == 98.67 && diagram.scroller.verticalOffset == 48.67).toBe(true);
             done();
         });
 
@@ -61,18 +61,18 @@ describe('Diagram Control', () => {
             diagram.tool = DiagramTools.ZoomPan;
             let events: MouseEvents = new MouseEvents();
             events.dragAndDropEvent(document.getElementById('diagramcontent'), 400, 300, 400, 200);
-            expect(diagram.scroller.horizontalOffset == 29.25 && diagram.scroller.verticalOffset == -85.45).toBe(true);
+            expect(diagram.scroller.horizontalOffset == 98.67 && diagram.scroller.verticalOffset == -51.33).toBe(true);
             done();
         });
 
         it('Checking zooming based on zoomTo method', (done: Function) => {
             diagram.zoomTo({ type: 'ZoomIn', zoomFactor: 0.5 });
             console.log('expect(Number(diagram.scroller.currentZoom.toFixed(2))).toBe(' + Number(diagram.scroller.currentZoom.toFixed(2)) + ')');
-            expect(Number(diagram.scroller.currentZoom.toFixed(2))).toBe(1.41);
+            expect(Number(diagram.scroller.currentZoom.toFixed(2))).toBe(1.2);
             console.log('expect(Math.round(diagram.scroller.horizontalOffset) == ' + Math.round(diagram.scroller.horizontalOffset) +
                 '&& Math.round(diagram.scroller.verticalOffset) ==' + Math.round(diagram.scroller.verticalOffset) + ').toBe(true);');
-            expect((Math.round(diagram.scroller.horizontalOffset) == -206 || Math.round(diagram.scroller.horizontalOffset) == -207) &&
-                (Math.round(diagram.scroller.verticalOffset) == -252 || Math.round(diagram.scroller.verticalOffset) == -253)).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) == -206 || Math.round(diagram.scroller.horizontalOffset) == -207 || Math.round (diagram.scroller.horizontalOffset) === -102) &&
+                (Math.round(diagram.scroller.verticalOffset) == -252 || Math.round(diagram.scroller.verticalOffset) == -253 || Math.round(diagram.scroller.verticalOffset) == -202 || Math.round(diagram.scroller.verticalOffset) == -201)).toBe(true);
             done();
         });
 
@@ -88,12 +88,13 @@ describe('Diagram Control', () => {
             args = events.onTouchMove(content, 548, 129, 204, 289, 204, 289);
             args['preventDefault'] = () => { };
             diagram['eventHandler'].mouseMove(<PointerEvent>args, null);
-            expect(Math.round(diagram.scroller.currentZoom)).toBe(4);
+            expect(Math.round(diagram.scroller.currentZoom)).toBe(3);
             console.log('Math.round(diagram.scroller.currentZoom)' + Math.round(diagram.scroller.currentZoom));
             console.log('Math.round(diagram.scroller.horizontalOffset)' + (Math.round(diagram.scroller.horizontalOffset)) +
                 'Math.round(diagram.scroller.verticalOffset)' + Math.round(diagram.scroller.verticalOffset));
-            expect((Math.round(diagram.scroller.horizontalOffset) == -860 || Math.round(diagram.scroller.horizontalOffset) == -861
-            && (Math.round(diagram.scroller.verticalOffset) == -1134 || Math.round(diagram.scroller.verticalOffset) == -1135 || Math.round(diagram.scroller.verticalOffset) == -1121 || Math.round(diagram.scroller.verticalOffset) == -1123))).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) == -860 || Math.round(diagram.scroller.horizontalOffset) == -861 || Math.round(diagram.scroller.horizontalOffset) == -586 || Math.round(diagram.scroller.horizontalOffset) == -585
+            && (Math.round(diagram.scroller.verticalOffset) == -1134 || Math.round(diagram.scroller.verticalOffset) == -1135 || Math.round(diagram.scroller.verticalOffset) == -1121 || Math.round(diagram.scroller.verticalOffset) == -1123
+            || Math.round(diagram.scroller.verticalOffset) == -987 || Math.round(diagram.scroller.verticalOffset) == -986))).toBe(true);
             diagram.scroller.updateScrollOffsets(0, 0);
             done();
         });
@@ -204,11 +205,11 @@ describe('Diagram Control', () => {
             diagram.scrollSettings.horizontalOffset = -1000;
             diagram.dataBind();
             expect(Math.round(diagram.scroller.horizontalOffset) == -517 || Math.round(diagram.scroller.horizontalOffset) == -515 ||
-                Math.round(diagram.scroller.horizontalOffset) == -526).toBe(true);
+                Math.round(diagram.scroller.horizontalOffset) == -526 || Math.round(diagram.scroller.horizontalOffset) == -521).toBe(true);
             diagram.scrollSettings.horizontalOffset = -3000;
             diagram.dataBind();
             expect(Math.round(diagram.scroller.horizontalOffset) == -517 || Math.round(diagram.scroller.horizontalOffset) == -515 ||
-                Math.round(diagram.scroller.horizontalOffset) == -526).toBe(true);
+                Math.round(diagram.scroller.horizontalOffset) == -526 || Math.round(diagram.scroller.horizontalOffset) == -521).toBe(true);
             done();
         });
 

@@ -169,6 +169,7 @@ export class ContextMenu implements IContextMenu {
                 } else {
                     // eslint-disable-next-line
                     let target: any = this.pdfViewerBase.designerModetarget;
+                    let annotationModule :any = this.pdfViewer.annotationModule;
                     if (args.event && args.event.target) {
                         target = args.event.target;
                     }
@@ -189,7 +190,7 @@ export class ContextMenu implements IContextMenu {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Comment')], false);
                         // eslint-disable-next-line max-len
-                    } else if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock) {
+                    } else if (annotationModule&& annotationModule.textMarkupAnnotationModule && annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation && !annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock) {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Cut'),
                             this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Scale Ratio')]);

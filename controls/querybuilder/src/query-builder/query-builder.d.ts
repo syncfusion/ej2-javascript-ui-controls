@@ -750,6 +750,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private checkNumberLiteral;
     private getOperator;
     private getTypeFromColumn;
+    private getLabelFromColumn;
+    private getLabelFromField;
     private processParser;
 }
 export interface Level {

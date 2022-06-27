@@ -1605,9 +1605,9 @@ describe('Diagram Control', () => {
             diagram.redo();
             expect((diagram.nodes[1].offsetX === 100 && diagram.nodes[1].offsetY === 100) &&
                 (diagram.nodes[2].offsetX === 500 && diagram.nodes[2].offsetY === 500) &&
-                (Math.round(diagram.nodes[0].offsetX) === 200 && Math.round(diagram.nodes[0].offsetY) === 367) &&
-                (diagram.connectors[0].sourcePoint.x === 250 && Math.round(diagram.connectors[0].sourcePoint.y) === 233) &&
-                (diagram.connectors[0].targetPoint.x === 400 && Math.round(diagram.connectors[0].targetPoint.y) === 233)).toBe(true);
+                (Math.round(diagram.nodes[0].offsetX) === 200 && Math.round(diagram.nodes[0].offsetY) === 233) &&
+                (diagram.connectors[0].sourcePoint.x === 250 && Math.round(diagram.connectors[0].sourcePoint.y) === 367) &&
+                (diagram.connectors[0].targetPoint.x === 400 && Math.round(diagram.connectors[0].targetPoint.y) === 367)).toBe(true);
             done();
         });
     });
@@ -1770,8 +1770,8 @@ describe('Diagram Control', () => {
             diagram.redo();
             expect((diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100) &&
                 (diagram.nodes[1].offsetX === 300 && diagram.nodes[1].offsetY === 400) &&
-                (diagram.connectors[0].sourcePoint.x === 100 && diagram.connectors[0].sourcePoint.y === 212.5) &&
-                (diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 312.5)).toBe(true);
+                (diagram.connectors[0].sourcePoint.x === 100 && diagram.connectors[0].sourcePoint.y === 187.5) &&
+                (diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 287.5)).toBe(true);
             done();
         });
     });
@@ -1828,8 +1828,8 @@ describe('Diagram Control', () => {
             diagram.redo();
             expect((diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 100) &&
                 (diagram.nodes[1].offsetX === 300 && diagram.nodes[1].offsetY === 400) &&
-                (diagram.connectors[0].sourcePoint.x === 100 && diagram.connectors[0].sourcePoint.y === 212.5) &&
-                (diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 312.5)).toBe(true);
+                (diagram.connectors[0].sourcePoint.x === 100 && diagram.connectors[0].sourcePoint.y === 187.5) &&
+                (diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 287.5)).toBe(true);
             done();
         });
     });
@@ -2179,6 +2179,115 @@ describe('Diagram Control', () => {
                 diagram.nodes.length === 4 && (diagram.nodes[0] as Node).outEdges[0] === 'connector1' &&
                 (diagram.nodes[1] as Node).inEdges[0] === 'connector1' && (diagram.nodes[2] as Node).outEdges.length === 0 &&
                 (diagram.nodes[3] as Node).inEdges.length === 0).toBe(true);
+            done();
+        });
+    });
+    describe('Testing undo redo - remove node then undo and check for connection',()=>{
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram1_remove' });
+            document.body.appendChild(ele);
+            let node0: NodeModel = {
+                id: 'node0', width: 100, height: 100, offsetX: 100, offsetY: 500,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 500,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 700,
+                shape: { type: 'Basic', shape: 'Rectangle' }
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 50, height: 50, offsetX: 350, offsetY: 100,
+            };
+            let node4: NodeModel  = {
+                id: 'node4', width: 50, height: 50, offsetX: 450, offsetY: 100,
+            };
+            let node5: NodeModel  = {
+                id: 'node5', width: 50, height: 50, offsetX: 350, offsetY: 300,
+            };
+            let node6: NodeModel  = {
+                id: 'node6', width: 50, height: 50, offsetX: 450, offsetY: 300,
+            };
+            let group1: NodeModel  = {
+                id:'group1',
+                children:['node3','node4'],
+                style:{strokeColor:'blue'},
+                padding:{left:10,top:10,right:10,bottom:10}
+            }
+            let group2: NodeModel  = {
+                id:'group2',
+                style:{strokeColor:'blue'},
+                children:['node5','node6'],
+                padding:{left:10,top:10,right:10,bottom:10}
+            }
+            let connector0: ConnectorModel = {
+                id: 'connector0', sourceID: node0.id, targetID: node1.id,constraints:ConnectorConstraints.Select
+            };
+            let connector1: ConnectorModel = {
+                id: 'connector1', sourceID: node0.id, targetID: node2.id ,constraints:ConnectorConstraints.Drag
+            }
+            let connector2: ConnectorModel = {
+                id: 'connector2', sourceID:'group1', targetID: 'group2',constraints:ConnectorConstraints.Drag
+            };
+            diagram = new Diagram({
+                width: '500px', height: '500px', nodes: [node0,node1, node2,node3,node4,node5,node6,group1,group2],
+                connectors: [connector0,connector1,connector2]
+            });
+            diagram.appendTo('#diagram1_remove');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking undo redo - remove group node and check for source id',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let groupNode = diagram.nodes[7];
+            let connector = diagram.connectors[2];
+            mouseEvents.clickEvent(diagramCanvas,500,100);
+            diagram.remove();
+            diagram.dataBind();
+            diagram.undo();
+            diagram.dataBind();
+            expect(connector.sourceID === groupNode.id).toBe(true);
+            console.log('group node outEdges');
+            done();
+        });
+        it('Checking undo redo - remove target node and check for target id',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nodes[1];
+            let connector = diagram.connectors[0];
+            mouseEvents.clickEvent(diagramCanvas,300,500);
+            diagram.remove();
+            diagram.dataBind();
+            diagram.undo();
+            diagram.dataBind();
+            expect(connector.targetID === node.id).toBe(true);
+            console.log('Target node inEdges');
+            done();
+        });
+        it('Checking undo redo - remove source node and check for source id',(done:Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nodes[0];
+            let connector1 = diagram.connectors[0];
+            let connector2 = diagram.connectors[1];
+            mouseEvents.clickEvent(diagramCanvas,100,500);
+            diagram.remove();
+            diagram.dataBind();
+            diagram.undo();
+            diagram.dataBind();
+            expect(connector1.sourceID === node.id && connector2.sourceID === node.id).toBe(true);
+            console.log('Source node outEdges');
             done();
         });
     });

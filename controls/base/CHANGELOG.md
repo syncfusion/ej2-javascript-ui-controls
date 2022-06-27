@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Common
+
+#### Bug Fixes
+
+- `SF-372767`, `SF-370308` - The empty space issue in `Treeview` component while dragging the element has been resolved.
+
+## 20.1.56 (2022-05-17)
+
+### Common
+
+#### Bug Fixes
+
+- `F173666` - The issue with sanitize html while creating a appointment in scheduler has been resolve.
+
+## 20.1.55 (2022-05-12)
+
+### Common
+
+#### Bug Fixes
+
+- `SF-376600` - The issue with "`IsDevice` value return as false only for Safari browser in iPad" has been resolved.
+
 ## 20.1.50 (2022-04-19)
 
 ### Common

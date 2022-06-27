@@ -1779,7 +1779,7 @@ describe('Delete column with comments ', () => {
         }
     });
 });
-describe('Check the comment while add the text without click the editor', () => {
+describe('Check the insert comment functionality after undo', () => {
     let editor: DocumentEditor;
     let documentHelper: DocumentHelper;
     beforeAll((): void => {
@@ -1794,6 +1794,9 @@ describe('Check the comment while add the text without click the editor', () => 
         editor.appendTo('#container');
         documentHelper = editor.documentHelper;
     });
+    beforeEach((): void => {
+        editor.openBlank();
+    });
     afterAll((done): void => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
@@ -1803,27 +1806,12 @@ describe('Check the comment while add the text without click the editor', () => 
             done();
         }, 1000);
     });
-    it('Check the comment while add the text without click the editor', () => {
-        console.log('Check the comment while add the text without click the editor');
-        editor.editor.insertComment("Hello world");
-        editor.editor.handleTextInput("Hello");
-        expect(editor.documentHelper.comments.length).toBe(1);
+    it('Check the insert comment functionality after undo', () => {
         editor.openBlank();
-        editor.editor.insertComment("Hello world");
-        editor.selection.moveToDocumentStart();
-        editor.editor.handleTextInput("Hello");
+        editor.editor.insertComment('hello');
+        editor.editorHistory.undo();
+        editor.editor.insertComment('hello');
         expect(editor.documentHelper.comments.length).toBe(1);
-        editor.openBlank();
-        editor.editor.insertComment("Hello world");
-        editor.enableTrackChanges = true;
-        editor.editor.handleTextInput("Hello");
-        expect(editor.documentHelper.comments.length).toBe(1);
-        editor.openBlank();
-        editor.enableTrackChanges = false;
-        editor.editor.insertComment("Hello world");
-        editor.enableTrackChanges = true;
-        editor.selection.moveToDocumentStart();
-        editor.editor.handleTextInput("Hello");
-        expect(editor.documentHelper.comments.length).toBe(1);
+
     });
 });

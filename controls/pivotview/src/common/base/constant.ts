@@ -98,6 +98,8 @@ export const chartSeriesCreated: string = 'chartSeriesCreated';
 /** @hidden */
 export const aggregateCellInfo: string = 'aggregateCellInfo';
 /** @hidden */
+export const onHeadersSort: string = 'onHeadersSort';
+/** @hidden */
 export const contextMenuClick: string = 'contextMenuClick';
 /** @hidden */
 export const contextMenuOpen: string = 'contextMenuOpen';

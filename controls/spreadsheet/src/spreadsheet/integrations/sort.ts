@@ -278,7 +278,6 @@ export class Sort {
     private getFields(): { [key: string]: string }[] {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const range: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //for entire range
             range[0] = 0; range[1] = 0; range[3] = sheet.usedRange.colIndex;
             const args: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
@@ -288,24 +287,23 @@ export class Sort {
             }
         }
         const fields: { [key: string]: string }[] = [];
-        let fieldName: string;
+        let text: string;
+        let value: string
         for (range[1]; range[1] <= range[3]; range[1]++) {
             const cell: CellModel = getCell(range[0], range[1], sheet);
+            value = 'Column ' + getColumnHeaderText(range[1] + 1);
             if (cell && cell.value) {
-                const eventArgs: { [key: string]: string | number | boolean } = {
-                    formattedText: cell.value,
-                    value: cell.value,
-                    format: cell.format,
-                    onLoad: true
-                };
+                text = cell.value;
                 if (cell.format) {
+                    const eventArgs: { [key: string]: string | boolean } = { formattedText: text, value: text, format: cell.format,
+                        onLoad: true };
                     this.parent.notify(getFormattedCellObject, eventArgs);
+                    text = eventArgs.formattedText as string;
                 }
-                fieldName = eventArgs.formattedText as string;
             } else {
-                fieldName = 'Column ' + getColumnHeaderText(range[1] + 1);
+                text = value;
             }
-            fields.push({ text: fieldName, value: 'Column ' + getColumnHeaderText(range[1] + 1) });
+            fields.push({ text: text, value: value });
         }
         return fields;
     }

@@ -1,8 +1,8 @@
 // color
 $treegrid-right-arrow-icon-color: $icon-color !default;
 $treegrid-right-arrow-hover-color: $icon-color-hover !default;
-$childborder-color: #4f46e5;
-$error-elem-color: #4f46e5;
+$childborder-color: $primary !default;
+$error-elem-color: $danger !default;
 
 // Layout
 
@@ -20,11 +20,9 @@ $treegrid-frame-bigger-icon-width: 18px !default;
 $treegrid-frame-icon-height: 16px !default;
 $treegrid-frame-icon-width: 16px !default;
 $treegrid-content-right-padding: 21px !default;
-$treegrid-treecell-padding: 12px !default;
-$treegrid-bigger-treecell-padding: 7px !default;
 $treegrid-rowdrag-childborder-border: 2px solid #4f46e5;
 $treegrid-rowdd-topbottom-border: 2px solid #4f46e5 !default;
-$treegrid-rowdd-boxshadow: #4f46e5 !default;
+$treegrid-rowdd-boxshadow: $primary !default;
 $treegrid-rowdd-childborder-width: 2px 0 0 !default;
 $treegrid-lastrowdd-childborder-width: 2px 0 !default;
 $treegrid-rtl-rowdd-childborder-width: 2px 0 2px 0 !default;

@@ -56,7 +56,8 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
                 {
                     label: this.parent.editSettings.mode !== 'Dialog' ? ' ' : args.column.headerText,
                     checked: chkState,
-                    disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl
+                    disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
+                    cssClass: this.parent.cssClass ? this.parent.cssClass : ''
                 },
                 args.column.edit.params));
         this.addEventListener();

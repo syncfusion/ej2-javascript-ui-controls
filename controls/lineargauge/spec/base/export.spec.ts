@@ -55,7 +55,7 @@ describe('Lineargauge axis testing', () => {
         it('checking a print', (done: Function) => {
             
             linearGaugeObj.beforePrint = (args: IPrintEventArgs): void => {
-            expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; touch-action: none; cursor: auto;">')) > -1).toBe(true);
+            expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; width: 400px; height: 300px; touch-action: none; cursor: auto;">')) > -1).toBe(true);
             done();
             };
             linearGaugeObj.print();
@@ -63,7 +63,7 @@ describe('Lineargauge axis testing', () => {
         it('Checking argument cancel', (done: Function) => {
             linearGaugeObj.beforePrint = (args: IPrintEventArgs): void => {
                   args.cancel = true;
-            expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; touch-action: none; cursor: auto;">')) > -1).toBe(true);
+            expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; width: 400px; height: 300px; touch-action: none; cursor: auto;">')) > -1).toBe(true);
                   done();
                 };
                 linearGaugeObj.print();
@@ -84,7 +84,7 @@ describe('Lineargauge axis testing', () => {
                 linearGaugeObj.print(document.getElementById('container'));
                 };
                 linearGaugeObj.beforePrint = (args: IPrintEventArgs): void => {
-            expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; touch-action: none; cursor: auto;">')) > -1).toBe(true);
+            expect((args.htmlContent.outerHTML.indexOf('<div id="container" class="e-lib e-control e-lineargauge" style="user-select: none; position: relative; width: 400px; height: 300px; touch-action: none; cursor: auto;">')) > -1).toBe(true);
                     done();
                 };
                 linearGaugeObj.refresh();

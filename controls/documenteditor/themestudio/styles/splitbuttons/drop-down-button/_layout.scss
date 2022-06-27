@@ -87,7 +87,8 @@
 
   .e-dropdown-popup {
     position: absolute;
-    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $theme-name == 'tailwind-dark' or $theme-name == 'bootstrap5-dark' {
+      border-radius: $drop-down-btn-ul-border-radius;
       margin-top: $drop-down-btn-popup-margin-top;
     }
 
@@ -175,8 +176,9 @@
   }
 
   #{if(&, '&', '*')}.e-bigger .e-dropdown-popup {
-    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
+    @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $theme-name == 'tailwind-dark' or $theme-name == 'bootstrap5-dark' {
       background-color: transparent;
+      border-radius: $drop-down-btn-ul-border-radius;
     }
   }
 

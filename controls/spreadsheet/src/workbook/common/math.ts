@@ -36,7 +36,7 @@ export function getGcd(a: string | number, b: string | number): number {
  * @param {number} val - Specifies the value.
  * @returns {Date} - Returns Date.
  */
-export function intToDate(val: number): Date {
+export function intToDate(val: number | string): Date {
     val = Number(val);
     val = (val > 0 && val < 1) ? (1 + val) : (val === 0) ? 1 : val;
     if (val > 60) {
@@ -97,8 +97,8 @@ export function isNumber(val: string | number): boolean {
  * @param {CellModel} cell - Specify the cell.
  * @returns {ToDateArgs} - Returns Date format.
  */
-export function toDate(text: Date | string | number, intl: Internationalization, locale: string, format?: string,
-                       cell?: CellModel): ToDateArgs {
+export function toDate(
+    text: Date | string | number, intl: Internationalization, locale: string, format?: string, cell?: CellModel): ToDateArgs {
     const defaultDateFormats: Object = IntlBase.getDependables(cldrData, locale, null).dateObject;
     const availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
     const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
@@ -115,10 +115,11 @@ export function toDate(text: Date | string | number, intl: Internationalization,
     if (isNullOrUndefined(dObj.dateObj)) {
         text = text.toString();
         if (text && text.indexOf('/') > -1 || text.indexOf('-') > 0) {
-            let cFormat: string = cell ? cell.format : format;
-            if (((cFormat === 'dd-MM-yyyy' || cFormat === 'dd/MM/yyyy'))) {
-                cFormat = cFormat === 'dd-MM-yyyy' ? 'd-M-y' : 'd/M/y';
-                dObj.dateObj = intl.parseDate(text as string, { format: cFormat });
+            let cFormat: string = (cell && cell.format) || format;
+            const hyphenDate: boolean = cFormat.includes('dd-MM-yy');
+            if (hyphenDate || cFormat.includes('dd/MM/yy')) {
+                cFormat = hyphenDate ? 'd-M-y' : 'd/M/y';
+                dObj.dateObj = intl.parseDate(text as string, { format: cFormat, skeleton: 'yMd' });
                 if (dObj.dateObj) {
                     dObj.type = 'date';
                     return dObj;
@@ -177,7 +178,7 @@ export function toDate(text: Date | string | number, intl: Internationalization,
  * @returns { string | number} - ReturnsparseIntValue.
  */
 export function parseIntValue(value: string): string | number {
-    return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
+    return (value && value !== '.' && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
 }
 
 export interface ToDateArgs {

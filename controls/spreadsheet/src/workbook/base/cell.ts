@@ -234,10 +234,10 @@ export function wrap(address: string, wrap: boolean = true, context?: Workbook, 
  * @returns {string} - Specifies the supported color code.
  */
 export function getColorCode(format: string): string {
-    const customColors: string[] = getCustomColors();
     let code: string;
     if (format.indexOf('[') > -1) {
         const colorValue: string = format.split('[')[1].split(']')[0];
+        const customColors: string[] = getCustomColors();
         if (customColors.indexOf(colorValue) > -1) {
             code = colorValue;
         }
@@ -251,4 +251,17 @@ export function getColorCode(format: string): string {
  */
 export function getCustomColors(): string[] {
     return ['Black', 'Blue', 'Cyan', 'Green', 'Magenta', 'Red', 'White', 'Yellow'];
+}
+/**
+ * @hidden
+ */
+export function isCustomDateTime(cell: CellModel, checkTime?: boolean): boolean {
+    if ((cell.format.includes('d') || cell.format.includes('y')) && cell.format.indexOf('#') === -1 && !getColorCode(cell.format)) {
+        return true;
+    }
+    if (checkTime && (cell.format.includes('h') || cell.format.includes('m') || cell.format.includes('s')) && cell.format.indexOf('#')
+        === -1 && !getColorCode(cell.format)) {
+        return true;
+    }
+    return false;
 }

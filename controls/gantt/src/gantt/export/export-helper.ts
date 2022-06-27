@@ -273,6 +273,9 @@ export class ExportHelper {
             if (data[this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
             }
+             if (data[this.parent.labelSettings.taskLabel]) {
+                taskbar.taskLabel = data[this.parent.labelSettings.taskLabel].toString();
+            }
             const reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
             taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
             taskbar.fontFamily = this.ganttStyle.fontFamily;
@@ -518,11 +521,11 @@ export class ExportValueFormatter {
             if (typeof args.column.format === 'string') {
                 let format: DateFormatOptions;
                 if (args.column.type === 'date') {
-                    format = { type: 'date', skeleton: args.column.format };
+                    format = { type: 'date', format: args.column.format };
                 } else if (args.column.type === 'time') {
-                    format = { type: 'time', skeleton: args.column.format };
+                    format = { type: 'time', format: args.column.format };
                 } else {
-                    format = { type: 'dateTime', skeleton: args.column.format };
+                    format = { type: 'dateTime', format: args.column.format };
                 }
                 return this.returnFormattedValue(args, format);
             } else {

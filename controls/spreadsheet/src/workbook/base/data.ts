@@ -1,6 +1,6 @@
-import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes } from '../index';
-import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel } from '../common/index';
+import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes, isFilterHidden } from '../index';
+import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel, getFormattedCellObject, NumberFormatArgs, isNumber } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setCell } from './../index';
@@ -23,17 +23,12 @@ import { setCell } from './../index';
  * @hidden
  */
 export function getData(
-    context: Workbook, address: string, columnWiseData?: boolean,
-    valueOnly?: boolean, frozenIndexes?: number[],
-    filterDialog?: boolean, formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string,
-    dateValueForSpecificColIdx?: number):
-    Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    context: Workbook, address: string, columnWiseData?: boolean, valueOnly?: boolean, frozenIndexes?: number[], filterDialog?: boolean,
+    formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string, dateValueForSpecificColIdx?: number,
+    dateColData?: { [key: string]: Object }[]): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
-            let i: number;
-            let row: RowModel;
-            let data: Map<string, CellModel> | { [key: string]: CellModel }[] = new Map();
             let sheetIdx: number;
             if (address.indexOf('!') > -1) {
                 sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
@@ -43,7 +38,6 @@ export function getData(
             }
             const sheet: SheetModel = getSheet(context, sheetIdx);
             let indexes: number[] = getIndexesFromAddress(commonAddr || address);
-            let sRow: number = indexes[0];
             /* eslint-disable */
             const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number,
                 isFinite?: boolean } = { sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx, isFinite:
@@ -53,57 +47,74 @@ export function getData(
             /* eslint-enable */
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
-                const frozenRow: number = context.frozenRowCount(sheet); const frozenCol: number = context.frozenColCount(sheet);
+                let i: number;
+                let row: RowModel;
+                let data: Map<string, CellModel> | { [key: string]: CellModel }[];
+                let sRow: number = indexes[0];
+                const frozenRow: number = context.frozenRowCount(sheet);
+                const frozenCol: number = context.frozenColCount(sheet);
+                const isDateCol: boolean = !!dateColData;
                 if (columnWiseData) {
-                    if (data instanceof Map) { data = []; }
+                    data = [];
                     let index: number;
-                    address.split(',').forEach((addr: string): void => {
+                    let cells: { [key: string]: CellModel | string | Date | number };
+                    let key: string;
+                    address.split(',').forEach((addr: string, addrIdx: number): void => {
                         indexes = getRangeIndexes(addr);
-                        index = 0; sRow = indexes[0];
+                        index = 0;
+                        sRow = indexes[0];
                         while (sRow <= indexes[2]) {
-                            const cells: { [key: string]: CellModel | string | Date | number } = data[index.toString()] || {};
-                            row = getRow(sheet, sRow); i = indexes[1];
+                            cells = data[index] || {};
+                            row = getRow(sheet, sRow);
+                            i = indexes[1];
                             while (i <= indexes[3]) {
-                                if (skipHiddenRows && isHiddenRow(sheet, sRow) && !filterDialog) { sRow++; continue; }
-                                const key: string = getColumnHeaderText(i + 1);
-                                const rowKey: string = '__rowIndex';
+                                if (skipHiddenRows && isHiddenRow(sheet, sRow) && !filterDialog) {
+                                    sRow++;
+                                    continue;
+                                }
+                                key = getColumnHeaderText(i + 1);
                                 if (valueOnly) {
-                                    cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
-                                    if (typeof cells[key] === 'string' && !!Number(cells[key])) {
-                                        cells[key] = Number(cells[key]);
+                                    cells[key] = row ? getValueFromFormat(context, getCell(sRow, i, sheet)) : '';
+                                    if (typeof cells[key] === 'string' && isNumber(Number(cells[key]))) {
+                                        cells[key] = parseFloat(<string>cells[key]);
                                     }
                                 } else {
                                     const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
-                                            cells[key] = extend(
-                                                {}, cell, { value: getValueFromFormat(context, sRow, i, sheetIdx, sheet, true) });
-                                            if (typeof (cells[key] as CellModel).value === 'string' && !!Number((cells[key] as CellModel).value)) {
-                                                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                                                (cells[key] as any).value = Number((cells[key] as CellModel).value);
+                                            cells[key] = extend({}, cell, { value: getValueFromFormat(context, cell, true) });
+                                            if (typeof (cells[key] as CellModel).value === 'string' &&
+                                                isNumber(Number((cells[key] as CellModel).value))) {
+                                                cells[key]['value'] = parseFloat((cells[key] as CellModel).value);
                                             }
                                         } else {
                                             cells[key] = cell;
                                         }
                                     }
                                 }
-                                if (indexes[3] < i + 1 && Object.keys(cells).length) { cells[rowKey] = (sRow + 1).toString(); }
-                                data[index.toString()] = cells;
+                                if (i === indexes[3] && Object.keys(cells).length) {
+                                    cells['__rowIndex'] = (sRow + 1).toString();
+                                    data[index] = cells;
+                                    if (isDateCol && addrIdx === 0 && !isFilterHidden(sheet, sRow)) {
+                                        dateColData.push(cells);
+                                    }
+                                    index++;
+                                }
                                 i++;
                             }
                             sRow++;
-                            if (Object.keys(cells).length) {
-                                index++;
-                            } else {
-                                (data as { [key: string]: CellModel }[]).pop();
-                            }
                         }
                     });
                 } else {
+                    data = new Map();
                     const checkFrozenIdx: boolean = !!(!valueOnly && frozenIndexes && frozenIndexes.length);
                     while (sRow <= indexes[2]) {
                         if (checkFrozenIdx && sRow >= frozenRow && sRow < frozenIndexes[0]) {
                             sRow = frozenIndexes[0];
+                            continue;
+                        }
+                        if (!valueOnly && isHiddenRow(sheet, sRow)) {
+                            sRow++;
                             continue;
                         }
                         row = getRow(sheet, sRow);
@@ -142,8 +153,10 @@ export function getData(
                                     }
                                 }
                             }
-                            if (!valueOnly && isHiddenRow(sheet, sRow)) { sRow++; continue; }
-                            if (!valueOnly && isHiddenCol(sheet, i)) { i++; continue; }
+                            if (!valueOnly && isHiddenCol(sheet, i)) {
+                                i++;
+                                continue;
+                            }
                             if (checkFrozenIdx && i >= frozenCol && i < frozenIndexes[1]) {
                                 i = frozenIndexes[1];
                                 continue;
@@ -166,31 +179,27 @@ export function getData(
 /**
  * @hidden
  * @param {Workbook} context - Specifies the context.
- * @param {number} rowIndex - Specifies the rowIndex.
- * @param {number} colIndex - Specifies the colIndex.
- * @param {number} sheetIdx - Specifies the sheetIdx.
- * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} cell - Specifies the cell model.
  * @param {boolean} getIntValueFromDate - Specify the getIntValueFromDate.
  * @returns {string | Date} - To get the value format.
  */
- export function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number,
-                            sheet: SheetModel, getIntValueFromDate?: boolean): string | Date {
-    const cell: CellModel = getCell(rowIndex, colIndex, sheet);
+export function getValueFromFormat(context: Workbook, cell: CellModel, getIntValueFromDate?: boolean): string | Date {
     if (cell) {
+        if (isNullOrUndefined(cell.value)) {
+            return '';
+        }
         if (cell.format) {
-            const args: { [key: string]: string | number | boolean | Date } = {
-                value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
-                sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
-            };
-            context.notify(checkDateFormat, args);
-            if (args.isDate) {
-                if (getIntValueFromDate) {
-                    return <string>args.updatedVal;
-                }
-                return args.dateObj as Date;
-            } else { return cell.value; }
-        } else { return cell.value; }
-    } else { return ''; }
+            const args: NumberFormatArgs = { value: cell.value, formattedText: cell.value, cell: cell, format: cell.format, onLoad: true,
+                checkDate: !getIntValueFromDate };
+            context.notify(getFormattedCellObject, args);
+            return args.dateObj && args.dateObj.toString() !== 'Invalid Date' ? args.dateObj : (getIntValueFromDate ? <string>args.value :
+                args.formattedText);
+        } else {
+            return cell.value;
+        }
+    } else {
+        return '';
+    }
 }
 
 /**

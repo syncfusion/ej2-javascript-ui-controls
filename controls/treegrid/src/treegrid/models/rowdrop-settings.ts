@@ -15,7 +15,15 @@ export class RowDropSettings extends ChildProperty<RowDropSettings> {
 }
 export interface TreeActionEventArgs {
     requestType?: string;
-    data?: ITreeData[];
+    data?: ITreeData | ITreeData[];
     row?: Object[];
     cancel?: boolean;
+    /** Defines the corresponding action */
+    action?: string;
+    /** Defines the target element from index. */
+    dropIndex?: number;
+    /** Defines drop position of the dragged record */
+    dropPosition?: string;
+    /** Defines the modified records. */
+    modifiedRecords?: ITreeData[];
 }

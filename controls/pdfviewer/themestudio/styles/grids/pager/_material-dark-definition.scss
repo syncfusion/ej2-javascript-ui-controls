@@ -1,4 +1,6 @@
 
+@use 'sass:math';
+
 $pager-font-size: 13px !default;
 $pager-font-line-height: 1 !default;
 $pager-font-family: sans-serif !default;
@@ -98,11 +100,11 @@ $pager-rtl-last-content-icon: 'e896' !default;
 $pager-rtl-first-content-icon: 'e897' !default;
 $pager-rtl-prev-content-icon: 'e913' !default;
 $pager-rtl-next-content-icon: 'e904' !default;
-$pager-bigger-messagebar-padding-right: $pager-messagebar-padding-right / .75 !default;
+$pager-bigger-messagebar-padding-right: math.div($pager-messagebar-padding-right, .75) !default;
 $pager-bigger-messagebar-padding-top: 15px !default;
-$pager-bigger-nexticon-marign-left: $pager-next-icon-margin-left / .75 !default;
-$pager-bigger-rtl-nexticon-marign-right: $pager-next-icon-margin-left / .75 !default;
-$pager-bigger-current-item-border-radius: $pager-numericitem-border-radius / .75 !default;
+$pager-bigger-nexticon-marign-left: math.div($pager-next-icon-margin-left, .75) !default;
+$pager-bigger-rtl-nexticon-marign-right: math.div($pager-next-icon-margin-left, .75) !default;
+$pager-bigger-current-item-border-radius: math.div($pager-numericitem-border-radius, .75) !default;
 $pager-item-hover-border-width: 0 !default;
 $pager-item-hover-border-color: $pager-border-color !default;
 $pager-bigger-current-item-hover-padding: $pager-bigger-current-item-padding !default;

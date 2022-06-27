@@ -10,6 +10,7 @@ import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationType } from '../drawing/enum';
 import {AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 import { AnnotationSelectorSettings } from '../pdfviewer';
+import { ISize } from '..';
 
 /**
  * @hidden
@@ -55,6 +56,7 @@ export interface IShapeAnnotation {
     allowedInteractions?: AllowedInteraction
     isPrint: boolean
     isCommentLock: boolean
+    isAnnotationRotated: boolean
 }
 
 /**
@@ -204,15 +206,26 @@ export class ShapeAnnotation {
                         annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                         let annotationObject: IShapeAnnotation = null;
                         this.shapeCount = this.shapeCount + 1;
+                        let isAnnotationRotated: boolean;
                         if (annotation.ShapeAnnotationType) {
+                            if (isImportAcion) {
+                                if (this.pdfViewerBase.isJsonImported) {
+                                    annotation.Bounds =  this.pdfViewerBase.importJsonForRotatedDocuments(annotation.Rotate, pageNumber, annotation.Bounds, annotation.AnnotationRotation);
+                                    isAnnotationRotated = this.pdfViewerBase.isPageRotated;
+                                }
+                            }
                             let vertexPoints: IPoint[] = null;
                             if (annotation.VertexPoints) {
                                 vertexPoints = [];
-                                for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
-                                    let x: number = annotation.VertexPoints[j].X ? annotation.VertexPoints[j].X : annotation.VertexPoints[j].x;
-                                    let y: number = annotation.VertexPoints[j].Y ? annotation.VertexPoints[j].Y : annotation.VertexPoints[j].y;
-                                    const point: IPoint = { x: x, y: y };
-                                    vertexPoints.push(point);
+                                if (isImportAcion && this.pdfViewerBase.isJsonImported) {
+                                    vertexPoints = this.pdfViewerBase.calculateVertexPoints(annotation.Rotate, pageNumber, annotation.VertexPoints, annotation.AnnotationRotation);
+                                } else {
+                                    for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
+                                        let x: number = annotation.VertexPoints[j].X ? annotation.VertexPoints[j].X : annotation.VertexPoints[j].x;
+                                        let y: number = annotation.VertexPoints[j].Y ? annotation.VertexPoints[j].Y : annotation.VertexPoints[j].y;
+                                        const point: IPoint = { x: x, y: y };
+                                        vertexPoints.push(point);
+                                    }
                                 }
                             }
                             // eslint-disable-next-line
@@ -242,8 +255,7 @@ export class ShapeAnnotation {
                             let left: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
                             let top: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
                             let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
-                            let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
-                            // eslint-disable-next-line max-len
+                            let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;                            // eslint-disable-next-line max-len
                             annotationObject = {
                                 id: 'shape' + this.shapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
                                 // eslint-disable-next-line max-len
@@ -257,7 +269,7 @@ export class ShapeAnnotation {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 // eslint-disable-next-line max-len
                                 labelBounds: annotation.LabelBounds,  annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: annotation.IsCommentLock
+                                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated
                             };
                             let annot: PdfAnnotationBaseModel;
                             // eslint-disable-next-line
@@ -647,6 +659,17 @@ export class ShapeAnnotation {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         if(!this.pdfViewerBase.checkFormFieldCollection(pageAnnotationObject.annotations[z].id)) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
+                            if (this.pdfViewerBase.isJsonExported) {
+                                if (pageAnnotationObject.annotations[z].isAnnotationRotated) {
+                                    pageAnnotationObject.annotations[z].bounds = this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex);
+                                    pageAnnotationObject.annotations[z].vertexPoints = this.pdfViewer.annotation.getVertexPoints(pageAnnotationObject.annotations[z].vertexPoints, pageAnnotationObject.pageIndex);
+                                } else {
+                                    const pageDetails: any = this.pdfViewerBase.pageSize[pageAnnotationObject.pageIndex];
+                                    if (pageDetails) {
+                                        pageAnnotationObject.annotations[z].annotationRotation = pageDetails.rotation;;
+                                    }
+                                }
+                            }
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         const strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
@@ -762,7 +785,7 @@ export class ShapeAnnotation {
             fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor, fontSize: annotationModel.fontSize,
             // eslint-disable-next-line max-len
             labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType, annotationModel.subject ), labelSettings: labelSettings, annotationSettings: annotationSettings,
-            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock
+            customData: this.pdfViewer.annotation.getShapeData(annotationModel.shapeAnnotationType, annotationModel.subject), isPrint: annotationModel.isPrint, isCommentLock: annotationModel.isCommentLock, isAnnotationRotated: false
         };
     }
 
@@ -872,7 +895,7 @@ export class ShapeAnnotation {
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
             // eslint-disable-next-line max-len
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
+            customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: false
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
     }

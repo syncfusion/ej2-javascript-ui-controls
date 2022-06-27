@@ -54,7 +54,8 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
                 enableRtl: this.parent.enableRtl,
                 placeholder: isInline ? '' : args.column.headerText, popupHeight: '200px',
                 floatLabelType: isInline ? 'Never' : 'Always',
-                sortOrder: 'Ascending'
+                sortOrder: 'Ascending',
+                cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             params));
         if (this.parent.enableVirtualization) {

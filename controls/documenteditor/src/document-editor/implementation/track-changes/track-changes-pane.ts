@@ -20,6 +20,7 @@ export class TrackChangesPane {
     private owner: DocumentEditor;
     private trackChangeDiv: HTMLElement;
     private toolbarElement: HTMLElement;
+    public closeButton: HTMLElement;
     private noChangeDivElement: HTMLElement;
     /**
      * @private
@@ -96,6 +97,23 @@ export class TrackChangesPane {
         this.selectedType = this.locale.getConstant('All');
         this.initTrackChangePane();
         this.commentReviewPane.reviewTab.items[1].content = this.trackChangeDiv;
+        this.commentReviewPane.reviewTab.refresh();
+        if (this.owner.enableRtl) {
+            this.closeButton = createElement('button', {
+                className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
+                attrs: { type: 'button', style: 'position:absolute;top:6px;left:1px' }
+            }) as HTMLButtonElement;
+        } else {
+            this.closeButton = createElement('button', {
+                className: 'e-de-close-icon e-btn e-flat e-icon-btn', id: 'close',
+                attrs: { type: 'button', style: 'position:absolute;top:6px;right:1px' }
+            }) as HTMLButtonElement;
+        }
+        this.closeButton.title = this.locale.getConstant('Close');
+        const closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
+        this.closeButton.appendChild(closeSpan);
+        this.commentReviewPane.reviewTab.element.appendChild(this.closeButton);
+        this.closeButton.addEventListener('click', this.commentReviewPane.closePane.bind(this.commentReviewPane));
     }
 
     private initTrackChangePane(): void {
@@ -403,6 +421,10 @@ export class TrackChangesPane {
         if (this.toolbar) {
             this.toolbar.destroy();
         }
+        if (this.closeButton && this.closeButton.parentElement) {
+            this.closeButton.parentElement.removeChild(this.closeButton);
+        }
+        this.closeButton = undefined;
         if (this.userDropDownButton) {
             this.userDropDownButton.destroy();
         }

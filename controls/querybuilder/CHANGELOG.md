@@ -2,7 +2,32 @@
 
 ## [Unreleased]
 
-## 20.1.50 (2022-04-19)
+## 20.1.59 (2022-06-07)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `I379818` - Issue with Getting change event as undefined for fields having custom value template of query builder has been fixed.
+
+## 20.1.55 (2022-05-12)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `I375944` - Issue with Null value is not available in IN operator of query builder has been fixed.
+
+## 20.1.51 (2022-04-26)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `I368359` - Issue with Validate Fields is not properly working for the rule template in query builder has been fixed.
+- `I374364` - Issue with Query builder rule shows field value instead of label value, while we set fieldMode as dropdowntree has been fixed.
+
+## 20.1.48 (2022-04-12)
 
 ### QueryBuilder
 

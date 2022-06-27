@@ -1396,7 +1396,7 @@ export class Splitter extends Component<HTMLElement> {
                         paneMinRange = this.convertPercentageToPixel(this.paneSettings[i].min);
                     }
                     minValue = this.convertPixelToNumber((paneMinRange).toString());
-                    if (this.orientation === 'Horizontal' ? this.allPanes[i].offsetWidth : this.allPanes[i].offsetHeight < minValue) {
+                    if ((this.orientation === 'Horizontal' ? this.allPanes[i].offsetWidth : this.allPanes[i].offsetHeight) < minValue) {
                         if (i === paneIndex) {
                             updatePane = this.allPanes[i];
                             flexPane = this.allPanes[i + 1];
@@ -1541,21 +1541,19 @@ export class Splitter extends Component<HTMLElement> {
         const visiblePane: boolean = collapseCount === this.allPanes.length - 2;
         const panes: HTMLElement[] = this.allPanes;
         for (let i: number = 0; i < panes.length; i++) {
+            panes[i].style.flexGrow = '';                    
+            if (status && !this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                this.nextPane.style.flexGrow = '1';
+            } 
+            if (visiblePane && this.allPanes[i].classList.contains(COLLAPSE_PANE) && this.paneSettings[i].size &&
+                i !== this.allPanes.length-1) {
+                panes[i].style.flexGrow = '';
+            }
             if (panes[i].classList.contains(EXPAND_PANE)) {
                 panes[i].style.flexGrow = '1';
             }
             else if (panes[i].classList.contains(COLLAPSE_PANE)) {
                 panes[i].style.flexGrow = '0';
-            }
-            else {
-                panes[i].style.flexGrow = '';
-            }
-            if (status && !this.nextPane.classList.contains(COLLAPSE_PANE)) {
-                this.nextPane.style.flexGrow = '1';
-            }
-            if (visiblePane && !this.allPanes[i].classList.contains(COLLAPSE_PANE) && this.paneSettings[i].size &&
-                i !== this.allPanes.length - 1) {
-                panes[i].style.flexGrow = '';
             }
         }
     }

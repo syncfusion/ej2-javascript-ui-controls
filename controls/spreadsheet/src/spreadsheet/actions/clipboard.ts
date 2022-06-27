@@ -17,7 +17,7 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
 import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
-import { updateCell, ModelType, getRow, ExtendedRowModel, beginAction } from '../../workbook/index';
+import { updateCell, ModelType, beginAction, isFilterHidden } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -296,8 +296,10 @@ export class Clipboard {
                 let isFullColMerge: boolean = false; let hiddenCount: number = 0;
                 if (!isRepeative) { this.setCF(cIdx, rfshRange, prevSheet, curSheet); }
                 let cFormats: ConditionalFormatModel[]; let cancel: boolean;
+                let isUniqueCell: boolean = false;
+                let uniqueCellColl: number[][] = [];
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
-                    if (!isExternal && !copyInfo.isCut && ((getRow(prevSheet, i) || {}) as ExtendedRowModel).isFiltered) {
+                    if (!isExternal && !copyInfo.isCut && isFilterHidden(prevSheet, i)) {
                         l--; hiddenCount++; continue;
                     }
                     if (isInRange) {
@@ -364,7 +366,7 @@ export class Clipboard {
                         }
                         if (isRepeative) {
                             for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
-                                if (!copyInfo.isCut && !hiddenCount && ((getRow(curSheet, x + l) || {}) as ExtendedRowModel).isFiltered) {
+                                if (!copyInfo.isCut && !hiddenCount && isFilterHidden(curSheet, x + l)) {
                                     continue;
                                 }
                                 for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
@@ -384,8 +386,8 @@ export class Clipboard {
                                     }
                                     const colInd: number = y + k;
                                     cell = extend({}, cell ? cell : {}, null, true);
-                                    if (!isExtend && this.copiedInfo && !this.copiedInfo.isCut) {
-                                        const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet);
+                                    if (!isExtend && this.copiedInfo && !this.copiedInfo.isCut && cell.formula) {
+                                        const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet, isInRange ? cell : null);
                                         if (!isNullOrUndefined(newFormula)) {
                                             cell.formula = newFormula;
                                         }
@@ -393,21 +395,27 @@ export class Clipboard {
                                     if (curSheet.isProtected && cell && cell.isLocked !== false) {
                                         cell.isLocked = prevCell.isLocked;
                                     }
+                                    const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string, sheetName: string } = {
+                                        cellIdx: [i, j], isUnique: false, uniqueRange: '', sheetName: prevSheet.name
+                                    };
+                                    this.parent.notify(checkUniqueRange, args);
+                                    if (args.isUnique) {
+                                        cell.value = null;
+                                    }
+                                    isUniqueCell = false;
+                                    if (cell && cell.formula && cell.formula.indexOf('=UNIQUE(') > -1) {
+                                        isUniqueCell = true;
+                                        uniqueCellColl.push([x, colInd]);
+                                        cell.value = null;
+                                    }
                                     cancel = this.setCell(
                                         x + l, colInd, curSheet, cell, isExtend, colInd === selIdx[3], !!isExternal,
-                                        !!(cFormats && cFormats.length));
+                                        !!(cFormats && cFormats.length), isUniqueCell);
                                     if (cancel) {
                                         continue;
                                     }
                                     if (cell.formula && this.copiedInfo.isCut) {
                                         this.parent.notify(clearFormulaDependentCells, { cellRef: getRangeAddress([i, j, i, j]) });
-                                    }
-                                    if (cell.formula && cell.formula.includes('UNIQUE')) {
-                                        const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: rfshRange,
-                                            isUnique: false, uniqueRange: '' };
-                                        this.parent.notify(checkUniqueRange, args);
-                                        rfshRange = getRangeIndexes(args.uniqueRange);
-                                        break;
                                     }
                                 }
                             }
@@ -442,6 +450,11 @@ export class Clipboard {
                         }
                     }
                     rowIdx++;
+                }
+                if (uniqueCellColl.length) {
+                    for(let i=0; i < uniqueCellColl.length; i++){
+                        this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(uniqueCellColl[i][0],uniqueCellColl[i][1]);
+                    }
                 }
                 this.parent.notify(refreshRibbonIcons, null);
                 rfshRange[2] -= hiddenCount;
@@ -599,9 +612,9 @@ export class Clipboard {
 
     private setCell(
         rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, lastCell?: boolean, isExternal?: boolean,
-        cFApplied?: boolean): boolean {
+        cFApplied?: boolean, isUniqueCell?: boolean): boolean {
         const cancel: boolean = updateCell(
-            this.parent, sheet, { cell: cell, rowIdx: rIdx, colIdx: cIdx, pvtExtend: !isExtend, valChange: true, lastCell: lastCell,
+            this.parent, sheet, { cell: cell, rowIdx: rIdx, colIdx: cIdx, pvtExtend: !isExtend, valChange: !isUniqueCell, lastCell: lastCell,
                 uiRefresh: sheet.name === this.parent.getActiveSheet().name, checkCf: cFApplied, requestType: 'paste' });
         if (!cancel) {
             if (cell && cell.style && isExternal) {
@@ -823,13 +836,12 @@ export class Clipboard {
     }
 
     private setExternalCells(args: ClipboardEvent, isCut?: boolean): void {
-        let cell: CellModel;
-        let text: string = '';
+        let cell: CellModel; let val: string; let text: string = '';
         const range: number[] = getSwapRange(this.copiedInfo.range);
         const sheet: SheetModel = this.parent.getActiveSheet();
         let data: string = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml"><tbody>';
         for (let i: number = range[0]; i <= range[2]; i++) {
-            if (!isCut && ((getRow(sheet, i) || {}) as ExtendedRowModel).isFiltered) { continue; }
+            if (!isCut && isFilterHidden(sheet, i)) { continue; }
             data += '<tr>';
             for (let j: number = range[1]; j <= range[3]; j++) {
                 cell = getCell(i, j, sheet, false, true);
@@ -854,24 +866,19 @@ export class Clipboard {
                 }
                 data += '"';
                 if (!isNullOrUndefined(cell.value)) {
-                    const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-                        formattedText: cell.value,
-                        value: cell.value,
-                        format: cell.format,
-                        onLoad: true,
-                        cell: cell,
-                        rowIndex: i,
-                        colIndex: j
-                    };
+                    val = cell.value;
                     if (cell.format && cell.format !== 'General') {
                         // eslint-disable-next-line
-                        data += cell.value.toString().includes('"') ? " cell-value='" + cell.value + "'" : ' cell-value="' + cell.value +
+                        data += cell.value.toString().includes('"') ? " cell-value='" + val + "'" : ' cell-value="' + cell.value +
                             '"';
+                        const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: val, value: val,
+                            format: cell.format, onLoad: true, cell: cell, rowIndex: i, colIndex: j };
                         this.parent.notify(getFormattedCellObject, eventArgs);
+                        val = <string>eventArgs.formattedText;
                     }
                     data += '>';
-                    data += eventArgs.formattedText;
-                    text += eventArgs.formattedText;
+                    data += val;
+                    text += val;
                     data += '</td>';
                 } else {
                     data += '></td>';
@@ -947,7 +954,7 @@ export class Clipboard {
                         cellStyle = this.getStyle(filteredChild, ele); childArr.splice(childArr.indexOf(filteredChild), 1);
                     }
                 }
-                row.trim().split('\t').forEach((col: string, j: number) => {
+                row.split('\t').forEach((col: string, j: number) => {
                     if (col || cellStyle) {
                         cells[j] = {};
                         if (cellStyle) {

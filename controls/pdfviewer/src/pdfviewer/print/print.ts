@@ -78,8 +78,8 @@ export class Print {
         // tslint: disable-next-line:max-line-length
         // set default zoomFactor value.
         const jsonObject: object = {
-            pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
-            hashId: this.pdfViewerBase.hashId, zoomFactor: 2,
+            pageNumber: pageIndex.toString(), documentId: this.pdfViewerBase.documentId,
+            hashId: this.pdfViewerBase.hashId, zoomFactor: "2",
             action: 'PrintImages',
             elementId: this.pdfViewer.element.id,
             uniqueId: this.pdfViewerBase.documentId
@@ -152,7 +152,7 @@ export class Print {
                 proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
                 proxy.printCanvas.style.width = pageWidth + 'px';
                 proxy.printCanvas.style.height = pageHeight + 'px';
-                const printScaleValue: number = 1.5;
+                const printScaleValue: number = 2;
                 if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
                     proxy.printCanvas.height = pageWidth * printScaleValue * window.devicePixelRatio;
                     proxy.printCanvas.width = pageHeight * printScaleValue * window.devicePixelRatio;
@@ -225,9 +225,9 @@ export class Print {
                 // eslint-disable-next-line
                 if (parseFloat(currentData['PageIndex']) === pageIndex) {
                     // eslint-disable-next-line
-
+                    let field: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
                     // eslint-disable-next-line
-                    let inputField: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
+                    let inputField: any = field.currentField;
                     if (inputField) {
                         // eslint-disable-next-line
                         let bounds: any = currentData['LineBounds'];
@@ -236,13 +236,8 @@ export class Print {
                         this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
                         inputField.InsertSpaces = currentData.InsertSpaces;
                         if (inputField.InsertSpaces) {
-                            const browserUserAgent: string = navigator.userAgent;
                             // eslint-disable-next-line
-                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.5;
-                            // eslint-disable-next-line
-                            if ((browserUserAgent.indexOf('Firefox')) !== -1) {
-                                font = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 1.2;
-                            }
+                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.6;
                             inputField.style.letterSpacing = '' + font + 'px';
                             inputField.style.fontFamily = 'monospace';
                         }
@@ -359,7 +354,7 @@ export class Print {
             const height: number = isFormDesignerField ? (bounds.Height / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
             let fontHeight: number = 0;
             if (font !== null && font.Height) {
-                inputField.style.fontfamily = font.Name;
+                inputField.style.fontFamily = font.Name;
                 if (font.Italic) {
                     inputField.style.fontStyle = 'italic';
                 }

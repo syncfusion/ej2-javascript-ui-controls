@@ -545,7 +545,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     compareValue = value;
                     dataSource.filter((item: { [key: string]: Object }) => {
                         const itemValue: string | number = getValue(fields.value, item);
-                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) && itemValue.toString() === compareValue.toString()) {
+                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value)
+                                 && itemValue.toString() === compareValue.toString()) {
                             value = getValue(fields.text, item) as string;
                         }
                     });
@@ -847,10 +848,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.isDataFetched = true;
                                 }
                                 ulElement = this.renderItems(listItems, fields);
-                                this.onActionComplete(ulElement, listItems, e);
                                 if (this.groupTemplate) {
                                     this.renderGroupTemplate(ulElement);
                                 }
+                                this.onActionComplete(ulElement, listItems, e);
                                 this.isRequested = false;
                                 this.bindChildItems(listItems, ulElement, fields, e);
                             }
@@ -868,7 +869,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                     this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
                         if (!localDataArgs.cancel) {
-                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);                            
+                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);
                             this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[]);
                             if (this.groupTemplate) {
                                 this.renderGroupTemplate(ulElement);
@@ -985,10 +986,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         this.fixedHeaderElement = isNullOrUndefined(this.fixedHeaderElement) ? this.fixedHeaderElement : null;
         if (this.getModuleName() === 'multiselect' && this.properties.allowCustomValue && this.fields.groupBy) {
-            for (let i: number = 0; i< ulElement.childElementCount; i++) {
+            for (let i : number = 0; i < ulElement.childElementCount; i++) {
                 if (ulElement.children[i].classList.contains('e-list-group-item')) {
-                    if (isNullOrUndefined(ulElement.children[i].innerHTML) || ulElement.children[i].innerHTML == "") {
-                        addClass([ulElement.children[i]], HIDE_GROUPLIST) }
+                    if (isNullOrUndefined(ulElement.children[i].innerHTML) || ulElement.children[i].innerHTML === '') {
+                        addClass([ulElement.children[i]], HIDE_GROUPLIST); }
                 }
             }
         }
@@ -997,7 +998,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.list.appendChild(ulElement);
             this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
             this.ulElement = this.list.querySelector('ul');
-            this.postRender(this.list, list, this.bindEvent);    
+            this.postRender(this.list, list, this.bindEvent);
         }
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -1127,8 +1128,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected scrollStop(e?: Event): void {
-        let target: Element = !isNullOrUndefined(e) ? <Element>e.target : this.list;
-        let liHeight: number = parseInt(getComputedStyle(this.getValidLi(), null).getPropertyValue('height'), 10);
+        const target: Element = !isNullOrUndefined(e) ? <Element>e.target : this.list;
+        const liHeight: number = parseInt(getComputedStyle(this.getValidLi(), null).getPropertyValue('height'), 10);
         const topIndex: number = Math.round(target.scrollTop / liHeight);
         const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li' + ':not(.e-hide-listitem)');
         for (let i: number = topIndex; i > -1; i--) {
@@ -1225,10 +1226,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             Refer bug report https://bugzilla.mozilla.org/show_bug.cgi?id=137688
             Refer alternate solution https://stackoverflow.com/a/41696234/9133493*/
             if (isNaN(borderWidth)) {
-                let borderTopWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-top-width'), 10);
-                let borderBottomWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-bottom-width'), 10);
-                let borderLeftWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-left-width'), 10);
-                let borderRightWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-right-width'), 10);
+                const borderTopWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-top-width'), 10);
+                const borderBottomWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-bottom-width'), 10);
+                const borderLeftWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-left-width'), 10);
+                const borderRightWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-right-width'), 10);
                 borderWidth = (borderTopWidth + borderBottomWidth + borderLeftWidth + borderRightWidth);
             }
         }
@@ -1312,6 +1313,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     dataSource = this.selectData;
                 }
             }
+            dataSource = this.getModuleName() === 'combobox' && this.selectData && dataSource instanceof Array && dataSource.length < this.selectData.length ? this.selectData : dataSource;
             this.setListData(dataSource, fields, query);
         }
     }
@@ -1502,7 +1504,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             if (this.itemTemplate && !isHeader) {
                 const itemCheck: boolean = this.templateCompiler(this.itemTemplate);
-                const compiledString: Function = itemCheck ? compile(select(this.itemTemplate, document).innerHTML.trim()) : compile(this.itemTemplate);
+                const compiledString: Function = itemCheck ?
+                    compile(select(this.itemTemplate, document).innerHTML.trim()) : compile(this.itemTemplate);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const addItemTemplate: any = compiledString(
                     item, this, 'itemTemplate', this.itemTemplateId, this.isStringTemplate, null, li);

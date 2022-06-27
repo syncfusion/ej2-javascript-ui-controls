@@ -37,7 +37,7 @@ $pivotgrid-button-background-color: $neutral-light !default;
 $pivotgrid-editor-dialog-footer-padding: 5px !default;
 $pivotgrid-button-drag-color: $theme-primary !default;
 $pivotgrid-expand-icon-fontsize: 10px !default;
-$pivotgrid-drill-margintop: 8px !default;
+$pivotgrid-drill-margintop: 7px !default;
 $pivotgrid-bigger-drill-margintop: $pivotgrid-drill-margintop !default;
 $pivotgrid-rtl-expand-icon-font-size: 10px !default;
 $pivotgrid-collapse-icon-fonsize: 10px !default;
@@ -99,6 +99,7 @@ $pivotgrid-bg-color: #5a6268;
 $pivotgrid-border-color: #545b62;
 $pivotgrid-active-border-color: #4e555b;
 $pivotgrid-box-shadow-color: rgba(108, 117, 125, .5);
+$pivot-toolbar-icon-hover-color: $pivotgrid-icon-hover-color !default;
 
 //enddefault
 

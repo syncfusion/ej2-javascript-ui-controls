@@ -34,6 +34,9 @@ export class AgendaBase extends ViewBase {
                 itemClass: this.parent.activeView.viewClass,
                 template: `<div class="${cls.AGENDA_NO_EVENT_CLASS}">${this.parent.localeObj.getConstant('noEvents')}</div>`
             });
+            if (listElement.querySelector('.e-agenda-item').children.length === 0) {
+                listElement.firstElementChild.appendChild(createElement('div', { className: cls.AGENDA_NO_EVENT_CLASS, innerHTML: this.parent.localeObj.getConstant('noEvents') }));
+            }
         } else {
             listElement = ListBase.createList(this.parent.createElement, listData, {
                 moduleName: 'agenda',

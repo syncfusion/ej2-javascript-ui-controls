@@ -77,6 +77,21 @@ export class Parser {
      * @returns {string} - returns parse.
      */
     public parse(text: string, fkey?: string): string {
+        if (text.split('(')[0].toUpperCase() === "IF" || "IFS") {
+            let uniqueCharVal: string = "(),:=^><+-*/%&";
+            let newText: string = "";
+            for (let index: number = 0; index < text.length; index++) {
+                let currChar: string = text[index];
+                if (uniqueCharVal.includes(currChar)) {
+                    newText = newText.trim() + currChar;
+                } else if (currChar == " " && uniqueCharVal.includes(newText[newText.length - 1])) {
+                    continue;
+                } else {
+                    newText += currChar;
+                }
+            }
+            text = newText;
+        }
         if (this.parent.isTextEmpty(text)) {
             return text;
         }

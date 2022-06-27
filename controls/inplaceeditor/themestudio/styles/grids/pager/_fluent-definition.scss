@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 $pager-numericitem-border-radius: 0 !default;
 $pager-border-type: solid !default;
 $pager-mobile-icon-size: 11px !default;
@@ -20,10 +22,10 @@ $pager-tripledot-font-size: 14px !default;
 $pager-last-page-hover-border-radius:  0 !default;
 $pager-first-page-hover-border-radius: 0 !default;
 $pager-rtl-parentmsgbar-margin-left: 6px !default;
-$pager-bigger-nexticon-marign-left: $pager-next-icon-margin-left / .75 !default;
-$pager-bigger-current-item-border-radius: $pager-numericitem-border-radius / .75 !default;
+$pager-bigger-nexticon-marign-left: math.div($pager-next-icon-margin-left, .75) !default;
+$pager-bigger-current-item-border-radius: math.div($pager-numericitem-border-radius, .75) !default;
 $pager-bigger-rtl-nexticon-marign-left: 0 !default;
-$pager-bigger-rtl-nexticon-marign-right: $pager-next-icon-margin-left / .75 !default;
+$pager-bigger-rtl-nexticon-marign-right: math.div($pager-next-icon-margin-left, .75) !default;
 $pager-device-padding: 19px 0 !default;
 $pager-device-messabar-padding: 0 !default;
 $pager-bigger-rtl-parentmsgbar-margin-left: 6px !default;

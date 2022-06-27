@@ -414,6 +414,9 @@ export class Toolbar {
             break;
         case 'EditAnnotations':
             this.enableAnnotationEditTool(isEnable);
+            if(!this.annotationToolbarModule.isToolbarHidden){
+                this.annotationToolbarModule.showAnnotationToolbar();
+            }
             break;
         }
     }

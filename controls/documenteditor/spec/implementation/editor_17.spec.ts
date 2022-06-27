@@ -1,9 +1,9 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget, BookmarkDialog, BookmarkElementBox, BorderSettings, TableWidget, TableRowWidget } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, BookmarkDialog, BookmarkElementBox, BorderSettings, TableWidget, TableRowWidget, ContentControl } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition, WSectionFormat } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
-import { Selection, PageLayoutViewer } from '../../src/index';
+import { Selection, PageLayoutViewer, SfdtExport } from '../../src/index';
 /**
  * Insert comment validation
  */
@@ -782,5 +782,12431 @@ describe('character style validation', () => {
         editor.selection.handleControlRightKey();
         editor.selection.handleRightKey();
         editor.editor.applyStyle(temp.name);
+    });
+});
+let Doc:any = {
+	"sections": [
+		{
+			"sectionFormat": {
+				"pageWidth": 595.2999877929688,
+				"pageHeight": 841.9000244140625,
+				"leftMargin": 99.25,
+				"rightMargin": 42.54999923706055,
+				"topMargin": 56.70000076293945,
+				"bottomMargin": 56.70000076293945,
+				"differentFirstPage": true,
+				"differentOddAndEvenPages": false,
+				"headerDistance": 35.45000076293945,
+				"footerDistance": 35.45000076293945,
+				"bidi": false
+			},
+			"blocks": [
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "DILIGENCIA.-"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"text": "La "
+						},
+						{
+							"characterFormat": {},
+							"text": "extiendo "
+						},
+						{
+							"characterFormat": {},
+							"text": "yo, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el/la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Letrado "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "Justicia, "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "hacer "
+						},
+						{
+							"characterFormat": {},
+							"text": "constar "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "día "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "fecha "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "el/la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Procurador/a, "
+						},
+						{
+							"characterFormat": {},
+							"text": "D/Dª "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_106_20297953"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Procurador:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_106_20297953"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "ha "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentado "
+						},
+						{
+							"characterFormat": {},
+							"text": "escrito "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_402_20333750"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "EL "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "ESCRITO "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "QUE "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "HAYA "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "PRESENTADO"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_402_20333750"
+						},
+						{
+							"characterFormat": {},
+							"text": " por "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_402_20358640"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "se "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "solicita "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "o "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "se "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "subsana "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "que "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "fuere"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_402_20358640"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "."
+						},
+						{
+							"characterFormat": {},
+							"text": " Doy "
+						},
+						{
+							"characterFormat": {},
+							"text": "fe."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"bold": true,
+						"boldBidi": true
+					},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"bold": true,
+						"boldBidi": true
+					},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"bold": true,
+						"boldBidi": true
+					},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Center",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"fontSize": 18,
+						"fontSizeBidi": 18
+					},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontSize": 18,
+								"boldBidi": true,
+								"fontSizeBidi": 18
+							},
+							"text": "A U T O"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_203_115442609"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Tratamiento "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Juez"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_203_115442609"
+						},
+						{
+							"characterFormat": {},
+							"text": " QUE "
+						},
+						{
+							"characterFormat": {},
+							"text": "LO "
+						},
+						{
+							"characterFormat": {},
+							"text": "DICTA: "
+						},
+						{
+							"characterFormat": {},
+							"text": "D/Dª. "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_204_115442843"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "NOMBRE "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "JUEZ"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_204_115442843"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "Lugar: "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_217_115442281"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Localidad"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_217_115442281"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "Fecha: "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_214_115442000"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Fecha"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_214_115442000"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Center",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"bold": true,
+						"fontSize": 13,
+						"boldBidi": true,
+						"fontSizeBidi": 13
+					},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontSize": 13,
+								"boldBidi": true,
+								"fontSizeBidi": 13
+							},
+							"text": "ANTECEDENTES DE HECHO"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "ÚNICO.-"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"text": "Por "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "Procurador "
+						},
+						{
+							"characterFormat": {},
+							"text": "D/Dña. "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_106_563562"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Procurador:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_106_563562"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "nombre "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "representación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "D/Dña. "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_101_1368734"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Nombre "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "y "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "apellidos:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_101_1368734"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "ha "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentado "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "Juzgado "
+						},
+						{
+							"characterFormat": {},
+							"text": "Decano "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "Pamplona "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "fecha "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_402_8821421"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "FECHA"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_402_8821421"
+						},
+						{
+							"characterFormat": {},
+							"text": " escrito "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitando "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "voluntario "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "representado "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "citada "
+						},
+						{
+							"characterFormat": {},
+							"text": "entidad, "
+						},
+						{
+							"characterFormat": {},
+							"text": "acompañando "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "documentos "
+						},
+						{
+							"characterFormat": {},
+							"text": "expresados "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "artículo "
+						},
+						{
+							"characterFormat": {},
+							"text": "6 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "(LC), "
+						},
+						{
+							"characterFormat": {},
+							"text": "así "
+						},
+						{
+							"characterFormat": {},
+							"text": "como "
+						},
+						{
+							"characterFormat": {},
+							"text": "plan "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Center",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"bold": true,
+						"boldBidi": true
+					},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "FUNDAMENTOS DE DERECHO"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "PRIMERO.-"
+						},
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "De "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "documentación "
+						},
+						{
+							"characterFormat": {},
+							"text": "aportada, "
+						},
+						{
+							"characterFormat": {},
+							"text": "apreciada "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "conjunto, "
+						},
+						{
+							"characterFormat": {},
+							"text": "resulta "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "existencia "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "endeudamiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "mercantil "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitante "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "sobreseimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "general "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "sus "
+						},
+						{
+							"characterFormat": {},
+							"text": "pagos "
+						},
+						{
+							"characterFormat": {},
+							"text": "reveladores "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "estado "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "insolvencia "
+						},
+						{
+							"characterFormat": {},
+							"text": "actual "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "impide "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "misma "
+						},
+						{
+							"characterFormat": {},
+							"text": "cumplir "
+						},
+						{
+							"characterFormat": {},
+							"text": "puntual "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "regularmente "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "sus "
+						},
+						{
+							"characterFormat": {},
+							"text": "obligaciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "exigibles."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "SEGUNDO.-"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"text": "El "
+						},
+						{
+							"characterFormat": {},
+							"text": "domicilio "
+						},
+						{
+							"characterFormat": {},
+							"text": "social "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitante "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "encuentra "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_104_20786906"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Domicilio:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_104_20786906"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF",
+								"styleName": "Campos"
+							},
+							"text": "de"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_114_21307312"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Localidad:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_114_21307312"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "donde "
+						},
+						{
+							"characterFormat": {},
+							"text": "debe "
+						},
+						{
+							"characterFormat": {},
+							"text": "presumirse "
+						},
+						{
+							"characterFormat": {},
+							"text": "tiene "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "centro "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "sus "
+						},
+						{
+							"characterFormat": {},
+							"text": "intereses "
+						},
+						{
+							"characterFormat": {},
+							"text": "principales, "
+						},
+						{
+							"characterFormat": {},
+							"text": "conforme "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "10 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "Por "
+						},
+						{
+							"characterFormat": {},
+							"text": "ello "
+						},
+						{
+							"characterFormat": {},
+							"text": "procede, "
+						},
+						{
+							"characterFormat": {},
+							"text": "conforme "
+						},
+						{
+							"characterFormat": {},
+							"text": "previene "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "14 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal, "
+						},
+						{
+							"characterFormat": {},
+							"text": "declarar "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "sociedad "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudora "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitante "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "pronunciamientos "
+						},
+						{
+							"characterFormat": {},
+							"text": "inherentes "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "tal "
+						},
+						{
+							"characterFormat": {},
+							"text": "declaración, "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "conformidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "establece "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "21 "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "demás "
+						},
+						{
+							"characterFormat": {},
+							"text": "concordantes "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "referida "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 18,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "TERCERO.-"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"text": "Establece "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "190.1 "
+						},
+						{
+							"characterFormat": {},
+							"text": "LC, "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "redacción "
+						},
+						{
+							"characterFormat": {},
+							"text": "dada "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "mismo "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "Real "
+						},
+						{
+							"characterFormat": {},
+							"text": "Decreto "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "38/2011, "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "10 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "Octubre, "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "juez "
+						},
+						{
+							"characterFormat": {},
+							"text": "podrá "
+						},
+						{
+							"characterFormat": {},
+							"text": "aplicar "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "procedimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "abreviado "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuando, "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "vista "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "información "
+						},
+						{
+							"characterFormat": {},
+							"text": "disponible, "
+						},
+						{
+							"characterFormat": {},
+							"text": "considere "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "reviste "
+						},
+						{
+							"characterFormat": {},
+							"text": "especial "
+						},
+						{
+							"characterFormat": {},
+							"text": "complejidad, "
+						},
+						{
+							"characterFormat": {},
+							"text": "atendiendo "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "siguientes "
+						},
+						{
+							"characterFormat": {},
+							"text": "circunstancias:"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "1º "
+						},
+						{
+							"characterFormat": {},
+							"text": "Que "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "lista "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentada "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudor "
+						},
+						{
+							"characterFormat": {},
+							"text": "incluya "
+						},
+						{
+							"characterFormat": {},
+							"text": "menos "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "cincuenta "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreedores."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "2º "
+						},
+						{
+							"characterFormat": {},
+							"text": "Que "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "estimación "
+						},
+						{
+							"characterFormat": {},
+							"text": "inicial "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "pasivo "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "supere "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "cinco "
+						},
+						{
+							"characterFormat": {},
+							"text": "millones "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "euros."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "3º "
+						},
+						{
+							"characterFormat": {},
+							"text": "Que "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "valoración "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "bienes "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "derechos "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "alcance "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "cinco "
+						},
+						{
+							"characterFormat": {},
+							"text": "millones "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "euros."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "El "
+						},
+						{
+							"characterFormat": {},
+							"text": "apartado "
+						},
+						{
+							"characterFormat": {},
+							"text": "tercero "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "mismo "
+						},
+						{
+							"characterFormat": {},
+							"text": "articulo"
+						},
+						{
+							"characterFormat": {},
+							"text": " dispone "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "juez "
+						},
+						{
+							"characterFormat": {},
+							"text": "aplicará "
+						},
+						{
+							"characterFormat": {},
+							"text": "necesariamente "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "procedimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "abreviado "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuando "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudor "
+						},
+						{
+							"characterFormat": {},
+							"text": "presente, "
+						},
+						{
+							"characterFormat": {},
+							"text": "junto "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitud "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso, "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "plan "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "contenga "
+						},
+						{
+							"characterFormat": {},
+							"text": "una "
+						},
+						{
+							"characterFormat": {},
+							"text": "propuesta "
+						},
+						{
+							"characterFormat": {},
+							"text": "escrita "
+						},
+						{
+							"characterFormat": {},
+							"text": "vinculante "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "compra "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "unidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "productiva "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "funcionamiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudor "
+						},
+						{
+							"characterFormat": {},
+							"text": "hubiera "
+						},
+						{
+							"characterFormat": {},
+							"text": "cesado "
+						},
+						{
+							"characterFormat": {},
+							"text": "completamente "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "actividad "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "tuviera "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "vigor "
+						},
+						{
+							"characterFormat": {},
+							"text": "contratos "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "trabajo."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "En "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "presente "
+						},
+						{
+							"characterFormat": {},
+							"text": "supuesto "
+						},
+						{
+							"characterFormat": {},
+							"text": "nos "
+						},
+						{
+							"characterFormat": {},
+							"text": "encontramos "
+						},
+						{
+							"characterFormat": {},
+							"text": "ante "
+						},
+						{
+							"characterFormat": {},
+							"text": "una "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitud "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "revela "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "procedimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "sin "
+						},
+						{
+							"characterFormat": {},
+							"text": "especial "
+						},
+						{
+							"characterFormat": {},
+							"text": "complejidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "vista "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "parámetros "
+						},
+						{
+							"characterFormat": {},
+							"text": "fijados "
+						},
+						{
+							"characterFormat": {},
+							"text": "legalmente, "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "procede "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "tramitación "
+						},
+						{
+							"characterFormat": {},
+							"text": "como "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "abreviado."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "CUARTO.-"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"text": "De "
+						},
+						{
+							"characterFormat": {},
+							"text": "conformidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "previsto "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "23.1 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "acuerda "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "publicación "
+						},
+						{
+							"characterFormat": {},
+							"text": "gratuita "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "B.O.E., "
+						},
+						{
+							"characterFormat": {},
+							"text": "debiéndose "
+						},
+						{
+							"characterFormat": {},
+							"text": "hacer "
+						},
+						{
+							"characterFormat": {},
+							"text": "constar "
+						},
+						{
+							"characterFormat": {},
+							"text": "así "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "oficio "
+						},
+						{
+							"characterFormat": {},
+							"text": "adjuntando "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "edicto "
+						},
+						{
+							"characterFormat": {},
+							"text": "dirigido "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "B.O.E, "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "contenido "
+						},
+						{
+							"characterFormat": {},
+							"text": "previsto "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "párrafo "
+						},
+						{
+							"characterFormat": {},
+							"text": "segundo "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "citado "
+						},
+						{
+							"characterFormat": {},
+							"text": "precepto."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"fontSize": 10,
+						"fontColor": "#000000FF",
+						"fontSizeBidi": 10
+					},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "QUINTO.-"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"text": "Conforme "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "191 "
+						},
+						{
+							"characterFormat": {},
+							"text": "ter.1, "
+						},
+						{
+							"characterFormat": {},
+							"text": "si "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudor "
+						},
+						{
+							"characterFormat": {},
+							"text": "hubiera "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitado "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "acuerdo "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "previsto "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "artículo "
+						},
+						{
+							"characterFormat": {},
+							"text": "190.2, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "juez "
+						},
+						{
+							"characterFormat": {},
+							"text": "acordará "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "inmediato "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "apertura "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "fase "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "En "
+						},
+						{
+							"characterFormat": {},
+							"text": "cumplimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "145 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "LC, "
+						},
+						{
+							"characterFormat": {},
+							"text": "deberá "
+						},
+						{
+							"characterFormat": {},
+							"text": "suspenderse "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "ejercicio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "funciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "disposición "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursado "
+						},
+						{
+							"characterFormat": {},
+							"text": "sobre "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "patrimonio, "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "todos "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo"
+						},
+						{
+							"characterFormat": {},
+							"text": " efectos "
+						},
+						{
+							"characterFormat": {},
+							"text": "establecidos "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "ella "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "título "
+						},
+						{
+							"characterFormat": {},
+							"text": "III "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "LC, "
+						},
+						{
+							"characterFormat": {},
+							"text": "así "
+						},
+						{
+							"characterFormat": {},
+							"text": "como "
+						},
+						{
+							"characterFormat": {},
+							"text": "deberá "
+						},
+						{
+							"characterFormat": {},
+							"text": "declararse "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "disolución "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "entidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "La "
+						},
+						{
+							"characterFormat": {},
+							"text": "apertura "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación "
+						},
+						{
+							"characterFormat": {},
+							"text": "produce "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "vencimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "anticipado "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "créditos "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursales "
+						},
+						{
+							"characterFormat": {},
+							"text": "aplazados "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "conversión "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "dinero "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "aquellos "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "consistan "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "otras "
+						},
+						{
+							"characterFormat": {},
+							"text": "prestaciones."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Center",
+						"styleName": "Normal",
+						"listFormat": {},
+						"tabs": [
+							{
+								"position": 108,
+								"deletePosition": 0,
+								"tabJustification": "Left",
+								"tabLeader": "None"
+							}
+						]
+					},
+					"characterFormat": {
+						"bold": true,
+						"boldBidi": true
+					},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "PARTE DISPOSITIVA"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "1.- "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "SE "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "DECLARA "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "EL "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "CONCURSO "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "VOLUNTARIO"
+						},
+						{
+							"characterFormat": {},
+							"text": " de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "entidad "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_101_1465593"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Nombre "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "y "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "apellidos:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_101_1465593"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "Se "
+						},
+						{
+							"characterFormat": {},
+							"text": "abre "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "fase "
+						},
+						{
+							"characterFormat": {},
+							"text": "común "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "tramitación "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "sustanciará "
+						},
+						{
+							"characterFormat": {},
+							"text": "conforme "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "trámites "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "procedimiento "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "abreviado"
+						},
+						{
+							"characterFormat": {},
+							"text": " y "
+						},
+						{
+							"characterFormat": {},
+							"text": "fórmense "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "Secciones "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "primera"
+						},
+						{
+							"characterFormat": {},
+							"text": " a "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "cuarta,"
+						},
+						{
+							"characterFormat": {},
+							"text": " en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "forma "
+						},
+						{
+							"characterFormat": {},
+							"text": "prevista "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley, "
+						},
+						{
+							"characterFormat": {},
+							"text": "ordenándose "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuantas "
+						},
+						{
+							"characterFormat": {},
+							"text": "piezas "
+						},
+						{
+							"characterFormat": {},
+							"text": "sean "
+						},
+						{
+							"characterFormat": {},
+							"text": "necesarias "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "convenientes. "
+						},
+						{
+							"characterFormat": {},
+							"text": "Expídase "
+						},
+						{
+							"characterFormat": {},
+							"text": "testimonio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "esta "
+						},
+						{
+							"characterFormat": {},
+							"text": "resolución "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "fin "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "encabezar "
+						},
+						{
+							"characterFormat": {},
+							"text": "dichas "
+						},
+						{
+							"characterFormat": {},
+							"text": "Secciones."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "2.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "El "
+						},
+						{
+							"characterFormat": {},
+							"text": "administrador "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "deberá "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentar "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "inventario "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "bienes "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "derechos "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "masa "
+						},
+						{
+							"characterFormat": {},
+							"text": "activa "
+						},
+						{
+							"characterFormat": {},
+							"text": "dentro "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "15 "
+						},
+						{
+							"characterFormat": {},
+							"text": "días "
+						},
+						{
+							"characterFormat": {},
+							"text": "siguientes "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "aceptación "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "cargo."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "El "
+						},
+						{
+							"characterFormat": {},
+							"text": "administrador "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "deberá "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentar "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "informe "
+						},
+						{
+							"characterFormat": {},
+							"text": "previsto "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "artículo "
+						},
+						{
+							"characterFormat": {},
+							"text": "75 "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "plazo "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "mes, "
+						},
+						{
+							"characterFormat": {},
+							"text": "contado "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "partir "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "aceptación "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "cargo."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "El "
+						},
+						{
+							"characterFormat": {},
+							"text": "Administrador "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "practicará "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "comunicación "
+						},
+						{
+							"characterFormat": {},
+							"text": "prevista "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "95.1 "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "menos "
+						},
+						{
+							"characterFormat": {},
+							"text": "cinco "
+						},
+						{
+							"characterFormat": {},
+							"text": "días "
+						},
+						{
+							"characterFormat": {},
+							"text": "antes "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "lista "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreedores."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"bold": true,
+						"boldBidi": true
+					},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "3.-"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Se "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "abre "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "fase "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "liquidación "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "que "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "se "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "sustanciará "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "conforme "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "al "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "artículo "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "191 "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "ter "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "LC"
+						},
+						{
+							"characterFormat": {},
+							"text": " y "
+						},
+						{
+							"characterFormat": {},
+							"text": "fórmese "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Sección "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "quinta"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "forma "
+						},
+						{
+							"characterFormat": {},
+							"text": "prevista "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley, "
+						},
+						{
+							"characterFormat": {},
+							"text": "ordenándose "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuantas "
+						},
+						{
+							"characterFormat": {},
+							"text": "piezas "
+						},
+						{
+							"characterFormat": {},
+							"text": "sean "
+						},
+						{
+							"characterFormat": {},
+							"text": "necesarias "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "convenientes "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "testimonio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "esta "
+						},
+						{
+							"characterFormat": {},
+							"text": "resolución."
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " "
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "Se "
+						},
+						{
+							"characterFormat": {},
+							"text": "suspende "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "ejercicio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "funciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "disposición "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursado "
+						},
+						{
+							"characterFormat": {},
+							"text": "sobre "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "patrimonio, "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "todos "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "efectos "
+						},
+						{
+							"characterFormat": {},
+							"text": "establecidos "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "ella "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "título "
+						},
+						{
+							"characterFormat": {},
+							"text": "III "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "LC."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "La "
+						},
+						{
+							"characterFormat": {},
+							"text": "apertura "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación "
+						},
+						{
+							"characterFormat": {},
+							"text": "produce "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "vencimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "anticipado "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "créditos "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursales "
+						},
+						{
+							"characterFormat": {},
+							"text": "aplazados "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "conversión "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "dinero "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "aquéllos "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "consistan "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "otras "
+						},
+						{
+							"characterFormat": {},
+							"text": "prestaciones."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "El "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudor "
+						},
+						{
+							"characterFormat": {},
+							"text": "deberá "
+						},
+						{
+							"characterFormat": {},
+							"text": "comparecer "
+						},
+						{
+							"characterFormat": {},
+							"text": "personalmente "
+						},
+						{
+							"characterFormat": {},
+							"text": "ante "
+						},
+						{
+							"characterFormat": {},
+							"text": "este "
+						},
+						{
+							"characterFormat": {},
+							"text": "Juzgado "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "ante "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuantas "
+						},
+						{
+							"characterFormat": {},
+							"text": "veces "
+						},
+						{
+							"characterFormat": {},
+							"text": "sea "
+						},
+						{
+							"characterFormat": {},
+							"text": "requerido, "
+						},
+						{
+							"characterFormat": {},
+							"text": "así "
+						},
+						{
+							"characterFormat": {},
+							"text": "como "
+						},
+						{
+							"characterFormat": {},
+							"text": "colaborar "
+						},
+						{
+							"characterFormat": {},
+							"text": "e "
+						},
+						{
+							"characterFormat": {},
+							"text": "informar "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "todo "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "necesario "
+						},
+						{
+							"characterFormat": {},
+							"text": "conveniente "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "interés "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "4.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "Se "
+						},
+						{
+							"characterFormat": {},
+							"text": "declara "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "disolución "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "entidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "5.- "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "La "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Administración "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "estará "
+						},
+						{
+							"characterFormat": {},
+							"text": "integrada "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "único "
+						},
+						{
+							"characterFormat": {},
+							"text": "miembro, "
+						},
+						{
+							"characterFormat": {},
+							"text": "nombrándose "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "D. "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_402_13880593"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "INSERTAR "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "NOMBRE"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_402_13880593"
+						},
+						{
+							"characterFormat": {},
+							"text": " en "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "condición "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_402_13900140"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "ECONOMISTA/ABOGADO"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_402_13900140"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "inscrito "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "listas "
+						},
+						{
+							"characterFormat": {},
+							"text": "remitidas "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "efectos "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "art.27.3 "
+						},
+						{
+							"characterFormat": {},
+							"text": "LC "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "correspondiente "
+						},
+						{
+							"characterFormat": {},
+							"text": "Colegio. "
+						},
+						{
+							"characterFormat": {},
+							"text": "Comuníquese "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "nombramiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "designado "
+						},
+						{
+							"characterFormat": {},
+							"text": "haciéndole "
+						},
+						{
+							"characterFormat": {},
+							"text": "saber "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "mayor "
+						},
+						{
+							"characterFormat": {},
+							"text": "brevedad "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "todo "
+						},
+						{
+							"characterFormat": {},
+							"text": "caso "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "plazo "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "cinco "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "días "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "siguientes"
+						},
+						{
+							"characterFormat": {},
+							"text": " al "
+						},
+						{
+							"characterFormat": {},
+							"text": "recibo "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "comunicación "
+						},
+						{
+							"characterFormat": {},
+							"text": "deberá "
+						},
+						{
+							"characterFormat": {},
+							"text": "comparecer "
+						},
+						{
+							"characterFormat": {},
+							"text": "ante "
+						},
+						{
+							"characterFormat": {},
+							"text": "este "
+						},
+						{
+							"characterFormat": {},
+							"text": "Juzgado "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "manifestar "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "aceptación "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "cargo"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "Hasta "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "aceptación "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "administrador "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudor "
+						},
+						{
+							"characterFormat": {},
+							"text": "podrá "
+						},
+						{
+							"characterFormat": {},
+							"text": "realizar "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "actos "
+						},
+						{
+							"characterFormat": {},
+							"text": "propios "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "giro "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "tráfico "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "sean "
+						},
+						{
+							"characterFormat": {},
+							"text": "imprescindibles "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "continuación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "actividad, "
+						},
+						{
+							"characterFormat": {},
+							"text": "siempre "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "ajusten "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "condiciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "normales "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "mercado."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "6.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "De "
+						},
+						{
+							"characterFormat": {},
+							"text": "conformidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "dispuesto "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "artículos "
+						},
+						{
+							"characterFormat": {},
+							"text": "21. "
+						},
+						{
+							"characterFormat": {},
+							"text": "1. "
+						},
+						{
+							"characterFormat": {},
+							"text": "5º "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "llama "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "todos "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreedores "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "entidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuyo "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "declara "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "plazo "
+						},
+						{
+							"characterFormat": {},
+							"text": "de"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": " UN "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "MES"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "a "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "contar "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "desde "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "día "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "siguiente "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "a "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "publicación "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "en "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "«Boletín "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Oficial "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "del "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Estado» "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "del "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "auto "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "concurso"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "comuniquen "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "existencia "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "sus "
+						},
+						{
+							"characterFormat": {},
+							"text": "créditos, "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "escrito "
+						},
+						{
+							"characterFormat": {},
+							"text": "firmado "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreedor, "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "cualquier "
+						},
+						{
+							"characterFormat": {},
+							"text": "otro "
+						},
+						{
+							"characterFormat": {},
+							"text": "interesado "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "crédito "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "quien "
+						},
+						{
+							"characterFormat": {},
+							"text": "acredite "
+						},
+						{
+							"characterFormat": {},
+							"text": "representación "
+						},
+						{
+							"characterFormat": {},
+							"text": "suficiente "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "ellos, "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "expresará "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "nombre, "
+						},
+						{
+							"characterFormat": {},
+							"text": "domicilio, "
+						},
+						{
+							"characterFormat": {},
+							"text": "correo "
+						},
+						{
+							"characterFormat": {},
+							"text": "electrónico "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "demás "
+						},
+						{
+							"characterFormat": {},
+							"text": "datos "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "identidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreedor, "
+						},
+						{
+							"characterFormat": {},
+							"text": "así "
+						},
+						{
+							"characterFormat": {},
+							"text": "como "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "relativos "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "crédito, "
+						},
+						{
+							"characterFormat": {},
+							"text": "concepto, "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuantía, "
+						},
+						{
+							"characterFormat": {},
+							"text": "fechas "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "adquisición "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "vencimiento, "
+						},
+						{
+							"characterFormat": {},
+							"text": "características "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "calificación "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "pretenda "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "caso "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "invocarse "
+						},
+						{
+							"characterFormat": {},
+							"text": "un "
+						},
+						{
+							"characterFormat": {},
+							"text": "privilegio "
+						},
+						{
+							"characterFormat": {},
+							"text": "especial, "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "bienes "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "derechos "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "afecte "
+						},
+						{
+							"characterFormat": {},
+							"text": "y, "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "caso, "
+						},
+						{
+							"characterFormat": {},
+							"text": "datos "
+						},
+						{
+							"characterFormat": {},
+							"text": "registrales, "
+						},
+						{
+							"characterFormat": {},
+							"text": "todo "
+						},
+						{
+							"characterFormat": {},
+							"text": "ello "
+						},
+						{
+							"characterFormat": {},
+							"text": "acompañado "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "originales "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "copia "
+						},
+						{
+							"characterFormat": {},
+							"text": "auténtica "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "título "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "documentos "
+						},
+						{
+							"characterFormat": {},
+							"text": "relativos "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "crédito."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "La "
+						},
+						{
+							"characterFormat": {},
+							"text": "administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "realizará "
+						},
+						{
+							"characterFormat": {},
+							"text": "sin "
+						},
+						{
+							"characterFormat": {},
+							"text": "demora "
+						},
+						{
+							"characterFormat": {},
+							"text": "una "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "comunicación "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "individualizada"
+						},
+						{
+							"characterFormat": {},
+							"text": " a "
+						},
+						{
+							"characterFormat": {},
+							"text": "cada "
+						},
+						{
+							"characterFormat": {},
+							"text": "uno "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreedores "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuya "
+						},
+						{
+							"characterFormat": {},
+							"text": "identidad, "
+						},
+						{
+							"characterFormat": {},
+							"text": "domicilio "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "dirección "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "electrónica"
+						},
+						{
+							"characterFormat": {},
+							"text": " consten "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso, "
+						},
+						{
+							"characterFormat": {},
+							"text": "informándoles "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "éste "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "deber "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "comunicar "
+						},
+						{
+							"characterFormat": {},
+							"text": "sus "
+						},
+						{
+							"characterFormat": {},
+							"text": "créditos "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "forma "
+						},
+						{
+							"characterFormat": {},
+							"text": "establecida "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "artículo "
+						},
+						{
+							"characterFormat": {},
+							"text": "85."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"rightIndent": 2.200000047683716,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "Además, "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "informará "
+						},
+						{
+							"characterFormat": {},
+							"text": "sin "
+						},
+						{
+							"characterFormat": {},
+							"text": "demora, "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "escrito "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "mediante "
+						},
+						{
+							"characterFormat": {},
+							"text": "envío "
+						},
+						{
+							"characterFormat": {},
+							"text": "individualizado, "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "acreedores"
+						},
+						{
+							"characterFormat": {},
+							"text": " conocidos "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "tengan "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "residencia "
+						},
+						{
+							"characterFormat": {},
+							"text": "habitual, "
+						},
+						{
+							"characterFormat": {},
+							"text": "domicilio "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "sede "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "en "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "extranjero"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "extremos "
+						},
+						{
+							"characterFormat": {},
+							"text": "previstos "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "art. "
+						},
+						{
+							"characterFormat": {},
+							"text": "214.2 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"bold": true,
+						"boldBidi": true
+					},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "7.- "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Una "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "vez "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "acepte "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Administración "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "cargo, "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "hágase "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "pública "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "presente "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "forma "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "gratuita "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "y"
+						},
+						{
+							"characterFormat": {},
+							"text": " en "
+						},
+						{
+							"characterFormat": {},
+							"text": "extracto "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "medio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "edictos "
+						},
+						{
+							"characterFormat": {},
+							"text": "conteniendo "
+						},
+						{
+							"characterFormat": {},
+							"text": "únicamente "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "datos "
+						},
+						{
+							"characterFormat": {},
+							"text": "indispensables "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "identificación "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursado, "
+						},
+						{
+							"characterFormat": {},
+							"text": "incluyendo "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "NIF, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "juzgado "
+						},
+						{
+							"characterFormat": {},
+							"text": "competente, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "número "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "autos, "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "Número "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "Identificación "
+						},
+						{
+							"characterFormat": {},
+							"text": "General "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "procedimiento, "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "fecha "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "auto "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "plazo "
+						},
+						{
+							"characterFormat": {},
+							"text": "establecido "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "comunicación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "créditos, "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "identidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "administradores "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursales, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "domicilio "
+						},
+						{
+							"characterFormat": {},
+							"text": "postal "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "dirección "
+						},
+						{
+							"characterFormat": {},
+							"text": "electrónica "
+						},
+						{
+							"characterFormat": {},
+							"text": "señalados "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreedores, "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "elección, "
+						},
+						{
+							"characterFormat": {},
+							"text": "efectúen "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "comunicación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "créditos "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "conformidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "artículo "
+						},
+						{
+							"characterFormat": {},
+							"text": "85, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "régimen "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "suspensión "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "intervención "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "facultades "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursado "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Dirección "
+						},
+						{
+							"characterFormat": {},
+							"text": "electrónica "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "Registro "
+						},
+						{
+							"characterFormat": {},
+							"text": "Público "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "donde "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "publicarán "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "resoluciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "traigan "
+						},
+						{
+							"characterFormat": {},
+							"text": "causa "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso, "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "insertarán "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "mayor "
+						},
+						{
+							"characterFormat": {},
+							"text": "urgencia "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Boletín "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Oficial "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "del "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Estado."
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"fontColor": "#000000FF"
+					},
+					"inlines": [
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Dese "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "publicidad "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "a "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "presente "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "resolución "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "mediante "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "publicación "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "en "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "RPC"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"fontColor": "#000000FF"
+					},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"fontColor": "#000000FF"
+					},
+					"inlines": [
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "De "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "conformidad "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "con "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "dispuesto "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "en "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Art. "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "8.1 "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "del "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "R.D. "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "829/13 "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "15 "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Noviembre"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": " por "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "que "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "se "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "regula "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "RPC, "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "no "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "siendo "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "hasta "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "momento "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "posible "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "traslado "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "las "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "resoluciones "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "a "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "través "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "aplicación "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "electrónica, "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "entréguese "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "documentación "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "necesaria "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "para "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "su "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "publicidad "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "en "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "RPC "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "al "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Procurador "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "del "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "solicitante "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "del "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "para "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "su "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "inmediata "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "remisión "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "al "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "RPC, "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "haciendo "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "constar "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "que "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "presente "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "resolución "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "no "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "es "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "firme"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "Líbrense "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "procurador "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitante "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "oficios "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "edictos "
+						},
+						{
+							"characterFormat": {},
+							"text": "correspondientes, "
+						},
+						{
+							"characterFormat": {},
+							"text": "apercibiéndole "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "cumplimentación "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "remisión "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "inmediato "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "anteriores "
+						},
+						{
+							"characterFormat": {},
+							"text": "medios "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "publicidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "acordados, "
+						},
+						{
+							"characterFormat": {},
+							"text": "cosa "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "deberá "
+						},
+						{
+							"characterFormat": {},
+							"text": "acreditar "
+						},
+						{
+							"characterFormat": {},
+							"text": "haber "
+						},
+						{
+							"characterFormat": {},
+							"text": "hecho "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "plazo "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "DIEZ "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "DÍAS"
+						},
+						{
+							"characterFormat": {},
+							"text": "."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "8.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "Siendo "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitante "
+						},
+						{
+							"characterFormat": {},
+							"text": "sujeto "
+						},
+						{
+							"characterFormat": {},
+							"text": "inscribible "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Registro "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "Mercantil"
+						},
+						{
+							"characterFormat": {},
+							"text": " líbrese "
+						},
+						{
+							"characterFormat": {},
+							"text": "mandamiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "duplicado "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "Registro "
+						},
+						{
+							"characterFormat": {},
+							"text": "Mercantil "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "provincia "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "Navarra, "
+						},
+						{
+							"characterFormat": {},
+							"text": "haciéndole "
+						},
+						{
+							"characterFormat": {},
+							"text": "saber "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_101_1531375"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Nombre "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "y "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "apellidos:Demandante"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_101_1531375"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "suspensión "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "ejercicio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "sus "
+						},
+						{
+							"characterFormat": {},
+							"text": "facultades "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "administración "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "disposición "
+						},
+						{
+							"characterFormat": {},
+							"text": "respecto "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "patrimonio, "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "nombramiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "administrador "
+						},
+						{
+							"characterFormat": {},
+							"text": "concursal "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "apertura "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "liquidación "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "disolución "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "ordenándose "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "inscripción "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "las "
+						},
+						{
+							"characterFormat": {},
+							"text": "anteriores "
+						},
+						{
+							"characterFormat": {},
+							"text": "circunstancias "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "hoja "
+						},
+						{
+							"characterFormat": {},
+							"text": "abierta "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "a"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_101_1571093"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Nombre "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "y "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "apellidos:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_101_1571093"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "NIF "
+						},
+						{
+							"characterFormat": {},
+							"text": "nº"
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_103_22389468"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": "Identificación:Demandante"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_103_22389468"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Campos"
+							},
+							"text": ","
+						},
+						{
+							"characterFormat": {},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_402_14798296"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "inscrita "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "al "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "tomo, "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "folio, "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "hoja, "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "inscripción"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_402_14798296"
+						},
+						{
+							"characterFormat": {},
+							"text": ". "
+						},
+						{
+							"characterFormat": {},
+							"text": "Entréguense "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "Procurador "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "solicitante "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "mandamientos "
+						},
+						{
+							"characterFormat": {},
+							"text": "correspondientes "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "práctica "
+						},
+						{
+							"characterFormat": {},
+							"text": "inmediata "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "asientos "
+						},
+						{
+							"characterFormat": {},
+							"text": "acordados."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"fontColor": "#0000FFFF"
+					},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "G_1354735000"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Elegir "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Párrafo"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "G_1354735000"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {
+						"fontColor": "#000000FF"
+					},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "9.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "Hágase "
+						},
+						{
+							"characterFormat": {},
+							"text": "saber "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {},
+							"text": "Juzgado "
+						},
+						{
+							"characterFormat": {},
+							"text": "Decano "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "F_402_21500671"
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "PAMPLONA "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "Y "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "partido "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "judicial "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "donde "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "tenga "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "el "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "domicilio "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "la "
+						},
+						{
+							"characterFormat": {
+								"styleName": "Avisos"
+							},
+							"text": "concursada"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "F_402_21500671"
+						},
+						{
+							"characterFormat": {},
+							"text": " para "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "comunicación "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "Juzgados "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "Primera "
+						},
+						{
+							"characterFormat": {},
+							"text": "Instancia "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "Social "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "efectos "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "arts. "
+						},
+						{
+							"characterFormat": {},
+							"text": "50 "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "55 "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ley "
+						},
+						{
+							"characterFormat": {},
+							"text": "Concursal."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "10.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "Cítese "
+						},
+						{
+							"characterFormat": {},
+							"text": "como "
+						},
+						{
+							"characterFormat": {},
+							"text": "parte "
+						},
+						{
+							"characterFormat": {},
+							"text": "al "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "FONDO "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "DE "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "GARANTÍA "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "SALARIAL"
+						},
+						{
+							"characterFormat": {},
+							"text": " mediante "
+						},
+						{
+							"characterFormat": {},
+							"text": "notificación "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "presente "
+						},
+						{
+							"characterFormat": {},
+							"text": "resolución "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "si "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "proceso "
+						},
+						{
+							"characterFormat": {},
+							"text": "pudiera "
+						},
+						{
+							"characterFormat": {},
+							"text": "derivarse "
+						},
+						{
+							"characterFormat": {},
+							"text": "su "
+						},
+						{
+							"characterFormat": {},
+							"text": "responsabilidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "abono "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "salarios "
+						},
+						{
+							"characterFormat": {},
+							"text": "o "
+						},
+						{
+							"characterFormat": {},
+							"text": "indemnizaciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "trabajadores."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "MODO "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "DE "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"boldBidi": true
+							},
+							"text": "IMPUGNACIÓN"
+						},
+						{
+							"characterFormat": {},
+							"text": ":"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "1.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "Contra "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "DECLARACIÓN "
+						},
+						{
+							"characterFormat": {},
+							"text": "DE "
+						},
+						{
+							"characterFormat": {},
+							"text": "CONCURSO "
+						},
+						{
+							"characterFormat": {},
+							"text": "cabe, "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "quien "
+						},
+						{
+							"characterFormat": {},
+							"text": "acredite "
+						},
+						{
+							"characterFormat": {},
+							"text": "interés "
+						},
+						{
+							"characterFormat": {},
+							"text": "legítimo, "
+						},
+						{
+							"characterFormat": {},
+							"text": "RECURSO "
+						},
+						{
+							"characterFormat": {},
+							"text": "DE "
+						},
+						{
+							"characterFormat": {},
+							"text": "APELACIÓN "
+						},
+						{
+							"characterFormat": {},
+							"text": "ante "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Audiencia "
+						},
+						{
+							"characterFormat": {},
+							"text": "Provincial, "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "tendrá "
+						},
+						{
+							"characterFormat": {},
+							"text": "carácter "
+						},
+						{
+							"characterFormat": {},
+							"text": "suspensivo."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "El "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "interpondrá "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "medido "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "escrito "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentado "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "este "
+						},
+						{
+							"characterFormat": {},
+							"text": "Juzgado "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "plazo "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "VEINTE "
+						},
+						{
+							"characterFormat": {},
+							"text": "DÍAS, "
+						},
+						{
+							"characterFormat": {},
+							"text": "contados "
+						},
+						{
+							"characterFormat": {},
+							"text": "desde "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "última "
+						},
+						{
+							"characterFormat": {},
+							"text": "publicación "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "anuncio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "declaración "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "concurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "limitado "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "citar "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "resolución "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurrida."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "2.- "
+						},
+						{
+							"characterFormat": {},
+							"text": "Contra "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "DEMÁS "
+						},
+						{
+							"characterFormat": {},
+							"text": "PRONUNCIAMIENTOS "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "auto "
+						},
+						{
+							"characterFormat": {},
+							"text": "cabe "
+						},
+						{
+							"characterFormat": {},
+							"text": "RECURSO "
+						},
+						{
+							"characterFormat": {},
+							"text": "DE "
+						},
+						{
+							"characterFormat": {},
+							"text": "REPOSICIÓN "
+						},
+						{
+							"characterFormat": {},
+							"text": "por "
+						},
+						{
+							"characterFormat": {},
+							"text": "medio "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "escrito "
+						},
+						{
+							"characterFormat": {},
+							"text": "presentado "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "este "
+						},
+						{
+							"characterFormat": {},
+							"text": "Juzgado, "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "obstante"
+						},
+						{
+							"characterFormat": {},
+							"text": " lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "cual "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "llevará "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "efecto "
+						},
+						{
+							"characterFormat": {},
+							"text": "lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "acordado, "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "plazo "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "CINCO "
+						},
+						{
+							"characterFormat": {},
+							"text": "DÍAS, "
+						},
+						{
+							"characterFormat": {},
+							"text": "computados, "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "deudor "
+						},
+						{
+							"characterFormat": {},
+							"text": "desde "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "notificación "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "auto "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "para "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "demás "
+						},
+						{
+							"characterFormat": {},
+							"text": "legitimados "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "forma "
+						},
+						{
+							"characterFormat": {},
+							"text": "expresada "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "apartado "
+						},
+						{
+							"characterFormat": {},
+							"text": "anterior, "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "expresión "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "infracción "
+						},
+						{
+							"characterFormat": {},
+							"text": "cometida "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "juicio "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurrente, "
+						},
+						{
+							"characterFormat": {},
+							"text": "sin "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuyos "
+						},
+						{
+							"characterFormat": {},
+							"text": "requisitos "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "admitirá "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "trámite "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "(artículos "
+						},
+						{
+							"characterFormat": {},
+							"text": "20.2 "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "197 "
+						},
+						{
+							"characterFormat": {},
+							"text": "LC "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "452 "
+						},
+						{
+							"characterFormat": {},
+							"text": "LEC)."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "\t"
+						},
+						{
+							"characterFormat": {},
+							"text": "Lo "
+						},
+						{
+							"characterFormat": {},
+							"text": "acuerda "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "firma "
+						},
+						{
+							"characterFormat": {},
+							"text": "S.Sª"
+						},
+						{
+							"characterFormat": {},
+							"text": ", "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ilma. "
+						},
+						{
+							"characterFormat": {},
+							"text": "Sra. "
+						},
+						{
+							"characterFormat": {},
+							"text": "Dña. "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "TF_204_228723"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Nombre "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Juez"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "TF_204_228723"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": ", "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Magistrada "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Titular "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "TF_201_256051"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Juzgado "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "de "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Primera "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Instancia "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Nº "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "1"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "TF_201_256051"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": ". "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Doy "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "fe"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"rows": [
+						{
+							"cells": [
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"styleName": "Normal",
+												"listFormat": {}
+											},
+											"characterFormat": {
+												"fontColor": "#000000FF"
+											},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"text": "El/la "
+												},
+												{
+													"characterFormat": {},
+													"bookmarkType": 0,
+													"name": "TF_203_102247"
+												},
+												{
+													"characterFormat": {
+														"fontColor": "#0000FFFF"
+													},
+													"text": "Tratamiento Juez"
+												},
+												{
+													"characterFormat": {},
+													"bookmarkType": 1,
+													"name": "TF_203_102247"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"left": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"right": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"bottom": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalDown": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {},
+										"topMargin": 0,
+										"rightMargin": 5.400000095367432,
+										"leftMargin": 5.400000095367432,
+										"bottomMargin": 0,
+										"preferredWidth": 167.39999389648438,
+										"preferredWidthType": "Point",
+										"cellWidth": 167.39999389648438,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 0
+								},
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"styleName": "Normal",
+												"listFormat": {}
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"text": "El/La Letrado de la Administración de Justicia"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"left": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"right": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"bottom": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalDown": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {},
+										"topMargin": 0,
+										"rightMargin": 5.400000095367432,
+										"leftMargin": 5.400000095367432,
+										"bottomMargin": 0,
+										"preferredWidth": 264.79998779296877,
+										"preferredWidthType": "Point",
+										"cellWidth": 264.79998779296877,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 1
+								}
+							],
+							"rowFormat": {
+								"height": 1,
+								"allowBreakAcrossPages": true,
+								"heightType": "AtLeast",
+								"isHeader": false,
+								"borders": {
+									"top": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"left": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"right": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"bottom": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"diagonalDown": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"diagonalUp": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"horizontal": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"vertical": {
+										"hasNoneStyle": true,
+										"lineStyle": "None",
+										"lineWidth": 0
+									}
+								},
+								"gridBefore": 0,
+								"gridAfter": 0
+							}
+						}
+					],
+					"grid": [
+						167.39999389648438,
+						264.79998779296877
+					],
+					"tableFormat": {
+						"borders": {
+							"top": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"left": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"right": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"bottom": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"diagonalDown": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"diagonalUp": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"horizontal": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"vertical": {
+								"hasNoneStyle": true,
+								"lineStyle": "None",
+								"lineWidth": 0
+							}
+						},
+						"shading": {},
+						"leftIndent": 0,
+						"tableAlignment": "Left",
+						"topMargin": 0,
+						"rightMargin": 5.4,
+						"leftMargin": 5.4,
+						"bottomMargin": 0,
+						"preferredWidthType": "Auto",
+						"bidi": false,
+						"allowAutoFit": true
+					},
+					"description": null,
+					"title": null,
+					"columnCount": 2
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "DEPÓSITO "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "PARA "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "RECURRIR "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "APELACIÓN: "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Deberá"
+						},
+						{
+							"characterFormat": {},
+							"text": " acreditarse "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "momento "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "anuncio "
+						},
+						{
+							"characterFormat": {},
+							"text": "haber "
+						},
+						{
+							"characterFormat": {},
+							"text": "consignado "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuenta "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "depósitos "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "consignaciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "este "
+						},
+						{
+							"characterFormat": {},
+							"text": "órgano "
+						},
+						{
+							"characterFormat": {},
+							"text": "abierta "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "TF_402_577186"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#FF0000FF"
+							},
+							"text": "BANCO "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#FF0000FF"
+							},
+							"text": "SANTANDER"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "TF_402_577186"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#FF0000FF"
+							},
+							"text": "  "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "TF_225_615060"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Cuenta "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Bancaria"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "TF_225_615060"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": ","
+						},
+						{
+							"characterFormat": {},
+							"text": " la "
+						},
+						{
+							"characterFormat": {},
+							"text": "suma "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "50 "
+						},
+						{
+							"characterFormat": {},
+							"text": "EUROS "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "apercibimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "verificarlo "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "admitirá "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "trámite "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "pretendido; "
+						},
+						{
+							"characterFormat": {},
+							"text": "salvo "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurrente "
+						},
+						{
+							"characterFormat": {},
+							"text": "sea: "
+						},
+						{
+							"characterFormat": {},
+							"text": "beneficiario "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "justicia "
+						},
+						{
+							"characterFormat": {},
+							"text": "gratuita, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ministerio "
+						},
+						{
+							"characterFormat": {},
+							"text": "Fiscal, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "Estado, "
+						},
+						{
+							"characterFormat": {},
+							"text": "Comunidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "Autónoma, "
+						},
+						{
+							"characterFormat": {},
+							"text": "entidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "local "
+						},
+						{
+							"characterFormat": {},
+							"text": "u "
+						},
+						{
+							"characterFormat": {},
+							"text": "organismo "
+						},
+						{
+							"characterFormat": {},
+							"text": "autónomo "
+						},
+						{
+							"characterFormat": {},
+							"text": "dependiente "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "alguno "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "anteriores."
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"paragraphFormat": {
+						"textAlignment": "Justify",
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "DEPOSITO "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "PARA "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "RECURRIR "
+						},
+						{
+							"characterFormat": {
+								"bold": true,
+								"fontColor": "#000000FF",
+								"boldBidi": true
+							},
+							"text": "REPOSICIÓN: "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": "Deberá"
+						},
+						{
+							"characterFormat": {},
+							"text": " acreditarse "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "momento "
+						},
+						{
+							"characterFormat": {},
+							"text": "del "
+						},
+						{
+							"characterFormat": {},
+							"text": "anuncio "
+						},
+						{
+							"characterFormat": {},
+							"text": "haber "
+						},
+						{
+							"characterFormat": {},
+							"text": "consignado "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"text": "la "
+						},
+						{
+							"characterFormat": {},
+							"text": "cuenta "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "depósitos "
+						},
+						{
+							"characterFormat": {},
+							"text": "y "
+						},
+						{
+							"characterFormat": {},
+							"text": "consignaciones "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "este "
+						},
+						{
+							"characterFormat": {},
+							"text": "órgano "
+						},
+						{
+							"characterFormat": {},
+							"text": "abierta "
+						},
+						{
+							"characterFormat": {},
+							"text": "en "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "TF_402_629560"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#FF0000FF"
+							},
+							"text": "BANCO "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#FF0000FF"
+							},
+							"text": "SANTANDER"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "TF_402_629560"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#FF0000FF"
+							},
+							"text": " "
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 0,
+							"name": "TF_225_646560"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Cuenta "
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#0000FFFF"
+							},
+							"text": "Bancaria"
+						},
+						{
+							"characterFormat": {},
+							"bookmarkType": 1,
+							"name": "TF_225_646560"
+						},
+						{
+							"characterFormat": {
+								"fontColor": "#000000FF"
+							},
+							"text": ","
+						},
+						{
+							"characterFormat": {},
+							"text": " la "
+						},
+						{
+							"characterFormat": {},
+							"text": "suma "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "25 "
+						},
+						{
+							"characterFormat": {},
+							"text": "EUROS "
+						},
+						{
+							"characterFormat": {},
+							"text": "con "
+						},
+						{
+							"characterFormat": {},
+							"text": "apercibimiento "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "verificarlo "
+						},
+						{
+							"characterFormat": {},
+							"text": "no "
+						},
+						{
+							"characterFormat": {},
+							"text": "se "
+						},
+						{
+							"characterFormat": {},
+							"text": "admitirá "
+						},
+						{
+							"characterFormat": {},
+							"text": "a "
+						},
+						{
+							"characterFormat": {},
+							"text": "trámite "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurso "
+						},
+						{
+							"characterFormat": {},
+							"text": "pretendido; "
+						},
+						{
+							"characterFormat": {},
+							"text": "salvo "
+						},
+						{
+							"characterFormat": {},
+							"text": "que "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "recurrente "
+						},
+						{
+							"characterFormat": {},
+							"text": "sea: "
+						},
+						{
+							"characterFormat": {},
+							"text": "beneficiario "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "justicia "
+						},
+						{
+							"characterFormat": {},
+							"text": "gratuita, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "Ministerio "
+						},
+						{
+							"characterFormat": {},
+							"text": "Fiscal, "
+						},
+						{
+							"characterFormat": {},
+							"text": "el "
+						},
+						{
+							"characterFormat": {},
+							"text": "Estado, "
+						},
+						{
+							"characterFormat": {},
+							"text": "Comunidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "Autónoma, "
+						},
+						{
+							"characterFormat": {},
+							"text": "entidad "
+						},
+						{
+							"characterFormat": {},
+							"text": "local "
+						},
+						{
+							"characterFormat": {},
+							"text": "u "
+						},
+						{
+							"characterFormat": {},
+							"text": "organismo "
+						},
+						{
+							"characterFormat": {},
+							"text": "autónomo "
+						},
+						{
+							"characterFormat": {},
+							"text": "dependiente "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "alguno "
+						},
+						{
+							"characterFormat": {},
+							"text": "de "
+						},
+						{
+							"characterFormat": {},
+							"text": "los "
+						},
+						{
+							"characterFormat": {},
+							"text": "anteriores.     "
+						}
+					]
+				}
+			],
+			"headersFooters": {
+				"header": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"styleName": "Normal",
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": [
+								{
+									"characterFormat": {},
+									"shapeId": 3,
+									"name": "Rectangle",
+									"visible": true,
+									"width": 281,
+									"height": 25,
+									"widthScale": 100,
+									"heightScale": 100,
+									"verticalPosition": 0,
+									"verticalOrigin": "Page",
+									"verticalAlignment": "None",
+									"verticalRelativePercent": -3.4028235e38,
+									"horizontalPosition": 0,
+									"horizontalOrigin": "Margin",
+									"horizontalAlignment": "Center",
+									"horizontalRelativePercent": -3.4028235e38,
+									"zOrderPosition": 1024,
+									"allowOverlap": true,
+									"textWrappingStyle": "Behind",
+									"textWrappingType": "Both",
+									"distanceBottom": 0,
+									"distanceLeft": 0,
+									"distanceRight": 0,
+									"distanceTop": 0,
+									"layoutInCell": true,
+									"lockAnchor": false,
+									"autoShapeType": "Rectangle",
+									"fillFormat": {
+										"color": "#FFFFFFFF",
+										"fill": true
+									},
+									"lineFormat": {
+										"lineFormatType": "None",
+										"color": "#000000FF",
+										"weight": 1,
+										"lineStyle": "Solid",
+										"line": false
+									},
+									"textFrame": {
+										"textVerticalAlignment": "Top",
+										"leftMargin": 5.31526,
+										"rightMargin": 5.31526,
+										"topMargin": 2.76372,
+										"bottomMargin": 2.76372,
+										"blocks": [
+											{
+												"paragraphFormat": {
+													"styleName": "Normal",
+													"listFormat": {}
+												},
+												"characterFormat": {},
+												"inlines": [
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Created"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "with"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " a trial "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "version"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "of"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Syncfusion"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Essential"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "DocIO"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "."
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						},
+						{
+							"paragraphFormat": {
+								"styleName": "Normal",
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": []
+						}
+					]
+				},
+				"evenHeader": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"styleName": "Normal",
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": [
+								{
+									"characterFormat": {},
+									"shapeId": 1,
+									"name": "Rectangle",
+									"visible": true,
+									"width": 281,
+									"height": 25,
+									"widthScale": 100,
+									"heightScale": 100,
+									"verticalPosition": 0,
+									"verticalOrigin": "Page",
+									"verticalAlignment": "None",
+									"verticalRelativePercent": -3.4028235e38,
+									"horizontalPosition": 0,
+									"horizontalOrigin": "Margin",
+									"horizontalAlignment": "Center",
+									"horizontalRelativePercent": -3.4028235e38,
+									"zOrderPosition": 2048,
+									"allowOverlap": true,
+									"textWrappingStyle": "Behind",
+									"textWrappingType": "Both",
+									"distanceBottom": 0,
+									"distanceLeft": 0,
+									"distanceRight": 0,
+									"distanceTop": 0,
+									"layoutInCell": true,
+									"lockAnchor": false,
+									"autoShapeType": "Rectangle",
+									"fillFormat": {
+										"color": "#FFFFFFFF",
+										"fill": true
+									},
+									"lineFormat": {
+										"lineFormatType": "None",
+										"color": "#000000FF",
+										"weight": 1,
+										"lineStyle": "Solid",
+										"line": false
+									},
+									"textFrame": {
+										"textVerticalAlignment": "Top",
+										"leftMargin": 5.31526,
+										"rightMargin": 5.31526,
+										"topMargin": 2.76372,
+										"bottomMargin": 2.76372,
+										"blocks": [
+											{
+												"paragraphFormat": {
+													"styleName": "Normal",
+													"listFormat": {}
+												},
+												"characterFormat": {},
+												"inlines": [
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Created"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "with"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " a trial "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "version"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "of"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Syncfusion"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Essential"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "DocIO"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "."
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						},
+						{
+							"paragraphFormat": {
+								"styleName": "Normal",
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": []
+						}
+					]
+				},
+				"firstPageHeader": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"styleName": "Normal",
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": [
+								{
+									"characterFormat": {},
+									"shapeId": 2,
+									"name": "Rectangle",
+									"visible": true,
+									"width": 281,
+									"height": 25,
+									"widthScale": 100,
+									"heightScale": 100,
+									"verticalPosition": 0,
+									"verticalOrigin": "Page",
+									"verticalAlignment": "None",
+									"verticalRelativePercent": -3.4028235e38,
+									"horizontalPosition": 0,
+									"horizontalOrigin": "Margin",
+									"horizontalAlignment": "Center",
+									"horizontalRelativePercent": -3.4028235e38,
+									"zOrderPosition": 3072,
+									"allowOverlap": true,
+									"textWrappingStyle": "Behind",
+									"textWrappingType": "Both",
+									"distanceBottom": 0,
+									"distanceLeft": 0,
+									"distanceRight": 0,
+									"distanceTop": 0,
+									"layoutInCell": true,
+									"lockAnchor": false,
+									"autoShapeType": "Rectangle",
+									"fillFormat": {
+										"color": "#FFFFFFFF",
+										"fill": true
+									},
+									"lineFormat": {
+										"lineFormatType": "None",
+										"color": "#000000FF",
+										"weight": 1,
+										"lineStyle": "Solid",
+										"line": false
+									},
+									"textFrame": {
+										"textVerticalAlignment": "Top",
+										"leftMargin": 5.31526,
+										"rightMargin": 5.31526,
+										"topMargin": 2.76372,
+										"bottomMargin": 2.76372,
+										"blocks": [
+											{
+												"paragraphFormat": {
+													"styleName": "Normal",
+													"listFormat": {}
+												},
+												"characterFormat": {},
+												"inlines": [
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Created"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "with"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " a trial "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "version"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "of"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Syncfusion"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "Essential"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": " "
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "DocIO"
+													},
+													{
+														"characterFormat": {
+															"bold": true,
+															"fontSize": 11,
+															"fontFamily": "Calibri",
+															"fontColor": "#000000FF",
+															"boldBidi": true,
+															"fontSizeBidi": 11,
+															"fontFamilyBidi": "Calibri"
+														},
+														"text": "."
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						},
+						{
+							"paragraphFormat": {
+								"styleName": "Normal",
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": []
+						}
+					]
+				}
+			}
+		}
+	],
+	"characterFormat": {
+		"bold": false,
+		"italic": false,
+		"fontSize": 11,
+		"fontFamily": "Times New Roman",
+		"underline": "None",
+		"strikethrough": "None",
+		"baselineAlignment": "Normal",
+		"highlightColor": "NoColor",
+		"fontColor": "#00000000",
+		"boldBidi": false,
+		"italicBidi": false,
+		"fontSizeBidi": 11,
+		"fontFamilyBidi": "Times New Roman",
+		"allCaps": false
+	},
+	"paragraphFormat": {
+		"leftIndent": 0,
+		"rightIndent": 0,
+		"firstLineIndent": 0,
+		"textAlignment": "Left",
+		"beforeSpacing": 0,
+		"afterSpacing": 0,
+		"lineSpacing": 1,
+		"lineSpacingType": "Multiple",
+		"listFormat": {},
+		"bidi": false,
+		"keepLinesTogether": false,
+		"keepWithNext": false,
+		"widowControl": true
+	},
+	"defaultTabWidth": 36,
+	"trackChanges": false,
+	"enforcement": false,
+	"hashValue": "",
+	"saltValue": "",
+	"formatting": false,
+	"protectionType": "NoProtection",
+	"dontUseHTMLParagraphAutoSpacing": false,
+	"formFieldShading": true,
+	"compatibilityMode": "Word2013",
+	"styles": [
+		{
+			"name": "Normal",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Arial",
+				"fontSizeBidi": 12,
+				"fontFamilyBidi": "Arial"
+			},
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 1",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"beforeSpacing": 12,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level1",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"fontSizeBidi": 16,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 1 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 1 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"fontSizeBidi": 16,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Default Paragraph Font",
+			"type": "Character",
+			"characterFormat": {}
+		},
+		{
+			"name": "Heading 2",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"beforeSpacing": 2,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level2",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"fontSizeBidi": 13,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 2 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 2 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"fontSizeBidi": 13,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 3",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"beforeSpacing": 2,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level3",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763FF",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 3 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 3 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763FF",
+				"fontSizeBidi": 12,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 4",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"beforeSpacing": 2,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level4",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"italicBidi": true,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 4 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 4 Char",
+			"type": "Character",
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"italicBidi": true,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 5",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"beforeSpacing": 2,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level5",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 5 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 5 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496FF",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 6",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"beforeSpacing": 2,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level6",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763FF",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 6 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 6 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763FF",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Ref. de comentario1",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 8,
+				"fontSizeBidi": 8
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Texto comentario1",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 10,
+				"fontSizeBidi": 10
+			},
+			"basedOn": "Normal",
+			"next": "Texto comentario1"
+		},
+		{
+			"name": "Asunto del comentario1",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"bold": true,
+				"boldBidi": true
+			},
+			"basedOn": "Texto comentario1",
+			"next": "Texto comentario1"
+		},
+		{
+			"name": "Campos",
+			"type": "Character",
+			"characterFormat": {
+				"fontColor": "#0000FFFF"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Avisos",
+			"type": "Character",
+			"characterFormat": {
+				"fontColor": "#FF0000FF"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Header",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {},
+				"tabs": [
+					{
+						"position": 212.60000610351563,
+						"deletePosition": 0,
+						"tabJustification": "Center",
+						"tabLeader": "None"
+					},
+					{
+						"position": 425.20001220703127,
+						"deletePosition": 0,
+						"tabJustification": "Right",
+						"tabLeader": "None"
+					}
+				]
+			},
+			"characterFormat": {},
+			"basedOn": "Normal",
+			"next": "Header"
+		},
+		{
+			"name": "Footer",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {},
+				"tabs": [
+					{
+						"position": 212.60000610351563,
+						"deletePosition": 0,
+						"tabJustification": "Center",
+						"tabLeader": "None"
+					},
+					{
+						"position": 425.20001220703127,
+						"deletePosition": 0,
+						"tabJustification": "Right",
+						"tabLeader": "None"
+					}
+				]
+			},
+			"characterFormat": {},
+			"basedOn": "Normal",
+			"next": "Footer"
+		},
+		{
+			"name": "Page Number",
+			"type": "Character",
+			"characterFormat": {},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Balloon Text",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 8,
+				"fontFamily": "Tahoma",
+				"fontSizeBidi": 8,
+				"fontFamilyBidi": "Tahoma"
+			},
+			"basedOn": "Normal",
+			"next": "Balloon Text"
+		},
+		{
+			"name": "Campos_0",
+			"type": "Character",
+			"characterFormat": {
+				"fontColor": "#0000FFFF"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Normal_0",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {}
+			},
+			"characterFormat": {},
+			"basedOn": "Normal",
+			"next": "Normal_0"
+		}
+	],
+	"lists": [],
+	"abstractLists": [],
+	"comments": [],
+	"revisions": [],
+	"customXml": [],
+	"footnotes": {
+		"separator": [
+			{
+				"paragraphFormat": {
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0003"
+					}
+				]
+			}
+		],
+		"continuationSeparator": [
+			{
+				"paragraphFormat": {
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0004"
+					}
+				]
+			}
+		],
+		"continuationNotice": [
+			{
+				"paragraphFormat": {
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": []
+			}
+		]
+	},
+	"endnotes": {
+		"separator": [
+			{
+				"paragraphFormat": {
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0003"
+					}
+				]
+			}
+		],
+		"continuationSeparator": [
+			{
+				"paragraphFormat": {
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0004"
+					}
+				]
+			}
+		],
+		"continuationNotice": [
+			{
+				"paragraphFormat": {
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": []
+			}
+		]
+	}
+}
+describe('Backspace validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableEditorHistory: true, enableComment: true, enableSelection: true, enableSfdtExport:true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it("Backspace validation",()=>{
+        console.log("Backspace validation");
+        editor.open(JSON.stringify(Doc));
+        editor.selection.select("0;133;0","0;133;504");
+        expect(()=>{ for(let i=0;i<37;i++){
+            editor.editor.onBackSpace();
+        } }).not.toThrowError();
+    });
+});
+let formField: any = {"sections":[{"sectionFormat":{"pageWidth":595.2999877929688,"pageHeight":841.9000244140625,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false,"pageNumberStyle":"Arabic"},"blocks":[{"paragraphFormat":{"lineSpacing":1.149999976158142,"lineSpacingType":"Multiple","styleName":"Normal","listFormat":{}},"characterFormat":{"fontFamily":"Arial","fontFamilyBidi":"Arial"},"inlines":[{"characterFormat":{"fontFamily":"Arial","fontFamilyBidi":"Arial"},"fieldType":0,"hasFieldEnd":true,"formFieldData":{"name":"Secção/Brigada","enabled":true,"helpText":"","statusText":"","textInput":{"type":"Text","maxLength":0,"defaultValue":"","format":"None"}}},{"characterFormat":{},"bookmarkType":0,"name":"Secção/Brigada"},{"characterFormat":{"fontFamily":"Arial","fontFamilyBidi":"Arial"},"text":"FORMTEXT"},{"characterFormat":{},"fieldType":2},{"characterFormat":{"fontFamily":"Arial","fontFamilyBidi":"Arial"},"text":" "},{"characterFormat":{"fontFamily":"Arial","fontFamilyBidi":"Arial"},"text":" "},{"characterFormat":{"fontFamily":"Arial","fontFamilyBidi":"Arial"},"text":"   "},{"characterFormat":{},"fieldType":1},{"characterFormat":{},"bookmarkType":1,"name":"Secção/Brigada"}]}],"headersFooters":{"header":{"blocks":[{"paragraphFormat":{"textAlignment":"Center","styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]},{"paragraphFormat":{"textAlignment":"Center","styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]},{"paragraphFormat":{"textAlignment":"Center","styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]},"footer":{"blocks":[{"paragraphFormat":{"textAlignment":"Right","styleName":"Normal","listFormat":{}},"characterFormat":{"fontSize":9,"fontFamily":"Arial","fontSizeBidi":9,"fontFamilyBidi":"Arial"},"inlines":[{"characterFormat":{"fontSize":9,"fontFamily":"Arial","fontSizeBidi":9,"fontFamilyBidi":"Arial"},"text":"Pág. "},{"characterFormat":{"fontSize":9,"fontFamily":"Arial","fontSizeBidi":9,"fontFamilyBidi":"Arial"},"fieldType":0,"hasFieldEnd":true},{"characterFormat":{"fontSize":9,"fontFamily":"Arial","fontSizeBidi":9,"fontFamilyBidi":"Arial"},"text":"PAGE  \\* MERGEFORMAT"},{"characterFormat":{},"fieldType":2},{"characterFormat":{"fontSize":9,"fontFamily":"Arial","fontSizeBidi":9,"fontFamilyBidi":"Arial"},"text":"1"},{"characterFormat":{},"fieldType":1}]}]}}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#00000000","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{},"bidi":false,"keepLinesTogether":false,"keepWithNext":false,"widowControl":true},"defaultTabWidth":36,"trackChanges":false,"enforcement":true,"hashValue":"LqZyy5RQnX3NY5RFxfr+uXvo24vzjlKXOKEcjLwn7u/8lXA9k2TbKTOFf/V2ll1MS/IlOy2CYeFAxqR7rPlWkw==","saltValue":"M+wGFtJiY64rtHzyC2lmrQ==","formatting":false,"protectionType":"FormFieldsOnly","dontUseHTMLParagraphAutoSpacing":false,"formFieldShading":true,"compatibilityMode":"Word2013","styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"beforeSpacing":12,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","next":"Normal"},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"beforeSpacing":2,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","next":"Normal"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"beforeSpacing":2,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","next":"Normal"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"beforeSpacing":2,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","next":"Normal"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"beforeSpacing":2,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","next":"Normal"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"beforeSpacing":2,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","next":"Normal"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"}],"lists":[],"abstractLists":[],"comments":[],"revisions":[],"customXml":[],"footnotes":{"separator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0004"}]}],"continuationNotice":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]},"endnotes":{"separator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0004"}]}],"continuationNotice":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]}};
+describe('Document broken layout after pressing enter in formfield', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableEditorHistory: true, enableComment: true, enableSelection: true, enableSfdtExport:true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+	it("Document broken layout after pressing enter in formfield",()=>{
+		console.log("Document broken layout after pressing enter in formfield");
+		editor.open(JSON.stringify(formField));
+		editor.selection.checkForCursorVisibility();
+		editor.documentEditorSettings.formFieldSettings.formFillingMode = "Inline";
+		editor.selection.handleTabKey(false,false);
+		editor.editor.insertText("hello");
+		editor.editor.onEnter();
+		expect(()=>{ 
+            editor.editor.insertText("world");
+        } ).not.toThrowError();
+	});
+	it("BackSpace validation",()=>{
+		console.log("BackSpace validation");
+		editor.selection.checkForCursorVisibility();
+		let i : number = 0;
+		while(i<5){
+			editor.editor.onBackSpace();
+			i++;
+		}
+		editor.selection.select("0;0;0","0;0;5");
+		expect(editor.selection.text).toBe("hello");
+	});
+});
+
+let contentControlDocument: any = {"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false,"pageNumberStyle":"Arabic"},"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"hello"},{"inlines":[{"characterFormat":{},"text":"content"}],"contentControlProperties":{"lockContentControl":true,"lockContents":false,"color":"#00000000","type":"RichText","hasPlaceHolderText":false,"multiline":false,"isTemporary":false,"characterFormat":{},"contentControlListItems":[]}},{"characterFormat":{},"text":"world"}]}],"headersFooters":{}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#00000000","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","listFormat":{},"bidi":false,"keepLinesTogether":false,"keepWithNext":false,"widowControl":true},"defaultTabWidth":36,"trackChanges":false,"enforcement":false,"hashValue":"","saltValue":"","formatting":false,"protectionType":"NoProtection","dontUseHTMLParagraphAutoSpacing":false,"formFieldShading":true,"compatibilityMode":"Word2013","styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Placeholder Text","type":"Character","characterFormat":{"fontColor":"#808080FF"},"basedOn":"Default Paragraph Font"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"}],"lists":[],"abstractLists":[],"comments":[],"revisions":[],"customXml":[],"footnotes":{"separator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0004"}]}],"continuationNotice":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]},"endnotes":{"separator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0004"}]}],"continuationNotice":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]}};
+describe('content control delete validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false,height: "650px" });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it("content control delete validation",()=>{
+        console.log("content control cannot be delete validation");
+        editor.openBlank();
+        editor.open(JSON.stringify(contentControlDocument));
+        let contentControlStart: ContentControl = editor.selection.start.currentWidget.children[1] as ContentControl;
+        expect(contentControlStart.contentControlProperties.lockContentControl).toBe(true);
+        editor.selection.selectAll();
+        let event: any = { keyCode: 46, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+        editor.documentHelper.onKeyDownInternal(event);
+        editor.selection.selectAll();
+        expect(editor.selection.text).toBe('hellocontentworld\r');
+    });
+    it("content control delete validation",()=>{
+        console.log("content control delete validation");
+        editor.openBlank();
+        editor.open(JSON.stringify(contentControlDocument));
+        let contentControlStart: ContentControl = editor.selection.start.currentWidget.children[1] as ContentControl;
+        contentControlStart.contentControlProperties.lockContentControl = false;
+        editor.selection.select("0;0;0","0;0;9");
+        let event: any = { keyCode: 46, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
+        editor.documentHelper.onKeyDownInternal(event);
+        editor.selection.select("0;0;0","0;0;10");
+        expect(editor.selection.text).toBe('tentworld');
     });
 });

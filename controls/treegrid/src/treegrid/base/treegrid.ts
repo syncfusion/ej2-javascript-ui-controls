@@ -115,11 +115,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private addedRecords: string = 'addedRecords';
     private targetElement: HTMLElement;
     private isGantt: boolean;
+    private isIndentEnabled: boolean;
+    private indentOutdentAction: string = 'indentOutdentAction';
     /**
      * The `sortModule` is used to manipulate sorting in TreeGrid.
      */
     public sortModule: Sort;
     private action: string;
+    private dropIndex: number;
+    private dropPosition: string;
+    private modifiedRecords: ITreeData[] = [];
     private selectedRecords: Object[];
     private selectedRows: Object[];
     private loggerModule: TreeLogger;
@@ -132,6 +137,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private isEditCollapse: boolean;
     private treeColumnTextAlign: TextAlign;
     private treeColumnField: string;
+    private stackedHeader: boolean = false;
     /** @hidden */
     public initialRender: boolean;
     /** @hidden */
@@ -1591,6 +1597,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         const splitFrozenCount: string = 'splitFrozenCount';
+        this.freezeModule = new Freeze(this);
         this.grid[splitFrozenCount](this.getGridColumns(this.columns as Column[]));
         if (this.isDestroyed) { return modules; }
         modules.push({
@@ -1640,7 +1647,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             });
         }
         if (this.frozenColumns || this.frozenRows || this.getFrozenColumns() ||
-            this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount()) {
+            this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount() || this.freezeModule) {
             modules.push({
                 member: 'freeze', args: [this]
             });
@@ -1669,14 +1676,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return modules;
     }
     public extendRequiredModules(modules: ModuleDeclaration[]): void {
-        if (this.allowRowDragAndDrop) {
-            modules.push({
-                member: 'rowDragAndDrop',
-                args: [this]
-            });
-        }
-        if (!isNullOrUndefined(this.toolbar) && (this.toolbar['includes']('Indent') || this.toolbar['includes']('Outdent'))) {
-            TreeGrid.Inject(RowDD);
+        const IsRowDDInjected: Function[] = this.injectedModules.filter((e: Function) => {
+            return e.prototype.getModuleName() === 'rowDragAndDrop';
+        });
+        if (this.allowRowDragAndDrop || IsRowDDInjected.length) {
+            if ((!isNullOrUndefined(this.toolbar) && (this.toolbar['includes']('Indent') ||
+             this.toolbar['includes']('Outdent')))) {
+                this.isIndentEnabled = true;
+            }
             modules.push({
                 member: 'rowDragAndDrop',
                 args: [this]
@@ -1804,6 +1811,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const root: string = 'root';
         this.grid[root] = this[root] ? this[root] : this;
         this.grid.appendTo(gridContainer as HTMLElement);
+        if (this.isIndentEnabled) {
+            this.refreshToolbarItems();
+        }
         this.wireEvents();
         this.renderComplete();
         const destroyTemplate: string = 'destroyTemplate';
@@ -1816,6 +1826,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.clearTemplate(args, index);
             }
         };
+    }
+
+    private refreshToolbarItems(): void {
+        const toolbarElement: Element = this.toolbarModule.getToolbar();
+        const indentID: string = this.element.id + '_gridcontrol_indent';
+        const outdentID: string = this.element.id + '_gridcontrol_outdent';
+        const indentElement: HTMLElement = toolbarElement.querySelector('#' + indentID).parentElement;
+        const outdentElement: HTMLElement = toolbarElement.querySelector('#' + outdentID).parentElement;
+        indentElement.classList.add('e-hidden');
+        outdentElement.classList.add('e-hidden');
     }
 
     private afterGridRender(): void {
@@ -2302,13 +2322,23 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (this.action === 'indenting' || this.action === 'outdenting') {
                 this.action = this.action === 'indenting' ? 'indented' : 'outdented';
+                const selectedItem: Object[] = [this.selectedRecords];
                 const actionArgs: TreeActionEventArgs = {
+                    data: selectedItem,
+                    dropIndex: this.dropIndex,
+                    dropPosition: this.dropPosition,
+                    modifiedRecords: this.modifiedRecords,
                     requestType: this.action,
-                    data: this.selectedRecords,
                     row: this.selectedRows
                 };
                 this.trigger(events.actionComplete, actionArgs);
-                this.action = ''; this.selectedRecords = this.selectedRows = [];
+                const currentPageItem: Object[] = this.getCurrentViewRecords().filter((e: ITreeData) => {
+                    return e.uniqueID === (selectedItem[0] as ITreeData).uniqueID;
+                });
+                if (!currentPageItem.length) {
+                    this.refreshToolbarItems();
+                }
+                this.action = ''; this.selectedRecords = this.selectedRows = this.modifiedRecords = [];
             } else {
                 this.trigger(events.actionComplete, args);
             }
@@ -2464,6 +2494,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                         target: '.e-content' , id: this.element.id + '_gridcontrol_cmenu_AddRow' ,
                         items: [{ text: this.l10n.getConstant('Above') , id: 'Above' }, { text: this.l10n.getConstant('Below') , id: 'Below'}, { text: this.l10n.getConstant('Child') , id: 'Child'}]});
                     break;
+                case 'Indent':
+                case ContextMenuItems.RowIndent:
+                    items.push(<ContextMenuItemModel>{ text: this.l10n.getConstant('RowIndent') ,
+                        target: '.e-content' , iconCss: 'e-indent e-icons', id: this.element.id + '_gridcontrol_cmenu_Indent'});
+                    break;
+                case 'Outdent':
+                case ContextMenuItems.RowOutdent:
+                    items.push(<ContextMenuItemModel>{ text: this.l10n.getConstant('RowOutdent') ,
+                        target: '.e-content' , iconCss: 'e-outdent e-icons', id: this.element.id + '_gridcontrol_cmenu_Outdent'});
+                    break;
                 default:
                     items.push(this.contextMenuItems[i]);
                 }
@@ -2482,6 +2522,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     private getGridToolbar(): Object[] {
         if (this.toolbar) {
+            this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
             const items: Object[] = [];
             let tooltipText: string;
             for (let i: number = 0; i < this.toolbar.length; i++) {
@@ -2509,7 +2550,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 case ToolbarItem.RowIndent:
                     tooltipText = this.l10n.getConstant('RowIndent');
                     items.push(<ItemModel>{
-                        text: tooltipText, tooltipText: tooltipText, disabled: true,
+                        text: tooltipText, tooltipText: tooltipText,
                         prefixIcon: 'e-indent', id: this.element.id + '_gridcontrol_indent'
                     });
                     break;
@@ -2517,7 +2558,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 case ToolbarItem.RowOutdent:
                     tooltipText = this.l10n.getConstant('RowOutdent');
                     items.push(<ItemModel>{
-                        text: tooltipText, tooltipText: tooltipText, disabled: true,
+                        text: tooltipText, tooltipText: tooltipText,
                         prefixIcon: 'e-outdent', id: this.element.id + '_gridcontrol_outdent'
                     });
                     break;
@@ -2555,6 +2596,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     } else if (prop === 'columns' && !isNullOrUndefined(column[i][prop])) {
                         gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[], false, index);
                         treeGridColumn[prop] = column[i][prop];
+                    } else if (this.initialRender && !isNullOrUndefined(treeColumn) && this.enablePersistence && prop === 'edit') {
+                        gridColumn[prop] = treeGridColumn[prop]  = treeColumn[prop];
                     } else if (!(treeColumn) || prop !== 'sortComparer') {
                         gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                     }
@@ -2694,7 +2737,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 this.grid.width = this.width; break;
             case 'locale':
-                this.grid.locale = this.locale; break;
+                this.grid.locale = this.locale;
+                this.TreeGridLocale(); this.grid.toolbar = this.getGridToolbar();
+                this.grid.contextMenuItems = this.getContextMenu();
+                break;
             case 'selectedRowIndex':
                 this.grid.selectedRowIndex = this.selectedRowIndex; break;
             case 'enableAltRow':
@@ -3171,7 +3217,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Column} - Returns tree grid column
      */
     public getColumnByUid(uid: string): Column {
-        const Columns: Column[] = this.initialRender ? <Column[]>this.grid.columns : <Column[]>this.columns;
+        let Columns: Column[] = this.initialRender ? <Column[]>this.grid.columns : <Column[]>this.columns;
+        const columnModel: string = 'columnModel';
+        if (this.grid.columns.length !== this.columnModel.length) {
+            Columns = this.grid[columnModel];
+        }
         return iterateArrayOrObject<Column, Column>(<Column[]>Columns, (item: Column) => {
             if (item.uid === uid) {
                 return item;
@@ -3314,7 +3364,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             temp = (this.columnModel[this.treeColumnIndex] as Column).template;
             field = (this.columnModel[this.treeColumnIndex] as Column).field;
         }
-        let stackedHeader: boolean = false;
         let gridColumn: ColumnModel;
         if (!this.enableColumnVirtualization || (this.enableColumnVirtualization && this.columnModel.length === gridColumns.length)) {
             this.columnModel = [];
@@ -3332,9 +3381,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const merge: string = 'deepMerge';
         this[merge] = ['columns']; // Workaround for blazor updateModel
         if (this.grid.columns.length !== this.columnModel.length) {
-            stackedHeader = true;
+            this.stackedHeader = true;
         }
-        if (!stackedHeader) {
+        if (!this.stackedHeader) {
             this.setProperties({ columns: this.columnModel }, true);
         }
         this[merge] = undefined;  // Workaround for blazor updateModel
@@ -4695,6 +4744,33 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
         this.rowDragAndDropModule.reorderRows(fromIndexes, toIndex, position);
     }
+
+    /**
+     * Indents the record to one level of hierarchy. Moves the selected row as the last child of its previous row.
+     *
+     * @param {Object} record – specifies the record to do indented
+     * @returns {void}
+     */
+    public indent(record?: Object): void {
+        if (!isNullOrUndefined(this.rowDragAndDropModule)) {
+            record = record as ITreeData;
+            this.rowDragAndDropModule[this.indentOutdentAction](record, 'indent');
+        }
+    }
+
+    /**
+     * Outdent the record to one level of hierarchy. Moves the selected row as sibling to its parent row.
+     *
+     * @param {Object} record – specifies the record to do outdented
+     * @returns {void}
+     */
+    public outdent(record?: Object): void {
+        if (!isNullOrUndefined(this.rowDragAndDropModule)) {
+            record = record as ITreeData;
+            this.rowDragAndDropModule[this.indentOutdentAction](record, 'outdent');
+        }
+    }
+
 
     /**
      * `columnchooserModule` is used to dynamically show or hide the TreeGrid columns.

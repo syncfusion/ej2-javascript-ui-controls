@@ -45,7 +45,6 @@ describe("Toast Util", () => {
         });
     });
     it("Toast Util using toast modal", () => {
-        debugger;
         expect(!isNOU(document.querySelector('.e-toast-util'))).toBe(true);
         expect(!isNOU(document.querySelector('.e-toast-message'))).toBe(true);
         expect(!isNOU(document.querySelector('.e-toast-title'))).toBe(true);

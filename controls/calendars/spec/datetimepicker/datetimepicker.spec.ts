@@ -4140,5 +4140,145 @@ describe('EJ2-56658:change event is not triggered while remove the selected time
     });
 
 });
+describe('EJ2-59142', () => {
+    let datetimepicker: any;
+    let keyEventArgs: any = {
+        preventDefault: (): void => { /** NO Code */ },
+        stopPropagation:(): void=>{},
+        action: 'ArrowLeft',
+        code: 'ArrowLeft',
+        key: 'ArrowLeft'
+    };
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'dateTime' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Typing a value in the Datetime picker mask is not working properly.', () => {
+        datetimepicker = new DateTimePicker({
+            placeholder: 'Select a date and time',
+            format: 'dd/MM/yyyy',
+            enableMask: true,
+            value: new Date('01/01/2020')
+        });
+        datetimepicker.appendTo('#dateTime');
+        datetimepicker.focusIn();
+        expect(datetimepicker.element.value).toBe('01/01/2020');
+        datetimepicker.element.selectionStart = 0;
+        datetimepicker.element.selectionEnd = 2;
+        datetimepicker.element.value = '0/01/2020';
+        datetimepicker.element.selectionStart = 1;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('0/01/2020');
+        expect(datetimepicker.element.selectionStart === 0).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 1).toBe(true);
+        datetimepicker.element.value = '4/01/2020';
+        datetimepicker.element.selectionStart = 1;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('04/01/2020');
+        expect(datetimepicker.element.selectionStart === 3).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 5).toBe(true);
+        datetimepicker.element.value = '04/0/2020';
+        datetimepicker.element.selectionStart = 4;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('04/0/2020');
+        expect(datetimepicker.element.selectionStart === 3).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 4).toBe(true);
+        datetimepicker.element.value = '04/5/2020';
+        datetimepicker.element.selectionStart = 4;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('04/05/2020');
+        expect(datetimepicker.element.selectionStart === 6).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 10).toBe(true);
+        datetimepicker.format = 'MM/dd/yyyy';
+        datetimepicker.dataBind();
+        datetimepicker.element.selectionStart = 0;
+        datetimepicker.element.selectionEnd = 2;
+        datetimepicker.element.value = '1/01/2020';
+        datetimepicker.element.selectionStart = 1;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('01/01/2020');
+        expect(datetimepicker.element.selectionStart === 0).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 2).toBe(true);
+        datetimepicker.element.value = '2/01/2020';
+        datetimepicker.element.selectionStart = 1;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('12/01/2020');
+        datetimepicker.element.selectionStart = 3;
+        datetimepicker.element.selectionEnd = 5;
+        datetimepicker.element.value = '12/1/2020';
+        datetimepicker.element.selectionStart = 4;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('12/01/2020');
+        expect(datetimepicker.element.selectionStart === 3).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 5).toBe(true);
+        datetimepicker.element.value = '12/0/2020';
+        datetimepicker.element.selectionStart = 4;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('12/10/2020');
+        expect(datetimepicker.element.selectionStart === 6).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 10).toBe(true);
+        datetimepicker.keydownHandler(keyEventArgs);
+        expect(datetimepicker.element.selectionStart).toBe(3);
+        expect(datetimepicker.element.selectionEnd).toBe(5);
+        datetimepicker.element.value = '12/0/2020';
+        datetimepicker.element.selectionStart = 4;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('12/0/2020');
+        expect(datetimepicker.element.selectionStart === 3).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 4).toBe(true);
+        datetimepicker.element.value = '12/6/2020';
+        datetimepicker.element.selectionStart = 4;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('12/06/2020');
+        expect(datetimepicker.element.selectionStart === 6).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 10).toBe(true);
+        datetimepicker.format = 'yyyy-MM-dd';
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('2020-01-01');
+        datetimepicker.element.selectionStart = 5;
+        datetimepicker.element.selectionEnd = 7;
+        datetimepicker.element.value = '2020-0-01';
+        datetimepicker.element.selectionStart = 6;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('2020-0-01');
+        expect(datetimepicker.element.selectionStart === 5).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 6).toBe(true);
+        datetimepicker.element.value = '2020-9-01';
+        datetimepicker.element.selectionStart = 6;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('2020-09-01');
+        expect(datetimepicker.element.selectionStart === 8).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 10).toBe(true);
+        datetimepicker.element.value = '2020-09-1';
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('2020-09-01');
+        expect(datetimepicker.element.selectionStart === 8).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 10).toBe(true);
+        datetimepicker.element.value = '2020-09-0';
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('2020-09-10');
+        datetimepicker.keydownHandler(keyEventArgs);
+        expect(datetimepicker.element.selectionStart === 5).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 7).toBe(true);
+        datetimepicker.element.value = '2020-1-10';
+        datetimepicker.element.selectionStart = 6;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('2020-01-10');
+        expect(datetimepicker.element.selectionStart === 5).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 7).toBe(true);
+        datetimepicker.element.value = '2020-2-10';
+        datetimepicker.element.selectionStart = 6;
+        datetimepicker.inputHandler();
+        expect(datetimepicker.element.value).toBe('2020-12-10');
+        expect(datetimepicker.element.selectionStart === 8).toBe(true);
+        expect(datetimepicker.element.selectionEnd === 10).toBe(true);
+    });
+});
 });
 

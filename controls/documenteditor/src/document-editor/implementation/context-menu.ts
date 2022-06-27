@@ -895,15 +895,14 @@ export class ContextMenu {
                 mergeCells.style.display = 'block';
             }
             autoFitTable.style.display = this.documentHelper.selection.isTableSelected() ? 'block' : 'none';
-        } else {
-            if (this.documentHelper.owner.fontDialogModule) {
-                font.style.display = 'block';
-            }
-            if (this.documentHelper.owner.paragraphDialogModule) {
-                paragraph.style.display = 'block';
-            } else if (!isDialogHidden && !this.documentHelper.owner.fontDialogModule && !isHideComment) {
-                (addComment.nextSibling as HTMLElement).style.display = 'none';
-            }
+        } 
+        if (this.documentHelper.owner.fontDialogModule) {
+            font.style.display = 'block';
+        }
+        if (this.documentHelper.owner.paragraphDialogModule) {
+            paragraph.style.display = 'block';
+        } else if (!isDialogHidden && !this.documentHelper.owner.fontDialogModule && !isHideComment) {
+            (addComment.nextSibling as HTMLElement).style.display = 'none';
         }
         if (selection.contextType === 'Image') {
             font.style.display = 'none';

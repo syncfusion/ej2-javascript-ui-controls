@@ -93,6 +93,13 @@ export interface PagerModel extends ComponentModel{
     click?: EmitType<Object>;
 
     /**
+     * Defines the own class for the pager element.
+     *
+     * @default ''
+     */
+    cssClass?: string;
+
+    /**
      * Triggers after pageSize is selected in DropDownList.
      *
      * @default null

@@ -3,7 +3,7 @@ import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, ChangeEventArgs, ClickEventArgs } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import * as events from '../../common/base/constant';
 import { IDataOptions, IFieldListOptions } from '../../base/engine';
@@ -40,7 +40,7 @@ export class DialogRenderer {
      */
     public render(): void {
         let fieldListWrappper: HTMLElement = createElement('div', {
-            id: this.parent.element.id + '_Wrapper',
+            id: this.parent.element.id + '_Container',
             className: cls.WRAPPER_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_WRAPPER_CLASS : ''),
             styles: 'width:' + this.parent.element.style.width
         });
@@ -264,6 +264,7 @@ export class DialogRenderer {
                 position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
                 buttons: buttons,
                 target: document.body,
+                cssClass: this.parent.cssClass,
                 close: this.removeFieldListIcon.bind(this),
                 open: this.dialogOpen.bind(this)
             });
@@ -297,6 +298,7 @@ export class DialogRenderer {
                 position: { X: 'center', Y: this.parent.element.offsetTop },    /* eslint-disable-line */
                 footerTemplate: template,
                 closeOnEscape: false,
+                cssClass: this.parent.cssClass,
                 target: !isNullOrUndefined(this.parent.target) ? ((typeof this.parent.target) === 'string') ?
                     <HTMLElement>document.querySelector(<string>this.parent.target) : <HTMLElement>this.parent.target : document.body,
                 close: this.removeFieldListIcon.bind(this)
@@ -534,7 +536,7 @@ export class DialogRenderer {
         }
     }
 
-    private onCloseFieldList(): void {
+    private onCloseFieldList(args: ClickEventArgs): void {
         if (this.parent.allowDeferLayoutUpdate) {
             this.parent.dataSourceSettings =
                 extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;   /* eslint-disable-line */
@@ -557,7 +559,9 @@ export class DialogRenderer {
             }
             if (this.parent.isPopupView && this.parent.pivotGridModule) {
                 this.parent.pivotGridModule.notify(events.uiUpdate, this);
-                this.parent.pivotGridModule.notify(events.contentReady, this);
+                if (!(args as any).currentTarget.classList.contains('e-defer-cancel-button')) {
+                    this.parent.pivotGridModule.notify(events.contentReady, this);
+                }
             } else {
                 this.cancelButtonClick();
             }
@@ -631,8 +635,8 @@ export class DialogRenderer {
                 this.fieldListDialog.destroy();
                 this.fieldListDialog = null;
             }
-            if (document.getElementById(this.parent.element.id + '_Wrapper')) {
-                remove(document.getElementById(this.parent.element.id + '_Wrapper'));
+            if (document.getElementById(this.parent.element.id + '_Container')) {
+                remove(document.getElementById(this.parent.element.id + '_Container'));
             }
         }
     }

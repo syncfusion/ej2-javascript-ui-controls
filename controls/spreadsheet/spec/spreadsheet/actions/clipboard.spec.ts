@@ -42,7 +42,7 @@ describe('Clipboard ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('F163240, FB23869 ->', () => {
+        describe('F163240, FB23869, EJ2-59226 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
@@ -93,12 +93,31 @@ describe('Clipboard ->', () => {
                     });
                 });
             });
+
+            it('When we copy the values with empty cell, it pasted to additional range with new values', (done: Function) => {
+                helper.edit('H3', '=SUM(F3:G3)');
+                helper.invoke('copy', ['H3:I3']).then(() => {
+                    helper.invoke('paste', ['I3']);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toEqual('');
+                    expect(helper.invoke('getCell', [2, 9]).textContent).toBe('');
+                });
+                helper.invoke('copy', ['G3:G3']).then(() => {
+                    helper.invoke('paste', ['H3']);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[7].value).not.toEqual('');
+                    expect(helper.invoke('getCell', [2, 7]).textContent).not.toBe('');
+                    done();
+                });
+            });
         });
         describe('F162960 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{ cells: [{ value: '100' }, { value: '25' }, { value: '1001' }] }, { cells: [{ value: '100' },
-                    { value: '25' }, { value: '1001' }] }], selectedRange: 'A1:B2' }],
+                    sheets: [{
+                        rows: [{ cells: [{ value: '100' }, { value: '25' }, { value: '1001' }] }, {
+                            cells: [{ value: '100' },
+                            { value: '25' }, { value: '1001' }]
+                        }], selectedRange: 'A1:B2'
+                    }],
                     created: (): void => helper.getInstance().setRowHeight(45)
                 }, done);
             });
@@ -198,9 +217,15 @@ describe('Clipboard ->', () => {
         describe('I329167, I328868 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{ cells: [{ index: 5, value: '10' }, { value: '11' }, { value: '8' }] }, { cells: [{ index: 5,
-                    formula: '=IF(F1>10,"Pass","Fail")' }, { index: 7, value: '10' }] }, { cells: [{ index: 7, formula: '=SUM(H1:H2)' }] }],
-                    selectedRange: 'F2' }]
+                    sheets: [{
+                        rows: [{ cells: [{ index: 5, value: '10' }, { value: '11' }, { value: '8' }] }, {
+                            cells: [{
+                                index: 5,
+                                formula: '=IF(F1>10,"Pass","Fail")'
+                            }, { index: 7, value: '10' }]
+                        }, { cells: [{ index: 7, formula: '=SUM(H1:H2)' }] }],
+                        selectedRange: 'F2'
+                    }]
                 }, done);
             });
             afterAll(() => {
@@ -355,7 +380,7 @@ describe('Clipboard ->', () => {
         });
         describe('EJ2-56522 ->', () => {
             beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ }, done);
+                helper.initializeSpreadsheet({}, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
@@ -425,25 +450,25 @@ describe('Clipboard ->', () => {
             });
             it('External copy and paste cell model with style creation - copied from PowerPoint', (done: Function) => {
                 const tableStr: string = '<style>col{mso-width-source:auto;}td{color:windowtext;vertical-align:bottom;border:none;}' +
-                '.oa1{border:1.0pt solid black;vertical-align:top;}</style>' +
-                '<table><tbody>' +
-                '<tr height="42" style="height:20.93pt">' +
+                    '.oa1{border:1.0pt solid black;vertical-align:top;}</style>' +
+                    '<table><tbody>' +
+                    '<tr height="42" style="height:20.93pt">' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single">' +
-                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">115</span>' +
+                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">115</span>' +
                     '</s></p></td>' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single">' +
-                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">313</span>' +
+                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">313</span>' +
                     '</s></p></td>' +
-                '</tr>' +
-                '<tr>' +
+                    '</tr>' +
+                    '<tr>' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
-                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;"">225</span></u></s></p>' +
+                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;"">225</span></u></s></p>' +
                     '</td>' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
-                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;">406</span></u></s></p>' +
+                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;">406</span></u></s></p>' +
                     '</td>' +
-                '</tr>' +
-                '</tbody></table>';
+                    '</tr>' +
+                    '</tbody></table>';
                 const tableCont: Element = createElement('span', { innerHTML: tableStr });
                 const spreadsheet: any = helper.getInstance();
                 let rows: RowModel[] = [];
@@ -452,20 +477,86 @@ describe('Clipboard ->', () => {
                 expect(rows[0].cells.length).toBe(2);
                 expect(rows[0].cells[0].value as any).toBe(115);
                 let style: string = '{"verticalAlign":"top","textAlign":"left","fontSize":"18pt","fontFamily":"Calibri","color":"#2E75B6",'
-                + '"fontWeight":"bold","fontStyle":"italic","textDecoration":"line-through","borderBottom":"1.33px solid black",' +
-                '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
+                    + '"fontWeight":"bold","fontStyle":"italic","textDecoration":"line-through","borderBottom":"1.33px solid black",' +
+                    '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
                 expect(JSON.stringify(rows[0].cells[0].style)).toBe(style);
                 expect(rows[0].cells[1].value as any).toBe(313);
                 expect(JSON.stringify(rows[0].cells[1].style)).toBe(style);
                 expect(rows[1].cells.length).toBe(2);
                 expect(rows[1].cells[0].value as any).toBe(225);
                 style = '{"verticalAlign":"top","textAlign":"left","textDecoration":"underline line-through","fontSize":"18pt",' +
-                '"fontFamily":"Calibri","color":"#2E75B6","fontStyle":"italic","borderBottom":"1.33px solid black",' +
-                '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
+                    '"fontFamily":"Calibri","color":"#2E75B6","fontStyle":"italic","borderBottom":"1.33px solid black",' +
+                    '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
                 expect(JSON.stringify(rows[1].cells[0].style)).toBe(style);
                 expect(rows[1].cells[1].value as any).toBe(406);
                 expect(JSON.stringify(rows[1].cells[1].style)).toBe(style);
                 done();
+            });
+        });
+        describe('EJ2-58124 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        ranges: [{
+                            dataSource: defaultData
+                        }]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('copy the unique formula and paste same sheet', (done: Function) => {
+                helper.getInstance().selectRange('I1:I1')
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = '=UNIQUE(D2:D6)';
+                helper.triggerKeyNativeEvent(13);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].formula).toBe('=UNIQUE(D2:D6)');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('10');
+                    done();
+                });
+            });
+            it('copying unique formula to another range', (done: Function) => {
+                helper.invoke('copy', ['I1:I4']).then(() => {
+                    helper.invoke('selectRange', ['J2']);
+                    helper.invoke('paste');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('30');
+                        done();
+                    });
+                });
+            });
+            it('copying unique formula to another value containing range', (done: Function) => {
+                helper.invoke('selectRange', ['I2:I4']);
+                helper.invoke('copy', ['I1:I4']).then(() => {
+                    helper.invoke('selectRange', ['F2']);
+                    helper.invoke('paste');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toBe('#SPILL!');
+                        done();
+                    });
+                });
+            });
+            it('copy the unique formula and paste without spill', (done: Function) => {
+                helper.getInstance().selectRange('I7:I7');
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = '=UNIQUE(D4:D7)';
+                helper.triggerKeyNativeEvent(13);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[6].cells[8].formula).toBe('=UNIQUE(D4:D7)');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('10');
+                    helper.invoke('selectRange', ['I7:I10']);
+                    helper.invoke('copy', ['I7:I10']).then(() => {
+                        helper.invoke('selectRange', ['E7']);
+                        helper.invoke('paste');
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].rows[6].cells[5].value).toBe('Formal Shoes');
+                            done();
+                        });
+                    });
+                    done();
+                });
             });
         });
     });

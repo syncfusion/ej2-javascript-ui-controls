@@ -11,7 +11,7 @@ import { LinearGaugeModel } from './linear-gauge-model';
 import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';
 import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';
 import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';
-import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange, getExtraWidth } from './utils/helper';
+import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange, getExtraWidth, stringToNumberSize } from './utils/helper';
 import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';
 import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';
 import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';
@@ -550,8 +550,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Method to calculate the size of the gauge
      */
     private calculateSize(): void {
-        const width: number = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
-        const height: number = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
+        if (!isNullOrUndefined(this.height)) {
+            this.element.style.height = this.height;
+        }
+        if (!isNullOrUndefined(this.width)) {
+            this.element.style.width = this.width;
+        }
+        const width: number = stringToNumberSize(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
+        const height: number = stringToNumberSize(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
     }
 

@@ -639,7 +639,7 @@ describe('Chart Control - Box and Whisker Series', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip == null).toBe(true);
                 svg = getElement('container_Series_0_Point_1_Trackball_0');
-                expect(svg != null).toBe(true);
+                expect(svg == null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

@@ -240,8 +240,8 @@ describe('Pivot Grid Toolbar', () => {
         // it('Fieldlist', (done: Function) => {
         //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
         //     setTimeout(() => {
-        //         //expect(window.getComputedStyle(document.querySelector('.e-pivotfieldlist-wrapper')).display !== 'none').toBeTruthy();
-        //         (document.querySelector('.e-pivotfieldlist-wrapper .e-cancel-btn') as HTMLElement).click();
+        //         //expect(window.getComputedStyle(document.querySelector('.e-pivotfieldlist-container')).display !== 'none').toBeTruthy();
+        //         (document.querySelector('.e-pivotfieldlist-container .e-cancel-btn') as HTMLElement).click();
         //         (document.querySelector('.e-pivot-toolbar .e-toolbar-formatting') as HTMLElement).click();
         //         done();
         //     }, 2000);

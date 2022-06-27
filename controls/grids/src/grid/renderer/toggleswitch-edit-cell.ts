@@ -49,7 +49,8 @@ export class ToggleEditCell extends EditCellBase implements IEditCell {
                     label: this.parent.editSettings.mode !== 'Dialog' ? ' ' : args.column.headerText,
                     checked: checkState,
                     disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
-                    change: this.switchModeChange.bind(this)
+                    change: this.switchModeChange.bind(this),
+                    cssClass: this.parent.cssClass ? this.parent.cssClass : ''
                 },
                 args.column.edit.params));
         this.obj.appendTo(args.element as HTMLElement);

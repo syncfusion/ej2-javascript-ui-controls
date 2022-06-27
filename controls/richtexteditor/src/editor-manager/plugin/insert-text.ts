@@ -26,7 +26,7 @@ export class InsertTextExec {
     }
     private insertText(e: IHtmlSubCommands): void {
         const node: Node =  document.createTextNode(e.value as string);
-        InsertHtml.Insert(this.parent.currentDocument, node as Node);
+        InsertHtml.Insert(this.parent.currentDocument, node as Node, this.parent.editableElement);
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,

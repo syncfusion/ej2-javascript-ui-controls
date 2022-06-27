@@ -552,11 +552,13 @@ export class Edit {
     private updateIndex (data: Object, rows: Object, records: Object): void {
         for (let j: number = 0; j < this.parent.getDataRows().length; j++ ) {
             const data1: ITreeData = records[j];
-            const index: number = getValue('uniqueIDCollection.' + data1.uniqueID + '.index', this.parent);
-            data1.index = index;
-            if (!isNullOrUndefined(data1.parentItem)) {
-                const parentIndex: number = getValue('uniqueIDCollection.' + data1.parentItem.uniqueID + '.index', this.parent);
-                data1.parentItem.index = parentIndex;
+            if (!isNullOrUndefined(data1)) {
+                const index: number = getValue('uniqueIDCollection.' + data1.uniqueID + '.index', this.parent);
+                data1.index = index;
+                if (!isNullOrUndefined(data1.parentItem)) {
+                    const parentIndex: number = getValue('uniqueIDCollection.' + data1.parentItem.uniqueID + '.index', this.parent);
+                    data1.parentItem.index = parentIndex;
+                }
             }
         }
         let count: number = -1;
@@ -575,31 +577,33 @@ export class Edit {
                 count++;
             }
             const data2: ITreeData = records[count];
-            let index: number = data2.index;
-            const level: number = data2.level;
-            const row: Element = rows[k];
-            if (!isNullOrUndefined(data2.parentItem)) {
-                index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
-            }
-            const treecell: HTMLElement = (row as HTMLTableRowElement).cells[treeColIndex];
-            if (!isNullOrUndefined(treecell)) {
-                for (let l: number = 0; l < treecell.classList.length; l++) {
-                    const value: string = treecell.classList[l];
-                    const remove: RegExp = /e-gridrowindex/i;
-                    const removed: RegExp = /e-griddetailrowindex/i;
-                    const result: RegExpMatchArray = value.match(remove);
-                    const results: RegExpMatchArray = value.match(removed);
-                    if (result != null) {
-                        removeClass([treecell], value);
-                    }
-                    if (results != null) {
-                        removeClass([treecell], value);
-                    }
+            if (!isNullOrUndefined(data2)) {
+                let index: number = data2.index;
+                const level: number = data2.level;
+                const row: Element = rows[k];
+                if (!isNullOrUndefined(data2.parentItem)) {
+                    index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
                 }
-                if (!rows[k].classList.contains('e-detailrow')) {
-                    addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
-                }else {
-                    addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
+                const treecell: HTMLElement = (row as HTMLTableRowElement).cells[treeColIndex];
+                if (!isNullOrUndefined(treecell)) {
+                    for (let l: number = 0; l < treecell.classList.length; l++) {
+                        const value: string = treecell.classList[l];
+                        const remove: RegExp = /e-gridrowindex/i;
+                        const removed: RegExp = /e-griddetailrowindex/i;
+                        const result: RegExpMatchArray = value.match(remove);
+                        const results: RegExpMatchArray = value.match(removed);
+                        if (result != null) {
+                            removeClass([treecell], value);
+                        }
+                        if (results != null) {
+                            removeClass([treecell], value);
+                        }
+                    }
+                    if (!rows[k].classList.contains('e-detailrow')) {
+                        addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
+                    }else {
+                        addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
+                    }
                 }
             }
         }
@@ -691,11 +695,11 @@ export class Edit {
             this.selectedIndex = this.batchEditModule.getSelectedIndex();
             if (this.parent.editModule['isAddedRowByMethod']) {
                 const args: Object = {
-                    action : "add",
+                    action : 'add',
                     data: this.parent.getBatchChanges()['addedRecords'][0],
                     index: index,
                     seletedRow: 0
-                }
+                };
                 this.parent.editModule.beginAddEdit(args);
                 this.parent.editModule.batchEditModule['batchAddRowRecord'].push(this.parent.editModule.batchEditModule['addRowRecord']);
                 this.parent.editModule.batchEditModule['batchAddedRecords'].push(args['data']);
@@ -831,7 +835,7 @@ export class Edit {
             let parentUniqueID: string; let parentItem: Object; let parentIdMapping: string;
             const isVirtualization: boolean = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
             const rows: HTMLTableRowElement[] = this.parent.getRows();
-            const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
+            const firstAriaIndex: number = rows.length ? currentData.indexOf(currentData[0]) : 0;
             const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
             const withinRange: boolean = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
             if (currentData.length) {

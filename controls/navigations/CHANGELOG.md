@@ -2,6 +2,56 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#F175215` - The issue with "Sidebar showBackdrop property is not working properly while setting the target property" has been resolved.
+
+## 20.1.58 (2022-05-31)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I377292` - Accessibility issues in tab has been fixed.
+
+## 20.1.56 (2022-05-17)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I373045` - An issue with "Script error occurs while using keyboard navigation in menu" has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I371505` - The issue with "The TreeView checked node state doesn't update properly for nested levels when loadOnDemand is enabled" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#F174831` - An issue with drag not works when adding multiple tab items has been fixed.
+
+## 20.1.51 (2022-04-26)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I371505` - The issue with "The TreeView checked node state doesn't update properly for nested levels when loadOnDemand is enabled" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#F174269` - Tab throws script error while adding items with `headerTemplate` has been fixed.
+
 ## 20.1.48 (2022-04-12)
 
 ### Menu

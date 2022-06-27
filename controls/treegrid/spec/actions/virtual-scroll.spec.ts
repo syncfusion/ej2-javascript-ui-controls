@@ -7,12 +7,13 @@ import { virtualData, editVirtualData, dataSource } from '../base/datasource.spe
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { select } from '@syncfusion/ej2-base';
+import { Filter } from '../../src/treegrid/actions/filter';
 
 /**
  * TreeGrid Virtual Scroll spec 
  */
 
-TreeGrid.Inject(VirtualScroll, Edit, Toolbar);
+TreeGrid.Inject(VirtualScroll, Edit, Toolbar, Filter);
 
 if(!editVirtualData.length){
     dataSource();
@@ -740,6 +741,62 @@ describe('TreeGrid Virtual Scroll', () => {
 
     afterAll(() => {
       gridObj.grid.contentModule.removeEventListener();
+      destroy(gridObj);
+    });
+  });
+
+
+  describe('EJ2-58929 - Searching after scroll shows no records to display in case of Virtualization enabled', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionBegin: () => void;
+    let actionComplete: () => void;    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                childMapping: 'Crew',
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                filterSettings: {
+                  mode: 'Immediate',
+                  type: 'FilterBar',
+                  hierarchyMode: 'None',
+                },
+                toolbar: ['Search'],
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120,allowEditing: false, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Scroll', (done: Function) => {
+        let content: HTMLElement = (<HTMLElement>gridObj.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 20000;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 1000);
+        done();
+    });    
+
+    it('Searching after Scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(gridObj.getRows().length == 1).toBe(true);
+            done();
+        }
+        gridObj.search("496");
+        gridObj.grid.actionComplete = actionComplete;
+    });
+
+    afterAll(() => {
       destroy(gridObj);
     });
   });

@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I379177`,`#I379023` - Now, the `GetTargetDetailsAsync` method doesn't display 'null' on an empty Kanban board.
+
+## 20.1.58 (2022-05-31)
+
+### Kanban
+
+#### New Features
+
+- `#I373922` - Now, we have improved the performance with the Kanban drag and drop action when large data is being loaded.
+
+## 20.1.52 (2022-05-04)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I375869` - Now, opening and closing the dialog by rapidly double-clicking on the card doesn't throw any console error.
+
 ## 19.4.38 (2021-12-17)
 
 ### Kanban

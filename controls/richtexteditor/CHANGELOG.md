@@ -2,6 +2,104 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I380279` - Now, the Image Resize icon is shown properly when Iframe is enabled.
+
+- `#I381276` - Now, image alignment is maintained with Iframe mode when focusing on the component.
+
+## 20.1.59 (2022-06-07)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I378184` - Now, the script error is not thrown when resizing the Rich Text Editor component with inline mode.
+
+- `#I381208` - Now, applying bold multiple times using `ctrl+b` on the nested list works properly.
+
+## 20.1.58 (2022-05-31)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I378721` - Now, pressing the enter key on the selection of multiple paragraph contents works properly in the `Firefox` browser.
+
+- `#I378378` - Now, copying and pasting the contents with a length that exceeds the `maxLength` API is properly prevented.
+
+- `#I378378` - Now, adding a link, image, and table is properly prevented when the content length exceeds the `maxLength` API limit.
+
+- `#I376816` - Now, applying the list by selecting all content that is pasted in the Rich Text Editor on the `Firefox` browser works and doesn't raise any console errors.
+
+- `#I378378` - Now, copying and pasting the contents with a length less than or equal to the `maxLength` API is pasted properly in the Rich Text Editor.
+
+- `#I380152` - Now, typing content in the Rich Text Editor when loading empty `P` tags in the `Iframe` mode works properly.
+
+- `#I380165` - Now, the focus will be maintained properly after pressing the enter key in the Rich Text Editor when loading empty `P` tags.
+
+## 20.1.57 (2022-05-24)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I376816` - Now, pressing the backspace or delete key after selecting all list contents in the Rich Text Editor removes the list properly.
+
+## 20.1.56 (2022-05-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I377121` - Now, adding the `cssClass` property will also add the CSS class to all the dependent components of the Rich Text Editor.
+
+- `#I376816` - Now, applying list by selecting all content which is pasted in the Rich Text Editor on the `Firefox` browser works properly.
+
+- `#SF-378184` - Now, the script error is not thrown when resizing the Rich Text Editor component with inline mode.
+
+## 20.1.55 (2022-05-12)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I374234` - Now, the Rich Text Editor table resize works properly when width is configured for the parent element.
+
+## 20.1.52 (2022-05-04)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I375434` - Now, pressing the enter key multiple times when the content is empty in the Rich Text Editor on the `Firefox` browser works properly.
+
+- `#I349917` - Now, the floating toolbar in the Rich Text Editor is displayed properly when rendered inside the modal dialog.
+
+- `#I376141` - Now, pressing enter key before the image with caption doesn't remove the image.
+
+- `#I373983` - Now, the Rich Text Editor table resize works properly when placed inside the `Grid` component.
+
+## 20.1.51 (2022-04-26)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I373527` - Now, the font name is updated properly when using the custom font names in the Rich Text Editor.
+
+- `#I373953` - Now, inserting the table after the list element with the image doesn't remove the image from the list.
+
+- `#I372489` - Now, resizing the images with equal height and width works properly.
+
+- `#F173394` - Now, the undo and redo keys work properly when pasting the content in the Rich Text Editor.
+
+- `#SF-367649` - Now, more space between the text and inserting a new link does not remove the space between the words.
+
 ## 20.1.50 (2022-04-19)
 
 ### RichTextEditor

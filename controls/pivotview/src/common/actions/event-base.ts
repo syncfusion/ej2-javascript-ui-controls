@@ -6,7 +6,9 @@ import { MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
-import { FilterType } from '../../base/types';
+import { FilterType, Sorting } from '../../base/types';
+import { HeadersSortEventArgs } from '../base/interface';
+import * as events from '../base/constant';
 
 /**
  * `EventBase` for active fields action.
@@ -55,6 +57,8 @@ export class EventBase {
             }
             //isDescending = (target.querySelectorAll(cls.SORT_DESCEND_CLASS));
             let sortObj: ISort = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.sortSettings) as ISort;
+            let addMembersOrder: string[] | number[] = this.parent.engineModule && this.parent.engineModule.fieldList[fieldName] && this.parent.engineModule.fieldList[fieldName].membersOrder
+                ? [...this.parent.engineModule.fieldList[fieldName].membersOrder] as string[] | number[] : [];
             if (!isNullOrUndefined(sortObj)) {
                 for (let i: number = 0; i < this.parent.dataSourceSettings.sortSettings.length; i++) {
                     if (this.parent.dataSourceSettings.sortSettings[i].name === fieldName) {
@@ -62,11 +66,11 @@ export class EventBase {
                         break;
                     }
                 }
-                let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
+                let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending', membersOrder: sortObj ? sortObj.membersOrder : addMembersOrder };
                 // let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending' };
                 this.parent.dataSourceSettings.sortSettings.push(newSortObj);
             } else {
-                let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
+                let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending', membersOrder: sortObj ? sortObj.membersOrder : addMembersOrder };
                 //let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending'  };
                 this.parent.dataSourceSettings.sortSettings.push(newSortObj);
             }
@@ -108,22 +112,45 @@ export class EventBase {
             if (this.parent.dataType === 'olap') {
                 treeData = this.getOlapData(fieldName, isInclude);
             } else {
+                let fieldInfo: IField = this.parent.engineModule.fieldList[fieldName];
                 let members: IAxisSet[] =
-                    PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember as []) as IAxisSet[];
+                    PivotUtil.getClonedData(fieldInfo.dateMember as []) as IAxisSet[];
                 /* eslint-disable  */
-                members =
-                    this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
-                        (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
-                            ((b.actualText > a.actualText) ? -1 : 0))) :
-                        this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
-                            (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
-                                ((b.actualText < a.actualText) ? -1 : 0))) :
-                            members;
+                let membersInfo: string[] | number[] = fieldInfo && fieldInfo.membersOrder ?
+                    [...fieldInfo.membersOrder] as string[] | number[] : [];
+                let sortDetails: HeadersSortEventArgs = {
+                    fieldName: fieldName,
+                    sortOrder: fieldInfo.sort as Sorting,
+                    members: membersInfo && membersInfo.length > 0 ? membersInfo : Object.keys(members),
+                    IsOrderChanged: false
+                };
+                let isHeaderSortByDefault: boolean = false;
+                let sortType: string | boolean = fieldInfo && fieldInfo.isAlphanumeric ? true : undefined;
+                if (membersInfo && membersInfo.length > 0) {
+                    members = PivotUtil.applyCustomSort(sortDetails, members, sortType);
+                }
+                else {
+                    members = PivotUtil.applyHeadersSort(members, sortDetails.sortOrder, sortType);
+                    isHeaderSortByDefault = true;
+                }
                 /* eslint-enable  */
                 let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
                 if (!isNullOrUndefined(filterObj)) {
                     isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
                     filterItems = filterObj.items ? filterObj.items : [];
+                }
+                if (isHeaderSortByDefault) {
+                    let copyOrder: string[] | number[] = [];
+                    for (let m: number = 0, n: number = 0; m < members.length; m++) {
+                        if (members[m].actualText !== 'Grand Total') {
+                            copyOrder[n++] = members[m].actualText;
+                        }
+                    }
+                    sortDetails.members = copyOrder as string[];
+                }
+                this.parent.control.trigger(events.onHeadersSort, sortDetails);
+                if (sortDetails.IsOrderChanged) {
+                    members = PivotUtil.applyCustomSort(sortDetails, members, sortType, true);
                 }
                 treeData =
                     this.getTreeData(isInclude, members, filterItems, fieldName);
@@ -135,7 +162,7 @@ export class EventBase {
         let popupTarget: HTMLElement = this.parent.control.filterTargetID;
         if (isNullOrUndefined(popupTarget)) {
             popupTarget = this.parent.moduleName !== 'pivotfieldlist' ?
-                this.parent.element : document.getElementById(this.parent.parentID + '_Wrapper');
+                this.parent.element : document.getElementById(this.parent.parentID + '_Container');
         }
         this.parent.filterDialog.createFilterDialog(treeData, fieldName, fieldCaption, popupTarget);
     }
@@ -222,13 +249,95 @@ export class EventBase {
      */
     public sortOlapFilterData(treeData: { [key: string]: Object }[], order: string): { [key: string]: Object }[] {  /* eslint-disable-line */
         if (treeData.length > 0) {
-            treeData = order === 'Ascending' ?
-                (treeData.sort((a: IOlapField, b: IOlapField) => (a.caption > b.caption) ? 1 :
-                    ((b.caption > a.caption) ? -1 : 0))) : order === 'Descending' ?
-                    (treeData.sort((a: IOlapField, b: IOlapField) => (a.caption < b.caption) ? 1 :
-                        ((b.caption < a.caption) ? -1 : 0))) : treeData;
+            let isHeaderSortByDefault: boolean = false;
+            let members: string[] = [];
+            for (let i = 0; i < treeData.length; i++) {
+                members.push(treeData[i].caption as string);
+            }
+            let fieldName: string = treeData[0].caption !== 'Grand Total' || treeData[0].caption === undefined ? (treeData[0].htmlAttributes as any)['data-fieldName'] : (treeData[1].htmlAttributes as any)['data-fieldName'];
+            let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+            let fieldInfo: IField = engineModule.fieldList[fieldName];
+            let membersInfo: string[] = fieldInfo && fieldInfo.membersOrder ? [...fieldInfo.membersOrder] as string[] : [];
+            let sortDetails: HeadersSortEventArgs = {
+                fieldName: fieldName,
+                sortOrder: order as Sorting,
+                members: membersInfo && membersInfo.length > 0 ? membersInfo : members,
+                IsOrderChanged: false
+            };
+            if (membersInfo && membersInfo.length > 0) {
+                this.applyFilterCustomSort(treeData, sortDetails);
+            }
+            else {
+                order === 'Ascending' ?
+                    (treeData.sort((a: IOlapField, b: IOlapField) => (a.caption > b.caption) ? 1 :
+                        ((b.caption > a.caption) ? -1 : 0))) : order === 'Descending' ?
+                        (treeData.sort((a: IOlapField, b: IOlapField) => (a.caption < b.caption) ? 1 :
+                            ((b.caption < a.caption) ? -1 : 0))) : treeData;
+                isHeaderSortByDefault = true;
+            }
+            if (isHeaderSortByDefault) {
+                let copyOrder: string[] = [];
+                for (let m: number = 0, n: number = 0; m < treeData.length; m++) {
+                    if (treeData[m].caption !== 'Grand Total') {
+                        copyOrder[n++] = treeData[m].caption as string;
+                    }
+                }
+                sortDetails.members = copyOrder as string[];
+            }
+            this.parent.control.trigger(events.onHeadersSort, sortDetails);
+            if (sortDetails.IsOrderChanged) {
+                this.applyFilterCustomSort(treeData, sortDetails, true);
+            }
         }
         return treeData;
+    }
+
+    private applyFilterCustomSort(headers: { [key: string]: Object }[], sortDetails: HeadersSortEventArgs, hasMembersOrder?: boolean): { [key: string]: Object }[] {
+        let order: string[] | number[] = [];
+        let updatedMembers: string[] = [];
+        let grandTotal: { [key: string]: Object };
+        if (sortDetails.IsOrderChanged) {
+            order = sortDetails.members;
+        }
+        else {
+            order = (sortDetails.sortOrder === 'Ascending' || sortDetails.sortOrder === 'None' || sortDetails.sortOrder === undefined) ? [].concat(sortDetails.members) : [].concat(sortDetails.members).reverse();
+        }
+        if (headers[0].caption === 'Grand Total') {
+            grandTotal = headers[0];
+            headers.shift();
+        }
+        for (let i: number = 0, j: number = 0; i < headers.length; i++) {
+            let sortText: string = headers[i].caption as string;
+            if (order[j] === sortText) {
+                headers.splice(j++, 0, headers[i]);
+                headers.splice(++i, 1);
+                if (j < order.length) {
+                    i = -1;
+                }
+                else {
+                    if (!hasMembersOrder) {
+                        updatedMembers.splice(--j, 0, sortText);
+                    }
+                    break;
+                }
+            }
+            if (i >= 0 && !hasMembersOrder) {
+                updatedMembers[i] = headers[i].caption as string;
+            }
+        }
+        if (!hasMembersOrder) {
+            for (let i: number = updatedMembers.length; i < headers.length; i++) {
+                updatedMembers[i] = headers[i].caption as string;
+            }
+            if (updatedMembers[updatedMembers.length - 1] === 'Grand Total') {
+                updatedMembers.pop();
+            }
+            sortDetails.members = updatedMembers;
+        }
+        if (grandTotal) {
+            headers.splice(0, 0, grandTotal);
+        }
+        return headers;
     }
 
     private getParentIDs(treeObj: TreeView, id: string, parent: string[]): string[] {

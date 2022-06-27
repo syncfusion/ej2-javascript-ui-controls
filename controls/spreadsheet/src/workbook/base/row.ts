@@ -2,7 +2,7 @@ import { CellModel, SheetModel } from './index';
 import { RowModel } from './row-model';
 import { ChildProperty, Collection, Property, Complex } from '@syncfusion/ej2-base';
 import { Cell } from './cell';
-import { FormatModel, Format } from '../common/index';
+import { FormatModel, Format, ExtendedRowModel } from '../common/index';
 
 /**
  * Configures the Row behavior for the spreadsheet.
@@ -110,6 +110,15 @@ export function setRow(sheet: SheetModel, rowIndex: number, row: RowModel): void
  */
 export function isHiddenRow(sheet: SheetModel, index: number): boolean {
     return sheet.rows[index] && sheet.rows[index].hidden;
+}
+/**
+ * @hidden
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {number} index - Specifies the index.
+ * @returns {boolean} - To return the bool value.
+ */
+ export function isFilterHidden(sheet: SheetModel, index: number): boolean {
+    return sheet.rows[index] && (sheet.rows[index] as ExtendedRowModel).isFiltered;
 }
 /**
  * @hidden

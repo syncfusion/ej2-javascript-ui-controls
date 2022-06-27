@@ -369,12 +369,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
                 const attributeName: string = this.element.attributes[index].nodeName;
-                if (attributeName !== 'id') {
+                if (attributeName !== 'id' && attributeName !== 'class') {
                     inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
                     inputElement.innerHTML = this.element.innerHTML;
                     if (attributeName === 'name') {
                         this.element.removeAttribute('name');
                     }
+                } else if (attributeName === 'class') {
+                    inputElement.setAttribute(attributeName, this.element.className.split(' ').filter((item: string) => item.indexOf('ng-') !== 0).join(' '));
                 }
             }
             this.element.appendChild(inputElement);

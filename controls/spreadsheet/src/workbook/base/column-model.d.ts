@@ -1,4 +1,4 @@
-import { SheetModel } from './index';import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FormatModel, Format, ValidationModel } from '../common/index';
+import { SheetModel } from './index';import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FormatModel, Format, ValidationModel, isInMultipleRange } from '../common/index';
 
 /**
  * Interface for a class Column

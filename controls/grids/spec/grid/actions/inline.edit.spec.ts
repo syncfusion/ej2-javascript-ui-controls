@@ -3276,6 +3276,17 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             (select('#' + grid.element.id + 'CustomerID', grid.element)  as any).value = 'updated';
             (<any>grid.toolbarModule).toolbarClickHandler({ item: { id: grid.element.id + '_update' } });
         });
+        it('EJ2-60088 - Alignment issue while adding a new row with frozen columns with RowDD', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect((grid.element.querySelector('.e-movablecontent').querySelector('.e-normaledit') as any).colSpan).toBe(
+                        grid.getVisibleColumns().length - grid.getVisibleFrozenColumns());
+                    done();
+                }
+            };
+            grid.actionComplete = actionComplete;
+            (<any>grid.toolbarModule).toolbarClickHandler({ item: { id: grid.element.id + '_add' } });
+        });
 
         afterAll(() => {
             destroy(grid);

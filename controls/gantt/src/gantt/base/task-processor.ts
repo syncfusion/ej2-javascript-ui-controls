@@ -164,7 +164,7 @@ export class TaskProcessor extends DateProcessor {
             const child: string = this.parent.taskFields.child;
             const resourceData: [] = tempData && tempData[this.parent.taskFields.resourceInfo];
             const resourceIdMapping: string = this.parent.resourceFields.id;
-            if (!tempData[child] && resourceData && resourceData.length) {
+            if ((!tempData[child] || tempData[child].length === 0) && resourceData && resourceData.length) {
                 resourceData.forEach((resource: number | object) => {
                     const id: string = (typeof resource === 'object') ? resource[resourceIdMapping] :
                         resource;
@@ -598,6 +598,13 @@ export class TaskProcessor extends DateProcessor {
             if (work % 1 !== 0) {
                 work = parseFloat(work.toFixed(2));
             }
+        }
+        if(ganttData.childRecords.length > 0){
+            let childCompletedWorks: number = 0
+            for(let i = 0; i < ganttData.childRecords.length; i++){
+                childCompletedWorks += ganttData.childRecords[i][this.parent.taskFields.work];
+            }
+            work += childCompletedWorks;
         }
         this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
         if (!isNullOrUndefined(this.parent.taskFields.work)) {
@@ -2116,7 +2123,7 @@ export class TaskProcessor extends DateProcessor {
             let totalDuration: number = 0;
             let progressValues: Object = {};
             let minStartDate: Date = null; let maxEndDate: Date = null;
-            let milestoneCount: number = 0; let totalProgress: number = 0; let childCompletedWorks: number = 0;
+            let milestoneCount: number = 0; let totalProgress: number = 0;
             let childData: IGanttData;
             for (let count: number = 0; count < childLength; count++) {
                 childData = childRecords[count] as IGanttData;
@@ -2156,7 +2163,6 @@ export class TaskProcessor extends DateProcessor {
                 } else {
                     milestoneCount++;
                 }
-                childCompletedWorks += childData.ganttProperties.work;
             }
             if (!deleteUpdate) {
                 if (this.compareDates(previousStartDate, minStartDate) !== 0) {
@@ -2185,7 +2191,6 @@ export class TaskProcessor extends DateProcessor {
                 }
                 this.updateWorkWithDuration(parentData);
                 let parentWork: number = parentProp.work;
-                parentWork += childCompletedWorks;
                 this.parent.setRecordValue('work', parentWork, parentProp, true);
                 this.parent.setRecordValue('taskType', 'FixedDuration', parentProp, true);
                 if (!isNullOrUndefined(this.parent.taskFields.type)) {

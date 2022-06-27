@@ -635,8 +635,12 @@ export class GanttChart {
      * @private
      */
     public getChartRows(): NodeListOf<Element> {
-        return document.getElementById(this.parent.element.id + 'GanttTaskTableBody').querySelectorAll('.e-chart-row');
-    }
+        if(document.getElementById(this.parent.element.id + 'GanttTaskTableBody') != null){
+            return document.getElementById(this.parent.element.id + 'GanttTaskTableBody').querySelectorAll('.e-chart-row');
+            } else {
+                return null;
+            }
+        }
 
     /**
      * Expand Collapse operations from gantt chart side
@@ -1002,7 +1006,7 @@ export class GanttChart {
                     this.parent.treeGrid.grid.notify('key-pressed', e);
                 }
             }
-            if (!this.parent.editModule.cellEditModule.isCellEdit) {
+            if (!isInEditedState) {
                 if (nextElement) {
                     if ($target.classList.contains('e-rowcell')) {
                         this.manageFocus($target as HTMLElement, 'remove', false);

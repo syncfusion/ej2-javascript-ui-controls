@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
+import { getCell } from "../../../src/index";
 
 describe('Auto fill ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -58,7 +59,7 @@ describe('Auto fill ->', () => {
     });
 
     describe('CR Issues ->', () => {
-        describe('EJ2-56558 ->', () => {
+        describe('EJ2-56558, EJ2-60197 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -90,6 +91,30 @@ describe('Auto fill ->', () => {
                         });
                     });
                 });
+            });
+            it('The formula with an empty space before the cell reference is not updated properly while performing autofill', (done: Function) => {
+                const instance: any = helper.getInstance();
+                helper.invoke('selectRange', ['I1']);
+                helper.edit('I1', '=IF($I2="Other", $J2, CONCAT($I2: $J2))');
+                let autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [1, 8]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                instance.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                instance.selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                helper.invoke('selectRange', ['I1']);
+                td = helper.invoke('getCell', [0, 9]);
+                coords = td.getBoundingClientRect();
+                autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                instance.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                instance.selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                expect(getCell(1, 8, instance.sheets[0]).formula).toBe('=IF($I3="Other", $J3, CONCAT($I3: $J3))');
+                expect(getCell(0, 9, instance.sheets[0]).formula).toBe('=IF($I2="Other", $J2, CONCAT($I2: $J2))');
+                done();
             });
         });
     });

@@ -4,7 +4,11 @@
 
 ## 20.1.50 (2022-04-19)
 
-### Radio Button
+### Checkbox
+
+#### Bug Fixes
+
+- `F373307` - Issue with Accessibility in checkbox and switch has been resolved.
 
 #### Bug Fixes
 

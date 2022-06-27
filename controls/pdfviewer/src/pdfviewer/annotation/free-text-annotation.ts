@@ -310,7 +310,7 @@ export class FreeTextAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean): void {
+    public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean,isAdddedProgrammatically?:boolean): void {
         let isFreeTextAdded: boolean = false;
         if (!isImportAction) {
             for (let p: number = 0; p < this.freeTextPageNumbers.length; p++) {
@@ -346,7 +346,8 @@ export class FreeTextAnnotation {
                         let annotationBoundsY: number = !isNullOrUndefined(annotation.Bounds.Y) ? annotation.Bounds.Y - topPadding: annotation.Bounds.y;
                         let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
                         let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
-                        let rotateValue: number = this.getRotationValue(pageNumber);
+                        let rotateValue: number = this.getRotationValue(pageNumber,isAdddedProgrammatically);
+                        let originalRotation: number = annotation.Rotate;
                         if (Math.sign(annotation.Rotate) === 1) {
                             annotation.Rotate = -annotation.Rotate + rotateValue;
                         } else {
@@ -354,6 +355,31 @@ export class FreeTextAnnotation {
                         }
                         // eslint-disable-next-line
                         let rotateAngle: any = Math.abs(annotation.Rotate);
+                        if (isImportAction) {
+                            if (this.pdfViewerBase.isJsonImported) {
+                                rotateAngle = this.pdfViewerBase.getRotationAngle(originalRotation, pageNumber);
+                                let pageDetails: any = this.pdfViewerBase.pageSize[pageNumber];
+                                if (rotateAngle === 1) {
+                                    height = width;
+                                    width = annotation.Bounds.Height;
+                                    annotationBoundsX = pageDetails.width - annotation.Bounds.Y - annotation.Bounds.Height;
+                                    annotationBoundsY = annotation.Bounds.X;
+                                    rotateAngle = 90;
+                                } 
+                                else if (rotateAngle === 2) {
+                                    annotationBoundsX = pageDetails.width - annotation.Bounds.X - annotation.Bounds.Width;
+                                    annotationBoundsY = pageDetails.height - annotation.Bounds.Y - annotation.Bounds.Height;
+                                    rotateAngle = 180;
+                                    //bound = new Drawing.RectangleF(pageWidth - ConvertPointToPixel(bounds.X) - ConvertPointToPixel(bounds.Width), pageHeight - ConvertPointToPixel(bounds.Y) - ConvertPointToPixel(bounds.Height), ConvertPointToPixel(bounds.Width), ConvertPointToPixel(bounds.Height));
+                                } else if (rotateAngle === 3){
+                                    height = width;
+                                    width = annotation.Bounds.Height;
+                                    annotationBoundsX = annotation.Bounds.Y;
+                                    annotationBoundsY = pageDetails.height - annotation.Bounds.X - height;
+                                    rotateAngle = 270;
+                                }    
+                            }
+                        }
                         if (rotateAngle === 90 || rotateAngle === 270) {
                             let rotationHeight: number = height;
                             let rotationWidth: number = width;
@@ -543,7 +569,7 @@ export class FreeTextAnnotation {
     /**
      * @private
      */
-    public saveFreeTextAnnotations(): string {
+    public saveFreeTextAnnotations(isAddedProgrammatically?:boolean): string {
         // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
         if (this.pdfViewerBase.isStorageExceed) {
@@ -563,7 +589,7 @@ export class FreeTextAnnotation {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
                         // eslint-disable-next-line max-len
-                        pageAnnotationObject.annotations[z].bounds = this.getBoundsBasedOnRotation(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.annotations[z].rotateAngle, pageAnnotationObject.pageIndex, pageAnnotationObject.annotations[z]);
+                        pageAnnotationObject.annotations[z].bounds = this.getBoundsBasedOnRotation(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.annotations[z].rotateAngle, pageAnnotationObject.pageIndex, pageAnnotationObject.annotations[z],isAddedProgrammatically);
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         const strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
@@ -588,26 +614,31 @@ export class FreeTextAnnotation {
     }
 
     // eslint-disable-next-line
-    private getRotationValue(pageIndex: number): any {
+    private getRotationValue(pageIndex: number,isAddedProgrammatically?:boolean): any {
         // eslint-disable-next-line
         let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
-        if (pageDetails.rotation === 0) {
+        if(isAddedProgrammatically){
             return 0;
-        } else if (pageDetails.rotation === 1) {
-            return 90;
-        } else if (pageDetails.rotation === 2) {
-            return 180;
-        } else if (pageDetails.rotation === 3) {
-            return 270;
         }
-        return 0;
+        else{
+            if (pageDetails.rotation === 0) {
+                return 0;
+            } else if (pageDetails.rotation === 1) {
+                return 90;
+            } else if (pageDetails.rotation === 2) {
+                return 180;
+            } else if (pageDetails.rotation === 3) {
+                return 270;
+            }
+            return 0;    
+        }
     }
 
-    private getBoundsBasedOnRotation(bounds: any, rotateAngle: number, pageIndex: number, annotation: any) {
+    private getBoundsBasedOnRotation(bounds: any, rotateAngle: number, pageIndex: number, annotation: any,isAddedProgrammatically?:boolean) {
         let paddingValues : any[] = this.getPaddingValues(this.fontSize);
         let leftPadding : number = paddingValues[0];
         let topPadding : number = paddingValues[1];
-        let rotateValue: number = this.getRotationValue(pageIndex)
+        let rotateValue: number = this.getRotationValue(pageIndex,isAddedProgrammatically)
         annotation.rotateAngle = rotateAngle - rotateValue;
         if (rotateAngle === 90 || rotateAngle === -90 || rotateAngle === 270 || rotateAngle === -270) {
             let x: number = bounds.x + (bounds.width / 2) - (bounds.height / 2);

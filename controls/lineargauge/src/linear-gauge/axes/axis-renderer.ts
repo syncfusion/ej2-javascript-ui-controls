@@ -325,6 +325,7 @@ export class AxisRenderer extends Animations {
         const size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
         const pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
         let gradientBarColor: string;
+
         if (this.gauge.gradientModule) {
             gradientBarColor = this.gauge.gradientModule.getGradientColorString(pointer);
         }
@@ -334,15 +335,15 @@ export class AxisRenderer extends Animations {
         if (this.gauge.container.type === 'Normal' || this.gauge.container.width === 0) {
             rectOptions = new RectOption(
                 pointerID, (gradientBarColor) ?
-                    gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
+                gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
                 pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions) as SVGAElement;
         } else {
-            path = getBox(
+            path = pointer.value > axis.minimum || this.gauge.container.type === 'Thermometer' ? getBox(
                 pointer.bounds, this.gauge.container.type, this.gauge.orientation,
                 new Size(pointer.bounds.width, pointer.bounds.height), 'bar',
-                this.gauge.container.width, axis, pointer.roundedCornerRadius);
+                this.gauge.container.width, axis, pointer.roundedCornerRadius) : '';
             options = new PathOption(
                 pointerID, (gradientBarColor) ? gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
                 pointer.border.width, pointer.border.color, pointer.opacity, pointer.border.dashArray, path);
@@ -365,7 +366,7 @@ export class AxisRenderer extends Animations {
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
         pointerElement.setAttribute('cursor', 'pointer');
         if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
-            if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0  && this.gauge.container.width > 0) {
+            if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0 && this.gauge.container.width > 0) {
                 clipRectElement = this.gauge.renderer.drawClipPath(
                     new RectOption(
                         this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + pointerIndex,

@@ -198,6 +198,9 @@ export class Timeline {
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
         }
         this.parent.dataOperation.calculateProjectDates();
+        if(this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate){
+            this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ? this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
+        }
         const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
         const totalDays: number = (timeDifference / (1000 * 3600 * 24));
         const chartWidth: number = this.parent.ganttChartModule.chartElement.offsetWidth;
@@ -827,7 +830,7 @@ export class Timeline {
             // PDf export collection
             const timelineCell: TimelineFormat = {};
             timelineCell.startDate = new Date(startDate.getTime());
-            if (mode === 'Month' && tier === 'bottomTier' && ((this.parent.currentZoomingLevel.level === 5) || (this.parent.currentZoomingLevel.level === 6)) && scheduleDateCollection.length === 0) {
+            if (mode === 'Month' && tier === 'bottomTier' && (count != 1) && scheduleDateCollection.length === 0) {
                 isFirstCell = true;
             }
             parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell, isFirstCell);
@@ -840,6 +843,10 @@ export class Timeline {
             }
             isFirstCell = false;
             startDate.setTime(newTime);
+            if (startDate.getHours() === 5 && count === 2 && tier === 'bottomTier' && 
+                this.parent.timelineSettings.bottomTier.unit === 'Hour') {
+                startDate.setTime(startDate.getTime() - (1000 * 60 * 60));
+            }
             if (startDate >= endDate) {
                 /* eslint-disable-next-line */
                 parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
@@ -957,12 +964,12 @@ export class Timeline {
     private checkDate(firstDay: Date, lastDay: Date, increment: number, count: number): number {
         var date = new Date(firstDay.getTime());
         date.setTime(date.getTime() + increment);
-        if (((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+        if (count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
             var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60);
             if (!this.parent.isInDst(date)) {
                 increment += (1000 * 60 * 60 * diffCount);
             }
-            else if (this.parent.isInDst(date)) {
+            else if (this.parent.isInDst(date) && count !== 2) {
                 increment -= (1000 * 60 * 60 * diffCount);
             }
         }

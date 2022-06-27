@@ -66,7 +66,7 @@ export class MarkerExplode extends ChartData {
      */
     private mouseMoveHandler(): void {
         const chart: Chart = this.chart;
-        if ((!chart.crosshair.enable || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
+        if ((chart.highlightMode !='None' || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
             this.markerMove(false);
         }
     }

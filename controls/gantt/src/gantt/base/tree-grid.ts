@@ -278,7 +278,7 @@ export class GanttTreeGrid {
         }
     }
     private treeActionComplete(args: object): void {
-        const updatedArgs: object = extend({}, args, true);
+        const updatedArgs: object = extend({}, args);
         if (getValue('requestType', args) === 'sorting') {
             this.parent.notify('updateModel', {});
             deleteObject(updatedArgs, 'isFrozen');

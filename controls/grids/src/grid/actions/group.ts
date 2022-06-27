@@ -437,16 +437,29 @@ export class Group implements IAction {
                 const rowObjs: Row<Column>[] = gObj.getRowsObject();
                 const startIdx: number = rowObjs.indexOf(captionRow);
                 const rowsState: { [x: string]: boolean } = {};
+                let cacheStartIdx: number = gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings &&
+                    gObj.infiniteScrollSettings.enableCache && rowObjs.length !== rowNodes.length ?
+                    Array.from(rowNodes).indexOf(trgt.parentElement) : undefined;
                 for (let i: number = startIdx; i < rowObjs.length; i++) {
                     if (i > startIdx && rowObjs[i].indent === indent) {
                         break;
                     }
                     if (rowObjs[i].isDetailRow) {
                         const visible: boolean = rowObjs[i - 1].isExpand && rowObjs[i - 1].visible;
-                        (rowNodes[i] as HTMLElement).style.display = visible ? '' : 'none';
+                        if (cacheStartIdx && cacheStartIdx > 0 && cacheStartIdx < rowNodes.length) {
+                            (rowNodes[cacheStartIdx] as HTMLElement).style.display = visible ? '' : 'none';
+                        }
+                        else if (isNullOrUndefined(cacheStartIdx)) {
+                            (rowNodes[i] as HTMLElement).style.display = visible ? '' : 'none';
+                        }
                     } else if (rowsState[rowObjs[i].parentUid] === false) {
                         rowObjs[i].visible = false;
-                        (rowNodes[i] as HTMLElement).style.display = 'none';
+                        if (cacheStartIdx && cacheStartIdx > 0 && cacheStartIdx < rowNodes.length) {
+                            (rowNodes[cacheStartIdx] as HTMLElement).style.display = 'none';
+                        }
+                        else if (isNullOrUndefined(cacheStartIdx)) {
+                            (rowNodes[i] as HTMLElement).style.display = 'none';
+                        }
                     } else {
                         if (!(rowObjs[i].isDataRow || rowObjs[i].isCaptionRow || rowObjs[i].isDetailRow || rowObjs[i].isAggregateRow)) {
                             const visible: boolean = rowObjs[i].cells.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell
@@ -454,11 +467,20 @@ export class Group implements IAction {
                             if (visible === rowObjs[i].visible) { continue; }
                         }
                         rowObjs[i].visible = true;
-                        (rowNodes[i] as HTMLElement).style.display = '';
-                        (rowNodes[i] as HTMLElement).classList.remove('e-hide');
+                        if (cacheStartIdx && cacheStartIdx > 0 && cacheStartIdx < rowNodes.length) {
+                            (rowNodes[cacheStartIdx] as HTMLElement).style.display = '';
+                            (rowNodes[cacheStartIdx] as HTMLElement).classList.remove('e-hide');
+                        }
+                        else if (isNullOrUndefined(cacheStartIdx)) {
+                            (rowNodes[i] as HTMLElement).style.display = '';
+                            (rowNodes[i] as HTMLElement).classList.remove('e-hide');
+                        }
                     }
                     if (rowObjs[i].isCaptionRow) {
                         rowsState[rowObjs[i].uid] = rowObjs[i].isExpand && rowObjs[i].visible;
+                    }
+                    if (!isNullOrUndefined(cacheStartIdx)) {
+                        cacheStartIdx++;
                     }
                 }
                 this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
@@ -909,6 +931,7 @@ export class Group implements IAction {
                 this.updateGroupDropArea();
                 if (this.groupSettings.showDropArea) {
                     this.element.style.display = '';
+                    this.parent.headerModule.refreshUI();
                 } else {
                     this.element.style.display = 'none';
                 }

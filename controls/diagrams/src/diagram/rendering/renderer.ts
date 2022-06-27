@@ -1346,6 +1346,11 @@ export class DiagramRenderer {
             // (EJ2-56874) - Set the calculated x and y position to the bezier connector annotation's(text element) bounds x,y position
             element.bounds.x = options.x;
             element.bounds.y = options.y;
+            // (EJ2-58802) - Calculate the center point x and y with the element export scale value if element is in export mode
+            if (element.isExport) {
+                options.x = options.x * Math.min(element.exportScaleValue.x || element.exportScaleValue.y);
+                options.y = options.y * Math.min(element.exportScaleValue.x || element.exportScaleValue.y);
+            }
         }
         (options as RectAttributes).cornerRadius = 0;
         (options as TextAttributes).whiteSpace = whiteSpaceToString(element.style.whiteSpace, element.style.textWrapping);

@@ -2,13 +2,56 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I380533` - When using value fields with advanced aggregate options, the pivot table can now be properly exported to Excel and CSV formats.
+
+## 20.1.57 (2022-05-24)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I378816` - When the defer layout update option is enabled, dataBound event is now restricted while clicking cancel option in the popup field list UI.
+- `#F174968` - When virtual scrolling is enabled, the pivot table can now be rendered properly while perform member filtering.
+- The pivot table's column selection is now working properly.
+
+## 20.1.56 (2022-05-17)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- The pivot table can now be sorted properly with date type headers.
+
+#### New Features
+
+- The pivot table now has support for adding custom classes via 'cssClass' property.
+
+## 20.1.55 (2022-05-12)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I363090` - The previous cell selection can now be maintained while restricting the current selection in the pivot table's column axis using the cell selection event.
+- `#I373754` - The pivot table can now be exported properly to Excel and CSV formats while using the virtual scrolling feature, with sub-totals hidden.
+- `#I374945` - The pivot chart will now refresh properly with the specified height when switching from adaptive to desktop mode.
+
+#### New Features
+
+- `#F174296` - Members of a specific field are now sorted based on user-defined order in the Pivot Table's row and column axes.
+
 ## 20.1.48 (2022-04-12)
 
 ### Pivot Table
 
 #### Bug fixes
 
-- `#I363090` - The previous cell selection can now be maintained while restricting the current selection in the pivot table's column axis using the cell selecting event.
 - In the OLAP field list UI, calculated fields are now properly displayed.
 - The pivot table now exports properly to excel format with string type values when virtual scrolling is enabled.
 

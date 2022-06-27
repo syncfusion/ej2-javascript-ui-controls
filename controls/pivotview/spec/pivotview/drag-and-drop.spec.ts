@@ -289,8 +289,8 @@ describe('Drag and drop - ', () => {
             expect(true).toBe(true);
         });
         it('Drag filter axis field to row axis field in field list', (done: Function) => {
-            let rowAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Wrapper').querySelector('.e-left-axis-fields .e-field-list-rows');
-            let filterAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Wrapper').querySelector('.e-left-axis-fields .e-field-list-filters');
+            let rowAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Container').querySelector('.e-left-axis-fields .e-field-list-rows');
+            let filterAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Container').querySelector('.e-left-axis-fields .e-field-list-filters');
             let pivotButton: HTMLElement[] = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
             let draggedElement: string = pivotButton[0].querySelector('.e-content').textContent;
@@ -315,7 +315,7 @@ describe('Drag and drop - ', () => {
             }, 1000);
         });
         it('Drag row axis field to row axis field in field list', (done: Function) => {
-            let rowAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Wrapper').querySelector('.e-left-axis-fields .e-field-list-rows');
+            let rowAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Container').querySelector('.e-left-axis-fields .e-field-list-rows');
             let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
             let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
             let draggedElement: string = pivotButton[0].querySelector('.e-content').textContent;

@@ -109,4 +109,12 @@
       content: '\e903';
       }
    }
+
+  .e-gantt-tooltip-arrow-left::before {
+    content: '\e977';
+  }
+
+  .e-gantt-tooltip-arrow-right::before {
+    content: '\e85f';
+  }
 }

@@ -39,6 +39,8 @@ const HOME: string = 'home';
 
 const END: string = 'end';
 
+const TAB: string = 'tab';
+
 const CARET: string = 'e-caret';
 
 const ITEM: string = 'e-menu-item';
@@ -605,6 +607,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.isMenu) {
             keyConfigs.home = HOME;
             keyConfigs.end = END;
+            keyConfigs.tab = TAB;
         }
         new KeyboardEvents(element, {
             keyAction: this.keyBoardHandler.bind(this),
@@ -666,6 +669,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         case UPARROW:
         case END:
         case HOME:
+        case TAB:
             this.upDownKeyHandler(e);
             break;
         case RIGHTARROW:
@@ -692,7 +696,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private upDownKeyHandler(e: KeyboardEventArgs): void {
         const cul: Element = this.getUlByNavIdx();
-        const defaultIdx: number = (e.action === DOWNARROW || e.action === HOME) ? 0 : cul.childElementCount - 1;
+        const defaultIdx: number = (e.action === DOWNARROW || e.action === HOME || e.action === TAB) ? 0 : cul.childElementCount - 1;
         let fliIdx: number = defaultIdx;
         const fli: Element = this.getLIByClass(cul, FOCUSED);
         if (fli) {
@@ -822,6 +826,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             if (!isClose) {
                 const liElem: Element = e && e.target && this.getLI(e.target as Element);
+                if (liElem) {
+                    this.cli = liElem;
+                } else {
+                    this.cli = ul.children[0];
+                }
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null; items = item ? item.items : this.items as objColl;
                 beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false , isFocused: true };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
@@ -2309,6 +2318,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             super.destroy();
             if (this.template) { this.clearTemplate(['template']); }
         }
+        this.rippleFn = null;
     }
 }
 

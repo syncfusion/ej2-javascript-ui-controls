@@ -1,7 +1,8 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, filterData } from '../util/datasource.spec';
 import { Spreadsheet, filterByCellValue } from '../../../src/index';
-import { classList } from "@syncfusion/ej2-base";
+import { classList, getComponent } from '@syncfusion/ej2-base';
+import { PredicateModel } from '@syncfusion/ej2-grids';
 
 describe('Filter ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -79,6 +80,305 @@ describe('Filter ->', () => {
                 helper.triggerKeyNativeEvent(38, false, false, null, 'keydown', true);
                 expect(helper.getElement().querySelector('.e-filter-popup')).toBeNull();
                 done();
+            });
+        });
+    });
+    describe('Date column filter ->', () => {
+        const dataSource: Object[] = [
+            { 'Item Name': 'Casual Shoes', Date: '02/14/2014', Amount: 200 },
+            { 'Item Name': 'Sports Shoes', Date: '06/11/2016', Amount: 600 },
+            { 'Item Name': 'Formal Shoes', Date: '07/27/2014', Amount: 300 },
+            { 'Item Name': 'Sandals & Floaters', Date: '11/21/2014', Amount: 300 },
+            { 'Item Name': 'Flip- Flops & Slippers', Date: '06/23/2015', Amount: 300 },
+            { 'Item Name': 'Sneakers', Date: '07/22/2014', Amount: 800 },
+            { 'Item Name': 'Running Shoes', Date: '02/04/2014', Amount: 200 },
+            { 'Item Name': 'Loafers', Date: '11/30/2015', Amount: 310 },
+            { 'Item Name': 'Cricket Shoes', Date: '07/09/2014', Amount: 1210 },
+            { 'Item Name': 'T-Shirts', Date: '10/31/2014', Amount: 500 },
+        ];
+        let spreadsheet: any; let checkboxList: HTMLElement; let ulList: HTMLElement; let treeObj: any; let filterCol: PredicateModel[];
+        let selectAll: HTMLElement;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: dataSource }], selectedRange: 'B1:B1' }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Date filter popup rendering check', (done: Function) => {
+            helper.invoke('applyFilter');
+            helper.invoke('numberFormat', ['dddd, mmmm dd, yyyy', 'B2']);
+            const cell: HTMLElement = helper.invoke('getCell', [0, 1]);
+            cell.focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                checkboxList = helper.getElement('.e-checkboxlist');
+                expect(checkboxList.childElementCount).toBe(0);
+                setTimeout(() => {
+                    expect(checkboxList.childElementCount).toBe(2);
+                    selectAll = checkboxList.firstElementChild as HTMLElement;
+                    expect(selectAll.classList.contains('e-spreadsheet-ftrchk')).toBeTruthy();
+                    expect(selectAll.querySelector('.e-selectall').classList.contains('e-check')).toBeTruthy();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeTruthy();
+                    done();
+                });
+            });
+        });
+        it('Treeview rendering check', (done: Function) => {
+            expect(checkboxList.lastElementChild.classList.contains('e-checkboxtree')).toBeTruthy();
+            treeObj = getComponent(checkboxList.lastElementChild as HTMLElement, 'treeview');
+            expect(treeObj.fields.id).toBe('__rowIndex');
+            expect(treeObj.fields.parentID).toBe('pId');
+            expect(treeObj.fields.text).toBe('B');
+            expect(treeObj.fields.hasChildren).toBe('hasChild');
+            expect(treeObj.fields.dataSource.length).toBe(20);
+            expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+            expect(treeObj.fields.dataSource[0]['__rowIndex']).toBe('2016');
+            expect(treeObj.fields.dataSource[1]['B']).toBe('2015');
+            expect(treeObj.fields.dataSource[2]['hasChild']).toBeTruthy();
+            expect(treeObj.fields.dataSource[0]['pId']).toBeUndefined();
+            expect(treeObj.fields.dataSource[4]['__rowIndex']).toBe('2016 June');
+            expect(treeObj.fields.dataSource[4]['B']).toBe('June');
+            expect(treeObj.fields.dataSource[9]['hasChild']).toBeTruthy();
+            expect(treeObj.fields.dataSource[6]['pId']).toBe('2014');
+            expect(treeObj.fields.dataSource[19]['__rowIndex']).toBe('2014 October 31');
+            expect(treeObj.fields.dataSource[19]['B']).toBe(31);
+            expect(treeObj.fields.dataSource[17]['hasChild']).toBeUndefined();
+            expect(treeObj.fields.dataSource[15]['pId']).toBe('2014 July');
+            expect(treeObj.fields.dataSource[13]['B']).toBe(14);
+            expect(treeObj.fields.dataSource[13]['pId']).toBe('2014 February');
+            expect(treeObj.fields.dataSource[13]['__rowIndex']).toBe('2014 February 14');
+            ulList = checkboxList.lastElementChild.querySelector('.e-ul');
+            expect(ulList.childElementCount).toBe(3);
+            expect(ulList.getElementsByClassName('e-check').length).toBe(3);
+            done();
+        });
+        it('Checkbox interaction and filtering', (done: Function) => {
+            selectAll.click();
+            expect(selectAll.querySelector('.e-selectall').classList.contains('e-check')).toBeFalsy();
+            expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeFalsy();
+            expect(ulList.getElementsByClassName('e-check').length).toBe(0);
+            const okBtn: HTMLButtonElement = helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary');
+            expect(okBtn.disabled).toBeTruthy();
+            selectAll.click();
+            expect(selectAll.querySelector('.e-selectall').classList.contains('e-check')).toBeTruthy();
+            expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeTruthy();
+            expect(ulList.getElementsByClassName('e-check').length).toBe(3);
+            expect(okBtn.disabled).toBeFalsy();
+            const list: HTMLElement = ulList.children[1].querySelector('.e-frame');
+            let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+            list.dispatchEvent(e);
+            e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+            list.dispatchEvent(e);
+            e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+            list.dispatchEvent(e);
+            expect(list.parentElement.querySelector('.e-check')).toBeNull();
+            expect(selectAll.querySelector('.e-check')).toBeNull();
+            expect(selectAll.querySelector('.e-selectall').classList.contains('e-stop')).toBeTruthy();
+            expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeFalsy();
+            okBtn.click();
+            spreadsheet = helper.getInstance();
+            filterCol = spreadsheet.filterModule.filterCollection.get(0);
+            expect(filterCol.length).toBe(2);
+            expect(filterCol[0].type).toBe('date');
+            expect(filterCol[0].predicate).toBe('and');
+            expect(filterCol[0].operator).toBe('notequal');
+            let date: Date = filterCol[0].value as Date;
+            expect(date.getDate()).toBe(23);
+            expect(date.getMonth()).toBe(5);
+            expect(date.getFullYear()).toBe(2015);
+            date = filterCol[1].value as Date;
+            expect(date.getDate()).toBe(30);
+            expect(date.getMonth()).toBe(10);
+            expect(date.getFullYear()).toBe(2015);
+            done();
+        });
+        it('Checkbox rendering with same filtered column and Clear filter action', (done: Function) => {
+            spreadsheet.element.focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                setTimeout(() => {
+                    checkboxList = helper.getElement('.e-checkboxlist');
+                    expect((getComponent(checkboxList.lastElementChild as HTMLElement, 'treeview') as any).checkedNodes.length).toBe(15);
+                    selectAll = checkboxList.firstElementChild as HTMLElement;
+                    expect(selectAll.querySelector('.e-selectall').classList.contains('e-stop')).toBeTruthy();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeFalsy();
+                    ulList = checkboxList.lastElementChild.querySelector('.e-ul');
+                    expect(ulList.children[1].querySelector('.e-check')).toBeNull();
+                    selectAll.click();
+                    expect(selectAll.querySelector('.e-stop')).toBeNull();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeTruthy();
+                    expect(ulList.getElementsByClassName('e-check').length).toBe(3);
+                    helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary').click();
+                    expect(filterCol.length).toBe(0);
+                    done();
+                });
+            });
+        });
+        it('Checkbox rendering with other filtered column', (done: Function) => {
+            helper.invoke('applyFilter', [[{
+                'value': 300, 'field': 'C', 'predicate': 'and', 'operator': 'notequal', 'type': 'number', 'matchCase': false,
+                'ignoreAccent': false
+            }], 'A1:C11']);
+            setTimeout(() => {
+                expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(1);
+                spreadsheet.element.focus();
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        checkboxList = helper.getElement('.e-checkboxlist');
+                        treeObj = getComponent(checkboxList.lastElementChild as HTMLElement, 'treeview');
+                        expect(treeObj.fields.dataSource.length).toBe(15);
+                        expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Searching day, month and year then filter', (done: Function) => {
+            const serachBox: HTMLInputElement = helper.getElement().querySelector('.e-searchinput');
+            serachBox.value = '2014';
+            spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: serachBox } });
+            expect(treeObj.fields.dataSource.length).toBe(9);
+            expect(treeObj.fields.dataSource[0]['__rowIndex']).toBe('2014');
+            expect(treeObj.fields.dataSource[1]['__rowIndex']).toBe('2014 February');
+            expect(treeObj.fields.dataSource[6]['__rowIndex']).toBe('2014 February 14');
+            expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+            serachBox.value = '';
+            spreadsheet.notify('refreshCheckbox', { event: { type: 'click', target: serachBox } });
+            expect(treeObj.fields.dataSource.length).toBe(15);
+            expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+            spreadsheet.notify('refreshCheckbox', { event: { type: 'click', target: serachBox.parentElement.querySelector('.e-search-icon') } });
+            expect(treeObj.fields.dataSource.length).toBe(15);
+            serachBox.value = '30';
+            spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: serachBox } });
+            expect(treeObj.fields.dataSource.length).toBe(3);
+            expect(treeObj.fields.dataSource[0]['__rowIndex']).toBe('2015');
+            expect(treeObj.fields.dataSource[1]['__rowIndex']).toBe('2015 November');
+            expect(treeObj.fields.dataSource[2]['__rowIndex']).toBe('2015 November 30');
+            expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+            serachBox.value = 'Jun';
+            spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: serachBox } });
+            expect(treeObj.fields.dataSource.length).toBe(3);
+            expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+            helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary').click();
+            filterCol = spreadsheet.filterModule.filterCollection.get(0);
+            expect(filterCol.length).toBe(2);
+            expect(filterCol[1].operator).toBe('equal');
+            expect(filterCol[1].predicate).toBe('or');
+            expect(filterCol[1].type).toBe('date');
+            const date: Date = filterCol[1].value as Date;
+            expect(date.getDate()).toBe(11);
+            expect(date.getMonth()).toBe(5);
+            expect(date.getFullYear()).toBe(2016);
+            done();
+        });
+        it('Checkbox rendering with same and other filtered columns', (done: Function) => {
+            spreadsheet.element.focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                setTimeout(() => {
+                    checkboxList = helper.getElement('.e-checkboxlist');
+                    treeObj = getComponent(checkboxList.lastElementChild as HTMLElement, 'treeview');
+                    expect(treeObj.fields.dataSource.length).toBe(15);
+                    expect(treeObj.checkedNodes.length).toBe(3);
+                    selectAll = checkboxList.firstElementChild as HTMLElement;
+                    expect(selectAll.querySelector('.e-selectall').classList.contains('e-stop')).toBeTruthy();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeFalsy();
+                    ulList = checkboxList.lastElementChild.querySelector('.e-ul');
+                    expect(ulList.children[0].querySelector('.e-frame').classList.contains('e-check')).toBeTruthy();
+                    expect(ulList.children[1].querySelector('.e-check')).toBeNull();
+                    expect(ulList.children[2].querySelector('.e-check')).toBeNull();
+                    selectAll.click();
+                    expect(selectAll.querySelector('.e-stop')).toBeNull();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeTruthy();
+                    expect(ulList.getElementsByClassName('e-check').length).toBe(3);
+                    treeObj.uncheckAll(['2014 February 14']);
+                    helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary').click();
+                    filterCol = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(filterCol.length).toBe(2);
+                    expect(filterCol[1].operator).toBe('notequal');
+                    const date: Date = filterCol[1].value as Date;
+                    expect(date.getDate()).toBe(14);
+                    expect(date.getMonth()).toBe(1);
+                    expect(date.getFullYear()).toBe(2014);
+                    done();
+                });
+            });
+        });
+        it('Columns with blank cell and other format cell', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '', format: 'General' }, 'B8']);
+            helper.invoke('updateCell', [{ value: 'Test', format: 'General' }, 'B9']);
+            spreadsheet.element.focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                setTimeout(() => {
+                    selectAll = helper.getElement('.e-spreadsheet-ftrchk');
+                    selectAll.click();
+                    const searchBox: HTMLInputElement = helper.getElement().querySelector('.e-searchinput');
+                    searchBox.value = 'Blan';
+                    spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: searchBox } });
+                    treeObj = getComponent(helper.getElement('.e-checkboxtree'), 'treeview');
+                    expect(treeObj.fields.dataSource.length).toBe(1);
+                    expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+                    expect(treeObj.fields.dataSource[0]['__rowIndex']).toBe('blanks');
+                    searchBox.value = 'Tes';
+                    spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: searchBox } });
+                    expect(treeObj.fields.dataSource.length).toBe(1);
+                    expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+                    expect(treeObj.fields.dataSource[0]['__rowIndex']).toBe('text test');
+                    helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary').click();
+                    filterCol = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(filterCol.length).toBe(2);
+                    expect(filterCol[1].value).toBe('test');
+                    expect(filterCol[1].predicate).toBe('or');
+                    expect(filterCol[1].type).toBe('string');
+                    done();
+                });
+            });
+        });
+        it('Invalid date rendering and filtering check', (done: Function) => {
+            helper.edit('B12', '10/10/202');
+            const cell: HTMLElement = helper.invoke('getCell', [11, 1]);
+            expect(cell.classList.contains('e-right-align')).toBeFalsy();
+            expect(cell.textContent).toBe('10/10/202');
+            helper.invoke('selectRange', ['B1']);
+            helper.invoke('getCell', [0, 1]).focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                checkboxList = helper.getElement('.e-checkboxlist');
+                expect(checkboxList.childElementCount).toBe(0);
+                setTimeout(() => {
+                    ulList = checkboxList.lastElementChild.querySelector('.e-ul');
+                    expect(ulList.children[2].querySelector('.e-icon-expandable')).toBeNull();
+                    expect(ulList.children[2].querySelector('.e-list-text').textContent).toBe('10/10/202');
+                    treeObj = getComponent(checkboxList.lastElementChild as HTMLElement, 'treeview');
+                    expect(treeObj.fields.dataSource[11]['B']).toBe('10/10/202');
+                    expect(treeObj.fields.dataSource[11]['__rowIndex']).toBe('text 10/10/202');
+                    const list: HTMLElement = ulList.children[1].querySelector('.e-frame');
+                    let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+                    list.dispatchEvent(e);
+                    e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                    list.dispatchEvent(e);
+                    e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+                    list.dispatchEvent(e);
+                    expect(list.parentElement.querySelector('.e-check')).not.toBeNull();
+                    helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary').click();
+                    const filterCol: any[] = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(filterCol.length).toBe(3);
+                    expect(filterCol[0].type).toBe('number');
+                    expect(filterCol[0].value).toBe(300);
+                    expect(filterCol[0].operator).toBe('notequal');
+                    expect(filterCol[0].predicate).toBe('and');
+                    expect(filterCol[1].type).toBe('string');
+                    expect(filterCol[1].value.getFullYear()).toBe(2016);
+                    expect(filterCol[1].operator).toBe('notequal');
+                    expect(filterCol[1].predicate).toBe('and');
+                    expect(filterCol[2].type).toBe('string');
+                    expect(filterCol[2].value).toBe('');
+                    expect(filterCol[2].operator).toBe('notequal');
+                    expect(filterCol[2].predicate).toBe('and');
+                    done();
+                });
             });
         });
     });
@@ -390,28 +690,52 @@ describe('Filter ->', () => {
         });
         describe('SF-367021 ->', () => {
             let spreadsheet: any;
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
-                    { sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B4:B4' }],
+                    { sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'D4:D4' }],
                     created: (): void => {
                         spreadsheet = helper.getInstance()
                         for (let i: number = 1; i < 11; i++) {
+                            spreadsheet.updateCell({ format: '0.00' }, 'D' + (i + 1));
                             spreadsheet.updateCell({ format: 'dd/MM/yyyy' }, 'B' + (i + 1));
                         }
                     }
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
+            });
+            it('Filter by custom formatted (0.00) cell value not working', (done: Function) => {
+                helper.openAndClickCMenuItem(3, 3, [6, 4]);
+                setTimeout(() => {
+                    const predicates: any[] = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(predicates.length).toBe(1);
+                    expect(predicates[0].field).toBe('D');
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[1].isFiltered).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[2].isFiltered).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].isFiltered).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].isFiltered).toBeUndefined();
+                    expect(helper.invoke('getContentTable').rows[1].cells[3].textContent).toBe('20.00');
+                    helper.invoke('selectRange', ['B4']);
+                    done();
+                });
             });
             it('Filter by date cell value not working', (done: Function) => {
                 spreadsheet.notify(filterByCellValue, null);
                 setTimeout(() => {
                     const predicates: any[] = spreadsheet.filterModule.filterCollection.get(0);
-                    expect(predicates.length).toBe(1);
-                    expect(predicates[0].field).toBe('B');
-                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeTruthy();
-                    expect(spreadsheet.sheets[0].rows[1].isFiltered).toBeTruthy();
+                    expect(predicates.length).toBe(2);
+                    expect(predicates[1].field).toBe('B');
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[2].isFiltered).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].isFiltered).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[7].isFiltered).toBeTruthy();
                     expect(helper.invoke('getContentTable').rows[1].cells[1].textContent).toBe('27/07/2014');
                     done();
                 });

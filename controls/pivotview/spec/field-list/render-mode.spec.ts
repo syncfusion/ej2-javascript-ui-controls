@@ -56,12 +56,12 @@ describe('Pivot Field List Rendering', () => {
             expect(document.getElementById('PivotFieldList').classList.contains('e-pivotfieldlist')).toEqual(true);
         });
         it('check field list control wrapper', () => {
-            expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper')));
+            expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-container')));
         });
         it('check calculated field', () => {
-            let controlWrapper: HTMLElement = fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper');
+            let controlWrapper: HTMLElement = fieldListObj.element.querySelector('.e-pivotfieldlist-container');
             (controlWrapper.querySelector('.e-calculated-field') as HTMLElement).click();
-            expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper')));
+            expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-container')));
         });
     });
     describe('Field List with Dynamic mode', () => {
@@ -115,13 +115,13 @@ describe('Pivot Field List Rendering', () => {
             expect(true).toBe(true);
         });
         it('check field list dialog with targetID', () => {
-            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-wrapper')));
+            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-container')));
         });
         it('check calculated field', () => {
-            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-wrapper');
+            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-container');
             (controlWrapper.querySelector('.e-calculated-field') as HTMLElement).click();
-            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-wrapper')));
-            expect(elem1.querySelector('.e-pivotfieldlist-wrapper').classList.contains('e-popup-open'));
+            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-container')));
+            expect(elem1.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-open'));
         });
         it('check filter popup', (done: Function) => {
             let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -135,9 +135,9 @@ describe('Pivot Field List Rendering', () => {
             }, 1000);
         });
         it('check close field list', () => {
-            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-wrapper');
+            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-container');
             (controlWrapper.querySelector('.e-cancel-btn') as HTMLElement).click();
-            expect(elem1.querySelector('.e-pivotfieldlist-wrapper').classList.contains('e-popup-close'));
+            expect(elem1.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-close'));
         });
     });
     describe('Field List with target ID', () => {
@@ -191,13 +191,13 @@ describe('Pivot Field List Rendering', () => {
             expect(true).toBe(true);
         });
         it('check field list dialog with targetID', () => {
-            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-wrapper')));
+            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-container')));
         });
         it('check calculated field', () => {
-            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-wrapper');
+            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-container');
             (controlWrapper.querySelector('.e-calculated-field') as HTMLElement).click();
-            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-wrapper')));
-            expect(elem1.querySelector('.e-pivotfieldlist-wrapper').classList.contains('e-popup-open'));
+            expect(!isNullOrUndefined(elem1.querySelector('.e-pivotfieldlist-container')));
+            expect(elem1.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-open'));
         });
         it('check filter popup', (done: Function) => {
             let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -211,9 +211,9 @@ describe('Pivot Field List Rendering', () => {
             }, 1000);
         });
         it('check close field list', () => {
-            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-wrapper');
+            let controlWrapper: HTMLElement = elem1.querySelector('.e-pivotfieldlist-container');
             (controlWrapper.querySelector('.e-cancel-btn') as HTMLElement).click();
-            expect(elem1.querySelector('.e-pivotfieldlist-wrapper').classList.contains('e-popup-close'));
+            expect(elem1.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-close'));
         });
     });
 

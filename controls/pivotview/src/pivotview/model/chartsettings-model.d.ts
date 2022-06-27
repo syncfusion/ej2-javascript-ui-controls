@@ -2383,6 +2383,7 @@ export interface PivotSeriesModel {
      * * StackingColumn
      * * StackingArea
      * * StackingBar
+     * * StackingLine
      * * StepLine
      * * Line
      * * Column
@@ -2397,6 +2398,7 @@ export interface PivotSeriesModel {
      * * StackingColumn100
      * * StackingBar100
      * * StackingArea100
+     * * StackingLine100
      * * Polar
      * * Radar
      * @default 'Line'

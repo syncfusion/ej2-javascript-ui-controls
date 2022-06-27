@@ -1,6 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { SheetModel, getRangeAddress, Spreadsheet } from "../../../src/index";
+import { SheetModel, getRangeAddress, Spreadsheet, getCell } from "../../../src/index";
+import { L10n } from '@syncfusion/ej2-base';
 
 describe('Cell Format ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -177,6 +178,79 @@ describe('Cell Format ->', () => {
                 setTimeout(() => {
                     expect(sheet.usedRange.rowIndex).toEqual(0);
                     expect(sheet.usedRange.colIndex).toEqual(0);
+                    done();
+                });
+            });
+        });
+        describe('EJ2-57647 ->', () => {
+            let sheets: SheetModel[];
+            L10n.load({
+                'de-DE': {
+                    'spreadsheet': {
+                        "Clear": "klar",
+                        "ClearContents": "Inhalt löschen",
+                        "ClearAll": "Alles löschen",
+                        "ClearFormats": "Formate löschen",
+                        "ClearHyperlinks": "Löschen Sie Hyperlinks",
+                    }
+                }
+            });
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], locale: 'de-DE'  }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Clear Hyperlink', (done: Function) => {
+                helper.invoke('insertHyperlink', [{ address: 'www.google.com' }, 'Sheet1!A7', 'Test', false]);
+                helper.invoke('selectRange', ['A7:A7']);
+                helper.click('#spreadsheet_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(4)');
+                sheets = helper.getInstance().sheets;
+                setTimeout(() => {
+                    expect(getCell(6, 0, sheets[0]).hyperlink).toBeUndefined();
+                    let td: HTMLElement = helper.invoke('getCell', [6, 0]);
+                    expect(helper.invoke('getCell', [6, 0]).children.length).toBe(0);
+                    done();
+                });
+            });
+            it('Clear Formats', (done: Function) => {
+                helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }, 'A1:F1']);
+                helper.invoke('selectRange', ['A1:A1']);
+                helper.click('#spreadsheet_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(2)');
+                sheets = helper.getInstance().sheets;
+                setTimeout(() => {
+                    expect(getCell(0, 0, sheets[0]).format).toBeUndefined();
+                    expect(helper.invoke('getCell', [0, 0]).style.fontWeight).toBe('');
+                    done();
+                });
+            });
+            it('Clear Contents', (done: Function) => {
+                helper.invoke('selectRange', ['D3:D3']);
+                helper.click('#spreadsheet_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(3)');
+                sheets = helper.getInstance().sheets;
+                setTimeout(() => {
+                    expect(getCell(2, 3, sheets[0]).value).toBeUndefined();
+                    expect(helper.invoke('getCell', [2, 3]).textContent).toBe('');
+                    done();
+                });
+            });
+            it('Clear All', (done: Function) => {
+                helper.invoke('insertHyperlink', [{ address: 'www.google.com' }, 'Sheet1!A4', 'Test', false]);
+                helper.invoke('selectRange', ['A1:C6']);
+                helper.click('#spreadsheet_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(1)');
+                sheets = helper.getInstance().sheets;
+                setTimeout(() => {
+                    expect(getCell(2, 0, sheets[0]).value).toBeUndefined();
+                    expect(helper.invoke('getCell', [2, 0]).textContent).toBe('');
+                    expect(getCell(0, 4, sheets[0]).format).toBeUndefined();
+                    expect(helper.invoke('getCell', [0, 4]).style.fontWeight).toBe('');
+                    expect(getCell(3, 0, sheets[0]).hyperlink).toBeUndefined();
+                    let td: HTMLElement = helper.invoke('getCell', [6, 0]);
+                    expect(helper.invoke('getCell', [3, 0]).children.length).toBe(0);
                     done();
                 });
             });

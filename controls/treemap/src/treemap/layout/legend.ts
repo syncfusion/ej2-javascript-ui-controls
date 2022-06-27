@@ -760,7 +760,7 @@ export class TreeMapLegend {
             let currentData: any; let legendRect: ClientRect;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let rect: Rect; let data: any[]; let fill: string; let stroke: string; let strokeWidth: number; let legendElement: Element;
-            targetItem = treemap.layout.renderItems[parseFloat(target.id.split('_')[6])];
+            targetItem = treemap.layout.renderItems[parseFloat(target.id.split('_Item_Index_')[1])];
             const svgRect: ClientRect = treemap.svgObject.getBoundingClientRect();
             for (let i: number = 0; i < this.legendCollections.length; i++) {
                 currentData = this.legendCollections[i];

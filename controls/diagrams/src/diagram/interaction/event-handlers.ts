@@ -1068,12 +1068,14 @@ export class DiagramEventHandler {
         if (ctrlKey) {
             // SF-362356 - Command below line to implement smooth scroll in diagram.
             // this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
-            const isZoomingIn = evt.deltaY > 0;
-            if (isZoomingIn) {
-                this.diagram.zoomTo({ type: "ZoomIn", zoomFactor: 0.02, focusPoint: mousePosition })
+            // EJ2-59803 - Added the below code to get the zoom factor value from scroll settings and 
+            // set it to zoomFactor args in zoomTo method.
+            let zoomFactor: number = this.diagram.scrollSettings.zoomFactor;
+            if (up) {
+                this.diagram.zoomTo({ type: "ZoomIn", zoomFactor: zoomFactor, focusPoint: mousePosition })
             }
             else {
-                this.diagram.zoomTo({ type: "ZoomOut", zoomFactor: 0.02, focusPoint: mousePosition })
+                this.diagram.zoomTo({ type: "ZoomOut", zoomFactor: zoomFactor, focusPoint: mousePosition })
             }
             evt.preventDefault();
         } else {

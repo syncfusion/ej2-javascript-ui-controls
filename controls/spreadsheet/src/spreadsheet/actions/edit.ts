@@ -4,8 +4,8 @@ import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAd
 import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula } from '../../workbook/common/event';
-import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getSheet, selectionComplete, beforeCellUpdate, BeforeCellUpdateArgs } from '../../workbook/index';
+import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation } from '../../workbook/base/index';
+import { getSheetNameFromAddress, getSheet, selectionComplete, beforeCellUpdate, BeforeCellUpdateArgs, isHiddenRow, isHiddenCol } from '../../workbook/index';
 import { beginAction, updateCell, checkCellValid } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
@@ -479,7 +479,7 @@ export class Edit {
                     const indexes: number[] = getRangeIndexes(this.uniqueColl);
                     const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
                     if (cell) {
-                        isSpill = cell.value.indexOf('#SPILL!') > - 1;
+                        isSpill = cell.value.toString().indexOf('#SPILL!') > - 1;
                     }
                 }
                 if (args.isUnique && this.uniqueColl.split(':')[0] === address.split(':')[0]) {
@@ -848,7 +848,7 @@ export class Edit {
         const newVal: string = this.editCellData.value;
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
-        if (this.parent.allowDataValidation && ((cell && cell.validation) || (column && column.validation)))  {
+        if (this.parent.allowDataValidation && ((cell && cell.validation) || checkColumnValidation(column, cellIndex[0], cellIndex[1])))  {
             const value: string = newVal ? newVal : this.getEditElement(sheet).innerText;
             const isCell: boolean = true;
             const sheetIdx: number = this.parent.activeSheetIndex;
@@ -875,7 +875,7 @@ export class Edit {
             const isUniqueRange: boolean = args.isUnique;
             if (isUniqueRange && oldCellValue !== '' && this.editCellData.value === '') {
                 const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
-                if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.indexOf('#SPILL!') === - 1) {
+                if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.toString().indexOf('#SPILL!') === - 1) {
                     return isValidate;
                 }
             }
@@ -901,7 +901,7 @@ export class Edit {
             }
             if (isUniqueRange) {
                 const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
-                if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.indexOf('#SPILL!') > - 1) { this.isSpill = true; }
+                if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.toString().indexOf('#SPILL!') > - 1) { this.isSpill = true; }
                 if ((oldCellValue !== '' && this.editCellData.value === '') ||
                 (this.editCellData.formula && this.editCellData.formula.length > 1 && oldCellValue !== this.editCellData.formula)) {
                     let skip: boolean = false;
@@ -924,12 +924,15 @@ export class Edit {
         return isValidate;
     }
 
-    private checkUniqueRange(uniquArgs: {cellIdx: number[], isUnique: boolean, uniqueRange?: string}): void {
+    private checkUniqueRange(uniquArgs: {cellIdx: number[], isUnique: boolean, uniqueRange?: string, sheetName?: string}): void {
         const args: {range: string[]} = {range : []};
         this.parent.notify(getUniqueRange, args);
         const collection: string[] = args.range;
+        if (!uniquArgs.sheetName) {
+            uniquArgs.sheetName = this.parent.getActiveSheet().name;
+        }
         for (let i: number = 0; i < collection.length; i++) {
-            if (collection[i].split('!')[0] === this.parent.getActiveSheet().name) {
+            if (collection[i].split('!')[0] === uniquArgs.sheetName) {
                 const rangeIdx: number[] = getRangeIndexes(collection[i]);
                 for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
                     for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
@@ -997,13 +1000,16 @@ export class Edit {
             rowIdx--; colIdx--;
             if (((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
                 && this.parent.activeSheetIndex === sheetIdx) || (this.uniqueCell && this.parent.activeSheetIndex === sheetIdx)) {
-                const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+                const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
+                let td: HTMLElement;
+                if (!isHiddenRow(sheet, rowIdx) && !isHiddenCol(sheet, colIdx)) {
+                    td = this.parent.getCell(rowIdx, colIdx);
+                }
                 if (td) {
                     if (td.parentElement) {
                         const curRowIdx: string = td.parentElement.getAttribute('aria-rowindex');
                         if (curRowIdx && Number(curRowIdx) - 1 !== rowIdx) { return; }
                     }
-                    const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     const actCell: number[] = getRangeIndexes(sheet.activeCell);
                     if (actCell[0] === rowIdx && actCell[1] === colIdx) {
@@ -1018,9 +1024,8 @@ export class Edit {
 
     private getRefreshNodeArgs(cell: CellModel, rowIdx?: number, colIdx?: number): RefreshValueArgs {
         cell = cell ? cell : {};
-        const fCode: string = (cell && cell.format) ? cell.format : '';
         const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-            value: cell.value, format: fCode, onLoad: true,
+            value: cell.value, format: cell.format, onLoad: true,
             formattedText: '', isRightAlign: false, type: 'General', cell: cell,
             rowIndex: rowIdx === undefined ? this.editCellData.rowIndex : rowIdx,
             colIndex: colIdx === undefined ? this.editCellData.colIndex : colIdx, isRowFill: false

@@ -181,7 +181,16 @@ export class HtmlEditor {
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
             this.spaceLink(e.args as KeyboardEvent);
             if (this.parent.editorMode === 'HTML' && !this.parent.readonly) {
-                this.parent.notify(events.enterHandler, { args: (e.args as KeyboardEvent) });
+                const currentLength: number = this.parent.getText().trim().length;
+                const selectionLength: number = this.parent.getSelection().length;
+                const totalLength: number = (currentLength - selectionLength) + 1;
+                if (!(this.parent.maxLength === -1 || totalLength <= this.parent.maxLength) &&
+                ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
+                    (e.args as KeyboardEvent).preventDefault();
+                    return;
+                } else {
+                    this.parent.notify(events.enterHandler, { args: (e.args as KeyboardEvent) });
+                }
             }
         }
         if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space') {

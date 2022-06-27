@@ -199,7 +199,8 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                         this.value = column.filter.operator;
                     }
                 }
-            }
+            },
+            cssClass: this.parent.cssClass ? this.parent.cssClass : null
         });
         this.dropOptr.appendTo(fbicon);
         const spanElmt: Element = closest(this.dropOptr.element, 'span');

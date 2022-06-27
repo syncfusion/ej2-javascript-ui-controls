@@ -316,13 +316,18 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         for (let i: number = 0; i < items.length; i++) {
             item = items[i];
-            const tempItem: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(item.text) : item.text;
+            const tempItem: string = item.text;
             li = this.createElement('li', {
-                innerHTML: item.url ? '' : tempItem,
                 className: item.separator ? classNames.ITEM + ' ' + classNames.SEPARATOR : classNames.ITEM,
                 attrs: { 'role': 'menuItem', 'tabindex': '-1' },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
             });
+            if (this.enableHtmlSanitizer) {
+                li.textContent = item.url ? '' : tempItem;
+            }
+            else{
+                li.innerHTML = item.url ? '' : tempItem;
+            }
             if (item.url) {
                 li.appendChild(this.createAnchor(item));
                 li.classList.add('e-url');
@@ -637,14 +642,16 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 if ((splitButton as any).isReact && popupElem.childNodes.length < 1) {
                     isReact = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (splitButton as any).appendReactElement(this.getTargetElement(), this.getPopUpElement())
+                    (splitButton as any).appendReactElement(this.getTargetElement(), this.getPopUpElement());
+                    this.renderReactTemplates();
                 }
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this as any).isReact && popupElem.childNodes.length < 1) {
                     isReact = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this as any).appendReactElement(this.getTargetElement(), this.getPopUpElement())
+                    (this as any).appendReactElement(this.getTargetElement(), this.getPopUpElement());
+                    this.renderReactTemplates();
                 }
             }
         }

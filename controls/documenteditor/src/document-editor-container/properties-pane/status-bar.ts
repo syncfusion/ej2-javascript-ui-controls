@@ -183,9 +183,7 @@ export class StatusBar {
     private setSpellCheckValue(text: string): void {
         this.spellCheckButton.content = this.localObj.getConstant('Spelling');
         if (text.match(this.localObj.getConstant('Spell Check'))) {
-            this.documentEditor.spellChecker.enableSpellCheck = (this.documentEditor.spellChecker.enableSpellCheck) ? false : true;            
-            this.documentEditor.documentHelper.triggerSpellCheck = false;
-            this.documentEditor.documentHelper.triggerElementsOnLoading = false;
+            this.documentEditor.spellChecker.enableSpellCheck = (this.documentEditor.spellChecker.enableSpellCheck) ? false : true;
         } else if (text.match(this.localObj.getConstant('Underline errors'))) {
             if (this.documentEditor.enableSpellCheck && this.documentEditor.spellChecker.enableSpellCheck) {
                 this.documentEditor.spellChecker.removeUnderline = (this.documentEditor.spellChecker.removeUnderline) ? false : true;

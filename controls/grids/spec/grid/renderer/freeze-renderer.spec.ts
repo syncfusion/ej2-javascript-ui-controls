@@ -544,6 +544,52 @@ describe('Freeze render module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-59576 - Grid is not rendering properly with row height and frozen columns properties', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    rowHeight: 30,
+                    allowResizing: true,
+                    height: 300,
+                    frozenColumns: 1,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, minWidth: 10, },
+                        { headerText: 'Order Details',
+                        columns: [
+                            { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10, },
+                            { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10, },
+                        ],
+                        },
+                        { headerText: 'Ship Details',
+                        columns: [
+                            { field: 'OrderDate', headerText: 'Shipped Date', textAlign: 'Right', width: 145, format: 'yMd', minWidth: 10, },
+                            { field: 'ShipCountry', headerText: 'Ship Country', width: 140, minWidth: 10, },
+                        ],
+                        },
+                    ],
+                }, done);
+        });
+      
+        it('Ensure Rows Height', () => {
+            let fHead: HTMLElement = gridObj.element.querySelector('.e-frozenheader').querySelector('table').rows[0];
+            let mHead: HTMLElement = gridObj.element.querySelector('.e-movableheader').querySelector('table').rows[0];
+            let fContent: HTMLElement = gridObj.element.querySelector('.e-frozencontent').querySelector('table').rows[0];
+            let mContent: HTMLElement = gridObj.element.querySelector('.e-movablecontent').querySelector('table').rows[0];
+            expect(fHead.offsetHeight).toBe(gridObj.rowHeight * 2);
+            expect(mHead.offsetHeight).toBe(gridObj.rowHeight);
+            expect(fContent.offsetHeight).toBe(gridObj.rowHeight);
+            expect(mContent.offsetHeight).toBe(gridObj.rowHeight);
+        });
+       
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
     describe('EJ2-45062 => Alignment issue when we have visible false column with empty data set', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

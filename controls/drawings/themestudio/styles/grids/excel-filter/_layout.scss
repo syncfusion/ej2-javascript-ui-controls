@@ -73,6 +73,7 @@
     }
 
     .e-radio + label .e-label {
+      margin-top: $grid-xl-radio-margin-top;
       padding-left: $grid-xl-radio-padding-left;
       padding-right: $grid-xl-radio-padding-right;
     }
@@ -216,6 +217,11 @@
     .e-contextmenu-wrapper ul .e-menu-item .e-caret {
       height: $grid-bigger-xlfl-li-height;
       line-height: $grid-bigger-xlfl-li-height;
+      margin-right: $grid-bigger-xlfl-li-icon-margin-arrow-icon;
+    }
+
+    &.e-rtl .e-contextmenu-wrapper ul .e-menu-item .e-caret {
+      margin-left: $grid-bigger-xlfl-li-icon-margin-arrow-icon;
     }
 
     &.e-dialog .e-dlg-content {
@@ -347,6 +353,11 @@
     .e-contextmenu-wrapper ul .e-menu-item .e-caret {
       height: $grid-xlfl-li-height;
       line-height: $grid-xlfl-li-height;
+      margin-right: $grid-xlfl-li-icon-margin-arrow-icon;
+    }
+
+    &.e-rtl .e-contextmenu-wrapper ul .e-menu-item .e-caret {
+      margin-left: $grid-xlfl-li-icon-margin-arrow-icon;
     }
 
     .e-footer-content {

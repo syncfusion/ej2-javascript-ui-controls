@@ -969,7 +969,7 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
     let nextDate: Date;
     const prevObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
     const nextObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
-    if (isNullOrUndefined(filterObject.value)) {
+    if (isNullOrUndefined(filterObject.value) || filterObject.value === '') {
         datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
         return datePredicate;
     }
@@ -1400,12 +1400,14 @@ export function ispercentageWidth(gObj: IGrid): boolean {
  * @param {Row<Column>[]} rows - Defines the row
  * @param {HTMLTableRowElement[]} rowElms - Row elements
  * @param {number} index - Row index
+ * @param {number} startRowIndex - Start Row Index
  * @returns {void}
  * @hidden
  */
-export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTableRowElement[], index?: number): void {
+export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTableRowElement[], index?: number,
+                              startRowIndex?: number): void {
     let startIndex: number = index ? index : 0;
-    for (let i: number = 0; i < rows.length; i++) {
+    for (let i: number = startRowIndex ? startRowIndex : 0; i < rows.length; i++) {
         if (rows[i].isDataRow) {
             rows[i].index = startIndex;
             rows[i].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;

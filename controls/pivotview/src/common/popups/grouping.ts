@@ -294,7 +294,8 @@ export class Grouping implements IAction {
             },
             closeOnEscape: true,
             close: this.removeDialog.bind(this),
-            target: this.parentElement
+            target: this.parentElement,
+            cssClass: this.parent.cssClass
         });
         this.groupDialog.isStringTemplate = true;
         this.groupDialog.appendTo(groupDialog);
@@ -305,7 +306,7 @@ export class Grouping implements IAction {
             className: 'e-group-field-div-content', id: this.parentElement.id + '_group_field_div_content',
             attrs: { 'data-fieldName': fieldName, 'data-type': type }
         });
-        let groupWrapperDiv1: HTMLElement = createElement('div', { className: 'e-group-option-wrapper' });
+        let groupWrapperDiv1: HTMLElement = createElement('div', { className: 'e-group-option-container' });
         mainDiv.appendChild(groupWrapperDiv1);
         // this.parentElement.appendChild(mainDiv);
         let dataSource: IDataOptions = this.parent.dataSourceSettings;
@@ -328,7 +329,7 @@ export class Grouping implements IAction {
                         className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('groupFieldCaption')
                     });
                     /* eslint-enable max-len */
-                    let captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-wrapper' });
+                    let captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-container' });
                     let captionInputField1: HTMLInputElement = createElement('input', {
                         id: this.parentElement.id + 'group_caption_option',
                         className: 'e-group-caption-text',
@@ -340,7 +341,7 @@ export class Grouping implements IAction {
                     let inputTextDiv1: HTMLElement = createElement('div', {
                         className: 'e-input-option-text', innerHTML: this.parent.localeObj.getConstant('groupTitle')
                     });
-                    let inputDiv1: HTMLElement = createElement('div', { className: 'e-group-input-wrapper' });
+                    let inputDiv1: HTMLElement = createElement('div', { className: 'e-group-input-container' });
                     let inputField1: HTMLInputElement = createElement('input', {
                         id: this.parentElement.id + 'group_input_option',
                         className: 'e-group-input-text',
@@ -371,7 +372,7 @@ export class Grouping implements IAction {
             case 'number':
                 {
                     let startAtWrapper: HTMLElement = createElement('div', {
-                        className: 'e-group-start-option-wrapper'
+                        className: 'e-group-start-option-container'
                     });
                     let startAtOptionDiv1: HTMLInputElement = createElement('input', {
                         id: this.parentElement.id + 'group_start_option',
@@ -387,7 +388,7 @@ export class Grouping implements IAction {
                     startAtWrapper.appendChild(startAtInputField1);
                     groupWrapperDiv1.appendChild(startAtWrapper);
                     let endAtWrapper: HTMLElement = createElement('div', {
-                        className: 'e-group-end-option-wrapper'
+                        className: 'e-group-end-option-container'
                     });
                     let endAtOptionDiv1: HTMLInputElement = createElement('input', {
                         id: this.parentElement.id + 'group_end_option',
@@ -403,7 +404,7 @@ export class Grouping implements IAction {
                     endAtWrapper.appendChild(endAtInputField1);
                     groupWrapperDiv1.appendChild(endAtWrapper);
                     let intervalWrapper: HTMLElement = createElement('div', {
-                        className: 'e-group-interval-option-wrapper'
+                        className: 'e-group-interval-option-container'
                     });
                     let intervalTextDiv1: HTMLElement = createElement('div', {
                         className: 'e-group-inerval-option-text', innerHTML: this.parent.localeObj.getConstant('groupBy')
@@ -443,7 +444,8 @@ export class Grouping implements IAction {
                             locale: this.parent.locale,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(startAt === undefined),
-                            width: '100%'
+                            width: '100%',
+                            cssClass: this.parent.cssClass
                         });
                         startAtInputObj.isStringTemplate = true;
                         startAtInputObj.appendTo(startAtInputField1);
@@ -453,7 +455,8 @@ export class Grouping implements IAction {
                             locale: this.parent.locale,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(endAt === undefined),
-                            width: '100%'
+                            width: '100%',
+                            cssClass: this.parent.cssClass
                         });
                         endAtInputObj.isStringTemplate = true;
                         endAtInputObj.appendTo(endAtInputField1);
@@ -470,6 +473,7 @@ export class Grouping implements IAction {
                             filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + this.parent.localeObj.getConstant('Months'),
                             enableRtl: this.parent.enableRtl,
                             locale: this.parent.locale,
+                            cssClass: this.parent.cssClass,
                             select: () => {
                                 groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
                             },

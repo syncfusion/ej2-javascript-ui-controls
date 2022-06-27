@@ -652,9 +652,6 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     this.intervalId = [];
     this.contentTemplate = null;
     this.toastTemplate = null;
-    if (this.isDevice && screen.width < 768) {
-      new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
-    }
     this.renderComplete();
     this.initRenderClass = this.element.className;
   }
@@ -700,6 +697,9 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     this.setCloseButton();
     this.setAria();
     this.appendToTarget(toastObj);
+    if (this.isDevice && screen.width < 768) {
+        new Touch(this.toastEle, { swipe: this.swipeHandler.bind(this) });
+    }
     if (!isNOU(collectionObj)) {
       extend(collectionObj, { element: [this.toastEle] }, true);
       this.toastCollection.push(collectionObj);

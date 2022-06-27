@@ -353,6 +353,7 @@ export class EditorHistory {
                 }
             }
             if (this.currentHistoryInfo.action === 'ReplaceAll') {
+                this.documentHelper.contentControlCollection = [];
                 this.owner.editorModule.layoutWholeDocument();
             } else if (selection.owner.isShiftingEnabled) {
                 this.documentHelper.layout.shiftLayoutedItems(false);

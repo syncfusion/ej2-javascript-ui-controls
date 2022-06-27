@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData } from '../base/datasource.spec';
+import { sampleData, projectData2 } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SaveEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
@@ -9,6 +9,7 @@ import { Sort } from '../../src/treegrid/actions/sort';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
+import { Query, DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Grid Cell Edit spec 
@@ -658,7 +659,6 @@ describe('Cell Edit module', () => {
         'cancelable': true
       });      
       gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
-      debugger;
       (gridObj.editModule as any).doubleClickTarget.getElementsByTagName("input")[0].value = "20";
       (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
@@ -1149,11 +1149,63 @@ describe('update rows method', () => {
       );
     });
     it('Edit mode continued to the next cell on tab click', (done: Function) => {
-      debugger;
       gridObj.editCell(2,'taskName');
       expect(gridObj.getRows()[2].classList.contains("e-editedrow")).toBe(true);
       gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
       expect(gridObj.getRows()[2].getAttribute('aria-rowindex') == '2').toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-60332 - editing the dropdown column with params when Persistence enabled', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: projectData2,
+          height: 400,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+          },
+          enablePersistence: true,
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          allowPaging: true,
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140, isPrimaryKey:true },
+              { field: 'TaskName', headerText: 'Task Name', width: 160 },
+              { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+              { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+              { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110,  editType: 'numericedit',
+              edit: { params: { format: 'n' } },},
+              { field: 'Priority', headerText: 'Priority', editType: 'dropdownedit',
+              edit: {
+                params: {
+                  dataSource: new DataManager([
+                    { name: 'Not Started', value: 'Not Started' },
+                    { name: 'In Progress', value: 'In Progress' },
+                    { name: 'Completed', value: 'Completed' },
+                    { name: 'Rejected', value: 'Rejected' }
+                  ]),
+                  fields: { text: 'name', value: 'value' },
+                  query: new Query(),
+                },
+              } }
+          ]
+        },
+        done
+      );
+    });
+    it('Editing the dropdown column with params', (done: Function) => {
+      gridObj.editCell(2,'Priority');
+      expect(gridObj.getRows()[2].classList.contains("e-editedrow")).toBe(true);
       done();
     });
     afterAll(() => {

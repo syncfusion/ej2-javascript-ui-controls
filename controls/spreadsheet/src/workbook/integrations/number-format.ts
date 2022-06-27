@@ -1,8 +1,9 @@
 import { getRangeIndexes, NumberFormatType, getCellAddress, updateCell } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs } from '../common/math';
-import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText, setCellFormat, rowFillHandler , getTextSpace, updateCustomFormatsFromImport } from '../common/event';
+import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFormatCheckArgs, rowFillHandler } from '../common/index';
+import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/index';
+import { setCellFormat, getTextSpace, NumberFormatArgs, isCustomDateTime } from './../index';
 import { checkIsNumberAndGetNumber } from '../common/internalization';
 /**
  * Specifies number format.
@@ -37,11 +38,8 @@ export class WorkbookNumberFormat {
             for (let j: number = selectedRange[1]; j <= selectedRange[3]; j++) {
                 if (!updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: i, colIdx: j })) {
                     cell = getCell(i, j, sheet);
-                    this.getFormattedCell({
-                        type: getTypeFromFormat(cell.format), value: cell.value,
-                        format: cell.format, rowIndex: i, colIndex: j,
-                        sheetIndex: activeSheetIndex, cell: cell
-                    });
+                    this.getFormattedCell(
+                        { value: cell.value, format: cell.format, rowIndex: i, colIndex: j, sheetIndex: activeSheetIndex, cell: cell });
                 }
             }
         }
@@ -53,65 +51,64 @@ export class WorkbookNumberFormat {
      * @param {Object} args - Specifies the args.
      * @returns {string} - to get formatted cell.
      */
-    public getFormattedCell(args: { [key: string]: string | number | boolean | CellModel }): string {
+    public getFormattedCell(args: NumberFormatArgs): string {
         const fResult: string = args.value === undefined || args.value === null ? '' : args.value as string;
-        const sheetIdx: number = args.sheetIndex === undefined ? this.parent.activeSheetIndex : args.sheetIndex as number;
+        const sheetIdx: number = args.sheetIndex === undefined ? this.parent.activeSheetIndex : args.sheetIndex;
         const sheet: SheetModel = this.parent.sheets[sheetIdx];
         let range: number[];
         if (args.rowIndex === undefined) {
             range = getRangeIndexes(sheet.activeCell);
         } else {
-            range = [args.rowIndex as number, args.colIndex as number];
+            range = [args.rowIndex, args.colIndex];
         }
-        let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
+        const cell: CellModel = args.cell || getCell(range[0], range[1], sheet, false, true);
         let rightAlign: boolean = false;
         const option: { currency?: string } = {};
         const intl: Internationalization = new Internationalization();
         intl.getNumberFormat(option);
         const currencySymbol: string = getNumberDependable(this.parent.locale, option.currency);
-        if (args.format === '' || args.format === 'General') {
-            cell = cell ? cell : {};
-            const dateEventArgs: { [key: string]: string | number | boolean } = {
-                value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetIndex,
-                updatedVal: <string>args.value, isDate: false, isTime: false
-            };
+        if (!args.format || args.format === 'General') {
+            args.type = args.format = 'General';
+            const dateEventArgs: DateFormatCheckArgs = { value: fResult, updatedVal: fResult, cell: cell };
             this.checkDateFormat(dateEventArgs);
-            if (dateEventArgs.isDate) {
+            if (dateEventArgs.isDate || dateEventArgs.isTime) {
                 rightAlign = true;
-                cell.value = args.value = <string>dateEventArgs.updatedVal;
-                cell.format = args.format = getFormatFromType('ShortDate');
-            } else if (dateEventArgs.isTime) {
-                rightAlign = true;
-                cell.value = args.value = <string>dateEventArgs.updatedVal;
-                cell.format = args.format = getFormatFromType('Time');
+                cell.value = args.value = dateEventArgs.updatedVal;
+                if (cell.format) {
+                    args.format = cell.format;
+                } else {
+                    cell.format = args.format = getFormatFromType(dateEventArgs.isDate ? 'ShortDate' : 'Time');
+                }
             }
+        } else {
+            args.type = getTypeFromFormat(args.format);
         }
-        args.type = args.format ? getTypeFromFormat(args.format as string) : 'General';
-        let result: { [key: string]: string | boolean };
-        let isCustomText: boolean;
-        if (cell && !isNullOrUndefined(cell.format) && this.isCustomType(cell)) {
+        let result: { fResult: string, rightAlign: boolean };
+        if (cell.format && this.isCustomType(cell)) {
+            args.type = 'Custom';
+            let isCustomText: boolean;
             const orgFormat: string = cell.format;
             cell.format = cell.format.split('\\').join('');
-            this.parent.notify(updateCustomFormatsFromImport, { format: cell.format });
-            args.type = 'Custom';
             this.currentRange = getCellAddress(range[0], range[1]);
             if (cell.format.indexOf(';') > -1) {
                 if (cell.format.indexOf('<') > -1 || cell.format.indexOf('>') > -1) {
                     args.value = args.result = this.processCustomConditions(cell);
                 } else {
-                    args.value = args.result = this.processCustomAccounting(cell, range[0], range[1], <HTMLElement>args.td, currencySymbol);
-                    isCustomText = (!isNumber(cell.value) ||  cell.format && cell.format.indexOf('@') > -1) ? true : false;
+                    args.value = args.result = this.processCustomAccounting(cell, range[0], range[1], args.td, currencySymbol);
+                    isCustomText = (!isNumber(cell.value) || cell.format && cell.format.indexOf('@') > -1) ? true : false;
                 }
                 cell.format = orgFormat;
-            } else if (this.isCustomDateTime(cell)) {
-                args.value = args.result = this.processCustomDate(cell);
+            } else if (isCustomDateTime(cell, true)) {
+                args.result = this.processCustomDate(args, cell);
+                isCustomText = args.result === '';
+                args.value = args.result = args.result|| cell.value;
             } else if (cell.format.indexOf('/') > -1) {
                 args.value = args.result = this.processCustomFraction(cell);
             } else if (cell.format.indexOf('@') > -1) {
                 isCustomText = true;
                 args.value = args.result = this.processCustomText(cell);
             } else if (checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).isNumber) {
-                args.value = args.result = this.processCustomNumberFormat(cell, range[0], range[1], <HTMLElement>args.td);
+                args.value = args.result = this.processCustomNumberFormat(cell, range[0], range[1], args.td);
                 isCustomText = !isNumber(cell.value);
             } else {
                 isCustomText = true;
@@ -122,29 +119,27 @@ export class WorkbookNumberFormat {
                 args.isRightAlign = isNullOrUndefined(cell.value) ? false : true;
             }
         } else {
-            result = this.processFormats(
-                args, fResult, rightAlign, cell, intl, currencySymbol, option.currency);
+            result = this.processFormats(args, fResult, rightAlign, cell, intl, currencySymbol, option.currency);
         }
         args.isRowFill = this.isRowFill;
-        if ((this.parent.getActiveSheet().id - 1 === sheetIdx) && !args.onLoad) {
-            this.parent.notify(refreshCellElement, {
-                isRightAlign: args.type === 'Custom' ? args.isRightAlign : result.rightAlign, result: args.type === 'Custom' ? args.value as string : result.fResult || args.value as string,
-                rowIndex: args.rowIndex, colIndex: args.colIndex, sheetIndex: args.sheetIndex,
-                type: args.type, curSymbol: currencySymbol, value: args.type === 'Custom' ? args.value : args.value || '', isRowFill: this.isRowFill
-            });
-            this.isRowFill = false;
-        }
-        if (!args.onLoad && (args.rowIndex > sheet.usedRange.rowIndex || args.colIndex > sheet.usedRange.colIndex)) {
-            this.parent.setUsedRange(args.rowIndex as number, args.colIndex as number);
+        if (!args.onLoad) {
+            if (sheet.id === this.parent.getActiveSheet().id) {
+                this.parent.notify(
+                    refreshCellElement, { isRightAlign: args.type === 'Custom' ? args.isRightAlign : result.rightAlign,
+                    result: args.type === 'Custom' ? args.value as string : result.fResult || args.value as string, rowIndex: args.rowIndex,
+                    colIndex: args.colIndex, sheetIndex: args.sheetIndex, type: args.type, curSymbol: currencySymbol,
+                    value: args.type === 'Custom' ? args.value : args.value || '', isRowFill: this.isRowFill });
+                this.isRowFill = false;
+            }
+            this.parent.setUsedRange(args.rowIndex, args.colIndex);
         }
         if (args.type === 'Custom') {
-            args.formattedText = args.value as string;
-            args.curSymbol = currencySymbol;
+            args.formattedText = args.value === undefined || args.value === null ? '' : args.value.toString();
         } else {
-            args.formattedText = result.fResult as string || args.value as string;
+            args.formattedText = result.fResult || (args.value === undefined || args.value === null ? '' : args.value.toString());
             args.isRightAlign = result.rightAlign;
-            args.curSymbol = currencySymbol;
         }
+        args.curSymbol = currencySymbol;
         return args.formattedText;
     }
 
@@ -190,63 +185,67 @@ export class WorkbookNumberFormat {
         return formatText;
     }
 
-    private isCustomDateTime(cell: CellModel): boolean {
-        let result: boolean = false;
-        const codes: string[] = ['m', 'd', 'y', 'h', 's'];
-        codes.forEach((e: string) => {
-            if (cell.format.indexOf(e) > -1 && !getColorCode(cell.format) && !(cell.format.indexOf('#') > -1)) {
-                result = true;
-            }
-        });
-        return result;
-    }
-
-    private processCustomDate(cell: CellModel): string {
-        const dateValue: Date = intToDate(parseFloat(cell.value));
+    private processCustomDate(args: NumberFormatArgs, cell: CellModel): string {
+        let dateValue: Date = intToDate(parseFloat(cell.value));
         if (isNaN(Number(dateValue))) {
-            return cell.value;
-        } else {
-            let custFormat: string = cell.format;
-            let type: string;
-            const intl: Internationalization = new Internationalization();
-            if (cell.format.indexOf('h') > -1) {
-                custFormat = custFormat.split('h').join('H');
-                type = 'time';
-            }
-            if (cell.format.indexOf('s') > -1) {
-                type = 'time';
-            }
-            if (cell.format.indexOf('AM/PM') > -1 || cell.format.indexOf('A/P') > -1) {
-                custFormat = custFormat.split('H').join('h');
-                custFormat = custFormat.split('A/P').join('AM/PM').split('AM/PM').join('a');
-                type = 'time';
-            }
-            if (cell.format.indexOf('d') > -1) {
-                type = 'date';
-                const charLength: number = cell.format.match(/d/g).length;
-                if (charLength > 2) {
-                    custFormat = cell.format.split('d').join('E');
-                }
-            }
-            if (cell.format.indexOf('m') > -1) {
-                if (cell.format.indexOf('s') > -1 || cell.format.indexOf('h') > -1) {
-                    type = 'time';
-                } else {
-                    type = 'date';
-                    custFormat = custFormat.split('m').join('M');
-                    if (cell.format.indexOf('mmmmm') > -1) {
-                        const monthName: string = this.formatDateTime(cell.value, 'MMMM', 'date', intl)[0];
-                        custFormat = cell.format.split('mmmmm').join('p');
-                        return this.formatDateTime(cell.value, custFormat, 'date', intl).split('p').join(monthName);
+            return cell.value || '';
+        }
+        let type: string;
+        let custFormat: string = cell.format;
+        const intl: Internationalization = new Internationalization();
+        const formatDateTime: Function = (checkDate?: boolean): string => {
+            let isValidDate: boolean;
+            if (cell.value.toString().includes('/') || cell.value.toString().includes('-')) {
+                dateValue = toDate(cell.value, new Internationalization(), this.parent.locale, custFormat, cell).dateObj;
+                if (isValidDate = dateValue && dateValue.toString() !== 'Invalid Date') {
+                    if (dateValue.getFullYear() < 1900) {
+                        return '';
+                    } else {
+                        cell.value = dateToInt(dateValue).toString();
                     }
                 }
+            } else {
+                isValidDate = dateValue && dateValue.toString() !== 'Invalid Date';
             }
-            return this.formatDateTime(cell.value, custFormat, type, intl);
+            if (checkDate && isValidDate) {
+                args.dateObj = dateValue;
+            }
+            return (isValidDate && intl.formatDate(dateValue, { type: type, format: custFormat })) || '';
         }
-    }
-
-    private formatDateTime(value: string, format: string, type: string, intl: Internationalization): string {
-        return intl.formatDate(intToDate(parseFloat(value)), { type: type, format: format});
+        if (cell.format.indexOf('h') > -1) {
+            custFormat = custFormat.split('h').join('H');
+            type = 'time';
+        }
+        if (cell.format.indexOf('s') > -1) {
+            type = 'time';
+        }
+        if (cell.format.indexOf('AM/PM') > -1 || cell.format.indexOf('A/P') > -1) {
+            custFormat = custFormat.split('H').join('h');
+            custFormat = custFormat.split('A/P').join('AM/PM').split('AM/PM').join('a');
+            type = 'time';
+        }
+        if (cell.format.indexOf('d') > -1) {
+            type = 'date';
+            const charLength: number = cell.format.match(/d/g).length;
+            if (charLength > 2) {
+                custFormat = cell.format.split('d').join('E');
+            }
+        }
+        if (cell.format.indexOf('m') > -1) {
+            if (cell.format.indexOf('s') > -1 || cell.format.indexOf('h') > -1) {
+                type = 'time';
+            } else {
+                type = 'date';
+                custFormat = custFormat.split('m').join('M');
+                if (cell.format.indexOf('mmmmm') > -1) {
+                    custFormat = 'MMMM';
+                    const monthName: string = formatDateTime()[0];
+                    custFormat = cell.format.split('mmmmm').join('p');
+                    return formatDateTime(args.checkDate).split('p').join(monthName);
+                }
+            }
+        }
+        return formatDateTime(args.checkDate);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -361,9 +360,13 @@ export class WorkbookNumberFormat {
 
     private processDigits(cell: CellModel): string {
         const custFormat: string = cell.format.split('?').join('0');
+        const cellValue: string = cell.value;
         cell.value = this.getFormattedNumber(custFormat, parseFloat(cell.value));
-        if (!isNullOrUndefined(cell.value)) {
+        if (!isNullOrUndefined(cell.value) && cell.value.includes('.')) {
             cell.value = cell.value.split('.')[0] + '.' + cell.value.split('.')[1].split('0').join('  ');
+        }
+        if (cell.value === '' && cellValue === '0') {
+            cell.value = cellValue;
         }
         return cell.value;
     }
@@ -407,6 +410,7 @@ export class WorkbookNumberFormat {
             }
             if (customFormat.indexOf('?') > -1) {
                 isFormatted = true;
+                customFormat = cell.format.split('?').join('');
                 formattedText = this.processDigits(cell);
             }
             if (customFormat.indexOf('_') > -1) {
@@ -464,18 +468,16 @@ export class WorkbookNumberFormat {
     }
 
     private processFormats(
-        args: { [key: string]: string | number | boolean | CellModel },
-        fResult: string, isRightAlign: boolean, cell: CellModel, intl: Internationalization,
-        currencySymbol: string, currencyCode: string): { [key: string]: string | boolean } {
+        args: NumberFormatArgs, fResult: string, isRightAlign: boolean, cell: CellModel, intl: Internationalization, currencySymbol: string,
+        currencyCode: string): { fResult: string, rightAlign: boolean } {
         let result: { [key: string]: string | boolean };
-        args.format = args.format ? args.format : 'General';
         if (fResult !== '') {
             switch (args.type) {
             case 'General':
                 result = this.autoDetectGeneralFormat({
                     args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                    isRightAlign: isRightAlign, curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIdx || args.rowIndex),
-                    colIdx: Number(args.colIdx || args.colIndex)
+                    isRightAlign: isRightAlign, curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIndex),
+                    colIdx: Number(args.colIndex)
                 });
                 fResult = result.fResult as string;
                 isRightAlign = result.isRightAlign as boolean;
@@ -595,7 +597,7 @@ export class WorkbookNumberFormat {
         return zeros.substr(0, suffixLen < 0 ? 0 : suffixLen) + resultSuffix;
     }
 
-    private applyNumberFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
+    private applyNumberFormat(args: NumberFormatArgs, intl: Internationalization): string {
         args.format = this.isCustomFormat(args.format.toString());
         const formatArr: string[] = args.format.toString().split(';');
         if (Number(args.value) > 0) {
@@ -650,8 +652,7 @@ export class WorkbookNumberFormat {
         format = format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
         return format;
     }
-    private currencyFormat(
-        args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization, currencyCode: string): string {
+    private currencyFormat(args: NumberFormatArgs, intl: Internationalization, currencyCode: string): string {
         args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
         args.format = args.format.toString().split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
         const formatArr: string[] = args.format.toString().split(';');
@@ -664,16 +665,14 @@ export class WorkbookNumberFormat {
         return intl.formatNumber(Number(args.value), { format: args.format as string, currency: currencyCode });
     }
 
-    private percentageFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
+    private percentageFormat(args: NumberFormatArgs, intl: Internationalization): string {
         args.format = args.format === '' ? getFormatFromType('Percentage') : args.format;
         return intl.formatNumber(Number(args.value), {
             format: args.format as string
         });
     }
 
-    private accountingFormat(
-        args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization, currencySymbol: string,
-        currencyCode: string): string {
+    private accountingFormat(args: NumberFormatArgs, intl: Internationalization, currencySymbol: string, currencyCode: string): string {
         args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
         args.format = (args.format as string).split('_(').join(' ').split('_)').join(' ').split('[Red]').join('').split('_').join('');
         const formatArr: string[] = (args.format as string).split(';');
@@ -702,42 +701,53 @@ export class WorkbookNumberFormat {
         return format;
     }
 
-    private shortDateFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        if ((args.format === 'dd/MM/yyyy' || args.format === 'dd-MM-yyyy') && args.value && (args.value.toString().indexOf('/') > -1 || args.value.toString().indexOf('-') > -1)) {
-            const intl: Internationalization = new Internationalization();
-            const dateObj: Date = toDate(args.value.toString(), intl, this.parent.locale, args.format.toString()).dateObj;
-            if (!isNullOrUndefined(dateObj) && dateObj.toString() !== 'Invalid Date') {
-                args.value = dateToInt(dateObj);
-                if (args.cell) {
-                    (args.cell as CellModel).value = args.value.toString();
+    private shortDateFormat(args: NumberFormatArgs, intl: Internationalization): string {
+        let format: string = (args.format === '' || args.format === 'General') ? getFormatFromType('ShortDate') : <string>args.format;
+        let dateObj: Object;
+        if (format === getFormatFromType('ShortDate')) {
+            format = 'MM-dd-yyyy';
+            dateObj = { type: 'date', skeleton: 'yMd' };
+        } else {
+            dateObj = { type: 'date', format: format };
+        }
+        if (args.value) {
+            args.value = args.value.toString();
+            if (args.value.includes('/') || args.value.includes('-')) {
+                if (format === 'dd-MM-yyyy' || format === 'dd/MM/yyyy') {
+                    format = '';
+                }
+                const obj: Date = toDate(args.value, new Internationalization(), this.parent.locale, format, <CellModel>args.cell).dateObj;
+                if (obj && obj.toString() !== 'Invalid Date') {
+                    if (obj.getFullYear() < 1900) {
+                        return '';
+                    }
+                    args.value = dateToInt(obj).toString();
+                    if (args.cell) {
+                        (args.cell as CellModel).value = args.value;
+                    }
+                    if (args.checkDate) {
+                        args.dateObj = obj;
+                    }
+                    return intl.formatDate(obj, dateObj);
                 }
             }
         }
-        const shortDate: Date = intToDate(args.value as number);
-        let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('ShortDate')
-            : args.format.toString();
-        let dateObj: Object;
-        if (code === getFormatFromType('ShortDate')) {
-            code = 'M/d/yy';
-            dateObj = {
-                type: 'date',
-                skeleton: 'yMd'
-            };
-        } else {
-            dateObj = {
-                type: 'date',
-                format: code
-            };
+        const shortDate: Date = intToDate(args.value);
+        if (args.checkDate) {
+            args.dateObj = shortDate;
         }
         return intl.formatDate(shortDate, dateObj);
     }
 
-    private longDateFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
-        const longDate: Date = intToDate(args.value as number);
+    private longDateFormat(args: NumberFormatArgs, intl: Internationalization): string {
+        const longDate: Date = intToDate(args.value);
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('LongDate')
             : args.format.toString();
         if (code === getFormatFromType('LongDate')) {
             code = 'EEEE, MMMM d, y';
+        }
+        if (args.checkDate) {
+            args.dateObj = longDate;
         }
         return intl.formatDate(longDate, {
             type: 'date',
@@ -745,7 +755,7 @@ export class WorkbookNumberFormat {
         });
     }
 
-    private timeFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
+    private timeFormat(args: NumberFormatArgs, intl: Internationalization): string {
         if (isNullOrUndefined(args.value)) {
             return '';
         }
@@ -766,7 +776,7 @@ export class WorkbookNumberFormat {
         });
     }
 
-    private scientificFormat(args: { [key: string]: string | number | boolean | CellModel }): string {
+    private scientificFormat(args: NumberFormatArgs): string {
         args.format = args.format === '' ? getFormatFromType('Scientific') : args.format;
         const zeros: string = (args.format as string).split('+')[1];
         const prefix: number = this.findDecimalPlaces(args.format as string, 'Scientific');
@@ -779,7 +789,7 @@ export class WorkbookNumberFormat {
         return fResult;
     }
 
-    private fractionFormat(args: { [key: string]: string | number | boolean | CellModel }): string {
+    private fractionFormat(args: NumberFormatArgs): string {
         args.format = args.format === '' ? getFormatFromType('Fraction') : args.format;
         let suffix: string = '';
         let fractionResult: string;
@@ -805,64 +815,99 @@ export class WorkbookNumberFormat {
         return 2;
     }
 
-    public checkDateFormat(args: { [key: string]: string | number | boolean | Date | CellModel }): void {
-        let dateObj: ToDateArgs;
-        const intl: Internationalization = new Internationalization();
-        let value: string = !isNullOrUndefined(args.value) ? args.value.toString() : '';
-        let cell: CellModel = getCell(
-            <number>args.rowIndex, <number>args.colIndex,
-            getSheet(this.parent, isNullOrUndefined(<number>args.sheetIndex) ? this.parent.activeSheetIndex : <number>args.sheetIndex));
-        const checkedDate: string = this.checkCustomDateFormat(value);
-        if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
-            value = checkedDate;
-            if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-                dateObj = toDate(value, intl, this.parent.locale, '', cell);
-                if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
-                    cell = cell ? cell : {};
-                    value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
-                    if (!cell.format || cell.format === '') {
-                        if (dateObj.type === 'time') {
-                            cell.format = getFormatFromType('Time');
-                        } else {
-                            cell.format = getFormatFromType('ShortDate');
-                        }
+    public checkDateFormat(args: DateFormatCheckArgs): void {
+        if (isNullOrUndefined(args.value)) {
+            return;
+        }
+        const cell: CellModel = args.cell || getCell(
+            args.rowIndex, args.colIndex,
+            getSheet(this.parent, isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex), false, true);
+        const props: { val: string, format: string } = this.checkCustomDateFormat(args.value.toString(), cell);
+        if (props.val !== 'Invalid') {
+            const dateObj: ToDateArgs = toDate(props.val, new Internationalization(), this.parent.locale, props.format, cell);
+            if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date' &&
+                dateObj.dateObj.getFullYear() >= 1900) {
+                props.val = dateToInt(dateObj.dateObj, props.val.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
+                if (!cell.format) {
+                    if (dateObj.type === 'time') {
+                        cell.format = getFormatFromType('Time');
+                    } else {
+                        cell.format = getFormatFromType('ShortDate');
                     }
-                    args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
-                    args.isTime = dateObj.type === 'time';
-                    args.dateObj = dateObj.dateObj;
                 }
+                args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
+                args.isTime = dateObj.type === 'time';
+                args.dateObj = dateObj.dateObj;
             }
-            args.updatedVal = value;
+            args.updatedVal = props.val;
         }
     }
 
-    private checkCustomDateFormat(val: string): string {
-        const dateArr: string[] = val.indexOf('/') > -1 ? val.split('/') : val.indexOf('-') > 0 ? val.split('-') : [''];
-        const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
+    private checkCustomDateFormat(val: string, cell: CellModel): { val: string, format: string } {
+        let separator: string;
+        if (val.includes('/')) {
+            separator = '/';
+        } else if (val.includes('-')) {
+            separator = '-';
+        } else {
+            return { val: val.includes(':') ? val : 'Invalid', format: '' };
+        }
+        const dateArr: string[] = val.split(separator);
+        let format: string = ''; const formatArr: string[] = [];
+        const updateFormat: Function = (): void => {
+            format = formatArr.join(separator);
+            if (!cell.format) {
+                cell.format = format;
+            }
+        };
         if (dateArr.length === 2) {
-            if (months.indexOf(dateArr[0].toLowerCase()) > -1 && Number(dateArr[1]) <= 31) {
-                return '01-' + dateArr[0] + '-' + dateArr[1];
-            } else if (months.indexOf(dateArr[1].toLowerCase()) > -1 && Number(dateArr[0]) <= 31) {
-                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
-            } else if (Number(dateArr[0]) <= 31 && Number(dateArr[1]) <= 12) {
-                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
+            let firstVal: string;
+            const updateSecValue: Function = (secVal: string): void => {
+                val = firstVal;
+                formatArr[0] = 'MMM';
+                if (Number(secVal) <= 31) {
+                    val = secVal + separator + val;
+                    formatArr.splice(0, 0, 'dd');
+                    updateFormat();
+                } else if (Number(secVal) >= 1900 && Number(secVal) <= 9999) {
+                    val += (separator + secVal.slice(2, 4));
+                    formatArr[1] = 'yy';
+                    updateFormat();
+                }
+            };
+            const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+            dateArr[0] = dateArr[0].toLowerCase().trim(); dateArr[1] = dateArr[1].toLowerCase().trim();
+            if (firstVal = !Number(dateArr[0]) && months.find((month: string) => dateArr[0].includes(month))) {
+                updateSecValue(dateArr[1]);
+            } else if (firstVal = !Number(dateArr[1]) && months.find((month: string) => dateArr[1].includes(month))) {
+                updateSecValue(dateArr[0]);
+            } else if (dateArr[0] && Number(dateArr[0]) <= 12) {
+                firstVal = months[Number(dateArr[0]) - 1];
+                updateSecValue(dateArr[1]);
             }
-            if (Number(dateArr[1]) <= 31 && Number(dateArr[0]) <= 12) {
-                return dateArr[0] + '-' + dateArr[1] + '-' + new Date().getFullYear();
-            }
-            if (Number(dateArr[0]) <= 12 && Number(dateArr[1]) <= 9999 && Number(dateArr[1]) >= 1900) {
-                return '01-' + dateArr[0] + '-' + dateArr[1];
-            } else {
-                return 'Invalid';
+            if (!formatArr.length) {
+                val = 'Invalid';
             }
         } else if (dateArr.length > 2) {
+            const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
             for (let i: number = 0; i < dateArr.length; i++) {
                 if (!(Number(dateArr[i]) > -1)) {
-                    if (!months.filter((month: string) => dateArr[i].toLowerCase().includes(month)).length) { return 'Invalid'; }
+                    if (months.filter((month: string) => dateArr[i].toLowerCase().includes(month)).length) {
+                        if (i === 1) {
+                            formatArr[1] = 'MMM';
+                            if (Number(dateArr[0]) < 31 && Number(dateArr[2]) >= 1900 && Number(dateArr[2]) <= 9999) {
+                                formatArr[0] = 'd';
+                                formatArr[2] = 'yy';
+                                updateFormat();
+                            }
+                        }
+                    } else {
+                        val = 'Invalid';
+                    }
                 }
             }
         }
-        return val;
+        return { val: val, format: format };
     }
 
     private formattedBarText(args: { [key: string]: CellModel | string }): void {
@@ -878,7 +923,7 @@ export class WorkbookNumberFormat {
         switch (type) {
         case 'ShortDate':
         case 'LongDate':
-            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date }, intl);
+            args.value = this.shortDateFormat({ type: type, value: <string>args.value, format: date, cell: <CellModel>args.cell }, intl);
             break;
         case 'Time':
             if (beforeText && Number(beforeText) >= 1) {
@@ -1059,7 +1104,7 @@ export function getTypeFromFormat(format: string): string {
 }
 
 interface AutoDetectGeneralFormatArgs {
-    args: { [key: string]: string | number | boolean | CellModel };
+    args: NumberFormatArgs;
     fResult: string;
     intl: Internationalization;
     currencySymbol: string;

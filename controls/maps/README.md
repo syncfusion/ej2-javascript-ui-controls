@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-maps/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-maps)
-
 # ej2-maps
 
 The Maps component is used to visualize the geographical data and represent the statistical data of a particular geographical area on earth with user interactivity, and provides various customizing options. 

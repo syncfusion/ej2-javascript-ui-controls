@@ -2679,3 +2679,64 @@ describe('EJ2-56656 - Wrong operator while filtering with Excel filter search bo
         gridObj = checkBoxFilter = actionBegin = actionComplete = null;
     });
 });
+
+describe('EJ2-58687 - template support for checkbox rendering in checkbox filter.', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('EmployeeID filter dialog open testing', (done: Function) => {
+        gridObj.on(events.beforeCheckboxfilterRenderer, (args: any) => {
+            args.element.innerHTML = '';
+            args.isCheckboxFilterTemplate = true;
+            gridObj.off(events.beforeCheckboxfilterRenderer);
+            done();
+        });
+        actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterafteropen'){  
+                expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('');      
+                done();
+            }   
+        };
+        gridObj.actionComplete = actionComplete;        
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('EmployeeID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('EmployeeID filter dialog open testing', (done: Function) => {
+        gridObj.on(events.beforeCheckboxfilterRenderer, (args: any) => {
+            args.element.innerHTML = '';
+            args.isCheckboxFilterTemplate = true;
+            let elem = document.createElement('input');
+            args.element.appendChild(elem);
+            gridObj.off(events.beforeCheckboxfilterRenderer);
+            done();
+        });
+        actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterafteropen'){  
+                expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('<input>');      
+                done();
+            }   
+        };
+        gridObj.actionComplete = actionComplete;        
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+}); 

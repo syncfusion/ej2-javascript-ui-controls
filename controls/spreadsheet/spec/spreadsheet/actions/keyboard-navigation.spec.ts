@@ -28,9 +28,9 @@ describe('Spreadsheet cell navigation module ->', () => {
             });
         });
 
-        describe('I348582 ->', () => {
+        describe('I348582, EJ2-60424 ->', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({}, done);
+                helper.initializeSpreadsheet({ sheets: [{ isProtected: true, protectSettings: { selectCells: true } }] }, done);
             });
 
             afterAll(() => {
@@ -42,6 +42,15 @@ describe('Spreadsheet cell navigation module ->', () => {
                 helper.getElement().focus();
                 helper.triggerKeyEvent('keydown', 40, null, false, true);
                 expect(helper.getContentElement().parentElement.scrollLeft).toBe(0);
+                done();
+            });
+
+            it('Pressing left/up key on 0th column/row throws script error on protected sheet', (done: Function) => {
+                helper.invoke('selectRange', ['A1']);
+                helper.triggerKeyEvent('keydown', 37);
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                helper.triggerKeyEvent('keydown', 38);
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
                 done();
             });
         });
@@ -65,6 +74,80 @@ describe('Spreadsheet cell navigation module ->', () => {
                 helper.getElement('#' + helper.id + 'listValid_popup .e-list-item').click();
                 expect(document.activeElement.classList.contains('e-spreadsheet')).toBeTruthy();
                 done();
+            });
+        });
+
+        describe('EJ2-59225 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rowCount: 3, colCount: 3 }], scrollSettings: { isFinite: true } }, done);
+            });
+
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+
+            it('The spreadsheet selection moves away from the spreadsheet table when we move it with the keyboard', (done: Function) => {
+                helper.getElement().focus();
+                const instance: any = helper.getInstance();
+                helper.invoke('selectRange', ['B2:B2']);
+                const selectionEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-selection');
+                const autofillEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-autofill');
+                helper.triggerKeyEvent('keydown', 39, null, false, true);
+                setTimeout(() => {
+                    expect(instance.sheets[0].selectedRange).toBe('B2:C2');
+                    expect(selectionEle.style.height).toBe('21px');
+                    expect(selectionEle.style.width).toBe('129px');
+                    expect(autofillEle.style.top).toBe('35px');
+                    expect(autofillEle.style.left).toBe('187px');
+                    helper.triggerKeyEvent('keydown', 39, null, false, true);
+                    setTimeout(() => {
+                        expect(instance.sheets[0].selectedRange).toBe('B2:C2');
+                        expect(selectionEle.style.height).toBe('21px');
+                        expect(selectionEle.style.width).toBe('129px');
+                        expect(autofillEle.style.top).toBe('35px');
+                        expect(autofillEle.style.left).toBe('187px');
+                        helper.triggerKeyEvent('keydown', 40, null, false, true);
+                        setTimeout(() => {
+                            expect(instance.sheets[0].selectedRange).toBe('B2:C3');
+                            expect(selectionEle.style.height).toBe('41px');
+                            expect(selectionEle.style.width).toBe('129px');
+                            expect(autofillEle.style.top).toBe('55px');
+                            expect(autofillEle.style.left).toBe('187px');
+                            helper.triggerKeyEvent('keydown', 40, null, false, true);
+                            setTimeout(() => {
+                                expect(instance.sheets[0].selectedRange).toBe('B2:C3');
+                                expect(selectionEle.style.height).toBe('41px');
+                                expect(selectionEle.style.width).toBe('129px');
+                                expect(autofillEle.style.top).toBe('55px');
+                                expect(autofillEle.style.left).toBe('187px');
+                                done();
+                            }, 10);
+                        }, 10);
+                    }, 10);
+                }, 10);
+            });
+        });
+        describe('EJ2-59905 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rowCount: 10, colCount: 26, rows: [{ index: 4, hidden: true }, { index: 5, hidden: true }, { index: 6, hidden: true }] }], height: 300, scrollSettings: { isFinite: true }} , done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Keyboard selection issue in finite mode', (done: Function) => {
+                helper.getElement().focus();
+                const instance: any = helper.getInstance();
+                helper.invoke('selectRange', ['A10:A10']);
+                const selectionEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-selection');
+                helper.triggerKeyEvent('keydown', 39, null, false, false);
+                setTimeout(() => {
+                    helper.triggerKeyEvent('keydown', 39, null, false, false);
+                    setTimeout(() => {
+                        expect(instance.sheets[0].selectedRange).toBe('C10:C10');
+                        done();
+                    }, 10);
+                }, 10);
             });
         });
     });

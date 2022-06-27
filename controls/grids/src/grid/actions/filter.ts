@@ -275,7 +275,7 @@ export class Filter implements IAction {
         const arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) ? this.value : [this.value];
         const moduleName : string = (this.parent.dataSource as DataManager).adaptor && (<{ getModuleName?: Function }>(
             this.parent.dataSource as DataManager).adaptor).getModuleName ? (<{ getModuleName?: Function }>(
-            this.parent.dataSource as DataManager).adaptor).getModuleName(): undefined;
+                this.parent.dataSource as DataManager).adaptor).getModuleName() : undefined;
         for (let i: number = 0, len: number = arrayVal.length; i < len; i++) {
             const field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
             const isMenuNotEqual: boolean = this.operator === 'notequal';
@@ -365,7 +365,7 @@ export class Filter implements IAction {
         this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValueFn);
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.columns.length &&
             !this.parent.getCurrentViewRecords().length) {
-            this.initialEnd(); 
+            this.initialEnd();
         }
     }
 
@@ -500,7 +500,7 @@ export class Filter implements IAction {
         this.fieldName = fieldName;
         this.operator = filterOperator;
         filterValue = !isNullOrUndefined(filterValue) ? filterValue.toString() : filterValue;
-        if (filterValue === "") {
+        if (filterValue === '') {
             filterValue = null;
         }
         if (this.column.type === 'number' || this.column.type === 'date') {
@@ -555,7 +555,7 @@ export class Filter implements IAction {
         if ((this.column.type === 'date' || this.column.type === 'datetime') && filterValue &&
             (filterValue as string).split(',').length > 1) {
             this.values[this.column.field] = (((filterValue as string)).split(',')).map((val: string) => {
-                if (val === "") {
+                if (val === '') {
                     val = null;
                 }
                 return this.setFormatForFlColumn(new Date(val), this.column);
@@ -1213,7 +1213,13 @@ export class Filter implements IAction {
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
             if (parentsUntil(e.target as HTMLElement, 'e-filterbarcell') &&
                 (e.target as HTMLElement).classList.contains('e-input-group-icon')) {
-                (closest(e.target as HTMLElement, 'div').querySelector('.e-filterbaroperator') as HTMLElement).focus();
+                const filterOperatorElement: HTMLElement = closest(e.target as HTMLElement, 'div').
+                    querySelector('.e-filterbaroperator') as HTMLElement;
+                if (filterOperatorElement) {
+                    filterOperatorElement.focus();
+                } else {
+                    (e.target as HTMLElement).focus();
+                }
             }
             if ((e.target as HTMLElement).classList.contains('e-list-item')) {
                 const inputId: string = document.querySelector('.e-popup-open').getAttribute('id').replace('_popup', '');

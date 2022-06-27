@@ -1,5 +1,5 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { SpreadsheetModel, SheetModel, getCell } from '../../../src/index';
+import { SpreadsheetModel, SheetModel, getCell, CellModel } from '../../../src/index';
 
 /**
  *  Spreadsheet Number Format spec
@@ -7,7 +7,40 @@ import { SpreadsheetModel, SheetModel, getCell } from '../../../src/index';
 describe('Spreadsheet Number Format Module ->', (): void => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
-
+    describe('Custom date format ->', (): void => {
+        let sheet: SheetModel;
+        beforeAll((done: Function) => {
+            model = {
+                sheets: [{ rows: [{ cells: [{ value: 'Mar-2020' }, { value: 'Apr-10' }, { value: '2020-May' }, { value: '22-jun' },
+                { value: '13-Jul-2020' }] }] }]
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll((): void => {
+            helper.invoke('destroy');
+        });
+        it('Automatic format deduction based on cell value checking', (done: Function) => {
+            sheet = helper.invoke('getActiveSheet');
+            const cells: CellModel[] = sheet.rows[0].cells;
+            const cellEle: Element[] = helper.invoke('getRow', [0]).cells;
+            expect(cells[0].value).toBe('43891');
+            expect(cells[0].format).toBe('MMM-yy');
+            expect(cellEle[0].textContent).toBe('Mar-20');
+            expect(cells[1].value).toBe('44661');
+            expect(cells[1].format).toBe('dd-MMM');
+            expect(cellEle[1].textContent).toBe('10-Apr');
+            expect(cells[2].value).toBe('43952');
+            expect(cells[2].format).toBe('MMM-yy');
+            expect(cellEle[2].textContent).toBe('May-20');
+            expect(cells[3].value).toBe('44734');
+            expect(cells[3].format).toBe('dd-MMM');
+            expect(cellEle[3].textContent).toBe('22-Jun');
+            expect(cells[4].value).toBe('44025');
+            expect(cells[4].format).toBe('d-MMM-yy');
+            expect(cellEle[4].textContent).toBe('13-Jul-20');
+            done();
+        });
+    });
     describe('CR Issues ->', (): void => {
         describe('SF-343605, EJ2-56678, SF-366825 ->', () => {
             beforeAll((done: Function) => {

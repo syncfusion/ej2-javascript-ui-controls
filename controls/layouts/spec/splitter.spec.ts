@@ -4733,7 +4733,7 @@ describe('Splitter Control', () => {
             splitterObj.allBars[0].firstElementChild.click();
             splitterObj.allBars[1].firstElementChild.click();
             splitterObj.allBars[0].lastElementChild.click();
-            expect(splitterObj.allPanes[0].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[0].style.flexGrow).toBe('1');
             expect(splitterObj.allPanes[1].style.flexGrow).toBe('0');
             expect(splitterObj.allPanes[2].style.flexGrow).toBe('');
             expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toBe(false);
@@ -5531,4 +5531,37 @@ describe('Splitter Control', () => {
             expect(splitterObj.allBars[1].style.order).toBe('1');
         });
     });
+    describe('EJ2-59987 Splitter collapse not working properly ', () =>{
+        let splitterObj: any;
+        beforeAll(() =>{
+            let element : HTMLElement = createElement('div',{ id: 'splitter'});
+            let child1 : HTMLElement = createElement('div');
+            let child2 : HTMLElement = createElement('div');
+            let child3 : HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+        });
+        afterAll(() =>{
+            document.body.innerHTML= '';
+        });
+        it("third pane should collapse ",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { content: 'First Pane', collapsible: true, size: '20%' },
+                    { content: 'Second Pane', collapsible: true, size: '50%' },
+                    { content: 'Third Pane', collapsible: true, size: '20%' }
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            expect(splitterObj.allPanes[0].classList.contains('e-static-pane')).toBe(true);
+            expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
+            expect(splitterObj.allPanes[2].classList.contains('e-static-pane')).toBe(false);
+            splitterObj.allBars[1].lastElementChild.click();
+            expect(splitterObj.allPanes[0].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[1].style.flexGrow).toBe('1');
+            expect(splitterObj.allPanes[2].style.flexGrow).toBe('0');
+        })
+    })
  });

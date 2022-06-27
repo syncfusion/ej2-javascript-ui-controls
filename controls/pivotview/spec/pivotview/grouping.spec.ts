@@ -1142,9 +1142,9 @@ describe('Grouping feature in UI', () => {
             expect(true).toBe(true);
         });
         it('check close field list', () => {
-            let controlWrapper: HTMLElement = document.querySelector('.e-pivotfieldlist-wrapper');
+            let controlWrapper: HTMLElement = document.querySelector('.e-pivotfieldlist-container');
             (controlWrapper.querySelector('.e-cancel-btn') as HTMLElement).click();
-            expect(document.querySelector('.e-pivotfieldlist-wrapper').classList.contains('e-popup-close'));
+            expect(document.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-close'));
         });
         it('Check code-behind groups initially', (done: Function) => {
             setTimeout(() => {

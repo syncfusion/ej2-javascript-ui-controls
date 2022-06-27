@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-treegrid/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-treegrid)
-
 # ej2-treegrid
 
 The TreeGrid component is a feature-rich control used to visualize self-referential hierarchical data effectively in a tabular format.. It will pull data from a data source, such as array of JSON objects, `OData web services`, or [`DataManager`](http://ej2.syncfusion.com/documentation/data) binding data fields to columns. It also incudes interactions like expanding and collapsing the parent records.

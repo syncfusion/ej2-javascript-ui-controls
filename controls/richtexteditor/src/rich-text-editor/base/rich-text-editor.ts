@@ -78,6 +78,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
+    public currentTarget: HTMLElement;
+    /**
+     * @hidden
+     * @deprecated
+     */
     public isFocusOut: boolean = false;
     /**
      * @hidden
@@ -1333,6 +1338,34 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.formatter.saveData();
             }
         }
+        if (this.maxLength !== -1 && !isNOU(tool.command)) {
+            let currentInsertContentLength: number = 0;
+            if (tool.command === 'Links') {
+                currentInsertContentLength = (value as ILinkCommandsArgs).text.length === 0 ?
+                (value as ILinkCommandsArgs).url.length :(value as ILinkCommandsArgs).text.length;
+            }
+            if (tool.command === 'Images' || tool.command === 'Table' || tool.command === 'Files') {
+                currentInsertContentLength = 1
+            }
+            if (tool.command === 'InsertHTML') {
+                if (!isNOU(value)) {
+                    let tempElem: HTMLElement = this.createElement('div');
+                    tempElem.innerHTML = value;
+                    currentInsertContentLength = tempElem.textContent.length;
+                } else if (!isNOU(tool.value) && (tool.value === '<hr/>' || tool.value === '<br/>')) {
+                    currentInsertContentLength = 1;
+                }
+            }
+            if (tool.command === 'InsertText') {
+                currentInsertContentLength = value.length;
+            }
+            const currentLength: number = this.getText().trim().length;
+            const selectionLength: number = this.getSelection().length;
+            const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
+            if (!(this.maxLength === -1 || totalLength <= this.maxLength)) {
+                return;
+            }
+        }
         this.formatter.editorManager.execCommand(
             tool.command,
             tool.subCommand ? tool.subCommand : (value ? value : tool.value),
@@ -1452,6 +1485,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         // eslint-disable-next-line
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        this.notify(events.bindCssClass, {cssClass: this.cssClass});
         this.renderComplete();
     }
 
@@ -1478,8 +1512,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             range.endContainer as Element;
         let closestLI: Element = closest(endNode, 'LI');
         if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
-        !range.collapsed) {
-                       closestLI.textContent = closestLI.textContent.trim();
+        !range.collapsed && isNOU(endNode.nextElementSibling)) {
+            closestLI.textContent = closestLI.textContent.trim();
             currentEndOffset = closestLI.textContent.length - 1;
             let currentLastElem: Element = closestLI;
             while(currentLastElem.nodeName !== '#text') {
@@ -1578,6 +1612,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private keyUp(e: KeyboardEvent): void {
+        if (this.editorMode === "HTML") {
+            const range: Range = this.getRange();
+            if (Browser.userAgent.indexOf('Firefox') != -1 && range.startContainer.nodeName === '#text' &&
+                range.startContainer.parentElement === this.inputElement && this.enterKey !== 'BR') {
+            const range: Range = this.getRange();
+            const tempElem: HTMLElement = this.createElement(this.enterKey);
+            range.startContainer.parentElement.insertBefore(tempElem, range.startContainer);
+            tempElem.appendChild(range.startContainer);
+            this.formatter.editorManager.nodeSelection.setSelectionText(
+                this.contentModule.getDocument(), tempElem.childNodes[0], tempElem.childNodes[0], 
+                tempElem.childNodes[0].textContent.length, tempElem.childNodes[0].textContent.length);
+            }
+        }
         this.notify(events.keyUp, { member: 'keyup', args: e });
         if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
         this.inputElement.innerHTML === '<br>')) {
@@ -1734,12 +1781,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             requestType: 'Paste'
         };
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
-            const currentLength: number = this.getText().trim().length;
+            const currentLength: number = this.inputElement.textContent.length;
             const selectionLength: number = this.getSelection().length;
             const pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
                 ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
             const totalLength: number = (currentLength - selectionLength) + pastedContentLength;
             if (this.editorMode === 'Markdown') {
+                const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
+                setTimeout(() => {
+                    this.formatter.onSuccess(this, args);
+                }, 0);
                 if (!(this.maxLength === -1 || totalLength <= this.maxLength)) {
                     e.preventDefault();
                 }
@@ -2042,6 +2093,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             case 'cssClass':
                 this.element.classList.remove(oldProp[prop]);
                 this.setCssClass(newProp[prop]);
+                this.notify(events.bindCssClass, {cssClass: newProp[prop], oldCssClass: oldProp[prop]});
                 break;
             case 'enabled': this.setEnable(); break;
             case 'enableRtl': this.updateRTL(); break;
@@ -3088,6 +3140,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private onIframeMouseDown(e: MouseEvent): void {
         this.isBlur = false;
+        this.currentTarget = <HTMLElement>e.target;
         this.notify(events.iframeMouseDown, e);
     }
 

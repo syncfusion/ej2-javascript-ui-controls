@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel } from '../../../src/diagram/objects/node-model';
+import { BpmnShapeModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { ShadowModel, RadialGradientModel, StopModel } from '../../../src/diagram/core/appearance-model';
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
@@ -85,14 +85,55 @@ describe('Diagram Control', () => {
                     },
                 },
             };
+            let node5: NodeModel = {
+                id: 'node4', width: 100, height: 100, offsetX: 400, offsetY: 400,
+                style: { strokeWidth: 5, strokeDashArray: '2 2' },
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'Task', task: {
+                            type: 'Send', compensation: false,
+                        }
+                    },
+                },
+            };
             diagram = new Diagram({
-                width: 1500, height: 500, nodes: [node, node1, node2, node3, node4]
+                width: 1500, height: 500, nodes: [node, node1, node2, node3, node4,node5]
             });
             diagram.appendTo('#diagram96task');
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+        });
+        it('Changing BPMN shape as Activity task type at runtime from Send to Receive', (done:Function)=>{
+            let shape =  (diagram.nodes[5].shape as BpmnShapeModel);
+            shape.activity.task.type = 'Receive';
+            diagram.dataBind();
+            let node = (diagram.nodes[5].wrapper.children[0] as Canvas).children[0] as Canvas;
+            expect(node.children[1].width === 18 && node.children[1].height === 16
+                 && shape.activity.task.type === 'Receive').toBe(true);
+                 console.log('Send to Receive');
+            done();
+        });
+        it('Changing BPMN shape as Activity task type at runtime from Receive to Send', (done:Function)=>{
+            let shape =  (diagram.nodes[5].shape as BpmnShapeModel);
+            shape.activity.task.type = 'Send';
+            diagram.dataBind();
+            let node = (diagram.nodes[5].wrapper.children[0] as Canvas).children[0] as Canvas;
+            expect(node.children[1].width === 18 && node.children[1].height === 16
+                 && shape.activity.task.type === 'Send').toBe(true);
+                 console.log('Receive to Send');
+            done();
+        });
+        it('Changing BPMN shape as Activity task type at runtime from Send to Manual', (done:Function)=>{
+            let shape =  (diagram.nodes[5].shape as BpmnShapeModel);
+            shape.activity.task.type = 'Manual';
+            diagram.dataBind();
+            let node = (diagram.nodes[5].wrapper.children[0] as Canvas).children[0] as Canvas;
+            expect(node.children[1].width === 20 && node.children[1].height === 20
+                 && shape.activity.task.type === 'Manual').toBe(true);
+                 console.log(' Send to Manual');
+            done();
         });
         it('Checking before, after,  BPMN shape as Activity with Task and task Type as None', (done: Function) => {
 

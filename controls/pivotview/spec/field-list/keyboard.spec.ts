@@ -219,7 +219,7 @@ describe('Pivot Rendering', () => {
             expect(true).toBe(true);
         });
         it('check field list dialog with targetID', () => {
-            expect(!isNullOrUndefined(elem.querySelector('.e-pivotfieldlist-wrapper')));
+            expect(!isNullOrUndefined(elem.querySelector('.e-pivotfieldlist-container')));
         });
     });
     describe('Testing on keyboard interaction with PivotGrid with GroupingBar', () => {
@@ -714,7 +714,7 @@ describe('Pivot Rendering', () => {
             }, 1000);
         });
         it('close the fieldlist dialog', (done: Function) => {
-            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Wrapper');
+            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Container');
 
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {

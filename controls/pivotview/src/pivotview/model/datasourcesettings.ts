@@ -408,6 +408,13 @@ export class Sort extends ChildProperty<Sort> implements ISort {
      */
     @Property('Ascending')
     public order: Sorting;
+
+    /**
+    * Allows to specify the order in which the members should be sorted.
+    * @default []
+    */
+    @Property([])
+    public membersOrder: string[] | number[];
 }
 
 /**

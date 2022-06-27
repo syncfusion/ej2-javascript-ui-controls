@@ -311,6 +311,13 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
      */
     @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     public padding: MarginModel;
+
+    /**
+     * Specifies the percentage of scale value for each ZoomIn or ZoomOut functionality.
+     * @default 0.2
+     */
+     @Property(0.2)
+     public zoomFactor: number;
 }
 
 

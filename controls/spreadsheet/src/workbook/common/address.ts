@@ -120,13 +120,23 @@ export function getAddressFromSelectedRange(sheet: SheetModel): string {
  * @hidden
  */
 export function getAddressInfo(context: Workbook, address: string): { sheetIndex: number, indices: number[] } {
+    return { sheetIndex: getSheetIndexFromAddress(context, address), indices: getIndexesFromAddress(address) };
+}
+
+/**
+ * @param {Workbook} context - Specifies the context.
+ * @param {string} address - Specifies the address.
+ * @returns {number} - return the sheet index.
+ * @hidden
+ */
+export function getSheetIndexFromAddress(context: Workbook, address: string): number {
     let sIdx: number;
     if (address.indexOf('!') > -1) {
         sIdx = getSheetIndex(context, getSheetNameFromAddress(address));
     } else {
         sIdx = context.activeSheetIndex;
     }
-    return { sheetIndex: sIdx, indices: getIndexesFromAddress(address) };
+    return sIdx;
 }
 
 /**

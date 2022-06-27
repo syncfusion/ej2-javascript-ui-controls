@@ -21,6 +21,38 @@ let keyboardEventArgs = {
     type: 'keydown'
 };
 
+describe('EJ2-59705 - Console error thrown when pressing enter key at firefox browser', () => {
+    let defaultUserAgent= navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode"><br></p>`
+        });
+        done();
+    });
+
+    it('Console error thrown when pressing enter key at firefox browser', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p><br></p><p><br></p><p class=\"focusNode\"><br></p>`).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+        Browser.userAgent =defaultUserAgent;
+    });
+});
+
 describe('EJ2-57587 - Many BR are inserted after enter key after the shift + enter is pressed', () => {
     let defaultUserAgent= navigator.userAgent;
     let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
@@ -1356,6 +1388,33 @@ describe('BLAZ-18839 - Enter Key press after link make the first char in the nex
             document, startNode.childNodes[0], startNode.childNodes[0], 4, 4);
         (<any>rteObj).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.querySelectorAll('p')[1].querySelectorAll('a').length === 0).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-59670 - Enter Key press at the start of the image with caption', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode"><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="blob:null/789e321d-7734-445f-831e-d62dc21a3ccf" class="e-rte-image e-imginline e-resize" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span> </p>`
+        });
+        done();
+    });
+
+    it('EJ2-59670 - Enter Key press at the start of the image with caption', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.element.querySelectorAll('img').length === 1).toBe(true);
     });
 
     afterAll(() => {

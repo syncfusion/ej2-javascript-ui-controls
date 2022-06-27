@@ -48,6 +48,7 @@ export interface ITextMarkupAnnotation {
     allowedInteractions?: AllowedInteraction
     isPrint: boolean
     isCommentLock: boolean
+    isAnnotationRotated: boolean
 }
 
 /**
@@ -532,7 +533,22 @@ export class TextMarkupAnnotation {
                     // eslint-disable-next-line
                     let annotation: any = annotations[i];
                     let annotationObject: ITextMarkupAnnotation = null;
+                    let isAnnotationRotated: boolean;
                     if (annotation.TextMarkupAnnotationType) {
+                        if (isImportAction) {
+                            if (this.pdfViewerBase.isJsonImported) {
+                                let newArray: any[] = [];
+                                for (let i: number = 0; i < annotation.Bounds.length; i++) {
+                                    // eslint-disable-next-line
+                                    annotation.Bounds[i] =  this.pdfViewerBase.importJsonForRotatedDocuments(annotation.Rotate, pageNumber, annotation.Bounds[i], annotation.AnnotationRotation);
+                                    annotation.Bounds[i].left = annotation.Bounds[i].X;
+                                    annotation.Bounds[i].top = annotation.Bounds[i].Y;
+                                    newArray.push(annotation.Bounds[i]);
+                                }
+                                annotation.Bounds = newArray;
+                                isAnnotationRotated = this.pdfViewerBase.isPageRotated;
+                            }
+                        }
                         // eslint-disable-next-line max-len
                         annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                         if (!annotation.Author) {
@@ -562,7 +578,7 @@ export class TextMarkupAnnotation {
                             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                             textMarkupContent: annotation.TextMarkupContent, textMarkupStartIndex: 0, textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation),
                             // eslint-disable-next-line max-len
-                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: isPrint, isCommentLock: annotation.IsCommentLock
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: isPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated
                         };
                         if (annotation.IsMultiSelect) {
                             annotationObject.annotNameCollection = annotation.AnnotNameCollection;
@@ -1324,6 +1340,16 @@ export class TextMarkupAnnotation {
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
+                        if (this.pdfViewerBase.isJsonExported) {
+                            if (pageAnnotationObject.annotations[z].isAnnotationRotated) {
+                                pageAnnotationObject.annotations[z].bounds = this.getBoundsForSave(pageAnnotationObject.annotations[z].bounds, i);
+                            } else {
+                                const pageDetails: any = this.pdfViewerBase.pageSize[pageAnnotationObject.pageIndex];
+                                if (pageDetails) {
+                                    pageAnnotationObject.annotations[z].annotationRotation = pageDetails.rotation;
+                                }
+                            }
+                        }
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.getBoundsForSave(pageAnnotationObject.annotations[z].bounds, i));
                         const colorString: string = pageAnnotationObject.annotations[z].color;
@@ -2593,7 +2619,7 @@ export class TextMarkupAnnotation {
             annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
             // eslint-disable-next-line max-len
             textMarkupContent: textContent, textMarkupStartIndex: startIndex, textMarkupEndIndex: endIndex, isMultiSelect: isMultiSelect, annotationSelectorSettings: this.getSelector(type),
-            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings, isPrint: isPrint, isCommentLock: isCommentLock
+            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings, isPrint: isPrint, isCommentLock: isCommentLock, isAnnotationRotated: false
         };
         if (isMultiSelect) {
             this.multiPageCollection.push(annotation);
@@ -2724,7 +2750,7 @@ export class TextMarkupAnnotation {
             textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation), customData: this.pdfViewer.annotation.getCustomData(annotation),
             isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers,
             // eslint-disable-next-line max-len
-            annotationAddMode: this.annotationAddMode, annotationSettings : annotation.AnnotationSettings, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
+            annotationAddMode: this.annotationAddMode, annotationSettings : annotation.AnnotationSettings, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: false
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
     }

@@ -1,5 +1,6 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel } from './../index';
-import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, InsertDeleteModelArgs } from './index';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, InsertDeleteModelArgs, getColumnHeaderText } from './index';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Check whether the text is formula or not.
@@ -79,6 +80,25 @@ export function inRange(range: number[], rowIdx: number, colIdx: number) : boole
     return range && (rowIdx >= range[0] && rowIdx <= range[2] && colIdx >= range[1] && colIdx <= range[3]);
 }
 
+/**
+ * @param {number[]} address - Specify the address
+ * @param {number} rowIdx - Specify the row index
+ * @param {number} colIdx - Specify the col index
+ * @returns {boolean} - Returns boolean value
+ */
+export function isInMultipleRange(address: string, rowIdx: number, colIdx: number): boolean {
+    let range: number[];
+    let isInRange: boolean;
+    const splitedAddress: string[] = address.split(' ');
+    for (let i: number = 0, len: number = splitedAddress.length; i < len; i++) {
+        range = getRangeIndexes(splitedAddress[i]);
+        isInRange = inRange(range, rowIdx, colIdx);
+        if (isInRange) {
+            break;
+        }
+    }
+    return isInRange;
+}
 
 /** @hidden
  * @param {number[]} range - Specify the range
@@ -116,6 +136,38 @@ export function isInRange(range: number[], testRange: number[], isModify?: boole
         }
     }
     return inRange;
+}
+
+/**
+ * @hidden
+ * @param {string} address - Specifies the address for whole column.
+ * @param {number[]} testRange - Specifies range used to split the address.
+ * @param {number} colIdx - Specifies the column index.
+ * @returns {string} - returns the modified address.
+ */
+export function getSplittedAddressForColumn(address: string, testRange: number[], colIdx: number): string {
+    const colName: string = getColumnHeaderText(colIdx + 1);
+    if (address) {
+        address.split(' ').forEach((addrs: string) => {
+            const range: number[] = getRangeIndexes(addrs);
+            if (isInRange(range, testRange)) {
+                address = address.split(addrs).join(colName + (range[0] + 1) +
+                    ':' + colName + testRange[0] + ' ' + colName + (testRange[2] + 2) +
+                    ':' + colName + (range[2] + 1));
+            } else if (isInRange(range, testRange, true)) {
+                let modifiedAddress: string;
+                if (testRange[0] > range[0]) {
+                    modifiedAddress = colName + (range[0] + 1) + ':' + colName + testRange[0];
+                } else {
+                    modifiedAddress = colName + (testRange[2] + 2) + ':' + colName + (range[2] + 1);
+                }
+                address = address.split(addrs).join(modifiedAddress);
+            }
+        });
+    } else {
+        address = colName + '1:' + colName + testRange[0] + ' ' + colName + (testRange[2] + 2) + ':' + colName + '1048576';
+    }
+    return address;
 }
 
 /**
@@ -306,8 +358,8 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             const cell: CellModel = getCell(args.rowIndex, args.colIndex, sheet, false, true);
             context.notify(
                 workbookEditOperation, { action: 'updateCellValue', address: [args.rowIndex, args.colIndex], sheetIndex:
-                getSheetIndex(context, sheet.name), value: isFormulaCell && !cell.formula ? '' : (cell.formula || cell.value ||
-                    (<unknown>cell.value === 0 ? '0' : '')) });
+                getSheetIndex(context, sheet.name), value: isFormulaCell && !cell.formula ? (cell.value ||
+                (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value || (<unknown>cell.value === 0 ? '0' : '')) });
             if (prop.requestType && args.cell === null) {
                 setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
             }

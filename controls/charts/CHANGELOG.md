@@ -2,6 +2,46 @@
 
 ## [Unreleased]
 
+## 20.1.57 (2022-05-24)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I378097` - `zooomComplete` event is now properly triggered for device.
+
+## 20.1.56 (2022-05-17)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I378119` - PlotOffsetBottom not working fine issue has been fixed.
+
+## 20.1.55 (2022-05-12)
+
+### Chart
+
+#### New Features
+
+- `#I360879` - Provided support to disable the marker explode without tooltip and highlight mode.
+
+## 20.1.52 (2022-05-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I375071` - Now axis labels is rendering properly with label rotation.
+
+## 20.1.51 (2022-04-26)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I375071` - Now axis labels is rendering properly with label rotation.
+
 ## 20.1.50 (2022-04-19)
 
 ### Chart

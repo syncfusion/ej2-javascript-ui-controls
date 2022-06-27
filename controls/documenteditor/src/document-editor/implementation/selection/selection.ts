@@ -22,7 +22,7 @@ import { Dictionary } from '../../base/dictionary';
 import {
     LineSpacingType, BaselineAlignment, HighlightColor,
     Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent,
-    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent
+    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent, CharacterRangeType
 } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
@@ -727,9 +727,9 @@ export class Selection {
      * @param fieldStart
      * @returns {void}
      */
-    public selectFieldInternal(fieldStart: FieldElementBox, isKeyBoardEvent?: boolean): void {
+    public selectFieldInternal(fieldStart: FieldElementBox, isKeyBoardEvent?: boolean, isReplacingFormResult?:boolean): void {
         if (fieldStart) {
-            const formFillingMode: boolean = this.documentHelper.isFormFillProtectedMode;
+            const formFillingMode: boolean = this.documentHelper.isFormFillProtectedMode || isReplacingFormResult;
             let fieldEnd: ElementBox = fieldStart.fieldEnd;
             if (formFillingMode) {
                 fieldStart = fieldStart.fieldSeparator;
@@ -2030,7 +2030,7 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public moveTextPosition(cursorPoint: Point, textPosition: TextPosition): void {
+    public moveTextPosition(cursorPoint: Point, textPosition: TextPosition, isMouseLeave?: boolean): void {
         if (isNullOrUndefined(this.start)) {
             return;
         }
@@ -2043,7 +2043,7 @@ export class Selection {
         this.upDownSelectionLength = textPosition.location.x;
         const selectionStartIndex: string = this.start.getHierarchicalIndexInternal();
         const selectionEndIndex: string = this.end.getHierarchicalIndexInternal();
-        if (selectionStartIndex !== selectionEndIndex) {
+        if (selectionStartIndex !== selectionEndIndex && !isMouseLeave) {
             // Extends selection end to field begin or field end.
             if (TextPosition.isForwardSelection(selectionStartIndex, selectionEndIndex)) {
                 textPosition.validateForwardFieldSelection(selectionStartIndex, selectionEndIndex);
@@ -3081,7 +3081,7 @@ export class Selection {
                 }
             }
             if (block instanceof TextFrame) {
-                const indexInOwner: string = block.containerShape.indexInOwner.toString();
+                const indexInOwner: number = block.containerShape.line.getOffset(block.containerShape, 1);
                 index = 'S' + ';' + indexInOwner + ';' + offset;
                 return this.getHierarchicalIndex(block.containerShape.paragraph, index);
             }
@@ -3262,11 +3262,12 @@ export class Selection {
             value = position.index.substring(0, 1);
             if (value === 'S') {
                 position.index = position.index.substring(1).replace(';', '');
-                const indexInOwner: string = position.index.substring(0, 1);
-                position.index = position.index.substring(1).replace(';', '');
-                const paraIndex: string = position.index.substring(0, 1);
-                position.index = position.index.substring(1).replace(';', '');
-                childWidget = (childWidget as ParagraphWidget).floatingElements[indexInOwner].textFrame.childWidgets[paraIndex] as Widget;
+                const indexInOwner: string = position.index.substring(0, position.index.indexOf(';'));
+                position.index = position.index.substring(position.index.indexOf(';')).replace(';', '');
+                const paraIndex: string = position.index.substring(0, position.index.indexOf(';'));
+                position.index = position.index.substring(position.index.indexOf(';')).replace(';', '');
+                let shape: ElementBox = (childWidget as ParagraphWidget).getInline(parseInt(indexInOwner), 0).element;
+                childWidget = (shape as ShapeElementBox).textFrame.childWidgets[paraIndex] as Widget;
             }
             const child: Widget = childWidget as Widget;
             if (child instanceof ParagraphWidget) {
@@ -4494,7 +4495,6 @@ export class Selection {
         const bidi: boolean = paragraph.paragraphFormat.bidi;
         for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
             const lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
-            if (!bidi) {
                 for (let j: number = 0; j < lineWidget.children.length; j++) {
                     const inline: ElementBox = lineWidget.children[j] as ElementBox;
                     if (inline.length === 0 || inline instanceof ListTextElementBox) {
@@ -4509,12 +4509,6 @@ export class Selection {
                     }
                     count += inline.length;
                 }
-            } else {
-                value = lineWidget.getInlineForOffset(offset, false, undefined, false, true, false).index;
-                if (value >= 0) {
-                    return value;
-                }
-            }
         }
         return offset - 1 === count ? validOffset : offset - 1;
     }
@@ -4525,7 +4519,7 @@ export class Selection {
      */
     public getNextValidOffset(line: LineWidget, offset: number): number {
         let count: number = 0;
-        if (!line.paragraph.paragraphFormat.bidi) {
+        // if (!line.paragraph.paragraphFormat.bidi) {
             for (let i: number = 0; i < line.children.length; i++) {
                 const inline: ElementBox = line.children[i] as ElementBox;
                 if (inline.length === 0 || inline instanceof ListTextElementBox) {
@@ -4543,11 +4537,11 @@ export class Selection {
                 }
                 count += inline.length;
             }
-        } else {
-            if (offset !== this.getLineLength(line)) {
-                offset = line.getInlineForOffset(offset, false, undefined, false, false, true).index;
-            }
-        }
+        // } else {
+        //     if (offset !== this.getLineLength(line)) {
+        //         offset = line.getInlineForOffset(offset, false, undefined, false, false, true).index;
+        //     }
+        // }
         return offset;
     }
 
@@ -6311,6 +6305,7 @@ export class Selection {
         let isRtlText: boolean = false;
         let isParaBidi: boolean = false;
         left = elementValues.left;
+        let children: ElementBox[] = widget.renderedElements;
         if (isNullOrUndefined(element)) {
             let topMargin: number = 0; let bottomMargin: number = 0;
             let size: SizeInfo = this.getParagraphMarkSize(widget.paragraph, topMargin, bottomMargin);
@@ -6319,8 +6314,8 @@ export class Selection {
             let selectParaMark: boolean = this.documentHelper.mouseDownOffset.y >= top && this.documentHelper.mouseDownOffset.y < top + widget.height ? (this.documentHelper.mouseDownOffset.x < left + size.width) : true;
             if (selectParaMark && includeParagraphMark && caretPosition.x > left + size.width / 2) {
                 left += size.width;
-                if (widget.children.length > 0) {
-                    inline = widget.children[widget.children.length - 1];
+                if (children.length > 0) {
+                    inline = children[children.length - 1];
                     index = inline.length;
                 }
                 index++;
@@ -6333,8 +6328,8 @@ export class Selection {
                     if (widget.paragraph.floatingElements.length > 0) {
                         isInInline = this.documentHelper.checkPointIsInLine(widget, caretPosition);
                     }
-                    for (let i: number = widget.children.indexOf(element); i < widget.children.length; i++) {
-                        element = widget.children[i];
+                    for (let i: number = children.indexOf(element); i < children.length; i++) {
+                        element = children[i];
                         if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
                             if (this.documentHelper.isInShapeBorder(element, caretPosition) &&
                                 !this.documentHelper.isSelectionChangedOnMouseMoved && !isInInline) {
@@ -6348,8 +6343,8 @@ export class Selection {
                         if (element instanceof ListTextElementBox || element instanceof TextElementBox) {
                             isCurrentParaBidi = element.line.paragraph.paragraphFormat.bidi;
                         }
-                        if (caretPosition.x < left + element.margin.left + element.width + element.padding.left || i === widget.children.length - 1
-                            || ((widget.children[i + 1] instanceof ListTextElementBox) && isCurrentParaBidi)) {
+                        if (caretPosition.x < left + element.margin.left + element.width + element.padding.left || i === children.length - 1
+                            || ((children[i + 1] instanceof ListTextElementBox) && isCurrentParaBidi)) {
                             break;
                         }
                         left += element.margin.left + element.width + element.padding.left;
@@ -6405,11 +6400,11 @@ export class Selection {
                                         left += prevWidth;
                                     }
                                     charIndex = i - 1;
-                                    if (i === 1 && element !== widget.children[0] && !(widget.children[0] instanceof ShapeBase &&
-                                        (widget.children[0] as ShapeBase).textWrappingStyle !== 'Inline')) {
-                                        let curIndex: number = widget.children.indexOf(element);
-                                        if (!(widget.children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
-                                            element = widget.children[curIndex - 1];
+                                    if (i === 1 && element !== children[0] && !(children[0] instanceof ShapeBase &&
+                                        (children[0] as ShapeBase).textWrappingStyle !== 'Inline')) {
+                                        let curIndex: number = children.indexOf(element);
+                                        if (!(children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
+                                            element = children[curIndex - 1];
                                             charIndex = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                                         }
                                     }
@@ -6424,10 +6419,10 @@ export class Selection {
                         if (caretPosition.x - left - element.margin.left > element.width / 2) {
                             index = 1;
                             left += (element.margin.left + element.width + element.padding.left);
-                        } else if (element !== widget.children[0] && !isImageSelected) {
-                            let curIndex: number = widget.children.indexOf(element);
-                            if (!(widget.children[curIndex - 1] instanceof ListTextElementBox)) {
-                                element = widget.children[curIndex - 1];
+                        } else if (element !== children[0] && !isImageSelected) {
+                            let curIndex: number = children.indexOf(element);
+                            if (!(children[curIndex - 1] instanceof ListTextElementBox)) {
+                                element = children[curIndex - 1];
                                 index = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                             }
                         }
@@ -6540,16 +6535,17 @@ export class Selection {
      */
     public getTextLength(widget: LineWidget, element: ElementBox): number {
         let length: number = 0;
-        let count: number = widget.children.indexOf(element);
-        if (widget.children.length > 0 && widget.children[0] instanceof ListTextElementBox) {
-            if (widget.children[1] instanceof ListTextElementBox) {
+        let renderedElement: ElementBox[] = widget.renderedElements;
+        let count: number = renderedElement.indexOf(element);
+        if (renderedElement.length > 0 && renderedElement[0] instanceof ListTextElementBox) {
+            if (renderedElement[1] instanceof ListTextElementBox) {
                 count -= 2;
             } else {
                 count -= 1;
             }
         }
         for (let i: number = 1; i < count; i++) {
-            length += widget.children[i].length;
+            length += renderedElement[i].length;
         }
         return length;
     }
@@ -6564,8 +6560,9 @@ export class Selection {
         if (this.isParagraphFirstLine(widget) && !paragraphFormat.bidi && !(paragraphFormat.textAlignment === 'Right')) {
             left += HelperMethods.convertPointToPixel(paragraphFormat.firstLineIndent);
         }
-        for (let i: number = 0; i < widget.children.length; i++) {
-            const element: ElementBox = widget.children[i];
+        let renderedElements: ElementBox[] = widget.renderedElements;
+        for (let i: number = 0; i < renderedElements.length; i++) {
+            const element: ElementBox = renderedElements[i];
             if (element instanceof ListTextElementBox && !paragraphFormat.bidi) {     //after list implementation
                 if (i === 0) {
                     left += element.margin.left + element.width;
@@ -6606,8 +6603,9 @@ export class Selection {
         }
         left += firstLineIndent;
         let element: ElementBox = undefined;
-        for (let i: number = 0; i < widget.children.length; i++) {
-            element = widget.children[i];
+        let renderedChild: ElementBox[] = widget.renderedElements;
+        for (let i: number = 0; i < renderedChild.length; i++) {
+            element = renderedChild[i];
             if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox) {
                 if (widget.paragraph.paragraphFormat.bidi) {
                     left += element.margin.left;
@@ -6706,50 +6704,30 @@ export class Selection {
 
             left += HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.firstLineIndent);
         }
-        let isRtlText: boolean = false;
-        let isParaBidi: boolean = false;
-        if (elementBox instanceof TextElementBox) {
-            isRtlText = elementBox.isRightToLeft;
-            isParaBidi = (elementBox as TextElementBox).line.paragraph.paragraphFormat.bidi;
-            if (!isRtlText && elementBox.nextElement && elementBox.nextElement.isRightToLeft) {
-                isRtlText = true;
-            }
-        }
-        //when line contains normal text and para is RTL para.
-        //if home key is pressed, update caret position after the last element in a line.
-        //if end key pressed, update caret position before the first element in a line. 
-
-        if (isParaBidi) {
-            if (!isRtlText) {
-                if (this.documentHelper.moveCaretPosition === 1 && widget.children.length > 0) {
-                    elementBox = widget.children[widget.children.length - 1];
-                } else if (this.documentHelper.moveCaretPosition === 2) {
-                    elementBox = widget.children[0];
-                }
-                if (elementBox instanceof ListTextElementBox && widget.children.length > 2) {
-                    elementBox = widget.children[widget.children.length - 3];
-                }
-            }
-        }
-        let count: number = widget.children.indexOf(elementBox);
-        if ((widget.children.length === 1 && widget.children[0] instanceof ListTextElementBox) || (widget.children.length === 2
-            && widget.children[0] instanceof ListTextElementBox && widget.children[1] instanceof ListTextElementBox)) {
-            count = widget.children.length;
+        let renderedWidget: ElementBox[] = widget.renderedElements;
+        let count: number = renderedWidget.indexOf(elementBox);
+        if ((renderedWidget.length === 1 && renderedWidget[0] instanceof ListTextElementBox) || (renderedWidget.length === 2
+            && renderedWidget[0] instanceof ListTextElementBox && renderedWidget[1] instanceof ListTextElementBox)) {
+            count = renderedWidget.length;
         }
         for (let i: number = 0; i < count; i++) {
-            let widgetInternal: ElementBox = widget.children[i];
+            let widgetInternal: ElementBox = renderedWidget[i];
             if (widgetInternal instanceof ShapeBase && widgetInternal.textWrappingStyle !== 'Inline') {
                 continue;
             }
-            if (i === 1 && widget.children[i] instanceof ListTextElementBox) {
-                left += widget.children[i].width;
-            } else if (widget.children[i] instanceof TabElementBox && elementBox === widgetInternal) {
-                left += widget.children[i].margin.left;
+            if (i === 1 && widgetInternal instanceof ListTextElementBox) {
+                left += widgetInternal.width;
+            } else if (widgetInternal instanceof TabElementBox && elementBox === widgetInternal) {
+                left += widgetInternal.margin.left;
             } else {
-                left += widget.children[i].margin.left + widget.children[i].width + widget.children[i].padding.left;
+                left += widgetInternal.margin.left + widgetInternal.width + widgetInternal.padding.left;
             }
         }
+        let isRtlText: boolean = false;
+        let isParaBidi: boolean = widget.paragraph.bidi;
         if (!isNullOrUndefined(elementBox)) {
+            isRtlText = (elementBox.characterRange & CharacterRangeType.RightToLeft) === CharacterRangeType.RightToLeft ;
+            isParaBidi = elementBox.line.paragraph.paragraphFormat.bidi;
             left += (elementBox.margin.left + elementBox.padding.left);
             if (elementBox instanceof ShapeBase && !isNullOrUndefined(elementBox.nextElement)) {
                 left += (elementBox.nextElement.margin.left + elementBox.nextElement.padding.left)
@@ -6778,7 +6756,6 @@ export class Selection {
                     left += elementBox.width + width;
                 }
             } else {
-
                 width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat);
                 (elementBox as TextElementBox).trimEndWidth = width;
                 if (isRtlText) {
@@ -7900,24 +7877,28 @@ export class Selection {
                 }
                 if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 0
                     && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox))) {
-                    let nextInline: ElementBox = isNullOrUndefined((inline as FieldElementBox).fieldSeparator) ?
-                        (inline as FieldElementBox).fieldEnd : (inline as FieldElementBox).fieldSeparator;
+                    let nextInline: ElementBox = isNullOrUndefined((inline as FieldElementBox).fieldEnd) ?
+                        (inline as FieldElementBox).fieldBegin : (inline as FieldElementBox).fieldEnd;
+                        j--;
                     do {
+                        this.characterFormat.combineFormat(inline.characterFormat);
                         count += inline.length;
                         inline = inline.nextNode;
                         i++;
+                        j++;
                     } while (!isNullOrUndefined(inline) && inline !== nextInline);
-                    isFieldStartSelected = true;
+                    continue;
+                    //isFieldStartSelected = true;
                 }
-                if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1
-                    && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)) && isFieldStartSelected) {
-                    let fieldInline: ElementBox = (inline as FieldElementBox).fieldBegin;
-                    do {
-                        this.characterFormat.combineFormat(fieldInline.characterFormat);
-                        fieldInline = fieldInline.nextNode as ElementBox;
-                    } while (!(fieldInline instanceof FieldElementBox));
-                }
-                if (inline instanceof TextElementBox) {
+                // if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1
+                //     && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)) && isFieldStartSelected) {
+                //     let fieldInline: ElementBox = (inline as FieldElementBox).fieldBegin;
+                //     do {
+                //         this.characterFormat.combineFormat(fieldInline.characterFormat);
+                //         fieldInline = fieldInline.nextNode as ElementBox;
+                //     } while (!(fieldInline instanceof FieldElementBox));
+                // }
+                if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
                     this.characterFormat.combineFormat(inline.characterFormat);
                 }
                 if (isNullOrUndefined(inline) || endOffset <= count + inline.length) {
@@ -8530,10 +8511,11 @@ export class Selection {
                 return field;
             }
         } else {
+            let renderedChild: ElementBox[] = widget.renderedElements;
             if (cursorPosition.x > left + element.margin.left) {
-                for (let i: number = widget.children.indexOf(element); i < widget.children.length; i++) {
-                    element = widget.children[i];
-                    if (cursorPosition.x < left + element.margin.left + element.width || i === widget.children.length - 1) {
+                for (let i: number = renderedChild.indexOf(element); i < renderedChild.length; i++) {
+                    element = renderedChild[i];
+                    if (cursorPosition.x < left + element.margin.left + element.width || i === renderedChild.length - 1) {
                         break;
                     }
                     left += element.margin.left + element.width;
@@ -8896,40 +8878,7 @@ export class Selection {
      */
     public getCurrentFormField(checkFieldResult?: boolean): FieldElementBox {
         let field: FieldElementBox;
-        if (checkFieldResult || this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
-            this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
-            for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
-                let formField: FieldElementBox = this.documentHelper.formFields[i];
-                let start: TextPosition = this.start;
-                let end: TextPosition = this.end;
-                if (!this.isForward) {
-                    start = this.end;
-                    end = this.start;
-                }
-                let startParagraph: ParagraphWidget = start.paragraph as ParagraphWidget;
-                let fieldParagraph: ParagraphWidget = formField.fieldSeparator.line.paragraph as ParagraphWidget;
-                if (fieldParagraph != startParagraph) {
-                    continue;
-                }
-                if (HelperMethods.isLinkedFieldCharacter(formField)) {
-                    let offset: number = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
-                    let fieldStart: TextPosition = new TextPosition(this.owner);
-                    fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
-
-                    let fieldEndElement: FieldElementBox = formField.fieldEnd;
-                    offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
-                    let fieldEnd: TextPosition = new TextPosition(this.owner);
-                    fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
-                    if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
-                        && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
-                        field = formField;
-                        break;
-                    }
-                }
-            }
-        } else {
             field = this.getHyperlinkField(true);
-        }
         if (field instanceof FieldElementBox && field.fieldType === 0 && !isNullOrUndefined(field.formFieldData)) {
             return field;
         }
@@ -9924,15 +9873,15 @@ export class Selection {
             return undefined;
         }
         let elements: ElementBox[] = [];
-        while (bidi && startElement && startElement !== endElement && startElement.nextElement && !startElement.isRightToLeft) {
-            startElement = startElement.nextElement;
-        }
-        while (bidi && endElement && startElement !== endElement && endElement.previousElement && !endElement.isRightToLeft) {
-            endElement = endElement.previousElement;
-        }
+        // while (bidi && startElement && startElement !== endElement && startElement.nextElement && !startElement.isRightToLeft) {
+        //     startElement = startElement.nextElement;
+        // }
+        // while (bidi && endElement && startElement !== endElement && endElement.previousElement && !endElement.isRightToLeft) {
+        //     endElement = endElement.previousElement;
+        // }
         let elementIndex: number = lineWidget.children.indexOf(startElement);
         while (elementIndex >= 0) {
-            for (let i: number = elementIndex; i > -1 && i < lineWidget.children.length; bidi ? i-- : i++) {
+            for (let i: number = elementIndex; i < lineWidget.children.length; i++) {
                 let inlineElement: ElementBox = lineWidget.children[i];
                 if (inlineElement.line === lineWidget) {
                     if (inlineElement === endElement) {
@@ -10472,7 +10421,7 @@ export class Selection {
                     }
                     return false;
                 }
-                if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
+                if ((cCStartInsideSelction) || (cCEndInsideSelction) && (contentControlStart.contentControlProperties.lockContentControl || contentControlStart.contentControlProperties.lockContents)) {
                     if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start))) {
                         return true;
                     }

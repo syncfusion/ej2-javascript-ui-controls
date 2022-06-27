@@ -217,7 +217,7 @@ export class ColumnMenu implements IAction {
         this.element.setAttribute('aria-label', this.l10n.getConstant('ColumnMenuDialogARIA'));
         this.parent.element.appendChild(this.element);
         this.columnMenu = new Menu({
-            cssClass: 'e-grid-menu',
+            cssClass: this.parent.cssClass ? 'e-grid-menu' + ' ' + this.parent.cssClass : 'e-grid-menu',
             enableRtl: this.parent.enableRtl,
             enablePersistence: this.parent.enablePersistence,
             locale: this.parent.locale,

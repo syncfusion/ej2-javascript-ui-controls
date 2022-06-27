@@ -73,7 +73,16 @@ export class FormFields {
             this.formFieldsData = JSON.parse(this.data);
             const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
             const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
+            let count : number;
             if (this.formFieldsData !== null && canvasElement !== null && textLayer !== null) {
+                let flag: boolean = false;
+                for (var i = 0; i < this.formFieldsData.length; i++) {
+                    let formField: any = this.formFieldsData[i];
+                    if (!flag && isNullOrUndefined(formField.ActualFieldName) && formField.PageIndex === pageIndex) {
+                        count = parseInt(formField.FieldName.split('_')[1]);
+                        flag = true;
+                    }
+                }
                 for (let i: number = 0; i < this.formFieldsData.length; i++) {
                     // eslint-disable-next-line
                     let currentData: any = this.formFieldsData[i]; 
@@ -125,7 +134,17 @@ export class FormFields {
                             const width: number = this.ConvertPointToPixel(bounds.Width);
                             const height: number = this.ConvertPointToPixel(bounds.Height);
                             let boundArray: any = {left: left, top: top, width: width, height: height};
-                            boundArray = this.getBounds(boundArray,pageIndex);
+                            let isFieldRotated : boolean = false;
+                            let rotateFieldAngle : number = 0;
+                            if (currentData["Rotation"] !== 0) {
+                                if (currentData["RotationAngle"] === -90 || currentData["RotationAngle"] === -270 || currentData["RotationAngle"] === -180) {
+                                    boundArray = this.getBounds(boundArray, pageIndex, 0, isFieldRotated);
+                                }
+                            } else {
+                                isFieldRotated = true;
+                                boundArray = this.getBounds(boundArray, pageIndex, 0, isFieldRotated);
+                                rotateFieldAngle = this.getAngle(pageIndex);
+                            }
                             let foreColor: string = 'rgba(' + fontColor.R + ',' + fontColor.G + ',' + fontColor.B + ',' + 1 + ')';
                             foreColor = this.rgbaToHex(foreColor);
                             let borderColor: any = currentData['BorderColor'];
@@ -136,10 +155,10 @@ export class FormFields {
  
                             let fieldProperties: any = {
                                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
-                                value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline,
+                                value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
                                 isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
                             };
-                              if (!currentData.id && this.pdfViewer.formFieldCollections[i] && this.pdfViewer.formFieldCollections[i].name === currentData['ActualFieldName']) {
+                              if (!currentData.id && this.pdfViewer.formFieldCollections[i] && !isNullOrUndefined(currentData['ActualFieldName'])) {
                                   fieldProperties.id = this.pdfViewer.formFieldCollections[i].id;
                               }
                             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {
@@ -164,10 +183,11 @@ export class FormFields {
                                             }
                                 }
                             } if (fieldType === 'SignatureField' || fieldType === 'InitialField') {
-                                this.addSignaturePath(currentData);
+                                this.addSignaturePath(currentData, count);
                                 if (!isNullOrUndefined(currentData.Value)) {
-                                    this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null);
+                                    this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
                                     this.isSignatureRendered = true;
+                                    count++;
                                 }
                             }
                             
@@ -177,7 +197,9 @@ export class FormFields {
                             // eslint-disable-next-line
                             if (parseFloat(currentData['PageIndex']) == pageIndex) {
                                 // eslint-disable-next-line
-                                let inputField: any = this.createFormFields(currentData, pageIndex, i);
+                                let field: any = this.createFormFields(currentData, pageIndex, i, null, count);
+                                let inputField : any = field.currentField;
+                                let signCount : number = field.count;
                                 if (inputField) {
                                     // eslint-disable-next-line
                                     let divElement: any = this.createParentElement(currentData, pageIndex);
@@ -186,19 +208,33 @@ export class FormFields {
                                     // eslint-disable-next-line
                                     let font: any = currentData['Font'];
                                     // eslint-disable-next-line
-                                    // eslint-disable-next-line
-                                    this.applyPosition(inputField, bounds, font, pageIndex, currentData['Rotation']);
+                                    let isFieldRotated : boolean = false;
+                                    var rotateAngle : number= 0;
+                                    if (currentData['Rotation'] === 0) {
+                                        isFieldRotated = true;
+                                        rotateAngle = this.getAngle(pageIndex);
+                                        if (divElement) {
+                                            divElement.style.transform = 'rotate(' + rotateAngle + 'deg)';
+                                        } else {
+                                            inputField.style.transform = 'rotate(' + rotateAngle + 'deg)';
+                                        }
+                                    } else {
+                                        if (divElement) {
+                                            divElement.style.transform = 'rotate(' + rotateAngle + 'deg)';
+                                        } else {
+                                            inputField.style.transform = 'rotate(' + rotateAngle + 'deg)';
+                                        }
+                                    }
+                                    this.applyPosition(inputField, bounds, font, pageIndex, 0, isFieldRotated);
                                     inputField.InsertSpaces = currentData.InsertSpaces;
                                     if (inputField.InsertSpaces) {
-                                        const browserUserAgent: string = navigator.userAgent;
+                                        let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
                                         // eslint-disable-next-line
-                                        let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.5;
-                                        if ((browserUserAgent.indexOf('Firefox')) !== -1) {
-                                            font = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 1.2;
-                                        }
+                                        let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - (0.6 * zoomFactor);
                                         // eslint-disable-next-line
                                         inputField.style.letterSpacing = '' + font + 'px';
                                         inputField.style.fontFamily = 'monospace';
+                                        inputField.style.paddingLeft = (font / 2) + 'px';
                                     }
                                     // eslint-disable-next-line
                                     currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
@@ -209,21 +245,15 @@ export class FormFields {
                                             }
                                         }
                                     }
-                                    this.applyCommonProperties(inputField, pageIndex, i, currentData);
+                                    if (isNullOrUndefined(currentData.Value)) {
+                                        currentData.Value = currentData['Text']
+                                    }
+                                    this.applyCommonProperties(inputField, pageIndex, i, currentData, isFieldRotated);
                                     this.checkIsReadonly(currentData, inputField);
                                     this.applyTabIndex(currentData, inputField, pageIndex);
                                     this.checkIsRequiredField(currentData, inputField);
                                     this.applyDefaultColor(inputField);
                                     this.updateFormFieldsCollection(currentData);
-                                    // eslint-disable-next-line
-                                    if (currentData['Rotation'] === 0) {
-                                        const rotationAngle: number = this.getAngle(pageIndex);
-                                        if (divElement) {
-                                            divElement.style.transform = 'rotate(' + rotationAngle + 'deg)';
-                                        } else {
-                                            inputField.style.transform = 'rotate(' + rotationAngle + 'deg)';
-                                        }
-                                    }
                                     if (divElement) {
                                         divElement.appendChild(inputField);
                                         textLayer.appendChild(divElement);
@@ -237,6 +267,7 @@ export class FormFields {
                                     inputField.addEventListener('change', this.changeFormFields.bind(this));
                                     inputField.addEventListener('keydown', this.updateFormFieldsValue.bind(this));
                                     inputField.addEventListener('keyup', this.updateSameFieldsValue.bind(this));
+                                    count = signCount;
                                 }
                             }
                         }
@@ -322,7 +353,11 @@ export class FormFields {
             // eslint-disable-next-line
             divElement.style.position = 'absolute';
             // eslint-disable-next-line
-            this.applyPosition(divElement, bounds, font, pageIndex, data['Rotation']);
+            let isFieldRotated: boolean = false;
+            if(data['Rotation'] === 0){
+                isFieldRotated = true;
+            }
+            this.applyPosition(divElement, bounds, font, pageIndex, 0, isFieldRotated);
         }
         return divElement;
     }
@@ -622,7 +657,11 @@ export class FormFields {
         }
         return null;
     }
-    private updateFormFieldsCollection(formField: any): void {
+    /**
+     * @param formField
+     * @private
+     */
+    public updateFormFieldsCollection(formField: any): void {
         let type: FormFieldType = formField['Name'];
         let formFieldCollection: FormFieldModel = {
             name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly, isRequired: formField.IsRequired, isSelected: type === 'CheckBox' ? false : formField.Selected,
@@ -665,6 +704,7 @@ export class FormFields {
             case 'Textbox':
             case 'Password':
             case 'SignatureField':
+            case 'InitialField':
                 currentField = currentData.FieldName;
                 break;
             case 'RadioButton':
@@ -858,9 +898,6 @@ export class FormFields {
             let currentIndex: any = backgroundcolor.lastIndexOf(',');
             // eslint-disable-next-line
             let currentColor: any = backgroundcolor.slice(0, currentIndex + 1) + 0 + ')';
-            if (currentTarget.type === 'checkbox') {
-                currentTarget.style.webkitAppearance = '';
-            }
             currentTarget.style.backgroundColor = currentColor;
         } else if (currentTarget) {
             // eslint-disable-next-line
@@ -889,11 +926,6 @@ export class FormFields {
         let currentIndex: any = backgroundcolor.lastIndexOf(',');
         // eslint-disable-next-line
         let currentColor: any = backgroundcolor.slice(0, currentIndex + 1) + 0.2 + ')';
-        if ((currentTarget.type === 'checkbox') && !currentTarget.checked) {
-            currentTarget.style.webkitAppearance = 'none';
-        } else {
-            currentTarget.style.webkitAppearance = '';
-        }
         currentTarget.style.backgroundColor = currentColor;
     }
     public updateFormFields(event: MouseEvent): void {
@@ -937,159 +969,182 @@ export class FormFields {
         let bounds: any;
         let targetBounds: Rect;
         let parentElementBounds: Rect;
-        // eslint-disable-next-line
-        let currentField: any = this.currentTarget ? this.currentTarget : target;
-        currentField = currentField ?  currentField: this.pdfViewerBase.currentTarget;
-        let elementId: string = currentField.offsetParent.offsetParent.id.split("_")[0];
-        let signatureField: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[elementId];
-        if (target && target.offsetParent && signatureField) {
-            targetBounds = target.getBoundingClientRect();
-            parentElementBounds = target.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
-            this.pdfViewerBase.drawSignatureWithTool = true;
-            if (target.nextSibling && target.nextSibling.id.indexOf("initial") !== -1) {
-                this.pdfViewer.isInitialFieldToolbarSelection = true;
-            }
-        }
-        const currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
-        let currentFont: string = fontname ? fontname : this.pdfViewerBase.signatureModule.fontName;
-        const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-        const currentWidth: number = this.pdfViewerBase.drawSignatureWithTool ? targetBounds.width / zoomvalue : parseFloat(currentField.style.width) / zoomvalue;
-        const currentHeight: number = this.pdfViewerBase.drawSignatureWithTool ? targetBounds.height / zoomvalue : parseFloat(currentField.style.height) / zoomvalue;
-        const currentLeft: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.left - parentElementBounds.left)) / zoomvalue : parseFloat(currentField.style.left) / zoomvalue;
-        const currentTop: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.top - parentElementBounds.top)) / zoomvalue : parseFloat(currentField.style.top) / zoomvalue;
-        const currentPage: number = this.pdfViewerBase.drawSignatureWithTool ? this.pdfViewerBase.getActivePage() : parseFloat(currentField.id.split('_')[1]);
-        const currentIndex: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split('_')[1]) : parseFloat(currentField.id.split('_')[2]) : parseFloat(currentField.id.split('_')[2]);
-        let signString: string = this.pdfViewerBase.signatureModule.saveImageString;
-        let signatureFontFamily: string;
-        let signatureFontSize: number;
-        let rotateAngle: number = this.getAngle(currentPage);
-        if (signatureType === 'Type') {
-            if (!currentFont) {
-                currentFont = 'Helvetica';
-            }
-            // eslint-disable-next-line
-            bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
-            if (this.pdfViewer.signatureFitMode === 'Default') {
-                bounds = this.getDefaultBoundsforSign(bounds);
-            }
-            annot = {
-                // eslint-disable-next-line max-len
-                id: currentField.id, bounds: { x: bounds.x, y: bounds.y , width: bounds.width , height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
-            };
-            signString = annot.data;
-            signatureFontFamily = annot.fontFamily;
-            signatureFontSize = annot.fontSize;
-        } else if (signatureType === 'Image') {
-            // eslint-disable-next-line
-            bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
-            let image: HTMLImageElement = new Image();
-            image.src = currentValue;
-            if (this.pdfViewer.signatureFitMode === 'Default') {
-                // To check whether the image shape is square or rectangle
-                let difference: number = 20;
-                let hightDifference: number = 4;
-                let heightRatio: number = 2;
-                if (Math.abs(image.height - image.width) < difference) {
-                    if (bounds.width > bounds.height) {
-                        bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / heightRatio);
-                        bounds.width = bounds.height;
-                    }
-                    else {
-                        bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
-                        bounds.height = bounds.width;
-                    }
-                }
-                else {
-                    if (bounds.width > bounds.height) {
-                        bounds.y = bounds.y + (bounds.height / hightDifference);
-                        bounds.x = bounds.x + (bounds.height / hightDifference);
-                        let height: number = bounds.height / heightRatio;
-                        bounds = { x: bounds.x, y: bounds.y, width: bounds.width - height, height: bounds.height - height };
-                    }
-                    else {
-                        bounds.y = bounds.y + (bounds.height / hightDifference);
-                        bounds.height = bounds.height / heightRatio;
-                    }
-                }
-            }
-            annot = {
-                // eslint-disable-next-line max-len
-                id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-            };
-            signString = annot.data;
+        let data: any;
+        if (this.pdfViewer.formDesigner) {
+            data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         } else {
-            if ((currentValue.indexOf('base64')) !== -1) {
+            data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        }
+        var formFieldsData = JSON.parse(data);
+        let targetName: string = target ? target.name ? target.name : target.offsetParent.name : this.currentTarget.name;
+        for (var i = 0; i < formFieldsData.length; i++) {
+            let fieldName: string = this.pdfViewer.formDesigner ? formFieldsData[i].FormField.name : formFieldsData[i].ActualFieldName;
+            if (fieldName === targetName) {
+                target = this.pdfViewer.formDesigner ? document.getElementById(formFieldsData[i].Key.split("_")[0]) : document.getElementById(formFieldsData[i].uniqueID);
                 // eslint-disable-next-line
-                bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
-                if (this.pdfViewer.signatureFitMode === 'Default') {
-                    bounds = this.getDefaultBoundsforSign(bounds);
+                let currentField: any = target;
+                let elementId: string = currentField.offsetParent.offsetParent.id.split("_")[0];
+                let signatureField: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[elementId];
+                if (target && target.offsetParent && signatureField) {
+                    targetBounds = target.getBoundingClientRect();
+                    parentElementBounds = target.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
+                    this.pdfViewerBase.drawSignatureWithTool = true;
+                    if (target.nextSibling && target.nextSibling.id.indexOf("initial") !== -1) {
+                        this.pdfViewer.isInitialFieldToolbarSelection = true;
+                    }
                 }
-                annot = {
-                    // eslint-disable-next-line max-len
-                    id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-                };
-                signString = annot.data;
-            } else {
-                // eslint-disable-next-line
-                if (this.pdfViewer.signatureFitMode === 'Default') {
+                const currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
+                let currentFont: string = fontname ? fontname : this.pdfViewerBase.signatureModule.fontName;
+                const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+                const currentWidth: number = this.pdfViewerBase.drawSignatureWithTool ? targetBounds.width / zoomvalue : parseFloat(currentField.style.width) / zoomvalue;
+                const currentHeight: number = this.pdfViewerBase.drawSignatureWithTool ? targetBounds.height / zoomvalue : parseFloat(currentField.style.height) / zoomvalue;
+                const currentLeft: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.left - parentElementBounds.left)) / zoomvalue : parseFloat(currentField.style.left) / zoomvalue;
+                const currentTop: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.top - parentElementBounds.top)) / zoomvalue : parseFloat(currentField.style.top) / zoomvalue;
+                const currentPage: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split("_")[0].charAt(target.nextElementSibling.id.split("_")[0].length - 1)) : parseFloat(currentField.id.split('_')[1]) : parseFloat(currentField.id.split('_')[1]);
+                const currentIndex: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split('_')[1]) : parseFloat(currentField.id.split('_')[2]) : parseFloat(currentField.id.split('_')[2]);
+                let signString: string = this.pdfViewerBase.signatureModule.saveImageString;
+                let signatureFontFamily: string;
+                let signatureFontSize: number;
+                let rotateAngleString: string = currentField.offsetParent.offsetParent.style.transform ? currentField.offsetParent.offsetParent.style.transform : currentField.style.transform;
+                rotateAngleString = rotateAngleString.substring(rotateAngleString.indexOf("(") + 1, rotateAngleString.indexOf("d"));
+                let rotateAngle: number = rotateAngleString ? parseInt(rotateAngleString) : 0;
+                if (signatureType === 'Type') {
+                    if (!currentFont) {
+                        currentFont = 'Helvetica';
+                    }
                     // eslint-disable-next-line
-                    let signatureBounds: any = this.updateSignatureAspectRatio(currentValue, false, currentField);
-                    // eslint-disable-next-line
-                    bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, signatureBounds.width, signatureBounds.height, true);
-                    bounds.x = bounds.x + signatureBounds.left;
-                    bounds.y = bounds.y + signatureBounds.top;
-                } else {
                     bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
+                    if (this.pdfViewer.signatureFitMode === 'Default') {
+                        bounds = this.getDefaultBoundsforSign(bounds);
+                    }
+                    annot = {
+                        // eslint-disable-next-line max-len
+                        id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+                        shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: rotateAngle === 90 || rotateAngle === 270 ? (bounds.width / 2) : (bounds.height / 2)
+                    };
+                    if (annot.shapeAnnotationType === 'SignatureText') {
+                        let textWidth: number = this.getTextWidth(annot.data, annot.fontSize, annot.fontFamily); 
+                        let widthRatio: number = 1;
+                        if (textWidth > bounds.width)
+                           widthRatio =  bounds.width / textWidth;
+                        annot.fontSize = this.getFontSize(Math.floor((annot.fontSize * widthRatio))); 
+                    }
+                    signString = annot.data;
+                    signatureFontFamily = annot.fontFamily;
+                    signatureFontSize = annot.fontSize;
+                } else if (signatureType === 'Image') {
+                    // eslint-disable-next-line
+                    bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
+                    let image: HTMLImageElement = new Image();
+                    image.src = currentValue;
+                    if (this.pdfViewer.signatureFitMode === 'Default') {
+                        // To check whether the image shape is square or rectangle
+                        let difference: number = 20;
+                        let hightDifference: number = 4;
+                        let heightRatio: number = 2;
+                        if (Math.abs(image.height - image.width) < difference) {
+                            if (bounds.width > bounds.height) {
+                                bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / heightRatio);
+                                bounds.width = bounds.height;
+                            }
+                            else {
+                                bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
+                                bounds.height = bounds.width;
+                            }
+                        }
+                        else {
+                            if (bounds.width > bounds.height) {
+                                bounds.y = bounds.y + (bounds.height / hightDifference);
+                                bounds.x = bounds.x + (bounds.height / hightDifference);
+                                let height: number = bounds.height / heightRatio;
+                                bounds = { x: bounds.x, y: bounds.y, width: bounds.width - height, height: bounds.height - height };
+                            }
+                            else {
+                                bounds.y = bounds.y + (bounds.height / hightDifference);
+                                bounds.height = bounds.height / heightRatio;
+                            }
+                        }
+                    }
+                    annot = {
+                        // eslint-disable-next-line max-len
+                        id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+                        shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    };
+                    signString = annot.data;
+                } else {
+                    if ((currentValue.indexOf('base64')) !== -1) {
+                        // eslint-disable-next-line
+                        bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
+                        if (this.pdfViewer.signatureFitMode === 'Default') {
+                            bounds = this.getDefaultBoundsforSign(bounds);
+                        }
+                        annot = {
+                            // eslint-disable-next-line max-len
+                            id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+                            shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                        };
+                        signString = annot.data;
+                    } else {
+                        // eslint-disable-next-line
+                        if (this.pdfViewer.signatureFitMode === 'Default') {
+                            // eslint-disable-next-line
+                            let signatureBounds: any = this.updateSignatureAspectRatio(currentValue, false, currentField);
+                            // eslint-disable-next-line
+                            bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, signatureBounds.width, signatureBounds.height, true);
+                            bounds.x = bounds.x + signatureBounds.left;
+                            bounds.y = bounds.y + signatureBounds.top;
+                        } else {
+                            bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
+                        }
+                        annot = {
+                            // eslint-disable-next-line max-len
+                            id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+                            shapeAnnotationType: 'Path', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                        };
+                    }
                 }
-                annot = {
-                    // eslint-disable-next-line max-len
-                    id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-                };
+                if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
+                    annot.id = signatureField.id + "_content";
+                    let obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                    signatureField.wrapper.children.push(obj.wrapper);
+                } else {
+                    this.pdfViewer.add(annot as PdfAnnotationBase);
+                }
+                if (annot && annot.shapeAnnotationType === 'Path' && currentValue !== '') {
+                    this.pdfViewerBase.currentSignatureAnnot = annot;
+                    // eslint-disable-next-line
+                    let position: any = { currentHeight: currentHeight, currentWidth: currentWidth, currentLeft: currentLeft, currentTop: currentTop };
+                    this.pdfViewerBase.signatureModule.addSignatureCollection(bounds, position);
+                    signString = this.pdfViewerBase.signatureModule.saveImageString;
+                    this.pdfViewerBase.currentSignatureAnnot = null;
+                }
+                // eslint-disable-next-line
+                let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
+                // eslint-disable-next-line
+                this.pdfViewer.renderDrawing(canvass as any, currentPage);
+                this.pdfViewerBase.signatureModule.showSignatureDialog(false);
+                if (currentField.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus') {
+                    currentField.className = 'e-pdfviewer-signatureformfields-signature e-pv-signature-focus';
+                } else {
+                    currentField.className = 'e-pdfviewer-signatureformfields-signature';
+                }
+                if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
+                    let key: string = target.offsetParent.offsetParent.id.split('_')[0] + '_content';
+                    this.updateSignatureDataInSession(annot, key);
+                } else {
+                    this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
+                }
+                currentField.style.pointerEvents = 'none';
+
+                if (this.pdfViewer.annotation) {
+                    this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
+                }
+                // eslint-disable-next-line
+                this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
+                this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
             }
         }
-        if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
-            annot.id = signatureField.id + "_content";
-            let obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
-            signatureField.wrapper.children.push(obj.wrapper);
-        } else {
-            this.pdfViewer.add(annot as PdfAnnotationBase);
-        }
-        if (annot && annot.shapeAnnotationType === 'Path' && currentValue !== '') {
-            this.pdfViewerBase.currentSignatureAnnot = annot;
-            // eslint-disable-next-line
-            let position: any = { currentHeight: currentHeight, currentWidth: currentWidth, currentLeft: currentLeft, currentTop: currentTop };
-            this.pdfViewerBase.signatureModule.addSignatureCollection(bounds, position);
-            signString = this.pdfViewerBase.signatureModule.saveImageString;
-            this.pdfViewerBase.currentSignatureAnnot = null;
-        }
-        // eslint-disable-next-line
-        let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
-        // eslint-disable-next-line
-        this.pdfViewer.renderDrawing(canvass as any, currentPage);
-        this.pdfViewerBase.signatureModule.showSignatureDialog(false);
-        if (currentField.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus') {
-            currentField.className = 'e-pdfviewer-signatureformfields-signature e-pv-signature-focus';
-        } else {
-            currentField.className = 'e-pdfviewer-signatureformfields-signature';
-        }
-        if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
-            let key: string = target.offsetParent.offsetParent.id.split('_')[0] + '_content';
-            this.updateSignatureDataInSession(annot, key);
-        } else {
-            this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
-        }
-        currentField.style.pointerEvents = 'none';
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
-        if (this.pdfViewer.annotation) {
-            this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
-        }
-        // eslint-disable-next-line
-        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
-        this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
         this.pdfViewerBase.drawSignatureWithTool = false;
         this.pdfViewer.isInitialFieldToolbarSelection = false;
     }
@@ -1099,6 +1154,7 @@ export class FormFields {
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key === key) {
+                let formFieldIndex: number = this.pdfViewer.formFieldCollections.findIndex(el => el.id === formFieldsData[i].FormField.id.split('_')[0]);
                 if (annot.shapeAnnotationType === "SignatureText") {
                     formFieldsData[i].FormField.signatureType = "Text";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
@@ -1106,18 +1162,25 @@ export class FormFields {
                     formFieldsData[i].FormField.fontFamily = annot.fontFamily;
                     this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
                     (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
+                    formFieldsData[i].FormField.fontSize = annot.fontSize;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.fontSize = annot.fontSize;
+                    (this.pdfViewer.nameTable as any)[key].fontSize = annot.fontSize;
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Text" : null;
                 } else if (annot.shapeAnnotationType === "SignatureImage") {
                     formFieldsData[i].FormField.signatureType = "Image";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
                     (this.pdfViewer.nameTable as any)[key].signatureType = "Image";
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Image" : null;
                 } else {
                     formFieldsData[i].FormField.signatureType = "Path";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
                     (this.pdfViewer.nameTable as any)[key].signatureType = "Path";
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Path" : null;
                 }
                 formFieldsData[i].FormField.signatureBound = annot.bounds;
                 this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = annot.bounds;
                 (this.pdfViewer.nameTable as any)[key].signatureBound = annot.bounds;
+                formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureBound = annot.bounds : null;
                 if (annot.shapeAnnotationType === "Path") {
                     let collectionData: any = processPathData(annot.data);
                     let csData: any = splitArrayCollection(collectionData);
@@ -1125,11 +1188,13 @@ export class FormFields {
                     (this.pdfViewer.nameTable as any)[key].value = annot.data;
                     (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
                     this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = JSON.stringify(csData) : null;
                 } else {
                     formFieldsData[i].FormField.value = annot.data;
                     this.pdfViewerBase.formFieldCollection[i].FormField.value = annot.data;
                     (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
                     (this.pdfViewer.nameTable as any)[key].value = annot.data;
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = annot.data : null;
                 }
                 this.pdfViewer.formDesigner.updateFormFieldCollections(formFieldsData[i].FormField);
                 this.pdfViewer.formDesigner.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldsData[i].FormField, true, false, false,
@@ -1146,24 +1211,36 @@ export class FormFields {
     public getDefaultBoundsforSign(bounds:any):any{
        return { x: bounds.x + 10, y: bounds.y + 10, width: bounds.width - 23, height: bounds.height - 23 }
     }
+    /**
+     * @private
+      */
     // eslint-disable-next-line
-    private getSignBounds(currentIndex: number, rotateAngle: number, currentPage: number, zoomvalue: number, currentLeft: number, currentTop: number, currentWidth: number, currentHeight: number, isDraw?: boolean): any {
+    public getSignBounds(currentIndex: number, rotateAngle: number, currentPage: number, zoomvalue: number, currentLeft: number, currentTop: number, currentWidth: number, currentHeight: number, isDraw?: boolean): any {
         // eslint-disable-next-line
         let bounds: any;
         let signatureId: string = this.pdfViewer.isInitialFieldToolbarSelection ? 'initialIcon' : 'signIcon';
         let signIcon: HTMLElement = document.getElementById(signatureId + currentPage + '_' + currentIndex);
-        let signLeft: number = parseFloat(signIcon.style.left) * zoomvalue;
+        let signLeft: number = signIcon ? parseFloat(signIcon.style.left) * zoomvalue : 0;
         let difference: number = (currentLeft * zoomvalue) - (signLeft / zoomvalue);
         if (rotateAngle === 90 || rotateAngle === 270) {
             this.rotateAngle = 0;
-            if (isDraw) {
-                return bounds = { x: currentLeft - (difference / zoomvalue) - zoomvalue, y: currentTop + (difference / zoomvalue) + zoomvalue, width: currentWidth, height: currentHeight };
+            if (signIcon.style.left !== '') {
+                if (isDraw) {
+                    return bounds = { x: currentLeft - (difference / zoomvalue) - zoomvalue, y: currentTop + (difference / zoomvalue) + zoomvalue, width: currentWidth, height: currentHeight };
+                }
+                else {
+                    return bounds = { x: currentLeft - (difference / zoomvalue) - zoomvalue, y: currentTop + (difference / zoomvalue) + zoomvalue, width: currentHeight, height: currentWidth };
+                }
             }
             else {
-                return bounds = { x: currentLeft - (difference / zoomvalue) - zoomvalue, y: currentTop + (difference / zoomvalue) + zoomvalue, width: currentHeight, height: currentWidth };
+                difference = 10;
+                if (isDraw) {
+                    return bounds = { x: currentLeft - currentWidth, y: currentTop + currentWidth, width: currentHeight, height: currentWidth };
+                } else {
+                    return bounds = { x: currentLeft - currentWidth - difference / 2, y: currentTop + currentWidth + difference, width: currentHeight, height: currentWidth };
+                }
             }
-        }
-        else {
+        } else {
             this.rotateAngle = 0;
             return bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
         }
@@ -1277,7 +1354,7 @@ export class FormFields {
         this.updateDataInSession(currentTarget);
     }
 
-    private calculateSignatureBounds(signatureCavasWidth: number, signatureCavasHeight: number, newdifferenceX: number, newdifferenceY: number, isSignature: boolean, currentField: any): any {
+    private calculateSignatureBounds(signatureCavasWidth: number, signatureCavasHeight: number, newdifferenceX: number, newdifferenceY: number, isSignature: boolean, currentField: any, currentData?: any): any {
         const ratioX: number = newdifferenceX / signatureCavasWidth;
         const ratioY: number = newdifferenceY / signatureCavasHeight;
         const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
@@ -1291,12 +1368,13 @@ export class FormFields {
             currentWidth = this.pdfViewer.handWrittenSignatureSettings.width ? this.pdfViewer.handWrittenSignatureSettings.width : 150;
             currentHeight = this.pdfViewer.handWrittenSignatureSettings.height ? this.pdfViewer.handWrittenSignatureSettings.height : 100;
         } else {
-            let fieldWidth: number = currentField.style.width === '100%' ? currentField.clientWidth : parseFloat(currentField.style.width);
-            let fieldHeight: number = currentField.style.height === '100%' ? currentField.clientHeight : parseFloat(currentField.style.height);
+            let fieldWidth: number = currentField ? currentField.style.width === '100%' ? currentField.clientWidth : parseFloat(currentField.style.width) : this.ConvertPointToPixel(currentData.LineBounds.Width);
+            let fieldHeight: number = currentField ? currentField.style.height === '100%' ? currentField.clientHeight : parseFloat(currentField.style.height) : this.ConvertPointToPixel(currentData.LineBounds.Height);
             let fieldWidthRatio: number = fieldWidth / fieldHeight;
             let fieldHeightRatio: number = fieldHeight / fieldWidth;
             let canvasWidthRatio: number = signatureCavasWidth / signatureCavasHeight;
             let canvasHeightRatio: number = signatureCavasHeight / signatureCavasWidth;
+            let fieldRotation: string = currentField ? currentField.offsetParent.offsetParent.style.transform ?  currentField.offsetParent.offsetParent.style.transform : currentField.style.transform : currentData.RotationAngle;
             if ((fieldWidthRatio > canvasWidthRatio) || (fieldHeightRatio > canvasWidthRatio) || ((Math.abs(fieldWidthRatio - fieldHeightRatio)) <= 1)) {
                 let ratioDifference: number = 0;
                 if ((fieldHeightRatio > canvasWidthRatio) || ((Math.abs(fieldWidthRatio - fieldHeightRatio)) <= 1)) {
@@ -1306,7 +1384,7 @@ export class FormFields {
                     isSignatureStretched = true;
                     ratioDifference = fieldWidthRatio / canvasWidthRatio;
                 }
-                if (currentField.style.transform === 'rotate(90deg)' || currentField.style.transform === 'rotate(270deg)') {
+                if (fieldRotation === 'rotate(90deg)' || fieldRotation === 'rotate(270deg)') {
                     // eslint-disable-next-line
                     currentWidth = fieldHeight / zoomvalue;
                     // eslint-disable-next-line
@@ -1331,7 +1409,7 @@ export class FormFields {
                     }
                 }
             } else {
-                if (currentField.style.transform === 'rotate(90deg)' || currentField.style.transform === 'rotate(270deg)') {
+                if (fieldRotation === 'rotate(90deg)' || fieldRotation === 'rotate(270deg)') {
                     // eslint-disable-next-line
                     currentWidth = fieldHeight / zoomvalue;
                     // eslint-disable-next-line
@@ -1378,7 +1456,7 @@ export class FormFields {
      * @private
      */
     // eslint-disable-next-line
-    public updateSignatureAspectRatio(data: any, isSignature?: boolean, currentField?: any): any {
+    public updateSignatureAspectRatio(data: any, isSignature?: boolean, currentField?: any, currentData?: any): any {
         // eslint-disable-next-line
         let collectionData: any = processPathData(data);
         // eslint-disable-next-line
@@ -1425,7 +1503,7 @@ export class FormFields {
         signatureCavasHeight = signatureCanvas ? signatureCanvas.clientHeight : 300;
         const newdifferenceX: number = maximumX - minimumX;
         const newdifferenceY: number = maximumY - minimumY;
-        let signBounds: any = this.calculateSignatureBounds(signatureCavasWidth, signatureCavasHeight, newdifferenceX, newdifferenceY, isSignature, currentField);
+        let signBounds: any = this.calculateSignatureBounds(signatureCavasWidth, signatureCavasHeight, newdifferenceX, newdifferenceY, isSignature, currentField, currentData);
         if (isSignature) {
             const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
             const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
@@ -1516,7 +1594,6 @@ export class FormFields {
                                     if ((currentData.GroupName === target.name) && (currentData.uniqueID !== currentTarget.id)) {
                                         currentData.Selected = false;
                                         currentTarget.checked = false;
-                                        currentTarget.style.webkitAppearance = 'none';
                                     }
                                 }
                             }
@@ -1550,6 +1627,10 @@ export class FormFields {
                                 }
                             }
                         }
+                        currentData.SelectedValue = target.value;
+                        let index: number = currentData.TextList? currentData.TextList.indexOf(target.value) : 0
+                        currentData.selectedIndex = index > -1? index : 0;
+                        currentData.SelectedList = [currentData.selectedIndex];
                     }
                     if(target.disabled) {
                         currentData.IsReadonly = true;
@@ -1586,13 +1667,13 @@ export class FormFields {
         }
     }
     // eslint-disable-next-line
-    private applyCommonProperties(inputdiv: any, pageIndex: number, index: number, currentData: any): void {
+    private applyCommonProperties(inputdiv: any, pageIndex: number, index: number, currentData: any, isFieldRotated?: boolean): void {
         // eslint-disable-next-line
         let inputField: any = document.getElementById(this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index);
         if (inputField) {
             let textLayer: any = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
             if (inputdiv.type === 'text' && inputField.parentElement !== textLayer) {
-                inputField.parentElement.remove(); 
+                inputField.parentElement.remove();
             }
             inputField.remove();
         }
@@ -1607,7 +1688,7 @@ export class FormFields {
         let hightDifference: number;
         let widthDifference: number;
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-        if (signIcon) {
+        if (signIcon && !isFieldRotated) {
             signIconWidth = parseFloat(signIcon.style.width);
             signIconHeght = parseFloat(signIcon.style.height);
             if (signIcon.style.transform == 'rotate(90deg)') {
@@ -1633,7 +1714,12 @@ export class FormFields {
             inputdiv.className = 'e-pdfviewer-signatureformfields-signature';
             inputdiv.style.pointerEvents = 'none';
         } else if (currentData.IsSignatureField) {
-            inputdiv.className = 'e-pdfviewer-signatureformfields';
+            if (currentData.Value) {
+                inputdiv.className = 'e-pdfviewer-signatureformfields-signature';
+                inputdiv.style.pointerEvents = 'none';
+            } else {
+                inputdiv.className = 'e-pdfviewer-signatureformfields';
+            }
         } else if (currentData.Name !== 'Button') {
             inputdiv.className = 'e-pdfviewer-formFields';
         }
@@ -1652,7 +1738,7 @@ export class FormFields {
      * @private
      */
     // eslint-disable-next-line
-    public createFormFields(currentData: any, pageIndex: number, index?: number, printContainer?: any): void {
+    public createFormFields(currentData: any, pageIndex: number, index?: number, printContainer?: any, count?: number): any {
         // eslint-disable-next-line
         let currentField: any;
         // eslint-disable-next-line
@@ -1677,16 +1763,27 @@ export class FormFields {
                 break;
             case 'InitialField':				
             case 'SignatureField':
-                currentField = this.createSignatureField(currentData, pageIndex, index, printContainer);
+                currentField = this.createSignatureField(currentData, pageIndex, index, printContainer, count);
+                let isFieldRotated: boolean = false;
+                if(currentData['Rotation'] === 0){
+                    isFieldRotated = true;
+                }
                 if (currentData.Value && currentData.Value !== '') {
-                    this.renderExistingAnnnot(currentData, index, printContainer);
+                    this.renderExistingAnnnot(currentData, index, printContainer, isFieldRotated);
                     this.isSignatureRendered = true;
+                    count++;
                 }
                 break;
             case 'Button':
                 currentField = this.createButtonField(currentData, pageIndex);
                 break;
             case 'ink':
+                if(this.pdfViewer.formDesignerModule){
+                    if (currentData.Value && currentData.Value !== '' && !this.isSignatureRendered) {
+                        this.renderExistingAnnnot(currentData, index, printContainer);
+                    }
+                }
+                break;
             case 'SignatureText':
             case 'SignatureImage':
                 if (currentData.Value && currentData.Value !== '' && !this.isSignatureRendered) {
@@ -1694,7 +1791,7 @@ export class FormFields {
                 }
                 break;
         }
-        return currentField;
+        return {currentField, count};
     }
 
     private getFormFieldType(currentData: any): any {
@@ -1925,8 +2022,6 @@ export class FormFields {
         inputField.type = type;
         if (data.Selected) {
             inputField.checked = true;
-        } else if (type === 'checkbox' && !printContainer) {
-            inputField.style.webkitAppearance = 'none';
         }
         inputField.name = data.GroupName;
         inputField.value = data.Value;
@@ -2017,7 +2112,7 @@ export class FormFields {
         return inputField;
     }
     // eslint-disable-next-line
-    private createSignatureField(data: any, pageIndex: number, index: number, printContainer: any): any {
+    private createSignatureField(data: any, pageIndex: number, index: number, printContainer: any, count?: number): any {
         // eslint-disable-next-line
         let inputField: any = document.createElement('input');
         inputField.type = 'text';
@@ -2079,11 +2174,11 @@ export class FormFields {
         span.style.backgroundColor = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor : 'orange';
         span.style.opacity = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity : 1;
         textLayer.appendChild(span);
-        this.addSignaturePath(data);
+        this.addSignaturePath(data, count);
         return inputField;
     }
     // eslint-disable-next-line
-    private addSignaturePath(signData: any): boolean {
+    private addSignaturePath(signData: any, count?: number): boolean {
         this.isSignatureField = false;
         // eslint-disable-next-line
         let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
@@ -2094,7 +2189,7 @@ export class FormFields {
                 // eslint-disable-next-line
                 let currentData: any = formFieldsData[m];
                 // eslint-disable-next-line max-len
-                if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.ActualFieldName && currentData.Value && currentData.Value !== '') {
+                if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.ActualFieldName + '_' + count && currentData.Value && currentData.Value !== '') {
                     signData.Value = currentData.Value;
                     signData.FontFamily = currentData.FontFamily;
                     signData.FontSize = currentData.FontSize;
@@ -2109,58 +2204,83 @@ export class FormFields {
         return this.isSignatureField;
     }
     // eslint-disable-next-line
-    private getBounds(bound: any, pageIndex: number, rotation?: any): any {
+    private getBounds(bound: any, pageIndex: number, rotation?: any, isFieldRotated? : boolean): any {
         // eslint-disable-next-line
         let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
         // eslint-disable-next-line
         let bounds: any;
         if (rotation > 0) {
-            bounds = this.getBoundsPosition(rotation, bound, pageDetails);
+            bounds = this.getBoundsPosition(rotation, bound, pageDetails, isFieldRotated);
         } else {
-            bounds = this.getBoundsPosition(pageDetails.rotation, bound, pageDetails);
+            bounds = this.getBoundsPosition(pageDetails.rotation, bound, pageDetails, isFieldRotated);
         }
         return bounds;
     }
     // eslint-disable-next-line
-    private getBoundsPosition(rotation: number, bound: any, pageDetails: any): void {
+    private getBoundsPosition(rotation: number, bound: any, pageDetails: any, isFieldRotated?: boolean): void {
         // eslint-disable-next-line
         let bounds: any;
-        switch (rotation) {
-            case 90:
-                // eslint-disable-next-line
-                bounds = { left: pageDetails.width - bound.top - bound.height, top: bound.left, width: bound.height, height: bound.width };
-                break;
-            case 180:
-                // eslint-disable-next-line
-                bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
-                break;
-            case 270:
-                // eslint-disable-next-line
-                bounds = { left: bound.top, top: pageDetails.height - bound.left - bound.width, width: bound.height, height: bound.width };
-                break;
-            case 0:
+        if (!isFieldRotated) {
+            switch (rotation) {
+                case 90:
+                    // eslint-disable-next-line
+                    bounds = { left: pageDetails.width - bound.top - bound.height, top: bound.left, width: bound.height, height: bound.width };
+                    break;
+                case 180:
+                    // eslint-disable-next-line
+                    bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                    break;
+                case 270:
+                    // eslint-disable-next-line
+                    bounds = { left: bound.top, top: pageDetails.height - bound.left - bound.width, width: bound.height, height: bound.width };
+                    break;
+                case 0:
+                    // eslint-disable-next-line
+                    bounds = bound;
+                    break;
+                case 1:
+                    // eslint-disable-next-line
+                    bounds = { left: pageDetails.width - bound.top - bound.height, top: bound.left, width: bound.height, height: bound.width };
+                    break;
+                case 2:
+                    // eslint-disable-next-line
+                    bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                    break;
+                case 3:
+                    // eslint-disable-next-line
+                    bounds = { left: bound.top, top: pageDetails.height - bound.left - bound.width, width: bound.height, height: bound.width };
+                    break;
+            }
+            if (!bounds) {
                 bounds = bound;
-                break;
-            case 1:
-                // eslint-disable-next-line
-                bounds = { left: pageDetails.width - bound.top - bound.height - (bound.width / 2 - bound.height / 2), top: bound.left + (bound.width / 2 - bound.height / 2), width: bound.width, height: bound.height };
-                break;
-            case 2:
-                // eslint-disable-next-line
-                bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
-                break;
-            case 3:
-                // eslint-disable-next-line
-                bounds = { left: bound.top - (bound.width / 2 - bound.height / 2), top: (pageDetails.height - bound.left - bound.width + (bound.width / 2 - bound.height / 2)), width: bound.width, height: bound.height };
-                break;
-        }
-        if (!bounds) {
-            bounds = bound;
+            }
+        } else {
+            switch (rotation) {
+                case 0:
+                    // eslint-disable-next-line
+                    bounds = bound;
+                    break;
+                case 1:
+                    // eslint-disable-next-line
+                    bounds = { left: pageDetails.width - bound.top - bound.height - (bound.width / 2 - bound.height / 2), top: bound.left + (bound.width / 2 - bound.height / 2), width: bound.width, height: bound.height };
+                    break;
+                case 2:
+                    // eslint-disable-next-line
+                    bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                    break;
+                case 3:
+                    // eslint-disable-next-line
+                    bounds = { left: bound.top - (bound.width / 2 - bound.height / 2), top: (pageDetails.height - bound.left - bound.width + (bound.width / 2 - bound.height / 2)), width: bound.width, height: bound.height };
+                    break;
+            }
+            if (!bounds) {
+                bounds = bound;
+            }
         }
         return bounds;
     }
     // eslint-disable-next-line
-    private applyPosition(inputField: any, bounds: any, font: any, pageIndex?: number, rotation?: number): void {
+    private applyPosition(inputField: any, bounds: any, font: any, pageIndex?: number, rotation?: number, isFieldRotated?: boolean): void {
         if (bounds) {
             const left: number = this.ConvertPointToPixel(bounds.X);
             const top: number = this.ConvertPointToPixel(bounds.Y);
@@ -2170,7 +2290,7 @@ export class FormFields {
             // eslint-disable-next-line
             let fieldBounds: any = { left: left, top: top, width: width, height: height };
             // eslint-disable-next-line
-            let annotBounds: any = this.getBounds(fieldBounds, pageIndex, rotation);
+            let annotBounds: any = this.getBounds(fieldBounds, pageIndex, rotation, isFieldRotated);
             if (font !== null && font.Height) {
                 inputField.style.fontFamily = font.Name;
                 if (font.Italic) {
@@ -2186,7 +2306,7 @@ export class FormFields {
     }
    
     // eslint-disable-next-line
-    private renderExistingAnnnot(data: any, index: any, printContainer: any): any {
+    private renderExistingAnnnot(data: any, index: any, printContainer: any, isFieldRotated?: boolean): any {
         if (!printContainer) {
             // eslint-disable-next-line
             let bounds: any;
@@ -2203,19 +2323,19 @@ export class FormFields {
                 currentLeft = bounds.x;
                 currentTop = bounds.y;
                 currentWidth = bounds.width;
-                currentHeight= bounds.height;
+                currentHeight = bounds.height;
             } else {
                 currentLeft = this.ConvertPointToPixel(bounds.X);
                 currentTop = this.ConvertPointToPixel(bounds.Y);
                 currentWidth = this.ConvertPointToPixel(bounds.Width);
-                currentHeight= this.ConvertPointToPixel(bounds.Height);
+                currentHeight = this.ConvertPointToPixel(bounds.Height);
             }
             // eslint-disable-next-line
             let currentPage: number = parseFloat(data['PageIndex']);
             // eslint-disable-next-line
             let bound: any = { left: currentLeft, top: currentTop, width: currentWidth, height: currentHeight };
             // eslint-disable-next-line
-            let newBounds: any = this.updateSignatureBounds(bound, currentPage);
+            let newBounds: any = this.updateSignatureBounds(bound, currentPage, isFieldRotated);
             let annot: PdfAnnotationBaseModel;
             let fontFamily: any = data.FontFamily ? data.FontFamily : data.fontFamily;
             // eslint-disable-next-line
@@ -2223,21 +2343,24 @@ export class FormFields {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: isFieldRotated ? this.getAngle(currentPage) : 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
-            } else if (fontFamily) {
+            } else if (fontFamily && !(data.Value && data.Value.startsWith('M') && data.Value.split(',')[1].split(' ')[1].startsWith('L'))) {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: data.FontFamily, fontSize: data.FontSize
+                    shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: isFieldRotated ? this.getAngle(currentPage) : 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: data.FontFamily, fontSize: data.FontSize
                 };
                 annot.fontFamily = fontFamily;
                 annot.fontSize = data.FontSize ? data.FontSize : data.fontSize;
             } else {
+                let bound: any = newBounds;
+                let tempBounds: any = { left: newBounds.x, top: newBounds.y, width: newBounds.width, height: newBounds.height };
+                bound = this.updateSignatureBounds(tempBounds, currentPage, false);
                 annot = {
                     // eslint-disable-next-line max-len
-                    id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: bound, pageIndex: currentPage, data: data.Value, modifiedDate: '',
+                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
             }
             if ((data.Name === 'SignatureField' || data.Name === 'InitialField') && !isNullOrUndefined(data.id)) {
@@ -2253,7 +2376,17 @@ export class FormFields {
                     inputField.className = 'e-pdfviewer-signatureformfields-signature';
                     inputField.parentElement.style.pointerEvents = 'none';
                 }
+                else if(!isNullOrUndefined(signatureFieldElement) && data.Value){
+                    let inputField: any = signatureFieldElement.children[0].children[0];
+                    inputField.style.pointerEvents = 'none';
+                    inputField.className = 'e-pdfviewer-signatureformfields-signature';
+                    inputField.parentElement.style.pointerEvents = 'none';
+                }
             } else {
+                let target: any = document.getElementById(annot.id);
+                if (target && (target as any).classList.contains('e-pdfviewer-signatureformfields-signature')) {
+                    this.pdfViewer.annotation.deleteAnnotationById(annot.id);
+                }
                 this.pdfViewer.add(annot as PdfAnnotationBase);
             }
             data.Bounds = annot.bounds;
@@ -2268,19 +2401,38 @@ export class FormFields {
     }
 
     // eslint-disable-next-line
-    private updateSignatureBounds(bound: any, pageIndex: number): any {
+    private updateSignatureBounds(bound: any, pageIndex: number, isFieldRotated : boolean): any {
         // eslint-disable-next-line
         let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
         if (pageDetails) {
+            if(!isFieldRotated){
             if (pageDetails.rotation === 1) {
-                return { x: pageDetails.width - bound.top - bound.height - (bound.width / 2 - bound.height / 2), y: bound.left + (bound.width / 2 - bound.height / 2), width: bound.width, height: bound.height };
+                // eslint-disable-next-line max-len
+                return { x: pageDetails.width - bound.top - bound.height, y: bound.left, width: bound.height, height: bound.width };
             } else if (pageDetails.rotation === 2) {
                 // eslint-disable-next-line max-len
                 return { x: pageDetails.width - bound.left - bound.width, y: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
             } else if (pageDetails.rotation === 3) {
-                return { x: bound.top - (bound.width / 2 - bound.height / 2), y: (pageDetails.height - bound.left - bound.width + (bound.width / 2 - bound.height / 2)), width: bound.width, height: bound.height };
+                // eslint-disable-next-line max-len
+                return { x: bound.top, y: (pageDetails.height - bound.left - bound.width), width: bound.height, height: bound.width };
             } else {
+                 // eslint-disable-next-line max-len
                 return { x: bound.left, y: bound.top, width: bound.width, height: bound.height };
+            }}
+            else {
+                if (pageDetails.rotation === 1) {
+                     // eslint-disable-next-line max-len
+                    return { x: pageDetails.width - bound.top - bound.height - (bound.width / 2 - bound.height / 2), y: bound.left + (bound.width / 2 - bound.height / 2), width: bound.width, height: bound.height };
+                } else if (pageDetails.rotation === 2) {
+                    // eslint-disable-next-line max-len
+                    return { x: pageDetails.width - bound.left - bound.width, y: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                } else if (pageDetails.rotation === 3) {
+                     // eslint-disable-next-line max-len
+                    return { x: bound.top - (bound.width / 2 - bound.height / 2), y: (pageDetails.height - bound.left - bound.width + (bound.width / 2 - bound.height / 2)), width: bound.width, height: bound.height };
+                } else {
+                     // eslint-disable-next-line max-len
+                    return { x: bound.left, y: bound.top, width: bound.width, height: bound.height };
+                }
             }
         } else {
             return { x: bound.left, y: bound.top, width: bound.width, height: bound.height };
@@ -2434,5 +2586,32 @@ export class FormFields {
      */
     public getModuleName(): string {
         return 'FormFields';
+    }
+
+    /**
+     * @private
+     * Get the text wdith
+     * @param text
+     * @param font
+     * @param fontFamily
+    */
+    public getTextWidth(text: any, font: any, fontFamily: any): number {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        let fontName: any;
+        if (font) {
+            fontName = font + 'px' + ' ' + fontFamily;
+        }
+        context.font = fontName || getComputedStyle(document.body).font;
+        return context.measureText(text).width;
+    }
+
+    /**
+     * @private
+     * @param {number} fontSize - Font size.
+     * @returns {number} - Returns the font size.
+    */
+    public getFontSize(fontSize: number): number {
+        return (fontSize % 2 === 0) ? fontSize : --fontSize;
     }
 }

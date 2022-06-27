@@ -7,7 +7,7 @@
         &.e-vertical .e-menu-item {
           & .e-caret {
             &::before {
-              content: '\e7b7';
+              content: '\e748';
             }
           }
         }
@@ -15,7 +15,7 @@
         & .e-menu-item  {
           & .e-caret {
             &::before {
-              content: '\e706';
+              content: '\e729';
             }
           }
         }
@@ -24,7 +24,7 @@
       & .e-ul .e-menu-item {
         & .e-caret {
           &::before {
-            content: '\e7b7';
+            content: '\e748';
           }
         }
       }
@@ -35,7 +35,7 @@
       & .e-menu-header {
 
         & .e-menu-icon::before {
-          content: '\e75c';
+          content: '\e799';
         }
       }
 
@@ -43,7 +43,7 @@
         & .e-menu-header {
 
           & .e-menu-icon::before {
-            content: '\e771';
+            content: '\e7e7';
           }
         }
       }
@@ -51,7 +51,7 @@
       & .e-vertical .e-menu-item .e-caret,
       & .e-menu-item .e-caret {
         &::before {
-          content: '\e706';
+          content: '\e729';
         }
       }
     }
@@ -60,7 +60,7 @@
       &.e-ul {
         & .e-caret {
           &::before {
-            content: '\e706';
+            content: '\e729';
           }
         }
       }
@@ -68,12 +68,12 @@
 
     & .e-menu-hscroll.e-hscroll .e-nav-left-arrow::before,
     & .e-menu-hscroll.e-hscroll .e-nav-right-arrow::before {
-      content: '\e7b7';
+      content: '\e748';
     }
 
     & .e-menu-vscroll.e-vscroll .e-nav-up-arrow::before,
     & .e-menu-vscroll.e-vscroll .e-nav-down-arrow::before {
-      content: '\e706';
+      content: '\e729';
     }
   }
 
@@ -82,7 +82,7 @@
     &.e-vertical {
       & .e-caret {
         &::before {
-          content: '\e70f';
+          content: '\e765';
         }
       }
     }
@@ -90,7 +90,7 @@
     &.e-ul {
       & .e-caret {
         &::before {
-          content: '\e70f';
+          content: '\e765';
         }
       }
     }
@@ -103,7 +103,7 @@
     &.e-vertical {
       & .e-caret {
         &::before {
-          content: '\e70f';
+          content: '\e765';
         }
       }
     }
@@ -111,7 +111,7 @@
     &.e-ul {
       & .e-caret {
         &::before {
-          content: '\e70f';
+          content: '\e765';
         }
       }
     }
@@ -125,7 +125,7 @@
     &.e-ul {
       & .e-caret {
         &::before {
-          content: '\e706';
+          content: '\e729';
         }
       }
     }

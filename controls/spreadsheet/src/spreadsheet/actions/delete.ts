@@ -29,7 +29,7 @@ export class Delete {
             }
             this.parent.notify(refreshSheetTabs, null);
             if (activeSheetDeleted) {
-                this.parent.renderModule.refreshSheet(false, false, true);
+                this.parent.renderModule.refreshSheet(false, false, true, true);
             }
         } else if (args.activeSheetIndex === this.parent.activeSheetIndex) {
             const sheet: SheetModel = this.parent.getActiveSheet();
@@ -41,10 +41,10 @@ export class Delete {
                             this.parent.updateTopLeftCell(
                                 skipHiddenIdx(sheet, args.startIndex - 1 < frozenRow ? frozenRow : args.startIndex - 1, true) - frozenRow,
                                 null, 'col');
-                            this.parent.renderModule.refreshSheet(false, false, true);
+                            this.parent.renderModule.refreshSheet(false, false, true, true);
                         } else {
                             if (args.freezePane) {
-                                this.parent.renderModule.refreshSheet(false, false, true);
+                                this.parent.renderModule.refreshSheet(false, false, true, true);
                             } else {
                                 const frozenIndexes: number[] = [];
                                 const frozenCol: number = this.parent.frozenColCount(sheet);
@@ -83,10 +83,10 @@ export class Delete {
                                 null, skipHiddenIdx(
                                     sheet, args.startIndex - 1 < frozenCol ? frozenCol : args.startIndex - 1, true, 'columns') - frozenCol,
                                     'row');
-                            this.parent.renderModule.refreshSheet(false, false, true);
+                            this.parent.renderModule.refreshSheet(false, false, true, true);
                         } else {
                             if (args.freezePane || args.refreshSheet === true) {
-                                this.parent.renderModule.refreshSheet(false, false, true);
+                                this.parent.renderModule.refreshSheet(false, false, true, true);
                             } else {
                                 const frozenRow: number = this.parent.frozenRowCount(sheet);
                                 let frozenIndexes: number[] = [];

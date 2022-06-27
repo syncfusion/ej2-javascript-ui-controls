@@ -5,6 +5,7 @@ import { Browser, select, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor, IRenderer, QuickToolbar, ToolbarRenderer } from "../../../src/rich-text-editor/index";
 import { BaseToolbar, pageYOffset } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy, removeStyleElements, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
+import { CLS_RTE_RES_HANDLE } from "../../../src/rich-text-editor/base/classes";
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -42,7 +43,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let QTBarModule: IRenderer;
 
         beforeAll((done: Function) => {
-            rteObj = renderRTE({});
+            rteObj = renderRTE({ });
             rteEle = rteObj.element;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
@@ -129,6 +130,56 @@ describe("Quick Toolbar - Actions Module", () => {
             (rteObj as any).keyDown({ which: 8, preventDefault: () => { }, action: null });
             document.getElementById('Image_Quick_Popup_4')
             expect(document.getElementById('Image_Quick_Popup_3')).toBe(null);
+        });
+    });
+
+    describe("EJ2-59865 - css class dependency component", () => {
+        let trg: HTMLElement;
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                cssClass: 'customClass'
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            QTBarModule.linkQTBar.showPopup(0, 0, trg);
+            QTBarModule.textQTBar.showPopup(0, 0, trg);
+            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it("css class dependency initial load and dynamic change", () => {
+            let linkPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            let textPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[1];
+            let imgPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[2];
+            expect(linkPop.classList.contains('customClass')).toBe(true);
+            expect(textPop.classList.contains('customClass')).toBe(true);
+            expect(imgPop.classList.contains('customClass')).toBe(true);
+            QTBarModule.linkQTBar.hidePopup();
+            QTBarModule.textQTBar.hidePopup();
+            QTBarModule.imageQTBar.hidePopup();
+            rteObj.cssClass = 'changedClass';
+            rteObj.dataBind();
+            QTBarModule.linkQTBar.showPopup(0, 0, trg);
+            QTBarModule.textQTBar.showPopup(0, 0, trg);
+            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+            let linkPop2: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            let textPop2: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[1];
+            let imgPop2: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[2];
+            expect(linkPop2.classList.contains('changedClass')).toBe(true);
+            expect(textPop2.classList.contains('changedClass')).toBe(true);
+            expect(imgPop2.classList.contains('changedClass')).toBe(true);
         });
     });
 
@@ -1832,6 +1883,67 @@ describe("Quick Toolbar - Actions Module", () => {
             (QTBarModule as any).hideInlineQTBar();
             let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             expect(pop).toBe(undefined);
+        });
+    });
+    describe('EJ2-59960 - Script error thrown when resizing the Rich Text Editor component with inline mode', () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let clickEvent: any;
+        let browseinfo: any;
+        let resizeStartSpy: jasmine.Spy = jasmine.createSpy('onresizeStart');
+        let resizingSpy: jasmine.Spy = jasmine.createSpy('onresizing');
+        let resizeStopSpy: jasmine.Spy = jasmine.createSpy('onresizeStop');
+
+        beforeAll((done: Function) => {
+            browseinfo = Browser.info.name;
+            Browser.info.name = 'msie';
+            (window as any).sfBlazor={ renderComplete:()=> {return true;}};
+            (window as any).Blazor = null;
+            rteObj = renderRTE({
+                enableResize: true,
+                resizeStart: resizeStartSpy,
+                resizing: resizingSpy,
+                resizeStop: resizeStopSpy,
+                toolbarSettings: {
+                    items: ['SourceCode', 'Bold']
+                },
+                inlineMode: {
+                    enable: true,
+                    onSelection: false
+                },
+                value: "<div>Syncfusion</div>"
+            }),
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterAll((done: Function) => {
+            Browser.info.name = browseinfo;
+            delete (window as any).Blazor;
+            delete (window as any).sfBlazor;
+            destroy(rteObj);
+            done();
+        });
+        it('resize event - mouse', (done) => {
+            let trg = (rteEle.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.resizeModule as any).resizeStart(clickEvent);
+            setTimeout(() => {
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("mousemove", false, true);
+                trg.dispatchEvent(clickEvent);
+                (rteObj.resizeModule as any).performResize(clickEvent);
+                setTimeout(() => {
+                    clickEvent = document.createEvent("MouseEvents");
+                    clickEvent.initEvent("mouseup", false, true);
+                    trg.dispatchEvent(clickEvent);
+                    (rteObj.resizeModule as any).stopResize(clickEvent);
+                    expect(Object.keys(window).indexOf('Blazor') >= 0).toBe(true);
+                    done();
+                }, 400);
+            }, 400);
         });
     });
 });

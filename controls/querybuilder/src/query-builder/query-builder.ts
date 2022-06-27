@@ -405,8 +405,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      *
      * @default 'Default'
      */
-     @Property('Default')
-     public fieldMode: FieldMode;
+    @Property('Default')
+    public fieldMode: FieldMode;
     /**
      * Specifies columns to create filters.
      *
@@ -685,7 +685,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private updateSubFieldsFromColumns(col: ColumnsModel[], field?: string): void {
         for (let i: number = 0; i < col.length; i++) {
-            if (this.separator != '' && col[i].field.indexOf(this.separator) < 0) {
+            if (this.separator !== '' && col[i].field.indexOf(this.separator) < 0) {
                 col[i].field = field ? field + this.separator + col[i].field : col[i].field;
             }
             if (col[i].operators) {
@@ -885,7 +885,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.ruleTemplateFn = this.templateParser(column.ruleTemplate);
             const templateID: string = this.element.id + column.field; let template: Element;
             args.fields = this.fields; args.columns = this.columns;
-            if (rule.field === "") {
+            if (rule.field === '') {
                 rule.field = column.field;
             }
             args.operators = this.getOperators(rule.field);
@@ -997,23 +997,25 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         } as DropDownChangeEventArgs);
                     }
                 } else {
-                    let dropdowntree : DropDownTree; let ddlField: DropDownTreeModel;
-                    const ddlValue: any = this.isImportRules ? (rule.field as string) : rule.field;
+                    let ddlField: DropDownTreeModel;
+                    const ddlValue: string = this.isImportRules ? (rule.field as string) : rule.field;
                     ddlField = {
                         fields: {dataSource: this.columns as { [key: string]: Object }[],
-                        value: 'field', text: 'label', child: 'columns', expanded: 'expanded'}, 
+                            value: 'field', text: 'label', child: 'columns', expanded: 'expanded'},
                         placeholder: this.l10n.getConstant('SelectField'), showClearButton: false,
                         popupHeight: ((this.columns.length > 5) ? height : 'auto'), changeOnBlur: false,
-                        change: this.changeField.bind(this), value: this.isImportRules? [ddlValue] : null,
+                        change: this.changeField.bind(this), value: this.isImportRules ? [ddlValue] : null,
                         open: this.popupOpen.bind(this, false)
                     };
                     if (this.fieldModel) {
                         ddlField = {...ddlField, ...this.fieldModel as DropDownTreeModel};
                     }
-                    dropdowntree = new DropDownTree(ddlField); dropdowntree.appendTo('#' + ruleElem.id + '_filterkey');
+                    const dropdowntree: DropDownTree = new DropDownTree(ddlField); dropdowntree.appendTo('#' + ruleElem.id + '_filterkey');
                     if (!isNullOrUndefined(dropdowntree.value)) {
-                        (dropdowntree.element as HTMLInputElement).value = dropdowntree.value[0];
+                        const value: string = this.getLabelFromColumn(dropdowntree.value[0]);
+                        (dropdowntree.element as HTMLInputElement).value = value;
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const ddlVal: string | number | boolean | any = this.isImportRules ?
                         this.GetRootColumnName(rule.field as string) : dropdowntree.value;
                     this.selectedColumn = this.getColumn(ddlVal) as ColumnsModel;
@@ -1046,16 +1048,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             groupElem = closest(target, '.e-group-container');
             rules = this.getParentGroup(groupElem);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const custom: any = (rule as any).custom;
             if (Object.keys(rule).length) {
                 rules.rules.push({
                     'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
                 });
                 if (custom) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (rules.rules[rules.rules.length - 1] as any).custom = custom;
                 }
             } else {
                 if (custom) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (newRule as any).custom = custom;
                 }
                 rules.rules.push(newRule);
@@ -1107,20 +1112,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     dropDownTreeObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdowntree');
                     if (dropDownTreeObj.value && dropDownTreeObj.value.length) {
                         this.selectedColumn = this.getColumn(dropDownTreeObj.value[0]) as ColumnsModel;
-                        validateRule = (this.selectedColumn as ColumnsModel).validation;        
+                        validateRule = (this.selectedColumn as ColumnsModel).validation;
                     }
                 } else {
-                    dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdownlist');
+                    dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field .e-control') as HTMLElement, 'dropdownlist');
                     this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
-                    validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;    
+                    validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
                 }
-                fieldElem = tempElem.querySelector('.e-rule-field input.e-control');
+                fieldElem = tempElem.querySelector('.e-rule-field .e-control');
                 if (validateRule && validateRule.isRequired) {
                     while (indexElem && indexElem.previousElementSibling !== null) {
                         indexElem = indexElem.previousElementSibling;
                         index++;
                     }
-                    fieldElem = tempElem.querySelector('.e-rule-operator input.e-control');
+                    fieldElem = tempElem.querySelector('.e-rule-operator .e-control');
                     if (!rule.rules[index].operator) {
                         if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
                             this.renderToolTip(fieldElem.parentElement);
@@ -1133,7 +1138,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (excludeOprs.indexOf(rule.rules[index].operator) < 0 && (isNullOrUndefined(rule.rules[index].value) &&
                     rule.rules[index].type !== 'date') || rule.rules[index].value === '' ||
                     (rule.rules[index].value instanceof Array && valArray.length < 1)) {
-                        const valElem: NodeListOf<Element> = tempElem.querySelectorAll('.e-rule-value input.e-control');
+                        const valElem: NodeListOf<Element> = tempElem.querySelectorAll('.e-rule-value .e-control');
                         isValid = false;
                         for (let j: number = 0, jLen: number = valElem.length; j < jLen; j++) {
                             const element: Element = valElem[j]; let elem: Element;
@@ -1594,7 +1599,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private changeField(args: DropDownChangeEventArgs): void {
         if (args.isInteracted) {
-            if(isNullOrUndefined(args.value)) {
+            if (isNullOrUndefined(args.value)) {
                 return;
             }
             this.isFieldChange = true;
@@ -1619,7 +1624,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     } else {
                         if (!isNullOrUndefined(args.value[0])) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            ddt.value = args.value[0] as any; ddt.dataBind(); ddtElem.value = args.value[0];
+                            ddt.value = args.value[0] as any; ddt.dataBind();
+                            const result: string = this.getLabelFromColumn(args.value[0]);
+                            ddtElem.value = result;
                         }
                     }
                 } else {
@@ -1647,7 +1654,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private changeRule(rule: RuleModel, ddlArgs: DropDownChangeEventArgs): void {
         if (!ddlArgs.itemData) {
-            if (this.fieldMode === "DropdownTree") {
+            if (this.fieldMode === 'DropdownTree') {
                 const ddt: DropDownTree = getComponent(ddlArgs.element, 'dropdowntree') as DropDownTree;
                 if (ddt.value == null) {
                     return;
@@ -1659,7 +1666,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const tempRule: RuleModel = {}; let filterElem: Element = closest(ddlArgs.element, '.e-rule-filter');
         filterElem = filterElem ? filterElem : closest(ddlArgs.element, '.e-rule-sub-filter');
         let ddlObj: DropDownList | DropDownTree = getComponent(ddlArgs.element, 'dropdownlist') as DropDownList;
-        if (this.fieldMode === 'DropdownTree' && filterElem !=null) {
+        if (this.fieldMode === 'DropdownTree' && filterElem != null) {
             ddlObj = getComponent(ddlArgs.element, 'dropdowntree') as DropDownTree;
         }
         const element: Element = closest(ddlArgs.element, '.e-group-container');
@@ -1669,16 +1676,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private changeFilter(
         flt: Element, dl: DropDownList | DropDownTree, grID: string, rl: RuleModel, tmpRl: RuleModel, dArg: DropDownChangeEventArgs): void {
         if (flt) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let ddlValue: string | number | boolean | any ;
             if (this.fieldMode === 'DropdownTree') {
                 ddlValue = (dl.value[0]);
             } else {
-              ddlValue = this.isImportRules ? this.GetRootColumnName(dl.value as string) : dl.value;
+                ddlValue = this.isImportRules ? this.GetRootColumnName(dl.value as string) : dl.value;
             }
             this.selectedColumn = this.getColumn(ddlValue) as ColumnsModel;
             const ruleElem: Element = closest(flt, '.e-rule-container');
             const ruleID: string = ruleElem.id.replace(this.element.id + '_', '');
-            const eventsArgs: ChangeEventArgs = { groupID: grID, ruleID: ruleID, selectedField: this.fieldMode === 'DropdownTree'? 
+            const eventsArgs: ChangeEventArgs = { groupID: grID, ruleID: ruleID, selectedField: this.fieldMode === 'DropdownTree' ?
                 dl.value[0] : dl.value as string, cancel: false, type: 'field' };
             if (!this.isImportRules) {
                 this.trigger('beforeChange', eventsArgs, (observedChangeArgs: ChangeEventArgs) => {
@@ -1693,7 +1701,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
     private changeOperator(
-        flt: Element, opr: Element, dl: DropDownList | DropDownTree | any, grID: string, rl: RuleModel, tmpRl: RuleModel, dArg: DropDownChangeEventArgs): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        flt: Element, opr: Element, dl: DropDownList | DropDownTree | any, grID: string, rl: RuleModel, tmpRl: RuleModel,
+        dArg: DropDownChangeEventArgs): void {
         let ruleElem: Element; let ruleID: string; let eventsArgs: ChangeEventArgs;
         if (opr) {
             ruleElem = closest(opr, '.e-rule-container'); ruleID = ruleElem.id.replace(this.element.id + '_', '');
@@ -1767,7 +1777,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             change: this.changeField.bind(this),
             index: 0,
             open: this.popupOpen.bind(this, false)
-        }
+        };
         if (this.fieldModel) {
             ddlField = {...ddlField, ...this.fieldModel as DropDownListModel};
         }
@@ -1859,8 +1869,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     fieldObj = getComponent(filterElem.querySelector('.e-dropdownlist') as HTMLElement, 'dropdownlist') as DropDownList;
                 }
-                 tempRule.type = this.fieldMode === 'DropdownTree'? this.getColumn(fieldObj.value[0]).type :
-                 this.getColumn(fieldObj.value as string).type;
+                tempRule.type = this.fieldMode === 'DropdownTree' ? this.getColumn(fieldObj.value[0]).type :
+                    this.getColumn(fieldObj.value as string).type;
                 const itemData: ColumnsModel = ddlArgs.itemData as ColumnsModel;
                 this.renderValues(
                     operatorElem, itemData, ddlArgs.previousItemData as ColumnsModel, true, rule, tempRule, ddlArgs.element);
@@ -2054,13 +2064,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const original: object = {};
         const result: object[] = [];
         let nest: string[] = [];
-        let value: string = ""; let isNested: number = field.indexOf(this.separator);
+        let value: string = ''; const isNested: number = field.indexOf(this.separator);
         for (let i: number = 0, iLen: number = dataSource.length; i < iLen; i++) {
             if (isNested === 0) {
                 value = dataSource[i][field];
             } else {
                 nest = field.split(this.separator);
-                nest.forEach(element => {
+                // eslint-disable-next-line @typescript-eslint/tslint/config
+                nest.forEach (element => {
                     if (value) {
                         value = value[element];
                     } else {
@@ -2072,7 +2083,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 value = dataSource[i][field].toString();
             }
             const data: object = {};
-            if (!(value in original) && !isNullOrUndefined(value)) {
+            if (!(value in original)) {
                 original[value] = 1;
                 if (isNested === 0) {
                     data[field] = value;
@@ -2098,9 +2109,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             isValues = true;
         }
         let fieldValue: string = this.selectedRule.field;
-        let isNested: number = this.selectedRule.field.indexOf(this.separator);
-        if (isNested !== 0 && this.fieldMode !== "DropdownTree") {
-            let nest: string[] = this.selectedRule.field.split(this.separator);
+        const isNested: number = this.selectedRule.field.indexOf(this.separator);
+        if (isNested !== 0 && this.fieldMode !== 'DropdownTree') {
+            const nest: string[] = this.selectedRule.field.split(this.separator);
             fieldValue = nest[nest.length - 1];
         }
         let multiSelectValue: MultiSelectModel;
@@ -2187,8 +2198,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const tempElements: NodeListOf<Element> = container.querySelectorAll('.e-template');
         const filterElem: HTMLElement = container.querySelector('.e-rule-filter .e-filter-input') as HTMLElement;
         const ddlObj: DropDownList | DropDownTree = this.fieldMode === 'DropdownTree' ? (getComponent(filterElem, 'dropdowntree') as DropDownTree)
-         : (getComponent(container.querySelector('.e-rule-filter .e-filter-input') as HTMLElement, 'dropdownlist') as DropDownList);
-        const column: ColumnsModel = this.fieldMode === 'DropdownTree'? this.getColumn(ddlObj.value[0]) : this.getColumn(ddlObj.value as string);
+            : (getComponent(container.querySelector('.e-rule-filter .e-filter-input') as HTMLElement, 'dropdownlist') as DropDownList);
+        const column: ColumnsModel = this.fieldMode === 'DropdownTree' ? this.getColumn(ddlObj.value[0]) : this.getColumn(ddlObj.value as string);
         if (typeof itemData.template === 'string' || (itemData.template as TemplateColumn).write === undefined) {
             const args: ActionEventArgs = { rule: rule, ruleID: container.id, operator: tempRule.operator, field: column.field,
                 requestType: 'value-template-create' };
@@ -2206,10 +2217,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private getItemData(parentId: string): ColumnsModel {
         let fieldObj: DropDownList | DropDownTree = getComponent(document.getElementById(parentId + '_filterkey'), 'dropdownlist') as DropDownList;
-        if(this.fieldMode === "DropdownTree") {
+        if (this.fieldMode === 'DropdownTree') {
             fieldObj = getComponent(document.getElementById(parentId + '_filterkey'), 'dropdowntree') as DropDownTree;
         }
-        return this.fieldMode === "DropdownTree"? this.getColumn(fieldObj.value[0]) : this.getColumn(fieldObj.value as string);
+        return this.fieldMode === 'DropdownTree' ? this.getColumn(fieldObj.value[0]) : this.getColumn(fieldObj.value as string);
     }
     private setDefaultValue(parentId?: string, isArryValue?: boolean, isNumber?: boolean):
     string[] | number[] | string | number | boolean | Date {
@@ -2501,6 +2512,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private getPreviousItemData(prevItemData: ColumnsModel, column: ColumnsModel): ColumnsModel {
         if (this.isFieldClose && prevItemData) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             prevItemData = this.getColumn((prevItemData as any).value);
         }
         if (column.template && prevItemData && Object.keys(prevItemData).length < 4) {
@@ -2514,11 +2526,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         tempRule: RuleModel, element: Element): void {
         const subFldElem: Element = target.previousElementSibling;
         const filtElem: HTMLElement = subFldElem.getElementsByTagName('input')[0];
-        const filtObj: DropDownTree | DropDownList = this.fieldMode === 'DropdownTree'? getComponent(filtElem, 'dropdowntree')
-         : getComponent(filtElem, 'dropdownlist');
-         let column: ColumnsModel = this.fieldMode === 'DropdownTree'? this.getColumn(filtObj.value[0])
-          : this.getColumn(filtObj.value as any);
-         this.selectedRule = column as RuleModel;
+        const filtObj: DropDownTree | DropDownList = this.fieldMode === 'DropdownTree' ? getComponent(filtElem, 'dropdowntree')
+            : getComponent(filtElem, 'dropdownlist');
+        const column: ColumnsModel = this.fieldMode === 'DropdownTree' ? this.getColumn(filtObj.value[0])
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            : this.getColumn(filtObj.value as any);
+        this.selectedRule = column as RuleModel;
         if (isRender) {
             const ddlObj: DropDownList = getComponent(target.querySelector('input'), 'dropdownlist') as DropDownList;
             itemData = element.id.indexOf('operator') > -1 ? itemData : this.selectedRule;
@@ -2733,7 +2746,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             dropDownObj = this.fieldMode === 'DropdownTree' ? getComponent(target as HTMLElement, 'dropdowntree') as DropDownTree :
                 getComponent(target as HTMLElement, 'dropdownlist') as DropDownList;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const column: ColumnsModel = this.fieldMode === 'DropdownTree' ? this.getColumn(dropDownObj.value[0] as any)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 : this.getColumn(dropDownObj.value as any);
             if (!this.isImportRules && rule.rules[index].field && rule.rules[index].field.toLowerCase() !== column.field.toLowerCase()) {
                 if (!(ruleElem.querySelectorAll('.e-template')) && !(operator.indexOf('null') > -1 )
@@ -2759,8 +2774,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (elementCln.length < 1) {
                 elementCln = valueContainer.querySelectorAll('.e-template');
             }
+            eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
             for (let i: number = 0; i < elementCln.length; i++) {
-                eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
                 if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
                     rule.rules[index].value = null;
                     continue;
@@ -3593,10 +3608,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             }
             const isTemplateRendered: Element = clnruleElem.querySelector('.e-template-value');
+            // eslint-disable
             try {
-                detach(clnruleElem);
-            } catch(err) {
+                detach (clnruleElem);
+            } catch (err) {
+                // eslint-disable-next-line no-ex-assign
+                err = [];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const error: any = 'error';
+                err[error] = error;
             }
+            // eslint-enable
             if (column && column.ruleTemplate) {
                 this.clearQBTemplate([clnruleElem.id]);
             }
@@ -3976,8 +3998,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         if (this.dataSource instanceof DataManager) {
-            if (!isNullOrUndefined(pred) && (pred.operator === "isnull" || pred.operator === "notnull")) {
-                pred.operator = pred.operator === "isnull"? "equal" : "notequal";
+            if (!isNullOrUndefined(pred) && (pred.operator === 'isnull' || pred.operator === 'notnull')) {
+                pred.operator = pred.operator === 'isnull' ? 'equal' : 'notequal';
             }
         }
         return pred;
@@ -4432,7 +4454,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
                 }
-                if (rule.condition && rule.condition != '') {
+                if (rule.condition && rule.condition !== '') {
                     condition = rule.condition;
                 }
             }
@@ -4570,7 +4592,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.parser.push(['Literal', matchValue]);
             return matchValue.length + 2;
         }
-        // eslint-disable-next-line
         if (this.checkNumberLiteral(sqlString)) {
             matchValue = /^[0-9]+(\.[0-9]+)?/.exec(sqlString)[0];
             this.parser.push(['Literal', matchValue]);
@@ -4661,9 +4682,40 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return columnData.type;
     }
 
+    private getLabelFromColumn(field: string): string {
+        let label: string = ''; let l: number = 0;
+        if (this.separator !== '') {
+            const fieldColl: string[] = field.split(this.separator);
+            for (let i: number = 0; i < fieldColl.length; i++) {
+                label += this.getLabelFromField(fieldColl, i + 1);
+                l++;
+                if (l < fieldColl.length) {
+                    label += this.separator;
+                }
+            }
+            return label;
+        }
+        else{
+            const labelItem: string = this.getColumn(field).label;
+            return labelItem;
+        }
+    }
+    private getLabelFromField(field: string[], startIdx: number): string {
+        let fieldName: string = ''; let j: number = 0;
+        for (let k: number = 0; k < startIdx; k++) {
+            fieldName += field[k];
+            j++;
+            if (j < startIdx) {
+                fieldName += this.separator;
+            }
+        }
+        return this.getColumn(fieldName).label;
+    }
+
     private processParser(parser: string[][], rules: RuleModel, levelColl: number[]): RuleModel {
         let j: number; let jLen: number; let rule: RuleModel; let subRules: RuleModel; let numVal: number[] = []; let strVal: string[] = [];
-        let k: number; let kLen: number; let l: number; let lLen: number; let grpCount: number; let operator: string; let isLeftOpened: boolean = false;
+        let k: number; let kLen: number; let l: number; let lLen: number; let grpCount: number;
+        let operator: string; let isLeftOpened: boolean = false;
         for (let i: number = 0, iLen: number = parser.length; i < iLen; i++) {
             if (parser[i][0] === 'Literal') {
                 rule = { label: parser[i][1], field: parser[i][1] };

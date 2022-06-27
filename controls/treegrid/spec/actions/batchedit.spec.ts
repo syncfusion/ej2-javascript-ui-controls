@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData, projectData2 } from '../base/datasource.spec';
+import { sampleData, projectData, projectData2, sampleData5 } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Page } from '../../src/treegrid/actions/page';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
@@ -1307,6 +1307,105 @@ describe('Batch Edit module', () => {
       select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
 
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-59077 - Addrecord through method in Batch Editing with single record', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData5,
+            idMapping: 'taskID',
+            parentIdMapping: 'parentID',
+            treeColumnIndex: 1,
+            height: 400,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Batch',
+                newRowPosition: 'Child'
+            },
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+                    validationRules: { required: true, number: true}, width: 90
+                },
+                { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: {required: true} },
+                { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+                  format: 'yMd', validationRules: { date: true} },
+                {
+                    field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100, editType: 'numericedit',
+                    validationRules: { number: true, min: 0}, edit: { params: {  format: 'n'}}
+                },
+                {
+                    field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 80,
+                    editType: 'numericedit', validationRules: { number: true, min: 0 }, edit: { params: {  format: 'n'}}
+                },
+                {
+                    field: 'priority', headerText: 'Priority', width: 90,
+                    editType: 'stringedit', validationRules: { required: true }
+                }
+            ]
+        },
+        done
+      );
+    });
+    it('Addrecordmethod - Adding as child for single record', (done: Function) => {
+      gridObj.addRecord({
+        taskID: 2,
+        taskName: 'CHILD',
+        startDate: new Date('02/03/2017'),
+        progress: 100,
+        duration: 5,
+        priority: 'Normal',
+        parentID: 1,
+      }, 0, 'Child');
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+      expect(gridObj.getRows()[0].getElementsByClassName('e-treecolumn-container')[0].children[0].classList.contains('e-treegridexpand')).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+  describe('EJ2-59077 - ExpandCollapse Icon position check', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Child" },
+          allowSorting: true,
+          allowFiltering: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Add - Batch Editing ExpandCollapse Icon check', (done: Function) => {
+      gridObj.selectRow(2);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+      expect((gridObj.flatData[0] as ITreeData).hasChildRecords).toBe(true);
+      done();
+    });
     afterAll(() => {
       destroy(gridObj);
     });

@@ -780,7 +780,9 @@ export class HeaderRender implements IRenderer {
                 const button: HTMLElement = gObj.createElement('button', { className: 'e-tbar-btn e-control e-btn e-lib e-icon-btn' });
                 const span: HTMLElement = gObj.createElement('span', { className: 'e-btn-icon e-res' + cls + '-icon e-icons' });
                 button.appendChild(span);
-                const btnObj: Button = new Button({});
+                const btnObj: Button = new Button({
+                    cssClass: this.parent.cssClass ? this.parent.cssClass : ''
+                });
                 btnObj.appendTo(button);
                 button.onclick = (e: MouseEvent) => {
                     if ((e.target as HTMLElement).classList.contains('e-ressort-btn')

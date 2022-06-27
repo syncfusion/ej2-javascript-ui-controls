@@ -3,7 +3,7 @@
  */
 import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
-import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition } from '../../workbook/common/index';
+import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition, getSheetIndexFromAddress } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
@@ -15,7 +15,7 @@ import { L10n, isNullOrUndefined, getComponent, closest, detach, isUndefined } f
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
-import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart } from '../common/index';
+import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart, insertDesignChart } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
 import { LegendSettingsModel, LabelPosition, ChartType, isHiddenCol, beginAction } from '../../workbook/index';
 
@@ -139,34 +139,25 @@ export class SpreadsheetChart {
     }
 
     private getPropertyValue(rIdx: number, cIdx: number, sheetIndex: number): string | number {
-        const sheets: SheetModel[] = this.parent.sheets;
-        if (sheets[sheetIndex] && sheets[sheetIndex].rows[rIdx] && sheets[sheetIndex].rows[rIdx].cells[cIdx]) {
-            const cell: CellModel = getCell(rIdx, cIdx, this.parent.sheets[sheetIndex]);
-            let value: string | number = '';
+        const cell: CellModel = getCell(rIdx, cIdx, getSheet(this.parent, sheetIndex));
+        if (cell) {
+            let value: string | number;
             if (cell.format) {
-                const formatObj: { [key: string]: string | boolean | CellModel } = {
-                    type: getTypeFromFormat(cell.format),
-                    value: cell && cell.value, format: cell && cell.format ?
-                        cell.format : 'General', formattedText: cell && cell.value,
-                    onLoad: true, isRightAlign: false, cell: cell,
-                    rowIndex: rIdx.toString(), colIndex: cIdx.toString()
-                };
-                if (cell) {
-                    this.parent.notify(getFormattedCellObject, formatObj);
-                    if (typeof (formatObj.value) === 'number') {
-                        // eslint-disable-next-line no-useless-escape
-                        const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
-                        formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
-                        value = parseInt(formatObj.formattedText.toString(), 10);
-                    } else {
-                        value = formatObj.formattedText && formatObj.formattedText.toString();
-                    }
+                const formatObj: { [key: string]: string | boolean | CellModel } = { value: cell.value, format: cell.format, onLoad: true,
+                    formattedText: cell.value, isRightAlign: false, cell: cell, rowIndex: rIdx.toString(), colIndex: cIdx.toString() };
+                this.parent.notify(getFormattedCellObject, formatObj);
+                if (typeof (formatObj.value) === 'number') {
+                    // eslint-disable-next-line no-useless-escape
+                    const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
+                    formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
+                    value = parseInt(formatObj.formattedText.toString(), 10);
+                } else {
+                    value = formatObj.formattedText && formatObj.formattedText.toString();
                 }
             } else {
-                value = this.parent.sheets[sheetIndex].rows[rIdx].cells[cIdx].value;
+                value = cell.value;
             }
-            value = isNullOrUndefined(value) ? '' : value;
-            return value;
+            return isNullOrUndefined(value) ? '' : value;
         } else {
             return '';
         }
@@ -306,28 +297,21 @@ export class SpreadsheetChart {
     private pushRowData(
         options: { range: number[], sheetIdx: number, skipFormula: boolean }, minr: number,
         minc: number, maxr: number, maxc: number, arr: object[], rowIdx: number[], isDataSrcEnsured: boolean, isYvalue: boolean): void {
-        const minCol: number = minc; const sheet: SheetModel = this.parent.sheets[options.sheetIdx];
+        const minCol: number = minc; const sheet: SheetModel = this.parent.sheets[options.sheetIdx]; let value: string | number;
         while (minr <= maxr) {
             if (isHiddenRow(sheet, minr)) { minr++; continue; }
             minc = minCol;
             while (minc <= maxc) {
                 if (isHiddenCol(sheet, minc)) { minc++; continue; }
-                let value: string | number = '';
-                const cell: CellModel = getCell(minr, minc, sheet);
-                if (cell && cell.format && !isYvalue) {
-                    const forArgs: { [key: string]: string | boolean | CellModel } = {
-                        value: cell && cell.value, format: cell && cell.format ? cell.format : 'General',
-                        formattedText: cell && cell.value, onLoad: true,
-                        type: cell && getTypeFromFormat(cell.format),
-                        rowIndex: minr.toString(), colIndex: minc.toString(),
-                        isRightAlign: false, cell: cell
-                    };
+                const cell: CellModel = getCell(minr, minc, sheet, false, true);
+                if (cell.format && !isYvalue) {
+                    const forArgs: { [key: string]: string | boolean | CellModel } = { value: cell.value, format: cell.format, onLoad: true,
+                        formattedText: cell.value, rowIndex: minr.toString(), colIndex: minc.toString(), isRightAlign: false, cell: cell };
                     this.parent.notify(getFormattedCellObject, forArgs);
                     value = forArgs.formattedText ? forArgs.formattedText.toString() : '';
                 } else {
-                    value = cell ? (!isNullOrUndefined(cell.value) ? cell.value : '') : '';
+                    value = cell.value || (<unknown>cell.value === 0 ? 0 : '');
                 }
-                // = this.parent.getValueRowCol(options.sheetIdx, minr + 1, minc + 1);
                 arr.push({ value });
                 minc++;
             }
@@ -664,7 +648,7 @@ export class SpreadsheetChart {
         const id: string = chart.id + '_overlay';
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
-        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, this.parent.getAddressInfo(eleRange).sheetIndex);
+        const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, getSheetIndexFromAddress(this.parent, eleRange));
         element.classList.add('e-datavisualization-chart');
         element.style.width = chart.width + 'px';
         element.style.height = chart.height + 'px';
@@ -738,6 +722,9 @@ export class SpreadsheetChart {
             this.chart.appendTo(chartContent);
         }
         element.appendChild(chartContent);
+        if (element.classList.contains('e-ss-overlay-active')) {
+            this.parent.notify(insertDesignChart, { id: element.id });
+        }
         if (argsOpt.triggerEvent) {
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
         }

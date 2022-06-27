@@ -4504,4 +4504,716 @@ describe('balanced layout connectors segment length is not correct', () => {
 
 });
 
+describe('Node Expand & Collapse does not work properly issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramexpand' });
+        document.body.appendChild(ele);
+ 
+
+        let Data: any = [
+            {
+                key: '1',
+                parentKey: null,
+                name: 'Black Pluto',
+            },
+            {
+                key: '2',
+                parentKey: '1',
+                name: 'Pluton Town Quick',
+            },
+            {
+                key: '3',
+                parentKey: '1',
+                name: 'New Wind Duck',
+            },
+            {
+                key: '4',
+                parentKey: '1',
+                name: 'King',
+            },
+            {
+                key: '5',
+                parentKey: '1',
+                name: 'South Pluto',
+            },
+            {
+                key: '6',
+                parentKey: '1',
+                name: 'Crazy',
+            },
+            {
+                key: '7',
+                parentKey: '1',
+                name: 'Brick',
+            },
+            {
+                key: '8',
+                parentKey: '2',
+                name: 'Wheel',
+            },
+            {
+                key: '9',
+                parentKey: '3',
+                name: 'Concrete Centre',
+            },
+            {
+                key: '10',
+                parentKey: '3',
+                name: 'Group Support Office',
+            },
+            {
+                key: '11',
+                parentKey: '3',
+                name: 'Newcastle',
+            },
+            {
+                key: '12',
+                parentKey: '3',
+                name: 'French',
+            },
+            {
+                key: '13',
+                parentKey: '3',
+                name: 'French Airport',
+            },
+            {
+                key: '14',
+                parentKey: '3',
+                name: 'Turkey',
+            },
+            {
+                key: '15',
+                parentKey: '4',
+                name: 'Universe',
+            },
+            {
+                key: '16',
+                parentKey: '4',
+                name: 'Gold Coast',
+            },
+            {
+                key: '17',
+                parentKey: '4',
+                name: 'Island',
+            },
+            {
+                key: '18',
+                parentKey: '5',
+                name: 'Hawaii',
+            },
+            {
+                key: '19',
+                parentKey: '5',
+                name: 'Mount Gambier',
+            },
+            {
+                key: '20',
+                parentKey: '6',
+                name: 'Hobart',
+            },
+            {
+                key: '21',
+                parentKey: '7',
+                name: 'Geelong',
+            },
+            {
+                key: '22',
+                parentKey: '7',
+                name: 'Melbourne',
+            },
+            {
+                key: '23',
+                parentKey: '7',
+                name: 'Townsville',
+            },
+            {
+                key: '24',
+                parentKey: '8',
+                name: 'Old and Client',
+            },
+            {
+                key: '25',
+                parentKey: '8',
+                name: 'Support',
+            },
+            {
+                key: '26',
+                parentKey: '9',
+                name: 'Concrete Centre',
+            },
+            {
+                key: '27',
+                parentKey: '10',
+                name: 'Support',
+            },
+            {
+                key: '28',
+                parentKey: '12',
+                name: 'Old and Customer',
+            },
+            {
+                key: '29',
+                parentKey: '13',
+                name: 'Air Freight',
+            },
+            {
+                key: '30',
+                parentKey: '13',
+                name: 'Export',
+            },
+            {
+                key: '31',
+                parentKey: '13',
+                name: 'Operations',
+            },
+            {
+                key: '32',
+                parentKey: '13',
+                name: 'Technical',
+            },
+            {
+                key: '33',
+                parentKey: '14',
+                name: 'Old and Customer',
+            },
+            {
+                key: '34',
+                parentKey: '14',
+                name: 'Support',
+            },
+            {
+                key: '35',
+                parentKey: '15',
+                name: 'Old and Customer',
+            },
+            {
+                key: '36',
+                parentKey: '15',
+                name: 'Support',
+            },
+            {
+                key: '37',
+                parentKey: '16',
+                name: 'Old and Customer',
+            },
+            {
+                key: '38',
+                parentKey: '16',
+                name: 'Support',
+            },
+            {
+                key: '39',
+                parentKey: '17',
+                name: 'Old and Customer',
+            },
+            {
+                key: '40',
+                parentKey: '17',
+                name: 'Support',
+            },
+            {
+                key: '41',
+                parentKey: '18',
+                name: 'Old and Customer',
+            },
+            {
+                key: '42',
+                parentKey: '18',
+                name: 'Support',
+            },
+            {
+                key: '43',
+                parentKey: '19',
+                name: 'Old and Customer',
+            },
+            {
+                key: '44',
+                parentKey: '19',
+                name: 'Support',
+            },
+            {
+                key: '45',
+                parentKey: '20',
+                name: 'Old and Customer',
+            },
+            {
+                key: '46',
+                parentKey: '20',
+                name: 'Support',
+            },
+            {
+                key: '47',
+                parentKey: '21',
+                name: 'Old and Customer',
+            },
+            {
+                key: '48',
+                parentKey: '21',
+                name: 'Support',
+            },
+            {
+                key: '49',
+                parentKey: '22',
+                name: 'Old and Customer',
+            },
+            {
+                key: '50',
+                parentKey: '22',
+                name: 'Support',
+            },
+            {
+                key: '51',
+                parentKey: '23',
+                name: 'Old and Customer',
+            },
+            {
+                key: '52',
+                parentKey: '23',
+                name: 'Support',
+            },
+            {
+                key: '53',
+                parentKey: '24',
+                name: 'North',
+            },
+            {
+                key: '54',
+                parentKey: '24',
+                name: 'Group',
+            },
+            {
+                key: '55',
+                parentKey: '24',
+                name: 'Maniside',
+            },
+            {
+                key: '56',
+                parentKey: '25',
+                name: 'Jack',
+            },
+            {
+                key: '57',
+                parentKey: '26',
+                name: 'Logistics',
+            },
+            {
+                key: '58',
+                parentKey: '27',
+                name: 'Jack',
+            },
+            {
+                key: '59',
+                parentKey: '27',
+                name: 'Computer Operations',
+            },
+            {
+                key: '60',
+                parentKey: '27',
+                name: 'Employee Relations',
+            },
+            {
+                key: '61',
+                parentKey: '27',
+                name: 'Finance',
+            },
+            {
+                key: '62',
+                parentKey: '27',
+                name: 'Vicky',
+            },
+            {
+                key: '63',
+                parentKey: '27',
+                name: 'Marketing',
+            },
+            {
+                key: '64',
+                parentKey: '27',
+                name: 'Free Health',
+            },
+            {
+                key: '65',
+                parentKey: '27',
+                name: 'Accounting',
+            },
+            {
+                key: '66',
+                parentKey: '28',
+                name: 'Customer liason',
+            },
+            {
+                key: '67',
+                parentKey: '28',
+                name: 'Customer Services',
+            },
+            {
+                key: '68',
+                parentKey: '28',
+                name: 'North',
+            },
+            {
+                key: '69',
+                parentKey: '28',
+                name: 'Group',
+            },
+            {
+                key: '70',
+                parentKey: '28',
+                name: 'Maniside',
+            },
+            {
+                key: '71',
+                parentKey: '29',
+                name: 'Air Crew',
+            },
+            {
+                key: '72',
+                parentKey: '29',
+                name: 'Drink',
+            },
+            {
+                key: '73',
+                parentKey: '30',
+                name: 'Area Vicky',
+            },
+            {
+                key: '74',
+                parentKey: '30',
+                name: 'Origin Supervision',
+            },
+            {
+                key: '75',
+                parentKey: '31',
+                name: 'Layer Handling',
+            },
+            {
+                key: '76',
+                parentKey: '31',
+                name: 'Checkin',
+            },
+            {
+                key: '77',
+                parentKey: '31',
+                name: 'Ground Control',
+            },
+            {
+                key: '78',
+                parentKey: '31',
+                name: 'Operations',
+            },
+            {
+                key: '79',
+                parentKey: '32',
+                name: 'Engineering',
+            },
+            {
+                key: '80',
+                parentKey: '32',
+                name: 'Laboratory',
+            },
+            {
+                key: '81',
+                parentKey: '32',
+                name: 'Maintenance',
+            },
+            {
+                key: '82',
+                parentKey: '32',
+                name: 'Projects',
+            },
+            {
+                key: '83',
+                parentKey: '33',
+                name: 'North',
+            },
+            {
+                key: '84',
+                parentKey: '33',
+                name: 'Group',
+            },
+            {
+                key: '85',
+                parentKey: '33',
+                name: 'Maniside',
+            },
+            {
+                key: '86',
+                parentKey: '34',
+                name: 'Jack',
+            },
+            {
+                key: '87',
+                parentKey: '35',
+                name: 'North',
+            },
+            {
+                key: '88',
+                parentKey: '35',
+                name: 'Group',
+            },
+            {
+                key: '89',
+                parentKey: '35',
+                name: 'Maniside',
+            },
+            {
+                key: '90',
+                parentKey: '36',
+                name: 'Jack',
+            },
+            {
+                key: '91',
+                parentKey: '36',
+                name: 'Vicky',
+            },
+            {
+                key: '92',
+                parentKey: '36',
+                name: 'Marketing',
+            },
+            {
+                key: '93',
+                parentKey: '37',
+                name: 'North',
+            },
+            {
+                key: '94',
+                parentKey: '37',
+                name: 'Group',
+            },
+            {
+                key: '95',
+                parentKey: '37',
+                name: 'Maniside',
+            },
+            {
+                key: '96',
+                parentKey: '38',
+                name: 'Jack',
+            },
+            {
+                key: '97',
+                parentKey: '39',
+                name: 'North',
+            },
+            {
+                key: '98',
+                parentKey: '39',
+                name: 'Group',
+            },
+            {
+                key: '99',
+                parentKey: '39',
+                name: 'Maniside',
+            },
+            {
+                key: '100',
+                parentKey: '40',
+                name: 'Jack',
+            },
+            {
+                key: '101',
+                parentKey: '41',
+                name: 'North',
+            },
+            {
+                key: '102',
+                parentKey: '41',
+                name: 'Group',
+            },
+            {
+                key: '103',
+                parentKey: '41',
+                name: 'Maniside',
+            },
+            {
+                key: '104',
+                parentKey: '42',
+                name: 'Jack',
+            },
+            {
+                key: '105',
+                parentKey: '43',
+                name: 'North',
+            },
+            {
+                key: '106',
+                parentKey: '43',
+                name: 'Group',
+            },
+            {
+                key: '107',
+                parentKey: '43',
+                name: 'Maniside',
+            },
+            {
+                key: '108',
+                parentKey: '44',
+                name: 'Jack',
+            },
+            {
+                key: '109',
+                parentKey: '45',
+                name: 'North',
+            },
+            {
+                key: '110',
+                parentKey: '45',
+                name: 'Group',
+            },
+            {
+                key: '111',
+                parentKey: '45',
+                name: 'Maniside',
+            },
+            {
+                key: '112',
+                parentKey: '46',
+                name: 'Jack',
+            },
+            {
+                key: '113',
+                parentKey: '47',
+                name: 'North',
+            },
+            {
+                key: '114',
+                parentKey: '47',
+                name: 'Group',
+            },
+            {
+                key: '115',
+                parentKey: '47',
+                name: 'Maniside',
+            },
+            {
+                key: '116',
+                parentKey: '48',
+                name: 'Jack',
+            },
+            {
+                key: '117',
+                parentKey: '49',
+                name: 'North',
+            },
+            {
+                key: '118',
+                parentKey: '49',
+                name: 'Group',
+            },
+            {
+                key: '119',
+                parentKey: '49',
+                name: 'Maniside',
+            },
+            {
+                key: '120',
+                parentKey: '50',
+                name: 'Jack',
+            },
+            {
+                key: '121',
+                parentKey: '50',
+                name: 'Vicky',
+            },
+            {
+                key: '122',
+                parentKey: '50',
+                name: 'Marketing',
+            },
+            {
+                key: '123',
+                parentKey: '51',
+                name: 'North',
+            },
+            {
+                key: '124',
+                parentKey: '51',
+                name: 'Group',
+            },
+            {
+                key: '125',
+                parentKey: '51',
+                name: 'Maniside',
+            },
+            {
+                key: '126',
+                parentKey: '52',
+                name: 'Jack',
+            },
+        ];
+        
+        let items: DataManager = new DataManager(Data as JSON[], new Query().take(7));
+        
+        diagram = new Diagram({
+            width: '100%', height: '550px',
+            layout: {
+                type: 'OrganizationalChart',
+                verticalSpacing: 30,
+                horizontalSpacing: 40,
+                enableAnimation: false,
+                getLayoutInfo: (_: NodeModel, options: TreeInfo) => {
+                    options.type = 'Center';
+                    options.orientation = 'Horizontal';
+                },
+            },
+            dataSourceSettings: {
+                id: 'key',
+                parentId: 'parentKey', dataSource: items,
+                //binds the data with the nodes
+                doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                    nodeModel.annotations = [
+                        {
+                            content: (data as any).name,
+                        },
+                    ];
+                },
+            },
+            getNodeDefaults: (obj: Node) => {
+                obj.width = 120;
+                obj.height = 60;
+                obj.expandIcon = {
+                    height: 10,
+                    width: 10,
+                    shape: 'Minus',
+                    fill: 'lightgray',
+                    offset: { x: 0.5, y: 1 },
+                };
+                obj.collapseIcon = {
+                    height: 10,
+                    width: 10,
+                    shape: 'Plus',
+                    fill: 'lightgray',
+                    offset: { x: 0.5, y: 1 },
+                };
+                obj.isExpanded = true;
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.type = 'Orthogonal';
+                return connector;
+            }
+        });
+        
+        diagram.appendTo('#diagramexpand');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether Child nodes get expand properly after expand and collapse', (done: Function) => {
+        diagram.nodes[0].isExpanded = false;
+        diagram.dataBind();
+        let node: NodeModel = diagram.nodes[diagram.nodes.length - 1];
+        expect(node.visible === false).toBe(true);
+        diagram.nodes[0].isExpanded = true;
+        diagram.dataBind();
+        expect(node.visible === true).toBe(true);
+        done();
+    });
+
+});
+
 

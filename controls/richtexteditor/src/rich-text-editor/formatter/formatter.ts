@@ -48,6 +48,21 @@ export class Formatter {
                 || self.contentModule.getPanel() === range.commonAncestorContainer)) {
             return;
         }
+        if (!isNullOrUndefined(args) && self.maxLength !== -1 && !isNullOrUndefined(args.item.command)) {
+            let currentInsertContentLength: number = 0;
+            if (args.item.command === 'Links') {
+                currentInsertContentLength = value.text.length === 0 ? value.url.length : value.text.length;
+            }
+            if (args.item.command === 'Images' || args.item.command === 'Table' || args.item.command === 'Files') {
+                currentInsertContentLength = 1
+            }
+            const currentLength: number = self.getText().trim().length;
+            const selectionLength: number = self.getSelection().length;
+            const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
+            if (!(self.maxLength === -1 || totalLength <= self.maxLength)) {
+                return;
+            }
+        }
         if (isNullOrUndefined(args)) {
             const action: string = (event as KeyboardEventArgs).action;
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {

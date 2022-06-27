@@ -121,6 +121,7 @@ export class AggregateMenu {
             items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
+            cssClass: this.parent.cssClass,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: (args: OpenCloseMenuEventArgs) => {    /* eslint-disable-line */
                 (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
@@ -201,7 +202,8 @@ export class AggregateMenu {
             overlayClick: () => {
                 this.removeDialog();
             },
-            close: this.removeDialog.bind(this)
+            close: this.removeDialog.bind(this),
+            cssClass: this.parent.cssClass
         });
         this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
@@ -253,11 +255,11 @@ export class AggregateMenu {
             className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
             attrs: { 'data-type': summaryType, 'data-caption': fieldCaption, 'data-basefield': baseField, 'data-baseitem': baseItem }
         });
-        let textWrappper: HTMLElement = createElement('div', { className: 'e-field-name-text-wrapper', });
-        let filterWrapperDiv1: HTMLElement = createElement('div', { className: 'e-field-option-wrapper' });
-        let optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-wrapper' });
-        let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-wrapper' });
-        let optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-wrapper' });
+        let textWrappper: HTMLElement = createElement('div', { className: 'e-field-name-text-container', });
+        let filterWrapperDiv1: HTMLElement = createElement('div', { className: 'e-field-option-container' });
+        let optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-container' });
+        let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
+        let optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
         let texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title', innerHTML: this.parent.localeObj.getConstant('sourceName') + '&nbsp;' });
         let textContent: HTMLElement = createElement('div', { className: 'e-field-name-content', innerHTML: buttonElement.id.toString() });
         let inputTextDiv1: HTMLElement = createElement('div', {
@@ -272,7 +274,7 @@ export class AggregateMenu {
         let optionTextDiv3: HTMLElement = createElement('div', {
             className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('baseItem')
         });
-        let inputDiv1: HTMLElement = createElement('div', { className: 'e-caption-input-wrapper' });
+        let inputDiv1: HTMLElement = createElement('div', { className: 'e-caption-input-container' });
         let dropOptionDiv1: HTMLElement = createElement('div', { id: this.parentElement.id + '_type_option' });
         let dropOptionDiv2: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_field_option' });
         let dropOptionDiv3: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_item_option' });
@@ -303,7 +305,7 @@ export class AggregateMenu {
             fields: { value: 'value', text: 'text' },
             value: summaryType,
             // popupWidth: 'auto',
-            cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 optionWrapper2.enabled = baseFieldTypes.indexOf(args.value as string) !== -1 ? true : false;
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
@@ -321,7 +323,7 @@ export class AggregateMenu {
             value: baseField,
             // popupWidth: 'auto',
             enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: cls.VALUE_OPTIONS_CLASS, width: '100%',
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
                 fieldItemDataSource = Object.keys(popupInstance.parent.engineModule.fieldList[args.value as string].formattedMembers);
                 optionWrapper3.dataSource = fieldItemDataSource;
@@ -340,7 +342,7 @@ export class AggregateMenu {
             allowFiltering: true,
             filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0],
             enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: cls.FILTER_OPERATOR_CLASS, width: '100%',
+            cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
         });
         optionWrapper3.isStringTemplate = true;
         optionWrapper3.appendTo(dropOptionDiv3);

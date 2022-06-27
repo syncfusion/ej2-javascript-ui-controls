@@ -103,8 +103,13 @@ export class WorkbookFormula {
         this.calculateInstance.grid = this.parent.getActiveSheet().id.toString();
     }
 
-    private clearFormulaDependentCells(args: { [key: string]: string }): void {
-        let cellRef: string = args.cellRef;
+    private clearFormulaDependentCells(args: { [key: string]: string | boolean }): void {
+        if (args.isOpen as boolean) {
+            this.calculateInstance.getDependentCells().clear();
+            this.calculateInstance.getFormulaInfoTable().clear();
+            return;
+        }
+        let cellRef: string = args.cellRef as string;
         cellRef = cellRef.split(':')[0];
         cellRef = '!' + this.parent.activeSheetIndex + '!' + cellRef;
         this.calculateInstance.clearFormulaDependentCells(cellRef);
@@ -451,6 +456,10 @@ export class WorkbookFormula {
         }
         this.calculateInstance.cell = '';
         const updatedCell: CellModel = getCell(rowIdx, colIdx, this.parent.getActiveSheet());
+        if (value && value.toString().toUpperCase().startsWith('=DOLLAR(') &&
+            updatedCell && updatedCell.value && updatedCell.value.startsWith('$')) {
+            this.dollarFormulaDecimalHandler(updatedCell);
+        }
         if (updatedCell && value && value.toString().toUpperCase().indexOf('=SUM(') === 0) {
             const errorStrings: string[] = ['#N/A', '#VALUE!', '#REF!', '#DIV/0!', '#NUM!', '#NAME?', '#NULL!', 'invalid arguments'];
             const val: string = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
@@ -463,6 +472,15 @@ export class WorkbookFormula {
                 }
             }
         }
+    }
+
+    private dollarFormulaDecimalHandler(updatedCell: CellModel) {
+        const decimalCount: number = updatedCell.value.split('.')[1].length;
+        let decimalValue: string = "";
+        for (let decimalIdx: number = 1; decimalIdx <= decimalCount; decimalIdx++) {
+            decimalValue += "0";
+        }
+        updatedCell.format = '$#,##.' + decimalValue;
     }
 
     private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number, sheetIdx: number): string {
@@ -654,32 +672,31 @@ export class WorkbookFormula {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let range: string = getSingleSelectedRange(sheet);
         const indexes: number[] = getRangeIndexes(range.split(':')[1]);
-        let i: number; let calcValue: string;
-        const formulaVal: string[] = ['SUM', 'AVERAGE', 'MIN', 'MAX'];
-        const formatedValues: string[] = [];
         if (indexes[0] + 1 === sheet.rowCount && indexes[1] + 1 === sheet.colCount) {
             range = `A1:${getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex)}`;
         }
-        const actCell: number[] = getRangeIndexes(sheet.activeCell);
-        const actCellModel: CellModel = sheet.rows[actCell[0]] ? sheet.rows[actCell[0]].cells ?
-            sheet.rows[actCell[0]].cells[actCell[1]] : {} : {};
-        const actCellfrmt: string = (actCellModel) ? actCellModel.format : '';
-        let cellValue: string;
+        let calcValue: string; let i: number;
         const cellCol: string | string[] = this.calculateInstance.getCellCollection(range);
         for (i = 0; i < cellCol.length; i++) {
-            cellValue = this.calculateInstance.getValueFromArg(cellCol[i]);
-            if (isNumber(cellValue)) { args.countOnly = false; break; }
+            calcValue = this.calculateInstance.getValueFromArg(cellCol[i]);
+            if (isNumber(calcValue)) {
+                args.countOnly = false;
+                break;
+            }
         }
         args.Count = this.calculateInstance.getFunction('COUNTA')(range);
-        if (!args.Count || args.countOnly) { return; }
+        if (!args.Count || args.countOnly) {
+            return;
+        }
+        const formulaVal: string[] = ['SUM', 'AVERAGE', 'MIN', 'MAX'];
+        const formatedValues: string[] = [];
+        const index: number[] = getRangeIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(index[0], index[1], sheet, false, true);
         for (i = 0; i < 4; i++) {
             calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i])(range));
-            const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-                formattedText: calcValue, value: calcValue, format: actCellfrmt,
-                cell: { value: calcValue, format: actCellfrmt },
-                onLoad: true
-            };
-            if (actCellfrmt) {
+            if (cell.format) {
+                const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: calcValue, value: calcValue,
+                    format: cell.format, cell: { value: calcValue, format: cell.format }, onLoad: true };
                 this.parent.notify(getFormattedCellObject, eventArgs);
                 calcValue = eventArgs.formattedText as string;
             }

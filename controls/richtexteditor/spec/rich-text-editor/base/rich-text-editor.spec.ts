@@ -111,6 +111,28 @@ L10n.load({
     }
 });
 
+describe('EJ2-60422: Removed nested bullet list when press ctrl+B on two times', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'b', stopPropagation: () => { }, shiftKey: false, which: 66};
+    it('pressing the ctrl+b on the parent list with nested list', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<ul><li><strong class="focusNode">List parent</strong><ul><li>Nested List</li><li>Nested List﻿﻿<br></li></ul></li></ul>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[1];
+        let startNode = rteObj.inputElement.querySelector('.focusNode');
+        let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], startNode.childNodes[0], 0, 11);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 66;
+        keyBoardEvent.code = 'b';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.innerHTML === `<ul><li><strong class="focusNode">List parent</strong><ul><li>Nested List</li><li>Nested List﻿﻿<br></li></ul></li></ul>`).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -2634,6 +2656,111 @@ describe('RTE base module', () => {
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].firstElementChild.id.indexOf("Bold") > 0).toBe(true);
         });
     });
+
+    describe('EJ2-59865 - CSS class property', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                cssClass: 'myClass',
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                        'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', 'SuperScript', '|',
+                        'LowerCase', 'UpperCase', '|', 
+                        'Formats', '|', 'OrderedList', 'UnorderedList', '|',
+                        'Indent', 'Outdent', '|',
+                        'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                        'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                }
+            });
+            done();
+        });
+        it('Ensure cssClass property for dropdownpopup', () => {
+            expect(rteObj.element.classList.contains('myClass')).toBe(true);
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
+            }
+        });
+        it('change cssClass property dropdownpopup', () => {
+            rteObj.cssClass = 'textClass';
+            rteObj.dataBind();
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
+            }
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-59865 - CSS class property in Inline toolbar', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                cssClass: 'myClass',
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                        'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', 'SuperScript', '|',
+                        'LowerCase', 'UpperCase', '|', 
+                        'Formats', '|', 'OrderedList', 'UnorderedList', '|',
+                        'Indent', 'Outdent', '|',
+                        'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                        'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                },
+                inlineMode: {
+                    enable: true,
+                    onSelection: true
+                }
+            });
+            done();
+        });
+        it('Ensure cssClass property in inline toolbar', (done) => {
+            rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
+            rteObj.inlineMode.enable = true;
+            rteObj.dataBind();
+            let start = rteObj.inputElement.querySelector('#p2');
+            setCursorPoint(document, start.childNodes[0] as Element, 5);
+            rteObj.showInlineToolbar();
+            expect(rteObj.element.classList.contains('myClass')).toBe(true);
+            expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('myClass')).toBe(true);
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                setTimeout(() => {
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
+                done();
+                }, 100);
+            }
+            rteObj.hideInlineToolbar();
+        });
+        it('through onproperty change cssClass property in inline toolbar', (done) => {
+            rteObj.hideInlineToolbar();
+            rteObj.cssClass = 'textClass';
+            rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
+            rteObj.inlineMode.enable = true;
+            rteObj.dataBind();
+            let start = rteObj.inputElement.querySelector('#p2');
+            setCursorPoint(document, start.childNodes[0] as Element, 5);
+            rteObj.showInlineToolbar();
+            expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('textClass')).toBe(true);
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                setTimeout(() => {
+                expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
+                expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
+                done();
+                }, 100);
+            }
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('RTE Properties', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -2845,6 +2972,28 @@ describe('RTE base module', () => {
             expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
         });
 
+        it('EJ2-59978 - Insert image after Max char count - Execute Command Module', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                maxLength: 20,
+                showCharCount: true
+            });
+            
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(curDocument, focusNode, focusNode, 0, 0);
+            let el = document.createElement("img"); 
+            el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"; 
+            (rteObj as any).inputElement.focus();
+            rteObj.executeCommand("insertImage", el);
+            expect(rteObj.inputElement.querySelectorAll('img').length === 0).toBe(true);
+        });
+
 
         it('ensure insert image on execute command with arguments', () => {
             destroy(rteObj);
@@ -2932,6 +3081,34 @@ describe('RTE base module', () => {
             expect((rteObj as any).inputElement.querySelector('table').getAttribute('style')).toBe('width: 40px; min-width: 20px; max-width: 100px;');
         });
 
+        it('EJ2-59978 - Insert table after Max char count - Execute Command Module', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                maxLength: 20,
+                showCharCount: true
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(curDocument, focusNode, focusNode, 0, 0);
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            rteObj.executeCommand('insertTable', {
+                rows: 2,
+                columns: 5,
+                width: { minWidth: '20px', maxWidth: '100px', width: 40 },
+                selection: saveSelection
+            } as ITableCommandsArgs);
+            expect((rteObj as any).inputElement.querySelector('table')).toBe(null);
+        });
+
         it('ensure create link on execute command with all the arguments', () => {
             destroy(rteObj);
             rteObj = renderRTE({
@@ -2957,6 +3134,36 @@ describe('RTE base module', () => {
             expect(linkElm.getAttribute('title')).toBe('facebook');
             expect(linkElm.getAttribute('target')).toBe('_self');
             expect(linkElm.innerText).toBe('hello this is facebook link');
+        });
+
+        it('EJ2-59978 - Insert link after Max char count - Execute Command Module', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                maxLength: 20,
+                showCharCount: true
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(curDocument, focusNode, focusNode, 0, 0);
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            rteObj.executeCommand('createLink', {
+                url: 'https://www.facebook.com',
+                title: 'facebook',
+                selection: saveSelection,
+                text: 'hello this is facebook link',
+                target: '_self'
+            });
+            let linkElm: HTMLElement = rteObj.inputElement.querySelector('a');
+            expect(linkElm).toBe(null);
         });
 
         it('ensure edit link on execute command with all the arguments', () => {
@@ -4012,6 +4219,73 @@ describe("EJ2-58355 - RTE insert HTML", () => {
     });
 });
 
+describe("EJ2-59978 - Insert HTML and Text after Max char count - Execute Command", () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: '<p class="focusNode">RTE Content with RTE</p>',
+            toolbarSettings: {
+                items: ['CreateTable']
+            },
+            maxLength: 20,
+            showCharCount: true
+        });
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Insert HTML after Max char count - Execute Command', () => {
+        let nodeSelection: NodeSelection = new NodeSelection();
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertHTML', `<div>inserted</div>`);
+        expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
+    });
+
+    it('Insert Text & insert horizontal ruler and insert BR after Max char count - Execute Command', () => {
+        destroy(rteObj);
+        rteObj = renderRTE({
+            value: '<p class="focusNode">RTE Content with RTE</p>',
+            toolbarSettings: {
+                items: ['CreateTable']
+            },
+            maxLength: 20,
+            showCharCount: true
+        });
+        let nodeSelection: NodeSelection = new NodeSelection();
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertText', `Hello`);
+        expect(rteObj.inputElement.textContent === `RTE Content with RTE`).toBe(true);
+    });
+
+    it('insert horizontal ruler and insert BR after Max char count - Execute Command', () => {
+        destroy(rteObj);
+        rteObj = renderRTE({
+            value: '<p class="focusNode">RTE Content with RTE</p>',
+            toolbarSettings: {
+                items: ['CreateTable']
+            },
+            maxLength: 20,
+            showCharCount: true
+        });
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertHorizontalRule');
+        expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
+
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        focusNode = rteObj.inputElement.childNodes[0].childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        rteObj.executeCommand('insertBrOnReturn');
+        expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
+    });
+});
+
 describe("RTE content remove issue", () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
@@ -5004,13 +5278,17 @@ describe('EJ2-26545 Empty P tag create while give the value with empty space in 
         done();
     });
 
-    it("don't create the p tag to empty text node ", () => {
+    it("don't create the p tag to empty text node ", (done) => {
        let emptyNode:NodeListOf<Element> = <NodeListOf<Element>>rteObj.inputElement.querySelectorAll("p:empty");
+       setTimeout(() => {
         expect(emptyNode.length === 0).toBe(true);
+        done();
+       }, 100);
     });
     afterAll(() => {
         destroy(rteObj);
     });
+
 });
 
 describe('To change the keyconfig API property', () => {
@@ -5088,7 +5366,7 @@ describe('Value property when xhtml is enabled', function () {
         destroy(rteObj);
     });
     it("value property checking when xhtml is enabled", function () {
-        expect(rteObj.value).toBe('<div><p>ad<br/></p><hr/>asd<p></p></div>');
+        expect(rteObj.value).toBe('<div><p>ad<br/></p><hr/>asd<p><br/></p></div>');
         rteObj.value = '<p>value changeded <br/></p>';
         rteObj.dataBind();
         expect(rteObj.value).toBe("<div><p>value changeded <br/></p></div>");
@@ -5484,6 +5762,46 @@ describe('EJ2-47075: Applying heading to the content in the Rich Text Editor app
         done();
     });
     afterEach(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-60047 - typing by selecting 3 empty p tag elements which is prefix of other element with content in firefox', () => {
+    let rteObj: RichTextEditor;
+    let defaultUserAgent= navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            value: `<p class="startNode"></br></p><p></br></p><p class="endNode"></br></p><div>
+            <h2>sssssssss</h2>
+            <div>
+            <h5>
+            aaaaaaaaaaaaaaaaaaaaaaaaaa
+            </h5>
+            </div>
+            </div><p></p>`
+        });
+    });
+
+    it('EJ2-60047 - typing by selecting 3 empty p tag elements which is prefix of other element with content in firefox', () => {
+        let keyBoardEvent: any = { preventDefault: () => { }, key: 'KeyA', stopPropagation: () => { }, shiftKey: false, which: 65 };
+        let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+        editNode.focus();
+        keyBoardEvent.which = 65;
+        keyBoardEvent.code = 'KeyA';
+        keyBoardEvent.type = 'keydown';
+        rteObj.contentModule.getEditPanel().innerHTML = `a<div><h2>sssssssss</h2><div><h5>aaaaaaaaaaaaaaaaaaaaaaaaaa</h5></div></div><p></p>`;
+        let sel1 = new NodeSelection().setSelectionText(document, editNode.childNodes[0], editNode.childNodes[0], 1, 1);
+        (rteObj as any).keyDown(keyBoardEvent);
+        keyBoardEvent.type = 'keyup';
+        (rteObj as any).keyUp(keyBoardEvent);
+        expect((editNode.childNodes[0] as HTMLElement).outerHTML === `<p>a</p>`).toBe(true);
+    });
+
+    afterAll(() => {
+        Browser.userAgent =defaultUserAgent;
         destroy(rteObj);
     });
 });

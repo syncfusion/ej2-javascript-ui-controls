@@ -2413,7 +2413,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
                 done();
-            }, 4000);
+            }, 3500);
         });
     });
     describe(' EJ2-20297: RTE Image insert link  - ', () => {
@@ -4102,6 +4102,45 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj.imageModule as any).insertDragImage(event);
             expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
             detach(document.getElementsByTagName('IMG')[0]);
+        });
+    });
+
+    describe('EJ2-59978 - Insert image after Max char count - Image Module', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p class="focusNode">RTE Content with RTE</p>',
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                maxLength: 20,
+                showCharCount: true
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Insert image after Max char count', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = {
+                preventDefault: function () { },
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
+            };
+            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let evnArg: any = { args, self: (<any>rteObj).imageModule, selection: save, selectNode: [''], link: null, target: '' };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+            expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
         });
     });
 });

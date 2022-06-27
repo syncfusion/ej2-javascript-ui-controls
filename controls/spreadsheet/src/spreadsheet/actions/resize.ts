@@ -277,7 +277,11 @@ export class Resize {
     }
 
     private setAutoFitHandler(args: { idx: number, isCol: boolean }): void {
-        this.setAutofit(args.idx, args.isCol);
+        if (args.isCol && isHiddenCol(this.parent.getActiveSheet(), args.idx)) {
+            this.showHiddenColumns(args.idx);
+        } else {
+            this.setAutofit(args.idx, args.isCol);
+        }
     }
 
     private setAutofit(idx: number, isCol?: boolean, prevData?: string): void {
@@ -512,7 +516,9 @@ export class Resize {
                 }
             }
         }
-        this.trgtEle.classList.remove('e-unhide-column');
+        if (this.trgtEle) {
+            this.trgtEle.classList.remove('e-unhide-column');
+        }
         const hideEvtArgs: HideShowEventArgs = { startIndex: startIdx, endIndex: endIdx, hide: false, isCol: true, autoFit: true };
         this.parent.notify(hideShow, hideEvtArgs);
         this.showHideCopyIndicator();

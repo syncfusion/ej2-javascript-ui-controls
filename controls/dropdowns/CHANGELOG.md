@@ -2,7 +2,65 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### DropDownList
+
+#### Bug Fixes
+
+- "Dropdown List template sample is not working in React 18" issue has been resolved.
+
+## 20.1.58 (2022-05-31)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#F34768` - Issue with "change event argument `IsInteracted` returns wrong value while rendering component with disabled custom value" has been resolved
+
+## 20.1.57 (2022-05-24)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I374653` - The issue with "The filtering was not working properly when using a hierarchical data source for the Dropdown Tree component" has been resolved.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `I375107` - Issue with "cascading dropdown list doesn't display the updated data while binding the remote data and filtering enabled" has been resolved.
+
+## 20.1.56 (2022-05-17)
+
+### ListBox
+
+#### Bug Fixes
+
+- `F174682` - Issue with "Drag and Drop not working properly while using item template in listbox" has been resolved.
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `I372269` - Issue with "value is displayed instead of text while binding beyond the initial loading data values" has been resolved.
+
+## 20.1.52 (2022-05-04)
+
+### ListBox
+
+#### Bug Fixes
+
+- `I374083` - Issue with "Filtering did not work in the datasource empty list" has been resolved.
+
 ## 20.1.50 (2022-04-19)
+
+### ListBox
+
+#### Bug Fixes
+
+- `I376206` - Issue with "When `MoveUp/MoveDown` Buttons retain enabled state after removing item and script error thrown" has been resolved.
 
 ### ListBox
 

@@ -1,23 +1,28 @@
 @include export-module('toast-fabric-icons') {
   .e-toast {
     .e-toast-close-icon::before {
-      content: $toast-close-icon;
+      content: '\e7a7';
+      font-family: 'e-icons';
     }
 
     .e-toast-success-icon::before {
-      content: $toast-success-icon;
+      content: '\ea84';
+      font-family: 'e-icons';
     }
 
     .e-toast-error-icon::before {
-      content: $toast-error-icon;
+      content: '\e7e9';
+      font-family: 'e-icons';
     }
 
     .e-toast-info-icon::before {
-      content: $toast-info-icon;
+      content: '\e607';
+      font-family: 'e-icons';
     }
 
     .e-toast-warning-icon::before {
-      content: $toast-warning-icon;
+      content: '\e92f';
+      font-family: 'e-icons';
     }
   }
 }

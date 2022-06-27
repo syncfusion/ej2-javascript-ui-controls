@@ -57,7 +57,7 @@ export class BooleanFilterUI implements IFilterMUI {
                 query: new Query().select(fields),
                 fields: { text: fields, value: fields },
                 placeholder: args.localizeText.getConstant('SelectValue'),
-                cssClass: 'e-popup-flmenu',
+                cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl
             },

@@ -7,6 +7,8 @@ import { DataManager } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import { editAction } from './crud-actions';
 import { getParentData, findChildrenRecords, isRemoteData, isOffline, isCountRequired } from '../utils';
+import { TreeActionEventArgs } from '../models';
+
 /**
  * TreeGrid RowDragAndDrop module
  *
@@ -31,9 +33,20 @@ export class RowDD {
     /** @hidden */
     public isMultipleGrid: string;
     /** @hidden */
+    private modifiedRecords: string = 'modifiedRecords';
+    /** @hidden */
+    private selectedItem: ITreeData;
+    /** @hidden */
+    private selectedRecords: string = 'selectedRecords';
+    /** @hidden */
+    private selectedRows: string = 'selectedRows';
+    /** @hidden */
     private hasDropItem: boolean = true;
     /** @hidden */
     public isaddtoBottom: boolean = false;
+    private selectedRecord: ITreeData;
+    private selectedRow: HTMLTableRowElement;
+
     /**
      * Constructor for render module
      *
@@ -79,7 +92,7 @@ export class RowDD {
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
         const tObj: TreeGrid = this.parent;
-        const action: string = 'action';
+        const action: string = 'action'; const dropPosition: string = 'dropPosition';
         const updateRowAndCellElements: string = 'updateRowAndCellElements';
         if (fromIndexes[0] !== toIndex && ['above', 'below', 'child'].indexOf(position) !== -1) {
             if (position === 'above') {
@@ -91,6 +104,7 @@ export class RowDD {
             if (position === 'child') {
                 this.dropPosition = 'middleSegment';
             }
+            this.parent[dropPosition] = this.dropPosition;
             const data: ITreeData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
                 data[i] = this.parent.getCurrentViewRecords()[fromIndexes[i]];
@@ -148,6 +162,80 @@ export class RowDD {
         } else {
             return;
         }
+    }
+
+    private indentOutdentAction(record?: ITreeData, request?: string): void {
+        const tObj: TreeGrid = this.parent; const action: string = 'action';
+        const droppedIndex: string = 'dropIndex'; let selectedItemIndex: number = -1;
+        if (isNullOrUndefined(record) && this.parent.selectedRowIndex === -1) {
+            return;
+        } else {
+            if (this.parent.enableVirtualization && this.parent.selectedRowIndex !== -1) {
+                selectedItemIndex = (this.parent.getSelectedRows()[0] as HTMLTableRowElement).rowIndex;
+            } else if (this.parent.selectedRowIndex !== -1) {
+                selectedItemIndex = this.parent.selectedRowIndex;
+            }
+            this.selectedItem = isNullOrUndefined(record) ?
+                tObj.getCurrentViewRecords()[selectedItemIndex] as ITreeData : record as ITreeData;
+            const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            const rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(this.selectedItem[primaryKeyField]);
+            this.selectedRow = this.parent[this.selectedRows] = selectedItemIndex !== -1 ?
+                this.parent.getSelectedRows()[0] as HTMLTableRowElement
+                : this.parent.grid.getRowByIndex(rowIndex) as HTMLTableRowElement;
+            this.selectedRecord = this.parent[this.selectedRecords] = selectedItemIndex !== -1 ?
+                tObj.getCurrentViewRecords()[selectedItemIndex] as ITreeData
+                : this.selectedItem as ITreeData;
+            if (request === 'indent') {
+                const record: ITreeData = tObj.getCurrentViewRecords()[this.selectedRow.rowIndex - 1];
+                let dropIndex: number;
+                if (this.selectedRow.rowIndex === 0 || this.selectedRow.rowIndex === -1 ||
+                         (tObj.getCurrentViewRecords()[this.selectedRow.rowIndex] as ITreeData).level - record.level === 1) {
+                    return;
+                }
+                if (record.level > this.selectedRecord.level) {
+                    for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
+                        if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === record.parentItem.taskData) {
+                            dropIndex = i;
+                        }
+                    }
+                } else {
+                    dropIndex = this.selectedRow.rowIndex - 1;
+                }
+                tObj[action] = 'indenting'; tObj[droppedIndex] = dropIndex;
+                this.eventTrigger('indenting', dropIndex);
+            } else if (request === 'outdent') {
+                if (this.selectedRow.rowIndex === -1 || this.selectedRow.rowIndex === 0  ||
+                    (tObj.getCurrentViewRecords()[this.selectedRow.rowIndex] as ITreeData).level === 0) {
+                    return;
+                }
+                let dropIndex: number; const parentItem: ITreeData = this.selectedRecord.parentItem;
+                for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
+                    if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === parentItem.taskData) {
+                        dropIndex = i;
+                    }
+                }
+                tObj[action] = 'outdenting'; tObj[droppedIndex] = dropIndex;
+                this.eventTrigger('outdenting', dropIndex);
+            }
+        }
+    }
+
+    private eventTrigger(action: string, dropIndex: number): void {
+        const actionArgs: TreeActionEventArgs = {
+            action: action,
+            cancel: false,
+            data: [this.parent[this.selectedRecords]],
+            row: this.parent[this.selectedRows]
+        };
+        this.parent.trigger(events.actionBegin, actionArgs, (actionArgs: TreeActionEventArgs) => {
+            if (!actionArgs.cancel) {
+                if (actionArgs.action === 'indenting'){
+                    this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'child');
+                } else if (actionArgs.action === 'outdenting') {
+                    this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'below');
+                }
+            }
+        });
     }
 
     private orderToIndex(currentData: ITreeData[]): ITreeData[] {
@@ -216,7 +304,8 @@ export class RowDD {
                         }
                     }
                 }
-                if (Object.prototype.hasOwnProperty.call(draggedRecord, tObj.parentIdMapping) && draggedRecord[tObj.parentIdMapping] != null
+                if (Object.prototype.hasOwnProperty.call(draggedRecord, tObj.parentIdMapping)
+                   && draggedRecord[tObj.parentIdMapping] !== null
                    && !this.isDraggedWithChild) {
                     draggedRecord.taskData[tObj.parentIdMapping] = null;
                     delete draggedRecord.parentItem;
@@ -713,7 +802,7 @@ export class RowDD {
                 indexes[i] = records[i].index;
             }
             const data: ITreeData[] = srcControl.dataSource as ITreeData[];
-            if (this.parent.idMapping != null && ( isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment' || this.dropPosition === 'Invalid') && !(data.length)) {
+            if (this.parent.idMapping !== null && ( isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment' || this.dropPosition === 'Invalid') && !(data.length)) {
                 const actualData: ITreeData[] = [];
                 for (let i: number = 0; i < records.length; i++) {
                     if (records[i].hasChildRecords) {
@@ -764,14 +853,23 @@ export class RowDD {
         return targetRow ? parseInt(targetRow.getAttribute('aria-rowindex'), 10) : 0;
     }
 
-    private getParentData(record: ITreeData): void {
-        const parentItem: ITreeData = record.parentItem;
+    private getParentData(record: ITreeData, data?: Object[]): void {
+        const parentItem: ITreeData = record.parentItem; let selectedItemIndex: number = -1;
+        if (this.parent.enableVirtualization && this.parent.selectedRowIndex !== -1) {
+            selectedItemIndex = (this.parent.getSelectedRows()[0] as HTMLTableRowElement).rowIndex;
+        } else if (this.parent.selectedRowIndex !== -1) {
+            selectedItemIndex = this.parent.selectedRowIndex;
+        }
         if (this.dropPosition === 'bottomSegment') {
-            const selectedRecord: ITreeData = this.parent.getSelectedRecords()[0];
+            const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            const rowIndex: number = selectedItemIndex === -1 ?
+                (this.parent.grid.getRowIndexByPrimaryKey(data[0][primaryKeyField]))
+                : this.parent.getSelectedRowIndexes()[0];
+            const selectedRecord: ITreeData = this.parent.getCurrentViewRecords()[rowIndex];
             this.droppedRecord = getParentData(this.parent, selectedRecord.parentItem.uniqueID);
         }
         if (this.dropPosition === 'middleSegment') {
-            const level: number = (this.parent.getSelectedRecords()[0] as ITreeData).level;
+            const level: number = (this.parent.getCurrentViewRecords()[selectedItemIndex] as ITreeData).level;
             if (level === parentItem.level) {
                 this.droppedRecord = getParentData(this.parent, parentItem.uniqueID);
             } else {
@@ -785,9 +883,12 @@ export class RowDD {
             const tObj: TreeGrid = this.parent;
             let draggedRecord: ITreeData; let droppedRecord: ITreeData;
             if (isNullOrUndefined(args.dropIndex)) {
-                const rowIndex: number = tObj.getSelectedRowIndexes()[0] - 1;
+                const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+                const rowIndex: number = tObj.selectedRowIndex === -1 ?
+                    (this.parent.grid.getRowIndexByPrimaryKey(args.data[0][primaryKeyField])) - 1
+                    : tObj.getSelectedRowIndexes()[0] - 1;
                 const record: ITreeData = (tObj.getCurrentViewRecords()[rowIndex] as ITreeData);
-                this.getParentData(record);
+                this.getParentData(record, args.data);
             } else {
                 args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
                 this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
@@ -799,6 +900,7 @@ export class RowDD {
             } else {
                 dragRecords = args.data;
             }
+            this.parent[this.modifiedRecords].push(args.data[0], droppedRecord);
             let count: number = 0;
             const multiplegrid: string = this.parent.rowDropSettings.targetID;
             this.isMultipleGrid = multiplegrid;
@@ -1112,8 +1214,23 @@ export class RowDD {
                 flatParentData.hasChildRecords = false;
                 flatParentData.hasFilteredChildRecords = false;
             }
+            if (this.parent[this.modifiedRecords].indexOf(flatParentData) === -1 && !isNullOrUndefined(flatParentData)) {
+                this.parent[this.modifiedRecords].push(flatParentData);
+            }
+            if (!isNullOrUndefined(flatParentData)) {
+                this.updateModifiedRecords(flatParentData);
+            }
         }
     }
+
+    private updateModifiedRecords(record: ITreeData): void {
+        const parentData: Object = getParentData(this.parent, record.parentUniqueID);
+        if (!isNullOrUndefined(parentData)) {
+            this.parent[this.modifiedRecords].push(parentData);
+            this.updateModifiedRecords(parentData);
+        }
+    }
+
     private removeChildItem(record: ITreeData): void {
         let currentRecord: ITreeData;
         let idx: number;

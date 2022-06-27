@@ -2,7 +2,7 @@ import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSetti
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel } from '@syncfusion/ej2-charts';
+import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries } from '@syncfusion/ej2-charts';
 import { AccumulationChart, PieSeries, FunnelSeries, PyramidSeries } from '@syncfusion/ej2-charts';
 import { SplineAreaSeries, MultiColoredLineSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries } from '@syncfusion/ej2-charts';
 import { MultiColoredAreaSeries, SplineSeries, StepLineSeries, AccumulationLegend, AccumulationTooltip } from '@syncfusion/ej2-charts';
@@ -334,7 +334,7 @@ export class PivotChart {
                             let columnSeries: string = colHeaders + ' | ' + actualText;
                             let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
                                 !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
-                                Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : Number(cell.value) : Number(cell.value));
+                                Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value));
                             yValue = yValue === Infinity ? null : yValue;
                             if (yValue === 0) {
                                 this.accEmptyPoint = true;
@@ -566,7 +566,7 @@ export class PivotChart {
             Chart.Inject(
                 ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries,
                 LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries,
-                AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries,
+                AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, StackingLineSeries, MultiColoredAreaSeries, ParetoSeries,
                 Legend, Tooltip, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection, StripLine, DataLabel);
             AccumulationChart.Inject(PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip,
                 Export);
@@ -784,7 +784,8 @@ export class PivotChart {
         let percentChart: boolean = this.persistSettings.chartSeries && (
             this.persistSettings.chartSeries.type === 'StackingColumn100' ||
             this.persistSettings.chartSeries.type === 'StackingBar100' ||
-            this.persistSettings.chartSeries.type === 'StackingArea100');
+            this.persistSettings.chartSeries.type === 'StackingArea100' ||
+            this.persistSettings.chartSeries.type === 'StackingLine100');
         let percentAggregateTypes: SummaryTypes[] = ['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
             'PercentageOfDifferenceFrom', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal'];
         if (this.chartSettings.enableMultipleAxis) {
@@ -1287,7 +1288,7 @@ export class PivotChart {
             option[1].items = collapse;
         }
         let menuOptions: ContextMenuModel = {
-            cssClass: this.parent.element.id + '_accumulationChart',
+            cssClass: this.parent.element.id + '_accumulationChart' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             items: option,
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.drillMenuOpen.bind(this),
@@ -1607,6 +1608,19 @@ export class PivotChart {
             }
         }
         this.parent.trigger(events.chartResized, args);
+    }
+
+    /* eslint-disable */
+    /** @hidden */
+    public getResizedChartHeight(): string {
+        let height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
+            this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
+            this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ? /* eslint-disable-line */
+            isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
+            (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
+                ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() :
+                this.getChartHeight().toString() : this.getChartHeight().toString();
+        return height;
     }
 
     /**

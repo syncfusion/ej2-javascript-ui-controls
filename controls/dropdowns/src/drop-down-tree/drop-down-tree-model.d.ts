@@ -172,7 +172,7 @@ export interface DropDownTreeModel extends ComponentModel{
     cssClass?: string;
 
     /**
-     * This property is used to customize the display text of the selected items in the Dropdown Tree. The given custom template is 
+     * This property is used to customize the display text of the selected items in the Dropdown Tree. The given custom template is
      * added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      *
      * @default "${value.length} item(s) selected"
@@ -308,7 +308,7 @@ export interface DropDownTreeModel extends ComponentModel{
      * * Delimiter : Selected items will be visualized in the text content.
      * * Default : On focus in component will act in the box mode. On blur component will act in the delimiter mode.
      * * Custom : Selected items will be visualized with the given custom template value. The given custom template
-     *  is added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled. 
+     *  is added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      */
     mode?: Mode;
 

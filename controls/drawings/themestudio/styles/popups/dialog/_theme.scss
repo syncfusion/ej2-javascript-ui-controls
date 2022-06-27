@@ -12,25 +12,25 @@
     background-color: $dialog-footer-bg-color;
 
     @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-      .e-btn.e-primary.e-flat {
+      .e-btn.e-primary.e-flat:not([DISABLED]) {
         background-color: $dialog-footer-btn-bg-color;
         border-color: $dialog-footer-btn-border-color;
         color: $dialog-footer-btn-color;
       }
 
-      .e-btn:hover.e-primary.e-flat {
+      .e-btn:hover.e-primary.e-flat:not([DISABLED]) {
         background-color: $dialog-footer-hover-btn-color;
       }
     }
 
     @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-      .e-btn.e-flat {
+      .e-btn.e-flat:not([DISABLED]) {
         background-color: $dialog-footer-flat-btn-bg-color;
         border-color: $dialog-footer-flat-btn-border-color;
         color: $dialog-footer-flat-btn-content-color;
       }
 
-      .e-btn:hover.e-flat {
+      .e-btn:hover.e-flat:not([DISABLED]) {
         background-color: $dialog-footer-flat-hover-btn-bg-color;
       }
     }
@@ -91,6 +91,9 @@
 
   .e-dlg-header-content .e-dlg-closeicon-btn:active {
     background-color: $dialog-closeicon-btn-active-color;
+    @if $skin-name == 'FluentUI' {
+      outline: none;
+    }
   }
 
   .e-south-east {

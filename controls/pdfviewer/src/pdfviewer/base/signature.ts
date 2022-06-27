@@ -85,6 +85,11 @@ export class Signature {
     /**
      * @private
      */
+    // eslint-disable-next-line
+    public signAnnotationIndex: any = [];
+    /**
+     * @private
+    */
     public fontName: string;
     // eslint-disable-next-line
     private fontsign: any = [];
@@ -1606,50 +1611,66 @@ export class Signature {
     // eslint-disable-next-line
     public renderExistingSignature(annotationCollection: any, pageIndex: number, isImport: boolean): void {
         let annot: PdfAnnotationBaseModel;
-        for (let n: number = 0; n < annotationCollection.length; n++) {
-            // eslint-disable-next-line
-            let currentAnnotation: any = annotationCollection[n];
-            // eslint-disable-next-line
-            if (currentAnnotation) {
+        let isAnnotationAdded: boolean = false;
+        if (!isImport){
+            for (let p: number = 0; p < this.signAnnotationIndex.length; p++){
+                if (this.signAnnotationIndex[p] === pageIndex){
+                    isAnnotationAdded = true;
+                    break;
+                }
+            }
+        }
+        if (annotationCollection && !isAnnotationAdded) {
+            if (annotationCollection.length > 0 && this.signAnnotationIndex.indexOf(pageIndex) === -1) {
+                this.signAnnotationIndex.push(pageIndex);
+            }
+            for (let n: number = 0; n < annotationCollection.length; n++) {
                 // eslint-disable-next-line
-                let bounds: any = currentAnnotation.Bounds;
-                const currentLeft: number = bounds.X;
-                const currentTop: number = bounds.Y;
-                const currentWidth: number = bounds.Width;
-                const currentHeight: number = bounds.Height;
-                // eslint-disable-next-line
-                let data: any = currentAnnotation.PathData;
-                if (isImport) {
-                    if (currentAnnotation.IsSignature) {
-                        data = currentAnnotation.PathData;
-                    } else if (currentAnnotation.AnnotationType === 'SignatureImage' || currentAnnotation.AnnotationType === 'SignatureText' ) {
-                        data = JSON.parse(JSON.stringify(currentAnnotation.PathData));
-                    } else {
-                        if (data.includes('command')) {
-                            data = getPathString(JSON.parse(currentAnnotation.PathData));
-                        } else {
+                let currentAnnotation: any = annotationCollection[n];
+                if (currentAnnotation) {
+                    // eslint-disable-next-line
+                    let data: any = currentAnnotation.PathData;
+                    if (isImport) {
+                        if (currentAnnotation.IsSignature) {
                             data = currentAnnotation.PathData;
                         }
+                        else if (currentAnnotation.AnnotationType === 'SignatureImage' || currentAnnotation.AnnotationType === 'SignatureText') {
+                            data = JSON.parse(JSON.stringify(currentAnnotation.PathData));
+                        }
+                        else {
+                             if (data.includes('command')) {
+                                data = getPathString(JSON.parse(currentAnnotation.PathData));
+                            }
+                            else {
+                                data = currentAnnotation.PathData;
+                            }
+                        }
                     }
-                }
-                if (currentAnnotation.AnnotationType === 'SignatureText') {
-                    annot = {
-                        // eslint-disable-next-line max-len
-                        id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data, fontFamily: currentAnnotation.FontFamily, fontSize: currentAnnotation.FontSize,
-                        shapeAnnotationType: 'SignatureText', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
-                    };
-                } else if (currentAnnotation.AnnotationType === 'SignatureImage') {
-                    annot = {
-                        // eslint-disable-next-line max-len
-                        id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
-                        shapeAnnotationType: 'SignatureImage', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
-                    };
-                } else {
-                    annot = {
-                        // eslint-disable-next-line max-len
-                        id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
-                        shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
-                    };
+                    this.outputString = data;
+                    this.outputString = '';
+                    let rectDiff = 0;
+                    let rectDifference = 1;
+                    let bounds = currentAnnotation.Bounds;
+                    let currentLeft = !isNullOrUndefined(bounds.X) ? bounds.X + (rectDiff / 2) : bounds.x + (rectDiff / 2);
+                    let currentTop = !isNullOrUndefined(bounds.Y) ? bounds.Y + (rectDiff / 2) : bounds.y + (rectDiff / 2);
+                    let currentWidth = bounds.Width ? bounds.Width - (rectDifference - 1) : bounds.width - (rectDifference - 1);
+                    let currentHeight = bounds.Height ? bounds.Height - (rectDifference - 1) : bounds.height - (rectDifference - 1);
+                    if (currentAnnotation.AnnotationType === 'SignatureText') {
+                        annot = {
+                            id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data, fontFamily: currentAnnotation.FontFamily, fontSize: currentAnnotation.FontSize,
+                            shapeAnnotationType: 'SignatureText', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
+                        };
+                    }
+                    else if(currentAnnotation.AnnotationType === 'SignatureImage') {
+                        annot = {
+                            id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,shapeAnnotationType: 'SignatureImage', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
+                        };
+                    }
+                    else{
+                        annot = {
+                            id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data:data,shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
+                        };
+                    }
                 }
                 this.pdfViewer.add(annot as PdfAnnotationBase);
                 // eslint-disable-next-line
@@ -1669,7 +1690,6 @@ export class Signature {
             }
         }
     }
-
     /**
      * @param pageNumber
      * @param annotations

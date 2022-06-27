@@ -174,6 +174,41 @@ describe('FileManager module', () => {
         });
     });
 
+    describe('EJ2-59865 - css class dependency component', () => {
+        let rteObj: RichTextEditor;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FileManager']
+                },
+                cssClass: 'customClass',
+                fileManagerSettings: {
+                    enable: true,
+                    path: '/Pictures/Food',
+                    ajaxSettings: {
+                        url: hostUrl + 'api/FileManager/FileOperations',
+                        getImageUrl: hostUrl + 'api/FileManager/GetImage',
+                        uploadUrl: hostUrl + 'api/FileManager/Upload'
+                    }
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('css class dependency initial load and dynamic change', (done: Function) => {
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            expect(document.body.querySelector('.e-rte-file-manager-dialog').classList.contains('customClass'));
+            rteObj.cssClass = 'changedClass';
+            rteObj.dataBind();
+            expect(document.body.querySelector('.e-rte-file-manager-dialog').classList.contains('changedClass'));
+            setTimeout(() => {
+                done();
+            }, 2000);
+        });
+    });
+
     describe('Open FileManager while replace image', () => {
         let trg: HTMLElement;
         let rteEle: HTMLElement;

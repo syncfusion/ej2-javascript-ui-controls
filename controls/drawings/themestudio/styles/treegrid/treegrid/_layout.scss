@@ -8,10 +8,6 @@
         width: $treegrid-bigger-icon-size;
       }
 
-      .e-rowcell.e-treerowcell {
-        padding-left: $treegrid-bigger-treecell-padding;
-      }
-
       .e-hierarchycheckbox {
         padding-left: 2px;
       }
@@ -21,8 +17,25 @@
         width: $treegrid-frame-bigger-icon-width;
       }
 
+      .e-hierarchycheckbox .e-frame {
+        @if $skin-name == 'bootstrap' or $skin-name == 'boostrap-dark' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+          font-size: 12px;
+          line-height: 12px;
+          padding: 2px 0;
+        }
+        height: $treegrid-frame-bigger-icon-height;
+        width: $treegrid-frame-bigger-icon-width;
+      }
+
       .e-treecell {
         line-height: $treegrid-bigger-icon-size;
+      }
+
+      .e-row[aria-expanded = 'true'] .e-treecell {
+        @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+          font-size: 16px;
+          font-weight: bold;
+        }
       }
     }
   }
@@ -31,6 +44,17 @@
 
     .e-icons.e-none::before {
       content: '';
+    }
+
+    .e-gridheader {
+
+      .e-headercell .e-css.e-hierarchycheckbox {
+        height: 20px;
+        @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+          padding-top: 0;
+        }
+        vertical-align: middle;
+      }
     }
 
     .e-treegridexpand::before,
@@ -58,8 +82,17 @@
       color: $treegrid-right-arrow-hover-color;
     }
 
-    .e-rowcell.e-treerowcell {
-      padding-left: $treegrid-treecell-padding;
+    .e-rowcell.e-treerowcell.e-treegridcheckbox {
+      @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        padding-left: $treegrid-treecell-padding;
+      }
+    }
+
+    .e-row[aria-expanded = 'true'] .e-treecell {
+      @if $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        font-size: 14px;
+        font-weight: bold;
+      }
     }
 
     .e-rtl {
@@ -104,8 +137,17 @@
     }
 
     .e-hierarchycheckbox .e-frame {
-      height: $cbox-height;
-      width: $cbox-width;
+      @if $skin-name == 'bootstrap' or $skin-name == 'boostrap-dark' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        font-size: 10px;
+        height: 16px;
+        line-height: 11px;
+        padding: 2px 0;
+        width: 16px;
+      }
+      @else {
+        height: $cbox-height;
+        width: $cbox-width;
+      }
     }
 
     .e-checkselection {
@@ -131,7 +173,12 @@
 
     .e-treecell {
       display: table-cell;
-      line-height: normal;
+      @if $skin-name == 'bootstrap5' or $skin-name == 'boostrap5-dark' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
+        line-height: 26px;
+      }
+      @else {
+        line-height: normal;
+      }
     }
 
     .e-grid {
@@ -294,8 +341,8 @@
       tr.e-row:first-child {
         td.e-rowcell.e-childborder ,
         td.e-rowdragdrop.e-childborder {
-          border-bottom: $treegrid-rowdd-topbottom-border;
-          border-top: $treegrid-rowdd-topbottom-border;
+          border-bottom: $treegrid-rowdrag-childborder-border;
+          border-top: $treegrid-rowdrag-childborder-border;
           box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
         }
 
@@ -306,7 +353,22 @@
        }
 
       td.e-rowcell {
-        &.e-childborder,
+        &.e-childborder {
+          border-bottom: $treegrid-rowdrag-childborder-border;
+          border-top: $treegrid-rowdrag-childborder-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+      }
+
+      td.e-rowdragdrop {
+        &.e-childborder {
+          border-bottom: $treegrid-rowdrag-childborder-border;
+          border-top: $treegrid-rowdrag-childborder-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+      }
+
+      td.e-rowcell {
         &.e-dropbottom {
           border-bottom: $treegrid-rowdd-topbottom-border;
           box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
@@ -314,7 +376,6 @@
       }
 
       td.e-rowdragdrop {
-        &.e-childborder,
         &.e-dropbottom {
           border-bottom: $treegrid-rowdd-topbottom-border;
           box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;

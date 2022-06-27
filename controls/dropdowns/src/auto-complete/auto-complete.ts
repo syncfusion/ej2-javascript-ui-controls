@@ -385,7 +385,9 @@ export class AutoComplete extends ComboBox {
             this.setScrollPosition(e as KeyboardEventArgs);
             if (this.autofill && this.isPopupOpen) {
                 this.preventAutoFill = false;
-                super.setAutoFill(li);
+                const isKeyNavigate: boolean = (e && (e as KeyboardEventArgs).action === 'down' || (e as KeyboardEventArgs).action === 'up' ||
+                (e as KeyboardEventArgs).action === 'home' || (e as KeyboardEventArgs).action === 'end' || (e as KeyboardEventArgs).action === 'pageUp' || (e as KeyboardEventArgs).action === 'pageDown');
+                super.setAutoFill(li, isKeyNavigate);
             }
             attributes(this.inputElement, { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
         } else {
@@ -467,8 +469,8 @@ export class AutoComplete extends ComboBox {
      *
      * @returns {void}
      */
-    public hidePopup(): void {
-        super.hidePopup();
+    public hidePopup(e?: KeyboardEventArgs): void {
+        super.hidePopup(e);
         this.activeIndex = -1;
     }
     /**

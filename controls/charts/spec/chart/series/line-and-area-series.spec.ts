@@ -264,7 +264,22 @@ describe('Chart Control Series', () => {
                 color: 'red'
             };
             chartObj.refresh();
-
+        });
+        it('Checking Marker highlight explode', (done: Function) => {
+            loaded = (): void => {
+                let trigger: MouseEvents = new MouseEvents();
+                let  series1:HTMLElement = document.getElementById('container_Series_2_Point_4_Symbol');
+                let chartArea: Element = document.getElementById('container_ChartAreaBorder');
+                let y:number =  parseFloat(series1.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
+                let x:number =  parseFloat(series1.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
+                trigger.mousemovetEvent(series1, Math.ceil(x), Math.ceil(y));
+                expect(document.getElementById('container_Series_2_Point_4_Trackball_1')).toBe(null);
+                expect(document.getElementById('container_Series_2_Point_4_Trackball_0')).toBe(null);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip.enable = false;
+            chartObj.refresh();
         });
     });
 

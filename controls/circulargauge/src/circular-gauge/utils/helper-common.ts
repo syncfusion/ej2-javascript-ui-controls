@@ -874,6 +874,7 @@ export class RectOption extends CustomizeOption {
     public fill: string;
     public stroke: string;
     public ['stroke-width']: number;
+    public ['stroke-dasharray']: string;
     constructor(
         id: string, fill: string, border: BorderModel, opacity: number, rect: Rect
     ) {
@@ -886,6 +887,7 @@ export class RectOption extends CustomizeOption {
         this.fill = fill;
         this.stroke = border.color;
         this['stroke-width'] = border.width;
+        this['stroke-dasharray'] = border.dashArray;
     }
 }
 

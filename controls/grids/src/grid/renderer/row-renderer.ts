@@ -74,6 +74,14 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         const node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
         const tr: Element = this.refreshRow(row, columns, attributes, rowTemplate, null, isChanged);
         const cells: HTMLTableDataCellElement[] = [].slice.call((tr as HTMLTableRowElement).cells);
+        const tempCells: HTMLTableDataCellElement[] =  [].slice.call(node.querySelectorAll('.e-templatecell'));
+        if (this.parent.isReact && tempCells.length) {
+            for (let i: number = 0, len: number = columns.length; i < len; i++) {
+                if (columns[i].template) {
+                    this.parent.refreshReactColumnTemplateByUid(columns[i].uid);
+                }
+            }
+        }
         node.innerHTML = '';
         for (const cell of cells) {
             node.appendChild(cell);

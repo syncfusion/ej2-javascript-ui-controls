@@ -247,8 +247,6 @@ export const rowFillHandler: string = 'rowFillHandler';
 /** @hidden */
 export const getTextSpace: string = 'getTextSpace';
 /** @hidden */
-export const updateCustomFormatsFromImport: string = 'updateCustomFormatsFromImport';
-/** @hidden */
 export const cFUndo: string = 'cFUndo';
 /** @hidden */
 export const refreshClipboard: string = 'refreshClipboard';

@@ -2700,4 +2700,279 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
         comboBox.hidePopup();
         comboBox.destroy();    
     });
+    describe('EJ2-58878', () => {
+        let comboBoxObj: any;
+        let element: any;
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74
+        };
+        let data: { [key: string]: Object }[] = [
+            {
+              Name: 'Andrew Fuller',
+              Eimg: '7',
+              Designation: 'Team Lead',
+              Country: 'England',
+            },
+            {
+              Name: 'Anne Dodsworth',
+              Eimg: '1',
+              Designation: 'Developer',
+              Country: 'USA',
+            },
+            { Name: 'Aanet Leverling', 
+              Eimg: '3',
+              Designation: 'HR', 
+              Country: 'USA' 
+            },
+            {
+              Name: 'Laura Callahan',
+              Eimg: '2',
+              Designation: 'Product Manager',
+              Country: 'USA',
+            },
+            {
+              Name: 'Margaret Peacock',
+              Eimg: '6',
+              Designation: 'Developer',
+              Country: 'USA',
+            },
+            {
+              Name: 'Aichael Suyama',
+              Eimg: '9',
+              Designation: 'Team Lead',
+              Country: 'USA',
+            },
+            {
+              Name: 'Nancy Davolio',
+              Eimg: '4',
+              Designation: 'Product Manager',
+              Country: 'USA',
+            },
+            {
+              Name: 'Robert King',
+              Eimg: '8',
+              Designation: 'Developer ',
+              Country: 'England',
+            },
+            {
+              Name: 'Steven Buchanan',
+              Eimg: '10',
+              Designation: 'CEO',
+              Country: 'England',
+            },
+          ];
+        beforeAll(() => {
+            element = createElement('EJS-COMBOBOX', { id: 'combobox' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            comboBoxObj.destroy();
+            element.remove();
+        });
+        it('Newly added data not displayed in the popup element, when item template is used', () => {
+            comboBoxObj = new ComboBox({
+                dataSource: data,
+                fields: { text: 'Name', value: 'Eimg' },
+                placeholder: "Find a country",
+                popupHeight: '250px',
+                itemTemplate: '<div>${Name}</div>',
+                allowFiltering: true,
+                autofill: true,
+                showClearButton: true,
+                change: function (args: any) {
+                    if (args.value === null) {
+                        comboBoxObj.addItem({
+                            Name: 'Raveen Kumar',
+                            Eimg: 'DL',
+                            Designation: 'CEO',
+                            Country: 'England',
+                        });
+                        comboBoxObj.dataBind();
+                    }
+                },
+            });
+            comboBoxObj.appendTo(element);
+            let list: Array<HTMLElement> = (<any>comboBoxObj).list.querySelectorAll('li');
+            mouseEventArgs.target = list[2];
+            mouseEventArgs.type = 'click';
+            (<any>comboBoxObj).onMouseClick(mouseEventArgs);
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            comboBoxObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
+            expect(comboBoxObj.list.querySelectorAll('li')[9].textContent === 'Raveen Kumar').toBe(true);
+        });
+    });
+    describe('EJ2-59155-Unable to type in the input when autofill is enabled with Contains filter', () => {
+        let comboBoxObj: any;
+        let e: any = { preventDefault: function () { }, target: null, type: null };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox1' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            comboBoxObj.destroy();
+            element.remove();
+        });
+        it('with filtertype as contains', () => {
+           comboBoxObj = new ComboBox({
+                dataSource: [
+                    { text: 'MM/dd/yyyy' },
+                    { text: 'yyyy-MM-dd' },
+                    { text: 'dd.MM.yyyy' },
+                    { text: 'dd/yyyy/MM' },
+                    { text: 'dd/MM/yyyy' },
+                  ],
+                  autofill: true,
+                  filterType: 'Contains',
+            });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.showPopup();
+            comboBoxObj.inputElement.value = 'm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mM/dd/yyyy');
+            let item: Element = comboBoxObj.list.querySelector('.e-active')
+            expect(item.textContent === 'MM/dd/yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'mm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm/dd/yyyy');
+            comboBoxObj.inputElement.value = 'mm-';
+            e.key = '-';
+            e.keyCode = 189;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm-');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'yyyy-MM-dd').toBe(true);
+            comboBoxObj.inputElement.value = 'mm'
+            e.key= "Backspace"
+            e.keyCode = 8;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm');
+            comboBoxObj.inputElement.value = 'mm.'
+            e.key = '.';
+            e.keyCode = 190;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm.');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'dd.MM.yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'y';
+            e.key = 'y';
+            e.keyCode = 89;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'MM/dd/yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'y/';
+            e.key = 'y/';
+            e.keyCode = 191;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y/');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'dd/yyyy/MM').toBe(true);
+            comboBoxObj.inputElement.value = 'y'
+            e.key= "Backspace"
+            e.keyCode = 8;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y');
+            comboBoxObj.inputElement.value = 'y-'
+            e.key= "-"
+            e.keyCode = 189;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y-');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'yyyy-MM-dd').toBe(true);
+            keyEventArgs.type = 'keydown';
+            keyEventArgs.action = 'down';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('dd.MM.yyyy');
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('dd/yyyy/MM');
+            keyEventArgs.type = 'keyup';
+            keyEventArgs.action = 'up';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('dd.MM.yyyy');
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('yyyy-MM-dd');
+            comboBoxObj.destroy();
+        });
+        it('with filtertype as endswith', () => {
+            comboBoxObj = new ComboBox({
+                 dataSource: [
+                     { text: 'MM/dd/yyyy' },
+                     { text: 'yyyy-MM-dd' },
+                     { text: 'dd.MM.yyyy' },
+                     { text: 'dd/yyyy/MM' },
+                     { text: 'dd/MM/yyyy' },
+                   ],
+                   autofill: true,
+                   filterType: 'EndsWith',
+             });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.showPopup();
+            comboBoxObj.inputElement.value = 'm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('m');
+            let item: Element = comboBoxObj.list.querySelector('.e-active')
+            expect(item.textContent === 'dd/yyyy/MM').toBe(true);
+            comboBoxObj.inputElement.value = 'mm';
+            e.key = 'm';
+            e.keyCode = 77;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'dd/yyyy/MM').toBe(true);
+            comboBoxObj.inputElement.value = 'mm-';
+            e.key = '-';
+            e.keyCode = 189;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm-');
+            expect(isNullOrUndefined(comboBoxObj.list.querySelector('.e-active'))).toBe(true);
+            comboBoxObj.inputElement.value = 'mm'
+            e.key= "Backspace"
+            e.keyCode = 8;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('mm');
+            expect(isNullOrUndefined(comboBoxObj.list.querySelector('.e-active'))).toBe(true);
+            comboBoxObj.inputElement.value = 'y'
+            e.key = 'y';
+            e.keyCode = 89;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y');
+            expect(comboBoxObj.list.querySelector('.e-active').textContent === 'MM/dd/yyyy').toBe(true);
+            comboBoxObj.inputElement.value = 'y/';
+            e.key = 'y/';
+            e.keyCode = 191;
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(comboBoxObj.inputElement.value).toBe('y/');
+            expect(isNullOrUndefined(comboBoxObj.list.querySelector('.e-active'))).toBe(true);
+            keyEventArgs.type = 'keydown';
+            keyEventArgs.action = 'down';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('MM/dd/yyyy');
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('yyyy-MM-dd');
+            keyEventArgs.type = 'keyup';
+            keyEventArgs.action = 'up';
+            comboBoxObj.keyActionHandler(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('MM/dd/yyyy');
+            comboBoxObj.destroy();
+        });
+    });
 });
+

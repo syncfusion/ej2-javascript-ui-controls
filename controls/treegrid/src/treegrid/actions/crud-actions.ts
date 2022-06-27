@@ -341,7 +341,11 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         control.grid.setRowData(key, record);
         let row: HTMLTableRowElement = <HTMLTableRowElement>control.getRowByIndex(index);
         if (control.editSettings.mode === 'Batch') {
-            row = <HTMLTableRowElement>control.getRows()[control.grid.getRowIndexByPrimaryKey(record[key])];
+            if (action === 'add') {
+                row = <HTMLTableRowElement>control.getRows()[control.grid.getCurrentViewRecords().indexOf(record)];
+            } else {
+                row = <HTMLTableRowElement>control.getRows()[control.grid.getRowIndexByPrimaryKey(record[key])];
+            }
         }
         let movableRow: HTMLTableRowElement;
         if (control.frozenRows || control.getFrozenColumns()) {

@@ -278,6 +278,41 @@ export let hierarchicalData3: { [key: string]: Object }[] = [
     }
 ]
 
+export let filterData: { [key: string]: Object }[] = [
+    {
+        text: 'Menu 1',
+        id: 'menu1',
+        items: []
+    },
+    {
+        text: 'Menu 2',
+        id: 'menu2',
+        items: [
+            {
+                text: 'sub menu 2-1',
+                id: 'submenu21'
+            },
+            {
+                text: 'sub menu 2-2',
+                id: 'submenu22'
+            }
+        ]
+    },
+    {
+        text: 'Menu 3',
+        id: 'menu3',
+        items: [
+            {
+                text: 'sub menu 3-1',
+                id: 'submenu31'
+            },
+            {
+                text: 'sub menu 3-2',
+                id: 'submenu32'
+            }
+        ]
+    }
+];
 
 export let hierarchicalData3filtering: { [key: string]: Object }[] = [
     {

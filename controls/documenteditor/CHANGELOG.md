@@ -2,6 +2,139 @@
 
 ## [Unreleased]
 
+## 20.1.60 (2022-06-14)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I384262` - Resolved the script error while removing the text inside shape.
+- `#I384843`, `#I383988` - Resolved issue in text form field after inserting space.
+- `#I384262` - Resolved script error while removing content from inline shape.
+- `#I382192` - Resolved issue in inserting comment.
+- `#I380536` - Resolved script error while accepting table revision.
+- `#I380523` - Resolved the crashing issue while inserting new line in protected region.
+- `#I379507` - Resolved issue in tab stop width calculation.
+- `#I375504` - Resolved script error while importing form fields.
+- `#I374466` - Resolved script error while updating dropdown form field.
+
+## 20.1.59 (2022-06-07)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#F174916` - Resolved the numbering pop-up binding issue.
+- `#I376243` - Resolved the script error in importing document with empty author.
+- `#I369585` - Resolved the selection issue in selecting document with large number of pages.
+- `#I375798` - Resolved the control hanging issue in opening the document.
+- `#I367499` - Resolved the shape and chart rendering issue.
+
+## 20.1.58 (2022-05-31)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I378991` - Resolved the corruption issue in exporting the document with chart.
+- `#I378564` - Resolved the script error in replacing more than 100 items.
+- `#I378450`, `#I373175` - Resolved the script error in deleting the tracked content.
+- `#I376819`  - Resolved the issue in saving the document with track changes.
+- `#I375984` - Resolved the script error on scrolling the document.
+- `#I375559` - Table with wrapping styles is now preserved properly.
+- `#I375504` - Resolved the script error in importing form field.
+- `#I375369` - Resolved the layouting issue after after editing.
+
+## 20.1.57 (2022-05-24)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I373287` - Resolved the control hanging issue while opening a document with table.
+- `#FB34847` - Resolved the script error thrown on re-updating the custom toolbar.
+- `#I376882` - Resolved the issue on applying highlight color after replacing the search text.
+- `#I372421` - Resolved the insert table's paragraph format inheritance from previous paragraph.
+- `#I378924` - Resolved the text frame margin saving issue in sfdt export.
+- `#I375700` - Resolved the footnote misplacement in the initial layout.
+- `#I371641` - Resolved the minimum column width causes in-finite lopping issue when resizing table.
+
+## 20.1.56 (2022-05-17)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I376089` - Resolved the error when converting sfdt to docx in Java server library.
+- `#I375856` - Resolved the issue in opening a document with nested content control and exporting to docx.
+- `#I373359` - Resolved the multiples instances of table of content was created when track changes was enabled issue.
+- `#I375732` - Resolved the table merged cell rendering issue.
+- `#I375798` - Resolved the control hanging issue on opening a document due to tab element.
+- `#I375298` - Resolved the indentation hides text in web layout.
+- `#I375704` - Resolved the restart level issue in word export.
+- `#I375703` - Resolved the footnote inside the table layout issue in initial rendering.
+
+## 20.1.55 (2022-05-12)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#FB34545` - Resolved the document editor container component destroy issue.
+- `#I375339` - Resolved the restart page numbering consideration on table of content updating.
+- `#I374447` - Resolved the empty pages issue on printing a document with landscape orientation.
+- `#I373959` - Resolved the pagination issue on layouting and downloading a sfdt.
+- `#I373287` - Resolved the control hanging issue while opening a document with table
+- `#I366157`, `#I367362` - Resolved the table rendering issue at the bottom of the page.
+- `#I373048` - Rejecting new paragraphs tracked changes releases the occupied space.
+- `#I372635` - Resolved the issue in review pane while opening a default document with track changes.
+- `#I372245` - Resolved the layouting issue for large footnote content which flows over the current page.
+- `#I371788` - Resolved the multiple call issue when enabling the spellcheck after editing the document.
+- `#I371641` - Resolved the minimum column width causes in-finite lopping issue when resizing table.
+- `#I368482` - Resolved the table in document overlaps footer.
+- `#I367499` - Resolved the chart color rendering and shape overlapping issue.
+- `#I368087` - Resolved the list format issues when open document by Document Editor.
+
+## 20.1.52 (2022-05-04)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-368653` - Resolved the Document Editor numbering continuity issue.
+- `#SF-376374` - Resolved the exception thrown on exporting a sfdt without a metafile property in server-side.
+- `#SF-373298` - Resolved the  extra paragraph added while updating the table of contents.
+- `#SF-373359` - Resolved the multiples instances of table of content creation when track changes is enabled.
+- `#SF-373451` - Resolved exception while open the document with image without relation identifier.
+- `#SF-373159` - Resolved the console error thrown on pasting a content and then changing page orientation.
+- `#SF-373175` - Resolved the script error thrown on deleting the revision text.
+- `#SF-372741` - Resolved inconsistent behaviour of text selection inside an editable table cell within a read only document.
+- `#SF-372794` - Resolved the script error while serializing sfdt document with page break to html format in server-side.
+- `#SF-372636` - Resolved the text inside the shape with wrapping style 'in-front of text'.
+- `#SF-372159` - Default number format for Page field is now displayed properly.
+- `#SF-371816` - List format is now preserved properly on importing.
+- `#SF-371644` - Table formatting is now preserved properly while copy pasting table and resolved the document hanging in copying.
+- `#SF-370909` - Resolved the script error rendering after content delete.
+- `#SF-369585` - Resolved the scrolling becomes quite slow while selecting the text in document with more than 20 pages.
+- `#SF-368794` - Resolved the tab space issue.
+- `#SF-366157`, `#SF-367362` - Resolved the table rendering issue at the bottom of the page.
+- `#SF-293527` - Justify paragraph layout issue in new page first paragraph is now resolved.
+- `#SF-373340` - Resolved the content hanging issue while opening the attached document.
+- `#SF-372431` - Resolved the table misalignment issue if the table has positioning properties.
+
+## 20.1.51 (2022-04-26)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I361566`, `#I372584` - Resolved the wrapping style issue in header/footer.
+- `#I373016` - Resolved the script error in accepting the revision inside the table.
+- `#I370714` - Resolved the character format updating issue.
+- `#I364803` - Resolved the track changes to empty page.
+- `#I356022` - Resolved the wrong comma placing in Hebrew language.
+- `#I368816` - Resolved the pie chart rendering and exporting issue.
+
 ## 20.1.50 (2022-04-19)
 
 ### Document Editor

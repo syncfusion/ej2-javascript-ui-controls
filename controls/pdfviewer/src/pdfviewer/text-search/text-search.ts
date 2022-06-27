@@ -801,10 +801,16 @@ export class TextSearch {
     // eslint-disable-next-line
     private calculateBounds(textDiv: HTMLElement, height: number, width: number, top: number, left: number, pageDetails: any): void {
         if (pageDetails.rotation === 0 || pageDetails.rotation === 2) {
-            textDiv.style.height = height * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.height = Math.ceil(height) * this.pdfViewerBase.getZoomFactor() + 'px';
             textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+            if (pageDetails.rotation === 2) {
+               textDiv.style.top = (pageDetails.height - top - height) * this.pdfViewerBase.getZoomFactor() + 'px';
+               textDiv.style.left = Math.ceil(pageDetails.width - left - width) * this.pdfViewerBase.getZoomFactor() + 'px';
+            }
+            else {
+               textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
+               textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+            }
         } else if (pageDetails.rotation === 1) {
             textDiv.style.height = width * this.pdfViewerBase.getZoomFactor() + 'px';
             textDiv.style.width = height * this.pdfViewerBase.getZoomFactor() + 'px';

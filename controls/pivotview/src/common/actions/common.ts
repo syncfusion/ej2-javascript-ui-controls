@@ -45,7 +45,8 @@ export class Common implements IAction {
                 isAdaptive: Browser.isDevice as boolean,
                 renderMode: 'Popup',
                 localeObj: this.parent.localeObj,
-                dataType: this.parent.dataType
+                dataType: this.parent.dataType,
+                cssClass: this.parent.cssClass
             };
             /* eslint-enable */
             this.parent.pivotCommon = new PivotCommon(args);
@@ -64,6 +65,7 @@ export class Common implements IAction {
             this.parent.pivotCommon.renderMode = 'Popup';
             this.parent.pivotCommon.localeObj = this.parent.localeObj;
             this.parent.pivotCommon.dataType = this.parent.dataType;
+            this.parent.pivotCommon.cssClass = this.parent.cssClass;
         }
         this.parent.pivotCommon.control = this.parent;
     }

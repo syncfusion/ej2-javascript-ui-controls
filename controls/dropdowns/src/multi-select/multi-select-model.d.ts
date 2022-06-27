@@ -450,7 +450,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      *
      * @default false
      */
-    addTagOnBlur?: boolean; 
+    addTagOnBlur?: boolean;
 
     /**
      * Fires each time when selection changes happened in list items after model and input value get affected.

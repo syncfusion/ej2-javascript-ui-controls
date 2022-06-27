@@ -1302,7 +1302,7 @@ describe('PivotView spec', () => {
                 expect(calcElement.textContent).toBe('price (Calculated Field)');
             });
             it('check on axis view change to calculated field', (done: Function) => {
-                let element: HTMLElement = document.querySelector('.e-pivotfieldlist-wrapper');
+                let element: HTMLElement = document.querySelector('.e-pivotfieldlist-container');
                 expect([].slice.call(element.querySelectorAll('.e-toolbar-item')).length).toEqual(5);
                 let headerElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-toolbar-item'));
                 expect(headerElement[4].classList.contains('e-active')).toBeTruthy;

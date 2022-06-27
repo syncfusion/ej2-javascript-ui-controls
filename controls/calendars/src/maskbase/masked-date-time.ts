@@ -46,6 +46,7 @@ export class MaskedDateTime {
     private isComplete : boolean = false;
     private previousDate : Date;
     private isNavigate : boolean = false;
+    private navigated : boolean = false;
     private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
     private isDeletion: boolean = false;
     private isShortYear: boolean = false;
@@ -163,7 +164,7 @@ export class MaskedDateTime {
         }
     }
     private setDynamicValue(): void {
-        this.maskDateValue = this.parent.value;
+        this.maskDateValue = new Date(+this.parent.value);
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = true
         this.updateValue();
         // this.parent.inputElement.selectionStart = start;
@@ -187,6 +188,7 @@ export class MaskedDateTime {
     }
 
     private maskKeydownHandler(args : events): void {
+        this.dayTypeCount = this.monthTypeCount = this.hourTypeCount = this.minuteTypeCount = this.secondTypeCount = 0;
         if(args.e.key === 'Delete')
         {
         this.isDeleteKey = true;
@@ -224,6 +226,12 @@ export class MaskedDateTime {
         }
     }
 
+    private isPersist(): boolean
+    {
+        let isPersist: boolean = this.parent.isFocused || this.navigated;
+        return isPersist;
+    }
+
     private differenceCheck(): void {
         let start: number = this.parent.inputElement.selectionStart;
         let inputValue: string = this.parent.inputElement.value;
@@ -244,7 +252,9 @@ export class MaskedDateTime {
         }
         switch (this.previousHiddenMask[start - 1]) {
             case 'd':
-                let date: number = (this.isDayPart && newDateValue.getDate().toString().length < 2 ? newDateValue.getDate() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                let date: number = (this.isDayPart && newDateValue.getDate().toString().length < 2 && !this.isPersist() ? newDateValue.getDate() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.parent.isFocused = this.parent.isFocused ? false : this.parent.isFocused;
+                this.navigated = this.navigated ? false : this.navigated;
                 this.isDateZero = (newVal[start - 1] == '0' );
                 if (isNaN(date)) {
                     return;
@@ -268,7 +278,7 @@ export class MaskedDateTime {
                 break;
             case 'M':
                 let month: number;
-                if(newDateValue.getMonth().toString().length < 2)
+                if(newDateValue.getMonth().toString().length < 2 && !this.isPersist())
                 {
                 month= (this.isMonthPart ? (newDateValue.getMonth() + 1) * 10 : 0) + parseInt(newVal[start - 1], 10);
                 }
@@ -276,6 +286,8 @@ export class MaskedDateTime {
                 {
                     month = parseInt(newVal[start - 1], 10);
                 }
+                this.parent.isFocused = this.parent.isFocused ? false : this.parent.isFocused;
+                this.navigated = this.navigated ? false : this.navigated;
                 this.isMonthZero = (newVal[start - 1] == '0' );
                 if (!isNaN(month)) {
                     while (month > 12) {
@@ -345,7 +357,9 @@ export class MaskedDateTime {
                 }
                 break;
             case 'h':
-                this.hour = (this.isHourPart && (newDateValue.getHours() % 12 || 12).toString().length < 2  ? (newDateValue.getHours() % 12 || 12) * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.hour = (this.isHourPart && (newDateValue.getHours() % 12 || 12).toString().length < 2 && !this.isPersist()  ? (newDateValue.getHours() % 12 || 12) * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.parent.isFocused = this.parent.isFocused ? false : this.parent.isFocused;
+                this.navigated = this.navigated ? false : this.navigated;
                 if (isNaN(this.hour)) {
                     return;
                 }
@@ -358,7 +372,9 @@ export class MaskedDateTime {
                 this.hourTypeCount = this.hourTypeCount + 1;
                 break;
             case 'H':
-                this.hour = (this.isHourPart && newDateValue.getHours().toString().length < 2 ? newDateValue.getHours() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.hour = (this.isHourPart && newDateValue.getHours().toString().length < 2 && !this.isPersist() ? newDateValue.getHours() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.parent.isFocused = this.parent.isFocused ? false : this.parent.isFocused;
+                this.navigated = this.navigated ? false : this.navigated;
                 if (isNaN(this.hour)) {
                     return;
                 }
@@ -371,7 +387,9 @@ export class MaskedDateTime {
                 this.hourTypeCount = this.hourTypeCount + 1;
                 break;
             case 'm':
-                let minutes: number = (this.isMinutePart && newDateValue.getMinutes().toString().length < 2 ? newDateValue.getMinutes() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                let minutes: number = (this.isMinutePart && newDateValue.getMinutes().toString().length < 2 && !this.isPersist() ? newDateValue.getMinutes() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.parent.isFocused = this.parent.isFocused ? false : this.parent.isFocused;
+                this.navigated = this.navigated ? false : this.navigated;
                 if (isNaN(minutes)) {
                     return;
                 }
@@ -384,7 +402,9 @@ export class MaskedDateTime {
                 this.minuteTypeCount = this.minuteTypeCount + 1;
                 break;
             case 's':
-                let seconds: number = (this.isSecondsPart && newDateValue.getSeconds().toString().length < 2 ? newDateValue.getSeconds() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                let seconds: number = (this.isSecondsPart && newDateValue.getSeconds().toString().length < 2 && !this.isPersist() ? newDateValue.getSeconds() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.parent.isFocused = this.parent.isFocused ? false : this.parent.isFocused;
+                this.navigated = this.navigated ? false : this.navigated;
                 if (isNaN(seconds)) {
                     return;
                 }
@@ -439,6 +459,11 @@ export class MaskedDateTime {
                 case 'dddd':
                 case 'd': result = proxy.isDayPart ? proxy.maskDateValue.getDate().toString() :  proxy.defaultConstant['day'].toString();
                           result = proxy.zeroCheck(proxy.isDateZero , proxy.isDayPart , result );
+                                if ( proxy.dayTypeCount == 2)
+                                {
+                                    proxy.isNavigate = true;
+                                    proxy.dayTypeCount = 0;
+                                }
                     break;
                 case 'dd': result = proxy.isDayPart ? proxy.roundOff(proxy.maskDateValue.getDate(), 2) :  proxy.defaultConstant['day'].toString();
                             result = proxy.zeroCheck(proxy.isDateZero , proxy.isDayPart , result )
@@ -460,6 +485,11 @@ export class MaskedDateTime {
                     break;
                 case 'M': result = proxy.isMonthPart ? (proxy.maskDateValue.getMonth() + 1).toString() :  proxy.defaultConstant['month'].toString();
                           result = proxy.zeroCheck(proxy.isMonthZero , proxy.isMonthPart , result )
+                           if ( proxy.monthTypeCount == 2)
+                           {
+                               proxy.isNavigate = true;
+                               proxy.monthTypeCount = 0;
+                           }
                     break;
                 case 'MM': result = proxy.isMonthPart ? proxy.roundOff(proxy.maskDateValue.getMonth() + 1, 2) :  proxy.defaultConstant['month'].toString();
                            result = proxy.zeroCheck(proxy.isMonthZero , proxy.isMonthPart , result )
@@ -485,6 +515,11 @@ export class MaskedDateTime {
                              result = proxy.zeroCheck(proxy.isYearZero , proxy.isYearPart , result )
                 break;
                 case 'h': result = proxy.isHourPart ? (proxy.maskDateValue.getHours() % 12 || 12).toString() :  proxy.defaultConstant['hour'].toString();
+                    if ( proxy.hourTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.hourTypeCount = 0;
+                    }
                     break;
                 case 'hh': result = proxy.isHourPart ? proxy.roundOff(proxy.maskDateValue.getHours() % 12 || 12, 2) :  proxy.defaultConstant['hour'].toString();
                     if ( proxy.hourTypeCount == 2)
@@ -494,6 +529,11 @@ export class MaskedDateTime {
                     }
                     break;
                 case 'H': result = proxy.isHourPart ? proxy.maskDateValue.getHours().toString() :  proxy.defaultConstant['hour'].toString();
+                    if ( proxy.hourTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.hourTypeCount = 0;
+                    }
                     break;
                 case 'HH': result = proxy.isHourPart ? proxy.roundOff(proxy.maskDateValue.getHours(), 2) :  proxy.defaultConstant['hour'].toString() ;
                     if ( proxy.hourTypeCount == 2)
@@ -503,6 +543,11 @@ export class MaskedDateTime {
                     }
                     break;
                 case 'm': result = proxy.isMinutePart ? proxy.maskDateValue.getMinutes().toString() :  proxy.defaultConstant['minute'].toString() ;
+                    if ( proxy.minuteTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.minuteTypeCount = 0;
+                    }
                     break;
                 case 'mm': result = proxy.isMinutePart ? proxy.roundOff(proxy.maskDateValue.getMinutes(), 2) :  proxy.defaultConstant['minute'].toString() ;
                     if ( proxy.minuteTypeCount == 2)
@@ -512,6 +557,11 @@ export class MaskedDateTime {
                     }
                     break;
                 case 's': result = proxy.isSecondsPart ? proxy.maskDateValue.getSeconds().toString() :  proxy.defaultConstant['second'].toString() ;
+                    if ( proxy.secondTypeCount == 2)
+                    {
+                        proxy.isNavigate = true;
+                        proxy.secondTypeCount = 0;
+                    }
                     break;
                 case 'ss': result = proxy.isSecondsPart ? proxy.roundOff(proxy.maskDateValue.getSeconds(), 2) :  proxy.defaultConstant['second'].toString();
                     if ( proxy.secondTypeCount == 2)
@@ -586,6 +636,7 @@ export class MaskedDateTime {
         let start: number = this.parent.inputElement.selectionStart;
         let end: number = this.parent.inputElement.selectionEnd;
         let formatIndex: number = isbackward ? start - 1 : end + 1;
+        this.navigated = true;
         while (formatIndex < this.hiddenMask.length && formatIndex >= 0) {
             if (this.validCharacters.indexOf(this.hiddenMask[formatIndex]) >= 0) {
                 this.setSelection(this.hiddenMask[formatIndex]);

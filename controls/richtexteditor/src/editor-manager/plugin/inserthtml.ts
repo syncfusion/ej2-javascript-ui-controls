@@ -353,7 +353,8 @@ export class InsertHtml {
                 range.insertNode(tempSpan);
                 tempSpan.parentNode.replaceChild(node, tempSpan);
             } else {
-                let currentNode: Node = nodes[nodes.length-1];
+                const nodeSelection: NodeSelection = new NodeSelection();
+                let currentNode: Node = this.getNodeCollection(range, nodeSelection, node)[this.getNodeCollection(range, nodeSelection, node).length - 1];
                 let splitedElm: Node;
                 if ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR') && !isNOU(currentNode.parentElement) &&
                 currentNode.parentElement.textContent.trim().length === 0) {

@@ -1503,11 +1503,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public swimlaneChildTable: {} = {};
     /** @private */
     public swimlaneZIndexTable: {} = {};
+    /** @private */
+    public canExpand: boolean = true;
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
     private previousNodeCollection: NodeModel[] = [];
     private previousConnectorCollection: ConnectorModel[] = [];
     private crudDeleteNodes: Object[] = [];
+    private previousSelectedObjects: (NodeModel | ConnectorModel)[] = []; 
 
     // Group update to server when BlazorAction is isGroupAction;
     private blazorAddorRemoveCollection: (NodeModel | ConnectorModel)[] = [];
@@ -2610,7 +2613,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {boolean} multipleSelection -Defines whether the existing selection has to be cleared or not
      *
      */
-    public select(objects: (NodeModel | ConnectorModel)[], multipleSelection?: boolean): void {
+    public select(objects: (NodeModel | ConnectorModel)[], multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel)[]): void {
         if (isBlazor()) {
             for (let i: number = 0; i < objects.length; i++) {
                 objects[i] = this.nameTable[(objects[i] as NodeModel).id];
@@ -2618,7 +2621,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             objects = this.nameTable[(objects as NodeModel).id] || objects;
         }
         if (objects != null) {
-            this.commandHandler.selectObjects(objects, multipleSelection);
+            this.commandHandler.selectObjects(objects, multipleSelection, oldValue);
         }
     }
 
@@ -4908,6 +4911,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.clearSelection();
         }
+        if (!(obj && (canDelete(obj) || (this.diagramActions & DiagramAction.Clear)))) {
+            if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
+            (obj instanceof Node || obj instanceof Connector)) {
+            const entry: HistoryEntry = {
+                type: 'ConnectionChanged', undoObject: cloneObject(obj),
+                redoObject: cloneObject(obj), category: 'Internal'
+            };
+            if (!(obj as Node).isLane && !(obj as Node).isPhase) {
+                if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj as Node)) {
+                    this.addHistoryEntry(entry);
+                }
+            }
+        }
+        }
         this.tooltipObject.close();
         if (isBlazor() && selectedItems && selectedItems.length > 0) {
             let check: boolean = true;
@@ -5323,7 +5340,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateNodeExpand(layout.rootNode as Node, layout.rootNode.isExpanded);
                 }
                 // EJ2-58221 - added to render the layout properly based on parent node isExpanded property.
-                else if (!this.layoutAnimateModule && layout.rootNode && !layout.rootNode.isExpanded) {
+                else if (!this.layoutAnimateModule && layout.rootNode && !layout.rootNode.isExpanded && !this.canExpand) {
                     this.updateNodeExpand(layout.rootNode as Node, layout.rootNode.isExpanded);
                 }
             } else if (this.mindMapChartModule) {
@@ -5359,7 +5376,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.preventDiagramUpdate = true;
                 const connectors: Object = {};
                 const updatedNodes: NodeModel[] = nodes as NodeModel[];
-                if (isBlazor()) { this.updateTemplate(); }
+                // BLAZ-22230 - Added condition to check if canUpdateTemplate is false means then we can update the template for blazor
+                if (isBlazor() && !this.commandHandler.canUpdateTemplate) { this.updateTemplate(); }
                 for (const obj of updatedNodes) {
                     const node: Node = obj as Node;
                     if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {
@@ -7719,6 +7737,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (changed) {
                 this.updateDiagramObject(node);
             }
+            //EJ2-59672 - Added the below code to render the ports while hovering over the node  
+            if (this.mode === 'Canvas') {
+                this.refreshCanvasLayers();
+            }
         }
     }
 
@@ -7908,6 +7930,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if (renderNode instanceof Connector && renderNode.type === 'Bezier') {
                         getCenterPoint = this.getMidPoint(renderNode);
+                        // (EJ2-58802) - Added the below code to add the transform x and y values to center point value in canvas mode
+                        if (this.mode === 'Canvas' && transform) {
+                            (getCenterPoint as any).cx += transformValue.tx;
+                            (getCenterPoint as any).cy += transformValue.ty;
+                        }
                     } else {
                         getCenterPoint = null;
                     }
@@ -9508,8 +9535,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (node.expandIcon !== undefined || node.collapseIcon !== undefined || node.isExpanded !== undefined) {
             this.updateIcon(actualObject); this.updateDefaultLayoutIcons(actualObject);
-            if (node.isExpanded !== undefined) { this.commandHandler.expandNode(actualObject, this); }
+            if (node.isExpanded !== undefined) { this.canExpand = true;  this.commandHandler.expandNode(actualObject, this); }
             update = true;
+            this.canExpand = false;
         }
         if (node.fixedUserHandles !== undefined) {
             let index: number;
@@ -10864,7 +10892,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.droppable = new Droppable(this.element);
         // this.droppable.accept = '.e-dragclone';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.droppable.over = (args: any) => {
+        this.droppable.over = (args: any) => { 
+            //EJ2-59341- SelectionChange OldValue argument is null
+            if (this.previousSelectedObjects.length === 0 && !this.currentSymbol) {
+                this.previousSelectedObjects = this.commandHandler.getSelectedObject(); 
+            }
             if (!this.currentSymbol) {
                 let dragDataHelper = null;
                 if (!args.dragData && args.name === 'drag') {
@@ -11202,7 +11234,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             value = this.add(clonedObject, true);
                         }
                         if ((clonedObject || value) && canSingleSelect(this)) {
-                            this.select([this.nameTable[clonedObject[id]]]);
+                            this.select([this.nameTable[clonedObject[id]]], false, this.previousSelectedObjects);
                         }
                     }
                 } else {
@@ -11253,6 +11285,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             this.allowServerDataBinding = true;
+            this.previousSelectedObjects = [];
         };
 
         this.droppable.out = (args: Object) => {

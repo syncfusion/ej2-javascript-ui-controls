@@ -657,11 +657,11 @@ export class MoveTool extends ToolBase {
                 this.commandHandler.annotation.stickyNotesAnnotationModule.updateStickyNotes(args.source, null);
             }
         }
-        let shapeAnnotationType : any = this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0 ? this.commandHandler.selectedItems.annotations[0].shapeAnnotationType : null;
+        let shapeAnnotationType : any = this.commandHandler && this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0 ? this.commandHandler.selectedItems.annotations[0].shapeAnnotationType : null;
         if (shapeAnnotationType && shapeAnnotationType !== 'Image' && shapeAnnotationType !== 'SignatureImage') {
             super.mouseUp(args);
         }
-        else if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
+        else if (this.commandHandler && this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
             super.mouseUp(args);
         }
     }
@@ -882,11 +882,13 @@ export class StampTool extends MoveTool {
             // eslint-disable-next-line max-len
             const nodeElement: PdfAnnotationBaseModel = this.commandHandler.annotation.stampAnnotationModule.moveStampElement(args.position.x, args.position.y, pageIndex);
             if (nodeElement.shapeAnnotationType === 'SignatureText') {
-                let textWidth: number = this.getTextWidth(nodeElement.data, nodeElement.fontSize); 
+                let textWidth: number = this.getTextWidth(nodeElement.data, nodeElement.fontSize, nodeElement.fontFamily); 
                 let widthRatio: number = 1;
                 if (textWidth > nodeElement.bounds.width)
                    widthRatio =  nodeElement.bounds.width / textWidth;
-                nodeElement.fontSize = (nodeElement.fontSize * widthRatio); 
+                nodeElement.fontSize = this.getFontSize(Math.floor((nodeElement.fontSize * widthRatio)));
+                let defaultFontSize : number = 32; // default font size.
+                nodeElement.bounds.height = nodeElement.fontSize < defaultFontSize ? nodeElement.fontSize * 2 : nodeElement.bounds.height;
                 nodeElement.thickness = 0;
             }
             newObject = this.commandHandler.add(nodeElement as PdfAnnotationBase);
@@ -908,11 +910,23 @@ export class StampTool extends MoveTool {
         return this.inAction;
     }
 
-    private getTextWidth(text: any, font: any): number {
+    private getTextWidth(text: any, font: any, fontFamily: any): number {
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d'); 
-        context.font = font || getComputedStyle(document.body).font; 
+        let fontName: any;
+        if (font) {
+            fontName = font + 'px' + ' ' + fontFamily;
+        }
+        context.font = fontName || getComputedStyle(document.body).font; 
         return context.measureText(text).width;
+    }
+
+    /**
+     * @param {number} fontSize - Font size.
+     * @returns {number} - Returns the font size.
+     */
+    private getFontSize(fontSize: number): number {
+        return (fontSize % 2 === 0) ? fontSize : --fontSize;
     }
 }
 

@@ -7,9 +7,9 @@
 export type Sorting =
     /**  Allows to display the field members in ascending order. */
     'Ascending' |
-    /**  Allows to display the field members in ascending order. */
+    /**  Allows to display the field members in descending order. */
     'Descending' |
-    /**  Allows to display the field members in ascending order. */
+    /**  Allows to display the field members in none order. */
     'None';
 
 /**

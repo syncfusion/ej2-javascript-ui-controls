@@ -1043,4 +1043,36 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = rowDeselected = preventDefault = null;
         });
     });
+
+    describe('EJ2-60247 => Editing error while checkbox is in last column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeSelectData.map(data => data),
+                    columns: [
+                        { field: 'EmployeeID', isPrimaryKey: true, headerText: 'Employee ID', textAlign: 'Right', width: 135, },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { type: 'checkbox', width: 180 },
+                    ],
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    pageSettings: { pageSize: 5 },
+                    allowPaging: true
+                }, done);
+        });
+
+        it('Edit first row', () => {
+            gridObj.editModule.startEdit(gridObj.element.querySelector('.e-row') as HTMLTableRowElement);
+        });
+
+        it('Check checkbox is render after editing', () => {
+            expect(gridObj.element.querySelector('.e-edit-checkselect').nextElementSibling).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -371,6 +371,9 @@ export class SfdtExport {
             section.sectionFormat.initialEndNoteNumber = bodyWidget.sectionFormat.initialEndNoteNumber;
 
         }
+        if(!isNullOrUndefined(bodyWidget.sectionFormat.pageNumberStyle)) {
+            section.sectionFormat.pageNumberStyle = bodyWidget.sectionFormat.pageNumberStyle;
+        }
         section.blocks = [];
         section.headersFooters = {};
         return section;
@@ -382,7 +385,9 @@ export class SfdtExport {
         if (widget instanceof ParagraphWidget) {
             if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.blockContentControl(widget);
-                if (!isNullOrUndefined(block) && this.isBlockClosed) {
+                this.blockContent = false;
+                if (!isNullOrUndefined(block) && (this.isBlockClosed || !this.nestedBlockContent)) {
+                    this.nestedBlockEnabled = false;
                     blocks.push(block);
                     this.blocks = [];
                 }
@@ -445,7 +450,6 @@ export class SfdtExport {
         if (!this.blockContent) {
             return blocks;
         } else if (!this.nestedBlockContent && this.nestedBlockEnabled) {
-            this.nestedBlockEnabled = false;
             return blocks;
         }
     }
@@ -587,12 +591,8 @@ export class SfdtExport {
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         this.contentInline = [];
-        let lineWidget: LineWidget = line.clone();
+        let lineWidget: LineWidget = line;
         let isformField: boolean = false;
-        let bidi: boolean = paragraph.paragraphFormat.bidi;
-        if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
-            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
-        }
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
             if (this.isExport && this.checkboxOrDropdown) {
@@ -946,7 +946,14 @@ export class SfdtExport {
         let chartDataFormat: any = {};
         chartDataFormat.fill = {};
         chartDataFormat.line = {};
-        chartDataFormat.fill.foreColor = format.fill.color;
+        if (!isNullOrUndefined(format.fill.color)) {
+            if (format.fill.color.length > 6) {
+                chartDataFormat.fill.foreColor = format.fill.color.substring(2);
+            }
+            else {
+                chartDataFormat.fill.foreColor = format.fill.color;
+            }
+        }
         chartDataFormat.fill.rgb = format.fill.rgb;
         chartDataFormat.line.color = format.line.color;
         chartDataFormat.line.rgb = format.line.rgb;
@@ -1079,7 +1086,7 @@ export class SfdtExport {
         let dataLabel: any = {};
         dataLabel.position = dataLabels.position;
         dataLabel.fontName = dataLabels.fontName;
-        dataLabel.fontColor = dataLabels.fontColor;
+        dataLabel.fontColor = HelperMethods.convertArgbToRgb(dataLabels.fontColor);
         dataLabel.fontSize = dataLabels.fontSize;
         dataLabel.isLegendKey = dataLabels.isLegendKey;
         dataLabel.isBubbleSize = dataLabels.isBubbleSize;
@@ -1120,11 +1127,7 @@ export class SfdtExport {
         let isContentStarted: boolean = false;
         let contentControl: boolean = false;
         let isEnd: boolean = line === this.endLine;
-        let lineWidget: LineWidget = line.clone();
-        let bidi: boolean = line.paragraph.paragraphFormat.bidi;
-        if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
-            this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
-        }
+        let lineWidget: LineWidget = line;
         let started: boolean = false;
         let ended: boolean = false;
         let length: number = 0;

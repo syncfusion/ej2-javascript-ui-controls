@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-treemap/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-treemap)
-
 # ej2-treemap
 
 The tree map control provides a simple and effective way to visualize flat or hierarchical data as clustered rectangles with a specific, weighted attribute determining the size of each rectangle.

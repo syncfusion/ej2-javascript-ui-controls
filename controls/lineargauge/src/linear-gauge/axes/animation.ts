@@ -118,7 +118,7 @@ export class Animations {
                 clipElement.setAttribute('width', '0');
             }
         }
-        path = getBox(
+        path = pointer.value === axis.minimum && this.gauge.container.type === 'RoundedRectangle' ? '' : getBox(
             pointer.bounds, this.gauge.container.type, this.gauge.orientation,
             new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.gauge.container.width, axis, pointer.roundedCornerRadius);
         new Animation({}).animate(pointerElement, {
@@ -144,7 +144,7 @@ export class Animations {
                                 clipElement.setAttribute('y', (clipVal - (timeStamp * parseInt(clipHeight, radix))).toString()) :
                                 clipElement.setAttribute('width', (timeStamp * parseInt(clipWidth, radix)).toString());
                         }
-                        currentPath = getBox(
+                        currentPath = pointer.value === axis.minimum && this.gauge.container.type === 'RoundedRectangle' ? '' : getBox(
                             pointer.bounds, this.gauge.container.type, this.gauge.orientation,
                             new Size(pointer.bounds.width, pointer.bounds.height), 'bar',
                             this.gauge.container.width, axis, pointer.roundedCornerRadius);

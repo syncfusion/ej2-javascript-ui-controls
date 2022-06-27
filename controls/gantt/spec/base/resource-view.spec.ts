@@ -685,6 +685,28 @@ describe('Self reference data', () => {
         triggerMouseEvent(element, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
       });
+      it("dynamically changes project to resource view", () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'refresh') {
+                ganttObj.viewType = 'ResourceView';
+                ganttObj.dataBind();
+              }
+            };
+        ganttObj.selectionModule.selectRows([1]);
+        let deleteToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
+        triggerMouseEvent(deleteToolbar, 'click');
+        let okElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(okElement, 'click');
+        ganttObj.openEditDialog(1);
+        let resource: HTMLElement = document.querySelector('#e-item-' + ganttObj.element.id + '_Tab_1') as HTMLElement;
+        triggerMouseEvent(resource, 'click');
+        let resourceCheckbox1: HTMLElement = document.querySelector("#" +
+          ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
+        triggerMouseEvent(resourceCheckbox1, "click");
+        let saveButton: HTMLElement = document.querySelector("#" + ganttObj.element.id +"_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
+        triggerMouseEvent(saveButton, "click");
+        expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe("Project Initiation");
+    });
   });
   describe("Virtualization in resource view", () => {
     let ganttObj: Gantt;
@@ -939,6 +961,90 @@ describe('Self reference data', () => {
         triggerMouseEvent(dragElement, 'mouseup');
     });
   });
-
+     describe('Update end date using recource unit', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: normalResourceData,
+        resources: resourceCollection,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            resourceInfo: 'resources',
+            work: 'work',
+            child: 'subtasks'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+            unit: 'resourceUnit',
+            group: 'resourceGroup'
+        },
+        showOverAllocation: true,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resources', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        splitterSettings: { columnIndex: 3 },
+        labelSettings: {
+            rightLabel: 'resources',
+            taskLabel: 'Progress'
+        },
+        allowResizing: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        height: '450px',
+        projectStartDate: new Date('03/28/2019'),
+        projectEndDate: new Date('05/18/2019')
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('update resource unit', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save') {
+                expect(ganttObj.getFormatedDate(args.data.EndDate, 'M/dd/yyyy')).toBe('4/02/2019');
+            }
+        };
+        ganttObj.dataBind();
+        let data: Object = {
+            TaskID: 3,
+            TaskName: 'Updated by index value',
+            resources: [
+                {
+                    resourceId: 2,
+                    resourceName: 'Rose Fuller',
+                    resourceUnit: 100,
+                },
+            ],
+        };
+        ganttObj.updateRecordByID(data);
+    });
+});
 
 });

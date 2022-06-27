@@ -2,7 +2,53 @@
 
 ## [Unreleased]
 
-## 20.1.50 (2022-04-19)
+## 20.1.60 (2022-06-14)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I381671` - Bpmn task type is working properly while changing from type Send to Receive.
+- `#F175332` - Undo is working properly after deleting the node attached with connector.
+- `#I376982` - Annotation dragging in connector and node is working properly when we set horizontal Alignment and vertical Alignment.
+
+## 20.1.59 (2022-06-07)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I378190` - Now, distribute commands will work properly.
+
+## 20.1.57 (2022-05-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F173877` - Now, Node template has been rendered properly in layout.
+
+## 20.1.55 (2022-05-12)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I373763` - Now, old value of SelectionChange event are updated properly.
+- `#I373774` - The sourcePointChange and targetPointChange events are triggered while dragging the node.
+- `#I375741` - Now, the performance and Memory leak is resolved in the saveDiagram method.
+- `#I372151` - Now, bezier connector annotation get exported properly as an image.
+- `#I376498` - Now, the diagram zooming behaviour is changed as an old behaviour.
+
+## 20.1.51 (2022-04-26)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I375103` - Now, Port visibility will work properly on mouse hover in Canvas mode.
+
+## 20.1.48 (2022-04-12)
 
 ### Diagram
 

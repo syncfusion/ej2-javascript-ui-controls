@@ -2362,4 +2362,163 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
             expect(dropDowns.ulElement.children[0].textContent).toBe("Canada.");
         });
     });
+    describe('console error throws when search the special character', () => {
+        let dropDowns: any;
+        let e: any = { preventDefault: function () { }, target: null, type: null };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let countries: { [key: string]: Object }[] = [
+            { "Name": "*Australia*", "Code": "AU" },
+            { "Name": "@Bermuda*.", "Code": "BM" },
+            { "Name": "Canada.", "Code": "CA" },
+            { "Name": "Came*.roon", "Code": "CM" },
+            { "Name": ".Den*mark", "Code": "DK" },
+            { "Name": "Fra-nce", "Code": "FR" },
+            { "Name": "Fin+land+", "Code": "FI" },
+            { "Name": "+Germany-", "Code": "DE" },
+            { "Name": "+-Greenland*", "Code": "GL" },
+            { "Name": "-Hong Kong+-", "Code": "HK" },
+            { "Name": "*.Switzerland+", "Code": "CH" },
+            { "Name": "Uni+-ted Kingdom@", "Code": "GB" },
+            { "Name": "United States+", "Code": "US" }
+        ];
+        beforeEach(() => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            dropDowns.destroy();
+            element.remove();
+        });
+        it('filter type as contains', () => {
+           dropDowns = new AutoComplete({
+                dataSource: countries,
+                fields: { value: 'Name' },
+                filterType: 'Contains'
+            });
+            dropDowns.appendTo(element);
+            dropDowns.inputElement.value = "*";
+            e.keyCode = 56;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe("*");
+            expect(dropDowns.ulElement.childElementCount === 6).toBe(true);
+            dropDowns.inputElement.value = ".";
+            e.keyCode = 190;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe(".");
+            expect(dropDowns.ulElement.childElementCount === 5).toBe(true);
+            dropDowns.inputElement.value = "+-";
+            e.keyCode = 189;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe("+-");
+            expect(dropDowns.ulElement.childElementCount === 3).toBe(true);
+            dropDowns.inputElement.value = "+l";
+            e.keyCode = 76;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe("+l");
+            expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+            dropDowns.inputElement.value = "*.";
+            e.keyCode = 190;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe("*.");
+            expect(dropDowns.ulElement.childElementCount === 3).toBe(true);
+            dropDowns.inputElement.value = "@";
+            e.keyCode = 50;
+            dropDowns.onInput(e);
+            dropDowns.onFilterUp(e);
+            expect(dropDowns.inputElement.value).toBe("@");
+            expect(dropDowns.ulElement.childElementCount === 2).toBe(true);
+        });
+        it('filter type as startsWith', () => {
+            dropDowns = new AutoComplete({
+                 dataSource: countries,
+                 fields: { value: 'Name' },
+                 filterType: 'StartsWith'
+             });
+             dropDowns.appendTo(element);
+             dropDowns.inputElement.value = "*";
+             e.keyCode = 56;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("*");
+             expect(dropDowns.ulElement.childElementCount === 2).toBe(true);
+             dropDowns.inputElement.value = ".";
+             e.keyCode = 190;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe(".");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+             dropDowns.inputElement.value = "+-";
+             e.keyCode = 189;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("+-");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+             dropDowns.inputElement.value = "+G";
+             e.keyCode = 71;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("+G");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+             dropDowns.inputElement.value = "*.";
+             e.keyCode = 190;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("*.");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+             dropDowns.inputElement.value = "@";
+             e.keyCode = 50;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("@");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+         });
+         it('filter type as endsWith', () => {
+            dropDowns = new AutoComplete({
+                 dataSource: countries,
+                 fields: { value: 'Name' },
+                 filterType: 'EndsWith'
+             });
+             dropDowns.appendTo(element);
+             dropDowns.inputElement.value = "*";
+             e.keyCode = 56;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("*");
+             expect(dropDowns.ulElement.childElementCount === 2).toBe(true);
+             dropDowns.inputElement.value = ".";
+             e.keyCode = 190;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe(".");
+             expect(dropDowns.ulElement.childElementCount === 2).toBe(true);
+             dropDowns.inputElement.value = "+-";
+             e.keyCode = 189;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("+-");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+             dropDowns.inputElement.value = "+";
+             e.keyCode = 187;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("+");
+             expect(dropDowns.ulElement.childElementCount === 3).toBe(true);
+             dropDowns.inputElement.value = "*.";
+             e.keyCode = 190;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("*.");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+             dropDowns.inputElement.value = "@";
+             e.keyCode = 50;
+             dropDowns.onInput(e);
+             dropDowns.onFilterUp(e);
+             expect(dropDowns.inputElement.value).toBe("@");
+             expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
+         });
+    });
 });

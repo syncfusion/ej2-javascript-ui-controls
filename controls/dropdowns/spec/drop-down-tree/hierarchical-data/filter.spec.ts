@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { DropDownTree, DdtFilteringEventArgs  } from '../../../src/drop-down-tree/drop-down-tree';
-import { hierarchicalData3,filteredhierarchicalData3,hierarchicalData3filtering} from '../dataSource.spec';
+import { hierarchicalData3,filteredhierarchicalData3,hierarchicalData3filtering, filterData} from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 describe('Hierarchial data filter testing', () => {
@@ -415,6 +415,37 @@ describe('Hierarchial data filter testing', () => {
                     expect(ddtreeObj.treeObj.selectedNodes.length).toBe(1);
                     expect((ddtreeObj.treeObj.element.querySelector('li.e-list-item.e-active').querySelector('.e-list-text') as HTMLElement).innerText).toBe("India");
                     expect(ddtreeObj.treeObj.selectedNodes[0]).toBe('21');
+                    done();
+                }, 350);
+            }, 350);
+        });
+        it('filter No Records Found testing', (done) => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: filterData, value: 'id', text: 'text', child: 'items' },
+                allowFiltering: true,
+                filterType: 'StartsWith'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(7);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'sub menu 4';
+            filterObj.value = 'sub menu 4';
+            let eventArgs: any = { value: 'sub menu 4', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect((ddtreeObj as any).popupObj.element.lastChild.classList.contains('e-no-data')).toBe(true);
+                expect((ddtreeObj as any).popupObj.element.lastChild.innerText).toBe('No Records Found');
+                filterEle.value = 'sub menu 3';
+                filterObj.value = 'sub menu 3';
+                let eventArgs: any = { value: 'sub menu 3', container: filterEle };
+                filterObj.input(eventArgs);
+                setTimeout(function () {
+                    filterEle = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+                    expect(filterEle.value).toBe('sub menu 3');
+                    expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(3);
                     done();
                 }, 350);
             }, 350);

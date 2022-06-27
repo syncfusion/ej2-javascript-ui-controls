@@ -39,7 +39,7 @@ export class PivotContextMenu {
             { text: this.parent.localeObj.getConstant('addToColumn'), id: this.parent.element.id + '_Columns' },
             { text: this.parent.localeObj.getConstant('addToValue'), id: this.parent.element.id + '_Values' }];
         let menuOptions: ContextMenuModel = {
-            cssClass: cls.PIVOT_CONTEXT_MENU_CLASS,
+            cssClass: cls.PIVOT_CONTEXT_MENU_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             items: menuItems,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,

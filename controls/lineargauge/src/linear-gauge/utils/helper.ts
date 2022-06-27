@@ -22,6 +22,14 @@ export function stringToNumber(value: string, containerSize: number): number {
     return null;
 }
 
+/** @private */
+export function stringToNumberSize(value: string, containerSize: number): number {
+    if (!isNullOrUndefined(value)) {
+        return value.indexOf('%') !== -1 ? containerSize : parseInt(value, 10);
+    }
+    return null;
+}
+
 /**
  * Function to measure the height and width of the text.
  *

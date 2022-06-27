@@ -3865,7 +3865,8 @@ export class AnnotationToolbar {
             } else {
                 this.showCalibrateAnnotationTool(false, 8, 8);
             }
-            if (this.pdfViewer.toolbarSettings.toolbarItems.indexOf('CommentTool') !== -1) {
+            let toolbarItems: any = this.pdfViewer.toolbarSettings.toolbarItems;
+            if (toolbarItems && toolbarItems.indexOf('CommentTool') !== -1) {
                 this.showStickyNoteToolInMobile(true);
             } else {
                 this.showStickyNoteToolInMobile(false);
