@@ -75,6 +75,7 @@ export class Selection {
      * @private
      */
     public skipFormatRetrieval: boolean = false;
+    public isModifyingSelectionInternally: boolean = false;
     private startInternal: TextPosition;
     private endInternal: TextPosition;
     private htmlWriterIn: HtmlExport;
@@ -468,7 +469,7 @@ export class Selection {
         const field: FieldElementBox = this.getHyperlinkField(true);
         if (!isNullOrUndefined(field)) {
             let code: string = this.getFieldCode(field);
-            let result: string = this.owner.editorModule.getFormFieldText(field);
+            let result: string = this.owner.editorModule.getFieldResultText(field);
             return {
                 code: code,
                 result: result
@@ -1732,21 +1733,6 @@ export class Selection {
             }
         }
     }
-    private getEndNoteBody(isStartBody: boolean): BodyWidget {
-        let lastPage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
-        if (isStartBody) {
-            while (lastPage.endnoteWidget && lastPage.endnoteWidget.bodyWidgets.length > 0) {
-                if (lastPage.previousPage && lastPage.previousPage.endnoteWidget && lastPage.previousPage.endnoteWidget.bodyWidgets.length > 0) {
-                    lastPage = lastPage.previousPage;
-                } else {
-                    return lastPage.endnoteWidget.bodyWidgets[0];
-                }
-            }
-        } else if (lastPage.endnoteWidget && lastPage.endnoteWidget.bodyWidgets && lastPage.endnoteWidget.bodyWidgets.length > 0) {
-            return lastPage.endnoteWidget.bodyWidgets[lastPage.endnoteWidget.bodyWidgets.length - 1] as BodyWidget;
-        }
-        return undefined;
-    }
     /**
      * Move to previous text position
      *
@@ -2076,10 +2062,7 @@ export class Selection {
     public getDocumentEnd(): TextPosition {
         let textPosition: TextPosition = undefined;
         const documentStart: TextPosition = this.owner.documentStart;
-        let lastPage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
-        while (lastPage.bodyWidgets[0].childWidgets.length === 0 && lastPage.previousPage) {
-            lastPage = lastPage.previousPage;
-        }
+        const lastPage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
         if (!isNullOrUndefined(documentStart) && lastPage.bodyWidgets[0].childWidgets.length > 0) {
             let block: BlockWidget = undefined;
             const section: BodyWidget = lastPage.bodyWidgets[0] as BodyWidget;
@@ -2407,7 +2390,24 @@ export class Selection {
         } else if ((isNavigateInCell || isShiftTab) && !isNullOrUndefined(start) && start.offset === this.getStartOffset(start.paragraph)
             && !isNullOrUndefined(start.paragraph.paragraphFormat) && !isNullOrUndefined(start.paragraph.paragraphFormat.listFormat)
             && start.paragraph.paragraphFormat.listFormat.listId !== -1 && !this.owner.isReadOnlyMode) {
-            this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
+            let selection: Selection = this.documentHelper.selection;
+            let currentPara: ParagraphWidget = start.paragraph;
+            let isFirstParaForList: boolean = false;
+            if (!selection.isForward) {
+                currentPara = selection.end.paragraph;
+            }
+            isFirstParaForList = this.owner.editorModule.isFirstParaForList(selection, currentPara);
+            if (isFirstParaForList) {
+                if (isShiftTab) {
+                    this.owner.editorModule.updateListLevelIndent(-this.documentHelper.defaultTabWidth, currentPara);
+                }
+                else {
+                    this.owner.editorModule.updateListLevelIndent(this.documentHelper.defaultTabWidth, currentPara);
+                }
+            }
+            else {
+                this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
+            }
         } else if (!this.owner.isReadOnlyMode && !this.documentHelper.isFormFillProtectedMode) {
             this.owner.editorModule.handleTextInput('\t');
         }
@@ -2535,13 +2535,13 @@ export class Selection {
                 this.owner.editor.applyFormTextFormat(previousField);
             }
 
-            previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(previousField) };
+            previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(previousField) };
             this.owner.trigger(afterFormFieldFillEvent, previousFieldData);
         }
         if (currentField !== previousField && currentField && ((currentField.formFieldData instanceof TextFormField
             && currentField.formFieldData.type === 'Text' && isKeyBoardNavigation == undefined) || (((currentField.formFieldData instanceof TextFormField && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') || (currentField.formFieldData instanceof CheckBoxFormField)) && isKeyBoardNavigation))) {
 
-            currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(currentField) };
+            currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFieldResultText(currentField) };
             this.owner.trigger(beforeFormFieldFillEvent, currentFieldData);
         }
     }
@@ -2804,12 +2804,8 @@ export class Selection {
             }
         } else if (container instanceof FootNoteWidget && container.footNoteType === 'Endnote') {
             const endNotes: FootNoteWidget = this.getContainerWidget(this.start.paragraph) as FootNoteWidget;
-            let startBody: BodyWidget = this.getEndNoteBody(true);
-            let startBlock: BlockWidget = !isNullOrUndefined(startBody) ? startBody.firstChild as BlockWidget : (endNotes.bodyWidgets[0] as BodyWidget).firstChild as BlockWidget;
-            documentStart = this.setPositionForBlock(startBlock, true);
-            let lastBody: BodyWidget = this.getEndNoteBody(false);
-            let lastBlock: BlockWidget = !isNullOrUndefined(lastBody) ? lastBody.lastChild as BlockWidget : (endNotes.bodyWidgets[endNotes.bodyWidgets.length - 1] as BodyWidget).lastChild as BlockWidget;
-            documentEnd = this.setPositionForBlock(lastBlock, false);
+            documentStart = this.setPositionForBlock((endNotes.bodyWidgets[0] as BodyWidget).firstChild as BlockWidget, true);
+            documentEnd = this.setPositionForBlock((endNotes.bodyWidgets[endNotes.bodyWidgets.length - 1] as BodyWidget).firstChild as BlockWidget, false);
         } else {
             documentStart = this.owner.documentStart;
             documentEnd = this.owner.documentEnd;
@@ -3767,8 +3763,8 @@ export class Selection {
                     const startPage: number = this.documentHelper.pages.indexOf(start.containerWidget.page);
                     const endPage: number = this.documentHelper.pages.indexOf(block.containerWidget.page);
                     if (startPage === endPage && start.containerWidget.containerWidget instanceof FootNoteWidget && block.containerWidget.containerWidget instanceof FootNoteWidget) {
-                        const startindex: number = block.containerWidget.containerWidget.footNoteType === 'Footnote' ? this.documentHelper.pages[startPage].footnoteWidget.bodyWidgets.indexOf(start.containerWidget) : this.documentHelper.pages[startPage].endnoteWidget.bodyWidgets.indexOf(start.containerWidget);
-                        const endindex: number = block.containerWidget.containerWidget.footNoteType === 'Footnote' ? this.documentHelper.pages[endPage].footnoteWidget.bodyWidgets.indexOf(block.containerWidget) : this.documentHelper.pages[endPage].endnoteWidget.bodyWidgets.indexOf(block.containerWidget);
+                        const startindex: number = this.documentHelper.pages[startPage].footnoteWidget.bodyWidgets.indexOf(start.containerWidget);
+                        const endindex: number = this.documentHelper.pages[endPage].footnoteWidget.bodyWidgets.indexOf(block.containerWidget);
                         return startindex < endindex;
                     } else {
                         return startPage < endPage;
@@ -5764,6 +5760,9 @@ export class Selection {
      */
     //FieldCharacter
     public getRenderedInline(inline: FieldElementBox, inlineIndex: number): ElementInfo {
+        if (this.documentHelper.isFormFillProtectedMode && (inline as FieldElementBox).fieldType === 2) {
+            return { 'element': inline, 'index': inlineIndex };
+        }
         let prevInline: ElementBox = this.getPreviousValidElement(inline);
         while (prevInline instanceof FieldElementBox) {
             prevInline = this.getPreviousTextElement(prevInline);
@@ -6825,9 +6824,8 @@ export class Selection {
      */
     public getFirstElementInternal(widget: LineWidget): ElementBox {
         let element: ElementBox = undefined;
-        let isBidi: boolean = widget.paragraph.paragraphFormat.bidi;
         let childLen: number = widget.children.length;
-        for (let i: number = isBidi ? childLen - 1 : 0; isBidi ? i >= 0 : i < childLen; isBidi ? i-- : i++) {
+        for (let i: number = 0; i < childLen; i++) {
             element = widget.children[i];
             if (element instanceof ListTextElementBox) {
                 element = undefined;
@@ -6974,6 +6972,9 @@ export class Selection {
                 this.start.updatePhysicalPosition(false);
                 this.end.updatePhysicalPosition(true);
             }
+        }
+        if (this.isModifyingSelectionInternally) {
+            return;
         }
         if (!this.skipFormatRetrieval) {
             this.retrieveCurrentFormatProperties();
@@ -7249,7 +7250,6 @@ export class Selection {
         }
     }
 
-
     private acceptReject(currentRevision: Revision, toAccept: boolean): void {
         this.selectRevision(currentRevision);
         if (toAccept) {
@@ -7258,7 +7258,6 @@ export class Selection {
             currentRevision.reject();
         }
     }
-
     private getselectedRevisionElements(): Revision[] {
         let revisionCollec: Revision[] = [];
         let start: TextPosition = this.start;
@@ -8878,7 +8877,7 @@ export class Selection {
      */
     public getCurrentFormField(checkFieldResult?: boolean): FieldElementBox {
         let field: FieldElementBox;
-            field = this.getHyperlinkField(true);
+        field = this.getHyperlinkField(true);
         if (field instanceof FieldElementBox && field.fieldType === 0 && !isNullOrUndefined(field.formFieldData)) {
             return field;
         }
@@ -10083,6 +10082,26 @@ export class Selection {
     }
     /**
      * @private
+     */
+    public selectTableRevision(revision: Revision[]): void {
+        if (!isNullOrUndefined(revision) && revision[0].range.length > 0) {
+            let firstElementTable: any = revision[0].range[0];
+            let lastElementTable: any = revision[revision.length - 1].range[0];
+            if (firstElementTable instanceof WRowFormat) {
+                let firstRowWidget: TableRowWidget = firstElementTable.ownerBase;
+                let firstCell: TableCellWidget = firstRowWidget.childWidgets[0] as TableCellWidget;
+                let secondRowWidget: TableRowWidget = lastElementTable.ownerBase;
+                let lastCell: TableCellWidget = secondRowWidget.childWidgets[secondRowWidget.childWidgets.length - 1] as TableCellWidget;
+                let firstPara: ParagraphWidget = this.getFirstParagraph(firstCell);
+                let lastPara: ParagraphWidget = this.getLastParagraph(lastCell);
+                this.start.setPosition(firstPara.firstChild as LineWidget, true);
+                this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                this.selectPosition(this.start, this.end);
+            }
+        }
+    }
+    /**
+     * @private
      * @returns {void}
      */
     public updateEditRangeCollection(): void {
@@ -10135,6 +10154,7 @@ export class Selection {
     public highlightEditRegion(): void {
         this.updateEditRangeCollection();
         if (this.owner.enableLockAndEdit) {
+            this.viewer.updateScrollBars();
             return;
         }
         if (!this.isHighlightEditRegion) {
@@ -10421,8 +10441,8 @@ export class Selection {
                     }
                     return false;
                 }
-                if ((cCStartInsideSelction) || (cCEndInsideSelction) && (contentControlStart.contentControlProperties.lockContentControl || contentControlStart.contentControlProperties.lockContents)) {
-                    if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start))) {
+                if ((cCStartInsideSelction) || (cCEndInsideSelction)) {
+                    if (!(cCstart.isAtSamePosition(start) || cCend.isAtSamePosition(start)) && (contentControlStart.contentControlProperties.lockContentControl || contentControlStart.contentControlProperties.lockContents)) {
                         return true;
                     }
                 }

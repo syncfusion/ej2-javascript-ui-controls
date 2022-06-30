@@ -274,7 +274,7 @@ export class SvgRenderer implements IRenderer {
      */
     public drawPath(
         svg: SVGElement, options: PathAttributes, diagramId: string, isSelector?: boolean,
-        parentSvg?: SVGSVGElement, ariaLabel?: Object): void {
+        parentSvg?: SVGSVGElement, ariaLabel?: Object, scale?: number): void {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const x: number = Math.floor((Math.random() * 10) + 1);
         //const id: string = svg.id + '_shape' + x.toString();
@@ -300,12 +300,22 @@ export class SvgRenderer implements IRenderer {
             svg.appendChild(path);
         }
         this.renderPath(path, options, collection);
-        const attr: Object = {
-            'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
-                + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + ')',
-            'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity,
-            'aria-label': ariaLabel ? ariaLabel : ''
-        };
+        let attr: object = {};
+        if (scale) {
+            attr = {
+                'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
+                    + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + '),scale(' + scale + ')',
+                'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity,
+                'aria-label': ariaLabel ? ariaLabel : ''
+            };
+        } else {
+            attr = {
+                'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
+                    + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + ')',
+                'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity,
+                'aria-label': ariaLabel ? ariaLabel : ''
+            };
+        }
         if (options.class) {
             attr['class'] = options.class;
         }

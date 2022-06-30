@@ -78,7 +78,7 @@ export class ActionEvents {
         if (args.isRedo) { actionArgs.isUndo = false; delete args.isRedo; }
         actionArgs.args = args;
         this.parent.trigger('actionBegin', actionArgs);
-        if (!preventAction && (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' ||
+        if (!preventAction && (args.action === 'clipboard' || args.action === 'format' ||
             args.action === 'cellSave' || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter'
             || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart' || args.action === 'chartDesign'
             || args.action === 'cellDelete' || args.action === 'autofill' || args.action === 'removeValidation' || args.action === 'hyperlink' || args.action === 'removeHyperlink' || args.action === 'deleteImage')) {

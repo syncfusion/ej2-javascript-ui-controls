@@ -1,4 +1,4 @@
-import { L10n, remove } from '@syncfusion/ej2-base';
+import { L10n, remove, addClass } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
@@ -215,6 +215,9 @@ export class CellRenderer implements ICellRenderer<Column> {
                 value = false;
             }
             const checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
+            if (this.parent.cssClass) {
+                addClass([checkWrap], [this.parent.cssClass]);
+            }
             this.rowChkBox.id = 'checkbox-' + cell.rowID;
             checkWrap.insertBefore(this.rowChkBox.cloneNode(), checkWrap.firstChild);
             node.appendChild(checkWrap);
@@ -231,6 +234,9 @@ export class CellRenderer implements ICellRenderer<Column> {
             const checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: checked, label: ' ' });
             node.innerHTML = '';
             checkWrap.classList.add('e-checkbox-disabled');
+            if (this.parent.cssClass) {
+                addClass([checkWrap], [this.parent.cssClass]);
+            }
             node.appendChild(checkWrap);
             node.setAttribute('aria-label', checked + ' column header ' + cell.column.headerText);
         }

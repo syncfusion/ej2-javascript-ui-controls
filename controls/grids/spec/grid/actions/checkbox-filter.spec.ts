@@ -2734,9 +2734,9 @@ describe('EJ2-58687 - template support for checkbox rendering in checkbox filter
         (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
     });
 
-
+    
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
     });
-}); 
+});

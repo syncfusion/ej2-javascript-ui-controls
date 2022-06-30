@@ -1,9 +1,11 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { ExtendedRowModel, Spreadsheet } from '../../../src/index';
+import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
 describe('Resize ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    let model: SpreadsheetModel;
 
     describe('public method ->', () => {
         beforeAll((done: Function) => {
@@ -123,6 +125,106 @@ describe('Resize ->', () => {
                     done();
                 });
             });
+        });
+    });
+    describe('EJ2-51216->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets:[{ selectedRange: 'B2' }]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Underline and strikethrough not working after performing row resize action', (done: Function) => {
+            helper.edit('B2', 'one two three four five ');
+            helper.getElement('#' + helper.id + '_wrap').click();
+            helper.invoke('setRowHeight', [80, 1]);
+            helper.invoke('setColWidth', [150, 1]);
+            helper.invoke('autoFit', ['2']);
+            helper.invoke('autoFit', ['B']);
+            helper.invoke('selectRange', ['C1']);
+            helper.edit('C1', 'One Two');
+            helper.invoke('cellFormat', [{ fontSize: '48pt' }, 'C1']);
+            helper.invoke('autoFit', ['1']);
+            helper.invoke('cellFormat', [{ fontSize: '9pt' }, 'C1']);
+            helper.invoke('autoFit', ['1']);
+            setTimeout(function () {
+                let cellEle: HTMLElement = helper.getElements('.e-active-cell')[0];
+                let selectionEle: HTMLElement = helper.getElements('.e-selection')[0];
+                expect(cellEle.style.height).toEqual(selectionEle.style.height);
+                done();
+            });
+        });
+    });
+    describe('EJ2-54009->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ selectedRange: 'B2' }]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Cell selection misalignment issue when copy paste and resize the pasted cell.->', (done: Function) => {
+            helper.invoke('copy', ['B2']);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                helper.invoke('setRowHeight', [80, 1]);
+                helper.invoke('setColWidth', [150, 1]);
+                setTimeout(() => {
+                    expect(helper.getElement().querySelector('.e-copy-indicator').style.height).toBe('81px');
+                    expect(helper.getElement().querySelector('.e-copy-indicator').style.width).toBe('151px');
+                    done();
+                }, 10);
+            });
+        });
+    });
+    describe('EJ2-56260->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Row height issue after performing undo operation->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(10, 0);
+            spreadsheet.selectRange("B1:B200");
+            helper.getElement('#' + helper.id + '_cut').click();
+            setTimeout(() => {
+                spreadsheet.insertColumn(2);
+                setTimeout(() => {
+                    spreadsheet.selectRange("C1");
+                    helper.getElement('#' + helper.id + '_paste').click();
+                    helper.getElement('#' + helper.id + '_undo').click();
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[0].height).toBe(10);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+    describe('EJ2-54762->', () => {
+        beforeEach((done: Function) => {
+            model = {
+                sheets: [{ rows: [{ height: 15 }, { height: 10 }, { height: 8 }, { height: 30 }, ], 
+                ranges: [{ dataSource: defaultData }] }]
+            }
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');;
+        });
+        it('While save(json) and load(json) with resize functionalities, row header and cell selection are misaligned->', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[0].height).toBe(15);
+            expect(helper.getInstance().sheets[0].rows[1].height).toBe(10);
+            expect(helper.getInstance().sheets[0].rows[2].height).toBe(8);
+            expect(helper.getInstance().sheets[0].rows[3].height).toBe(30);
+            done();
         });
     });
     describe('EJ2-60189 ->', () => {

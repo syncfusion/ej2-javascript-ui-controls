@@ -576,7 +576,7 @@ describe('Numerictextbox Control', () => {
             numerictextbox = new NumericTextBox();
             numerictextbox.appendTo('#Numeric');
             expect(numerictextbox.inputWrapper.container.parentElement.getAttribute('id')).toBe('Numeric');
-            expect(numerictextbox.element.hasAttribute('id')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('id')).toBe(true);
             expect(numerictextbox.hiddenInput.hasAttribute('id')).toBe(false);
         });
     });

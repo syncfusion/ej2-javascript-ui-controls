@@ -922,9 +922,9 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 
     /**
      * Allows you To customize the mode of empty points.
-     * @default Gap
+     * @default Zero
      */
-    @Property('Gap')
+    @Property('Zero')
     public mode: EmptyPointMode | AccEmptyPointMode;
 }
 
@@ -1728,9 +1728,9 @@ export class PivotChartSeriesEmptyPointSettings {
 
     /**
      * To customize the mode of empty points.
-     * @default Gap
+     * @default Zero
      */
-    @Property('Gap')
+    @Property('Zero')
     public mode: EmptyPointMode | AccEmptyPointMode;
 }
 /**

@@ -1069,22 +1069,5 @@
       margin-top: $pivotgrid-bigger-report-label-margin-top;
     }
   }
-
-  .e-bigger .e-dialog .e-footer-content {
-    height: 62px;
-  }
-
-  .e-bigger .e-dialog .e-dlg-header-content {
-    @if ($skin-name == 'tailwind') {
-      height: 52px;
-    }
-    padding-left: 10px;
-  }
-
-  .e-bigger .e-tab .e-tab-header .e-toolbar-item.e-active {
-    // sass-lint:disable-all
-    margin-left: 24px !important;
-    // sass-lint:enable-all
-  }
 }
   

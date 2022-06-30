@@ -1296,7 +1296,7 @@ export class Signature {
         }
     }
     private signaturePanelMouseMove(e: MouseEvent | TouchEvent): void {
-        if (this.mouseDetection) {
+        if (this.mouseDetection && this.signaturetype === 'Draw') {
             this.findMousePosition(e);
             this.enableCreateButton(false);
             this.drawMousePosition(e);

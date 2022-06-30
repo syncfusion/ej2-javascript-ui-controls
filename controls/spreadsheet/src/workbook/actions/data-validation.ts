@@ -1,5 +1,5 @@
-import { Workbook, SheetModel, CellModel, getSheet, getColumn, ColumnModel, isHiddenRow, getCell, setCell, getSheetIndex } from '../base/index';
-import { cellValidation, applyCellFormat, isValidation, addHighlight, getCellAddress, validationHighlight, getSwapRange, getSheetIndexFromAddress, getSplittedAddressForColumn } from '../common/index';
+import { Workbook, SheetModel, CellModel, getSheet, getColumn, ColumnModel, isHiddenRow, getCell, setCell, getSheetIndex, getSheetNameFromAddress } from '../base/index';
+import { cellValidation, applyCellFormat, isValidation, addHighlight, getCellAddress, validationHighlight, getSwapRange, getSheetIndexFromAddress, getSplittedAddressForColumn, getRangeFromAddress } from '../common/index';
 import { removeHighlight, InsertDeleteEventArgs, checkIsFormula, checkCellValid } from '../common/index';
 import { getRangeIndexes, getUpdatedFormulaOnInsertDelete, InsertDeleteModelArgs } from '../common/index';
 import { CellFormatArgs, ValidationType, ValidationOperator, ValidationModel, updateCell, beforeInsert, beforeDelete } from '../common/index';
@@ -61,18 +61,9 @@ export class WorkbookDataValidation {
         const sheet: SheetModel = getSheet(this.parent, sheetName ? getSheetIndex(this.parent, sheetName) : this.parent.activeSheetIndex);
         this.parent.dataValidationRange = (this.parent.dataValidationRange.indexOf('!') > -1 ? '' : sheet.name + '!') + this.parent.dataValidationRange + onlyRange + ',';
         let isfullCol: boolean = false;
-        const maxRowCount: number = sheet.rowCount;
-        const rangeArr: string[] = onlyRange.split(':');
-        if (onlyRange.match(/\D/g) && !onlyRange.match(/[0-9]/g)) {
-            rangeArr[0] += 1;
-            rangeArr[1] += maxRowCount;
-            onlyRange = rangeArr[0] + ':' + rangeArr[1];
-            isfullCol = true;
-        } else if (!onlyRange.match(/\D/g) && onlyRange.match(/[0-9]/g)) {
-            rangeArr[0] = 'A' + rangeArr[0];
-            rangeArr[1] = getCellAddress(0, sheet.colCount - 1).replace(/[0-9]/g, '') + rangeArr[1];
-            onlyRange = rangeArr[0] + ':' + rangeArr[1];
-        }
+        const rangeInfo: { range: string, isFullCol: boolean }  = this.getRangeWhenColumnSelected(onlyRange, sheet);
+        onlyRange = rangeInfo.range;
+        isfullCol = rangeInfo.isFullCol;
         if (!isNullOrUndefined(sheetName)) {
             args.range = sheetName + '!' + onlyRange;
         }
@@ -162,12 +153,12 @@ export class WorkbookDataValidation {
         const sheetIdx: number = range ? getSheetIndexFromAddress(this.parent, range) : this.parent.activeSheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         range = range || sheet.selectedRange;
+        const sheetName: string = range.includes('!') ? getSheetNameFromAddress(range): sheet.name;
+        const rangeInfo: { range: string, isFullCol: boolean } = this.getRangeWhenColumnSelected(getRangeFromAddress(range), sheet);
+        let isFullCol: boolean = rangeInfo.isFullCol;
+        range = sheetName + '!' + rangeInfo.range;
         const indexes: number[] = range ? getSwapRange(getRangeIndexes(range)) : [];
         range = this.getRange(range);
-        let isfullCol: boolean = false;
-        if (range.match(/\D/g) && !range.match(/[0-9]/g)) {
-            isfullCol = true;
-        }
         let rowIdx: number = range ? indexes[0] : 0;
         const lastRowIdx: number = range ? indexes[2] : sheet.rows.length;
         for (rowIdx; rowIdx <= lastRowIdx; rowIdx++) {
@@ -196,11 +187,11 @@ export class WorkbookDataValidation {
                             if (isclearFormat && !validation.isHighlighted) {
                                 return;
                             }
-                            if (isRemoveHighlightedData && isfullCol) {
+                            if (isRemoveHighlightedData && isFullCol) {
                                 if (validation.isHighlighted) {
                                     column.validation.isHighlighted = false;
                                 }
-                            } else if (isfullCol) {
+                            } else if (isFullCol) {
                                 column.validation.isHighlighted = true;
                             }
                         }
@@ -264,6 +255,22 @@ export class WorkbookDataValidation {
                 }
             }
         }
+    }
+
+    private getRangeWhenColumnSelected(range: string, sheet: SheetModel): { range: string, isFullCol: boolean } {
+        let isFullCol: boolean;
+        const colNames: string[] = range.split(':');
+        if (range.match(/\D/g) && !range.match(/[0-9]/g)) {
+            colNames[0] += 1;
+            colNames[1] += sheet.rowCount;
+            range = colNames[0] + ':' + colNames[1];
+            isFullCol = true;
+        } else if (!range.match(/\D/g) && range.match(/[0-9]/g)) {
+            colNames[0] = 'A' + colNames[0];
+            colNames[1] = getCellAddress(0, sheet.colCount - 1).replace(/[0-9]/g, '') + colNames[1];
+            range = colNames[0] + ':' + colNames[1];
+        }
+        return { range: range, isFullCol: isFullCol };
     }
 
     private updateValidationForInsertedModel(args: InsertDeleteEventArgs, sheet: SheetModel, rowIndex: number, colIndex: number, validation: ValidationModel): void {

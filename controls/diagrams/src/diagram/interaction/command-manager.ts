@@ -31,7 +31,7 @@ import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { Selector } from '../objects/node';
 import { hasSelection, isSelected, hasSingleConnection, contains } from './actions';
-import { AlignmentOptions, DistributeOptions, SizingOptions, DiagramEvent, BoundaryConstraints, AlignmentMode } from '../enum/enum';
+import { AlignmentOptions, DistributeOptions, SizingOptions, DiagramEvent, BoundaryConstraints, AlignmentMode, ConnectorConstraints, BezierSmoothness } from '../enum/enum';
 import { BlazorAction, EntryType } from '../enum/enum';
 import { HistoryEntry } from '../diagram/history';
 import { canSelect, canMove, canRotate, canDragSourceEnd, canDragTargetEnd, canSingleSelect, canDrag } from './../utility/constraints-util';
@@ -93,6 +93,8 @@ export class CommandHandler {
 
     /**   @private  */
     public connectorsTable: Object[] = [];
+    /** @private */
+    public PreventConnectorSplit:boolean = false;
     /**   @private  */
     public processTable: {} = {};
     /**   @private  */
@@ -102,7 +104,6 @@ export class CommandHandler {
     private state: TransactionState;
     /** @private */
     public diagram: Diagram;
-
     /** @private */
     public canUpdateTemplate: boolean = false;
 
@@ -112,6 +113,7 @@ export class CommandHandler {
     private blazor: string = 'Blazor';
     private blazorInterop: string = 'sfBlazor';
     private cloneGroupChildCollection: (NodeModel | ConnectorModel)[] = [];
+    enableConnectorSplit: boolean;
 
     /**   @private  */
     public get snappingModule(): Snapping {
@@ -241,6 +243,105 @@ export class CommandHandler {
                 },
                 1);
         }
+    }
+
+    /**
+     * Split the connector, when the node is dropped onto it and establish connection with that dropped node.
+     *
+     * @returns {  void }   connectorSplit  method .\
+     * @param {NodeModel}  droppedObject - Provide the dropped node id
+     * @param {ConnectorModel} targetConnector - Provide the connector id
+     * @private
+     */
+    public connectorSplit(droppedObject:NodeModel, targetConnector:ConnectorModel): void {
+        let droppedNodeId:string =droppedObject.id ;
+        let existingConnector:ConnectorModel=cloneObject(targetConnector)
+        let connectorIndex:number;
+        connectorIndex=this.diagram.connectors.indexOf(targetConnector)
+        let nodeIndex:number;
+        nodeIndex =this.diagram.nodes.indexOf(droppedObject)
+        let droppedNode:NodeModel = cloneObject(droppedObject)
+        let connectorOldChanges: ConnectorPropertyChanging={} ;
+        let nodeOldChanges:NodePropertyChanging={};
+        let nodeOldProperty:NodeModel={
+            offsetX:droppedNode.offsetX,
+            offsetY:droppedNode.offsetY
+        }; 
+        let connectorOldProperty:ConnectorModel={
+        sourceID:existingConnector.sourceID,
+        sourcePoint:existingConnector.sourcePoint,
+        sourcePortID:existingConnector.sourcePortID,
+        targetID: existingConnector.targetID,
+        targetPoint: existingConnector.targetPoint,
+        targetPortID:existingConnector.targetPortID
+        };
+        connectorOldChanges[connectorIndex]=connectorOldProperty;
+        nodeOldChanges[nodeIndex]=nodeOldProperty;
+        let connectorNewChanges:ConnectorPropertyChanging={};
+        let nodeNewChanges:NodePropertyChanging={};
+        let nodeNewProperty:NodeModel={
+        };   
+        let connectorNewProperty:ConnectorModel={
+        };  
+        //Split the connector based on the dropped node      
+        if(existingConnector.sourceID!= "" &&existingConnector.targetID != ""){
+           connectorNewProperty.targetID = this.ConnectorTargetChange(targetConnector,droppedNodeId)
+        }
+        else if (existingConnector.sourceID != "" && existingConnector.targetID == "") {
+            this.nodeOffsetChange(nodeNewProperty,droppedNode,targetConnector.targetPoint);
+            connectorNewProperty.targetID = this. ConnectorTargetChange(targetConnector,droppedNodeId);
+        }
+        else if((existingConnector.sourceID == "" && existingConnector.targetID == "") || (existingConnector.sourceID== "" &&existingConnector.targetID != "")){
+            this.nodeOffsetChange(nodeNewProperty,droppedNode,targetConnector.sourcePoint)
+            connectorNewProperty.sourceID= this. ConnectorSourceChange(targetConnector,droppedNodeId);
+        }
+        connectorNewChanges[connectorIndex]=connectorNewProperty;
+         nodeNewChanges[nodeIndex]=nodeNewProperty;
+         this.diagram.nodePropertyChange(droppedObject as Node,nodeOldProperty as Node,nodeNewProperty as Node);
+         this.diagram.updateSelector();
+         this.diagram.connectorPropertyChange(targetConnector as Connector,connectorOldProperty as Connector,connectorNewProperty as Connector);
+        //Check Whether the connector connects with the node 
+         if(existingConnector.sourceID !="" && existingConnector.targetID !=""){
+            let newConnector:ConnectorModel = { 
+            id:"connector "+droppedNodeId,
+            constraints:ConnectorConstraints.Default|ConnectorConstraints.AllowDrop,
+            sourceID:droppedNodeId,
+        }; 
+        //Check whether the connector connects with the ports
+        if(existingConnector.sourcePortID != "" && existingConnector.targetPortID != "") {
+        newConnector.targetID = existingConnector.targetID;
+        newConnector.targetPortID =existingConnector.targetPortID
+        }
+        else{
+        newConnector.targetID =existingConnector.targetID;
+        }
+        this.diagram.add(newConnector);
+        }
+        const entry: HistoryEntry = {
+            type: 'PropertyChanged', redoObject: {nodes:nodeNewChanges as NodeModel[]}, undoObject: {nodes:nodeOldChanges as NodeModel[]},
+            category: 'Internal'
+        };
+        this.diagram.addHistoryEntry(entry);
+        const entry1: HistoryEntry = {
+            type: 'PropertyChanged', redoObject: {connectors:connectorNewChanges as ConnectorModel[]}, undoObject: {connectors:connectorOldChanges as ConnectorModel[] },
+            category: 'Internal'
+        };
+        this.diagram.addHistoryEntry(entry1);
+    }
+    
+      private nodeOffsetChange(propertyChangeArg:NodeModel,node:NodeModel,nodeNewOffset:PointModel ): void {
+        propertyChangeArg.offsetX =node.offsetX =nodeNewOffset.x;
+        propertyChangeArg.offsetY =node.offsetY =nodeNewOffset.y;
+    }
+    
+       private ConnectorTargetChange(connector:ConnectorModel,newTarget:string): string {
+        connector.targetID= newTarget;
+        return newTarget
+    }
+   
+       private ConnectorSourceChange(connector:ConnectorModel,newTarget:string): string {
+        connector.sourceID= newTarget;
+        return newTarget
     }
 
     /**
@@ -2070,6 +2171,8 @@ export class CommandHandler {
             } else {
                 selectorModel.connectors.push(obj as ConnectorModel);
             }
+            // EJ2-56919 - Push the newly selected objects in selectedObjects collection
+            selectorModel.selectedObjects.push(obj);
             if (!multipleSelection) {
                 (selectorModel as Selector).init(this.diagram);
                 if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
@@ -2184,6 +2287,8 @@ export class CommandHandler {
                 index = selectormodel.connectors.indexOf(obj as ConnectorModel, 0);
                 selectormodel.connectors.splice(index, 1);
             }
+            index = selectormodel.selectedObjects.indexOf(obj, 0);
+            selectormodel.selectedObjects.splice(index, 1);
             arg = {
                 oldValue: items, newValue: selectedObjects, cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Removal', cancel: false
@@ -3166,6 +3271,7 @@ export class CommandHandler {
         }
         if (endPoint === 'BezierSourceThumb' || endPoint === 'BezierTargetThumb') {
             checkBezierThumb = true;
+            connector.isBezierEditing = true;
         }
         if (endPoint === 'ConnectorSourceEnd' || endPoint === 'BezierSourceThumb') {
             tx = point.x - (checkBezierThumb ? (segment as BezierSegment).bezierPoint1.x : connector.sourcePoint.x);
@@ -3405,6 +3511,8 @@ export class CommandHandler {
                 selectormodel.connectors = [];
                 selectormodel.wrapper = null;
                 (selectormodel as Selector).annotation = undefined;
+                // EJ2-56919 - While clear selection empty the selectedObjects collection
+                selectormodel.selectedObjects = [];
                 this.diagram.clearSelectorLayer();
                 if (triggerAction) {
                     arg = {
@@ -4057,17 +4165,33 @@ Remove terinal segment in initial
         void {
         const index: number = (connector.segments.indexOf(seg));
         const segment: BezierSegment = connector.segments[index] as BezierSegment;
+        let prevSegment: BezierSegment = index > 0 ? connector.segments[index - 1] as BezierSegment : null;
+        let startPoint: PointModel = prevSegment != null ? prevSegment.point : connector.sourcePoint;
+        let endPoint: PointModel = index == connector.segments.length - 1 ? connector.targetPoint : segment.point;
+
         if (segment) {
             if (value === 'BezierSourceThumb' && (segment.vector1.angle || segment.vector1.distance)) {
+                let oldDistance: number = segment.vector1.distance;
+                let oldAngle: number = segment.vector1.angle;
                 segment.vector1 = {
-                    distance: (connector as Connector).distance(connector.sourcePoint, point),
-                    angle: Point.findAngle(connector.sourcePoint, point)
+                    distance: (connector as Connector).distance(startPoint, point),
+                    angle: Point.findAngle(startPoint, point)
                 };
+
+                let deltaLength: number = segment.vector1.distance - oldDistance;
+                let deltaAngle: number = segment.vector1.angle - oldAngle;
+                this.translateSubsequentSegment(connector, seg, true, deltaLength, deltaAngle);
             } else if (value === 'BezierTargetThumb' && (segment.vector2.angle || segment.vector2.distance)) {
+                let oldDistance: number = segment.vector2.distance;
+                let oldAngle: number = segment.vector2.angle;
                 segment.vector2 = {
-                    distance: (connector as Connector).distance(connector.targetPoint, point),
-                    angle: Point.findAngle(connector.targetPoint, point)
+                    distance: (connector as Connector).distance(endPoint, point),
+                    angle: Point.findAngle(endPoint, point)
                 };
+
+                let deltaLength: number = segment.vector2.distance - oldDistance;
+                let deltaAngle: number = segment.vector2.angle - oldAngle;
+                this.translateSubsequentSegment(connector, seg, false, deltaLength, deltaAngle);
             } else if ((value === 'ConnectorSourceEnd' && !connector.sourceID || value === 'ConnectorTargetEnd' && !connector.targetID)
                 && update && isEmptyVector(segment.vector1) && isEmptyVector(segment.vector2)) {
                 if (Point.isEmptyPoint(segment.point1)) {
@@ -4090,6 +4214,55 @@ Remove terinal segment in initial
                 }
             }
         }
+    }
+
+    private translateSubsequentSegment(connector: ConnectorModel, seg: BezierSegmentModel, isSourceEnd: boolean, deltaLength?: number, deltaAngle?: number) {
+        const index: number = (connector.segments.indexOf(seg));
+        const segment: BezierSegment = connector.segments[index] as BezierSegment;
+        if (!(connector.bezierSettings.smoothness & BezierSmoothness.SymmetricAngle)) {
+            deltaAngle = null;
+        }
+
+        if (!(connector.bezierSettings.smoothness & BezierSmoothness.SymmetricDistance)) {
+            deltaLength = null;
+        }
+
+        if (deltaLength == null && deltaAngle == null) {
+            return;
+        }
+
+        if (isSourceEnd) {
+            if (index != 0) {
+                this.updatePreviousBezierSegment(connector, index, deltaLength, deltaAngle);
+            }
+        }
+        else {
+            if (index != connector.segments.length - 1) {
+                this.updateNextBezierSegment(connector, index, deltaLength, deltaAngle);
+            }
+        }
+    }
+
+    private updatePreviousBezierSegment(connector: ConnectorModel, index: number, deltaLength: number, deltaAngle: number): void {
+        const segment: BezierSegment = connector.segments[index - 1] as BezierSegment;
+        let newDistance: number = segment.vector2.distance + deltaLength;
+        let newAngle: number = (segment.vector2.angle + deltaAngle) % 360;
+        if (newAngle < 0) {
+            newAngle += 360;
+        }
+
+        segment.vector2 = { distance: newDistance, angle: newAngle };
+    }
+
+    private updateNextBezierSegment(connector: ConnectorModel, index: number, deltaLength: number, deltaAngle: number): void {
+        const segment: BezierSegment = connector.segments[index + 1] as BezierSegment;
+        let newDistance: number = segment.vector1.distance + deltaLength;
+        let newAngle: number = (segment.vector1.angle + deltaAngle) % 360;
+        if (newAngle < 0) {
+            newAngle += 360;
+        }
+
+        segment.vector1 = { distance: newDistance, angle: newAngle };
     }
 
 
@@ -4174,8 +4347,32 @@ Remove terinal segment in initial
         const connector: ConnectorModel = this.diagram.nameTable[obj.id];
         if ((connector.type === 'Straight' || connector.type === 'Bezier') && connector.segments.length > 0) {
             if (segmentNumber !== undefined && connector.segments[segmentNumber]) {
-                (connector.segments[segmentNumber] as StraightSegmentModel).point.x += tx;
-                (connector.segments[segmentNumber] as StraightSegmentModel).point.y += ty;
+                if (connector.type === 'Bezier') {
+                    let seg: BezierSegmentModel = connector.segments[segmentNumber] as BezierSegmentModel;
+                    let isInternalSegment = (seg as BezierSegment).isInternalSegment;
+                    if (!isInternalSegment || connector.bezierSettings == null || connector.bezierSettings.segmentEditOrientation == 'FreeForm') {
+                        seg.point.x += tx;
+                        seg.point.y += ty;
+                    }
+                    else {
+                        if (seg.orientation == 'Horizontal') {
+                            seg.point.x += tx;
+                        }
+                        else {
+                            seg.point.y += ty;
+                        }
+
+                        this.updateDirectionalBezierCurve(connector);
+                    }
+                    
+                    if (isInternalSegment) {
+                        (connector as Connector).isBezierEditing = true;
+                    }
+                }
+                else {
+                    (connector.segments[segmentNumber] as StraightSegmentModel).point.x += tx;
+                    (connector.segments[segmentNumber] as StraightSegmentModel).point.y += ty;
+                }
             } else {
                 for (let i: number = 0; i < connector.segments.length - 1; i++) {
                     (connector.segments[i] as StraightSegmentModel).point.x += tx;
@@ -4187,6 +4384,86 @@ Remove terinal segment in initial
             }
         }
         return true;
+    }
+
+    public updateDirectionalBezierCurve(connector: ConnectorModel): void {
+        if (connector.segments.length < 2) {
+            return;
+        }
+
+        let pts: PointModel[] = [];
+        pts.push(connector.sourcePoint);
+        for (let i: number = 0; i < connector.segments.length - 1; i++) {
+            let seg: BezierSegmentModel = connector.segments[i] as BezierSegmentModel;
+            if (seg.orientation == 'Horizontal') {
+                pts.push({ x: seg.point.x, y: pts[pts.length - 1].y });
+            }
+            else {
+                pts.push({ x: pts[pts.length - 1].x, y: seg.point.y });
+            }
+
+            if (i == connector.segments.length - 2) {
+                if (seg.orientation == 'Horizontal') {
+                    pts.push({ x: seg.point.x, y: connector.targetPoint.y });
+                }
+                else {
+                    pts.push({ x: connector.targetPoint.x, y: seg.point.y });
+                }
+            }
+        }
+
+        pts.push(connector.targetPoint);
+
+        let start: PointModel = pts[0];
+        let end: PointModel = pts[pts.length - 1];
+
+        if (connector.segments.length > 1) {
+            let mid1: PointModel = pts[1];
+            let mid2: PointModel = pts[2];
+            let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+            var segment1: BezierSegmentModel = connector.segments[0];
+            segment1.vector1.angle = findAngle(start, mid1);
+            segment1.vector1.distance = Point.findLength(start, mid1) * 0.5;
+            segment1.vector2.angle = findAngle(center1, mid1);
+            segment1.vector2.distance = Point.findLength(center1, mid1) * 0.5;
+            segment1.point = center1;
+
+            var segment2: BezierSegmentModel = connector.segments[1];
+            segment2.vector1.angle = findAngle(center1, mid2);
+            segment2.vector1.distance = Point.findLength(center1, mid2) * 0.5;
+            if (connector.segments.length > 2) {
+                let mid3: PointModel = pts[3];
+                let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
+                segment2.vector2.angle = findAngle(center2, mid2);
+                segment2.vector2.distance = Point.findLength(center2, mid2) * 0.5;
+                segment2.point = center2;
+
+                var segment3: BezierSegmentModel = connector.segments[2];
+                segment3.vector1.angle = findAngle(center2, mid3);
+                segment3.vector1.distance = Point.findLength(center2, mid3) * 0.5;
+                if (connector.segments.length > 3) {
+                    let mid4: PointModel = pts[4];
+                    let center3: PointModel = { x: (mid3.x + mid4.x) * 0.5, y: (mid3.y + mid4.y) * 0.5 };
+                    segment3.vector2.angle = findAngle(center3, mid3);
+                    segment3.vector2.distance = Point.findLength(center3, mid3) * 0.5;
+                    segment3.point = center3;
+
+                    var segment4: BezierSegmentModel = connector.segments[3];
+                    segment4.vector1.angle = findAngle(center3, mid4);
+                    segment4.vector1.distance = Point.findLength(center3, mid4) * 0.5;
+                    segment4.vector2.angle = findAngle(end, mid4);
+                    segment4.vector2.distance = Point.findLength(end, mid4) * 0.5;
+                }
+                else {
+                    segment3.vector2.angle = findAngle(end, mid3);
+                    segment3.vector2.distance = Point.findLength(end, mid3) * 0.5;
+                }
+            }
+            else {
+                segment2.vector2.angle = findAngle(end, mid2);
+                segment2.vector2.distance = Point.findLength(end, mid2) * 0.5;
+            }
+        }
     }
 
     /**
@@ -5009,6 +5286,7 @@ Remove terinal segment in initial
             this.diagram.connectorPropertyChange(object as Connector, oldValues as Connector, changedvalues as Connector);
         }
         this.diagram.updateDiagramObject(object);
+
     }
     /** @private */
     public labelResize(
@@ -5024,45 +5302,47 @@ Remove terinal segment in initial
             rotateMatrix(matrix, -rotateAngle, pivot.x, pivot.y);
             scaleMatrix(matrix, deltaWidth, deltaHeight, pivot.x, pivot.y);
             rotateMatrix(matrix, rotateAngle, pivot.x, pivot.y);
-            let newPosition: PointModel;
-            switch (label.verticalAlignment) {
-                case "Center":
-                    if (label.horizontalAlignment == 'Center') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
-                    }
-                    else if (label.horizontalAlignment == 'Right') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY });
-                    }
-                    else if (label.horizontalAlignment == 'Left') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY });
-                    }
-                    break;
-                case "Top":
-                    if (label.horizontalAlignment == 'Center') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
-                    }
-                    else if (label.horizontalAlignment == 'Right') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
-                    }
-                    else if (label.horizontalAlignment == 'Left') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
-                    }
-                    break;
-                case "Bottom":
-                    if (label.horizontalAlignment == 'Center') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY+(textElement.outerBounds.height)/2 });
-                    }
-                    else if (label.horizontalAlignment == 'Right') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
-                    }
-                    else if (label.horizontalAlignment == 'Left') {
-                        newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
-                    }
-                    break;
-            }
             const height: number = textElement.actualSize.height * deltaHeight;
             const width: number = textElement.actualSize.width * deltaWidth;
             const shape: ShapeAnnotationModel | PathAnnotationModel = this.findTarget(textElement, node as IElement) as ShapeAnnotation;
+            let newPosition: PointModel = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
+            if(shape instanceof PathAnnotation){
+                switch (label.verticalAlignment) {
+                    case "Center":
+                        if (label.horizontalAlignment == 'Center') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
+                        }
+                        else if (label.horizontalAlignment == 'Right') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY });
+                        }
+                        else if (label.horizontalAlignment == 'Left') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY });
+                        }
+                        break;
+                    case "Top":
+                        if (label.horizontalAlignment == 'Center') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
+                        }
+                        else if (label.horizontalAlignment == 'Right') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
+                        }
+                        else if (label.horizontalAlignment == 'Left') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
+                        }
+                        break;
+                    case "Bottom":
+                        if (label.horizontalAlignment == 'Center') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY+(textElement.outerBounds.height)/2 });
+                        }
+                        else if (label.horizontalAlignment == 'Right') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
+                        }
+                        else if (label.horizontalAlignment == 'Left') {
+                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
+                        }
+                        break;
+                }
+            }
             if (shape instanceof PathAnnotation) {
                 this.updatePathAnnotationOffset(node as Connector, label as PathAnnotation, 0, 0, newPosition, new Size(width, height));
             } else {
@@ -5070,6 +5350,10 @@ Remove terinal segment in initial
                 newPosition = transformPointByMatrix(newMat, newPosition);
                 newPosition.x = newPosition.x - textElement.margin.left + textElement.margin.right;
                 newPosition.y = newPosition.y - textElement.margin.top + textElement.margin.bottom;
+                newPosition.y += (shape.verticalAlignment === 'Top') ? (-height / 2) : (
+                    (shape.verticalAlignment === 'Bottom') ? (height / 2) : 0);
+                newPosition.x += (shape.horizontalAlignment === 'Left') ? (-width / 2) : (
+                    (shape.horizontalAlignment === 'Right') ? (width / 2) : 0);
                 const offsetx: number = bounds.width / (newPosition.x - bounds.x);
                 const offsety: number = bounds.height / (newPosition.y - bounds.y);
                 if (width > 1) {
@@ -6019,6 +6303,27 @@ Remove terinal segment in initial
         this.diagram.scroller.zoom(
             scale, scrollX * this.diagram.scroller.currentZoom, scrollY * this.diagram.scroller.currentZoom, focusPoint);
     }
+}
+
+/** @private */
+export interface ConnectorPropertyChanging{
+    connectorIndex?:number;
+    connectorOldProperty?:ConnectorModel;
+    sourceId?:string;
+    targetId?:string;
+    sourcePoint?:PointModel;
+    targetPoint?:PointModel;
+    sourcePortId?:string;
+    targetPortId?:string;
+    connectors?:ConnectorModel[];
+}
+/** @private */
+export interface NodePropertyChanging{
+    nodeIndex?:number;
+    nodeOldProperty?:NodeModel;
+    offsetX?: number;
+    offsetY?: number;
+    nodes?:NodeModel[];
 }
 
 /** @private */

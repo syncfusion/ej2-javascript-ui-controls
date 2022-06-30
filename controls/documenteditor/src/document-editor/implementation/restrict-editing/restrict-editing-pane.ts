@@ -8,7 +8,6 @@ import { Base64 } from '../editor/editor-helper';
 import { ListView } from '@syncfusion/ej2-lists';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Key } from 'selenium-webdriver';
-
 /**
  * @private
  */
@@ -28,7 +27,7 @@ export class RestrictEditing {
     private userWholeDiv: HTMLElement;
     /**
      * @private
-     */
+    */
     public unProtectDialog: UnProtectDocumentDialog;
     public stopProtectionDiv: HTMLElement;
     public contentDiv1: HTMLElement;
@@ -37,18 +36,16 @@ export class RestrictEditing {
     private closeButton: HTMLButtonElement;
     public protectionType: ProtectionType = 'ReadOnly';
     private localObj: L10n;
-
     public currentHashValue: string;
     public currentSaltValue: string;
+    public previousProtectionType: string = 'Read only';
     public isShowRestrictPane: boolean = false;
     public base64: Base64;
     public addedUser: ListView;
     public stopReadOnlyOptions: HTMLElement;
     public isAddUser: boolean = false;
-
     public usersCollection: string[] = ['Everyone'];
     public highlightCheckBox: CheckBox;
-
     public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
         this.addUserDialog = new AddUserDialog(documentHelper);
@@ -77,7 +74,6 @@ export class RestrictEditing {
             this.documentHelper.updateFocus();
         }
     }
-
     private initPane(localValue: L10n, isRtl?: boolean): void {
         this.restrictPane = createElement('div', { className: 'e-de-restrict-pane'});
         if (isRtl) {
@@ -133,7 +129,8 @@ export class RestrictEditing {
         [
             {Value: 'Read only', Name: localObj.getConstant('Read only')},
             {Value: 'Filling in forms', Name: localObj.getConstant('Filling in forms')},
-            {Value: 'Comments', Name: localObj.getConstant('Comments')}
+            {Value: 'Comments', Name: localObj.getConstant('Comments')},
+            {Value: 'Tracked changes', Name: localObj.getConstant('Tracked changes') }
         ]
         this.protectionTypeDrop = new DropDownList({
             dataSource: protectionTypeValue,
@@ -302,7 +299,8 @@ export class RestrictEditing {
                 //this.enforceProtection.style.marginLeft = '0px';
                 this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
                 this.contentDiv2.innerHTML = this.localObj.getConstant('ReadOnlyProtection');
-                //this.contentDiv2.style.display = 'block';
+                //this.contentDiv2.style.display = 'block';     
+                this.previousProtectionType = args.previousItemData.Value;  
                 break;
             case 'Filling in forms':
                 this.protectionType = 'FormFieldsOnly';
@@ -311,6 +309,7 @@ export class RestrictEditing {
                 this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
                 this.contentDiv2.innerHTML = this.localObj.getConstant('FormFieldsOnly');
                 //this.contentDiv2.style.display = 'block';
+                this.previousProtectionType = args.previousItemData.Value;
                 break;
             case 'Comments':
                 this.protectionType = 'CommentsOnly';
@@ -319,6 +318,34 @@ export class RestrictEditing {
                 this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
                 this.contentDiv2.innerHTML = this.localObj.getConstant('CommentsOnly');
                 //this.contentDiv2.style.display = 'none';
+                this.previousProtectionType = args.previousItemData.Value;
+                break;
+            case 'Tracked changes':
+                this.protectionType = 'RevisionsOnly';
+                this.userWholeDiv.style.display = 'none';
+                this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
+                this.contentDiv2.innerHTML = this.localObj.getConstant('TrackChangesOnly');
+                this.previousProtectionType = args.previousItemData.Value;
+                if (this.documentHelper.selection && this.documentHelper.editRanges.length > 0) {
+                    this.documentHelper.dialog.height = ' Auto';
+                    this.documentHelper.dialog.width = ' 600px';
+                    this.documentHelper.dialog.header = this.localObj.getConstant('Information');
+                    this.documentHelper.dialog.content = this.localObj.getConstant('RemovedIgnoreExceptions') + '<br>' + '<br>' + this.localObj.getConstant('RemovedIgnore');
+                    this.documentHelper.dialog.buttons = [{
+                        click: this.onYesButtonClick,
+                        buttonModel: { content: this.localObj.getConstant('Yes') }
+                    },
+                    {
+                        click: this.onCancelButtonClick,
+                        buttonModel: { content: this.localObj.getConstant('Cancel') }
+                    },
+                    {
+                        click: this.onNoButtonClick,
+                        buttonModel: { content: this.localObj.getConstant('No') }
+                    }];
+                    this.documentHelper.dialog.dataBind();
+                    this.documentHelper.dialog.show();
+                }
                 break;
             default:
                 this.protectionType = 'NoProtection';
@@ -327,6 +354,17 @@ export class RestrictEditing {
                 break;
         }
     }
+    private onYesButtonClick = (): void => {
+        this.viewer.owner.editor.removeAllEditRestrictions();
+        this.documentHelper.dialog.hide();
+    }
+    private onCancelButtonClick = (args: any): void => {
+        this.protectionTypeDrop.value = this.previousProtectionType;
+        this.documentHelper.dialog.hide();
+    };
+    private onNoButtonClick = (): void => {
+        this.documentHelper.dialog.hide();
+    };
     private selectHandler(args: any): void {
         if (args.isChecked) {
             this.viewer.owner.editor.insertEditRangeElement(args.text);
@@ -347,7 +385,6 @@ export class RestrictEditing {
         checkBox.appendTo(element);
         return checkBox;
     }
-
     public loadPaneValue(): void {
         // if (!this.isAddUser) {
         //     this.protectionType = this.documentHelper.protectionType;
@@ -363,6 +400,9 @@ export class RestrictEditing {
             case 'CommentsOnly':
                 this.protectionTypeDrop.value = 'Comments';
                 break;
+            case 'RevisionsOnly':
+                this.protectionTypeDrop.value = 'Tracked changes';
+                break;
         }
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;
@@ -370,7 +410,6 @@ export class RestrictEditing {
         this.addedUser.dataBind();
         this.showStopProtectionPane(this.documentHelper.isDocumentProtected);
     }
-
     public navigateNextRegion(): void {
         this.documentHelper.selection.navigateToNextEditingRegion();
     }

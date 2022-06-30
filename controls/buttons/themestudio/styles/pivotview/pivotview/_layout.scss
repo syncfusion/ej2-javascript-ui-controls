@@ -147,9 +147,9 @@
 
           &:hover {
             @if ($pivotgrid-skin == 'bootstrap4') {
-              background-color: #6c757d !important;
-              border-color: #6c757d !important;
-              color: #fff !important;
+              background-color: $gray-600 !important;
+              border-color: $gray-600 !important;
+              color: $white !important;
             }
           }
 
@@ -169,9 +169,9 @@
 
           &:focus {
             @if ($pivotgrid-skin == 'bootstrap4') {
-              background-color: #6c757d !important;
-              border-color: #6c757d !important;
-              color: #fff !important;
+              background-color: $gray-600 !important;
+              border-color: $gray-600 !important;
+              color: $white !important;
             }
 
             &.e-active {
@@ -630,6 +630,9 @@
 
         .e-icons.e-btn-icon {
           font-size: 16px;
+          @if ($skin-name == 'FluentUI') {
+            margin: 4px;
+          }
         }
       }
 
@@ -637,8 +640,8 @@
         background-color: transparent;
         border: none;
         @if ($pivotgrid-skin == 'bootstrap4') {
-          background-color: #f8f9fa;
-          color: #495057;
+          background-color: $gray-100;
+          color: $gray-700;
         }
 
         // sass-lint:disable-all
@@ -649,8 +652,8 @@
           overflow: hidden;
           padding-left: 10px;
           @if ($pivotgrid-skin == 'bootstrap4') {
-            background-color: #f8f9fa;
-            color: #495057;
+            background-color: $gray-100;
+            color: $gray-700;
           }
 
           .e-menu-icon {
@@ -658,7 +661,7 @@
             margin-right: 0;
             font-size: 16px;
             @if ($pivotgrid-skin == 'bootstrap4') {
-              color: #495057;
+              color: $gray-700;
             }
 
             @if ($pivotgrid-skin == 'FluentUI') {
@@ -676,7 +679,7 @@
 
           .e-caret {
             @if ($pivotgrid-skin == 'bootstrap4') {
-              color: #495057;
+              color: $gray-700;
             }
 
             @if ($pivotgrid-skin == 'FluentUI') {
@@ -695,14 +698,14 @@
 
         ul .e-menu-item.e-focused {
           @if ($pivotgrid-skin == 'bootstrap4') {
-            background-color: #6c757d;
+            background-color: $gray-600;
             border-radius: $pivotgrid-default-border-radius;
         }
 
         .e-menu-icon,
         .e-icons{
           @if ($pivotgrid-skin == 'bootstrap4') {
-            color:#ffffff;
+            color: $white;
           }
 
           @if ($pivotgrid-skin == 'FluentUI') {
@@ -1068,23 +1071,6 @@
     .e-pivotview-report-label {
       margin-top: $pivotgrid-bigger-report-label-margin-top;
     }
-  }
-
-  .e-bigger .e-dialog .e-footer-content {
-    height: 62px;
-  }
-
-  .e-bigger .e-dialog .e-dlg-header-content {
-    @if ($skin-name == 'tailwind') {
-      height: 52px;
-    }
-    padding-left: 10px;
-  }
-
-  .e-bigger .e-tab .e-tab-header .e-toolbar-item.e-active {
-    // sass-lint:disable-all
-    margin-left: 24px !important;
-    // sass-lint:enable-all
   }
 }
   

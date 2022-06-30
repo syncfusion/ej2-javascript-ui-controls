@@ -156,10 +156,20 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
      */
 
     private static delayAnimation(model: AnimationModel): void {
-        if (model.delay) {
-            setTimeout(() => { Animation.applyAnimation(model); }, model.delay);
-        } else {
-            Animation.applyAnimation(model);
+        if(animationMode === 'Disable'){
+            if (model.begin) {
+                model.begin.call(this, model);
+            }
+            if (model.end) {
+                model.end.call(this, model);
+            }
+        }
+        else{
+            if (model.delay) {
+                setTimeout(() => { Animation.applyAnimation(model); }, model.delay);
+            } else {
+                Animation.applyAnimation(model);
+            }
         }
     }
 
@@ -494,4 +504,17 @@ export let isRippleEnabled: boolean = false;
 export function enableRipple(isRipple: boolean): boolean {
     isRippleEnabled = isRipple;
     return isRippleEnabled;
+}
+
+/**
+ * Defines the Modes of Global animation.
+ * @private
+ */
+ export let animationMode: string = '';
+
+ /**
+  * Method for set the Global animation modes for Syncfusion Blazor components.
+  */
+ export function setGlobalAnimation(value: string): void {
+     animationMode = value;
 }

@@ -592,6 +592,9 @@ export class Dependency {
         const connectorObj: IConnectorLineObject = this.parent.connectorLineModule.createConnectorLineObject(
             parentGanttRecord, childGanttRecord, predecessor);
         if (connectorObj) {
+            if (childGanttRecord.isCritical && parentGanttRecord.isCritical) {
+                connectorObj.isCritical = true;
+            }
             if ((this.parent.connectorLineIds.length > 0 && this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) === -1) ||
             this.parent.connectorLineIds.length === 0) {
                 this.parent.updatedConnectorLineCollection.push(connectorObj);

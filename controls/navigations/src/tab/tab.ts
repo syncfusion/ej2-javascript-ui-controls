@@ -8,7 +8,6 @@ import { Base } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
-import { ToolbarModel } from '../toolbar';
 
 type HTEle = HTMLElement;
 type Str = string;
@@ -745,78 +744,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
             if (!isNOU(this.tbItem)) {
                 for (let i: number = 0; i < this.items.length; i++) {
-                    const tabID: string = this.items[i].id;
-                    this.tbItem[i].setAttribute('data-id', tabID);
+                    if (this.items[i]) {
+                        const tabID: string = this.items[i].id;
+                        this.tbItem[i].setAttribute('data-id', tabID);
+                    }
                 }
             }
             this.setRTL(this.enableRtl);
         }
     }
-
-    private serverItemsChanged(): void {
-        this.enableAnimation = false;
-        this.setActive(this.selectedItem, true);
-        if (this.loadOn !== 'Dynamic' && !isNOU(this.cntEle)) {
-            const itemCollection: HTMLElement[] = [].slice.call(this.cntEle.children);
-            const content: string = CLS_CONTENT + this.tabId + '_' + this.selectedItem;
-            itemCollection.forEach((item: HTEle) => {
-                if (item.classList.contains(CLS_ACTIVE) && item.id !== content) {
-                    item.classList.remove(CLS_ACTIVE);
-                }
-                if (item.id === content) {
-                    item.classList.add(CLS_ACTIVE);
-                }
-            });
-            this.prevIndex = this.selectedItem;
-            this.triggerAnimation(CLS_ITEM + this.tabId + '_' + this.selectedItem, false);
-        }
-        this.enableAnimation = true;
-    }
-
-    private headerReady(): void {
-        this.initRender = true;
-        this.hdrEle = this.getTabHeader();
-        this.setOrientation(this.headerPlacement, this.hdrEle);
-        if (!isNOU(this.hdrEle)) {
-            this.tbObj = (<ToolbarModel>(this.hdrEle && (<Instance>this.hdrEle).ej2_instances[0])) as Toolbar;
-        }
-        this.tbObj.clicked = this.clickHandler.bind(this);
-        this.tbObj.on('onItemsChanged', this.serverItemsChanged.bind(this));
-        this.tbItems = <HTEle>select('.' + CLS_HEADER + ' .' + CLS_TB_ITEMS, this.element);
-        if (!isNOU(this.tbItems)) {
-            rippleEffect(this.tbItems, { selector: '.e-tab-wrap' });
-        }
-        if (selectAll('.' + CLS_TB_ITEM, this.element).length > 0) {
-            this.bdrLine = <HTEle>select('.' + CLS_INDICATOR + '.' + CLS_IGNORE, this.element);
-            const scrollCnt: HTEle = <HTEle>select('.' + this.scrCntClass, this.tbItems);
-            if (!isNOU(scrollCnt)) {
-                scrollCnt.insertBefore(this.bdrLine, scrollCnt.firstElementChild);
-            } else {
-                this.tbItems.insertBefore(this.bdrLine, this.tbItems.firstElementChild);
-            }
-            this.select(this.selectedItem);
-        }
-        this.cntEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
-        if (!isNOU(this.cntEle)) {
-            this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) });
-        }
-        if (this.loadOn === 'Demand') {
-            const id: string = this.setActiveContent();
-            this.triggerAnimation(id, false);
-        }
-        this.initRender = false;
-        this.renderComplete();
-    }
-
-    private setActiveContent(): string {
-        const id: string = CLS_ITEM + this.tabId + '_' + this.selectedItem;
-        const item: HTEle = this.getTrgContent(this.cntEle, this.extIndex(id));
-        if (!isNOU(item)) {
-            item.classList.add(CLS_ACTIVE);
-        }
-        return id;
-    }
-
     private renderHeader(): void {
         const hdrPlace: HeaderPosition = this.headerPlacement;
         let tabItems: Object[] = [];
@@ -864,8 +800,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this),
             scrollStep: this.scrollStep,
-            enableHtmlSanitizer: this.enableHtmlSanitizer
-
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
+            cssClass: this.cssClass
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
@@ -875,7 +811,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.setCloseButton(this.showCloseButton);
         const toolbarHeader: HTEle = this.tbObj.element.querySelector('.' + CLS_TB_ITEMS);
         if (!isNOU(toolbarHeader)) {
-            toolbarHeader.id = this.element.id + '_' +  'tab_header_items';
+            if (isNOU(toolbarHeader.id) || toolbarHeader.id === '') {
+                toolbarHeader.id = this.element.id + '_' +  'tab_header_items';
+            }
+            this.element.setAttribute('aria-owns', toolbarHeader.id);
         }
     }
     private renderContent(): void {
@@ -1559,12 +1498,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.trigger('selected', eventArg);
         }
     }
-
-    private contentReady(): void {
-        const id: string = this.setActiveContent();
-        this.triggerAnimation(id, this.enableAnimation);
-    }
-
     private setItems(items: object[]): void {
         this.isReplace = true;
         this.tbItems = <HTEle>select('.' + CLS_TB_ITEMS, this.getTabHeader());
@@ -2181,6 +2114,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 textValue = item.headerTemplate || item.header.text;
                 if (!(isNOU(item.headerTemplate || item.header) || isNOU(textValue) ||
                     ((<string>textValue).length === 0) && !isNOU(item.header) && isNOU(item.header.iconCss))) {
+                    if (tabItems[place]) {
+                        if (isNOU(item.id)) {
+                            item.id = TABITEMPREFIX + (lastEleIndex + place).toString();
+                        }
+                        (tabItems[place] as Record<string, any>).htmlAttributes['data-id'] = item.id;
+                    }
                     this.items.splice((index + i), 0, item);
                     i++;
                 }
@@ -2203,6 +2142,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.select(index);
             } else {
                 this.setActiveBorder();
+                this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
             }
             this.bindDraggable();
         }
@@ -2403,6 +2343,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         let item: TabItemModel = this.items[args];
                         this.items.splice(args, 1);
                         this.items.splice(this.tbItem.length - 1, 0, item);
+                        let itemId: string = this.itemIndexArray[args];
+                        this.itemIndexArray.splice(args, 1);
+                        this.itemIndexArray.splice(this.tbItem.length - 1, 0, itemId);
                     }
                 } else {
                     this.setActive(args, null, isInteracted);
@@ -2478,11 +2421,19 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
+                    const headerEle: HTMLElement = this.element.querySelector('.' + CLS_HEADER);
                     if (oldProp.cssClass !== '' && !isNullOrUndefined(oldProp.cssClass)) {
                         this.setCssClass(this.element, oldProp.cssClass, false);
                         this.setCssClass(this.element, newProp.cssClass, true);
+                        if (!isNullOrUndefined(headerEle)) {
+                            this.setCssClass(headerEle, oldProp.cssClass, false);
+                            this.setCssClass(headerEle, newProp.cssClass, true);
+                        }
                     } else {
                         this.setCssClass(this.element, newProp.cssClass, true);
+                        if (!isNullOrUndefined(headerEle)) {
+                            this.setCssClass(headerEle, newProp.cssClass, true);
+                        }
                     }
                     break;
                 case 'items':

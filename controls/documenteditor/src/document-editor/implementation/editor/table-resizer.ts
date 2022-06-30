@@ -19,8 +19,8 @@ export class TableResizer {
     public currentResizingTable: TableWidget = undefined;
     public startingPoint: Point;
     /**
-   * @private
-   */
+    * @private
+    */
     public checkCellMinWidth: boolean = false;
     public constructor(node: DocumentEditor) {
         this.owner = node;

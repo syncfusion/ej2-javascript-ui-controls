@@ -33,3 +33,9 @@ export const CLEAR_COMMAND: string = 'clear-commands';
  * @hidden
  */
 export const MD_TABLE: string = 'insert-table';
+/**
+ * insertText plugin events
+ *
+ * @hidden
+ */
+export const INSERT_TEXT_COMMAND: string = 'insert-text';

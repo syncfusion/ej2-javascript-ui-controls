@@ -383,7 +383,7 @@ export class SfdtExport {
             return undefined;
         }
         if (widget instanceof ParagraphWidget) {
-            if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
+            if (widget.hasOwnProperty('contentControlProperties')) {
                 let block: any = this.blockContentControl(widget);
                 this.blockContent = false;
                 if (!isNullOrUndefined(block) && (this.isBlockClosed || !this.nestedBlockContent)) {
@@ -430,7 +430,7 @@ export class SfdtExport {
                     nestedBlocks = true;
                 }
             }
-            if ((nestedBlocks || (this.blockContent && firstElement instanceof ContentControl && !this.nestedBlockContent && (firstElement as ContentControl).type === 0 && (firstElement as ContentControl).contentControlWidgetType === 'Block'))) {
+            if ((nestedBlocks || (this.blockContent && firstElement instanceof ContentControl && !this.nestedBlockContent && (firstElement as ContentControl).type === 0 && secondElement instanceof ContentControl && (firstElement as ContentControl).contentControlWidgetType === 'Block'))) {
                 this.nestedBlockContent = true;
                 this.nestedBlockEnabled = true;
                 let block: any = this.blockContentControl(widget);
@@ -447,11 +447,10 @@ export class SfdtExport {
             blocks.push(paragraph);
             this.nextBlock = this.writeParagraph(widget, paragraph, blocks);
         }
-        if (!this.blockContent) {
-            return blocks;
-        } else if (!this.nestedBlockContent && this.nestedBlockEnabled) {
-            return blocks;
+        if (!this.nestedBlockContent && this.nestedBlockEnabled) {
+            this.nestedBlockEnabled = false;
         }
+        return blocks;
     }
     private contentControlProperty(contentControlPropertie: ContentControlProperties): any {
         let contentControlProperties: any = {};
@@ -516,7 +515,16 @@ export class SfdtExport {
             this.nextBlock = widget.nextWidget;
             return undefined;
         }
-        block.blocks = this.writeParagraphs(widget);        
+        block.blocks = this.writeParagraphs(widget);    
+        if (!isNullOrUndefined(this.nextBlock)) {
+            if (widget.contentControlProperties === this.nextBlock.contentControlProperties) {
+                this.isBlockClosed = false;
+                this.nestedBlockContent = true;
+                return this.blocks = block.blocks;
+            } else {
+                this.isBlockClosed = true;
+            }
+        }        
         if (!isNullOrUndefined(block.blocks)) {
             let child: LineWidget = widget.childWidgets[0] as LineWidget;
             let firstChild: ElementBox = child.children[0];
@@ -607,17 +615,11 @@ export class SfdtExport {
                 continue;
             }
             if (element instanceof FootnoteElementBox) {
-                if (element.footnoteType === 'Endnote') {
-                    inlines.push(this.writeInlinesEndNote(paragraph, element, line, inlines));
-                } else {
-                    inlines.push(this.writeInlinesFootNote(paragraph, element, line, inlines));
-                }
+                inlines.push(this.writeInlinesFootNote(paragraph, element, line, inlines));
                 continue;
             }
-            if ((element instanceof ContentControl && !isNullOrUndefined(element.contentControlProperties) && element.contentControlProperties.type !== 'BuildingBlockGallery') || this.startContent || this.blockContent) {
-                if (inlines.length > 0) {
-                    this.writeInlinesContentControl(element, line, inlines, i);
-                }
+            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+                this.writeInlinesContentControl(element, line, inlines, i);
                 continue;
             } else {
                 let inline: any = this.writeInline(element);
@@ -658,17 +660,15 @@ export class SfdtExport {
                 inline.inlines = this.inlineContentControls(element, this.contentInline);
             }
         }
-        if (!isNullOrUndefined(nextElement)) {
-            if (nextElement.type === 1 && !this.nestedContent) {
-                if (this.multipleLineContent) {
-                    inlines[inlines.length - 1].contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
-                    this.multipleLineContent = false;
-                    return;
-                } else {
-                    inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
-                }
-                return inline;
+        if (nextElement instanceof ContentControl && nextElement.type === 1 && !this.nestedContent) {
+            if (this.multipleLineContent) {
+                inlines[inlines.length - 1].contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
+                this.multipleLineContent = false;
+                return;
+            } else {
+                inline.contentControlProperties = this.contentControlProperty(nextElement.contentControlProperties);
             }
+            return inline;
         } else if (this.startContent) {
             this.multipleLineContent = true;
             return inline;
@@ -1164,7 +1164,7 @@ export class SfdtExport {
             if (!started || isContentStarted) {
                 continue;
             }
-            if ((element instanceof ContentControl && !isNullOrUndefined(element.contentControlProperties) && element.contentControlProperties.type !== 'BuildingBlockGallery') || this.startContent || this.blockContent) {
+            if (element instanceof ContentControl || this.startContent || this.blockContent) {
                 if (ended) {
                     this.startContent = false;
                     break;
@@ -1197,33 +1197,6 @@ export class SfdtExport {
         for (let i: number = 0; i < element.bodyWidget.childWidgets.length; i++) {
             this.writeBlock(element.bodyWidget.childWidgets[i], 0, inline.blocks);
         }
-        inline.symbolCode = element.symbolCode;
-        inline.symbolFontName = element.symbolFontName;
-        inline.customMarker = element.customMarker;
-        return inline;
-    }
-    private writeInlinesEndNote(paragraph: any, element: any, line: any, inlines: any): any {
-        let inline: any = {};
-        inline.footnoteType = element.footnoteType;
-        inline.characterFormat = {};
-        inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
-        inline.blocks = [];
-        let body: BodyWidget = element.bodyWidget as BodyWidget;
-        let isFirst: boolean = true;
-        do {
-            for (let i: number = 0; i < body.childWidgets.length; i++) {
-                if ((body.childWidgets[i] as BlockWidget).getPreviousSplitWidgets().length > 0) {
-                    continue;
-                }
-                this.writeBlock(body.childWidgets[i] as BlockWidget, 0, inline.blocks);
-            }
-            if (isFirst) {
-                isFirst = false;
-                body = ((line as LineWidget).children[(element as ElementBox).indexInOwner] as FootnoteElementBox).bodyWidget.nextRenderedWidget as BodyWidget;
-            } else {
-                body = body.nextRenderedWidget as BodyWidget;
-            }
-        } while (body && (body.firstChild as BlockWidget).index !== 0);
         inline.symbolCode = element.symbolCode;
         inline.symbolFontName = element.symbolFontName;
         inline.customMarker = element.customMarker;
@@ -1287,6 +1260,7 @@ export class SfdtExport {
                         let inline: any = {};
                         inline.inlines = this.contentInline;
                         inlines.push(inline);
+                        this.contentInline = [];
                     } else {
                         inlines.push(contentinline);
                         this.contentInline = [];
@@ -1343,6 +1317,7 @@ export class SfdtExport {
     }
     private writeParagraphFormat(format: WParagraphFormat, isInline?: boolean): any {
         let paragraphFormat: any = {};
+        paragraphFormat.borders = this.writeParagraphBorders(format.borders);
         paragraphFormat.leftIndent = isInline ? format.leftIndent : format.getValue('leftIndent');
         paragraphFormat.rightIndent = isInline ? format.rightIndent : format.getValue('rightIndent');
         paragraphFormat.firstLineIndent = isInline ? format.firstLineIndent : format.getValue('firstLineIndent');
@@ -1542,6 +1517,18 @@ export class SfdtExport {
         border.space = wBorder.hasValue('space') ? wBorder.space : undefined;
         return border;
     }
+
+    private writeParagraphBorders(wBorders: WBorders): any {
+        let borders: any = {};
+        borders.top = this.writeBorder(wBorders.getBorder('top'));
+        borders.left = this.writeBorder(wBorders.getBorder('left'));
+        borders.right = this.writeBorder(wBorders.getBorder('right'));
+        borders.bottom = this.writeBorder(wBorders.getBorder('bottom'));
+        borders.horizontal = this.writeBorder(wBorders.getBorder('horizontal'));
+        borders.vertical = this.writeBorder(wBorders.getBorder('vertical'));
+        return borders;
+    }
+
     private writeBorders(wBorders: WBorders): any {
         let borders: any = {};
         borders.top = this.writeBorder(wBorders.top);

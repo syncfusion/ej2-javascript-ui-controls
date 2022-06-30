@@ -32,7 +32,8 @@ export class MarkdownRender implements IRenderer {
         const div: HTMLElement = this.parent.createElement('div', { id: this.parent.getID() + '_view', className: 'e-rte-content' });
         this.editableElement = this.parent.createElement('textarea', {
             className: 'e-content',
-            id: this.parent.getID() + '_editable-content'
+            id: this.parent.getID() + '_editable-content',
+            attrs: { 'aria-labelledby': this.parent.getID() + '_view' }
         });
         div.appendChild(this.editableElement);
         this.setPanel(div);

@@ -30,7 +30,7 @@ import { Zoom } from './user-interaction/zoom';
 import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, itemSelection, zoomIn } from './model/constants';
 import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';
 import { MapsModel } from './maps-model';
-import { getThemeStyle } from './model/theme';
+import { getThemeStyle, Theme } from './model/theme';
 import { BingMap } from './layers/bing-map';
 import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
 import { GeoPosition, ITooltipRenderCompleteEventArgs, ILegendRenderingEventArgs } from './model/interface';
@@ -979,15 +979,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private renderMap(): void {
         if (this.legendModule && this.legendSettings.visible) {
-            if (!this.isTileMap) {
-                this.legendModule.renderLegend();
-            } else {
-                const layerCount: number = this.layersCollection.length - 1;
-                if (!this.layersCollection[layerCount].isBaseLayer) {
-                    this.isTileMapSubLayer = true;
-                    this.legendModule.renderLegend();
-                }
-            }
+            this.legendModule.renderLegend();
         }
         this.createTile();
         if (this.zoomSettings.enable && this.zoomModule) {
@@ -1070,12 +1062,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 bottom = svg.bottom - tile.bottom - element.offsetTop;
                 top = parseFloat(tileElement.style.top) + element.offsetTop;
             }
-            top = (bottom <= 11) ? top : (top * 2);
-            left = (bottom <= 11) ? left : (left * 2);
+            top = (bottom <= 11) ? top : (!isNullOrUndefined(this.legendModule) && this.legendSettings.position === 'Bottom') ? this.mapAreaRect.y : (top * 2);
+            left = (bottom <= 11) ? left : !isNullOrUndefined(this.legendModule) ? left : (left * 2);
             tileElement.style.top = top + 'px';
             tileElement.style.left = left + 'px';
             tileElement1.style.top = top + 'px';
             tileElement1.style.left = left + 'px';
+            if (!isNullOrUndefined(this.legendModule) && this.legendModule.totalPages.length > 0) {
+                tileElement.style.height = tileElement1.style.height = this.legendModule.legendTotalRect.height + 'px';
+                tileElement.style.width = tileElement1.style.width = this.legendModule.legendTotalRect.width + 'px';
+            }
         }
 
         this.arrangeTemplate();
@@ -1214,12 +1210,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.zoomModule.layerCollectionEle = getElementByID(this.element.id + '_Layer_Collections');
         }
         if (this.isTileMap && getElementByID(this.element.id + '_Tile_SVG') && getElementByID(this.element.id + '_tile_parent')) {
-            const tileRect: ClientRect = getElementByID(this.element.id + '_tile_parent').getBoundingClientRect();
-            const tileSvgRect: ClientRect = getElementByID(this.element.id + '_Tile_SVG').getBoundingClientRect();
+            let tileElement: Element = getElementByID(this.element.id + '_tile_parent');
+            let tileSvgElement: Element = getElementByID(this.element.id + '_Tile_SVG');
+            const tileSvgParentElement: Element = getElementByID(this.element.id + '_Tile_SVG_Parent');
+            const tileRect: ClientRect = tileElement.getBoundingClientRect();
+            const tileSvgRect: ClientRect = tileSvgElement.getBoundingClientRect();
             left = (tileRect.left - tileSvgRect.left);
             top = (tileRect.top - tileSvgRect.top);
-            (getElementByID(this.element.id + '_Tile_SVG_Parent') as HTMLElement).style.left = left + 'px';
-            (getElementByID(this.element.id + '_Tile_SVG_Parent') as HTMLElement).style.top = top + 'px';
+            (tileSvgParentElement as HTMLElement).style.left = left + 'px';
+            (tileSvgParentElement as HTMLElement).style.top = top + 'px';
+            if (!isNullOrUndefined(this.legendModule) && this.legendModule.totalPages.length > 0) {
+                (tileElement as HTMLElement).style.width = (tileSvgElement as HTMLElement).style.width =  this.legendModule.legendTotalRect.width.toString();                
+                (tileElement as HTMLElement).style.height = (tileSvgElement as HTMLElement).style.height = this.legendModule.legendTotalRect.height.toString();                
+                (tileSvgParentElement as HTMLElement).style.width = this.legendModule.legendTotalRect.width + 'px';
+                (tileSvgParentElement as HTMLElement).style.height = this.legendModule.legendTotalRect.height + 'px';
+            }
             const markerTemplateElements: HTMLCollectionOf<Element> = document.getElementsByClassName('template');
             if (!isNullOrUndefined(markerTemplateElements) && markerTemplateElements.length > 0) {
                 for (let i: number = 0; i < markerTemplateElements.length; i++) {
@@ -1237,7 +1242,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (!isNullOrUndefined(elements) && elements.childElementCount > 0) {
                 for (let i: number = 0; i < elements.childNodes.length; i++) {
                     const childElement: SVGAElement = elements.childNodes[i] as SVGAElement;
-                    if (childElement.tagName === 'g') {
+                    if (childElement.tagName === 'g' && childElement.id.indexOf('_Legend_Group') == -1) {
                         const layerIndex: number = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                         for (let j: number = 0; j < childElement.childNodes.length; j++) {
                             const childNode: Element = <Element>childElement.childNodes[j];
@@ -1276,7 +1281,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.element.id + '_template');
         if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
-            getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
+            getElementByID(this.element.id + '_Layer_Collections') && !this.isTileMap) {
             for (let i: number = 0; i < templateElements.length; i++) {
                 let offSetLetValue: number = 0;
                 let offSetTopValue: number = 0;
@@ -1311,10 +1316,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const mainLayer: LayerSettings = this.layersCollection[0];
         const padding: number = 0;
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
-            mainLayer.layerType === 'GoogleStaticMap' || mainLayer.layerType === 'Google')) {
-            if (mainLayer.layerType === 'Google') {
-                mainLayer.urlTemplate = 'https://mt1.google.com/vt/lyrs=m@129&hl=en&x=tileX&y=tileY&z=level';
-            }
+            mainLayer.layerType === 'GoogleStaticMap' || mainLayer.layerType === 'Google' || (!isNullOrUndefined(mainLayer.urlTemplate) && mainLayer.urlTemplate !== ''))) {
             removeElement(this.element.id + '_tile_parent');
             removeElement(this.element.id + '_tiles');
             removeElement('animated_tiles');
@@ -1363,7 +1365,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const baseLayer: LayerSettings = <LayerSettings>mainLayers[i];
             if (baseLayer.visible && baseIndex === i) {
                 baseLayer.isBaseLayer = true;
-                this.isTileMap = (baseLayer.layerType === 'Geometry') ? false : true;
+                this.isTileMap = (baseLayer.layerType === 'Geometry' && !isNullOrUndefined(baseLayer.shapeData)) ? false : true;
                 this.layersCollection.push(baseLayer);
                 break;
             } else if (i === mainLayers.length - 1) {
@@ -1412,12 +1414,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     private renderTitle(title: TitleSettingsModel, type: string, bounds: Rect, groupEle: Element): void {
-        const style: FontModel = title.textStyle;
+        const style: FontModel = {
+            size: title.textStyle.size,
+            color: title.textStyle.color,
+            fontFamily: title.textStyle.fontFamily,
+            fontWeight: title.textStyle.fontWeight,
+            fontStyle: title.textStyle.fontStyle,
+            opacity: title.textStyle.opacity
+        };
         let height: number;
         const width: number = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
-        style.fontFamily = this.themeStyle.fontFamily || style.fontFamily;
+        style.fontFamily = !isNullOrUndefined(style.fontFamily) ? style.fontFamily : this.themeStyle.fontFamily;
         style.fontWeight = style.fontWeight || this.themeStyle.titleFontWeight;
-        style.size = this.themeStyle.titleFontSize || style.size;
+        style.size = type === 'title' ? (style.size || this.themeStyle.titleFontSize) : (style.size || Theme.mapsSubTitleFont.size);
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
@@ -1596,6 +1605,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const id: string = event.target['id'];
             event.preventDefault();
             if (this.legendModule && (id.indexOf('_Left_Page_Rect') > -1 || id.indexOf('_Right_Page_Rect') > -1)) {
+                this.mapAreaRect = this.legendModule.initialMapAreaRect;
                 this.legendModule.currentPage = (id.indexOf('_Left_Page_') > -1) ? (this.legendModule.currentPage - 1) :
                     (this.legendModule.currentPage + 1);
                 this.legendModule.legendGroup = this.renderer.createGroup({ id: this.element.id + '_Legend_Group' });
@@ -1959,7 +1969,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if ((targetId === (this.element.id + '_Map_title')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
             showTooltip(
-                this.titleSettings.text, this.titleSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight,
+                this.titleSettings.text, this.titleSettings.textStyle.size || this.themeStyle.titleFontSize, x, y, this.element.offsetWidth, this.element.offsetHeight,
                 this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch
             );
         } else {
@@ -2404,7 +2414,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         if (!isNullOrUndefined(newProp.layers[x])) {
                             const collection: string[] = Object.keys(newProp.layers[x]);
                             for (const collectionProp of collection) {
-                                if (collectionProp === 'layerType' && newProp.layers[x].layerType === 'OSM') {
+                                if ((collectionProp === 'layerType' && newProp.layers[x].layerType !== 'Geometry') || (isNullOrUndefined(this.layers[x].shapeData)
+                                    && !isNullOrUndefined(this.layers[x].urlTemplate) && this.layers[x].urlTemplate !== '')) {
                                     this.isReset = true;
                                 } else if (collectionProp === 'markerSettings') {
                                     isMarker = true;
@@ -2694,6 +2705,30 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return null;
     }
+
+    /**
+     * This method is used to get the Bing maps URL.
+     * 
+     * @param {string} url - Specifies the URL of the maps.
+     * @returns {Promise<string>} - Returns the processed Bing URL as Promise.
+     */
+    public getBingUrlTemplate(url: string): Promise<string> {
+        const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
+            const ajax: Ajax = new Ajax({
+                url: url
+            });
+            ajax.onSuccess = (json: string) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const jsonObject: any = JSON.parse(json);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const resource: any = jsonObject['resourceSets'][0]['resources'][0];
+                resolve(<string>resource['imageUrl']);
+            }
+            ajax.send();
+        }); 
+        return promise;
+    }
+
     /**
      * To find visibility of layers and markers for required modules load.
      *

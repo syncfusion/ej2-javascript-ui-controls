@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-richtexteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-richtexteditor)
+
 # ej2-richtexteditor
 
 The [JavaScript Rich Text Editor](https://www.syncfusion.com/javascript-ui-controls/js-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-rich-text-editor-npm) component is a HTML and markdown editor that provides best user experience for creating and updating the content.

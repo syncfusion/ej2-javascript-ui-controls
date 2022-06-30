@@ -963,5 +963,55 @@ describe('Gantt taskbar editing', () => {
                 expect(ganttObj.currentViewData[0].expanded).toBe(true);
             }, 100);
         });
-    }); 
+    });
+    describe('Split task -', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: splitTasksData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        segments: 'Segments'
+                    },
+                    enableContextMenu: true,
+                    dateFormat:'MM/dd/yyyy hh:mm:ss',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+
+                    allowSelection: true,
+                    height: '450px',
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            ganttObj.openAddDialog();
+            let startDate: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            startDate.value = new Date('02/08/2019');
+            let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            duration.value = 2;
+            let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(save, 'click');
+            setTimeout(done, 500);
+        });
+        it('split over weekends', () => {
+            ganttObj.splitTask(12, new Date('02/09/2019'));
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].startDate, 'MM/dd/yyyy')).toBe('02/12/2019');
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+
+    });
 });

@@ -1251,7 +1251,6 @@
       }
 
       .e-content-wrap {
-        display: flex;
         font-size: $schedule-date-header-wrap-nrml-font-size;
       }
 
@@ -1796,6 +1795,11 @@
       .e-event-table {
         position: absolute;
         top: 0;
+
+        .e-appointment-container.e-event-container {
+          height: $schedule-timeline-year-work-cells-height;
+          position: relative;
+        }
 
         .e-appointment-wrapper {
           position: absolute;
@@ -3019,7 +3023,7 @@
   }
 
   .e-bigger .e-dialog.e-quick-dialog.e-following-events-dialog {
-    width: 485px;
+    width: 502px;
   }
 
   .e-dialog.e-quick-dialog.e-following-events-dialog {

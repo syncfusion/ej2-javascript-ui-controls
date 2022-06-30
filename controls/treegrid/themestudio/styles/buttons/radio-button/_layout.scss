@@ -56,7 +56,7 @@
       white-space: nowrap;
       @if $skin-name == 'FluentUI' {
         border: 1px solid transparent;
-        height: 20px;
+        height: 24px;
       }
 
       & .e-label {
@@ -83,9 +83,19 @@
         box-sizing: border-box;
         content: '';
         height: $radio-btn-height;
-        left: 0;
+        @if $skin-name == 'FluentUI' {
+          left: 1px;
+        }
+        @else {
+          left: 0;
+        }
         position: absolute;
-        top: 0;
+        @if $skin-name == 'FluentUI' {
+          top: 1px;
+        }
+        @else {
+          left: 0;
+        }
         width: $radio-btn-width;
       }
 

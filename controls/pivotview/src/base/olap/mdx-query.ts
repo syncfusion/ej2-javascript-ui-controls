@@ -493,7 +493,7 @@ export class MDXQuery {
         if (!hasAllMember && !dimension.isNamedSet && !dimension.isCalculatedField) {
             query = '((' + name + ').levels(0).AllMembers)';
         } else {
-            query = (dimension.isNamedSet ? '{' + name + '}' : this.isPaging ? name + '.CHILDREN' :
+            query = (dimension.isNamedSet || dimension.isCalculatedField ? '{' + name + '}' : this.isPaging ? name + '.CHILDREN' :
                 'DrilldownLevel({' + name + '}' + ((axis === 'rows' || axis === 'columns') ? ',,,INCLUDE_CALC_MEMBERS' : '') + ')');
         }
         return query;

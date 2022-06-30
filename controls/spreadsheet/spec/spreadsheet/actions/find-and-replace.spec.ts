@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet } from '../../../src';
+import { Spreadsheet, SpreadsheetModel } from '../../../src/spreadsheet/index';
 
 describe('Find & Replace ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -89,10 +89,24 @@ describe('Find & Replace ->', () => {
             setTimeout(() => {
                 helper.click('.e-findtool-dlg .e-findRib-more');
                 setTimeout(() => {
+                    helper.setAnimationToNone('.e-find-dlg');
+                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeTruthy();
+                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeTruthy();
                     const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
-                    findTxtBox.value = 'T-Shirts';
+                    findTxtBox.value = '10';
                     helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
                     setTimeout(() => {
+                        expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeFalsy();
+                        expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeFalsy();
+                        helper.click('.e-find-dlg .e-btn-findPrevious');
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('G6:G6');
+                        helper.click('.e-find-dlg .e-btn-findPrevious');
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('E6:E6');
+                        helper.click('.e-find-dlg .e-btn-findNext');
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('G6:G6');
+                        helper.click('.e-find-dlg .e-btn-findNext');
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('C7:C7');
+                        findTxtBox.value = 'T-Shirts';
                         helper.click('.e-find-dlg .e-btn-findNext');
                         expect(helper.getInstance().sheets[0].selectedRange).toBe('A11:A11');
                         helper.click('.e-find-dlg .e-btn-findNext');
@@ -169,7 +183,7 @@ describe('Find & Replace ->', () => {
                                         setTimeout(() => {
                                             // expect(helper.getElementFromSpreadsheet('.e-find-dlg')).toBeNull(); // Check this now
                                             done();
-                                        });
+                                        }, 20);
                                         //});
                                     });
                                 });
@@ -197,22 +211,23 @@ describe('Find & Replace ->', () => {
         //         });
         //     });
         // });
-        // it('GoTo', (done: Function) => {
-        //     helper.triggerKeyEvent('keydown', 71, null, true, null);
-        //     setTimeout(() => {
-        //         const goToText: HTMLInputElement = helper.getElementFromSpreadsheet('.e-goto-dlg .e-text-goto') as HTMLInputElement;
-        //         // helper.click('.e-goto-dlg .e-btn-goto-ok'); // Check this now
-        //         // expect(helper.getElementFromSpreadsheet('.e-goto-alert-span').textContent).toBe('Reference value is not valid.');
-        //         // goToText.value = 'H10';
-        //         // helper.click('.e-goto-dlg .e-btn-goto-ok');
-        //         // expect(helper.getInstance().sheets[0].selectedRange).toBe('H10:H10');
-        //         // helper.click('.e-goto-dlg .e-dlg-closeicon-btn');
-        //         // setTimeout(() => {
-        //         //     // expect(helper.getElementFromSpreadsheet('.e-goto-dlg')).toBeNull(); // Need to check this
-        //              done();
-        //         // });
-        //     });
-        // });
+        it('GoTo', (done: Function) => {
+            helper.triggerKeyNativeEvent(71, true);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-goto-dlg');
+                const goToText: HTMLInputElement = helper.getElementFromSpreadsheet('.e-goto-dlg .e-text-goto') as HTMLInputElement;
+                helper.click('.e-goto-dlg .e-btn-goto-ok'); // Check this now
+                expect(helper.getElementFromSpreadsheet('.e-goto-alert-span').textContent).toBe('Reference value is not valid.');
+                goToText.value = 'H10';
+                helper.click('.e-goto-dlg .e-btn-goto-ok');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('H10:H10');
+                helper.click('.e-goto-dlg .e-dlg-closeicon-btn');
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('.e-goto-dlg')).toBeNull(); // Need to check this
+                     done();
+                });
+            });
+        });
     });
     describe('CR-Issues ->', () => {
         describe('I298335 ->', () => {
@@ -261,6 +276,135 @@ describe('Find & Replace ->', () => {
                     setTimeout((): void => {
                         expect((spreadsheet.getCell(0,0) as any).innerText).toBe('Item Name');
                         done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-49854->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{columns: [{ width: 350 }, { width: 350 }, { width: 350 }, { width: 350 } ],
+                        rows: [{cells: [{ value: 'Denial Rationale'}] },
+                        {cells: [{ }] },{ cells: [{ }] },{ cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.' }] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate.Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate.Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ }] },{ cells: [{ }] },{cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ }] },{cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
+                        {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                    ] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Searching in spreadsheet need to scroll horizontally when values not in visible area', (done: Function) => {
+                helper.click('#' + helper.id + '_findbtn');
+                setTimeout(() => {
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+                    findTxtBox.value = 'Moutain';
+                    helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A4:A4');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A9:A9');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A12:A12');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A15:A15');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A16:A16');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A18:A18');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A21:A21');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A22:A22');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-51507', () => {
+            const model: SpreadsheetModel = { sheets: [{  ranges: [{ dataSource: defaultData }] }] };
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet( model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Destroyed the find dialog while destroying the spreadsheet component', (done: Function) => {
+                helper.click('#' + helper.id + '_findbtn');
+                setTimeout(() => {
+                    helper.click('.e-findtool-dlg .e-findRib-more');
+                    setTimeout(() => {
+                        helper.invoke('destroy');
+                        new Spreadsheet(model, '#' + helper.id);
+                        setTimeout(() => {
+                            expect(helper.getElementFromSpreadsheet('.e-find-dlg')).toBeNull();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-55821->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2' }],
+                    actionBegin(args){
+                        if(args.action == "beforeReplace"){
+                            args.args.eventArgs.cancel = true;
+                        }
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix the cancel event args not working for beforeReplace action in spreadsheet->', (done: Function) => {
+                helper.click('#' + helper.id + '_findbtn');
+                setTimeout(() => {
+                    helper.click('.e-findtool-dlg .e-findRib-more');
+                    setTimeout(() => {
+                        const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                        findTxtBox.value = 'Casual Shoes';
+                        helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                        setTimeout(() => {
+                            const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+                            replaceTxtBox.value = 'Test';
+                            helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+                            setTimeout(() => {
+                                helper.click('.e-find-dlg .e-btn-replace');
+                                expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
+                                done();
+                            });
+                        });
                     });
                 });
             });

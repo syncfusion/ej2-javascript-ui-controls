@@ -378,9 +378,13 @@ export class ContentRender implements IRenderer {
             }
         }
         this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
+        if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+            (this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage] = [];
+        }
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
             if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+                (this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage].push(modelData[i]);
                 this.setRowsInLazyGroup(modelData[i], i);
                 if (isNullOrUndefined(modelData[i].indent)) {
                     continue;
@@ -415,7 +419,7 @@ export class ContentRender implements IRenderer {
                     gObj.renderTemplates();
                 } else {
                     elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID,
-                        undefined, undefined, undefined, this.parent['root']);
+                                                     undefined, undefined, undefined, this.parent['root']);
                 }
                 if (!gObj.isReact && (elements[0] as Element).tagName ===  'TBODY') {
                     for (let j: number = 0; j < elements.length; j++) {
@@ -448,6 +452,11 @@ export class ContentRender implements IRenderer {
                 this.rowElements.push(tr);
             }
             this.ariaService.setOptions(this.getTable() as HTMLElement, { colcount: gObj.getColumns().length.toString() });
+        }
+        if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
+            this.parent.notify(events.refreshExpandandCollapse, {
+                rows: (this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage]
+            });
         }
         if (isFrozenGrid) {
             contentModule.splitRows(tableName);

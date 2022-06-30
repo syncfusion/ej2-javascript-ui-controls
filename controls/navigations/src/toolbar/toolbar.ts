@@ -972,6 +972,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 this.scrollModule = new HScroll({ scrollStep: this.scrollStep, enableRtl: this.enableRtl }, <HTEle>innerItems[0]);
             }
+            if (this.cssClass) {
+                addClass([<HTEle>innerItems[0]], this.cssClass.split(' '));
+            }
             this.remove(this.scrollModule.element, CLS_TBARPOS);
             setStyle(this.element, { overflow: 'hidden' });
         }
@@ -1209,6 +1212,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private popupInit(element: HTEle, ele: HTEle): void {
         if (!this.popObj) {
             element.appendChild(ele);
+            if (this.cssClass) {
+                addClass([ele], this.cssClass.split(' '));
+            }
             setStyle(this.element, { overflow: '' });
             const eleStyles: CSSStyleDeclaration = window.getComputedStyle(this.element);
             const popup: Popup = new Popup(null, {

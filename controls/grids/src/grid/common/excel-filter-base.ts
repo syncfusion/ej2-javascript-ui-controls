@@ -113,6 +113,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         } else {
             this.menu.classList.remove('e-rtl');
         }
+        if (this.parent.cssClass) {
+            this.menu.classList.add(this.parent.cssClass);
+        }
         const ul: Element = this.parent.createElement('ul');
         const icon: string = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -223,7 +226,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 beforeClose: this.preventClose.bind(this),
                 cssClass: this.options.isResponsiveFilter && this.parent.cssClass ?
                     'e-res-contextmenu-wrapper' + ' ' + this.parent.cssClass : this.options.isResponsiveFilter ?
-                    'e-res-contextmenu-wrapper' : this.parent.cssClass ? this.parent.cssClass : ''
+                        'e-res-contextmenu-wrapper' : this.parent.cssClass ? this.parent.cssClass : ''
             };
             this.parent.element.appendChild(this.cmenu);
             this.menuObj = new ContextMenu(menuOptions, this.cmenu);
@@ -393,7 +396,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             {
                 click: this.removeDialog.bind(this),
                 buttonModel: { content: this.getLocalizedLabel('CancelButton'),
-                cssClass: this.parent.cssClass ? 'e-xlfl-cancelbtn' + ' ' + this.parent.cssClass : 'e-xlfl-cancelbtn' }
+                    cssClass: this.parent.cssClass ? 'e-xlfl-cancelbtn' + ' ' + this.parent.cssClass : 'e-xlfl-cancelbtn' }
             }],
             content: mainDiv,
             width: 430,

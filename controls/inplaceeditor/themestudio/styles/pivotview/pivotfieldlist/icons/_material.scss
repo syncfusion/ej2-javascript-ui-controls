@@ -321,6 +321,10 @@
         content: '\e667' !important;
     }
 
+    .e-field-list-search-icon::before {
+      content: '\e993' !important;
+    }
+
     .e-sort-descend::before {
         content: '\e665' !important;
     }

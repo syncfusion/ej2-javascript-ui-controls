@@ -36,11 +36,10 @@ export class ColorPicker {
                 if (eventArgs.cancel) {
                     this.fontColorPicker.setProperties({ 'value': this.fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 } else {
-                    this.updateSelectedColor(eventArgs.style.color, this.fontColorPicker.element);
+                    this.updateSelectedColor(eventArgs.style.color, this.fontColorPicker.element, 'TextColor');
                 }
-                focus(this.parent.element);
             },
-            created: (): void => this.wireFocusEvent(this.fontColorPicker.element, '#000000')
+            created: (): void => this.updateSelectedColor('#000000', this.fontColorPicker.element, 'TextColor', true)
         });
         this.fontColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
@@ -64,11 +63,10 @@ export class ColorPicker {
                 if (eventArgs.cancel) {
                     this.filColorPicker.setProperties({ 'value': this.filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
                 } else {
-                    this.updateSelectedColor(eventArgs.style.backgroundColor, this.filColorPicker.element);
+                    this.updateSelectedColor(eventArgs.style.backgroundColor, this.filColorPicker.element, 'FillColor');
                 }
-                focus(this.parent.element);
             },
-            created: (): void => this.wireFocusEvent(this.filColorPicker.element, '#ffff00')
+            created: (): void => this.updateSelectedColor('#ffff00', this.filColorPicker.element, 'FillColor', true)
         });
         this.filColorPicker.createElement = this.parent.createElement;
         this.parent.element.appendChild(input);
@@ -76,15 +74,14 @@ export class ColorPicker {
         input.parentElement.id = `${id}_fill_color_picker`;
         addClass([input.nextElementSibling.getElementsByClassName('e-selected-color')[0]], ['e-icons', 'e-fill-color']);
     }
-    private updateSelectedColor(color: string, ele: HTMLElement): void {
-        (ele.nextElementSibling.querySelector('.e-selected-color') as HTMLElement).style.borderBottomColor = color;
-    }
-    private wireFocusEvent(element: HTMLElement, color: string): void {
-        this.updateSelectedColor(color, element);
-        element = element.parentElement.querySelector('.e-split-colorpicker');
-        element.addEventListener('focus', (): void => {
-            focus(this.parent.element);
-        });
+    private updateSelectedColor(color: string, ele: HTMLElement, name: string, isCreated?: boolean): void {
+        const localeText: string = this.parent.serviceLocator.getService<L10n>(locale).getConstant(name);
+        if (isCreated) {
+            ele.parentElement.querySelector('.e-dropdown-btn').setAttribute('aria-label', localeText);
+        }
+        const primaryBtn: HTMLElement = ele.parentElement.querySelector('.e-split-colorpicker');
+        primaryBtn.setAttribute('aria-label', `${localeText} ${color}`);
+        (primaryBtn.firstElementChild as HTMLElement).style.borderBottomColor = color;
     }
     private openHandler(args: OpenEventArgs): void {
         (args.element.querySelector('.e-mode-switch-btn') as HTMLElement).title =
@@ -93,6 +90,7 @@ export class ColorPicker {
     private beforeCloseHandler(inst: ColorPickerComponent): void {
         if (!inst.modeSwitcher) { inst.setProperties({ modeSwitcher: true }, true); }
         if (inst.showButtons) { inst.setProperties({ showButtons: false }, true); }
+        focus(inst.element.parentElement.querySelector('.e-split-colorpicker'));
     }
     private beforeModeSwitch(inst: ColorPickerComponent, args: ModeSwitchEventArgs): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);

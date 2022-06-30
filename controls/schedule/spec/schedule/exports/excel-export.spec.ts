@@ -150,6 +150,12 @@ describe('excel export', () => {
             schObj.exportToExcel(exportValues);
             setTimeout(() => done(), 50);
         });
+
+        it('export check with csv separator', (done: DoneFn) => {
+            const exportValues: ExportOptions = { exportType: 'csv', separator: ';' };
+            schObj.exportToExcel(exportValues);
+            setTimeout(() => done(), 50);
+        });
     });
 
     it('memory leak', () => {

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/ban-types */
@@ -985,6 +985,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     @Property(false)
     public enableComplexProperty: boolean;
 
+    public rangeColorPoints: string[] = [];
+
     private isAdvancedColor: boolean = undefined;
     /**
      * Process data for the series.
@@ -1024,8 +1026,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 this.pushCategoryData(point, i, <string>point.x);
                 this.pushData(point, i);
                 this.setEmptyPoint(point, i);
+                this.rangeColorsInterior(point);
                 i++;
             }
+            
         } else if (this.xAxis.valueType.indexOf('DateTime') > -1) {
             const option: DateFormatOptions = {
                 skeleton: 'full',
@@ -1048,6 +1052,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                     }
                     this.pushData(point, i);
                     this.setEmptyPoint(point, i);
+                    //this.rangeColorsInterior(point);
                 } else {
                     point.visible = false;
                 }
@@ -1075,6 +1080,19 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             if (this.type.indexOf('Histogram') > -1 && this.points.length == 1) {
                 this.xMin = this.xMin - this.histogramValues.binWidth;
                 this.xMax = this.xMax + this.histogramValues.binWidth;
+            }
+        }
+    }
+
+    private rangeColorsInterior(point: Points): void {
+        if (this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 &&
+            (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
+                this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble')) {
+            if (!this.rangeColorPoints[point.interior]) {
+                this.rangeColorPoints[point.interior] = [];
+            }
+            else if (this.rangeColorPoints[point.interior] != undefined) {
+                this.rangeColorPoints[point.interior].push(point)
             }
         }
     }
@@ -1239,7 +1257,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      */
     private setXYMinMax(yValue: number): void {
         const isLogAxis: boolean = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
-        const isNegativeValue: boolean = yValue < 0;
+        const isNegativeValue: boolean = yValue < 0 || this.yAxis.rangePadding === "None";
         let seriesMinY: number;
         if (this.isRectTypeSeries && !setRange(this.yAxis)) {
             seriesMinY = ((isLogAxis ? (yValue) : isNegativeValue ? yValue : 0));
@@ -1327,7 +1345,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * @returns {void}
      * @private
      */
-    public refreshDataManager(chart: Chart, series: SeriesBase): void {
+    public refreshDataManager(chart: Chart): void {
         this.chart = chart;
         let dataSource: Object | DataManager;
         const isAngular: string = 'isAngular';
@@ -1337,16 +1355,13 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             dataSource = this.dataSource || chart.dataSource;
         }
         if (!(dataSource instanceof DataManager) && isNullOrUndefined(this.query)) {
-            series.points = [];
             this.dataManagerSuccess({ result: dataSource, count: (dataSource as Object[]).length }, false);
             return;
         }
-        if (isNullOrUndefined(series.points)) {
-            const dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
-            dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e));
-        } else {
-            chart.visibleSeriesCount++;
-        }
+       
+        const dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
+        dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e));
+       
     }
 
     private dataManagerSuccess(e: { result: Object, count: number }, isRemoteData: boolean = true): void {
@@ -2172,6 +2187,8 @@ export class Series extends SeriesBase {
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
             if (!this.chart.enableCanvas || this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') {
+                this.seriesElement.setAttribute("tabindex", index === 0 ? "0" : "");
+                this.seriesElement.setAttribute("style", "outline: none");
                 this.seriesElement.appendChild(this.clipRectElement);
             }
         }

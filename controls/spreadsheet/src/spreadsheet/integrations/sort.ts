@@ -3,7 +3,7 @@ import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, is
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction } from '../../workbook/index';
-import { SortEventArgs, BeforeSortEventArgs, SortOptions } from '../../workbook/common/interface';
+import { SortEventArgs, BeforeSortEventArgs, SortOptions, applyCF, ApplyCFArgs } from '../../workbook/common/index';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList, ChangeEventArgs as DropdownChangeEventArgs, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
@@ -287,8 +287,8 @@ export class Sort {
             }
         }
         const fields: { [key: string]: string }[] = [];
-        let text: string;
-        let value: string
+        let text: string; 
+        let value: string;
         for (range[1]; range[1] <= range[3]; range[1]++) {
             const cell: CellModel = getCell(range[0], range[1], sheet);
             value = 'Column ' + getColumnHeaderText(range[1] + 1);
@@ -581,6 +581,7 @@ export class Sort {
             }
         }
         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, true, true);
+        this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: range });
         this.parent.hideSpinner();
     }
 }

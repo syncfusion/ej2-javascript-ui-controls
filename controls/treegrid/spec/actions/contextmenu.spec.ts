@@ -528,9 +528,8 @@ describe('ContextMenu module', () => {
       destroy(gridObj);
     });
   });
-
-
-  describe('EJ2-59747 - Indent using context menu', () => {
+  
+    describe('EJ2-59747 - Indent using context menu', () => {
     let gridObj: TreeGrid;
     let actionComplete: (args: CellSaveEventArgs) => void;
     beforeAll((done: Function) => {
@@ -600,7 +599,7 @@ describe('ContextMenu module', () => {
           done
         );
       });
-  
+
       it('Outdent Action with contextmenu and ensure indent disabling ', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if(args.requestType === 'indented'){

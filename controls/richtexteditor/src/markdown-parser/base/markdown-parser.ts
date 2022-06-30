@@ -14,7 +14,7 @@ import { MDLink } from './../plugin/link';
 import { MDTable } from './../plugin/table';
 import * as EVENTS from './../../common/constant';
 import { ClearFormat } from './../plugin/clearformat';
-
+import { MDInsertText } from './../plugin/insert-text';
 /**
  * MarkdownParser internal component
  *
@@ -35,6 +35,7 @@ export class MarkdownParser {
     public linkObj: MDLink;
     public tableObj: MDTable;
     public clearObj: ClearFormat;
+    public insertTextObj: MDInsertText;
     /**
      * Constructor for creating the component
      *
@@ -54,6 +55,7 @@ export class MarkdownParser {
         this.linkObj = new MDLink(this);
         this.tableObj = new MDTable({ parent: this, syntaxTag: ({Formats: this.formatTags, List: this.listTags}) });
         this.clearObj = new ClearFormat(this);
+        this.insertTextObj = new MDInsertText(this);
         this.wireEvents();
     }
     private initialize(): void {
@@ -119,6 +121,10 @@ export class MarkdownParser {
             break;
         case 'clear':
             this.observer.notify(CONSTANT.CLEAR_COMMAND, { subCommand: value, event: event, callBack: callBack });
+            break;
+        case 'inserttext':
+            this.observer.notify(CONSTANT.INSERT_TEXT_COMMAND, { subCommand: value, event: event, callBack: callBack,
+                value: {text: exeValue} });
             break;
         }
     }

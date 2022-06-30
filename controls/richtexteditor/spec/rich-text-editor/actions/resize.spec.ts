@@ -203,4 +203,26 @@ describe("Resize - Actions Module", () => {
             }, 400);
         });
     });
+
+    describe('EJ2-49434 - Resize icon on RTL mode', () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                enableRtl:true,
+                enableResize:true
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it("class availability testing", () => {
+            let trg = (rteEle.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
+            expect(trg.classList.contains('e-south-west')).toBe(true);
+        });
+    });
 });

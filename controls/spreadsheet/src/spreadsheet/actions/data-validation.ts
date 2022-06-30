@@ -1,5 +1,5 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, CellSaveEventArgs, completeAction } from '../index';
-import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, activeCellChanged } from '../../workbook/common/event';
+import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, completeAction } from '../index';
+import { isValidation, checkDateFormat, applyCellFormat, activeCellChanged } from '../../workbook/common/event';
 import { getCell, setCell } from '../../workbook/base/cell';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -321,7 +321,7 @@ export class DataValidation {
         } else {
             updateCell(
                 this.parent, sheet, { cell: { value: value }, rowIdx: cellIdx[0], colIdx: cellIdx[1], valChange: true, lastCell: true,
-                uiRefresh: true, checkCf: true });
+                uiRefresh: true, checkCF: true });
             this.parent.notify(completeAction, { action: 'cellSave', eventArgs: { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell } });
         }
     }
@@ -847,8 +847,7 @@ export class DataValidation {
         const values: HTMLElement = dlgContEle.getElementsByClassName('e-values')[0] as HTMLElement;
         const value1: string = values.getElementsByTagName('input')[0].value;
         const value2: string = values.getElementsByTagName('input')[1] ? values.getElementsByTagName('input')[1].value : '';
-        const ignoreBlank: boolean = dlgContEle.querySelector('.e-ignoreblank').querySelector('.e-checkbox-wrapper').
-            getAttribute('aria-checked') === 'true' ? true : false;
+        const ignoreBlank: boolean = (dlgContEle.querySelector('.e-ignoreblank .e-checkbox') as HTMLInputElement).checked;
         const inCellDropDown: boolean = allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper') ?
             allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper').querySelector('.e-check') ? true : false : null;
         const range: string = (dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0] as HTMLInputElement).value;
@@ -929,7 +928,6 @@ export class DataValidation {
                         }
                     }
                     delete args.cancel;
-                    this.parent.notify(completeAction, { eventArgs: args, action: 'validation' });
                     if (!document.getElementsByClassName('e-validationerror-dlg')[0]) {
                         if (dialogInst.dialogInstance) {
                             dialogInst.dialogInstance.hide();
@@ -937,6 +935,7 @@ export class DataValidation {
                             dialogInst.hide();
                         }
                     }
+                    this.parent.notify(completeAction, { eventArgs: args, action: 'validation' });
                 }
             }
         }
@@ -999,7 +998,7 @@ export class DataValidation {
         if (!isEmpty) {
             for (let idx: number = 0; idx < values.length; idx++) {
                 const value: string = checkIsFormula(values[idx]) ? this.parent.computeExpression(values[idx]).toString() : values[idx];
-                formValidation = this.formatValidation(value, type);
+                formValidation = this.formatValidation(value, type, true);
                 if (formValidation.isValidate) {
                     count = count + 1;
                 } else {
@@ -1241,7 +1240,7 @@ export class DataValidation {
         }
     }
 
-    private formatValidation(value: string, type: string): { isValidate: boolean, errorMsg: string } {
+    private formatValidation(value: string, type: string, isDialogValidator?: boolean): { isValidate: boolean, errorMsg: string } {
         const sheetPanel: HTMLElement = this.parent.element.getElementsByClassName('e-sheet-panel')[0] as HTMLElement;
         let errorMsg: string;
         const formEle: HTMLElement = this.parent.createElement('form', {
@@ -1283,12 +1282,24 @@ export class DataValidation {
         case 'WholeNumber':
             options = {
                 rules: {
-                    'validation': { regex: /^\d*\.?[0]*$/ }
+                    'validation': { regex: /^-?\d*\.?[0]*$/ }
                 },
                 customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
                     errorMsg = error.innerText;
                 }
             };
+            break;
+        case 'TextLength':
+            if (isDialogValidator) {
+                 options = {
+                    rules: {
+                        'validation': { regex: /^\d*\.?[0]*$/ }
+                    },
+                    customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
+                        errorMsg = error.innerText;
+                    }
+                };
+            }
             break;
         default:
             break;

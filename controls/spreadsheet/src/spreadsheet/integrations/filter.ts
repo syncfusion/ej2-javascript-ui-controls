@@ -1117,8 +1117,15 @@ export class Filter {
      * @returns {void} - Triggers when sorting items are chosen on context menu of filter popup.
      */
     private selectSortItemHandler(target: HTMLElement): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale); 
         const sortOrder: SortOrder = target.classList.contains('e-filter-sortasc') ? 'Ascending'
             : target.classList.contains('e-filter-sortdesc') ? 'Descending' : null;
+        if(sortOrder === "Ascending"){
+            target.setAttribute('aria-label', l10n.getConstant('SortAscending'));
+        }
+        else{
+            target.setAttribute('aria-label', l10n.getConstant('SortDescending'));
+        }
         if (!sortOrder) { return; }
         const sheet: SheetModel = this.parent.getActiveSheet();
         const sheetIdx: number = this.parent.activeSheetIndex;

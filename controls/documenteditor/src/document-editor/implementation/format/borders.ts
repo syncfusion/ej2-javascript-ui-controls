@@ -1,8 +1,9 @@
 import { LineStyle } from '../../base/types';
 import { WBorder } from './border';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IWidget } from '../viewer/page';
-
+import { isNullOrUndefined , Property } from '@syncfusion/ej2-base';
+import { BlockContainer, IWidget, ParagraphWidget } from '../viewer/page';
+import { WParagraphFormat } from './paragraph-format';
+import { WParagraphStyle } from './style';
 /**
  * @private
  */
@@ -15,42 +16,58 @@ export class WBorders implements IWidget {
     private verticalIn: WBorder = new WBorder(this);
     private diagonalUpIn: WBorder = new WBorder(this);
     private diagonalDownIn: WBorder = new WBorder(this);
-    private lineWidthIn: number = 0;
-    private valueIn: LineStyle;
-
+    public isParsing: boolean = false;
     public ownerBase: Object;
 
     public get left(): WBorder {
+        if (this.ownerBase instanceof WParagraphFormat) {
+            return this.getPropertyValue('left') as WBorder;
+        }
         return this.leftIn;
     }
     public set left(value: WBorder) {
         this.leftIn = value;
     }
     public get right(): WBorder {
+        if (this.ownerBase instanceof WParagraphFormat) {
+            return this.getPropertyValue('right') as WBorder;
+        }
         return this.rightIn;
     }
     public set right(value: WBorder) {
         this.rightIn = value;
     }
     public get top(): WBorder {
+        if (this.ownerBase instanceof WParagraphFormat) {
+            return this.getPropertyValue('top') as WBorder;
+        }
         return this.topIn;
     }
     public set top(value: WBorder) {
         this.topIn = value;
     }
     public get bottom(): WBorder {
+        if (this.ownerBase instanceof WParagraphFormat) {
+            return this.getPropertyValue('bottom') as WBorder;
+        }
         return this.bottomIn;
     }
     public set bottom(value: WBorder) {
         this.bottomIn = value;
     }
     public get horizontal(): WBorder {
+        if (this.ownerBase instanceof WParagraphFormat) {
+            return this.getPropertyValue('horizontal') as WBorder;
+        }
         return this.horizontalIn;
     }
     public set horizontal(value: WBorder) {
         this.horizontalIn = value;
     }
     public get vertical(): WBorder {
+        if (this.ownerBase instanceof WParagraphFormat) {
+            return this.getPropertyValue('vertical') as WBorder;
+        }
         return this.verticalIn;
     }
     public set vertical(value: WBorder) {
@@ -72,25 +89,92 @@ export class WBorders implements IWidget {
     public constructor(node?: Object) {
         this.ownerBase = node;
     }
+    private getPropertyValue(property: string): Object {
+        let border: WBorder = this.getBorder(property);
+        if (this.isParsing) {
+            return border;
+        }
+        if (!border.hasValues()) {
+            let baseStyle: WParagraphStyle = (this.ownerBase as WParagraphFormat).baseStyle as WParagraphStyle;
+            if (!isNullOrUndefined(baseStyle)) {
+                let currentFormat: WBorders = this;
+                while (!isNullOrUndefined(baseStyle)) {
+                    let listParaFormat: WParagraphFormat;
+                    if (!(this.ownerBase as WParagraphFormat).listFormat.hasValue('listId')) {
+                        listParaFormat = baseStyle.paragraphFormat.getListPargaraphFormat(property);
+                    }
+                    if (baseStyle.paragraphFormat.borders.getBorder(property).hasValues()) {
+                        currentFormat = baseStyle.paragraphFormat.borders;
+                        break;
+                    } else if (!isNullOrUndefined(listParaFormat) &&
+                        ((listParaFormat as WParagraphFormat).borders.getBorder(property).hasValues())) {
+                        currentFormat = listParaFormat.borders;
+                        break;
+                    } else {
+                        baseStyle = baseStyle.basedOn as WParagraphStyle;
+                    }
+                }
+                if (!isNullOrUndefined(baseStyle)) {
+                    return currentFormat.getBorder(property);
+                }
+            }
+        } else {
+            return border;
+        }
+        return this.getDefaultValue(property);
+    }
+    private getDefaultValue(property: string): Object {
+        const docParagraphFormat: WParagraphFormat = this.documentParagraphFormat();
+        let border: WBorder;
+        if (!isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.borders)) {
+            border = docParagraphFormat.borders.getBorder(property);
+        }
+        return border;
+    }
+    private documentParagraphFormat(): WParagraphFormat {
+        let docParagraphFormat: WParagraphFormat;
+        if (this.ownerBase instanceof WParagraphFormat) {
+            docParagraphFormat = (this.ownerBase as WParagraphFormat).getDocumentParagraphFormat();
+        }
+        return docParagraphFormat;
+    }
+    public getBorder(property: string): WBorder {
+        let value: WBorder = undefined;
+        switch (property) {
+            case 'left':
+                return this.leftIn;
+            case 'right':
+                return this.rightIn;
+            case 'top':
+                return this.topIn;
+            case 'bottom':
+                return this.bottomIn;
+            case 'vertical':
+                return this.verticalIn;
+            case 'horizontal':
+                return this.horizontalIn;
+        }
+        return value;
+    }
     /* eslint-enable */
     public destroy(): void {
-        if (!isNullOrUndefined(this.left)) {
-            this.left.destroy();
+        if (!isNullOrUndefined(this.leftIn)) {
+            this.leftIn.destroy();
         }
-        if (!isNullOrUndefined(this.top)) {
-            this.top.destroy();
+        if (!isNullOrUndefined(this.topIn)) {
+            this.topIn.destroy();
         }
-        if (!isNullOrUndefined(this.bottom)) {
-            this.bottom.destroy();
+        if (!isNullOrUndefined(this.bottomIn)) {
+            this.bottomIn.destroy();
         }
-        if (!isNullOrUndefined(this.right)) {
-            this.right.destroy();
+        if (!isNullOrUndefined(this.rightIn)) {
+            this.rightIn.destroy();
         }
-        if (!isNullOrUndefined(this.horizontal)) {
-            this.horizontal.destroy();
+        if (!isNullOrUndefined(this.horizontalIn)) {
+            this.horizontalIn.destroy();
         }
-        if (!isNullOrUndefined(this.vertical)) {
-            this.vertical.destroy();
+        if (!isNullOrUndefined(this.verticalIn)) {
+            this.verticalIn.destroy();
         }
         if (!isNullOrUndefined(this.diagonalDown)) {
             this.diagonalDown.destroy();
@@ -106,45 +190,49 @@ export class WBorders implements IWidget {
         this.verticalIn = undefined;
         this.diagonalDownIn = undefined;
         this.diagonalUpIn = undefined;
-        this.lineWidthIn = undefined;
-        this.valueIn = undefined;
     }
     public cloneFormat(): WBorders {
         const borders: WBorders = new WBorders(undefined);
-        borders.top = isNullOrUndefined(this.top) ? undefined : this.top.cloneFormat();
-        borders.bottom = isNullOrUndefined(this.bottom) ? undefined : this.bottom.cloneFormat();
-        borders.left = isNullOrUndefined(this.left) ? undefined : this.left.cloneFormat();
-        borders.right = isNullOrUndefined(this.right) ? undefined : this.right.cloneFormat();
-        borders.horizontal = isNullOrUndefined(this.horizontal) ? undefined : this.horizontal.cloneFormat();
-        borders.vertical = isNullOrUndefined(this.vertical) ? undefined : this.vertical.cloneFormat();
+        borders.top = isNullOrUndefined(this.topIn) ? undefined : this.topIn.cloneFormat();
+        borders.bottom = isNullOrUndefined(this.bottomIn) ? undefined : this.bottomIn.cloneFormat();
+        borders.left = isNullOrUndefined(this.leftIn) ? undefined : this.leftIn.cloneFormat();
+        borders.right = isNullOrUndefined(this.rightIn) ? undefined : this.rightIn.cloneFormat();
+        borders.horizontal = isNullOrUndefined(this.horizontalIn) ? undefined : this.horizontalIn.cloneFormat();
+        borders.vertical = isNullOrUndefined(this.verticalIn) ? undefined : this.verticalIn.cloneFormat();
         borders.diagonalUp = isNullOrUndefined(this.diagonalUp) ? undefined : this.diagonalUp.cloneFormat();
         borders.diagonalDown = isNullOrUndefined(this.diagonalDown) ? undefined : this.diagonalDown.cloneFormat();
         return borders;
     }
     public copyFormat(borders: WBorders): void {
-        if (!isNullOrUndefined(borders.left) && borders.left instanceof WBorder) {
-            this.left = new WBorder(this);
-            (this.left as WBorder).copyFormat(borders.left);
+        if (!isNullOrUndefined(borders.getBorder('left')) && borders.getBorder('left') instanceof WBorder) {
+            let left: WBorder = new WBorder(this);
+            left.copyFormat(borders.getBorder('left'));
+            this.left = left;
         }
-        if (!isNullOrUndefined(borders.right) && borders.right instanceof WBorder) {
-            this.right = new WBorder(this);
-            (this.right as WBorder).copyFormat(borders.right);
+        if (!isNullOrUndefined(borders.getBorder('right')) && borders.getBorder('right') instanceof WBorder) {
+            let right: WBorder = new WBorder(this);
+            (right as WBorder).copyFormat(borders.getBorder('right'));
+            this.right = right;
         }
-        if (!isNullOrUndefined(borders.top) && borders.top instanceof WBorder) {
-            this.top = new WBorder(this);
-            (this.top as WBorder).copyFormat(borders.top);
+        if (!isNullOrUndefined(borders.getBorder('top')) && borders.getBorder('top') instanceof WBorder) {
+            let top: WBorder = new WBorder(this);
+            (top as WBorder).copyFormat(borders.getBorder('top'));
+            this.top = top;
         }
-        if (!isNullOrUndefined(borders.bottom) && borders.bottom instanceof WBorder) {
-            this.bottom = new WBorder(this);
-            (this.bottom as WBorder).copyFormat(borders.bottom);
+        if (!isNullOrUndefined(borders.getBorder('bottom')) && borders.getBorder('bottom') instanceof WBorder) {
+            let bottom: WBorder = new WBorder(this);
+            (bottom as WBorder).copyFormat(borders.getBorder('bottom'));
+            this.bottom = bottom;
         }
-        if (!isNullOrUndefined(borders.horizontal) && borders.horizontal instanceof WBorder) {
-            this.horizontal = new WBorder(this);
-            (this.horizontal as WBorder).copyFormat(borders.horizontal);
+        if (!isNullOrUndefined(borders.getBorder('horizontal')) && borders.getBorder('horizontal') instanceof WBorder) {
+            let horizontal: WBorder = new WBorder(this);
+            (horizontal as WBorder).copyFormat(borders.getBorder('horizontal'));
+            this.horizontal = horizontal;
         }
-        if (!isNullOrUndefined(borders.vertical) && borders.vertical instanceof WBorder) {
-            this.vertical = new WBorder(this);
-            (this.vertical as WBorder).copyFormat(borders.vertical);
+        if (!isNullOrUndefined(borders.getBorder('vertical')) && borders.getBorder('vertical') instanceof WBorder) {
+            let vertical: WBorder = new WBorder(this);
+            (vertical as WBorder).copyFormat(borders.getBorder('vertical'));
+            this.vertical = vertical;
         }
         if (!isNullOrUndefined(borders.diagonalDown) && borders.diagonalDown instanceof WBorder) {
             this.diagonalDown = new WBorder(this);

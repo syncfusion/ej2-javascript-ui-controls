@@ -148,7 +148,7 @@ describe('Gantt pdfexport support', () => {
                 }
             });
         });
-         describe('Gantt PDF Export', () => {
+        describe('Gantt PDF Export', () => {
             Gantt.Inject(Toolbar, PdfExport);
             let ganttObj: Gantt;
             beforeAll((done: Function) => {
@@ -198,6 +198,6 @@ describe('Gantt pdfexport support', () => {
             it('Export with custom date format', () => {
                 ganttObj.pdfExport();
             });
-        });
+            });
         });
     });

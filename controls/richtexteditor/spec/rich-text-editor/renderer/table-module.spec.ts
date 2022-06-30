@@ -499,10 +499,10 @@ describe('Table creation', () => {
             expect(table.querySelectorAll('tr').length === 3).toBe(true);
             expect(table.querySelectorAll('td').length === 9).toBe(true);
             (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 2).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-row-resize').length === 3).toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
-            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
             clickEvent.initEvent("mousedown", false, true);
             reCol1.dispatchEvent(clickEvent);
             (rteObj.tableModule as any).resizeStart(clickEvent);
@@ -512,7 +512,7 @@ describe('Table creation', () => {
             let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
             let mouseEvent = document.createEvent('MouseEvents');
             mouseEvent.initEvent('mousedown', true, true);
-            (document.getElementsByClassName('e-column-resize')[0] as HTMLElement).dispatchEvent(mouseEvent);
+            (document.getElementsByClassName('e-column-resize')[1] as HTMLElement).dispatchEvent(mouseEvent);
             mouseEvent.initEvent('mousemove', true, true);
             document.dispatchEvent(mouseEvent);
             mouseEvent.initEvent('mouseup', true, true);
@@ -533,7 +533,7 @@ describe('Table creation', () => {
             expect(table.querySelectorAll('td').length === 9).toBe(true);
             let clickEvent: any = document.createEvent("MouseEvents");
             (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
-            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
             (<any>rteObj.tableModule).resizeBtnStat.column = true;
             (rteObj.tableModule as any).resizeStart({ target: reCol1, pageX: 100, pageY: 0, preventDefault: function () { } });
             clickEvent.initEvent("mousedown", false, true);
@@ -573,6 +573,163 @@ describe('Table creation', () => {
             (<any>rteObj).tableModule.docClick(eventArgs);
         });
     });
+
+    describe('EJ2-60291 - Table First Column Resize check ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                resizeStart: (args) => {
+                    expect(args.event.target.getAttribute('data-col') === '0');
+                },
+                resizeStop: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                },
+                resizing: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Resize Start Event check with first column', () => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+        });
+        it('Percentage Check-While resizing first column', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            let mouseEvent = document.createEvent('MouseEvents');
+            mouseEvent.initEvent('mousedown', true, true);
+            (document.getElementsByClassName('e-column-resize')[0] as HTMLElement).dispatchEvent(mouseEvent);
+            mouseEvent.initEvent('mousemove', true, true);
+            document.dispatchEvent(mouseEvent);
+            mouseEvent.initEvent('mouseup', true, true);
+            document.dispatchEvent(mouseEvent);
+            let colWidth: string = (table as HTMLTableElement).rows[0].cells[0].style.width
+            expect(colWidth.indexOf('%') !== -1).toBe(true);
+        });
+        it('resize end after first column', () => {
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-column-resize') as HTMLElement;
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            (rteObj.tableModule as any).resizeEnd({ target: resizeBot });
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-column-resize')).toBe(null);
+            expect((rteObj.tableModule as any).pageX).toBe(null);
+        });
+        it('resizing first column', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table.style.marginLeft !== '').toBe(false);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            (rteObj.tableModule as any).resizeStart({ target: reCol1, pageX: 100, pageY: 0, preventDefault: function () { } });
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            let width: any = (table as HTMLTableElement).rows[0].cells[0].offsetWidth;
+            (rteObj.tableModule as any).resizing({ target: reCol1, pageX: 200, pageY: 200, preventDefault: function () { } });
+            width += 200;
+            expect(table.style.marginLeft !== '').toBe(true);
+        });
+    });
+
+    describe('EJ2-60291 - Table Last Column Resize check ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                resizeStart: (args) => {
+                    expect(args.event.target.getAttribute('data-col') === '3');
+                },
+                resizeStop: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                },
+                resizing: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Resize Start Event check with Last column', () => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[3];
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+        });
+        it('Percentage Check-While resizing Last column', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            let mouseEvent = document.createEvent('MouseEvents');
+            mouseEvent.initEvent('mousedown', true, true);
+            (document.getElementsByClassName('e-column-resize')[3] as HTMLElement).dispatchEvent(mouseEvent);
+            mouseEvent.initEvent('mousemove', true, true);
+            document.dispatchEvent(mouseEvent);
+            mouseEvent.initEvent('mouseup', true, true);
+            document.dispatchEvent(mouseEvent);
+            let colWidth: string = (table as HTMLTableElement).rows[0].cells[0].style.width
+            expect(colWidth.indexOf('%') !== -1).toBe(true);
+        });
+        it('resize end after Last column', () => {
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-column-resize') as HTMLElement;
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            (rteObj.tableModule as any).resizeEnd({ target: resizeBot });
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-column-resize')).toBe(null);
+            expect((rteObj.tableModule as any).pageX).toBe(null);
+        });
+        it('resizing first column', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table.style.marginLeft !== '').toBe(false);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[3];
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            (rteObj.tableModule as any).resizeStart({ target: reCol1, pageX: -100, pageY: 0, preventDefault: function () { } });
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            let width: any = (table as HTMLTableElement).rows[0].cells[0].offsetWidth;
+            (rteObj.tableModule as any).resizing({ target: reCol1, pageX: -200, pageY: 200, preventDefault: function () { } });
+            expect(table.style.width !== '100%').toBe(true);
+            expect(table.querySelector('tr').querySelectorAll('td')[2].style.width !== "33.3333%").toBe(true);
+        });
+    });
+
 
     describe('table keyboard support ', () => {
         let rteEle: HTMLElement;
@@ -803,7 +960,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             let clickEvent: any = document.createEvent("MouseEvents");
             let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
             (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
-            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
             clickEvent.initEvent("mousedown", false, true);
             reCol1.dispatchEvent(clickEvent);
             (rteObj.tableModule as any).resizeStart(clickEvent);
@@ -841,7 +998,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             target.dispatchEvent(clickEvent);
             let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
             (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
-            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
             (rteObj.tableModule as any).resizeStart({ target: reCol1, pageX: 100, pageY: 0, preventDefault: function () { } });
             (rteObj.tableModule as any).resizing({ target: reCol1, pageX: 200, pageY: 200, preventDefault: function () { } });
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-column-resize')).toBe(null);
@@ -880,7 +1037,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             table.querySelector('tr').querySelectorAll('td')[2].remove();
             table.querySelector('tr').querySelectorAll('td')[1].remove();
             (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length).toBe(2);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length).toBe(4);
             (rteObj.tableModule as any).destroy();
         });
     });
@@ -923,7 +1080,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             clickEvent.initEvent("mousedown", false, true);
             tar.dispatchEvent(clickEvent);
             (rteObj.tableModule as any).resizeStart(clickEvent);
-            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
+            let reCol1: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
             (rteObj.tableModule as any).resizeStart({ target: reCol1, preventDefault: function () { }, stopImmediatePropagation: function () { } });
             (rteObj.tableModule as any).resizing({ target: reCol1, touches: [{ pageX: 300 }] });
             expect((rteObj.tableModule as any).pageX).toBe(300);
@@ -2619,6 +2776,105 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("EJ2-49389: Table quick toolbar not hide while 'ctrl + a' after  backspace key action", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 8,
+            shiftKey: false
+        };
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                client side.</p><table class="e-rte-table" style="width: 100%;"><thead><tr><th class="e-cell-select"><br></th><th><br></th></tr></thead><tbody><tr><td style="width: 50%;" class=""><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>
+                `
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('- checking toolbar hidden after backspace', (done) => {
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("td");
+            setCursorPoint(node, 0);
+            node.focus();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            (rteObj as any).inputElement.dispatchEvent(clickEvent);
+            let eventsArg: any = { pageX: 50, pageY: 300, target: node };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                (<any>rteObj).selectAll();
+                (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+                expect((document.querySelectorAll('.e-rte-quick-popup') as any).length).toBe(0);
+                done();
+            }, 600);
+        });
+    });
+
+    describe("EJ2-49385: Table cell focus style not removed when interact outside of the RTE in Iframe Mode", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 8,
+            shiftKey: false
+        };
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                iframeSettings: {
+                    enable: true
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                client side.</p><table class="e-rte-table" style="width: 100%;"><thead><tr><th class="e-cell-select"><br></th><th><br></th></tr></thead><tbody><tr><td style="width: 50%;" class=""><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>
+                `
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('- checking table focus being removed', (done) => {
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("td");
+            setCursorPoint(node, 0);
+            node.focus();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            (rteObj as any).inputElement.dispatchEvent(clickEvent);
+            let eventsArg: any = { pageX: 50, pageY: 300, target: node };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                clickEvent.initEvent('mousedown', false, true);
+                document.dispatchEvent(clickEvent);
+                expect((document.querySelectorAll('.e-cell-select') as any).length).toBe(0);
+                done();
+            }, 600);
+        });
+    });
+
     describe(" IE - table delete testing", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3753,14 +4009,14 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(table.querySelectorAll('tr').length === 2).toBe(true);
             expect(table.querySelectorAll('td').length === 10).toBe(true);
             (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 6).toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-row-resize').length === 2).toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
             table = rteObj.contentModule.getEditPanel().querySelectorAll('table')[1];
             expect(table.querySelectorAll('tr').length === 3).toBe(true);
             expect(table.querySelectorAll('td').length === 15).toBe(true);
             (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 6).toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-row-resize').length === 3).toBe(true);
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
         });

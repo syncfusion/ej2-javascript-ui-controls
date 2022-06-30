@@ -51,8 +51,8 @@ export class AgendaBase extends ViewBase {
                         'data-guid': listData[li].Guid as string,
                         'role': 'button',
                         'tabindex': '0',
-                        'aria-readonly': this.parent.eventBase.getReadonlyAttribute(listData[li]),
-                        'aria-selected': 'false',
+                        'aria-disabled': this.parent.eventBase.getReadonlyAttribute(listData[li]),
+                        'aria-pressed': 'false',
                         'aria-grabbed': 'true',
                         'aria-label': this.parent.getAnnouncementString(listData[li])
                     }
@@ -315,8 +315,8 @@ export class AgendaBase extends ViewBase {
                 ntd.appendChild(this.createDateHeaderElement(tempData.date));
                 addClass([ntd], [cls.AGENDA_CELLS_CLASS, cls.AGENDA_DATE_CLASS, cls.DATE_BORDER_CLASS]);
                 const daysCount: number = util.getDaysCount(this.parent.selectedDate.getTime(), tempData.date.getTime());
-                ntr.setAttribute('aria-rowindex', daysCount.toString());
-                if (this.parent.element.querySelector(`.e-agenda-view tr[aria-rowindex="${daysCount}"]`)) { break; }
+                ntr.setAttribute('data-row-index', daysCount.toString());
+                if (this.parent.element.querySelector(`.e-agenda-view tr[data-row-index="${ daysCount }"]`)) { break; }
                 ntr.insertBefore(ntd, ntr.childNodes[0]);
             }
             tBody.appendChild(ntr);
@@ -353,13 +353,13 @@ export class AgendaBase extends ViewBase {
 
     public createTableRowElement(date: Date, type: string): Element {
         const daysCount: number = util.getDaysCount(this.parent.selectedDate.getTime(), date.getTime());
-        const tr: Element = createElement('tr', { attrs: { 'role': 'row', 'aria-rowindex': daysCount.toString() } });
+        const tr: Element = createElement('tr', { attrs: { 'role': 'row', 'data-row-index': daysCount.toString() } });
         const td: Element = createElement('td', {
             attrs: {
                 'class': (type === 'monthHeader') ? cls.MONTH_HEADER_CLASS : cls.AGENDA_CELLS_CLASS,
                 'role': 'gridcell',
                 'aria-selected': 'false',
-                'aria-colindex': daysCount.toString(),
+                'data-column-index': daysCount.toString(),
                 'data-date': date.getTime().toString()
             }
         });

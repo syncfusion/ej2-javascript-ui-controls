@@ -205,7 +205,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             ariaState = 'mixed';
             this.element.indeterminate = true;
         }
-        this.getWrapper().setAttribute('aria-checked', ariaState);
     }
 
     private clickHandler(event: Event): void {
@@ -262,7 +261,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     this.element.removeAttribute(key);
                 });
             } else {
-                ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                ['class'].forEach((key: string) => {
                     wrapper.removeAttribute(key);
                 });
                 wrapper.innerHTML = '';
@@ -338,7 +337,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         let wrapper: Element = this.element.parentElement;
         if (!wrapper.classList.contains(WRAPPER)) {
             wrapper = this.createElement('div', {
-                className: WRAPPER, attrs: { 'aria-checked': 'false' }
+                className: WRAPPER
             });
             this.element.parentNode.insertBefore(wrapper, this.element);
         }

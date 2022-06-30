@@ -1,9 +1,10 @@
-import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet, CellEditEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { CellModel } from '../../../src/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { EventHandler } from '@syncfusion/ej2-base';
 
 /**
  *  Editing test cases
@@ -250,6 +251,79 @@ describe('Editing ->', () => {
         });
     });
 
+    describe('Delete image, apply unique formula ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Delete image, apply unique formula ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertImage([{src:"https://www.w3schools.com/images/w3schools_green.jpg"}],"D3");
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+            EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+            helper.invoke('deleteImage', ['spreadsheet_overlay_picture_1']);
+            setTimeout(() => {
+            helper.edit('I3','=UNIQUE(H2:H5)');
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"10","formula":"=UNIQUE(H2:H5)"}');
+                done();
+            });
+        },0);
+        });
+    });
+
+    describe('Edit formula in formula bar and cells ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Edit formula in formula bar and cells ', (done: Function) => {
+            helper.edit('I5', '=SUM(H2:H5)');
+            helper.triggerKeyNativeEvent(13);
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":154,"formula":"=SUM(H2:H5)"}');
+            helper.invoke('selectRange', ['I5']);
+            helper.edit('I5', '=SUM(G2:G5)');
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":24,"formula":"=SUM(G2:G5)"}');
+                done();
+            });
+        });
+    });
+    describe('Update unique range formula ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Update unique range formula ', (done: Function) => {
+            helper.edit('I3','=UNIQUE(H2:H5)')
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"10","formula":"=UNIQUE(H2:H5)"}');
+            });
+            setTimeout(() => {
+            helper.edit('I3','=UNIQUE(H2:H10)')
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[8])).toBe('{"value":"29"}');
+                done();
+            });
+            });
+            
+            
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('I309407, EJ2-60617 ->', () => {
             beforeAll((done: Function) => {
@@ -434,7 +508,7 @@ describe('Editing ->', () => {
                 helper.getInstance().hideColumn(2, 2, true);
                 helper.edit('A1', '11');
                 expect(helper.invoke('getCell', [0, 1]).textContent).toBe('2');
-                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('2');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe(2);
                 done();
             });
         });
@@ -532,6 +606,140 @@ describe('Editing ->', () => {
                     expect(helper.getInstance().sheets[0].usedRange.colIndex).toBe(7);
                     done();
                 });
+            });
+        });
+        describe('EJ2-49472', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ colCount: 10, rowCount: 90, ranges: [{ dataSource: defaultData }] }],
+                        scrollSettings: {enableVirtualization: false, isFinite: true }
+                    }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Spreadsheet scrolls up on Enter/Tab keypress while editing the cells', (done: Function) => {
+                helper.invoke('goTo', ['A85']);
+                helper.edit('A85', '1');
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(13);
+                    setTimeout(() => {
+                        helper.edit('A86', '1');
+                        helper.triggerKeyNativeEvent(9);
+                        setTimeout(() => {
+                            helper.edit('B86', '1');
+                            expect(helper.getInstance().sheets[0].selectedRange).toEqual('B86:B86');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-53885->', () => {
+            beforeEach((done: Function) => {
+                model = {
+                    sheets: [{ selectedRange: 'B2' }],
+                    cellEditing: (args: CellEditEventArgs):  void => {
+                        expect(args.value).toEqual('CellSave');
+                        expect(args.oldValue).toEqual('');
+                    }
+                }
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('cellEditing event args does not contains edited value->', (done: Function) => {
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
+                done();
+            });
+        });
+        describe('EJ2-54233->', () => {
+            let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    actionBegin: (args: any): void => {
+                        if (args.action === 'cellSave') { actionBeginCalled = true; }
+                    },
+                    actionComplete: (args: any): void => {
+                        if (args.action === 'cellSave') { actionCompleteCalled = true; }
+                    },
+                    cellSave: (args: CellSaveEventArgs): void => {
+                        expect(args.address).toEqual('Sheet1!A1');
+                        expect(args.oldValue).toBeUndefined;
+                        expect(args.value as any).toEqual('CellSave');
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Events not triggered in uniformity when cellEdit and save action.->', (done: Function) => {
+                expect(actionBeginCalled).toBeFalsy();
+                expect(actionCompleteCalled).toBeFalsy();
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
+                helper.triggerKeyNativeEvent(13);
+                expect(actionBeginCalled).toBeTruthy();
+                expect(actionCompleteCalled).toBeTruthy();
+                done();
+            });
+        });
+        describe('EJ2-55703->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    beforeCellSave: (args: CellEditEventArgs) => {
+                        args.value = 'New value';
+                      }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Not able to change the cell value in the beforeCellSave event while saving the edited value.->', (done: Function) => {
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
+                helper.triggerKeyNativeEvent(13);
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('New value');
+                done();
+            });
+        });
+        describe('EJ2-55046->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange:'G1:G1000' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('script error on cell delete issues->', (done: Function) => {
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 6]).textContent).toBeUndefined;
+                    done();
+                });
+            });
+        });
+        describe('EJ2-56562->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    actionBegin(args){
+                        if(args.action == "cellDelete"){
+                            args.args.eventArgs.cancel = true;
+                        }
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to provide cancel argument in action begin for delete cell action->', (done: Function) => {
+                helper.triggerKeyNativeEvent(46);
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                done();
             });
         });
     });

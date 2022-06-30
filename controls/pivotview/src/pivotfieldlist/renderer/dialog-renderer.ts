@@ -57,6 +57,11 @@ export class DialogRenderer {
         if (this.parent.cssClass) {
             addClass([fieldListWrappper], this.parent.cssClass);
         }
+        if (this.parent.enableFieldSearching) {
+            addClass([fieldListWrappper], cls.FIELD_LIST_SEARCH_MODE_CLASS);
+        } else {
+            removeClass([fieldListWrappper], cls.FIELD_LIST_SEARCH_MODE_CLASS);
+        }
         this.parentElement = createElement('div', { className: cls.CONTAINER_CLASS });
         this.parent.element.appendChild(fieldListWrappper);
         if (this.parent.isAdaptive) {
@@ -101,13 +106,14 @@ export class DialogRenderer {
                 checked: true,
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
-                change: this.onCheckChange.bind(this)
+                change: this.onCheckChange.bind(this),
+                cssClass: this.parent.cssClass
             });
             this.deferUpdateCheckBox.isStringTemplate = true;
             this.deferUpdateCheckBox.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
             this.deferUpdateApplyButton = new Button({
                 cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
-                    (' ' + cls.BUTTON_FLAT_CLASS) : ''),
+                    (' ' + cls.BUTTON_FLAT_CLASS) : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 content: this.parent.localeObj.getConstant('apply'),
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
@@ -120,7 +126,7 @@ export class DialogRenderer {
         }
         this.deferUpdateCancelButton = new Button({
             cssClass: cls.DEFER_CANCEL_BUTTON + ' ' + cls.CANCEL_BUTTON_CLASS + (this.parent.renderMode === 'Popup' ?
-                (' ' + cls.BUTTON_FLAT_CLASS) : ''),
+                (' ' + cls.BUTTON_FLAT_CLASS) : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
                 this.parent.localeObj.getConstant('close'),
             enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate, locale: this.parent.locale
@@ -235,7 +241,7 @@ export class DialogRenderer {
             let buttons: ButtonPropsModel[] = [{
                 click: this.showFieldListDialog.bind(this),
                 buttonModel: {
-                    cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS,
+                    cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
                     isPrimary: true
                 }
@@ -243,7 +249,7 @@ export class DialogRenderer {
                 click: this.showCalculatedField.bind(this),
                 buttonModel: {
                     cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
-                        ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE,
+                        ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS, enableRtl: this.parent.enableRtl,
                     isPrimary: true
                 }
@@ -380,7 +386,8 @@ export class DialogRenderer {
             height: '100%',
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            selected: this.tabSelect.bind(this)
+            selected: this.tabSelect.bind(this),
+            cssClass: this.parent.cssClass
         });
         if (this.parent.renderMode === 'Fixed') {
             layoutFooter.appendChild(this.createAddButton());
@@ -431,7 +438,7 @@ export class DialogRenderer {
             }
         });
         let calculateField: Button = new Button({
-            cssClass: cls.CALCULATED_FIELD_CLASS + ' ' + cls.ICON_DISABLE,
+            cssClass: cls.CALCULATED_FIELD_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             content: this.parent.localeObj.getConstant('CalculatedField'),
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
@@ -451,12 +458,12 @@ export class DialogRenderer {
         let calculatedButton: HTMLElement = createElement('div', {});
         let calculateField: Button = new Button({
             cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
-                ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE,
+                ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         let fieldList: Button = new Button({
-            cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS,
+            cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });

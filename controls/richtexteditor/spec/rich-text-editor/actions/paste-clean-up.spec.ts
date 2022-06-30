@@ -2453,7 +2453,7 @@ describe("EJ2-58827 - pasting only content which is contenteditable as false", (
     });
 });
 
-describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
+describe("EJ2-58433 - Pasting content from note pad, outlook, visual studio, VS Code, the list is removed", () => {
     let rteObj: RichTextEditor;
     let editorObj: EditorManager;
     let keyBoardEvent: any = {
@@ -2470,20 +2470,104 @@ describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
     beforeAll((done: Function) => {
       rteObj = renderRTE({
         pasteCleanupSettings: {
-          prompt: false
-        },
-        showCharCount: true,
-        maxLength: 30
+          prompt: true
+        }
       });
       editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
       done();
     });
-    it("pasting content which exceeds the max char count", (done) => {
-      let localElem: string = `<p>Content1</p>`;
+    it("Pasting content from notepad to the list with empty content", (done) => {
+      let localElem: string = `RTE Content`;
       keyBoardEvent.clipboardData = {
-        getData: () => {
-          return localElem;
+        getData: (e: any) => {
+            if (e === "text/plain") {
+                return 'RTE Content';
+            } else {
+                return '';
+            }
         },
+        items: []
+      };
+      rteObj.value = '<ol><li class="focusNode">﻿﻿<br></li></ol>'
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement.querySelector('.focusNode').childNodes[0], 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `<ol><li class="focusNode"><p>RTE Content</p></li></ol>`).toBe(true)
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});
+
+describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
+  let rteObj: RichTextEditor;
+  let editorObj: EditorManager;
+  let keyBoardEvent: any = {
+    preventDefault: () => { },
+    type: "keydown",
+    stopPropagation: () => { },
+    ctrlKey: false,
+    shiftKey: false,
+    action: null,
+    which: 64,
+    key: ""
+  };
+
+  beforeAll((done: Function) => {
+    rteObj = renderRTE({
+      pasteCleanupSettings: {
+        prompt: false
+      },
+      showCharCount: true,
+      maxLength: 30
+    });
+    editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+    done();
+  });
+  it("pasting content which exceeds the max char count", (done) => {
+    let localElem: string = `<p>Content1</p>`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    rteObj.value = '<p>.NEt core application.&nbsp;</p>';
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement.firstElementChild.childNodes[0], 23);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;</p>`).toBe(true)
+      done();
+    }, 100);
+  });
+
+  it("EJ2-60239 - pasting content with exact content the max char count", (done) => {
+      keyBoardEvent.clipboardData = {
+      getData: (e: any) => {
+          if (e === "text/plain") {
+              return 'content';
+          } else {
+              return '';
+          }
+      },
         items: []
       };
       rteObj.value = '<p>.NEt core application.&nbsp;</p>';
@@ -2495,36 +2579,11 @@ describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
       setCursorPoint((rteObj as any).inputElement.firstElementChild.childNodes[0], 23);
       rteObj.onPaste(keyBoardEvent);
       setTimeout(() => {
-        expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;</p>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;</p><p>content</p>`).toBe(true)
+        expect((rteObj as any).element.querySelector('.e-rte-character-count').innerHTML === `30 / 30`).toBe(true)
         done();
       }, 100);
     });
-
-    it("EJ2-60239 - pasting content with exact content the max char count", (done) => {
-        keyBoardEvent.clipboardData = {
-        getData: (e: any) => {
-            if (e === "text/plain") {
-                return 'content';
-            } else {
-                return '';
-            }
-        },
-          items: []
-        };
-        rteObj.value = '<p>.NEt core application.&nbsp;</p>';
-        rteObj.pasteCleanupSettings.deniedTags = [];
-        rteObj.pasteCleanupSettings.deniedAttrs = [];
-        rteObj.pasteCleanupSettings.allowedStyleProps = [];
-        rteObj.dataBind();
-        (rteObj as any).inputElement.focus();
-        setCursorPoint((rteObj as any).inputElement.firstElementChild.childNodes[0], 23);
-        rteObj.onPaste(keyBoardEvent);
-        setTimeout(() => {
-          expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;</p><p>content</p>`).toBe(true)
-          expect((rteObj as any).element.querySelector('.e-rte-character-count').innerHTML === `30 / 30`).toBe(true)
-          done();
-        }, 100);
-      });
 
     afterAll(() => {
       destroy(rteObj);

@@ -2881,7 +2881,7 @@ describe('EJ2-56011 - Filter null value in OData adaptor', () => {
         destroy(gridObj);
         gridObj = actionComplete = null;
     });
-});
+}); 
 describe('EJ2-58920 - Incorrect filterOperator for initial filter', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
@@ -2912,7 +2912,7 @@ describe('EJ2-58920 - Incorrect filterOperator for initial filter', () => {
         destroy(gridObj);
         gridObj = null;
     });
-}); 
+});
 describe('EJ2-57916 Initial filter value is not displayed => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
@@ -3022,4 +3022,5 @@ describe('EJ2-60560 - Scroller thumb is shown when empty record displayed in the
         destroy(gridObj);
         gridObj = actionComplete = null;
     });
+    
 });

@@ -522,6 +522,13 @@ export class ViewBase {
         const tdDate: number = new Date(util.resetTime(new Date(+scrollDate)).getTime()).getTime();
         const dateElement: HTMLElement = scrollWrap.querySelector(`.${cls.WORK_CELLS_CLASS}[data-date="${tdDate}"]`) as HTMLElement;
         if (this.parent.currentView === 'Month' && dateElement) {
+            if (scrollWrap.scrollWidth > scrollWrap.clientWidth) {
+                if (!this.parent.enableRtl) {
+                    scrollWrap.scrollLeft = dateElement.offsetLeft;
+                } else {
+                    scrollWrap.scrollLeft = -(this.parent.getContentTable().offsetWidth - dateElement.offsetLeft - dateElement.offsetWidth);
+                }
+            }
             scrollWrap.scrollTop = dateElement.offsetTop;
         }
         if (this.parent.currentView === 'TimelineMonth' && dateElement) {
@@ -567,6 +574,18 @@ export class ViewBase {
             endDate = util.addDays(this.parent.resourceBase.getResourceRenderDates().slice(-1)[0], 1);
         }
         return endDate;
+    }
+
+    public getAdjustedDate(startTime: Date): Date {
+        if (!this.parent.activeViewOptions.timeScale.enable || this.parent.currentView === 'Month' ||
+            (this.parent.currentView === 'TimelineYear' && this.parent.activeViewOptions.group.resources.length === 0)) {
+            return new Date(startTime.setHours(0, 0, 0, 0));
+        }
+        else if (this.parent.currentView === 'TimelineYear' && this.parent.activeViewOptions.group.resources.length > 0) {
+            startTime.setHours(0, 0, 0, 0);
+            return new Date(startTime.setDate(1));
+        }
+        return null;
     }
 
     public destroy(): void {

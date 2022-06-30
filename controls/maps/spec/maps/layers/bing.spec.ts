@@ -241,6 +241,21 @@ describe('Map layer testing', () => {
             ele.setAttribute('style', 'height: 512px; width: 512px;');
             osm.refresh();
         });
+        it('bing map url template', (done: Function) => {
+            osm.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_tile_parent');
+                expect(spec).not.toBe(null);
+                done();
+            };
+            osm.zoomSettings.zoomFactor = 1;
+            osm.layers = [
+                {
+                    urlTemplate: 'https://ecn.{subdomain}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=12305',
+                },
+            ];
+            ele.setAttribute('style', 'height: 512px; width: 512px;');
+            osm.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

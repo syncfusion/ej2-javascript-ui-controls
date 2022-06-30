@@ -1336,9 +1336,15 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let heightValue: string;
         let widthValue: string;
         if (this.checkMediaQuery()) {
-            heightValue = ((this.maxRow()) *
+            let entirePanelsY: number = 0;
+            for (let i: number = 0; i < this.panels.length; i++) {
+                if (this.panels[i].sizeY) {
+                    entirePanelsY += this.panels[i].sizeY;
+                }
+            }
+            heightValue = ((entirePanelsY) *
                 (this.element.parentElement && ((this.element.parentElement.offsetWidth)) / this.cellAspectRatio) +
-                (this.maxRow() - 1) * this.cellSpacing[1]) + 'px';
+                (entirePanelsY - 1) * this.cellSpacing[1]) + 'px';
         } else {
             heightValue = ((this.maxRow()) *
                 (<number>this.cellSize[0] / this.cellAspectRatio) + (this.maxRow() - 1) * this.cellSpacing[1]) + 'px';

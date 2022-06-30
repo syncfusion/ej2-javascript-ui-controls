@@ -82,6 +82,8 @@ export const beforeSort: string = 'beforeSort';
 /** @hidden */
 export const initiateSort: string = 'initiateSort';
 /** @hidden */
+export const updateSortedDataOnCell: string = 'updateSortedDataOnCell';
+/** @hidden */
 export const sortComplete: string = 'sortComplete';
 /** @hidden */
 export const sortRangeAlert: string = 'sortRangeAlert';
@@ -187,19 +189,13 @@ export const hideShow: string = 'hideShow';
 /** @hidden */
 export const setCFRule: string = 'setCFRule';
 /** @hidden */
-export const cFInitialCheck: string = 'cFInitialCheck';
+export const applyCF: string = 'applyCF';
 /** @hidden */
 export const clearCFRule: string = 'clearCFRule';
-/** @hidden */
-export const initiateClearCFRule: string = 'initiateClearCFRule';
-/** @hidden */
-export const cFRender: string = 'cFRender';
 /** @hidden */
 export const clear: string = 'clear';
 /** @hidden */
 export const clearCF: string = 'clearCF';
-/** @hidden */
-export const clearCells: string = 'clearCells';
 /** @hidden */
 export const setImage: string = 'setImage';
 /** @hidden */
@@ -247,8 +243,6 @@ export const rowFillHandler: string = 'rowFillHandler';
 /** @hidden */
 export const getTextSpace: string = 'getTextSpace';
 /** @hidden */
-export const cFUndo: string = 'cFUndo';
-/** @hidden */
 export const refreshClipboard: string = 'refreshClipboard';
 /** @hidden */
 export const updateView: string = 'updateView';
@@ -259,8 +253,8 @@ export const refreshInsertDelete: string = 'refreshInsertDelete';
 /** @hidden */
 export const getUpdatedFormulaOnInsertDelete: string = 'getUpdatedFormulaOnInsertDelete';
 /** @hidden */
-export const checkConditionalFormat: string = 'checkConditionalFormat';
-/** @hidden */
 export const beforeCellUpdate: string = 'beforeCellUpdate';
 /** @hidden */
 export const duplicateSheetFilterHandler: string = 'duplicateSheetFilterHandler';
+/** @hidden */
+export const unMerge: string = 'unMerge';

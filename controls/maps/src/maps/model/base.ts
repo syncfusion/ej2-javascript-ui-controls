@@ -824,7 +824,7 @@ export class SubTitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the options for customizing the text in the subtitle for maps.
      */
-    @Complex<FontModel>({ size: Theme.mapsSubTitleFont.size, fontWeight: null }, Font)
+    @Complex<FontModel>({ size: null, fontWeight: null, fontFamily: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the alignment of the subtitle for maps.
@@ -841,7 +841,7 @@ export class TitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the options for customizing the text of the title in Maps.
      */
-    @Complex<FontModel>({ size: Theme.mapsTitleFont.size, fontWeight: null }, Font)
+    @Complex<FontModel>({ size: null, fontWeight: null, fontFamily: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the alignment for the text in the title for the maps.
@@ -1116,7 +1116,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Sets and gets the options for customizing the text styles for the legend in maps.
      */
-    @Complex<FontModel>({}, Font)
+    @Complex<FontModel>({ fontFamily: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -1164,7 +1164,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Sets and gets the options for customizing the style of the title for the legend in maps.
      */
-    @Complex<FontModel>(Theme.legendTitleFont, Font)
+    @Complex<FontModel>({ size: Theme.legendTitleFont.size, color: Theme.legendTitleFont.color, fontStyle: Theme.legendTitleFont.fontStyle, fontWeight: Theme.legendTitleFont.fontWeight,  fontFamily: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -1662,6 +1662,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      * Sets and gets the Bing map type for the layer. If you use shape data with BingMapType without using layer type as Bing,
      * then the map will render based on shape data since default layer type will be set as Geometry.
      *
+     * @deprecated
      * @default Aerial
      */
     @Property('Aerial')
@@ -1669,6 +1670,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * Sets and gets the type of the static maps.
      *
+     * @deprecated
      * @default RoadMap
      */
     @Property('RoadMap')
@@ -1676,6 +1678,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * Sets and gets the key for the tile map layer in maps.
      *
+     * @deprecated
      * @default ''
      */
     @Property('')
@@ -1684,6 +1687,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      * Sets and gets the type of the layer in maps. If we use layer type with shape data property in layer of the maps
      * then map will render based on the provided layer type.
      *
+     * @deprecated
      * @default Geometry
      */
     @Property('Geometry')
@@ -1691,9 +1695,9 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * Sets and gets the template for the map using the url.
      *
-     * @default 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
+     * @default ''
      */
-    @Property('https://a.tile.openstreetmap.org/level/tileX/tileY.png')
+    @Property('')
     public urlTemplate: string;
     /**
      * Enables or disables the visibility state for the layers in maps.

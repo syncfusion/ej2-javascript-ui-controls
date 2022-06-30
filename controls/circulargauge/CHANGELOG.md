@@ -4,22 +4,6 @@
 
 ## [Unreleased]
 
-## 20.1.60 (2022-06-14)
-
-### Circular Gauge
-
-#### New Features
-
-- `#I365344` - Dash array can now be customized in the border of the Circular Gauge.
-
-## 19.4.43 (2022-01-18)
-
-### CircularGauge
-
-#### New Features
-
-- `cancel` argument is now available in the `resized` event to restrict the resize of the control when set as `true`.
-
 ## 19.3.53 (2021-11-12)
 
 ### CircularGauge

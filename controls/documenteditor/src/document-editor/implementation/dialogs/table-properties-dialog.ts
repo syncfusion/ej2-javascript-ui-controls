@@ -1,7 +1,7 @@
 import { Dialog } from '@syncfusion/ej2-popups';
 import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
+import { WTableFormat, WRowFormat, WCellFormat, WParagraphFormat } from '../format/index';
 import { TableAlignment, WidthType, HeightType, CellVerticalAlignment } from '../../base/types';
 import { Selection } from '../index';
 import { CheckBox, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
@@ -73,6 +73,7 @@ export class TablePropertiesDialog {
     private rtlButton: RadioButton;
     private ltrButton: RadioButton;
     private localValue: L10n = undefined;
+    private paraFormatIn:WParagraphFormat;
     /**
      * @private
      */
@@ -105,6 +106,17 @@ export class TablePropertiesDialog {
         this.tableFormatIn = value;
     }
 
+    private get paraFormat(): WParagraphFormat {
+        if (isNullOrUndefined(this.tableFormatIn)) {
+            this.paraFormatIn = new WParagraphFormat();
+            return this.paraFormatIn;
+        }
+        return this.paraFormatIn;
+    }
+
+    private set paraFormat(value: WParagraphFormat) {
+        this.paraFormatIn = value;
+    }
     private get rowFormat(): WRowFormat {
         if (isNullOrUndefined(this.rowFormatInternal)) {
             this.rowFormatInternal = new WRowFormat();
@@ -200,6 +212,7 @@ export class TablePropertiesDialog {
         }
         this.documentHelper.dialog2.header = localValue.getConstant('Table Properties');
         this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog2.animationSettings = { effect: 'None', duration: 400, delay:0 }
         this.documentHelper.dialog2.width = 'auto';
         this.documentHelper.dialog2.height = 'auto';
         this.documentHelper.dialog2.content = this.target;
@@ -217,6 +230,10 @@ export class TablePropertiesDialog {
         //this.tabObj.select(0);
         this.documentHelper.dialog2.dataBind();
         this.documentHelper.dialog2.show();
+        const dialogElement: HTMLElement = this.documentHelper.dialog2.element;
+        if (dialogElement) {
+            this.documentHelper.updateDialogTabHeight(dialogElement, this.target);
+        }
     }
     /**
      * @returns {void}
@@ -407,62 +424,60 @@ export class TablePropertiesDialog {
     };
     //#region Table Format
     private initTableProperties(element: HTMLDivElement, localValue: L10n, isRtl?: boolean): void {
-        const container: HTMLDivElement = <HTMLDivElement>createElement('div', { id: element.id + '_table_TabContainer' });
+        const container: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dialog-size-label' });
         const sizeHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: container.id + '_sizeLabel', innerHTML: localValue.getConstant('Size'),
-            styles: 'width:100%;margin:0px;', className: 'e-de-table-dialog-options-label e-de-table-dialog-size-label'
+            innerHTML: localValue.getConstant('Size'),
+            className: 'e-de-para-dlg-heading'
         });
-        const parentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display: inline-flex;' });
+        //const parentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display: inline-flex;' });
         const childContainer1: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'float: left;',
-            className: 'e-de-table-container-div'
+            className: 'e-de-table-ppty-options-break'
+        });
+        const preferCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
+            attrs: { 'type': 'checkbox' }
         });
         const childContainer2: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-table-ppty-dlg-preferred-width-div'
+            className: 'e-de-container-row'
         });
-        const child1: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'display: inline;',
-            className: 'e-de-table-ppty-dlg-measure-div'
+        const preferredWidthDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-subcontainer-left e-de-table-dialog-row-height'
         });
-        const child2: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'display: inline;position: absolute;',
-            className: 'e-de-table-ppty-dlg-measure-drop-down-div'
-        });
-        const childContainer3: HTMLDivElement = <HTMLDivElement>createElement('div');
-        const preferCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            id: element.id + '_Prefer_Width_CheckBox', attrs: { 'type': 'checkbox' }
-        });
-        this.preferredWidth = <HTMLInputElement>createElement('input', { id: element.id + 'preferred_Width' });
-        const controlDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        this.preferredWidth = <HTMLInputElement>createElement('input');
+        const controlDiv: HTMLDivElement = createElement('div',{className: 'e-de-subcontainer-right'}) as HTMLDivElement;
         const tableWidthType: HTMLSelectElement = createElement('select', {
             innerHTML: '<option value="Points">' + localValue.getConstant('Points') +
-                '</option><option value="Percent">' + localValue.getConstant('Percent') + '</option>', id: element.id + '_width_dropdown'
+                '</option><option value="Percent">' + localValue.getConstant('Percent') + '</option>'
         }) as HTMLSelectElement;
-        const labeltext: HTMLInputElement = <HTMLInputElement>createElement('span', {
-            innerHTML: localValue.getConstant('Measure in'),
-            className: 'e-de-table-measure-lbl'
-        });
+        // const labeltext: HTMLInputElement = <HTMLInputElement>createElement('span', {
+        //     innerHTML: localValue.getConstant('Measure in'),
+        //     className: 'e-de-table-measure-lbl'
+        // });
+        const alignment :HTMLDivElement = createElement ('div',{className: 'e-de-dlg-row'}) as HTMLDivElement;
+        const alignmentContainer: HTMLDivElement = createElement ('div', {className: 'e-de-subcontainer-left'}) as HTMLDivElement;
         const alignmentHeader: HTMLDivElement = createElement('div', {
-            innerHTML: localValue.getConstant('Alignment'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;margin: 0px;'
+            innerHTML: localValue.getConstant('Alignment'), className: 'e-de-table-dlg-alignment-heading'
         }) as HTMLDivElement;
-        const alignmentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'height:85px;display:inline-flex', className: 'e-de-tbl-prop-sub-cntr' });
-        const classDivName: string = element.id + 'e-de-table-alignment';
+        const alignmentSubContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-container-row' });
+        const classDivName: string = element.id + 'e-de-table-alignment e-de-table-dialog-alignment-icon';
+        const leftDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
         const leftAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
         this.left = createElement('div', {
             className: 'e-icons e-de-table-properties-alignment e-de-table-left-alignment ' + classDivName,
-            id: element.id + '_left_alignment', styles: 'width:54px;height:54px;margin:2px'
+            id: element.id + '_left_alignment'
+            //styles: 'width:54px;height:54px;margin:2px'
         }) as HTMLDivElement;
         leftAlignDiv.appendChild(this.left);
         const centerAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
         this.center = createElement('div', {
             className: 'e-icons e-de-table-properties-alignment  e-de-table-center-alignment ' + classDivName,
-            id: element.id + '_center_alignment', styles: 'width:54px;height:54px;margin:2px'
+            id: element.id + '_center_alignment'
+            //styles: 'width:54px;height:54px;margin:2px'
         }) as HTMLDivElement;
         centerAlignDiv.appendChild(this.center);
         this.right = createElement('div', {
-            styles: 'width:54px;height:54px;margin:2px', id: element.id + '_right_alignment',
-            className: 'e-icons e-de-table-properties-alignment  e-de-table-right-alignment ' + classDivName
+            //styles: 'width:54px;height:54px;margin:2px', 
+            className: 'e-icons e-de-table-properties-alignment  e-de-table-right-alignment ' + classDivName,
+            id: element.id + '_right_alignment'
         }) as HTMLDivElement;
         const rightAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
         rightAlignDiv.appendChild(this.right);
@@ -476,37 +491,36 @@ export class TablePropertiesDialog {
             innerHTML: localValue.getConstant('Right'), className: 'e-de-table-dia-align-label'
         }) as HTMLLabelElement;
         const leftIndenetContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-table-ppty-dlg-left-indent-container'
+            className: 'e-de-subcontainer-right'
         });
-        let leftIndentLabelMargin: string;
-        let leftIndentBoxMargin: string;
-        if (isRtl) {
-            leftIndentLabelMargin = 'left: 45px;';
-            leftIndentBoxMargin = 'left: 45px;';
-        } else {
-            leftIndentLabelMargin = 'right: 45px;';
-            leftIndentBoxMargin = 'right: 45px;';
-        }
-        this.indentingLabel = createElement('label', {
-            innerHTML: localValue.getConstant('Indent from left'),
-            styles: leftIndentLabelMargin,
-            className: 'e-de-tbl-indent-lbl'
-        }) as HTMLLabelElement;
-        const leftIndentBox: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'margin-top: 15px;position: relative;' + leftIndentBoxMargin
-        });
-        this.leftIndent = <HTMLInputElement>createElement('input', { id: element.id + '_left_indent' });
+        // let leftIndentLabelMargin: string;
+        // let leftIndentBoxMargin: string;
+        // if (isRtl) {
+        //     leftIndentLabelMargin = 'left: 45px;';
+        //     leftIndentBoxMargin = 'left: 45px;';
+        // } else {
+        //     leftIndentLabelMargin = 'right: 45px;';
+        //     leftIndentBoxMargin = 'right: 45px;';
+        // }
+        // this.indentingLabel = createElement('label', {
+        //     innerHTML: localValue.getConstant('Indent from left'),
+        //     //styles: leftIndentLabelMargin,
+        //     className: 'e-de-tbl-indent-lbl'
+        // }) as HTMLLabelElement;
+        // const leftIndentBox: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        //     styles: 'margin-top: 15px;position: relative;' + leftIndentBoxMargin
+        // });
+        this.leftIndent = <HTMLInputElement>createElement('input');
         const tableDirHeader: HTMLDivElement = createElement('div', {
-            innerHTML: localValue.getConstant('Table direction'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;margin: 0px;padding-top:14px;'
+            innerHTML: localValue.getConstant('Table direction'), className: 'e-de-para-dlg-heading'
         }) as HTMLDivElement;
-        const tableDirContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display:flex' });
-        const rtlDiv: HTMLElement = createElement('div', { id: element.id + '_TableDirDiv', className: 'e-de-tbl-rtl-btn-div' });
-        const rtlInputELe: HTMLElement = createElement('input', { id: element.id + '_rtlEle' });
+        const tableDirContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {className: 'e-de-dlg-row'});
+        const rtlDiv: HTMLElement = createElement('div', { className: 'e-de-tbl-rtl-btn-div' });
+        const rtlInputELe: HTMLElement = createElement('input');
         rtlDiv.appendChild(rtlInputELe);
         tableDirContainer.appendChild(rtlDiv);
-        const ltrDiv: HTMLElement = createElement('div', { id: element.id + '_DirDiv', className: 'e-de-tbl-ltr-btn-div' });
-        const ltrInputELe: HTMLElement = createElement('input', { id: element.id + '_ltrEle' });
+        const ltrDiv: HTMLElement = createElement('div', { className: 'e-de-tbl-ltr-btn-div' });
+        const ltrInputELe: HTMLElement = createElement('input');
         ltrDiv.appendChild(ltrInputELe);
         tableDirContainer.appendChild(ltrDiv);
         this.rtlButton = new RadioButton({
@@ -524,58 +538,55 @@ export class TablePropertiesDialog {
         const tableOptionContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
             className: 'e-de-tbl-dlg-border-btn'
         });
-        if (isRtl) {
-            tableOptionContiner.style.cssFloat = 'left';
-        }
+        // if (isRtl) {
+        //     tableOptionContiner.style.cssFloat = 'left';
+        // }
         this.bordersAndShadingButton = createElement('button', {
             innerHTML: localValue.getConstant('Borders and Shading') + '...',
-            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-de-ok-button',
+            className: 'e-control e-btn e-de-ok-button',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton = createElement('button', {
             className: 'e-control e-btn', innerHTML: localValue.getConstant('Options') + '...',
-            id: element.id + '_table_cellmargin', attrs: { type: 'button' }
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton.addEventListener('click', this.showTableOptionsDialog);
         this.bordersAndShadingButton.addEventListener('click', this.showBordersShadingsPropertiesDialog);
         tableOptionContiner.appendChild(this.bordersAndShadingButton);
         tableOptionContiner.appendChild(this.tableOptionButton);
-        leftIndenetContainer.appendChild(this.indentingLabel); leftIndentBox.appendChild(this.leftIndent);
-        leftIndenetContainer.appendChild(leftIndentBox); alignmentContainer.appendChild(leftAlignDiv);
-        alignmentContainer.appendChild(centerAlignDiv); alignmentContainer.appendChild(rightAlignDiv);
+        leftIndenetContainer.appendChild(this.leftIndent);
+        alignmentSubContainer.appendChild(leftDiv); alignmentContainer.appendChild(alignmentHeader);
+        leftDiv.appendChild(leftAlignDiv); alignmentContainer.appendChild(alignmentSubContainer); 
+        alignmentSubContainer.appendChild(centerAlignDiv); alignmentSubContainer.appendChild(rightAlignDiv);
         leftAlignDiv.appendChild(leftlabel); centerAlignDiv.appendChild(centerlabel);
-        rightAlignDiv.appendChild(rightlabel); alignmentContainer.appendChild(leftIndenetContainer);
+        rightAlignDiv.appendChild(rightlabel); alignment.appendChild(alignmentContainer);
         container.appendChild(sizeHeader); element.appendChild(container);
-        childContainer1.appendChild(preferCheckBox); parentContainer.appendChild(childContainer1);
-        childContainer2.appendChild(this.preferredWidth); parentContainer.appendChild(childContainer2);
-        controlDiv.appendChild(tableWidthType); child1.appendChild(labeltext);
-        child2.appendChild(controlDiv); childContainer3.appendChild(child1);
-        childContainer3.appendChild(child2); parentContainer.appendChild(childContainer3);
-        element.appendChild(parentContainer); element.appendChild(alignmentHeader);
-        element.appendChild(alignmentContainer); element.appendChild(tableDirHeader);
+        childContainer1.appendChild(preferCheckBox); container.appendChild(childContainer1);
+        preferredWidthDiv.appendChild(this.preferredWidth); container.appendChild(childContainer2);
+        controlDiv.appendChild(tableWidthType); alignment.appendChild(leftIndenetContainer);
+        childContainer2.appendChild(preferredWidthDiv); childContainer2.appendChild(controlDiv); 
+        element.appendChild(alignment); element.appendChild(tableDirHeader);
         element.appendChild(tableDirContainer); element.appendChild(tableOptionContiner);
         this.tableWidthBox = new NumericTextBox({
             value: 0, decimals: 2, min: 0, max: 1584, enablePersistence: false
         });
         this.tableWidthBox.appendTo(this.preferredWidth);
         this.leftIndentBox = new NumericTextBox({
-            value: 0, decimals: 2, min: -1584, max: 1584, width: 140, enablePersistence: false
+            value: 0, decimals: 2, min: -1584, max: 1584, enablePersistence: false, floatLabelType: 'Always', placeholder: localValue.getConstant('Indent from left')
         });
         this.leftIndentBox.appendTo(this.leftIndent);
         this.preferCheckBox = new CheckBox({
             label: localValue.getConstant('Preferred Width'), enableRtl: isRtl
         });
         this.preferCheckBox.appendTo(preferCheckBox);
-        this.tableWidthType = new DropDownList({ enableRtl: isRtl });
+        this.tableWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in')});
         this.tableWidthType.appendTo(tableWidthType);
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
-            childContainer2.classList.add('e-de-rtl');
-            child1.classList.add('e-de-rtl');
-            child2.classList.add('e-de-rtl');
+            //childContainer2.classList.add('e-de-rtl');
             leftIndenetContainer.classList.add('e-de-rtl');
             tableOptionContiner.classList.add('e-de-rtl');
-            this.bordersAndShadingButton.classList.add('e-de-rtl');
+            //this.bordersAndShadingButton.classList.add('e-de-rtl');
             leftAlignDiv.classList.add('e-de-rtl');
             centerAlignDiv.classList.add('e-de-rtl');
             rightAlignDiv.classList.add('e-de-rtl');
@@ -696,10 +707,12 @@ export class TablePropertiesDialog {
         }
         if (tableFormat.bidi) {
             this.leftIndentBox.enabled = tableAlignment === 'Right';
-            this.indentingLabel.innerHTML = this.localValue.getConstant('Indent from right');
+            //this.indentingLabel.innerHTML = this.localValue.getConstant('Indent from right');
+            this.leftIndentBox.placeholder = this.localValue.getConstant('Indent from right');
         } else {
             this.leftIndentBox.enabled = tableAlignment === 'Left';
-            this.indentingLabel.innerHTML = this.localValue.getConstant('Indent from left');
+            //this.indentingLabel.innerHTML = this.localValue.getConstant('Indent from left');
+            this.leftIndentBox.placeholder = this.localValue.getConstant('Indent from left');
         }
 
         this.leftIndentBox.value = tableFormat.leftIndent;
@@ -709,11 +722,14 @@ export class TablePropertiesDialog {
         classList(this.center, [], ['e-de-table-alignment-active']);
 
         if (tableAlignment === 'Left') {
-            this.left.classList.add('e-de-table-alignment-active');
+            classList(this.left,['e-de-table-alignment-active'],['e-de-table-properties-alignment']);
+            //this.left.classList.add('e-de-table-alignment-active');
         } else if (tableAlignment === 'Center') {
-            this.center.classList.add('e-de-table-alignment-active');
+            classList(this.center,['e-de-table-alignment-active'],['e-de-table-properties-alignment']);
+            //this.center.classList.add('e-de-table-alignment-active');
         } else if (tableAlignment === 'Right') {
-            this.right.classList.add('e-de-table-alignment-active');
+            classList(this.right,['e-de-table-alignment-active'],['e-de-table-properties-alignment']);
+            //this.right.classList.add('e-de-table-alignment-active');
         }
     }
     /**
@@ -787,13 +803,12 @@ export class TablePropertiesDialog {
 
     //#region Row Format
     private initTableRowProperties(element: HTMLDivElement, localValue: L10n, isRtl?: boolean): void {
-        const rowDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;' });
+        const sizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {className: 'e-de-table-dialog-size-label'});
         const sizeLabeldiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localValue.getConstant('Size'),
-            styles: 'width: 100%;',
-            className: 'e-de-table-dialog-options-label e-de-table-dialog-size-label'
+            className: 'e-de-para-dlg-heading'
         });
-        const parentDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display: inline-flex;width: 100%;' });
+        //const parentDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
         // let childDiv1Float: string;
         // if (isRtl) {
         //     childDiv1Float = 'float: right;';
@@ -801,16 +816,19 @@ export class TablePropertiesDialog {
         //     childDiv1Float = 'float: left;';
         // }
         const childDiv1: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-table-header-div', styles: 'margin-top:6px'
+            className: 'e-de-table-ppty-options-break'
         });
         const rowHeightCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'checkbox' }, id: element.id + '_height_CheckBox'
+            attrs: { 'type': 'checkbox' }
         });
         const childdiv2: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-row-ht-top'
+            className: 'e-de-container-row'
         });
+        const rowHeightDiv: HTMLElement = <HTMLDivElement>createElement('div',{
+            className: 'e-de-subcontainer-left e-de-table-dialog-row-height'
+        })
         this.rowHeight = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'text' }, 'id': element.id + '_table_row_height'
+            attrs: { 'type': 'text' }
         });
         //let child2Float: string;
         // if (isRtl) {
@@ -818,34 +836,33 @@ export class TablePropertiesDialog {
         // } else {
         //     child2Float = 'float: right;';
         // }
-        const child2: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-ht-wdth-type' });
-        const child3: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const child4: HTMLDivElement = createElement('div') as HTMLDivElement;
-        const controlDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        const controlDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-subcontainer-right' });
+        //const child3: HTMLDivElement = createElement('div') as HTMLDivElement;
+        //const child4: HTMLDivElement = createElement('div') as HTMLDivElement;
+        //const controlDiv: HTMLDivElement = createElement('div', {className: 'e-de-subcontainer-right'}) as HTMLDivElement;
         const rowHeightType: HTMLSelectElement = createElement('select', {
             innerHTML: '<option value="At least">' + localValue.getConstant('At least')
-                + '</option><option value="Exactly">' + localValue.getConstant('Exactly') + '</option>',
-            id: element.id + '_height_type'
+                + '</option><option value="Exactly">' + localValue.getConstant('Exactly') + '</option>'
         }) as HTMLSelectElement;
-        const labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('span', {
-            innerHTML: localValue.getConstant('Row height is'),
-            className: 'e-de-table-measure-lbl'
-        });
-        rowDiv.appendChild(sizeLabeldiv); element.appendChild(rowDiv); childDiv1.appendChild(rowHeightCheckBox);
-        parentDiv.appendChild(childDiv1); childdiv2.appendChild(this.rowHeight); parentDiv.appendChild(childdiv2);
-        controlDiv.appendChild(rowHeightType); child3.appendChild(labeltext); child4.appendChild(controlDiv);
-        child2.appendChild(child3); child2.appendChild(child4); parentDiv.appendChild(child2); element.appendChild(parentDiv);
+        // const labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('span', {
+        //     innerHTML: localValue.getConstant('Row height is'),
+        //     className: 'e-de-table-measure-lbl'
+        // });
+        sizeDiv.appendChild(sizeLabeldiv); element.appendChild(sizeDiv); childDiv1.appendChild(rowHeightCheckBox);
+        sizeDiv.appendChild(childDiv1); childdiv2.appendChild(rowHeightDiv); sizeDiv.appendChild(childdiv2);
+        rowHeightDiv.appendChild(this.rowHeight); controlDiv.appendChild(rowHeightType);
+        childdiv2.appendChild(controlDiv);
         const alignmentDiv: HTMLDivElement = createElement('div', {
-            innerHTML: localValue.getConstant('Options') + '...', styles: 'width: 100%;',
-            className: 'e-de-table-dialog-options-label'
+            innerHTML: localValue.getConstant('Options') + '...',
+            className: 'e-de-para-dlg-heading'
         }) as HTMLDivElement;
         const allowRowContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-ppty-options-break' });
         const repeatHeaderContaniner: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-ppty-options-header-row' });
         const allowRowBreak: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'checkbox' }, id: element.id + '_allow_row_break'
+            attrs: { 'type': 'checkbox' }
         });
         const repeatHeader: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'checkbox' }, 'id': element.id + '_repeat_header'
+            attrs: { 'type': 'checkbox' }
         });
         allowRowContainer.appendChild(allowRowBreak); repeatHeaderContaniner.appendChild(repeatHeader);
         element.appendChild(alignmentDiv); element.appendChild(allowRowContainer);
@@ -859,7 +876,7 @@ export class TablePropertiesDialog {
             enableRtl: isRtl
         });
         this.rowHeightCheckBox.appendTo(rowHeightCheckBox);
-        this.rowHeightType = new DropDownList({ enableRtl: isRtl });
+        this.rowHeightType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Row height is')});
         this.rowHeightType.appendTo(rowHeightType);
         this.allowRowBreak = new CheckBox({
             label: localValue.getConstant('Allow row to break across pages'),
@@ -871,11 +888,11 @@ export class TablePropertiesDialog {
             enableRtl: isRtl
         });
         this.repeatHeader.appendTo(repeatHeader);
-        if (isRtl) {
-            child3.classList.add('e-de-rtl');
-            child4.classList.add('e-de-rtl');
-            childdiv2.classList.add('e-de-rtl');
-        }
+        // if (isRtl) {
+        //     child3.classList.add('e-de-rtl');
+        //     child4.classList.add('e-de-rtl');
+        //     childdiv2.classList.add('e-de-rtl');
+        // }
     }
     private setTableRowProperties(): void {
         const rowFormat: SelectionRowFormat = this.documentHelper.selection.rowFormat;
@@ -980,12 +997,11 @@ export class TablePropertiesDialog {
 
     //#region Cell Format
     private initTableCellProperties(element: HTMLDivElement, localValue: L10n, isRtl?: boolean): void {
-        const sizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;' });
+        const sizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {className: 'e-de-table-dialog-size-label'});
         const div: HTMLDivElement = createElement('div', {
-            innerHTML: localValue.getConstant('Size'), className: 'e-de-table-dialog-options-label e-de-table-dialog-size-label',
-            styles: 'width: 100%;'
+            innerHTML: localValue.getConstant('Size'), className: 'e-de-para-dlg-heading',
         }) as HTMLDivElement;
-        const parentdiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;display: inline-flex;' });
+        //const parentdiv: HTMLDivElement = <HTMLDivElement>createElement('div');
         // let childdiv1Float: string;
         // if (isRtl) {
         //     childdiv1Float = 'float: right';
@@ -993,16 +1009,19 @@ export class TablePropertiesDialog {
         //     childdiv1Float = 'float: left';
         // }
         const childdiv1: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-table-cell-header-div', styles: 'margin-top:9px'
+            className: 'e-de-table-ppty-options-break'
         });
         const preferredCellWidthCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            attrs: { 'type': 'checkbox' }, id: element.id + '_Prefer_Width_CheckBox_cell'
+            attrs: { 'type': 'checkbox' }
         });
         const childdiv2: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-cell-ht-top'
+            className: 'e-de-container-row'
         });
+        const preferredCellDiv: HTMLElement = <HTMLDivElement>createElement('div',{
+            className: 'e-de-subcontainer-left e-de-table-dialog-row-height'
+        })
         this.preferredCellWidth = <HTMLInputElement>createElement('input', {
-            id: element.id + 'tablecell_Width_textBox', attrs: { 'type': 'text' }
+            attrs: { 'type': 'text' }
         });
         // let child2Float: string;
         // if (isRtl) {
@@ -1010,56 +1029,55 @@ export class TablePropertiesDialog {
         // } else {
         //     child2Float = 'float: right;';
         // }
-        const child2: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-ht-wdth-type'
+        const controlDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-subcontainer-right'
         });
-        const child3: HTMLDivElement = <HTMLDivElement>createElement('div');
+        //const child3: HTMLDivElement = <HTMLDivElement>createElement('div');
         // let child4Float: string;
         // if (isRtl) {
         //     child4Float = 'float: left;';
         // } else {
         //     child4Float = 'float: right;';
         // }
-        const child4: HTMLDivElement = <HTMLDivElement>createElement('div');
-        const controlDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        //const child4: HTMLDivElement = <HTMLDivElement>createElement('div');
+        //const controlDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         const cellWidthType: HTMLSelectElement = createElement('select', {
             innerHTML: '<option value="Points">' + localValue.getConstant('Points') + '</option><option value="Percent">' +
-                localValue.getConstant('Percent') + '</option>', 'id': element.id + '_measure_type_cell'
+                localValue.getConstant('Percent') + '</option>'
         }) as HTMLSelectElement;
-        const labeltext: HTMLLabelElement = createElement('span', {
-            innerHTML: localValue.getConstant('Measure in'),
-            className: 'e-de-table-measure-lbl'
-        }) as HTMLLabelElement;
+        // const labeltext: HTMLLabelElement = createElement('span', {
+        //     innerHTML: localValue.getConstant('Measure in'),
+        //     className: 'e-de-table-measure-lbl'
+        // }) as HTMLLabelElement;
         sizeDiv.appendChild(div); element.appendChild(sizeDiv); childdiv1.appendChild(preferredCellWidthCheckBox);
-        parentdiv.appendChild(childdiv1); childdiv2.appendChild(this.preferredCellWidth);
-        parentdiv.appendChild(childdiv2); controlDiv.appendChild(cellWidthType); child3.appendChild(labeltext);
-        child4.appendChild(controlDiv); child2.appendChild(child3); child2.appendChild(child4);
-        parentdiv.appendChild(child2); element.appendChild(parentdiv);
+        sizeDiv.appendChild(childdiv1); preferredCellDiv.appendChild(this.preferredCellWidth);
+        sizeDiv.appendChild(childdiv2); childdiv2.appendChild(preferredCellDiv); childdiv2.appendChild(controlDiv);
+        controlDiv.appendChild(cellWidthType);
         const alignmentDiv: HTMLDivElement = createElement('div', {
             innerHTML: localValue.getConstant('Vertical alignment'),
-            styles: 'width: 100%;margin: 0px;',
-            className: 'e-de-table-dialog-options-label'
+            className: 'e-de-para-dlg-heading'
         }) as HTMLDivElement;
-        const classDivName: string = element.id + 'e-de-table-cell-alignment';
+        const classDivName: string = element.id + 'e-de-table-cell-alignment e-de-tablecell-dialog-alignment-icon';
         const divAlignment: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'width: 100%;height: 100px;'
+            className: 'e-de-container-row'
         });
-        const divStyle: string = 'width:54px;height:54px;margin:2px;border-style:solid;border-width:1px';
-        const topAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
+        const topDiv: HTMLDivElement = <HTMLDivElement>createElement('div');
+        //const divStyle: string = 'width:54px;height:54px;margin:2px;border-style:solid;border-width:1px';
+        const topAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-tablecell-dia-align-div' });
         this.cellTopAlign = createElement('div', {
-            styles: divStyle, id: element.id + '_cell_top-alignment',
+            id: element.id + '_cell_top-alignment',
             className: 'e-icons e-de-tablecell-alignment  e-de-tablecell-top-alignment ' + classDivName
         }) as HTMLDivElement;
         topAlignDiv.appendChild(this.cellTopAlign);
-        const centerAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
+        const centerAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-tablecell-dia-align-div' });
         this.cellCenterAlign = createElement('div', {
-            styles: divStyle, id: element.id + '_cell_center-alignment',
+            id: element.id + '_cell_center-alignment',
             className: 'e-icons e-de-tablecell-alignment  e-de-tablecell-center-alignment ' + classDivName
         }) as HTMLDivElement;
         centerAlignDiv.appendChild(this.cellCenterAlign);
-        const bottomAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
+        const bottomAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-tablecell-dia-align-div' });
         this.cellBottomAlign = createElement('div', {
-            styles: divStyle, id: element.id + '_cell_bottom-alignment',
+            id: element.id + '_cell_bottom-alignment',
             className: 'e-icons e-de-tablecell-alignment e-de-tablecell-bottom-alignment  ' + classDivName
         }) as HTMLDivElement;
         bottomAlignDiv.appendChild(this.cellBottomAlign);
@@ -1073,11 +1091,12 @@ export class TablePropertiesDialog {
             innerHTML: localValue.getConstant('Bottom'), className: 'e-de-table-dia-align-label'
         }) as HTMLLabelElement;
         this.cellOptionButton = createElement('button', {
-            innerHTML: localValue.getConstant('Options') + '...', id: element.id + '_table_cellmargin',
+            innerHTML: localValue.getConstant('Options') + '...',
             className: 'e-control e-btn', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.cellOptionButton.style.cssFloat = isRtl ? 'left' : 'right';
-        divAlignment.appendChild(topAlignDiv); divAlignment.appendChild(centerAlignDiv);
+        divAlignment.appendChild(topDiv);topDiv.appendChild(topAlignDiv)
+        divAlignment.appendChild(centerAlignDiv);
         divAlignment.appendChild(bottomAlignDiv); topAlignDiv.appendChild(topLabel);
         centerAlignDiv.appendChild(centerLabel); bottomAlignDiv.appendChild(bottomLabel);
         element.appendChild(alignmentDiv); element.appendChild(divAlignment); element.appendChild(this.cellOptionButton);
@@ -1088,17 +1107,17 @@ export class TablePropertiesDialog {
         this.cellWidthBox.appendTo(this.preferredCellWidth);
         this.preferredCellWidthCheckBox = new CheckBox({ label: localValue.getConstant('Preferred Width'), enableRtl: isRtl });
         this.preferredCellWidthCheckBox.appendTo(preferredCellWidthCheckBox);
-        this.cellWidthType = new DropDownList({ enableRtl: isRtl });
+        this.cellWidthType = new DropDownList({ enableRtl: isRtl , floatLabelType: 'Always', placeholder: localValue.getConstant('Measure in')});
         this.cellWidthType.appendTo(cellWidthType);
-        if (isRtl) {
-            childdiv2.classList.add('e-de-rtl');
-            child3.classList.add('e-de-rtl');
-            child4.classList.add('e-de-rtl');
-            this.cellOptionButton.classList.add('e-de-rtl');
-            topAlignDiv.classList.add('e-de-rtl');
-            centerAlignDiv.classList.add('e-de-rtl');
-            bottomAlignDiv.classList.add('e-de-rtl');
-        }
+        // if (isRtl) {
+        //     childdiv2.classList.add('e-de-rtl');
+        //     child3.classList.add('e-de-rtl');
+        //     child4.classList.add('e-de-rtl');
+        //     this.cellOptionButton.classList.add('e-de-rtl');
+        //     topAlignDiv.classList.add('e-de-rtl');
+        //     centerAlignDiv.classList.add('e-de-rtl');
+        //     bottomAlignDiv.classList.add('e-de-rtl');
+        // }
     }
     private setTableCellProperties(): void {
         const cellFormat: SelectionCellFormat = this.documentHelper.selection.cellFormat;
@@ -1125,11 +1144,14 @@ export class TablePropertiesDialog {
         classList(this.cellBottomAlign, ['e-de-tablecell-alignment'], ['e-de-table-alignment-active']);
 
         if (cellFormat.verticalAlignment === 'Top') {
-            this.cellTopAlign.classList.add('e-de-table-alignment-active');
+            classList(this.cellTopAlign,['e-de-table-alignment-active'],['e-de-tablecell-alignment']);
+            //this.cellTopAlign.classList.add('e-de-table-alignment-active');
         } else if (cellFormat.verticalAlignment === 'Center') {
-            this.cellCenterAlign.classList.add('e-de-table-alignment-active');
+            classList(this.cellCenterAlign,['e-de-table-alignment-active'],['e-de-tablecell-alignment']);
+            //this.cellCenterAlign.classList.add('e-de-table-alignment-active');
         } else if (cellFormat.verticalAlignment === 'Bottom') {
-            this.cellBottomAlign.classList.add('e-de-table-alignment-active');
+            classList(this.cellBottomAlign,['e-de-table-alignment-active'],['e-de-tablecell-alignment']);
+            //this.cellBottomAlign.classList.add('e-de-table-alignment-active');
         }
     }
 

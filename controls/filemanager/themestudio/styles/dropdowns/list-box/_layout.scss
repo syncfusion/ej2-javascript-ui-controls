@@ -14,6 +14,21 @@
       box-sizing: border-box;
     }
 
+    &.e-listboxtool-container .e-list-wrap {
+      @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+        width: calc(100% - 16%) !important; // sass-lint:disable-line no-important
+      }
+      @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
+        width: calc(100% - 14%) !important; // sass-lint:disable-line no-important
+      }
+      @else if $skin-name == 'fabric' {
+        width: calc(100% - 14%) !important; // sass-lint:disable-line no-important
+      }
+      @else if $skin-name == 'highcontrast' {
+        width: calc(100% - 13%) !important; // sass-lint:disable-line no-important
+      }
+    }
+
     &:focus {
       outline: none;
     }
@@ -249,7 +264,7 @@
       vertical-align: middle;
     }
 
-    &.e-right {
+    &.e-checkbox-right {
       .e-checkbox-wrapper {
         position: absolute;
         right: 0;
@@ -373,6 +388,14 @@
         margin-bottom: 10px;
       }
     }
+
+    &.e-checkbox-right {
+      .e-checkbox-wrapper {
+        position: absolute;
+        right: 0;
+        top: 30%;
+      }
+    }
   }
 
   .e-rtl.e-listboxtool-wrapper,
@@ -396,6 +419,18 @@
   .e-listbox-container.e-bigger {
     @if ($skin-name == 'bootstrap4') {
       font-size: 16px;
+    }
+
+    &.e-listboxtool-container .e-list-wrap {
+      @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+        width: calc(100% - 20%) !important; // sass-lint:disable-line no-important
+      }
+      @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
+        width: calc(100% - 15%) !important; // sass-lint:disable-line no-important
+      }
+      @else if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        width: calc(100% - 17%) !important; // sass-lint:disable-line no-important
+      }
     }
 
     .e-list-item {

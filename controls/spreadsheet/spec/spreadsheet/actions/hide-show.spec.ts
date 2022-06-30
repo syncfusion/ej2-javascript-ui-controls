@@ -1,6 +1,7 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { SheetModel } from "../../../src/index";
+import { RowModel, onContentScroll, SheetModel } from '../../../src/index';
+import { L10n } from '@syncfusion/ej2-base';
 
 describe('Hide & Show ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -106,6 +107,294 @@ describe('Hide & Show ->', () => {
                         expect(tBody.childElementCount).toBe(childCount);
                         expect(tBody.rows[0].getAttribute('aria-rowindex')).toBe('4');
                         done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('UI-Interaction with Protect Sheet and Localization->', () => {
+        beforeAll((done: Function) => {
+            L10n.load({
+                'de-DE': {
+                    'spreadsheet': {
+                        'HideRows': 'Zeilen löschen',
+                        'UnHideRows': 'Zeilen ausblenden',
+                        'HideColumns': 'Spalten löschen',
+                        'UnHideColumns': 'Spalten ausblenden',
+                    }
+                }
+            });
+            helper.initializeSpreadsheet({ sheets: [{ isProtected: true, protectSettings: { selectCells: true, formatCells: true, formatRows: true, insertLink:
+                true, formatColumns: true }, ranges: [{ dataSource: defaultData }, ] }] , locale:'de-DE',  }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Hide Row->', (done: Function) => {
+            helper.invoke('selectRange', ['A2:A3']);
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                setTimeout(() => {
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    expect(helper.getInstance().sheets[0].rows[1].hidden).toBeTruthy();
+                    expect(helper.getInstance().sheets[0].rows[2].hidden).toBeTruthy();
+
+                    let rows: any = helper.getElementFromSpreadsheet('.e-sheet-content').getElementsByClassName('e-row');
+                    expect(rows[0].getAttribute('aria-rowindex')).toBe('1');
+                    expect(rows[1].getAttribute('aria-rowindex')).toBe('4');
+
+                    rows = helper.getElementFromSpreadsheet('.e-row-header').getElementsByClassName('e-row');
+                    expect(rows[0].textContent).toContain('1');
+                    expect(rows[1].textContent).toContain('4');
+                    expect(rows[0].classList).toContain('e-hide-start');
+                    expect(rows[1].classList).toContain('e-hide-end');
+                    done();
+                });
+            });
+        });
+
+        it('UnHide Row->', (done: Function) => {
+            helper.invoke('selectRange', ['A1:A5']);
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[0].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').click();
+                setTimeout(() => {
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    expect(helper.getInstance().sheets[0].rows[1].hidden).toBeFalsy();
+                    expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
+
+                    let rows: any = helper.getElementFromSpreadsheet('.e-sheet-content').getElementsByClassName('e-row');
+                    expect(rows[1].getAttribute('aria-rowindex')).toBe('2');
+                    expect(rows[2].getAttribute('aria-rowindex')).toBe('3');
+
+                    rows = helper.getElementFromSpreadsheet('.e-row-header').getElementsByClassName('e-row');
+                    expect(rows[1].textContent).toContain('2');
+                    expect(rows[2].textContent).toContain('3');
+                    expect(rows[1].classList).not.toContain('e-hide-start');
+                    expect(rows[2].classList).not.toContain('e-hide-end');
+                    done();
+                });
+            });
+        });
+
+        it('Hide Column->', (done: Function) => {
+            helper.invoke('selectRange', ['B1:C1']);
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                setTimeout(() => {
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    expect(helper.getInstance().sheets[0].columns[1].hidden).toBeTruthy();
+                    expect(helper.getInstance().sheets[0].columns[2].hidden).toBeTruthy();
+
+                    let rows = helper.getElementFromSpreadsheet('.e-sheet-content').getElementsByClassName('e-row');
+                    expect(rows[0].children[1].getAttribute('aria-colindex')).toBe('4');
+                    expect(rows[0].children[2].getAttribute('aria-colindex')).toBe('5');
+                    
+                    rows = helper.getElementFromSpreadsheet('.e-column-header').getElementsByClassName('e-header-row');
+                    expect(rows[0].children[1].textContent).toContain('D');
+                    expect(rows[0].children[2].textContent).toContain('E');
+                    expect(rows[0].children[0].classList).toContain('e-hide-start');
+                    expect(rows[0].children[1].classList).toContain('e-hide-end');
+                    done();
+                });
+            });
+        });
+
+        it('UnHide Column->', (done: Function) => {
+            helper.invoke('selectRange', ['A1:E1']);
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').click();
+                setTimeout(() => {
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    expect(helper.getInstance().sheets[0].columns[1].hidden).toBeFalsy();
+                    expect(helper.getInstance().sheets[0].columns[2].hidden).toBeFalsy();
+
+                    let rows = helper.getElementFromSpreadsheet('.e-sheet-content').getElementsByClassName('e-row');
+                    expect(rows[0].children[1].getAttribute('aria-colindex')).toBe('2');
+                    expect(rows[0].children[2].getAttribute('aria-colindex')).toBe('3');
+                    
+                    rows = helper.getElementFromSpreadsheet('.e-column-header').getElementsByClassName('e-header-row');
+                    expect(rows[0].children[1].textContent).toContain('B');
+                    expect(rows[0].children[2].textContent).toContain('C');
+                    expect(rows[0].children[0].classList).not.toContain('e-hide-start');
+                    expect(rows[0].children[1].classList).not.toContain('e-hide-end');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Hide with freeze pane ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }], frozenColumns: 3, frozenRows: 4, rows: [{ index: 3, cells:
+                    [{ index: 1, colSpan: 3, rowSpan: 2 }] }], columns: [{ index: 2, hidden: true }], selectedRange: 'A4:CV5' }], height: 500 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Hide rows contains merged cells', (done: Function) => {
+            const selectAllTable: HTMLTableElement = helper.invoke('getSelectAllContent').firstElementChild;
+            expect(selectAllTable.rows.length).toBe(6);
+            expect(selectAllTable.rows[5].classList.contains('e-empty')).toBeTruthy();
+            expect(helper.invoke('getColHeaderTable').rows.length).toBe(5);
+            helper.invoke('hideRow', [3, 4]);
+            const rows: RowModel[] = helper.getInstance().sheets[0].rows;
+            expect(rows[3].hidden).toBeTruthy();
+            expect(rows[4].hidden).toBeTruthy();
+            setTimeout(() => {
+                expect(helper.invoke('getSelectAllContent').firstElementChild.rows.length).toBe(4);
+                expect(helper.invoke('getColHeaderTable').rows.length).toBe(4);
+                expect(helper.invoke('getRowHeaderTable').rows[0].getAttribute('aria-rowindex')).toBe('6');
+                expect(helper.invoke('getContentTable').rows[0].getAttribute('aria-rowindex')).toBe('6');
+                done();
+            });
+        });
+        it('Hide first column inside freezepane and vertical scroll checking', (done: Function) => {
+            helper.invoke('hideColumn', [2, 2, false]);
+            helper.invoke('hideColumn', [0]);
+            const spreadsheet: any = helper.getInstance();
+            expect(spreadsheet.sheets[0].columns[2].hidden).toBeFalsy();
+            expect(spreadsheet.sheets[0].columns[0].hidden).toBeTruthy();
+            helper.invoke('getMainContent').parentElement.scrollTop = 400;
+            spreadsheet.notify(onContentScroll, { scrollTop: 400, scrollLeft: 0 });
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('D26');
+                helper.invoke('getMainContent').parentElement.scrollTop = 0;
+                spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 0 });
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('D6');
+                    const rowHdrTable: HTMLTableElement = helper.invoke('getRowHeaderTable');
+                    expect(rowHdrTable.rows[0].getAttribute('aria-rowindex')).toBe('6');
+                    expect(rowHdrTable.rows[0].cells.length).toBe(3);
+                    expect(rowHdrTable.rows[0].cells[0].classList.contains('e-header-cell')).toBeTruthy();
+                    expect(rowHdrTable.rows[0].cells[1].getAttribute('aria-colindex')).toBe('2');
+                    expect(helper.invoke('getContentTable').rows[0].getAttribute('aria-rowindex')).toBe('6');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('CR-Issues->', () => {
+        describe('EJ2-50923', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{  ranges: [{ dataSource:defaultData }] }] , scrollSettings: { enableVirtualization: false }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Getting error while unhide 200 hidden rows in spreadsheet->', (done: Function) => {
+                helper.invoke('hideRow', [2,202]);
+                expect(helper.getInstance().sheets[0].rows[2].hidden).toBeTruthy();
+                expect(helper.getInstance().sheets[0].rows[202].hidden).toBeTruthy();
+                setTimeout(() => {
+                    helper.invoke('hideRow', [2, 202, false]);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
+                        expect(helper.getInstance().sheets[0].rows[202].hidden).toBeFalsy();
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-53947->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Undo-Redo actions are not working for hidden rows->', (done: Function) => {
+                helper.invoke('selectRange', ['A3:A7']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(2, 0, [8], true);
+                setTimeout(() => {
+                   expect(helper.getInstance().sheets[0].rows[2].hidden).toBeTruthy();
+                   expect(helper.getInstance().sheets[0].rows[5].hidden).toBeTruthy();
+                   helper.invoke('selectRange', ['B2']);
+                   helper.getElement('#' + helper.id + '_undo').click();
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
+                        expect(helper.getInstance().sheets[0].rows[5].hidden).toBeFalsy();
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-54216->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rowCount: 11, colCount: 8, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true}
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Show/hide update with finite mode->', (done: Function) => {
+                helper.invoke('selectRange', ['A8:A11']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(7, 0, [8], true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[7].hidden).toBeTruthy();
+                    expect(helper.getInstance().sheets[0].rows[10].hidden).toBeTruthy();
+                    expect(helper.getInstance().sheets[0].rowCount).toBe(11);
+                    expect(helper.getInstance().sheets[0].usedRange.rowIndex).toBe(10);
+                    helper.invoke('selectRange', ['F1:H1']);
+                    helper.openAndClickCMenuItem(0, 5, [8], false, true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].columns[5].hidden).toBeTruthy();
+                        expect(helper.getInstance().sheets[0].columns[7].hidden).toBeTruthy();
+                        expect(helper.getInstance().sheets[0].colCount).toBe(8);
+                        expect(helper.getInstance().sheets[0].usedRange.colIndex).toBe(7);
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-53422->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    created: (): void => {
+                        const spreadsheet: any = helper.getInstance();
+                        spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'contains', value: 'Casual Shoes' }]);
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix the data shuffle issue while applying the filters and hiding the columns.->', (done: Function) => {
+                helper.invoke('hideColumn', [2, 2]);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['A1']);
+                    helper.getElement('#' + helper.id + '_sorting').click();
+                    helper.getElement('#' + helper.id + '_clearfilter').click();
+                    setTimeout(() => {
+                        helper.invoke('hideColumn', [2, 2, false]);
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [5, 3]).textContent).toBe('30');
+                            expect(helper.invoke('getCell', [2, 3]).textContent).toBe('20');
+                            expect(helper.invoke('getCell', [10, 3]).textContent).toBe('50');
+                            done();
+                        });
                     });
                 });
             });

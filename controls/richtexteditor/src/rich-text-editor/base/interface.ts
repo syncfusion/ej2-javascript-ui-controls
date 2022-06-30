@@ -166,6 +166,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enableXhtml?: boolean
     enableHtmlSanitizer?: boolean
     getInsertImgMaxWidth?(): string | number
+    getInsertVidMaxWidth?(): string | number
     getSelection(): string
     currentTarget: HTMLElement
 }
@@ -279,6 +280,7 @@ export interface IColorPickerModel extends ColorPickerModel {
     subCommand?: string
     target?: string
     iconCss?: string
+    cssClass?: string
 }
 
 /**

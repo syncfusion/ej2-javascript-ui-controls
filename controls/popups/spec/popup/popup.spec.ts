@@ -797,13 +797,13 @@ describe('Popup # ', () => {
             Browser.userAgent = ua;
         });
     });
-
+    
     describe(" EJ2-59889 - prevent calling unwire event if it is already called in hide method", function() {
         var popEle = createElement('div',{id:"posPopup"});
         var popObj:any;
         var eventStatus:boolean=false;
         var popupunwirecscrollevent: any;
-        
+
         it("prevent calling unwire event Test Case ", function() {
             popObj = new Popup(popEle,{
                 position:{X:'left', Y:'bottom'}
@@ -815,7 +815,7 @@ describe('Popup # ', () => {
             };
             popObj.show();
             popObj.hide();
-            
+
             popObj.destroy();
             expect(eventStatus).toEqual(true);
             eventStatus=false;

@@ -1863,6 +1863,51 @@ export type DecoratorShapes =
     'Custom';
 
 /**
+ * Defines the segmentThumb shape of the connector
+ * Rhombus - Sets the segmentThumb shape as Rhombus
+ * Square - Sets the segmentThumb shape as Square
+ * Rectangle - Sets the segmentThumb shape as Rectangle
+ * Ellipse - Sets the segmentThumb shape as Ellipse
+ * Arrow - Sets the segmentThumb shape as Arrow
+ * Diamond - Sets the segmentThumb shape as Diamond
+ * OpenArrow - Sets the segmentThumb shape as OpenArrow
+ * Circle - Sets the segmentThumb shape as Circle
+ * Fletch - Sets the segmentThumb shape as Fletch
+ * OpenFetch - Sets the segmentThumb shape as OpenFetch
+ * IndentedArrow - Sets the segmentThumb shape as Indented Arrow
+ * OutdentedArrow - Sets the segmentThumb shape as Outdented Arrow
+ * DoubleArrow - Sets the segmentThumb shape as DoubleArrow
+ */
+ export type SegmentThumbShapes =
+
+ /** Rhombus - Sets the segmentThumb shape as Rhombus */
+ 'Rhombus'  |
+ /** Square - Sets the segmentThumb shape as Square */
+ 'Square'   |
+ /** Rectangle - Sets the segmentThumb shape as Rectangle */
+ 'Rectangle'|
+ /** Ellipse - Sets the segmentThumb shape as Ellipse */
+ 'Ellipse'   |
+ /** Arrow - Sets the segmentThumb shape as Arrow */
+ 'Arrow' |
+ /** Diamond - Sets the segmentThumb shape as Diamond */
+ 'Diamond' |
+ /** OpenArrow - Sets the segmentThumb shape as OpenArrow */
+ 'OpenArrow' |
+ /** Circle - Sets the segmentThumb shape as Circle */
+ 'Circle' |
+ /** Fletch - Sets the segmentThumb shape as Fletch */
+ 'Fletch' |
+ /** OpenFetch - Sets the segmentThumb shape as OpenFetch */
+ 'OpenFetch' |
+ /** IndentedArrow - Sets the segmentThumb shape as Indented Arrow */
+ 'IndentedArrow' |
+ /** OutdentedArrow - Sets the segmentThumb shape as Outdented Arrow */
+ 'OutdentedArrow' |
+ /** DoubleArrow - Sets the segmentThumb shape as DoubleArrow */
+ 'DoubleArrow' ;
+
+/**
  * Defines the shape of the ports
  * X - Sets the decorator shape as X
  * Circle - Sets the decorator shape as Circle
@@ -2752,3 +2797,39 @@ export type AssociationFlow = 'Directional' | 'Default' | 'BiDirectional';
  * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
  */
 export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne';
+
+/**
+ * Defines the visibility of the control points in the Bezier connector
+ */
+export enum ControlPointsVisibility {
+    /** None - Hides all the control points of the Bezier connector*/
+    None = 1 << 0,
+    /** Source - Shows the source control point*/
+    Source = 1 << 1,
+    /** Target - Shows the target control point*/
+    Target = 1 << 2,
+    /** Intermediate - Shows the intermediate control points*/
+    Intermediate = 1 << 3,
+    /** All - Shows all the control points of the Bezier connector*/
+    All = 1 << 1 | 1 << 2 | 1 << 3
+}
+
+/**
+ * Defines the editing mode of the intermediate point of two bezier curve
+ */
+export type BezierSegmentEditOrientation =
+    /** BiDirectional - Allows the intermediate points to be dragged either vertical or horizontal direction only */
+    'BiDirectional' |
+    /** FreeForm - Allows the intermediate points to be dragged in any direction */
+    'FreeForm';
+
+export enum BezierSmoothness {
+    /** Disable all smoothness Constraints. */
+    None = 0,
+    /** Enables the  SymmetricAngle for a bezier segment to the angle between the control point as same. */
+    SymmetricAngle = 1 << 1,
+    /** Enables the SymmetricDistance for bezier segment to the distance between the control point as same. */
+    SymmetricDistance = 1 << 2,
+    /** Enables the symmetric for bezier segment to the distance and angle between the control point as same. */
+    Default = 1 << 1 | 1 << 2
+}

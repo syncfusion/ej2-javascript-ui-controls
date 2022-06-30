@@ -685,7 +685,7 @@ describe('Self reference data', () => {
         triggerMouseEvent(element, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
       });
-      it("dynamically changes project to resource view", () => {
+    it("dynamically changes project to resource view", () => {
         ganttObj.actionComplete = (args: any): void => {
             if (args.requestType === 'refresh') {
                 ganttObj.viewType = 'ResourceView';
@@ -847,7 +847,7 @@ describe('Self reference data', () => {
         expect(ganttObj.flatData.length).toBe(12);
     });
   });
-     describe("CR issues", () => {
+ describe("CR issues", () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
       ganttObj = createGantt(
@@ -961,7 +961,7 @@ describe('Self reference data', () => {
         triggerMouseEvent(dragElement, 'mouseup');
     });
   });
-     describe('Update end date using recource unit', () => {
+      describe('Update end date using recource unit', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt({
@@ -1046,5 +1046,4 @@ describe('Self reference data', () => {
         ganttObj.updateRecordByID(data);
     });
 });
-
 });

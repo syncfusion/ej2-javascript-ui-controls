@@ -73,7 +73,7 @@ const IFRAMEHEADER: string = `
                 h3+h4, h4+h5, h5+h6{margin-top: 00.6em;}
                 ul:last-child{margin-bottom: 0;}
                 table { border-collapse: collapse; empty-cells: show;}
-                table td,table th {border: 1px solid #BDBDBD; height: 20px; vertical-align: middle;}
+                table td,table th {border: 1px solid #BDBDBD; height: 20px; padding: 2px 5px; vertical-align: middle;}
                 table.e-alternate-border tbody tr:nth-child(2n) {background-color: #F5F5F5;}
                 table th {background-color: #E0E0E0;}
                 table.e-dashed-border td,table.e-dashed-border th { border: 1px dashed #BDBDBD} 

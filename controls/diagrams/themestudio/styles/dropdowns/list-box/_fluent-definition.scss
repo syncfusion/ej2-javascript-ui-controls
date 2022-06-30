@@ -111,3 +111,10 @@ $listbox-groupheader-border: $border-light !default;
 $listbox-groupheader-icon: $icon-color !default;
 $listbox-template-multiline-header-color: $content-text-color !default;
 $listbox-template-multiline-content-color: $content-text-color-alt2 !default;
+
+$listbox-select-height: calc(100% - 36px) !default;
+$listbox-select-bigger-height: calc(100% - 48px) !default;
+$listbox-filterselect-height: calc(100% - 93px) !default;
+$listbox-filterselect-bigger-height: calc(100% - 113px) !default;
+$listbox-filter-height: calc(100% - 57px) !default;
+$listbox-filter-bigger-height: calc(100% - 65px) !default;

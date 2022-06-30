@@ -2367,4 +2367,10 @@ export interface SelectorModel {
      */
     setTooltipTemplate?: Function | string;
 
+    /**
+     * Defines the collection of selected nodes and connectors
+     * @default []
+     */
+    selectedObjects?: (NodeModel | ConnectorModel)[];
+
 }

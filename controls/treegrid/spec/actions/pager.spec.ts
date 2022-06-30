@@ -525,7 +525,7 @@ describe('TreeGrid Pager module', () => {
         });
       });
 
-	describe('While Selecting ALL, displays only 3 records', () => {
+	  describe('While Selecting ALL, displays only 3 records', () => {
 		let gridObj: TreeGrid;
 		let rows: HTMLTableRowElement[];
 		let dataBound: () => void;
@@ -552,10 +552,11 @@ describe('TreeGrid Pager module', () => {
 			);
 		});
 		it('Checking the totalRecordCount', (done: Function) => {
-			if (gridObj.pageSettings.pageSizes) {
+			if (gridObj.pageSettings.pageSizes)
+			{
 				gridObj.collapseAll();
 				gridObj.grid.pagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value = gridObj.grid.pagerModule.pagerObj.getLocalizedLabel('All');
-				gridObj.expandAll();
+				gridObj.expandAll();				
 				done();
 			}
 			expect(gridObj.grid.pagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value === 36).toBe(true);
@@ -564,7 +565,6 @@ describe('TreeGrid Pager module', () => {
 			destroy(gridObj);
 		});
 	});
-
 
   it('memory leak', () => {
     profile.sample();

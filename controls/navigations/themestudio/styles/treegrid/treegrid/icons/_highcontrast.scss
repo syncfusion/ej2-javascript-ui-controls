@@ -1,4 +1,15 @@
 @include export-module('treegrid-highcontrast-icons') {
+  #{&}.e-treegrid,
+  .e-grid-menu {
+    .e-indent::before {
+      content: '\e33f';
+    }
+
+    .e-outdent::before {
+      content: '\e35d';
+    }
+  }
+
   .e-treegrid {
     .e-treegridexpand::before,
     .e-treegridcollapse::before {

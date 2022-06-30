@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-base",
-	"version": "20.1.56",
+	"version": "20.2.36",
 	"description": "A common package of Essential JS 2 base libraries, methods and class definitions",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -38,6 +38,9 @@
 	"module": "./index.js",
 	"es2015": "./dist/es6/ej2-base.es2015.js",
 	"readme": "ReadMe.md",
+	"bin": {
+		"syncfusion-license": "bin/syncfusion-license.js"
+	},
 	"dependencies": {
 		"@syncfusion/ej2-icons": "*"
 	},

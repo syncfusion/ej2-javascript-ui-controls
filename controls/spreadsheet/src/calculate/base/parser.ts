@@ -77,21 +77,6 @@ export class Parser {
      * @returns {string} - returns parse.
      */
     public parse(text: string, fkey?: string): string {
-        if (text.split('(')[0].toUpperCase() === "IF" || "IFS") {
-            let uniqueCharVal: string = "(),:=^><+-*/%&";
-            let newText: string = "";
-            for (let index: number = 0; index < text.length; index++) {
-                let currChar: string = text[index];
-                if (uniqueCharVal.includes(currChar)) {
-                    newText = newText.trim() + currChar;
-                } else if (currChar == " " && uniqueCharVal.includes(newText[newText.length - 1])) {
-                    continue;
-                } else {
-                    newText += currChar;
-                }
-            }
-            text = newText;
-        }
         if (this.parent.isTextEmpty(text)) {
             return text;
         }
@@ -224,7 +209,7 @@ export class Parser {
                     split('*+').join('*').split('+*').join('+');
                 if ((this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
-                    && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1))) &&
+                        && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1))) &&
                     (formula[i + 2] !== '-' || (formula[i + 1] !== '*' && formula[i + 1] !== '/'))) {
                     if (isNullOrUndefined(args)) {
                         throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], true);
@@ -426,9 +411,9 @@ export class Parser {
         const mulCharArray: string[] = [this.charMultiply, this.charDivide];
         const addCharArray: string[] = [this.charAdd, this.charSubtract];
         const compareTokenArray: string[] = [this.tokenLess, this.tokenGreater, this.tokenEqual, this.tokenLessEq,
-            this.tokenGreaterEq, this.tokenNotEqual];
+        this.tokenGreaterEq, this.tokenNotEqual];
         const compareCharArray: string[] = [this.charLess, this.charGreater, this.charEqual, this.charLessEq,
-            this.charGreaterEq, this.charNoEqual];
+        this.charGreaterEq, this.charNoEqual];
         const expCharArray: string[] = [this.charEp, this.charEm];
         const andTokenArray: string[] = [this.tokenAnd];
         const andCharArray: string[] = [this.charAnd];
@@ -484,6 +469,20 @@ export class Parser {
         }
         try {
             if (this.indexOfAny(text, operators) > -1) {
+                if (text.includes(" ")) {
+                    let newText: string = "";
+                    for (let index: number = 0; index < text.length; index++) {
+                        let currChar: string = text[index];
+                        if (operators.indexOf(currChar) >= 0) {
+                            newText = newText.trim() + currChar;
+                        } else if (currChar == " " && operators.indexOf(newText[newText.length - 1]) >= 0) {
+                            continue;
+                        } else {
+                            newText += currChar;
+                        }
+                    }
+                    text = newText;
+                }
                 i = this.indexOfAny(text, operators);
                 while (i > -1) {
                     let left: string = '';

@@ -1,7 +1,7 @@
-import { L10n, EventHandler, extend, isNullOrUndefined, MouseEventArgs } from '@syncfusion/ej2-base';
-import { remove, select } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, extend, isNullOrUndefined, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { remove, select, removeClass } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { IGrid, NotifyArgs } from '../base/interface';
+import { IGrid, NotifyArgs, FocusInfo } from '../base/interface';
 import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { EditSettingsModel } from '../base/grid-model';
@@ -21,6 +21,8 @@ export class Toolbar {
     public toolbar: tool;
     private searchElement: HTMLInputElement;
     private gridID: string;
+    protected sIcon: Element;
+    private isSearched: boolean = false;
     // module declarations
     private parent: IGrid;
     private rowSelectedFunction: () => void;
@@ -138,14 +140,21 @@ export class Toolbar {
     private toolbarCreated(isNormal?: boolean): void {
         if (this.element.querySelector('.e-search-wrapper')) {
             if (!this.parent.enableAdaptiveUI || isNormal) {
-                this.element.querySelector('.e-search-wrapper').innerHTML = '<div class="e-input-group e-search" role="search">\
-                    <input id="' + this.gridID + '_searchbar" class="e-input" name="input" type="search" \
+                const classList: string = this.parent.cssClass ? 'e-input-group e-search ' + this.parent.cssClass
+                    : 'e-input-group e-search';
+                this.element.querySelector('.e-search-wrapper').innerHTML = '<div class="' + classList + '" role="search">\
+                    <input id="' + this.gridID + '_searchbar" class="e-input e-search" name="input" type="search" \
                     placeholder= "' + this.l10n.getConstant('Search') + '"/>\
+                    <span id="' + this.gridID + '_clearbutton" class="e-input-group-icon e-icons e-sicon e-clear-icon e-clear-icon-hide" \
+                    tabindex="-1" title="' + this.l10n.getConstant('Clear') + '" aria-label= "clear" role= "clear"></span>\
                     <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search" role= "search"></span> \
                     </div>';
             } else {
                 this.element.querySelector('.e-search-wrapper').innerHTML = '<span id="' + this.gridID
+                + '_clearbutton" class="e-input-group-icon e-icons e-sicon e-clear-icon e-clear-icon-hide" \
+                    tabindex="-1" title="' + this.l10n.getConstant('Clear') + '" aria-label= "clear"></span>\
+                    <span id="' + this.gridID
                     + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search"></span> \
                     </div>';
@@ -406,6 +415,14 @@ export class Toolbar {
                             || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
                         this.renderResponsiveSearch(true);
                     }
+                    else if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement){
+                        this.searchElement.value = '';
+                        this.sIcon.classList.add('e-clear-icon-hide');
+                        if (this.isSearched) {
+                            this.parent.search(this.searchElement.value);
+                            this.isSearched = false;
+                        }
+                    }
                     break;
                 case gID + '_columnchooser':
                     /* eslint-disable */
@@ -451,9 +468,19 @@ export class Toolbar {
         if (e.keyCode === 13) {
             this.search();
         }
+        if (this.searchElement) {
+            this.sIcon = this.searchElement.parentElement.querySelector('.e-clear-icon');
+            if (this.searchElement.value.length && !isNullOrUndefined(this.sIcon)) {
+                this.sIcon.classList.remove('e-clear-icon-hide');
+            }
+            else {
+                this.sIcon.classList.add('e-clear-icon-hide');
+            }
+        }
     }
 
     private search(): void {
+        this.isSearched = true;
         this.parent.search(this.searchElement.value);
     }
 
@@ -469,12 +496,70 @@ export class Toolbar {
             EventHandler.add(this.searchElement, 'keyup', this.keyUpHandler, this);
             this.searchBoxObj.wireEvent();
         }
+        EventHandler.add(this.toolbar.element, 'focusin', this.onFocusIn, this);
+        EventHandler.add(this.toolbar.element, 'focusout', this.onFocusOut, this);
     }
 
     private unWireEvent(): void {
         if (this.searchElement) {
             EventHandler.remove(this.searchElement, 'keyup', this.keyUpHandler);
             this.searchBoxObj.unWireEvent();
+        }
+        EventHandler.remove(this.toolbar.element, 'focusin', this.onFocusIn);
+        EventHandler.remove(this.toolbar.element, 'focusout', this.onFocusOut);
+    }
+
+    private onFocusIn(e: FocusEvent): void {
+        const currentInfo: FocusInfo = this.parent.focusModule.currentInfo;
+        if (currentInfo && currentInfo.element) {
+            removeClass([currentInfo.element, currentInfo.elementToFocus],
+                        ['e-focused', 'e-focus']);
+            currentInfo.element.tabIndex = -1;
+        }
+        (e.target as HTMLElement).tabIndex = 0;
+    }
+
+    private onFocusOut(e: FocusEvent): void {
+        (e.target as HTMLElement).tabIndex = -1;
+    }
+
+    private setFocusToolbarItem(element: Element): void {
+        let elementToFocus: Element = element.querySelector('.e-btn,.e-input');
+        if (!elementToFocus && this.parent.enableAdaptiveUI && !this.searchElement
+            && element.classList.contains('e-search-wrapper')) {
+            elementToFocus = element.querySelector('#' + this.gridID + '_searchbutton');
+        }
+        (elementToFocus as HTMLElement).focus();
+    }
+
+    private getFocusableToolbarItems(): NodeListOf<Element> {
+        return this.toolbar.element.querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+    }
+
+    private keyPressedHandler(e: KeyboardEventArgs): void {
+        if (e.target && parentsUntil(e.target as Element, 'e-toolbar-item')) {
+            const targetParent: Element = parentsUntil(e.target as Element, 'e-toolbar-item');
+            const focusableToolbarItems: NodeListOf<Element> = this.getFocusableToolbarItems();
+            if (e.action === 'tab' || e.action === 'shiftTab') {
+                if ((e.action === 'tab' && targetParent === focusableToolbarItems[focusableToolbarItems.length - 1])
+                    || (e.action === 'shiftTab' && targetParent === focusableToolbarItems[0])) {
+                    return;
+                }
+                for (let i: number = 0; i < focusableToolbarItems.length; i++) {
+                    if (targetParent === focusableToolbarItems[i]) {
+                        e.preventDefault();
+                        const index: number = e.action === 'tab' ? i + 1 : i - 1;
+                        this.setFocusToolbarItem(focusableToolbarItems[index]);
+                        return;
+                    }
+                }
+            }
+            if (e.action === 'enter') {
+                if (this.parent.enableAdaptiveUI && !this.searchElement
+                    && (e.target as Element).id === this.gridID + '_searchbutton') {
+                    this.renderResponsiveSearch(true);
+                }
+            }
         }
     }
 
@@ -497,7 +582,8 @@ export class Toolbar {
             { event: events.dataBound, handler: this.refreshToolbarItems },
             { event: events.click, handler: this.removeResponsiveSearch },
             { event: events.rowModeChange, handler: this.reRenderToolbar },
-            { event: events.destroy, handler: this.destroy }];
+            { event: events.destroy, handler: this.destroy },
+            { event: events.keyPressed, handler: this.keyPressedHandler }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.rowSelectedFunction = this.rowSelected.bind(this);
         this.rowDeSelectedFunction = this.rowSelected.bind(this);

@@ -1,7 +1,7 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI } from '../common/index';
-import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF, focus, freeze } from '../common/index';
+import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
 import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, completeAction, applySort, hideRibbonTabs } from '../common/index';
@@ -14,20 +14,21 @@ import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select, EventHandler } from '@syncfusion/ej2-base';
+import { attributes } from '@syncfusion/ej2-base';
 import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat, setCell, RowModel } from '../../workbook/index';
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, setMerge } from '../../workbook/common/index';
+import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, setMerge, unMerge } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
-import { SortOrder, NumberFormatType, SetCellFormatArgs, getRangeAddress, clearCFRule } from '../../workbook/common/index';
+import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { findDlg, insertDesignChart, removeDesignChart, UnProtectWorksheet } from '../common/index';
-import { refreshRibbonIcons, ChartTheme, beginAction, count } from '../../workbook/common/index';
+import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -43,7 +44,7 @@ export class Ribbon {
     private sortingDdb: DropDownButton;
     private datavalidationDdb: DropDownButton;
     private bordersDdb: DropDownButton;
-    private cFDdb: DropDownButton;
+    private cfDdb: DropDownButton;
     private clearDdb: DropDownButton;
     private findDdb: Button;
     private findDialog: FindDialog;
@@ -56,8 +57,6 @@ export class Ribbon {
     private findValue: string = '';
     private preTabIdx: number = 1;
     private addChartDdb: DropDownButton;
-    private chartThemeDDB: DropDownButton;
-    private chartThemeIndex: number = 5;
     private cPickerEle: HTMLElement;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -111,37 +110,44 @@ export class Ribbon {
         const items: RibbonItemModel[] = [  {
             header: { text: l10n.getConstant('Home') },
             content: [
-                { prefixIcon: 'e-undo-icon', tooltipText: `${l10n.getConstant('Undo')} (Ctrl+Z)`, id: id + '_undo', disabled: true },
-                { prefixIcon: 'e-redo-icon', tooltipText: `${l10n.getConstant('Redo')} (Ctrl+Y)`, id: id + '_redo', disabled: true },
+                { prefixIcon: 'e-undo-icon', tooltipText: `${l10n.getConstant('Undo')} (Ctrl+Z)`,
+                 htmlAttributes: { 'aria-label': l10n.getConstant('Undo') }, id: id + '_undo', disabled: true },
+                { prefixIcon: 'e-redo-icon', tooltipText: `${l10n.getConstant('Redo')} (Ctrl+Y)`,
+                 htmlAttributes: { 'aria-label': l10n.getConstant('Redo') }, id: id + '_redo', disabled: true },
                 { type: 'Separator', id: id + '_separator_1' },
-                { prefixIcon: 'e-cut-icon', tooltipText: `${l10n.getConstant('Cut')} (Ctrl+X)`, id: id + '_cut' },
-                { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`, id: id + '_copy' },
-                { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id), id: id + '_paste',
-                    disabled: true
-                }, { type: 'Separator', id: id + '_separator_2' },
+                { prefixIcon: 'e-cut-icon', tooltipText: `${l10n.getConstant('Cut')} (Ctrl+X)`,
+                 htmlAttributes: { 'aria-label': l10n.getConstant('Cut') }, id: id + '_cut'},
+                { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`,
+                 htmlAttributes: { 'aria-label': l10n.getConstant('Copy') }, id: id + '_copy' },
+                { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id),
+                 htmlAttributes: { 'aria-label': l10n.getConstant('Paste') }, id: id + '_paste', disabled: true},
+                { type: 'Separator', id: id + '_separator_2' },
                 { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
                 { type: 'Separator', id: id + '_separator_3' },
                 { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font'), id: id + '_font_name' },
                 { type: 'Separator', id: id + '_separator_4' },
                 { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize'), id: id + '_font_size' },
                 { type: 'Separator', id: id + '_separator_5' },
-                { template: this.getBtn(id, 'bold'), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)`, id: id + '_bold' },
-                { template: this.getBtn(id, 'italic'), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)`, id: id + '_italic' },
-                { template: this.getBtn(id, 'line-through'), tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)`,
+                { template: this.getBtn(id, 'bold', l10n.getConstant('Bold')), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)`,
+                 id: id + '_bold' },
+                { template: this.getBtn(id, 'italic', l10n.getConstant('Italic')), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)`,
+                 id: id + '_italic' },
+                { template: this.getBtn(id, 'line-through', l10n.getConstant('Strikethrough')),
+                 tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)`,
                     id: id + '_line-through' },
-                { template: this.getBtn(id, 'underline'), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)`,
+                { template: this.getBtn(id, 'underline', l10n.getConstant('Underline')), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)`,
                     id: id + '_underline' },
                 { template: document.getElementById(`${id}_font_color_picker`), tooltipText: l10n.getConstant('TextColor'),
                     id: id + '_font_color_picker' }, { type: 'Separator', id: id + '_separator_6' },
                 { template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor'),
                     id: id + '_fill_color_picker' },
-                { template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders' }, {
-                    template: this.getMergeSplitBtn(id), tooltipText: l10n.getConstant('MergeCells'), id: id + '_merge_cells',
-                    disabled: true }, { type: 'Separator', id: id + '_separator_7' },
-                { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id:
-                    id + '_text_align' }, { template: this.getVerticalAlignDDB(id), tooltipText:
-                    l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' },
-                { template: this.getBtn(id, 'wrap', false), tooltipText: `${l10n.getConstant('WrapText')}`, id: id + '_wrap' }]
+                { template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders' },
+                { template: this.getMergeSplitBtn(id), tooltipText: l10n.getConstant('MergeCells'),
+                 htmlAttributes: { 'aria-label': l10n.getConstant('MergeCells') }, id: id + '_merge_cells', disabled: true },
+                { type: 'Separator', id: id + '_separator_7' },
+                { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align' },
+                { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' },
+                { template: this.getBtn(id, 'wrap', l10n.getConstant('WrapText'), false), tooltipText: `${l10n.getConstant('WrapText')}`, id: id + '_wrap' }]
         },
         {
             header: { text: l10n.getConstant('Insert') }, content: [
@@ -151,14 +157,14 @@ export class Ribbon {
                 },
                 {
                     prefixIcon: 'e-image-icon', text: l10n.getConstant('Image'),
-                    id: id + '_image', tooltipText: l10n.getConstant('Image'), click: (): void => {
-                        select('#' + id + '_imageUpload', this.parent.element).click(); }
+                    id: id + '_image', tooltipText: l10n.getConstant('Image'), click: (): void =>
+                    { select('#' + id + '_imageUpload', this.parent.element).click(); }
                 }]
         },
         {
             header: { text: l10n.getConstant('Formulas') }, content: [{
-                prefixIcon: 'e-insert-function', tooltipText: l10n.getConstant('InsertFunction'),
-                text: l10n.getConstant('InsertFunction'), id: id + '_insert_function'
+                prefixIcon: 'e-insert-function', tooltipText: l10n.getConstant('InsertFunction'), text: l10n.getConstant('InsertFunction'),
+                 id: id + '_insert_function'
             }]
         },
         {
@@ -243,12 +249,16 @@ export class Ribbon {
                     { text: l10n.getConstant('Formats'), id: 'Formats' }],
                 createPopupOnClick: true,
                 select: (args: MenuEventArgs) => {
+                    this.pasteSplitBtn.element.setAttribute('aria-label', l10n.getConstant('Paste') + ' ' + args.item.text);
                     this.parent.notify(paste, { type: args.item.id, isAction: true, isInternal: true });
                 },
                 click: () => {
+                    btn.setAttribute('aria-label', l10n.getConstant('Paste'));
                     this.parent.notify(paste, { isAction: true, isInternal: true });
                 },
-                close: () => { focus(this.parent.element); }
+                beforeOpen: (args: MenuEventArgs) => {
+                    args.element.setAttribute('aria-label', l10n.getConstant('Paste'));
+                }
             });
         this.pasteSplitBtn.createElement = this.parent.createElement;
         this.pasteSplitBtn.appendTo(btn);
@@ -440,16 +450,38 @@ export class Ribbon {
     private getChartThemeDDB(id: string): Element {
         const chartThemeBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart_theme' });
         chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Material' }));
-        this.chartThemeDDB = new DropDownButton({
-            items: this.getChartThemeDdbItems(),
+        let theme: ChartTheme = 'Material';
+        const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
+        if (overlay) {
+            let chart: HTMLElement;
+            if (chart = overlay.querySelector('.e-chart')) {
+                theme = (getComponent(chart, 'chart') as { theme: ChartTheme }).theme;
+            } else if (chart = overlay.querySelector('.e-accumulationchart')) {
+                theme = (getComponent(chart, 'accumulationchart') as { theme: ChartTheme }).theme;
+            }
+        }
+        const chartThemeDDB: DropDownButton = new DropDownButton({
+            items: this.getChartThemeDdbItems(theme),
+            content: theme,
             createPopupOnClick: true,
-            select: (args: MenuEventArgs): void => this.chartThemeDDBSelect(args),
+            select: (args: MenuEventArgs): void => {
+                this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
+                if (!args.element || !args.element.querySelector('.e-selected-icon')) {
+                    chartThemeDDB.content = args.item.text;
+                    chartThemeDDB.dataBind();
+                    this.parent.notify(chartDesignTab, { chartTheme: args.item.id, triggerEvent: true });
+                    chartThemeDDB.setProperties({ items: this.getChartThemeDdbItems(args.item.id) }, true);
+                }
+            },
             close: (): void => this.parent.element.focus(),
             cssClass: 'e-flat e-charttheme-ddb',
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.tBarDdbBeforeOpen(args.element, args.items)
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                this.tBarDdbBeforeOpen(
+                    args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Chart'));
+            },
         });
-        this.chartThemeDDB.createElement = this.parent.createElement;
-        this.chartThemeDDB.appendTo(chartThemeBtn);
+        chartThemeDDB.createElement = this.parent.createElement;
+        chartThemeDDB.appendTo(chartThemeBtn);
         return chartThemeBtn;
     }
 
@@ -462,9 +494,11 @@ export class Ribbon {
             select: (args: MenuEventArgs): void => this.numDDBSelect(args),
             open: (args: OpenCloseMenuEventArgs): void => this.numDDBOpen(args),
             beforeItemRender: (args: MenuEventArgs): void => this.previewNumFormat(args),
-            close: (): void => focus(this.parent.element),
             cssClass: 'e-flat e-numformat-ddb',
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.tBarDdbBeforeOpen(args.element, args.items)
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                this.tBarDdbBeforeOpen(
+                    args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('NumberFormat'));
+            },
         });
         this.numFormatDDB.createElement = this.parent.createElement;
         this.numFormatDDB.appendTo(numFormatBtn);
@@ -480,15 +514,16 @@ export class Ribbon {
                 { text: '18' }, { text: '20' }, { text: '22' }, { text: '24' }, { text: '26' }, { text: '28' }, { text: '36' },
                 { text: '48' }, { text: '72' }],
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
-                this.tBarDdbBeforeOpen(args.element, args.items);
+                this.tBarDdbBeforeOpen(
+                    args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('FontSize'));
                 this.refreshSelected(this.fontSizeDdb, args.element, 'content', 'text');
             },
             select: (args: MenuEventArgs): void => {
                 const eventArgs: SetCellFormatArgs = { style: { fontSize: `${args.item.text}pt` }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
                 if (!eventArgs.cancel) { this.fontSizeDdb.content = eventArgs.style.fontSize.split('pt')[0]; this.fontSizeDdb.dataBind(); }
+                this.fontSizeDdb.element.setAttribute('aria-label', args.item.text);
             },
-            close: (): void => focus(this.parent.element)
         });
         this.fontSizeDdb.createElement = this.parent.createElement;
         this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
@@ -522,8 +557,10 @@ export class Ribbon {
             createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 chartMenu = this.createChartMenu(ul, menuClass, l10n, chartDdb);
-                this.tBarDdbBeforeOpen(args.element, chartMenu.items);
+                this.tBarDdbBeforeOpen(args.element, chartMenu.items,
+                    (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Chart'));
             },
+            open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.' + menuClass)) {
                     args.cancel = true;
@@ -531,7 +568,6 @@ export class Ribbon {
                     chartMenu.destroy();
                 }
             },
-            close: (): void => focus(this.parent.element)
         });
         chartDdb.createElement = this.parent.createElement;
         chartDdb.appendTo(chartBtn);
@@ -840,7 +876,7 @@ export class Ribbon {
     private getCFDBB(id: string): Element {
         const ul: HTMLElement = this.parent.createElement('ul', { id: id + '_cf_menu' });
         let cfMenu: Menu;
-        this.cFDdb = new DropDownButton({
+        this.cfDdb = new DropDownButton({
             iconCss: 'e-icons e-conditionalformatting-icon',
             cssClass: 'e-cf-ddb',
             target: ul,
@@ -848,8 +884,10 @@ export class Ribbon {
             close: (): void => focus(this.parent.element),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 cfMenu = this.createCFMenu(ul);
-                this.tBarDdbBeforeOpen(args.element, cfMenu.items);
+                this.tBarDdbBeforeOpen(
+                    args.element, cfMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('ConditionalFormatting'));
             },
+            open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-cf-menu')) {
                     args.cancel = true;
@@ -858,49 +896,45 @@ export class Ribbon {
                 }
             }
         });
-        this.cFDdb.createElement = this.parent.createElement;
-        this.cFDdb.appendTo(this.parent.createElement('button', { id: id + '_conditionalformatting' }));
-        return this.cFDdb.element;
+        this.cfDdb.createElement = this.parent.createElement;
+        this.cfDdb.appendTo(this.parent.createElement('button', { id: id + '_conditionalformatting' }));
+        return this.cfDdb.element;
     }
 
     private createCFMenu(ul: HTMLElement): Menu {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const cFMenu: Menu = new Menu({
+        const addIcons: Function = (icons: string[], category: string, appendTo: Element): void => {
+            icons.forEach((icon: string): void => {
+                appendTo.appendChild(
+                    this.parent.createElement('span', { id: icon + category, className: `e-${icon.toLowerCase()} e-cf-icon`,
+                    attrs: { 'title': l10n.getConstant(icon + category) } }));
+            });
+        };
+        const cfMenu: Menu = new Menu({
             cssClass: 'e-cf-menu',
             items: [{
                 iconCss: 'e-icons e-hlcellrules', text: l10n.getConstant('HighlightCellsRules'),
-                items: [{ iconCss: 'e-icons e-greaterthan', id: 'cf_greaterthan', text: l10n.getConstant('GreaterThan') + '...' },
-                    { iconCss: 'e-icons e-lessthan', id: 'cf_lessthan', text: l10n.getConstant('LessThan') + '...' },
-                    { iconCss: 'e-icons e-between', id: 'cf_between', text: l10n.getConstant('Between') + '...' },
-                    { iconCss: 'e-icons e-equalto', id: 'cf_eqaulto', text: l10n.getConstant('CFEqualTo') + '...' }, {
-                        iconCss: 'e-icons e-textcontains', id: 'cf_textthatcontains',
-                        text: l10n.getConstant('TextThatContains') + '...'
-                    }, { iconCss: 'e-icons e-adateoccuring', id: 'cf_adateoccuring', text: l10n.getConstant('ADateOccuring') + '...' }, {
-                        iconCss: 'e-icons e-duplicate', id: 'cf_duplicatevalues',
-                        text: l10n.getConstant('DuplicateValues') + '...'
-                    }]
+                items: [{ iconCss: 'e-icons e-greaterthan', id: 'cf_greaterthan_dlg', text: l10n.getConstant('GreaterThan') + '...' },
+                    { iconCss: 'e-icons e-lessthan', id: 'cf_lessthan_dlg', text: l10n.getConstant('LessThan') + '...' },
+                    { iconCss: 'e-icons e-between', id: 'cf_between_dlg', text: l10n.getConstant('Between') + '...' },
+                    { iconCss: 'e-icons e-equalto', id: 'cf_eqaulto_dlg', text: l10n.getConstant('CFEqualTo') + '...' },
+                    { iconCss: 'e-icons e-textcontains', id: 'cf_textcontains_dlg', text: l10n.getConstant('TextThatContains') + '...' },
+                    { iconCss: 'e-icons e-adateoccuring', id: 'cf_adateoccuring_dlg', text: l10n.getConstant('ADateOccuring') + '...' },
+                    { iconCss: 'e-icons e-duplicate', id: 'cf_duplicatevalues_dlg', text: l10n.getConstant('DuplicateValues') + '...' }]
             },
             {
                 iconCss: 'e-icons e-topbottomrules', text: l10n.getConstant('TopBottomRules'),
-                items: [{ iconCss: 'e-icons e-top10items', id: 'cf_top10items', text: l10n.getConstant('Top10Items') + '...' },
-                    { iconCss: 'e-icons e-top10', id: 'cf_top10', text: l10n.getConstant('Top10') + ' %...' },
-                    { iconCss: 'e-icons e-bottom10items', id: 'cf_bottom10items', text: l10n.getConstant('Bottom10Items') + '...' },
-                    { iconCss: 'e-icons e-bottom10', id: 'cf_bottom10', text: l10n.getConstant('Bottom10') + ' %...' },
-                    { iconCss: 'e-icons e-aboveaverage', id: 'cf_aboveaverage', text: l10n.getConstant('AboveAverage') + '...' },
-                    { iconCss: 'e-icons e-belowaverage', id: 'cf_belowaverage', text: l10n.getConstant('BelowAverage') + '...' }]
+                items: [{ iconCss: 'e-icons e-top10items', id: 'cf_top10items_dlg', text: l10n.getConstant('Top10Items') + '...' },
+                    { iconCss: 'e-icons e-top10', id: 'cf_top10_dlg', text: l10n.getConstant('Top10') + ' %...' },
+                    { iconCss: 'e-icons e-bottom10items', id: 'cf_bottom10items_dlg', text: l10n.getConstant('Bottom10Items') + '...' },
+                    { iconCss: 'e-icons e-bottom10', id: 'cf_bottom10_dlg', text: l10n.getConstant('Bottom10') + ' %...' },
+                    { iconCss: 'e-icons e-aboveaverage', id: 'cf_aboveaverage_dlg', text: l10n.getConstant('AboveAverage') + '...' },
+                    { iconCss: 'e-icons e-belowaverage', id: 'cf_belowaverage_dlg', text: l10n.getConstant('BelowAverage') + '...' }]
             },
-            {
-                iconCss: 'e-icons e-databars', text: l10n.getConstant('DataBars'),
-                items: [{ id: 'cf_databars' }]
-            },
-            {
-                iconCss: 'e-icons e-colorscales', text: l10n.getConstant('ColorScales'),
-                items: [{ id: 'cf_colorscales' }]
-            },
-            {
-                iconCss: 'e-icons e-iconsets', text: l10n.getConstant('IconSets'),
-                items: [{ id: 'cf_iconsets' }]
-            },
+            { iconCss: 'e-icons e-databars', text: l10n.getConstant('DataBars'), items: [{ id: 'db_icons1' }, { id: 'db_icons2' }] },
+            { iconCss: 'e-icons e-colorscales', text: l10n.getConstant('ColorScales'), items: [{ id: 'cs_icons1' }, { id: 'cs_icons2' },
+                { id: 'cs_icons3' }] },
+            { iconCss: 'e-icons e-iconsets', text: l10n.getConstant('IconSets'), items: [{ id: 'is_icons' }] },
             {
                 iconCss: 'e-icons e-clearrules', text: l10n.getConstant('ClearRules'),
                 items: [{ id: 'cf_cr_cells', text: l10n.getConstant('SelectedCells') },
@@ -908,64 +942,23 @@ export class Ribbon {
             }],
             orientation: 'Vertical',
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.parentItem.text === l10n.getConstant('DataBars')) {
-                    args.element.firstChild.appendChild(dataBars);
+                if (args.parentItem.iconCss === 'e-icons e-databars') {
                     args.element.parentElement.classList.add('e-databars');
-                } else if (args.parentItem.text === l10n.getConstant('ColorScales')) {
-                    args.element.firstChild.appendChild(colorScales);
+                    addIcons(['Blue', 'Green', 'Red'], 'DataBar', args.element.firstChild);
+                    addIcons(['Orange', 'LightBlue', 'Purple'], 'DataBar', args.element.lastChild);
+                } else if (args.parentItem.iconCss === 'e-icons e-colorscales') {
                     args.element.parentElement.classList.add('e-colorscales');
-                } else if (args.parentItem.text === l10n.getConstant('IconSets')) {
-                    args.element.firstChild.appendChild(iconSets);
+                    addIcons(['GYR', 'RYG', 'GWR', 'RWG'], 'ColorScale', args.element.firstChild);
+                    addIcons(['BWR', 'RWB', 'WR', 'RW'], 'ColorScale', args.element.querySelector('#cs_icons2'));
+                    addIcons(['GW', 'WG', 'GY', 'YG'], 'ColorScale', args.element.lastChild);
+                } else if (args.parentItem.iconCss === 'e-icons e-iconsets') {
                     args.element.parentElement.classList.add('e-iconsets');
+                    args.element.firstChild.appendChild(iconSets);
                 }
             },
-            select: this.cFSelected.bind(this)
+            select: this.cfSelected.bind(this)
         });
-        const dataBars: HTMLElement = this.parent.createElement('div', { id: 'db', className: 'e-db' });
-        const db1: HTMLElement = this.parent.createElement('div', { id: 'db1', className: 'e-db1' });
-        const db2: HTMLElement = this.parent.createElement('div', { id: 'db2', className: 'e-db2' });
-        dataBars.appendChild(db1);
-        dataBars.appendChild(db2);
-        const bBar: HTMLElement = this.parent.createElement('span', { id: 'BlueDataBar', className: 'e-bdatabar e-databar-icon' });
-        const gBar: HTMLElement = this.parent.createElement('span', { id: 'GreenDataBar', className: 'e-gdatabar e-databar-icon' });
-        const rBar: HTMLElement = this.parent.createElement('span', { id: 'RedDataBar', className: 'e-rdatabar e-databar-icon' });
-        const oBar: HTMLElement = this.parent.createElement('span', { id: 'OrangeDataBar', className: 'e-odatabar e-databar-icon' });
-        const lBBar: HTMLElement = this.parent.createElement('span', { id: 'LightBlueDataBar', className: 'e-lbdatabar e-databar-icon' });
-        const pBar: HTMLElement = this.parent.createElement('span', { id: 'PurpleDataBar', className: 'e-pdatabar e-databar-icon' });
-        bBar.title = l10n.getConstant('BlueDataBar'); gBar.title = l10n.getConstant('GreenDataBar');
-        rBar.title = l10n.getConstant('RedDataBar'); oBar.title = l10n.getConstant('OrangeDataBar');
-        lBBar.title = l10n.getConstant('LightblueDataBar'); pBar.title = l10n.getConstant('PurpleDataBar');
-        db1.appendChild(bBar); db1.appendChild(gBar); db1.appendChild(rBar);
-        db2.appendChild(oBar); db2.appendChild(lBBar); db2.appendChild(pBar);
-        cFMenu.createElement = this.parent.createElement;
-        const colorScales: HTMLElement = this.parent.createElement('div', { id: 'db', className: 'e-cs' });
-        const cs1: HTMLElement = this.parent.createElement('div', { id: 'cs1', className: 'e-cs1' });
-        const cs2: HTMLElement = this.parent.createElement('div', { id: 'cs2', className: 'e-cs2' });
-        const cs3: HTMLElement = this.parent.createElement('div', { id: 'cs3', className: 'e-cs3' });
-        colorScales.appendChild(cs1);
-        colorScales.appendChild(cs2);
-        colorScales.appendChild(cs3);
-        const gyr: HTMLElement = this.parent.createElement('span', { id: 'GYRColorScale', className: 'e-gyr e-colorscale-icon' });
-        const ryg: HTMLElement = this.parent.createElement('span', { id: 'RYGColorScale', className: 'e-ryg e-colorscale-icon' });
-        const gwr: HTMLElement = this.parent.createElement('span', { id: 'GWRColorScale', className: 'e-gwr e-colorscale-icon' });
-        const rwg: HTMLElement = this.parent.createElement('span', { id: 'RWGColorScale', className: 'e-rwg e-colorscale-icon' });
-        const bwr: HTMLElement = this.parent.createElement('span', { id: 'BWRColorScale', className: 'e-bwr e-colorscale-icon' });
-        const rwb: HTMLElement = this.parent.createElement('span', { id: 'RWBColorScale', className: 'e-rwb e-colorscale-icon' });
-        const wr: HTMLElement = this.parent.createElement('span', { id: 'WRColorScale', className: 'e-wr e-colorscale-icon' });
-        const rw: HTMLElement = this.parent.createElement('span', { id: 'RWColorScale', className: 'e-rw e-colorscale-icon' });
-        const gw: HTMLElement = this.parent.createElement('span', { id: 'GWColorScale', className: 'e-gw e-colorscale-icon' });
-        const wg: HTMLElement = this.parent.createElement('span', { id: 'WGColorScale', className: 'e-wg e-colorscale-icon' });
-        const gy: HTMLElement = this.parent.createElement('span', { id: 'GYColorScale', className: 'e-gy e-colorscale-icon' });
-        const yg: HTMLElement = this.parent.createElement('span', { id: 'YGColorScale', className: 'e-yg e-colorscale-icon' });
-        gyr.title = l10n.getConstant('GYRColorScale'); ryg.title = l10n.getConstant('RYGColorScale');
-        gwr.title = l10n.getConstant('GWRColorScale'); rwg.title = l10n.getConstant('RWGColorScale');
-        bwr.title = l10n.getConstant('BWRColorScale'); rwb.title = l10n.getConstant('RWBColorScale');
-        wr.title = l10n.getConstant('WRColorScale'); rw.title = l10n.getConstant('RWColorScale');
-        gw.title = l10n.getConstant('GWColorScale'); wg.title = l10n.getConstant('WGColorScale');
-        gy.title = l10n.getConstant('GYColorScale'); yg.title = l10n.getConstant('YGColorScale');
-        cs1.appendChild(gyr); cs1.appendChild(ryg); cs1.appendChild(gwr); cs1.appendChild(rwg);
-        cs2.appendChild(bwr); cs2.appendChild(rwb); cs2.appendChild(wr); cs2.appendChild(rw);
-        cs3.appendChild(gw); cs3.appendChild(wg); cs3.appendChild(gy); cs3.appendChild(yg);
+        cfMenu.createElement = this.parent.createElement;
 
         const iconSets: HTMLElement = this.parent.createElement('div', { id: 'is', className: 'e-is' });
         const is1: HTMLElement = this.parent.createElement('div', { id: 'is1', className: 'e-is1', innerHTML: 'Directional' });
@@ -1108,10 +1101,10 @@ export class Ribbon {
         ratings5.appendChild(this.createElement('span', 'e-5boxes-3 e-iconsetspan'));
         ratings5.appendChild(this.createElement('span', 'e-5boxes-4 e-iconsetspan'));
         ratings5.appendChild(this.createElement('span', 'e-5boxes-5 e-iconsetspan'));
-        cFMenu.createElement = this.parent.createElement;
-        cFMenu.appendTo(ul);
+        cfMenu.createElement = this.parent.createElement;
+        cfMenu.appendTo(ul);
         ul.classList.add('e-ul');
-        return cFMenu;
+        return cfMenu;
     }
 
     private createElement(tag: string, className: string ): HTMLElement {
@@ -1141,8 +1134,10 @@ export class Ribbon {
             createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 bordersMenu = this.createBorderMenu(ul);
-                this.tBarDdbBeforeOpen(args.element, bordersMenu.items, 1);
+                this.tBarDdbBeforeOpen(
+                    args.element, bordersMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Borders'), 1);
             },
+            open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-borders-menu')) {
                     args.cancel = true;
@@ -1150,7 +1145,7 @@ export class Ribbon {
                     bordersMenu.destroy();
                 }
             },
-            close: (): void => focus(this.parent.element)
+            close: (): void => focus(this.bordersDdb.element)
         });
         this.bordersDdb.createElement = this.parent.createElement;
         this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
@@ -1214,7 +1209,9 @@ export class Ribbon {
             onOpen: (args: OpenCloseMenuEventArgs): void => {
                 if (args.parentItem.id === `${id}_border_bordercolor`) { args.element.parentElement.style.overflow = 'visible'; }
             },
-            select: (args: MenuEventArgs): void => this.borderSelected(args, bordersMenu)
+            select: (args: MenuEventArgs): void => {
+                this.borderSelected(args, bordersMenu);
+            },
         });
         bordersMenu.createElement = this.parent.createElement;
         bordersMenu.appendTo(ul);
@@ -1239,32 +1236,27 @@ export class Ribbon {
         if (args.item && (!args.item.items || !args.item.items.length)) { this.addChartDdb.toggle(); }
     }
 
-    private cFSelected(args: MenuEventArgs): void {
-        const eleId: string = args.element.id;
-        if (('cf_greaterthan' + 'cf_lessthan' + 'cf_between' + 'cf_eqaulto' + 'cf_textthatcontains' +
-            'cf_adateoccuring' + 'cf_duplicatevalues' + 'cf_top10items' + 'cf_top10' + 'cf_bottom10items' +
-            'cf_bottom10' + 'cf_aboveaverage' + 'cf_belowaverage').includes(eleId)) {
-            this.parent.notify(initiateConditionalFormat, { action: args.item.text });
-        } else if (('cf_databars' + 'cf_colorscales').includes(eleId)) {
-            const id: string = (args.event.target as HTMLElement).id;
-            this.parent.notify(setCF, { action: eleId, id: id });
-        } else if ('cf_iconsets' === args.element.id) {
-            const target: HTMLElement = args.event.target as HTMLElement;
-            const iconName: string = (target.id === '') ? target.parentElement.id : target.id;
-            this.parent.notify(setCF, { action: eleId, id: iconName });
-        }
-        if (eleId === 'cf_cr_cells') {
-            this.parent.notify(clearCFRule, { range: this.parent.getActiveSheet().selectedRange, isPublic: false });
-        } else if (eleId === 'cf_cr_sheet') {
-            const sheet: SheetModel = this.parent.getActiveSheet();
-            const range: string = getRangeAddress([0, 0, sheet.rowCount - 1, sheet.colCount - 1]);
+    private cfSelected(args: MenuEventArgs): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        if (args.item.id.includes('_dlg')) {
+            this.parent.notify(renderCFDlg, { action: args.item.text });
+        } else if (args.item.id.includes('icons')) {
+            const trgt: Element = args.event.target as Element;
+            this.parent.notify(
+                setCFRule, <CFArgs>{ cfModel: { type: trgt.id || trgt.parentElement.id, range: sheet.selectedRange }, isAction: true });
+        } else if (args.item.id === 'cf_cr_cells') {
+            this.parent.notify(clearCFRule, <CFArgs>{ range: sheet.selectedRange, isAction: true });
+        } else if (args.item.id === 'cf_cr_sheet') {
             this.parent.conditionalFormat = null;
-            this.parent.notify(clearCFRule, { range: range, isPublic: false });
+            this.parent.notify(clearCFRule, <CFArgs>{ isAction: true });
         }
-        if (args.item && (!args.item.items || !args.item.items.length)) { this.cFDdb.toggle(); }
+        if (args.item && (!args.item.items || !args.item.items.length)) {
+            this.cfDdb.toggle();
+        }
     }
 
     private borderSelected(args: MenuEventArgs, bordersMenu: Menu): void {
+        this.bordersDdb.element.setAttribute('aria-label', args.item.text);
         const id: string = this.parent.element.id;
         if (args.item.items.length || args.item.id === `${id}_border_colors`) { return; }
         if (!args.item.text) {
@@ -1332,20 +1324,23 @@ export class Ribbon {
             select: (args: MenuEventArgs): void => {
                 const eventArgs: SetCellFormatArgs = { style: { fontFamily: args.item.text as FontFamily }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
+                fontNameBtn.setAttribute('aria-label', args.item.text);
                 if (!eventArgs.cancel) { this.refreshFontNameSelection(eventArgs.style.fontFamily); }
             },
-            close: (): void => focus(this.parent.element),
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.tBarDdbBeforeOpen(args.element, args.items)
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>{
+                this.tBarDdbBeforeOpen(
+                    args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant(('Font')));
+            },
         });
         this.fontNameDdb.createElement = this.parent.createElement;
         this.fontNameDdb.appendTo(fontNameBtn);
         return fontNameBtn;
     }
 
-    private getBtn(id: string, name: string, bindEvent: boolean = true): Element {
-        const btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`, isToggle: true });
+    private getBtn(id: string, name: string, text: string, bindEvent: boolean = true): Element {
+        const btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`,cssClass:'e-flat',isToggle: true });
         btnObj.createElement = this.parent.createElement;
-        btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}`, attrs: { 'type': 'button' } }));
+        btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}`, attrs: { 'aria-label': text, 'type': 'button' } }));
         if (bindEvent) {
             btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
         }
@@ -1366,6 +1361,7 @@ export class Ribbon {
             createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.datavalidationDdb, args.element, 'iconCss');
+                args.element.setAttribute('aria-label', l10n.getConstant('DataValidation'));
             },
             select: (args: MenuEventArgs): void => {
                 switch (args.item.text) {
@@ -1386,8 +1382,8 @@ export class Ribbon {
                     this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } } });
                     break;
                 }
+                this.datavalidationDdb.element.setAttribute('aria-label', args.item.text);
             },
-            close: (): void => focus(this.parent.element)
         });
         this.datavalidationDdb.createElement = this.parent.createElement;
         this.datavalidationDdb.appendTo(this.parent.createElement('button', { id: id + '_datavalidation' }));
@@ -1395,6 +1391,7 @@ export class Ribbon {
     }
 
     private getTextAlignDDB(id: string): Element {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.textAlignDdb = new DropDownButton({
             cssClass: 'e-align-ddb',
             iconCss: 'e-icons e-left-icon',
@@ -1403,6 +1400,7 @@ export class Ribbon {
             createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.textAlignDdb, args.element, 'iconCss');
+                args.element.setAttribute('aria-label', l10n.getConstant('HorizontalAlignment'));
             },
             select: (args: MenuEventArgs): void => {
                 const eventArgs: SetCellFormatArgs = {
@@ -1412,8 +1410,9 @@ export class Ribbon {
                 if (!eventArgs.cancel) {
                     this.textAlignDdb.iconCss = `e-icons e-${eventArgs.style.textAlign}-icon`; this.textAlignDdb.dataBind();
                 }
+                this.textAlignDdb.element.setAttribute(
+                    'aria-label', (l10n.getConstant('HorizontalAlignment') + ' ' + l10n.getConstant('Align' + this.getAlignText(args))));
             },
-            close: (): void => focus(this.parent.element)
         });
         this.textAlignDdb.createElement = this.parent.createElement;
         this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align' }));
@@ -1421,6 +1420,7 @@ export class Ribbon {
     }
 
     private getVerticalAlignDDB(id: string): Element {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.verticalAlignDdb = new DropDownButton({
             cssClass: 'e-align-ddb',
             iconCss: 'e-icons e-bottom-icon',
@@ -1429,6 +1429,7 @@ export class Ribbon {
             createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.verticalAlignDdb, args.element, 'iconCss');
+                args.element.setAttribute('aria-label', l10n.getConstant('VerticalAlignment'));
             },
             select: (args: MenuEventArgs): void => {
                 const eventArgs: SetCellFormatArgs = {
@@ -1438,8 +1439,9 @@ export class Ribbon {
                 if (!eventArgs.cancel) {
                     this.verticalAlignDdb.iconCss = `e-icons e-${eventArgs.style.verticalAlign}-icon`; this.verticalAlignDdb.dataBind();
                 }
+                this.verticalAlignDdb.element.setAttribute(
+                    'aria-label', (l10n.getConstant('VerticalAlignment') + ' ' + l10n.getConstant('Align' + this.getAlignText(args))));
             },
-            close: (): void => focus(this.parent.element)
         });
         this.verticalAlignDdb.createElement = this.parent.createElement;
         this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align' }));
@@ -1457,8 +1459,8 @@ export class Ribbon {
                 `${id}_merge_horizontally` }, { text: l10n.getConstant('MergeVertically'), id: `${id}_merge_vertically` },
             { separator: true, id: `${id}_merge_separator` }, { text: l10n.getConstant('Unmerge'), id: `${id}_unmerge` }],
             select: this.mergeSelectHandler.bind(this),
-            close: (): void => focus(this.parent.element),
             click: (args: BtnClickEventArgs): void => {
+                args.element.setAttribute('aria-label', l10n.getConstant('MergeCells'));
                 if (args.element.classList.contains('e-active')) {
                     this.toggleActiveState(false); this.unMerge();
                 } else {
@@ -1468,7 +1470,8 @@ export class Ribbon {
             created: (): void => {
                 this.mergeSplitBtn.element.title = l10n.getConstant('MergeCells');
                 (this.mergeSplitBtn.element.nextElementSibling as HTMLButtonElement).title = l10n.getConstant('SelectMergeType');
-            }
+            },
+            beforeOpen: (args: MenuEventArgs) => args.element.setAttribute('aria-label', l10n.getConstant('MergeCells'))
         });
         this.mergeSplitBtn.createElement = this.parent.createElement;
         this.mergeSplitBtn.appendTo('#' + id + '_merge');
@@ -1481,11 +1484,13 @@ export class Ribbon {
         } else {
             this.merge(args.item.id);
         }
+        this.mergeSplitBtn.element.setAttribute('aria-label', args.item.text);
     }
 
-    private unMerge(): void {
+    private unMerge(args?: { range: string }): void {
         this.parent.showSpinner();
-        this.parent.notify(setMerge, <MergeArgs>{ merge: false, range: this.parent.getActiveSheet().selectedRange,
+        const selectedRange: string = this.parent.getActiveSheet().selectedRange;
+        this.parent.notify(setMerge, <MergeArgs>{ merge: false, range: args ? (args.range || selectedRange) : selectedRange,
             isAction: true, refreshRibbon: true, type: 'All' });
         this.parent.hideSpinner();
     }
@@ -1517,7 +1522,6 @@ export class Ribbon {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
-                focus(this.parent.element);
             },
             buttons: [{
                 buttonModel: { content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true },
@@ -1564,7 +1568,7 @@ export class Ribbon {
             beforeItemRender: (args: MenuEventArgs): void => {
                 const eventArgs: { [key: string]: boolean } = { isFiltered: false, isClearAll: true };
                 this.parent.notify(getFilteredColumn, eventArgs);
-                if (!this.parent.allowSorting && (args.item.text === l10n.getConstant('SortAscending') || 
+                if (!this.parent.allowSorting && (args.item.text === l10n.getConstant('SortAscending') ||
                     args.item.text===l10n.getConstant('SortDescending') || args.item.text ===(l10n.getConstant('CustomSort') + '...'))) {
                     args.element.classList.add('e-disabled');
                 }
@@ -1581,6 +1585,8 @@ export class Ribbon {
             },
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.sortingDdb, args.element, 'iconCss');
+                args.element.setAttribute
+                    ('aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('SortAndFilter'));
             },
             select: (args: MenuEventArgs): void => {
                 switch (args.item.text) {
@@ -1601,8 +1607,8 @@ export class Ribbon {
                     this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } } });
                     break;
                 }
+                this.sortingDdb.element.setAttribute('aria-label', args.item.text);
             },
-            close: (): void => focus(this.parent.element)
         });
         this.sortingDdb.createElement = this.parent.createElement;
         this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting' }));
@@ -1611,8 +1617,13 @@ export class Ribbon {
 
     private getFindBtn(id: string): HTMLElement {
         const findToolbtn: HTMLElement = this.parent.createElement(
-            'button', { id: id + '_findbtn', attrs: { 'type': 'button' } }) as HTMLElement;
-        this.findDdb = new Button({ cssClass: 'e-spreadsheet-find-ddb', iconCss: 'e-icons e-search-icon' });
+            'button', {
+                id: id + '_findbtn', attrs: {
+                    'type': 'button',
+                    'aria-label': (this.parent.serviceLocator.getService(locale) as L10n).getConstant('FindReplaceTooltip')
+                }
+        }) as HTMLElement;
+        this.findDdb = new Button({ cssClass: 'e-spreadsheet-find-ddb e-flat', iconCss: 'e-icons e-search-icon' });
         this.findDdb.createElement = this.parent.createElement;
         this.findDdb.appendTo(findToolbtn);
         findToolbtn.onclick = this.findToolDlg.bind(this);
@@ -1702,8 +1713,10 @@ export class Ribbon {
                         this.parent.notify(findHandler, { findOption: 'prev' });
                         this.updateCount(findSpan, true);
                     } else if (args.item.cssClass === 'e-findRib-more') {
-                        this.parent.notify(findDlg, null);
+                        this.findDialog.animationSettings.effect = 'None';
+                        this.findDialog.setProperties({ animationSettings: this.findDialog.animationSettings }, true);
                         this.findDialog.hide();
+                        this.parent.notify(findDlg, null)
                     }
                 }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
             });
@@ -1754,8 +1767,13 @@ export class Ribbon {
                     dialogDiv.style.display = '';
                     dialogDiv.style.width = '';
                     dialogDiv.style.visibility = '';
-                    this.findDialog.position = { X: content.parentElement.getBoundingClientRect().width -
-                        parseInt(this.findDialog.width, 10) - this.parent.sheetModule.getScrollSize(),
+                    const mainPanelWidth: number = content.parentElement.getBoundingClientRect().width;
+                    let findDlgWidth: number = parseInt(this.findDialog.width, 10);
+                    const scrollEleWidth: number = this.parent.sheetModule.getScrollSize();
+                    if ( mainPanelWidth <= findDlgWidth) {
+                        findDlgWidth = mainPanelWidth - scrollEleWidth;
+                    }
+                    this.findDialog.position = { X: mainPanelWidth - findDlgWidth - scrollEleWidth,
                         Y: this.parent.getActiveSheet().showHeaders ? 31 : 0 };
                     this.findDialog.dataBind();
                     this.findDialog.show();
@@ -1794,8 +1812,13 @@ export class Ribbon {
                 { text: l10n.getConstant('ClearContents'), id: id + '_Clear Contents' },
                 { text: l10n.getConstant('ClearHyperlinks'), id: id + '_Clear Hyperlinks' }],
             createPopupOnClick: true,
-            select: (args: MenuEventArgs): void => this.parent.notify(clearViewer, { options: { type: args.item.id.replace(id + '_','') } }),
-            close: (): void => focus(this.parent.element)
+            beforeOpen: (args: MenuEventArgs): void => {
+                args.element.setAttribute('aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Clear'));
+            },
+            select: (args: MenuEventArgs): void => {
+                this.parent.notify(clearViewer, { options: { type: args.item.id.replace(id + '_', '') }, isAction: true });
+                this.clearDdb.element.setAttribute('aria-label', args.item.text);
+            },
         });
         this.clearDdb.createElement = this.parent.createElement;
         this.clearDdb.appendTo(this.parent.createElement('button', { id: id + '_clear' }));
@@ -1803,14 +1826,17 @@ export class Ribbon {
     }
 
     private ribbonCreated(): void {
-        (this.ribbon.element.querySelector('.e-drop-icon') as HTMLElement).title
-            = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('CollapseToolbar');
+        const text: string = this.parent.serviceLocator.getService<L10n>(locale).getConstant('CollapseToolbar');
+        attributes(
+            this.ribbon.element.querySelector('.e-drop-icon'), { 'role': 'button', 'tabindex': '-1', 'title': text, 'aria-label': text });
     }
 
     private alignItemRender(args: MenuEventArgs): void {
+        args.element.title = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Align' + this.getAlignText(args));
+    }
+    private getAlignText(args: MenuEventArgs): string {
         let text: string = args.item.iconCss.split(' e-')[1].split('-icon')[0];
-        text = text[0].toUpperCase() + text.slice(1, text.length);
-        args.element.title = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Align' + text);
+        return text[0].toUpperCase() + text.slice(1, text.length);
     }
     private toggleBtnClicked(e: MouseEvent | KeyboardEvent): void {
         const target: Element = closest(e.target as Element, '.e-btn');
@@ -1847,7 +1873,6 @@ export class Ribbon {
         if (!eventArgs.cancel && value !== eventArgs.style[key]) {
             this.refreshToggleBtn(getCellIndexes(this.parent.getActiveSheet().activeCell));
         }
-        focus(this.parent.element);
     }
 
     private getCellStyleValue(cssProp: string, indexes: number[]): string {
@@ -1870,31 +1895,23 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (args.expanded) {
             target.title = l10n.getConstant('CollapseToolbar');
+            target.setAttribute('aria-label', l10n.getConstant('ExpandToolbar'));
         } else {
             target.title = l10n.getConstant('ExpandToolbar');
+            target.setAttribute('aria-label', l10n.getConstant('CollapseToolbar'));
         }
         this.parent.setPanelSize();
     }
 
-    private getChartThemeDdbItems(): ItemModel[] {
+    private getChartThemeDdbItems(theme: string): ItemModel[] {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        return [
-            { id: 'Material', text: l10n.getConstant('Material') },
-            { id: 'Fabric', text: l10n.getConstant('Fabric') },
-            { id: 'Bootstrap', text: l10n.getConstant('Bootstrap') },
-            { id: 'HighContrastLight', text: l10n.getConstant('HighContrastLight') },
-            { id: 'MaterialDark', text: l10n.getConstant('MaterialDark') },
-            { id: 'FabricDark', text: l10n.getConstant('FabricDark') },
-            { id: 'HighContrast', text: l10n.getConstant('HighContrast') },
-            { id: 'BootstrapDark', text: l10n.getConstant('BootstrapDark') },
-            { id: 'Bootstrap4', text: l10n.getConstant('Bootstrap4') },
-            { id: 'Bootstrap5Dark', text: l10n.getConstant('Bootstrap5Dark') },
-            { id: 'Bootstrap5', text: l10n.getConstant('Bootstrap5') },
-            { id: 'TailwindDark', text: l10n.getConstant('TailwindDark') },
-            { id: 'Tailwind', text: l10n.getConstant('Tailwind') },
-            { id: 'FluentDark', text: l10n.getConstant('FluentDark') },
-            { id: 'Fluent', text: l10n.getConstant('Fluent') }
-        ];
+        const items: ItemModel[] = [];
+        const themes: string[] = ['Material', 'Fabric', 'Bootstrap', 'HighContrastLight', 'MaterialDark', 'FabricDark', 'HighContrast',
+        'BootstrapDark', 'Bootstrap4', 'Bootstrap5Dark', 'Bootstrap5', 'TailwindDark', 'Tailwind', 'FluentDark', 'Fluent'];
+        themes.forEach((id: string): void => {
+            items.push({ id: id, text: l10n.getConstant(id), iconCss: id === theme ? 'e-icons e-selected-icon' : '' });
+        });
+        return items;
     }
 
     private getNumFormatDdbItems(id: string): ItemModel[] {
@@ -1950,6 +1967,7 @@ export class Ribbon {
             this.refreshTextAlign(sheet, getCell(cellIndex[0], cellIndex[1], sheet, false, true), type, cellIndex);
             this.parent.notify(completeAction, { eventArgs: actionArgs, action: 'format' });
         }
+        this.numFormatDDB.element.setAttribute('aria-label', type);
     }
 
     private renderCustomFormatDialog(): void {
@@ -1960,7 +1978,7 @@ export class Ribbon {
         const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
         const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('APPLY')});
         const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample', innerHTML: l10n.getConstant('CustomFormatSample') + ':'});
-        const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': 'Custom Number Format', 'spellcheck': 'false' }});
+        const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': l10n.getConstant('CustomFormat'), 'spellcheck': 'false' }});
         const listviewCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-listview'});
         const customFormatDialog: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         const formatData = [{ text: 'General' }, { text: '0' }, { text: '0.00' }, { text: '#,##0' }, { text: '#,##0.00' },
@@ -2009,13 +2027,7 @@ export class Ribbon {
         listview.selectItem(item);
     }
 
-    private chartThemeDDBSelect(args: MenuEventArgs): void {
-        this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
-        this.refreshChartThemeSelection(args.item.id);
-        this.parent.notify(chartDesignTab,  { chartTheme: args.item.id as ChartTheme, triggerEvent: true });
-    }
-
-    private tBarDdbBeforeOpen(element: HTMLElement, items: MenuItemModel[], separatorCount: number = 0): void {
+    private tBarDdbBeforeOpen(element: HTMLElement, items: MenuItemModel[], targetLabel?: string, separatorCount: number = 0): void {
         const viewportHeight: number = this.parent.viewport.height;
         let actualHeight: number = (parseInt(getComputedStyle(element.firstElementChild).height, 10) * (items.length - separatorCount)) +
             (parseInt(getComputedStyle(element).paddingTop, 10) * 2);
@@ -2029,6 +2041,7 @@ export class Ribbon {
         } else {
             if (element.style.height) { element.style.height = ''; element.style.overflowY = ''; }
         }
+        element.setAttribute('aria-label', targetLabel);
     }
 
     private numDDBOpen(args: OpenCloseMenuEventArgs): void {
@@ -2233,6 +2246,7 @@ export class Ribbon {
             'Tahoma', 'Times New Roman', 'Verdana'].indexOf(fontFamily) < 0) {
             this.fontNameDdb.items[this.fontNameIndex].iconCss = '';
         }
+        this.fontNameDdb.element.setAttribute('aria-label', fontFamily);
     }
 
     private refreshNumFormatSelection(type: string): void {
@@ -2246,74 +2260,7 @@ export class Ribbon {
         }
         this.numFormatDDB.element.firstElementChild.textContent = type;
         this.numFormatDDB.setProperties({ 'items': this.numFormatDDB.items }, true);
-    }
-
-    private refreshChartThemeSelection(chartTheme: string): void {
-        if (chartTheme !== this.chartThemeDDB.items[this.chartThemeIndex].text) {
-            this.chartThemeDDB.element.firstElementChild.textContent = this.getChartThemeText(chartTheme);
-            for (let i: number = 0; i < this.chartThemeDDB.items.length; i++) {
-                if (this.chartThemeDDB.items[i].id === chartTheme) {
-                    this.chartThemeDDB.items[i].iconCss = 'e-icons e-selected-icon';
-                    this.chartThemeDDB.items[this.chartThemeIndex].iconCss = '';
-                    this.chartThemeDDB.setProperties({ 'items': this.chartThemeDDB.items }, true);
-                    this.chartThemeIndex = i;
-                    break;
-                }
-            }
-        }
-    }
-
-    private getChartThemeText(theme: string): string {
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let selectedTheme: string = '';
-        switch (theme) {
-        case 'Material':
-            selectedTheme = l10n.getConstant('Material');
-            break;
-        case 'Fabric':
-            selectedTheme = l10n.getConstant('Fabric');
-            break;
-        case 'Bootstrap':
-            selectedTheme = l10n.getConstant('Bootstrap');
-            break;
-        case 'HighContrastLight':
-            selectedTheme = l10n.getConstant('HighContrastLight');
-            break;
-        case 'MaterialDark':
-            selectedTheme = l10n.getConstant('MaterialDark');
-            break;
-        case 'FabricDark':
-            selectedTheme = l10n.getConstant('FabricDark');
-            break;
-        case 'HighContrast':
-            selectedTheme = l10n.getConstant('HighContrast');
-            break;
-        case 'BootstrapDark':
-            selectedTheme = l10n.getConstant('BootstrapDark');
-            break;
-        case 'Bootstrap4':
-            selectedTheme = l10n.getConstant('Bootstrap4');
-            break;
-        case 'Bootstrap5Dark':
-            selectedTheme = l10n.getConstant('Bootstrap5Dark');
-            break;
-        case 'Bootstrap5':
-            selectedTheme = l10n.getConstant('Bootstrap5');
-            break;
-        case 'TailwindDark':
-            selectedTheme = l10n.getConstant('TailwindDark');
-            break;
-        case 'Tailwind':
-            selectedTheme = l10n.getConstant('Tailwind');
-            break;
-        case 'Fluent':
-            selectedTheme = l10n.getConstant('Fluent');
-            break;
-        case 'FluentDark':
-            selectedTheme = l10n.getConstant('FluentDark');
-            break;
-        }
-        return selectedTheme;
+        this.numFormatDDB.element.setAttribute('aria-label', type);
     }
 
     private fileMenuItemSelect(args: MenuEventArgs): void {
@@ -2383,7 +2330,6 @@ export class Ribbon {
                 this.parent.setSheetPropertyOnMute(sheet, 'showHeaders', !sheet.showHeaders);
                 (this.parent.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
                 this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
-                focus(this.parent.element);
                 break;
             case parentId + '_gridlines':
                 evtglArgs = {
@@ -2395,7 +2341,6 @@ export class Ribbon {
                 if (evtglArgs.cancel) { return; }
                 this.parent.setSheetPropertyOnMute(sheet, 'showGridLines', !sheet.showGridLines);
                 this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
-                focus(this.parent.element);
                 break;
             case parentId + '_protect':
                 if (this.parent.openModule.isImportedFile &&
@@ -2481,7 +2426,7 @@ export class Ribbon {
                     this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
                 }
             }
-            if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader) {
+            if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader && args.props !== 'Protect') {
                 this.updateToggleText(args.props.toLowerCase(), text);
             }
         }
@@ -2548,9 +2493,16 @@ export class Ribbon {
     }
 
     private updateToggleText(item: string, text: string): void {
+        const ele: HTMLElement = select(`#${this.parent.element.id}_${item} .e-tbar-btn-text`, this.ribbon.element);
+        if (item === 'protect' || item === 'protectworkbook') {
+            ele.parentElement.setAttribute('aria-label', text);
+        } else {
+            ele.parentElement.setAttribute('aria-label', ele.textContent);
+        }
         getUpdateUsingRaf((): void => {
-            const ele: HTMLElement = select(`#${this.parent.element.id}_${item} .e-tbar-btn-text`, this.ribbon.element);
-            if (ele) { ele.textContent = text; }
+            if (ele) {
+                ele.textContent = text;
+            }
         });
         if (item === 'headers' && this.findDialog) {
             this.findDialog.position.Y = this.parent.getActiveSheet().showHeaders ? 31 : 0;
@@ -2800,6 +2752,7 @@ export class Ribbon {
             });
         }
         this.parent.trigger('fileMenuBeforeOpen', args);
+        args.element.setAttribute('aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('File'));
     }
     private enableRibbonTabs(args: { tabs: string[], enable: boolean }): void {
         this.ribbon.enableTabs(args.tabs, args.enable);
@@ -2896,7 +2849,8 @@ export class Ribbon {
         }
     }
     private updateMergeItem(e: MouseEvent & TouchEvent): void {
-        if (e.type === 'mousemove' || e.type === 'pointermove' || (e.shiftKey && e.type === 'mousedown')) {
+        if (e.type === 'mousemove' || e.type === 'pointermove' || e.type === 'touchmove' ||
+         (e.shiftKey && (e.type === 'mousedown' || e.type === 'touchend'))) {
             const indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
             if ((indexes[1] !== indexes[3] || indexes[0] !== indexes[2]) && !this.parent.getActiveSheet().isProtected &&
                 this.parent.allowMerge) {
@@ -2942,6 +2896,7 @@ export class Ribbon {
         this.parent.on(insertDesignChart, this.insertDesignChart, this);
         this.parent.on(removeDesignChart, this.removeDesignChart, this);
         this.parent.on(ribbonFind, this.findToolDlg, this);
+        this.parent.on(unMerge, this.unMerge, this);
     }
     public destroy(): void {
         const parentElem: HTMLElement = this.parent.element;
@@ -2967,7 +2922,7 @@ export class Ribbon {
         this.destroyComponent(id + '_chart_menu', 'menu'); this.destroyComponent(id + '_chart_type_menu', 'menu');
         this.destroyComponent(id + '_chart-btn', 'dropdown-btn'); this.destroyComponent(id + '_chart-type-btn', 'dropdown-btn');
         this.destroyComponent(`${id}_cf_menu`, 'menu');
-        this.cFDdb.destroy(); this.cFDdb = null;
+        this.cfDdb.destroy(); this.cfDdb = null;
         this.detachPopupElement(id);
         this.parent.notify('destroyRibbonComponents', null);
         this.ribbon.destroy();
@@ -3026,6 +2981,7 @@ export class Ribbon {
             this.parent.off(insertDesignChart, this.insertDesignChart);
             this.parent.off(removeDesignChart, this.removeDesignChart);
             this.parent.on(ribbonFind, this.findToolDlg, this);
+            this.parent.off(unMerge, this.unMerge);
         }
     }
 }

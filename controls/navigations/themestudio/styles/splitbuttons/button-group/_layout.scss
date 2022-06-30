@@ -12,7 +12,7 @@
     input:focus+label.e-btn,
     .e-btn:focus,
     .e-btn:hover {
-      @if $skin-name != 'tailwind' and $skin-name != 'tailwind-dark' {
+      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {
         z-index: 2;
       }
     }

@@ -30,6 +30,7 @@ describe('Toolbar functionalities', () => {
     let actionBegin: (e?: Object) => void;
     let actionComplete: (e?: Object) => void;
     let keyup: any = getEventObject('KeyboardEvent', 'keyup');
+    let preventDefault: Function = new Function();
     keyup.keyCode = 13;
 
     beforeAll((done: Function) => {
@@ -104,6 +105,15 @@ describe('Toolbar functionalities', () => {
         gridObj.dataBind();
         expect(gridObj.toolbarModule.getToolbar().querySelectorAll('.e-toolbar-item').length).toBe(11);
         //expect(gridObj.toolbarModule.toolbar.items[9].align).toBe('left');
+    });
+    it('Check keyPressHandler by Tab and Shift Tab Action', () => {
+        const focusableToolbarItems: NodeListOf<Element> = gridObj.toolbarModule.toolbar.element.querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+        let args: any = { action: 'tab', preventDefault: preventDefault, target: focusableToolbarItems[0].querySelector('.e-btn')};
+        (gridObj.toolbarModule as any).keyPressedHandler(args);
+        expect(focusableToolbarItems[1].querySelector('.e-btn').getAttribute('tabindex')).toBe('0');
+        args = { action: 'shiftTab', preventDefault: preventDefault, target: focusableToolbarItems[1].querySelector('.e-btn')};
+        (gridObj.toolbarModule as any).keyPressedHandler(args);
+        expect(focusableToolbarItems[0].querySelector('.e-btn').getAttribute('tabindex')).toBe('0');
     });
 
     it('check search', (done: Function) => {

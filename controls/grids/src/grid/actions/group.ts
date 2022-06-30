@@ -1,4 +1,4 @@
-import { MouseEventArgs, Draggable, Droppable, L10n, DropEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { MouseEventArgs, Draggable, Droppable, L10n, DropEventArgs, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { createElement, closest, remove, classList, addClass, removeClass, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
@@ -31,7 +31,12 @@ export class Group implements IAction {
     private sortRequired: boolean = true;
     /** @hidden */
     public groupSettings: GroupSettingsModel;
-    private element: HTMLElement;
+    /** @hidden */
+    public element: HTMLElement;
+    /** @hidden */
+    public groupSortFocus: boolean = false;
+    /** @hidden */
+    public groupCancelFocus: boolean = false;
     private colName: string;
     private column: Column;
     private isAppliedGroup: boolean = false;
@@ -294,6 +299,21 @@ export class Group implements IAction {
 
     private keyPressHandler(e: KeyboardEventArgs): void {
         const gObj: IGrid = this.parent;
+        if (e.target && parentsUntil(e.target as Element, 'e-groupheadercell') && (e.action === 'tab' || e.action === 'shiftTab')) {
+            const focusableGroupedItems: Element[] = this.getFocusableGroupedItems();
+            if ((e.action === 'tab' && e.target === focusableGroupedItems[focusableGroupedItems.length - 1])
+                || (e.action === 'shiftTab' && e.target === focusableGroupedItems[0])) {
+                return;
+            }
+            for (let i: number = 0; i < focusableGroupedItems.length; i++) {
+                if (e.target === focusableGroupedItems[i]) {
+                    e.preventDefault();
+                    const index: number = e.action === 'tab' ? i + 1 : i - 1;
+                    (focusableGroupedItems[index] as HTMLElement).focus();
+                    return;
+                }
+            }
+        }
         if (e.action !== 'ctrlSpace' && (!this.groupSettings.columns.length ||
             ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1)) {
             return;
@@ -325,7 +345,19 @@ export class Group implements IAction {
             this.collapseAll();
             break;
         case 'enter':
-            if (this.parent.isEdit || (closest(e.target as Element, '#' + this.parent.element.id + '_searchbar') !== null)) { return; }
+            if ((e.target as Element).classList.contains('e-groupsort')) {
+                this.groupSortFocus = true;
+                this.applySortFromTarget(e.target as Element);
+                break;
+            } else if ((e.target as Element).classList.contains('e-ungroupbutton')) {
+                this.groupCancelFocus = true;
+                this.unGroupFromTarget(e.target as Element);
+                break;
+            }
+            if (this.parent.isEdit || (closest(e.target as Element, '#' + this.parent.element.id + '_searchbar') !== null) ||
+                parentsUntil(e.target  as Element, 'e-pager')) {
+                return;
+            }
             // eslint-disable-next-line no-case-declarations
             const element: HTMLElement = this.focus.getFocusedElement();
             // eslint-disable-next-line no-case-declarations
@@ -348,8 +380,68 @@ export class Group implements IAction {
         }
     }
 
+    /**
+     * @returns {Element[]} - Return the focusable grouping items
+     * @hidden */
+    public getFocusableGroupedItems(): Element[] {
+        const focusableGroupedItems: Element[] = [];
+        if (this.groupSettings.columns.length) {
+            const focusableGroupedHeaderItems: NodeListOf<Element> = this.element.querySelectorAll('.e-groupheadercell');
+            for (let i: number = 0; i < focusableGroupedHeaderItems.length; i++) {
+                focusableGroupedItems.push(focusableGroupedHeaderItems[i].querySelector('.e-grouptext'));
+                focusableGroupedItems.push(focusableGroupedHeaderItems[i].querySelector('.e-groupsort'));
+                focusableGroupedItems.push(focusableGroupedHeaderItems[i].querySelector('.e-ungroupbutton'));
+            }
+        }
+        return focusableGroupedItems;
+    }
+
+    private wireEvent(): void {
+        EventHandler.add(this.element, 'focusin', this.onFocusIn, this);
+        EventHandler.add(this.element, 'focusout', this.onFocusOut, this);
+    }
+
+    private unWireEvent(): void {
+        EventHandler.remove(this.element, 'focusin', this.onFocusIn);
+        EventHandler.remove(this.element, 'focusout', this.onFocusOut);
+    }
+
+    private onFocusIn(e: FocusEvent): void {
+        if (this.parent.focusModule.currentInfo && this.parent.focusModule.currentInfo.element) {
+            removeClass([this.parent.focusModule.currentInfo.element, this.parent.focusModule.currentInfo.elementToFocus],
+                        ['e-focused', 'e-focus']);
+            this.parent.focusModule.currentInfo.element.tabIndex = -1;
+        }
+        this.addOrRemoveFocus(e);
+    }
+
+    private onFocusOut(e: FocusEvent): void {
+        this.addOrRemoveFocus(e);
+    }
+
+    private addOrRemoveFocus(e: FocusEvent): void {
+        if ((e.target as HTMLElement).classList.contains('e-groupdroparea') || (e.target as HTMLElement).classList.contains('e-grouptext')
+            || (e.target as HTMLElement).classList.contains('e-groupsort')
+            || (e.target as HTMLElement).classList.contains('e-ungroupbutton')) {
+            const target: Element = (e.target as HTMLElement).classList.contains('e-grouptext') ?
+                (e.target as Element).parentElement.parentElement : e.target as Element;
+            if (e.type === 'focusin') {
+                addClass([target as Element], ['e-focused', 'e-focus']);
+                (target as HTMLElement).tabIndex = 0;
+            } else {
+                removeClass([target as Element], ['e-focused', 'e-focus']);
+                (target as HTMLElement).tabIndex = -1;
+            }
+        }
+    }
 
     private clickHandler(e: MouseEventArgs): void {
+        if ((e.target as Element).classList.contains('e-groupsort')) {
+            this.groupSortFocus = true;
+        }
+        if ((e.target as Element).classList.contains('e-ungroupbutton')) {
+            this.groupCancelFocus = true;
+        }
         this.expandCollapseRows(e.target as Element);
         this.applySortFromTarget(e.target as Element);
         this.unGroupFromTarget(e.target as Element);
@@ -566,6 +658,7 @@ export class Group implements IAction {
         this.renderGroupDropArea();
         this.initDragAndDrop();
         this.refreshToggleBtn();
+        this.wireEvent();
     }
 
     private renderGroupDropArea(): void {
@@ -987,6 +1080,7 @@ export class Group implements IAction {
         if ((this.parent.isDestroyed || !this.parent.allowGrouping) && !(<any>this.parent).refreshing) {
             this.clearGrouping();
         }
+        this.unWireEvent();
         this.removeEventListener();
         this.refreshToggleBtn(true);
         if (this.element.parentNode) {

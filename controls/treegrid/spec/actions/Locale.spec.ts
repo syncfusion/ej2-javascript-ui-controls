@@ -52,7 +52,7 @@ describe('Localization', () => {
     });
   });
   
-    describe('EJ2-59730 - Dynamic Localization Update Testing', () => {
+      describe('EJ2-59730 - Dynamic Localization Update Testing', () => {
     let gridObj: TreeGrid;
     const localede = {
       'de-DE': {

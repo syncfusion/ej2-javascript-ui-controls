@@ -2,7 +2,7 @@ import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/inde
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange } from '../common/event';
 import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
-import { checkIsFormula, checkConditionalFormat } from '../../workbook/common/index';
+import { checkIsFormula } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
 
 /**
@@ -86,8 +86,7 @@ export class WorkbookEdit {
         return value;
     }
 
-    private updateCellValue(
-        address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string): void {
+    private updateCellValue(address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string): void {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
@@ -99,8 +98,11 @@ export class WorkbookEdit {
         }
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         let cell: CellModel = getCell(range[0], range[1], sheet, true);
+        let prevVal: string;
         if (!cell) {
             cell = sheet.rows[range[0]].cells[range[1]] = {};
+        } else {
+            prevVal = cell.value;
         }
         if (!isValueOnly) {
             let isFormula: boolean = checkIsFormula(value);
@@ -167,11 +169,6 @@ export class WorkbookEdit {
         this.parent.setUsedRange(range[0], range[1], sheet);
         if (this.parent.chartColl.length) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
-        }
-        if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
-            this.parent.notify(
-                checkConditionalFormat, { rowIdx: range[0], colIdx: range[1], cell: cell, isAction: true,
-                    preventIfSheetNotRendered: true });
         }
     }
 }

@@ -139,6 +139,7 @@ export class ListBox extends DropDownBase {
     private jsonData: { [key: string]: Object }[] | string[] | boolean[] | number[];
     private toolbarAction: string;
     private isDataSourceUpdate: boolean = false;
+    private dragValue: string;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -393,7 +394,8 @@ export class ListBox extends DropDownBase {
     }
 
     private initWrapper(): void {
-        const hiddenSelect: Element = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
+        const hiddenSelect: HTMLElement = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
+        hiddenSelect.style.visibility = 'hidden';
         this.list.classList.add('e-listbox-wrapper');
         if (this.itemTemplate) {
             this.list.classList.add('e-list-template');
@@ -691,13 +693,13 @@ export class ListBox extends DropDownBase {
     }
 
     private triggerDrag(args: DragEventArgs): void {
-        let scrollParent: HTMLElement; let boundRect: DOMRect; const scrollMoved: number = 36;
+        let scrollParent: HTMLElement; let boundRect: DOMRect; let scrollMoved: number = 36;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const event: any = (args as any).event; let wrapper: HTMLElement;
-        if (args.target && (args.target.classList.contains('e-listbox-wrapper') || args.target.classList.contains('e-list-item')
-        || args.target.classList.contains('e-filter-parent') || args.target.classList.contains('e-input-group'))) {
-            if (args.target.classList.contains('e-list-item') || args.target.classList.contains('e-filter-parent')
-            || args.target.classList.contains('e-input-group')) {
+        let event: any = (args as any).event; let wrapper: HTMLElement;
+        if (args.target && (args.target.classList.contains("e-listbox-wrapper") || args.target.classList.contains("e-list-item")
+        || args.target.classList.contains("e-filter-parent") || args.target.classList.contains("e-input-group"))) {
+            if (args.target.classList.contains("e-list-item") || args.target.classList.contains("e-filter-parent")
+            || args.target.classList.contains("e-input-group")) {
                 wrapper = args.target.closest('.e-listbox-wrapper') as HTMLElement;
             } else {
                 wrapper = args.target as HTMLElement;
@@ -729,11 +731,11 @@ export class ListBox extends DropDownBase {
     }
 
     private beforeDragEnd(args: DropEventArgs): void {
-        const dragValue: string = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
-        if ((this.value as string[]).indexOf(dragValue) > -1) {
+        this.dragValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
+        if ((this.value as string[]).indexOf(this.dragValue) > -1) {
             args.items = this.getDataByValues(this.value);
         } else {
-            args.items = this.getDataByValues([dragValue]);
+            args.items = this.getDataByValues([this.dragValue]);
         }
         this.trigger('beforeDrop', args);
     }
@@ -745,8 +747,7 @@ export class ListBox extends DropDownBase {
         const listObj: ListBox = this.getComponent(args.droppedElement);
         const getArgs: Object = this.getDragArgs({ target: args.droppedElement } as DragEventArgs , true);
         const sourceArgs: Object = { previousData: this.dataSource }; const destArgs: Object = { previousData: listObj.dataSource };
-        let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource },
-            previousIndex: args.previousIndex, currentIndex: args.currentIndex });
+        let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource }, previousIndex: args.previousIndex, currentIndex: args.currentIndex });
         if (listObj !== this) {
             const sourceArgs1: Object = extend( sourceArgs, {currentData: this.listData});
             dragArgs = extend(dragArgs, { source: sourceArgs1, destination: destArgs} );
@@ -782,7 +783,7 @@ export class ListBox extends DropDownBase {
                         sortedData.splice(toSortIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
                         liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0] as HTMLElement);
                         ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
-                    }
+                    } 
                 });
             }
             (this.listData as dataType[]) = listData; (this.jsonData as dataType[]) = jsonData;
@@ -823,13 +824,13 @@ export class ListBox extends DropDownBase {
                 currIdx++;
             });
             if (this.fields.groupBy) {
-                const sourceElem: HTMLElement = this.renderItems(this.listData as obj[], this.fields);
+                let sourceElem: HTMLElement = this.renderItems(this.listData as obj[], this.fields);
                 this.updateListItems(sourceElem, this.ulElement); this.setSelection();
             }
             if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
                 !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy || listObj.itemTemplate || this.itemTemplate) {
                 const sortable: { placeHolderElement: Element } = getComponent(ul as HTMLElement, 'sortable');
-                const sourceElem: HTMLElement = listObj.renderItems(listData as obj[], listObj.fields);
+                let sourceElem: HTMLElement = listObj.renderItems(listData as obj[], listObj.fields);
                 listObj.updateListItems(sourceElem, ul as HTMLElement); this.setSelection();
                 if (sortable.placeHolderElement) {
                     ul.appendChild(sortable.placeHolderElement);
@@ -856,10 +857,10 @@ export class ListBox extends DropDownBase {
 
     private updateListItems(sourceElem: HTMLElement, destElem: HTMLElement): void {
         const i: number = 0;
-        destElem.innerHTML = '';
-        while (i < sourceElem.childNodes.length) {
-            destElem.appendChild(sourceElem.childNodes[i]);
-        }
+		destElem.innerHTML = "";
+		while (i < sourceElem.childNodes.length) {
+			destElem.appendChild(sourceElem.childNodes[i]);
+		}
     }
 
     private removeSelected(listObj: ListBox, elems: Element[]): void {
@@ -924,7 +925,7 @@ export class ListBox extends DropDownBase {
     public enableItems(items: string[], enable: boolean = true, isValue?: boolean): void {
         let li: HTMLElement;
         items.forEach((item: string) => {
-            const text: string = item;
+            let text: string = item;
             li = this.findListElement(this.list, 'li', 'data-value', isValue ? text : this.getValueByText(text));
             if (!li) { return; }
             if (enable) {
@@ -1040,6 +1041,7 @@ export class ListBox extends DropDownBase {
         }
         for (let i: number = 0; i < liCollections.length; i++) {
             this.ulElement.removeChild(liCollections[i]);
+            
         }
         if (this.listData.length === 0) {
             this.l10nUpdate();
@@ -1613,7 +1615,7 @@ export class ListBox extends DropDownBase {
             }
             const rLiCollection: HTMLElement[] = [];
             dataLiIdx.sort((n1: number, n2: number) => n1 - n2).reverse().forEach((i: number) => {
-                rLiCollection.push(fliCollections.splice(i, 1)[0]);
+            rLiCollection.push(fliCollections.splice(i, 1)[0]);
             });
             fListBox.liCollections = fliCollections;
             if (index) {
@@ -1641,7 +1643,7 @@ export class ListBox extends DropDownBase {
             });
             if (isRefresh) {
                 if (fListBox.fields.groupBy) {
-                    const sourceElem: HTMLElement = fListBox.renderItems(listData as obj[], fListBox.fields);
+                    let sourceElem: HTMLElement = fListBox.renderItems(listData as obj[], fListBox.fields);
                     fListBox.updateListItems(sourceElem, fListBox.ulElement);
                 } else {
                     elems.forEach((ele: Element) => { detach(ele); });
@@ -1670,7 +1672,7 @@ export class ListBox extends DropDownBase {
             tListBox.jsonData = tJsonData as {[key: string]: object}[];
             tListBox.sortedData = tSortData as {[key: string]: object}[];
             if (isRefresh) {
-                const sourceElem: HTMLElement = tListBox.renderItems(tListData as obj[], tListBox.fields);
+                let sourceElem: HTMLElement = tListBox.renderItems(tListData as obj[], tListBox.fields);
                 tListBox.updateListItems(sourceElem, tListBox.ulElement);
                 tListBox.setSelection();
                 fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
@@ -1761,7 +1763,7 @@ export class ListBox extends DropDownBase {
         tListBox.jsonData = jsonData;
         fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
         if (isRefresh) {
-            const sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
+            let sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
             tListBox.updateListItems(sourceElem, tListBox.ulElement);
             this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         } else {
@@ -1815,6 +1817,15 @@ export class ListBox extends DropDownBase {
     }
 
     private getGrabbedItems(): Element[] {
+        for (let i: number = 0; i < this.value.length; i++) {
+            if (this.value[i] === this.dragValue) {
+                const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
+                for (let i: number = 0; i < liColl.length; i++) {
+                    liColl[i].classList.add('e-grabbed');
+                }
+                break;
+            }
+       }
         const elems: Element[] = Array.prototype.slice.call(this.element.querySelectorAll('.e-grabbed'));
         return elems;
     }
@@ -1868,7 +1879,7 @@ export class ListBox extends DropDownBase {
                         this.moveData(listObj, this, true);
                     }
                 }
-            } else if (e.keyCode !== 37 && e.keyCode !== 39 && e.code !== 'KeyA') {
+            } else if (e.keyCode !== 37 && e.keyCode !== 39 && e.code !== "KeyA") {
                 this.upDownKeyHandler(e);
             }
         } else if (this.allowFiltering) {
@@ -1910,10 +1921,10 @@ export class ListBox extends DropDownBase {
                 this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
             }
             if (this.selectionSettings.showCheckbox && e.ctrlKey && e.shiftKey && (e.keyCode === 36 || e.keyCode === 35)) {
-                const selectedidx : number = Array.prototype.indexOf.call(ul.children, fli);
-                const sidx : number = e.code === 'Home' ? 0 : selectedidx;
-                const eidx : number = e.code === 'Home' ? selectedidx : ul.children.length - 1;
-                for (let i: number = sidx; i <= eidx; i++) {
+                let selectedidx : number = Array.prototype.indexOf.call(ul.children, fli);
+                let sidx : number = e.code === "Home" ? 0 : selectedidx;
+                let eidx : number = e.code === "Home" ? selectedidx: ul.children.length -1;
+                for (let i = sidx; i <= eidx; i++) { 
                     const item: Element = ul.children[i];
                     this.notify('updatelist', { li: item, e: {
                         target: this.ulElement.getElementsByClassName('e-focused')[0],

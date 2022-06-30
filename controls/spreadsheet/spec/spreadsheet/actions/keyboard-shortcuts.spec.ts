@@ -227,4 +227,75 @@ describe('Spreadsheet formula bar module ->', () => {
 
     });
 
+    describe('CR-Issues->', () => {
+        describe('EJ2-54235->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ index: 2, cells: [{ index: 2, value: 'Test' }] }] }]
+                },done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to prevent paste multiple times after cut action.->', (done: Function) => {
+                helper.invoke('selectRange', ['C3']);
+                helper.triggerKeyNativeEvent(88, true);
+                setTimeout(() => {
+                    helper.triggerKeyEvent('cut', 88, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['C5']);
+                        helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });            
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].rows[4].cells[2].value.toString()).toEqual('Test');
+                            helper.invoke('selectRange', ['D5']);
+                            helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
+                            setTimeout(() => {
+                                expect(helper.getInstance().sheets[0].rows[4].cells[3]).toBeNull;
+                                done();
+                            });
+                        }); 
+                    });
+                });
+            });
+        });
+        describe('EJ2-54313->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'H3:H7' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Redo action working incorrectly when cut and paste the cell values->', (done: Function) => {
+                helper.triggerKeyNativeEvent(88, true);
+                setTimeout(() => {
+                    helper.triggerKeyEvent('cut', 88, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['J3']);
+                        helper.triggerKeyEvent('paste', 86, helper.getElementFromSpreadsheet('.e-clipboard'), true, false, null, { clipboardData: new DataTransfer() });            
+                        expect(helper.getInstance().sheets[0].rows[2].cells[9].value.toString()).toEqual('50');
+                        expect(helper.getInstance().sheets[0].rows[6].cells[9].value.toString()).toEqual('66');
+                        setTimeout(() => {
+                            helper.triggerKeyNativeEvent(90, true);   
+                            expect(helper.getInstance().sheets[0].rows[2].cells[9]).toBeNull;
+                            expect(helper.getInstance().sheets[0].rows[6].cells[9]).toBeNull;      
+                            expect(helper.getInstance().sheets[0].rows[2].cells[7].value.toString()).toEqual('50');
+                            expect(helper.getInstance().sheets[0].rows[6].cells[7].value.toString()).toEqual('66');
+                            setTimeout(() => {
+                                helper.triggerKeyNativeEvent(89, true);  
+                                setTimeout(() => {
+                                    expect(helper.getInstance().sheets[0].rows[2].cells[7]).toBeNull;
+                                    expect(helper.getInstance().sheets[0].rows[6].cells[7]).toBeNull;            
+                                    expect(helper.getInstance().sheets[0].rows[2].cells[9].value.toString()).toEqual('50');
+                                    expect(helper.getInstance().sheets[0].rows[6].cells[9].value.toString()).toEqual('66');
+                                    done();
+                                });
+                            });
+                        });
+                    });
+                });
+            })
+        });
+    });
 });

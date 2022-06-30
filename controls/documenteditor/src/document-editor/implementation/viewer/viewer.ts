@@ -20,7 +20,7 @@ import {
 } from './page';
 import {
     HelperMethods, Point, TextPositionInfo, ImagePointInfo,
-    PageInfo, CanvasInfo, ShapeInfo, ElementInfo
+    PageInfo, CanvasInfo, ShapeInfo, ElementInfo, BorderRenderInfo
 } from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -399,6 +399,11 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public triggerElementsOnLoading: boolean = false;
+
+    /**
+     * @private
+     */
     public triggerSpellCheck: boolean = false;
 
     /**
@@ -752,6 +757,9 @@ export class DocumentHelper {
      public get isCommentOnlyMode(): boolean {
         return this.isDocumentProtected && this.protectionType === 'CommentsOnly';
     }
+    public get isTrackedOnlyMode() : boolean{
+        return this.isDocumentProtected && this.protectionType === 'RevisionsOnly';
+    }
     //#endregion
 
     public constructor(owner: DocumentEditor) {
@@ -996,7 +1004,7 @@ export class DocumentHelper {
             this.showRevision = false;
         }
         if (show) {
-            this.owner.trackChangesPane.enableDisableButton(!this.owner.isReadOnly);
+            this.owner.trackChangesPane.enableDisableButton(!this.owner.isReadOnly && !this.isDocumentProtected);
         }
     }
     /**
@@ -1353,6 +1361,7 @@ export class DocumentHelper {
      */
     public onKeyPressInternal = (event: KeyboardEvent): void => {
         const key: number = event.which || event.keyCode;
+        this.triggerElementsOnLoading = false;
         let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
         const alt: boolean = event.altKey ? event.altKey : ((key === 18) ? true : false); // alt key detection
         if (Browser.isIE && alt && ctrl) {
@@ -1985,8 +1994,8 @@ export class DocumentHelper {
                                 }
                             }
                         }
-                        startPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                        endPosition.setPositionParagraph((endnotes.bodyWidgets[i].childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
                         this.selection.selectRange(startPosition, endPosition);
                     }
                 } else {
@@ -3102,8 +3111,8 @@ export class DocumentHelper {
         let scrollToLastPage: boolean = false;
         for (let j: number = 0; j < this.pages.length; j++) {
             let page: Page = this.pages[j];
-            if (page.bodyWidgets.length === 0 || (page.bodyWidgets[0].childWidgets.length === 0
-                && isNullOrUndefined(page.endnoteWidget))) {
+            if (page.bodyWidgets.length === 0 || page.bodyWidgets[0].childWidgets.length === 0) {
+
                 if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
@@ -3525,8 +3534,72 @@ export class DocumentHelper {
             div.style.cursor = 'all-scroll';
         }
     }
+    /**
+     * @private
+     */
+    public updateDialogTabHeight(dialogElement: HTMLElement, targetElement: HTMLElement): number {
+        const header: HTMLElement = dialogElement.getElementsByClassName('e-dlg-header-content')[0] as HTMLElement;
+        const contentElement: HTMLElement = dialogElement.getElementsByClassName('e-dlg-content')[0] as HTMLElement;
+        const footer: HTMLElement = dialogElement.getElementsByClassName('e-footer-content')[0] as HTMLElement;
+        const contentStyle: CSSStyleDeclaration = getComputedStyle(contentElement);
+        const dialogStyle: CSSStyleDeclaration = getComputedStyle(dialogElement);
+        const paddingTop: number = parseInt(contentStyle.paddingTop, 10);
+        const paddingBottom: number = parseInt(contentStyle.paddingBottom, 10);
+        const paddingVertical: number = (isNaN(paddingTop) ? 0 : paddingTop) + (isNaN(paddingBottom) ? 0 : paddingBottom);
+        const borderTop: number = parseInt(dialogStyle.borderTop, 10);
+        const borderBottom: number = parseInt(dialogStyle.borderBottom, 10);
+        const borderVertical: number = (isNaN(borderTop) ? 0 : borderTop) + (isNaN(borderBottom) ? 0 : borderBottom);
+        const contentHeight: number = dialogElement.offsetHeight - (header.offsetHeight + footer.offsetHeight + paddingVertical + borderVertical);
+        targetElement.style.height = contentHeight + 'px';
+        const paddingLeft: number = parseInt(contentStyle.paddingLeft, 10);
+        const paddingRight: number = parseInt(contentStyle.paddingRight, 10);
+        const paddingHorizontal: number = (isNaN(paddingLeft) ? 0 : paddingLeft) + (isNaN(paddingRight) ? 0 : paddingRight);
+        const borderLeft: number = parseInt(dialogStyle.borderLeft, 10);
+        const borderRight: number = parseInt(dialogStyle.borderRight, 10);
+        const borderHorizontal: number = (isNaN(borderLeft) ? 0 : borderLeft) + (isNaN(borderRight) ? 0 : borderRight);
+        const contentWidth: number = dialogElement.offsetWidth - (paddingHorizontal + borderHorizontal);
+        return contentWidth;
+    }
+    /**
+     * 
+     * @private
+     */
+    public canRenderBorder(paragraph: ParagraphWidget): BorderRenderInfo {
+        let skipTopBorder: boolean = false;
+        let skipBottomBorder: boolean = false;
+        let isSamePreviousBorder: boolean;
+        let isSameNextBorder: boolean;
+        let isSameTopBorder: boolean;
+        let isSameBottomBorder: boolean;
+        let isSameLeftBorder: boolean;
+        let isSameRightBorder: boolean;
+        let previousBlock: BlockWidget = paragraph.previousRenderedWidget as BlockWidget;
+        let nextBlock: BlockWidget = paragraph.nextRenderedWidget as BlockWidget;
+        if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraph.x === previousBlock.x) {
+            isSamePreviousBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(previousBlock.paragraphFormat.borders.bottom);
+            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(previousBlock.paragraphFormat.borders.left, true);
+            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(previousBlock.paragraphFormat.borders.right, true);
+            if (isSamePreviousBorder && isSameLeftBorder && isSameRightBorder
+                && previousBlock.paragraphFormat.borders.horizontal.lineStyle === 'None') {
+                skipTopBorder = true;
+            }
+        }
+        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && paragraph.x === nextBlock.x) {
+            isSameNextBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(nextBlock.paragraphFormat.borders.top);
+            isSameTopBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(nextBlock.paragraphFormat.borders.top);
+            isSameBottomBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(nextBlock.paragraphFormat.borders.bottom);
+            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(nextBlock.paragraphFormat.borders.left, true);
+            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(nextBlock.paragraphFormat.borders.right, true);
+            if (isSameNextBorder && isSameBottomBorder && isSameTopBorder && isSameLeftBorder && isSameRightBorder) {
+                skipBottomBorder = true;
+            }
+        }
+        return {
+            'skipTopBorder': skipTopBorder,
+            'skipBottomBorder': skipBottomBorder
+        };
+    }
 }
-
 /**
  * @private
  */
@@ -3615,7 +3688,6 @@ export abstract class LayoutViewer {
                 }
             }
             let bottom: number = 0.667 + bottomMargin;
-            bottomMargin -= 1.5;
             if (!isNullOrUndefined(page.footerWidget)) {
                 isEmptyWidget = page.footerWidget.isEmpty;
                 let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
@@ -3713,16 +3785,6 @@ export abstract class LayoutViewer {
         this.clientArea.y = widget.y;
         this.clientActiveArea.x = widget.x;
         this.clientActiveArea.y = widget.y;
-    }
-    /**
-     * @private
-     */
-    public updateClientAreaForEndNote(page: Page): void {
-        let body: BodyWidget = page.bodyWidgets[0];
-        if (body.childWidgets.length > 0) {
-            let lastBlock: BlockWidget = body.childWidgets[body.childWidgets.length - 1] as BlockWidget;
-            this.cutFromTop(lastBlock.y + lastBlock.height);
-        }
     }
     /**
      * @private
@@ -3897,9 +3959,11 @@ export abstract class LayoutViewer {
                 this.updateHeaderFooterPageInstance(updatePage);
             }
         }
+        if(!isNullOrUndefined(updatePage)){
+            this.updateHeaderFooterPageInstance(updatePage);
+        }
         return point;
     }
-
 
     private updateHeaderFooterPageInstance(page:Page):void{
         if (!isNullOrUndefined(page.headerWidget)) {
@@ -3909,7 +3973,6 @@ export abstract class LayoutViewer {
             page.footerWidget.page = page;
         }
     }
-
     public getPageHeightAndWidth(height: number, width: number, viewerWidth: number, viewerHeight: number): PageInfo {
         height = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
@@ -4368,7 +4431,7 @@ export class PageLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.triggerElementsOnLoading || this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
             this.documentHelper.cachedPages.push(page.index);
             let content: string = this.owner.spellChecker.getPageContent(page);
             if (content.trim().length > 0) {
@@ -4382,6 +4445,7 @@ export class PageLayoutViewer extends LayoutViewer {
                     this.documentHelper.triggerSpellCheck = true;
                     this.renderPage(page, x, y, width, height);
                     this.documentHelper.triggerSpellCheck = false;
+                    this.documentHelper.triggerElementsOnLoading = false;
                 });
             } else {
                 this.renderPage(page, x, y, width, height);
@@ -4393,7 +4457,7 @@ export class PageLayoutViewer extends LayoutViewer {
     public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
     }
-
+ 
 }
 
 
@@ -4530,7 +4594,7 @@ export class WebLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.owner.isSpellCheck && this.owner.spellChecker.enableOptimizedSpellCheck && (this.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && this.documentHelper.cachedPages.indexOf(page.index) < 0) {
             this.owner.documentHelper.cachedPages.push(page.index);
             let contentlen: string = this.documentHelper.owner.spellChecker.getPageContent(page);
             if (contentlen.trim().length > 0) {
@@ -4544,6 +4608,7 @@ export class WebLayoutViewer extends LayoutViewer {
                     this.owner.documentHelper.triggerSpellCheck = true;
                     this.renderPage(page, x, y, width, height);
                     this.owner.documentHelper.triggerSpellCheck = false;
+                    this.owner.documentHelper.triggerElementsOnLoading = false;
                 });
             } else {
                 this.renderPage(page, x, y, width, height);
@@ -4561,5 +4626,5 @@ export class WebLayoutViewer extends LayoutViewer {
     public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
     }
-    
+
 }

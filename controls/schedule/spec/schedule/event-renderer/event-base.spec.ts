@@ -596,6 +596,64 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('checking Recurrence appointments', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Test',
+            StartTime: new Date(2022, 5, 14, 19, 0),
+            EndTime: new Date(2022, 5, 18, 20, 0),
+            RecurrenceRule: 'FREQ=WEEKLY;INTERVAL=1;'
+        }];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2022, 5, 21)
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('CR issue - EJ2-60887 - To check appointment rendering in week view', () => {
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toBe(1);
+            expect(app[0].querySelectorAll('.e-right-icon').length).toBe(0);
+            expect(app[0].querySelectorAll('.e-left-icon').length).toBe(0);
+            expect(app[0].querySelectorAll('.e-recurrence-icon').length).toBe(1);
+            expect(app[0].classList).toContain('e-all-day-appointment');
+            const occurrence: Record<string, any>[] = schObj.getEvents(null, null, true);
+            expect(occurrence.length).toBe(7);
+        });
+        it('CR issue - EJ2-60887 - To check appointment rendering in Day view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(app.length).toBe(1);
+                expect(app[0].querySelectorAll('.e-right-icon').length).toBe(1);
+                expect(app[0].querySelectorAll('.e-left-icon').length).toBe(0);
+                expect(app[0].querySelectorAll('.e-recurrence-icon').length).toBe(1);
+                const occurrence: Record<string, any>[] = schObj.getEvents(null, null, true);
+                expect(occurrence.length).toBe(6);
+                done();
+            };
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+        it('CR issue - EJ2-60887 - To check for occurrence rendering in Day view on date navigate', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(app.length).toBe(1);
+                expect(app[0].querySelectorAll('.e-right-icon').length).toBe(1);
+                expect(app[0].querySelectorAll('.e-left-icon').length).toBe(1);
+                expect(app[0].querySelectorAll('.e-recurrence-icon').length).toBe(1);
+                const occurrence: Record<string, any>[] = schObj.getEvents(null, null, true);
+                expect(occurrence.length).toBe(6);
+                done();
+            };
+            schObj.selectedDate = new Date(2022, 5, 22);
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

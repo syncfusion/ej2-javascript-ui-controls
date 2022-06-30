@@ -249,7 +249,7 @@
       vertical-align: middle;
     }
 
-    &.e-right {
+    &.e-checkbox-right {
       .e-checkbox-wrapper {
         position: absolute;
         right: 0;
@@ -371,6 +371,14 @@
         display: list-item;
         list-style-type: none;
         margin-bottom: 10px;
+      }
+    }
+
+    &.e-checkbox-right {
+      .e-checkbox-wrapper {
+        position: absolute;
+        right: 0;
+        top: 30%;
       }
     }
   }

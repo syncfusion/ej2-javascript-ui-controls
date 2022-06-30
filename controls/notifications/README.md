@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-notifications/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-notifications)
+
 # ej2-notifications
 
 ![ej2-notifications](https://ej2.syncfusion.com/products/images/notifications/readMe.gif)

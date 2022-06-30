@@ -581,19 +581,22 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             const tabIdx: number = this.getTabIndex(tab, -1);
             if (tabIdx < 0) { return; }
             for (let i: number = 0; i < items.length; i++) {
-                if (typeof(items[i]) === 'string') {
+                if (typeof items[i] === 'string') {
                     for (let j: number = 0; j < this.items[tabIdx].content.length; j++) {
                         if (this.items[tabIdx].content[j].id === items[i]) { items[i] = j; break; }
                     }
                 }
-                if (typeof(items[i]) === 'string') {
+                if (typeof items[i] === 'string') {
                     if (items.length - 1 > i) { continue; } else { return; }
                 }
                 this.items[tabIdx].content[items[i]].disabled = !enable;
-                if (tabIdx !== this.selectedTab) { this.setProperties({ 'items': this.items }, true); }
+                this.setProperties({ 'items': this.items }, true);
+                if (tabIdx === this.selectedTab) {
+                    this.toolbarObj.enableItems(<number>items[i], enable);
+                }
             }
-            if (tabIdx === this.selectedTab) { this.updateToolbar(tabIdx); }
-        } else {
+        }
+        else {
             this.toolbarObj.disable(!enable);
         }
     }

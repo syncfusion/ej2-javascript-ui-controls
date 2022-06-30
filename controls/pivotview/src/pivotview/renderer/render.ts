@@ -403,6 +403,9 @@ export class Render {
     }
     /* eslint-disable */
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        if (args.element && this.parent.cssClass) {
+            addClass([args.element.parentElement], this.parent.cssClass);
+        }
         for (let item of args.items) {
             let cellTarget: Element = this.parent.lastCellClicked;
             let elem: Element = null;
@@ -1947,8 +1950,8 @@ export class Render {
             if (isNullOrUndefined(pivotValue.value) || isNullOrUndefined(pivotValue.formattedText) || pivotValue.formattedText === "") {
                 args.value = this.parent.exportType === 'Excel' ? null : '';
             } else {
-                let aggMatrix: IMatrix2D = this.parent.engineModule.aggregatedValueMatrix;
-                if (aggMatrix[pivotValue.rowIndex] && aggMatrix[pivotValue.rowIndex][pivotValue.colIndex]) {
+                let aggMatrix: IMatrix2D = this.parent.dataType === 'pivot' && this.parent.engineModule ? this.parent.engineModule.aggregatedValueMatrix : undefined;
+                if (aggMatrix && aggMatrix[pivotValue.rowIndex] && aggMatrix[pivotValue.rowIndex][pivotValue.colIndex]) {
                     args.value = aggMatrix[pivotValue.rowIndex][pivotValue.colIndex];
                 } else {
                     args.value = !isNullOrUndefined(pivotValue.value) ? (pivotValue.formattedText === '#DIV/0!' ? pivotValue.formattedText : pivotValue.value) : pivotValue.formattedText;

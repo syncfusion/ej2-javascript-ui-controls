@@ -4,12 +4,12 @@ import { Spreadsheet } from '../base/index';
 import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
-import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, setCell, ChartModel } from '../../workbook/index';
+import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth, editAlert } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, DialogBeforeOpenEventArgs, insertImage } from '../common/index';
 import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt } from '../common/index';
-import { getMaxHgt, setRowEleHeight, locale, deleteImage, getRowIdxFromClientY, getColIdxFromClientX, focus, cut } from '../common/index';
+import { getMaxHgt, setRowEleHeight, locale, deleteImage, getRowIdxFromClientY, getColIdxFromClientX, cut } from '../common/index';
 import { OpenOptions, colWidthChanged } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
@@ -17,7 +17,7 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
 import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
-import { updateCell, ModelType, beginAction, isFilterHidden } from '../../workbook/index';
+import { updateCell, ModelType, beginAction, isFilterHidden, applyCF, CFArgs, ApplyCFArgs } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -88,7 +88,6 @@ export class Clipboard {
             this.copy(<ClipboardInfo>{ invokeCopy: true });
             break;
         }
-        focus(this.parent.element);
     }
 
     private tabSwitchHandler(args: { activeTab: number }): void {
@@ -235,7 +234,8 @@ export class Clipboard {
             }
             let cell: CellModel;
             let isExtend: boolean; let prevCell: CellModel; const mergeCollection: MergeArgs[] = [];
-            const prevSheet: SheetModel = getSheet(this.parent as Workbook, isExternal ? cSIdx : copiedIdx);
+            const pSheetIdx: number = isExternal ? cSIdx : copiedIdx;
+            const prevSheet: SheetModel = getSheet(this.parent as Workbook, pSheetIdx);
             const notRemoveMerge: boolean = isSingleCell(cIdx) && this.isRangeMerged(selIdx, curSheet);
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0]; cIdx = isExternal
@@ -294,8 +294,11 @@ export class Clipboard {
                 const isColSelected: boolean = (selIdx[0] === 0 && selIdx[2] === curSheet.rowCount - 1);
                 let isFullRowMerge: boolean = false;
                 let isFullColMerge: boolean = false; let hiddenCount: number = 0;
-                if (!isRepeative) { this.setCF(cIdx, rfshRange, prevSheet, curSheet); }
-                let cFormats: ConditionalFormatModel[]; let cancel: boolean;
+                const cf: ConditionalFormatModel[] = [];
+                if (!isRepeative && pasteType !== 'Values') {
+                    this.setCF(cIdx, rfshRange, prevSheet, curSheet, cf);
+                }
+                let cfRule: ConditionalFormatModel[]; let cancel: boolean;
                 let isUniqueCell: boolean = false;
                 let uniqueCellColl: number[][] = [];
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
@@ -342,7 +345,7 @@ export class Clipboard {
                                 }
                             }
                         }
-                        if (cell && args && args.type || pasteType) {
+                        if (cell && pasteType) {
                             switch (pasteType) {
                             case 'Formats':
                                 cell = { format: cell.format, style: cell.style };
@@ -355,7 +358,7 @@ export class Clipboard {
                                 }
                                 break;
                             }
-                            isExtend = ['Formats', 'Values'].indexOf(args.type || pasteType) > -1;
+                            isExtend = ['Formats', 'Values'].indexOf(pasteType) > -1;
                         }
                         if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
                             || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
@@ -370,9 +373,11 @@ export class Clipboard {
                                     continue;
                                 }
                                 for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
-                                    if (i === cIdx[0] && j === cIdx[1] && (cFormats === undefined || cFormats.length)) {
-                                        cFormats = this.setCF(
-                                            cIdx, [x, y, x + (cIdx[2] - cIdx[0]), y + (cIdx[3] - cIdx[1])], prevSheet, curSheet, cFormats);
+                                    if (i === cIdx[0] && j === cIdx[1] && (cfRule === undefined || cfRule.length) &&
+                                        pasteType !== 'Values') {
+                                        cfRule = this.setCF(
+                                            cIdx, [x, y, x + (cIdx[2] - cIdx[0]), y + (cIdx[3] - cIdx[1])], prevSheet, curSheet, cf,
+                                            cfRule);
                                     }
                                     prevCell = getCell(x + l, y + k, curSheet, false, true);
                                     if (!isExternal && (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined)) {
@@ -409,8 +414,7 @@ export class Clipboard {
                                         cell.value = null;
                                     }
                                     cancel = this.setCell(
-                                        x + l, colInd, curSheet, cell, isExtend, colInd === selIdx[3], !!isExternal,
-                                        !!(cFormats && cFormats.length), isUniqueCell);
+                                        x + l, colInd, curSheet, cell, isExtend, colInd === selIdx[3], !!isExternal, isUniqueCell);
                                     if (cancel) {
                                         continue;
                                     }
@@ -472,13 +476,11 @@ export class Clipboard {
                 if ((isExternal || isInRange) && this.copiedInfo) {
                     this.clearCopiedInfo();
                 }
-                if (isExternal || (args && args.isAction)) {
-                    focus(this.parent.element);
-                }
+                let clearCFArgs: CFArgs;
                 if (isCut) {
-                    if (cFormats && cFormats.length && pasteType !== 'Values') {
-                        this.parent.notify(
-                            clearCFRule, { range: getRangeAddress(cIdx), sheetIdx: isExternal ? cSIdx : copiedIdx });
+                    if (cfRule && cfRule.length && pasteType !== 'Values') {
+                        clearCFArgs = { range: cIdx, sheetIdx: pSheetIdx, isClear: true };
+                        this.parent.notify(clearCFRule, clearCFArgs);
                     }
                     //this.updateFilter(copyInfo, rfshRange);
                     setMaxHgt(
@@ -486,6 +488,11 @@ export class Clipboard {
                             cIdx[0], null, this.parent.frozenColCount(prevSheet)) || { offsetHeight: 20 }).offsetHeight);
                     const hgt: number = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
+                }
+                if (cf.length) {
+                    this.parent.notify(
+                        applyCF, <ApplyCFArgs>{ cfModel: cf, sheetIdx: cSIdx, otherSheets: cSIdx !== this.parent.activeSheetIndex,
+                            isAction: true });
                 }
                 const copySheet: SheetModel = getSheet(this.parent as Workbook, copiedIdx);
                 if (!isExternal && cIdx[0] === cIdx[2] && (cIdx[3] - cIdx[1]) === copySheet.colCount - 1) {
@@ -508,6 +515,12 @@ export class Clipboard {
                         type: pasteType || 'All'
                     };
                     if (!!hiddenCount) { eventArgs['skipFilterCheck'] = true; }
+                    if (clearCFArgs && clearCFArgs.cfClearActionArgs) {
+                        eventArgs['cfClearActionArgs'] = clearCFArgs.cfClearActionArgs;
+                    }
+                    if (cf.length) {
+                        eventArgs['cfActionArgs'] = { cfModel: cf, sheetIdx: cSIdx };
+                    }
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
             }
@@ -517,15 +530,21 @@ export class Clipboard {
     }
 
     private setCF(
-        cRange: number[], pRange: number[], cSheet: SheetModel, pSheet: SheetModel,
+        cRange: number[], pRange: number[], cSheet: SheetModel, pSheet: SheetModel, cf: ConditionalFormatModel[],
         conditionalFormats?: ConditionalFormatModel[]): ConditionalFormatModel[] {
-        let cFRange: number[]; let indexes: number[];
+        let cfRange: number[]; let indexes: number[];
         const assignCF: Function = (conditionalFormat: ConditionalFormatModel): void => {
-            cFRange = [pRange[0] + (indexes[0] <= cRange[0] ? 0 : indexes[0] - cRange[0]),
+            cfRange = [pRange[0] + (indexes[0] <= cRange[0] ? 0 : indexes[0] - cRange[0]),
                 pRange[1] + (indexes[1] <= cRange[1] ? 0 : indexes[1] - cRange[1]),
                 pRange[2] - (indexes[2] >= cRange[2] ? 0 : cRange[2] - indexes[2]),
                 pRange[3] - (indexes[3] >= cRange[3] ? 0 : cRange[3] - indexes[3])];
-                pSheet.conditionalFormats.push({ range: getRangeAddress(cFRange), type:conditionalFormat.type , cFColor:conditionalFormat.cFColor, value: conditionalFormat.value, format:conditionalFormat.format});
+                if (!pSheet.conditionalFormats) {
+                    this.parent.setSheetPropertyOnMute(pSheet, 'conditionalFormats', []);
+                }
+                const cfRule: ConditionalFormatModel = { range: getRangeAddress(cfRange), type: conditionalFormat.type,
+                    cFColor: conditionalFormat.cFColor, value: conditionalFormat.value, format: conditionalFormat.format };
+                pSheet.conditionalFormats.push(cfRule);
+                cf.push(cfRule);
         };
         if (conditionalFormats) {
             for (let i: number = 0, len: number = conditionalFormats.length; i < len; i++) {
@@ -612,10 +631,10 @@ export class Clipboard {
 
     private setCell(
         rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, lastCell?: boolean, isExternal?: boolean,
-        cFApplied?: boolean, isUniqueCell?: boolean): boolean {
+        isUniqueCell?: boolean): boolean {
         const cancel: boolean = updateCell(
             this.parent, sheet, { cell: cell, rowIdx: rIdx, colIdx: cIdx, pvtExtend: !isExtend, valChange: !isUniqueCell, lastCell: lastCell,
-                uiRefresh: sheet.name === this.parent.getActiveSheet().name, checkCf: cFApplied, requestType: 'paste' });
+                uiRefresh: sheet.name === this.parent.getActiveSheet().name, requestType: 'paste' });
         if (!cancel) {
             if (cell && cell.style && isExternal) {
                 let hgt: number =
@@ -741,7 +760,9 @@ export class Clipboard {
         });
         if (args && args.clipboardData) {
             this.setExternalCells(args, isCut);
-            focus(this.parent.element);
+            this.getClipboardEle().setAttribute(
+                'aria-label', `${sheet.selectedRange} ${this.parent.serviceLocator.getService<L10n>(locale).getConstant(
+                    isCut ? 'Cut' : 'Copy')}`);
         }
     }
 

@@ -1114,6 +1114,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public onPropertyChanged(model: DocumentEditorModel, oldProp: DocumentEditorModel): void {
         for (const prop of Object.keys(model)) {
             switch (prop) {
+            case 'enableTrackChanges':
+                 if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges){
+                     this.enableTrackChanges = true;
+             }
+            break;
             case 'zoomFactor':
                 if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
                     this.documentHelper.zoomFactor = model.zoomFactor;
@@ -1154,6 +1159,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.commentReviewPane.showHidePane(true, 'Comments');
                 }
                 this.commentReviewPane.enableDisableItems();
+                this.trackChangesPane.enableDisableButton(!this.isReadOnly && !this.documentHelper.isDocumentProtected);
                 break;
             case 'currentUser':
             case 'userColor':
@@ -1175,7 +1181,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 }
                 break;
             case 'showComments':
-                if (this.viewer) {
+                if (this.viewer && model.showComments !== oldProp.showComments) {
                     this.documentHelper.showComments(model.showComments);
                 }
                 this.viewer.updateScrollBars();
@@ -2217,7 +2223,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'FirstCapital': 'FirstCapital',
         'TitleCase': 'Titlecase',
         'Filling in forms': 'Filling in forms',
-        'px': 'px'
+        'px': 'px',
+        'Tracked changes': 'Tracked changes',
+        'TrackChangesOnly': 'You may edit in this region, but all change will be tracked.',
+        'RemovedIgnoreExceptions': 'If you make this change in document protection, Word will ignore all the exceptions in this document.',
+        'RemovedIgnore': 'Do you want to remove the ignored exceptions?',
+        'Information': 'Information',
+        'Yes': 'Yes',
+        'No': 'No'
     };
     /* eslint-enable */
     // Public Implementation Starts
@@ -2238,6 +2251,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.cachedPages = [];
             this.clearSpellCheck();
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.documentHelper.triggerElementsOnLoading = true;
                 this.documentHelper.triggerSpellCheck = true;
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
@@ -2248,6 +2262,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
+                this.documentHelper.triggerElementsOnLoading = false;
                 this.documentHelper.triggerSpellCheck = false;
             }
         }
@@ -2421,7 +2436,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 } else if (formField[i].formFieldData instanceof TextFormField) {
                     let resultText: string = '';
                     if (this.documentHelper.isInlineFormFillProtectedMode) {
-                        resultText = this.editorModule.getFormFieldText(formField[i]);
+                        resultText = this.editorModule.getFieldResultText(formField[i]);
                     } else {
                         resultText = formField[i].resultText;
                     }

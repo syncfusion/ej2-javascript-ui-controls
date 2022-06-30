@@ -72,6 +72,7 @@ describe('Filter ->', () => {
             done();
         });
         it('Filter popup open close using key action', (done: Function) => {
+            helper.invoke('getCell', [0, 0]).focus();
             helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
             setTimeout(() => {
                 let filterPopup: HTMLElement = helper.getElement().lastElementChild;
@@ -621,6 +622,7 @@ describe('Filter ->', () => {
                 helper.getElement(`${id}_applyfilter`).click();
                 expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
                 helper.invoke('selectRange', ['G1']);
+                helper.invoke('getCell', [0, 0]).focus();
                 helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
                 setTimeout(() => {
                     setTimeout(() => {
@@ -828,21 +830,16 @@ describe('Filter ->', () => {
     });
 
     describe('Filter Icon Missing In Duplicate Sheet ->', () => {
-
         describe('EJ2-55527 ->', () =>  {
-
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }]
                 }, done);
             });
-    
             afterAll(() => {
                 helper.invoke('destroy');
             });
-            
             it('Filter issue in duplicate sheet', (done: Function) => {
-
                 helper.invoke('applyFilter', [[{ field: 'A', predicate: 'or', operator: 'equal', value: 'Casual Shoes' }], 'A1:H11']);
                 helper.invoke('duplicateSheet', [0]);
                 setTimeout(() => {
@@ -853,5 +850,620 @@ describe('Filter ->', () => {
                 });
             });
         });  
+    });
+    describe('CR - Issues->', () => {
+        describe('EJ2-50433->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'E2:E7' }],
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.cellFormat({ backgroundColor: '#e56590', color: '#fff', fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Count value is wrongly Displayed in Aggregate in Sort and Filter Sample', (done: Function) => {
+                var spreadsheet = helper.getInstance();
+                spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'contains', value: '20' }]);
+                setTimeout(function () {
+                    helper.click('#' + helper.id + '_aggregate');
+                    expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 6');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                    helper.click('#' + helper.id + '_aggregate');
+                    expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 6');
+                    expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li:nth-child(2)').textContent).toBe('Sum: 115');
+                    done();
+                });
+            });
+        });
+        describe('EJ2-50631->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A1:H11' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Filter not get removed from the sheet while apply clear all', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                helper.getElement('#' + helper.id + '_clear').click();
+                expect(helper.getElement('#' + helper.id + '_clear-popup ul li:nth-child(1)').textContent).toBe('Clear All');
+                helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
+                expect(helper.invoke('getCell', [0, 7]).querySelector('.e-filter-iconbtn')).toBeNull();
+                done();
+            });
+        });
+        describe('EJ2-53803->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    created: (): void => {
+                        const spreadsheet: any = helper.getInstance();
+                        spreadsheet.applyFilter([{ field: "F", operator: "contains", value: 200 }]);
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Console error issue with clearFilter in Spreadsheet->', (done: Function) => {
+                helper.invoke('clearFilter', ['F']);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 5]).children[0].children[0].classList).not.toContain('e-filtered');
+                    done();
+                });
+            });
+        });
+        describe('EJ2-54427->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Apply Filter->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.invoke('updateCell', [{ value: 'Test' }, 'B12']);
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('getCell', [0, 0]).focus();
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const selectall: HTMLInputElement = helper.getElementFromSpreadsheet('.e-excelfilter .e-dlg-content .e-checkboxlist .e-selectall') as HTMLInputElement;
+                        selectall.click();
+                        const list: HTMLElement = helper.getElement('.e-checkboxlist');
+                        expect(list.children[1].querySelector('.e-checkboxfiltertext').textContent).toBe('Blanks');
+                        const cbox: HTMLElement = list.children[1].querySelector('.e-checkbox-wrapper');
+                        cbox.click();
+                        const cbox1: HTMLElement = helper.getElement('.e-checkboxlist').children[2].querySelector('.e-checkbox-wrapper');
+                        cbox1.click();
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        helper.invoke('selectRange', ['A1:A200']);
+                        done();
+                    });
+                });
+            });
+            it('When cut and paste the filter applied column, it causes a script error.->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_cut').click();
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['D1']);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(0, 3, [6,2], false, true);
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['E1']);
+                        helper.getElement('#' + helper.id + '_paste').click();
+                        setTimeout(function () {
+                            expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                            expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).toBeNull();
+                            expect(helper.invoke('getCell', [1, 4]).textContent).toBe('Casual Shoes');
+                            done();
+                        });   
+                    });
+                });
+            });
+        });
+        describe('EJ2-53662->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Apply Filter ->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('getCell', [0, 0]).focus();
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const selectall: HTMLInputElement = helper.getElementFromSpreadsheet('.e-excelfilter .e-dlg-content .e-checkboxlist .e-selectall') as HTMLInputElement;
+                        selectall.click();
+                        const cbox: HTMLElement = helper.getElement('.e-checkboxlist').children[1].querySelector('.e-checkbox-wrapper');
+                        cbox.click();
+                        const cbox1: HTMLElement = helper.getElement('.e-checkboxlist').children[2].querySelector('.e-checkbox-wrapper');
+                        cbox1.click();
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Copy paste issue in spreadsheet after clear filtering ->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_clearfilter').click();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    helper.invoke('selectRange', ['A1:A100']);
+                    helper.invoke('copy').then(function () {
+                        helper.invoke('paste', ['J1']);
+                        setTimeout(function () {
+                            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('Item Name');
+                            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('Sports Shoes');
+                            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('Loafers');
+                            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('T-Shirts');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-53663', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Apply Filter->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('getCell', [0, 0]).focus();
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const cbox: HTMLElement = helper.getElement('.e-checkboxlist').children[1].querySelector('.e-checkbox-wrapper');
+                        cbox.click();
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].rows[1].hidden).toBeTruthy();
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                            helper.invoke('selectRange', ['A1:A3']);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('console error on clear filter when manually unhide filtered row->', (done: Function) => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(2, 0, [9], true, false);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[1].hidden).toBeFalsy();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                    helper.invoke('selectRange', ['A1']);
+                    helper.getElement('#' + helper.id + '_sorting').click();
+                    helper.getElement('#' + helper.id + '_clearfilter').click();
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-55246->', () => {
+            beforeAll((done: Function)  => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'D1:D100' }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Apply Filter->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('selectRange', ['D1']);
+                helper.invoke('getCell', [0, 3]).focus();
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        helper.getElement('.e-checkboxlist').children[2].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[3].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[4].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            helper.invoke('selectRange', ['D1:D100']);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Cut / paste the filter applied column and click undo, the spinner spins endless->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_cut').click();
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['D1']);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(0, 3, [6, 2], false, true);
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['E1']);
+                        helper.getElement('#' + helper.id + '_paste').click();
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).toBeNull();
+                            expect(helper.invoke('getCell', [0, 4]).textContent).toBe('Quantity');
+                             done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-54430->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Apply Filter->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('getCell', [0, 0]).focus();
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const selectall: HTMLInputElement = helper.getElementFromSpreadsheet('.e-excelfilter .e-dlg-content .e-checkboxlist .e-selectall') as HTMLInputElement;
+                        selectall.click();
+                        helper.getElement('.e-checkboxlist').children[1].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[2].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[3].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[4].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            helper.invoke('selectRange', ['A1:A15']);
+                            helper.getElement('#' + helper.id + '_copy').click();
+                            setTimeout(() => {
+                                helper.invoke('selectRange', ['I1']);
+                                helper.getElement('#' + helper.id + '_paste').click(); helper.invoke('selectRange', ['J1']);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+            it('Copy paste working incorretly after clearing the filters->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_paste').click();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 9]).textContent).toBe('Item Name');
+                    expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Casual Shoes');
+                    expect(helper.invoke('getCell', [3, 9]).textContent).toBe('Flip- Flops & Slippers');
+                    helper.invoke('selectRange', ['I1']);
+                    helper.getElement('#' + helper.id + '_sorting').click();
+                    helper.getElement('#' + helper.id + '_clearfilter').click();
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['A1:A15']);
+                        helper.getElement('#' + helper.id + '_copy').click();
+                        setTimeout(() => {
+                            helper.invoke('selectRange', ['K1']);
+                            helper.getElement('#' + helper.id + '_paste').click();
+                            setTimeout(() => {
+                                expect(helper.invoke('getCell', [0, 10]).textContent).toBe('Item Name');
+                                expect(helper.invoke('getCell', [2, 10]).textContent).toBe('Sports Shoes');
+                                expect(helper.invoke('getCell', [4, 10]).textContent).toBe('Sandals & Floaters');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-55397->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix the sorting and filtering related issues->', (done: Function) => {
+                helper.invoke('selectRange', ['G2']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(1, 6, [6, 4], false, false);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 6]).querySelector('.e-filtered')).not.toBeNull();
+                    expect(helper.invoke('getCell', [1, 6]).textContent).toBe('1');
+                    expect(helper.getInstance().sheets[0].rows[4].hidden).toBeFalsy;
+                    done();
+                });
+            });
+        });
+        describe('EJ2-55882->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B1:B200' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Console error appears while using cut and filter functionality->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_cut').click();
+                setTimeout(() => {
+                    helper.invoke('hideColumn', [1]);
+                    helper.invoke('insertColumn', [3]);
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['D1'])
+                        helper.getElement('#' + helper.id + '_paste').click();
+                        helper.invoke('hideColumn', [1, 1, false]);
+                        setTimeout(() => {
+                            helper.invoke('selectRange', ['B2']);
+                            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                            helper.openAndClickCMenuItem(1, 1, [6, 4], false, false);
+                            setTimeout(() => {
+                                expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filtered')).not.toBeNull();
+                                expect(helper.invoke('getCell', [1, 1]).textContent).toBe('');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-55605->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Filter popup not shown properly for blank columns->', (done: Function) => {
+                helper.invoke('selectRange', ['A1:K1']);
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    expect(helper.invoke('getCell', [0, 7]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    expect(helper.invoke('getCell', [0, 8]).querySelector('.e-filter-iconbtn')).toBeNull();
+                    done();
+                });
+            });
+        });
+        describe('EJ2-56163->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Script error while re-apply the filter with the wrap and resized row header->', (done: Function) => {
+                helper.invoke('selectRange', ['A1:H1']);
+                helper.getElement('#' + helper.id + '_wrap').click();
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    helper.invoke('setRowHeight', [60, 0]);
+                    expect(helper.getInstance().sheets[0].rows[0].height).toBe(60);
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    helper.getElement('#' + helper.id + '_sorting').click();
+                    helper.getElement('#' + helper.id + '_applyfilter').click();
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-55604->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: filterData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Apply Filter in Single Column->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('getCell', [0, 0]).focus();
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const selectall: HTMLInputElement = helper.getElementFromSpreadsheet('.e-excelfilter .e-dlg-content .e-checkboxlist .e-selectall') as HTMLInputElement;
+                        selectall.click();
+                        helper.getElement('.e-checkboxlist').children[1].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[2].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[3].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[4].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-checkboxlist').children[5].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                            helper.invoke('selectRange', ['D1']);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Apply Filter in Multiple Column->', (done: Function) => {
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        helper.getElement('.e-checkboxlist').children[1].querySelector('.e-checkbox-wrapper').click();
+                        helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).not.toBeNull();
+                            helper.invoke('selectRange', ['A1']);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Filter not applied properly in multiple column filtering after clearing the single column filter->', (done: Function) => {
+                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                setTimeout(() => {
+                    setTimeout(() => {
+                        helper.click('.e-excelfilter .e-spreadsheet-contextmenu ul li:nth-child(3)');
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).toBeNull();
+                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filtered')).not.toBeNull();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-54849->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Undo after filter->', (done: Function) => {
+                helper.invoke('selectRange', ['E6']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(5, 4, [6, 4], false, false);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['F8']);
+                    helper.openAndClickCMenuItem(7, 5, [6, 4], false, false);
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['A1']);
+                        helper.getElement('#' + helper.id + '_undo').click();
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filtered')).toBeNull();
+                            expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                            helper.getElement('#' + helper.id + '_undo').click();
+                            setTimeout(() => {
+                                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filter-iconbtn')).toBeNull();
+                                expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filter-iconbtn')).toBeNull();
+                                expect(helper.invoke('getCell', [0, 4]).querySelector('.e-filtered')).toBeNull();
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-54849->', () => {
+            let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    created: (): void => {
+                        const spreadsheet: any = helper.getInstance();
+                        spreadsheet.applyFilter([{ field: 'A', predicate: 'or', operator: 'contains', value: 'Casual Shoes' }]);
+                    },
+                    actionBegin: (args: any): void => {
+                        if (args.action === 'filter') { actionBeginCalled = true; }
+                    },
+                    actionComplete: (args: any): void => {
+                        if (args.action === 'filter') { actionCompleteCalled = true; }
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Action Begin and Action Complete Events are not triggered on Clear Filters->', (done: Function) => {
+                expect(actionBeginCalled).toBeFalsy();
+                expect(actionCompleteCalled).toBeFalsy();
+                helper.invoke('selectRange', ['A1']);
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_clearfilter').click();
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                    expect(actionBeginCalled).toBeTruthy();
+                    expect(actionCompleteCalled).toBeTruthy();
+                    done();
+                });
+            });
+        });
+        describe('EJ2-55275->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cell delete deleting the filtered rows data issue->', (done: Function) => {
+                helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['A6:A8']);
+                    helper.triggerKeyNativeEvent(46);
+                    helper.invoke('selectRange', ['A1']);
+                    helper.getElement('#' + helper.id + '_sorting').click();
+                    helper.getElement('#' + helper.id + '_clearfilter').click();
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [5, 0]).textContent).toBe('');
+                        expect(helper.invoke('getCell', [6, 0]).textContent).toBe('Sneakers');
+                        expect(helper.invoke('getCell', [7, 0]).textContent).toBe('');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-55012->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Used range not updated while save and load the spreadsheet as JSON ->', (done: Function) => {
+                const json: object = { Workbook: { sheets: [{ ranges: [{ dataSource: filterData }] }] } }
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.openFromJson({ file: json});
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['A3']);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(2, 0, [6, 4], false, false);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filtered')).not.toBeNull();
+                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

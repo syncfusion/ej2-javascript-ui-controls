@@ -3416,6 +3416,70 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * To manually open the quick info popup based on cell or event details.
+     *
+     * @param {object} data Defines the cell or event data. If the data contains valid ID, it will open event quick info popup,
+     * otherwise cell quick info popup displayed.
+     * @returns {void}
+     */
+    public openQuickInfoPopup(data: Record<string, any>): void {
+        if (this.currentView === 'Year' || isNullOrUndefined(data)) {
+            return;
+        }
+        if (isNullOrUndefined(data[this.eventFields.id])) {
+            if (this.currentView === 'Agenda' || this.currentView === 'MonthAgenda' || isNullOrUndefined(this.activeView)) {
+                return;
+            }
+            const cellData: CellClickEventArgs = {
+                startTime: this.activeCellsData.startTime = this.getDateTime(<Date>data[this.eventFields.startTime]),
+                endTime: this.activeCellsData.endTime = this.getDateTime(<Date>data[this.eventFields.endTime]),
+                isAllDay: this.activeCellsData.isAllDay =
+                    !isNullOrUndefined(data[this.eventFields.isAllDay]) ? data[this.eventFields.isAllDay] : false
+            };
+            const startTime: Date = this.activeView.getAdjustedDate(new Date(cellData.startTime));
+            if (startTime) {
+                let query: string = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + startTime.getTime() + '"]';
+                if (this.activeViewOptions.group.resources.length > 0 && !this.uiStateValues.isGroupAdaptive
+                    && this.resourceBase && this.eventBase) {
+                    cellData.groupIndex = this.eventBase.getGroupIndexFromEvent(data as Record<string, any>);
+                    query = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + startTime.getTime() + '"][data-group-index="' + cellData.groupIndex + '"]';
+                }
+                const workCell: HTMLElement = this.element.querySelector(query);
+                if (workCell) {
+                    workCell.focus();
+                    cellData.element = workCell;
+                    this.notify(events.cellClick, cellData);
+                }
+            }
+        }
+        else {
+            const app: Record<string, any>[] = this.getCurrentViewEvents().filter((item: Record<string, any>) =>
+                data[this.eventFields.id] === item[this.eventFields.id]);
+            if (app.length <= 0) {
+                return;
+            }
+            let selectEvent: Record<string, any> = app[0];
+            if (data[this.eventFields.recurrenceRule]) {
+                const occurence: Record<string, any> = app.filter((x: Record<string, any>) =>
+                    x[this.eventFields.startTime].getTime() === data[this.eventFields.startTime].getTime());
+                if (occurence.length > 0) {
+                    selectEvent = occurence[0];
+                }
+            }
+            const element: HTMLElement = this.element.querySelector('div[data-guid="' + selectEvent.Guid + '"]');
+            if (element) {
+                this.eventBase.removeSelectedAppointmentClass();
+                this.eventBase.addSelectedAppointments([element]);
+                this.activeEventData = { event: selectEvent, element: element } as EventClickArgs;
+                if (this.currentView === 'Agenda' || this.currentView === 'MonthAgenda') {
+                    addClass([this.activeEventData.element as Element], cls.AGENDA_SELECTED_CELL);
+                }
+                this.notify(events.eventClick, this.activeEventData);
+            }
+        }
+    }
+
+    /**
      * To manually close the quick info popup
      *
      * @function closeQuickInfoPopup

@@ -1574,7 +1574,62 @@
              expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/9/2019');
          });
      });
-     describe('Edit Duration of milestone', function () {
+     describe('Baseline - ', function () {
+                let ganttObj: Gantt;
+                beforeAll(function (done) {
+                    ganttObj = createGantt({
+                        dataSource: dialogEditData,
+                        taskFields: {
+                            id: 'TaskID',
+                            name: 'TaskName',
+                            startDate: 'StartDate',
+                            endDate: 'EndDate',
+                            duration: 'Duration',
+                            progress: 'Progress',
+                            notes: 'Notes',
+                            baselineStartDate: 'BaselineStartDate',
+                            baselineEndDate: 'BaselineEndDate',
+                            dependency: 'Predecessor',
+                            child: 'subtasks'
+                        },
+                        projectStartDate: new Date('03/25/2019'),
+                        projectEndDate: new Date('05/30/2019'),
+                        renderBaseline: true,
+                        editSettings: {
+                            allowAdding: true,
+                            allowEditing: true,
+                            allowDeleting: true,
+                        },
+                        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                        }, done);
+                });
+                afterAll(function () {
+                    if (ganttObj) {
+                        destroyGantt(ganttObj);
+                    }
+                });
+                beforeEach((done: Function) => {
+                    ganttObj.openAddDialog();
+                    let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                    triggerMouseEvent(saveRecord, 'click');
+                    setTimeout(done, 1000);
+                });
+                it('End date validation', () => {
+                    ganttObj.selectionModule.selectRow(0);
+                    ganttObj.openEditDialog();
+                    let sdate: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'BaselineStartDate')).ej2_instances[0];
+                    sdate.value = new Date('04/02/2019');
+                    sdate.dataBind();
+                    let edate: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'BaselineEndDate')).ej2_instances[0];
+                    edate.value = new Date('04/10/2019');
+                    edate.dataBind();
+                    let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                    triggerMouseEvent(saveButton, 'click');
+                    expect((ganttObj.currentViewData[0].ganttProperties.baselineEndDate).getDate()).toBe(10);
+
+                });
+            });
+	 describe('Edit Duration of milestone', function () {
         let ganttObj: Gantt;
         let data: Object[] =[ {TaskID: 1, TaskName: 'New Task 1', Duration: 1, Progress: 0, StartDate: new Date('03/26/2019')},
         {TaskID: 2, TaskName: 'New Task 2', StartDate: new Date('03/26/2019'), Duration: 0, Progress: 0}
@@ -1664,14 +1719,14 @@
                     to: "03/25/2019",
                     label: " Public holidays",
                     cssClass: "e-custom-holiday"
-                
+
                 },
                 {
                     from: "04/12/2019",
                     to: "04/12/2019",
                     label: " Public holiday",
                     cssClass: "e-custom-holiday"
-                
+
                 }],
                 labelSettings: {
                     leftLabel: 'TaskID',

@@ -344,8 +344,8 @@ export class QuickPopups {
                     attrs: {
                         'data-id': '' + eventData[fields.id],
                         'data-guid': eventData.Guid as string, 'role': 'button', 'tabindex': '0',
-                        'aria-readonly': this.parent.eventBase.getReadonlyAttribute(eventData),
-                        'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': this.parent.getAnnouncementString(eventData)
+                        'aria-disabled': this.parent.eventBase.getReadonlyAttribute(eventData),
+                        'aria-pressed': 'false', 'aria-grabbed': 'true', 'aria-label': this.parent.getAnnouncementString(eventData)
                     }
                 });
                 let templateElement: HTMLElement[];
@@ -438,7 +438,7 @@ export class QuickPopups {
             this.quickPopupHide();
             return;
         }
-        const targetEle: Element = args.event.target as Element;
+        const targetEle: Element = !isNullOrUndefined(args.event) ? args.event.target as Element : args.element as Element;
         if (this.parent.isAdaptive) {
             this.quickPopupHide();
             let newEventClone: HTMLElement = this.parent.element.querySelector('.' + cls.NEW_EVENT_CLASS) as HTMLElement;
@@ -598,7 +598,7 @@ export class QuickPopups {
                     `<button class="${cls.DELETE_CLASS + ' ' + cls.ICON}" title="${this.l10n.getConstant('delete')}"></button>` +
                     `<button class="${cls.CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>` +
                     `<div class="${cls.SUBJECT_WRAP}"><div class="${cls.SUBJECT_CLASS} ${cls.TEXT_ELLIPSIS}" ` +
-                    `title="${args.eventSubject}">${args.eventSubject}</div></div >`;
+                    `title="${args.eventSubject ? args.eventSubject.replaceAll('"', '\'') : args.eventSubject}">${args.eventSubject}</div></div >`;
                 break;
             }
             const templateWrapper: HTMLElement = createElement('div', { innerHTML: header });

@@ -922,6 +922,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isAutoFitColumns: boolean = false;
     /** @hidden */
     public enableDeepCompare: boolean = false;
+    /** @hidden */
+    public totalDataRecordsCount: number = 0;
+    /** @hidden */
+    public disableSelectedRecords: Object[] = [];
+    /** @hidden */
+    public partialSelectedRecords: Object[] = [];
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
     private keyConfigs: { [key: string]: string };
@@ -1819,7 +1825,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggered every time a request is made to access cell information, element, or data.
      * This will be triggered before the cell element is appended to the Grid element.
-     * Rendering a template in a Grid cell using the QueryCellInfo event is not the preferred/recommended way. Instead, use the [column template](../../grid/columns/column-template/) feature.
      *
      * @event queryCellInfo
      */
@@ -4647,6 +4652,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.frozenName = 'Right';
         } else if (this.frozenLeftCount && this.frozenRightCount) {
             this.frozenName = 'Left-Right';
+        } else if (this.frozenColumns && this.frozenRows) {
+            this.frozenName = 'Left';
         } else {
             this.frozenName = undefined;
         }
@@ -4849,9 +4856,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-    * @hidden
-    * @returns {void}
-    */
+     * @hidden
+     * @returns {void}
+     */
     public clearGridActions(): void {
         this.setProperties({ sortSettings: { columns: [] } }, true);
         this.setProperties({ filterSettings: { columns: [] } }, true);
@@ -4878,10 +4885,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {string} actualOperator - Defines the actual filter operator for the filter column.
      * @returns {void}
      */
-    public filterByColumn(
-        fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[]| null,
-        predicate?: string, matchCase?: boolean,
-        ignoreAccent?: boolean, actualFilterValue?: string, actualOperator?: string): void {
+    public filterByColumn(fieldName: string, filterOperator: string,
+                          filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[]| null,
+                          predicate?: string, matchCase?: boolean,
+                          ignoreAccent?: boolean, actualFilterValue?: string, actualOperator?: string): void {
         if (this.filterModule) {
             this.filterModule.filterByColumn(
                 fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent,
@@ -5121,7 +5128,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * To update the specified row by given values without changing into edited state.
      *
      * {% codeBlock src='grid/updateRow/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
      * @returns {void}
@@ -5205,8 +5212,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (indentWidth < 1) {
             indentWidth = 1;
         }
-        if (this.enableColumnVirtualization || this.isAutoGen || (this.columns.length === this.groupSettings.columns.length)) { 
-            indentWidth = 30; 
+        if (this.enableColumnVirtualization || this.isAutoGen || (this.columns.length === this.groupSettings.columns.length)) {
+            indentWidth = 30;
         }
         while (i < this.groupSettings.columns.length) {
             applyWidth(i, indentWidth);
@@ -6030,13 +6037,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.notify(events.groupCollapse, { target: e.target, collapse: false });
                     this.keyA = false;
                 } else {
-                    this.focusModule.focusHeader();
-                    this.focusModule.addOutline();
+                    if (this.focusModule && this.focusModule.currentInfo && this.focusModule.currentInfo.element) {
+                        removeClass([this.focusModule.currentInfo.element, this.focusModule.currentInfo.elementToFocus],
+                                    ['e-focused', 'e-focus']);
+                        this.focusModule.currentInfo.element.tabIndex = -1;
+                    }
+                    if (!this.element.classList.contains('e-childgrid')) {
+                        this.element.focus();
+                    }
                 }
             }
             if (e.keyCode === 87) {//alt w
-                this.focusModule.focusContent();
-                this.focusModule.addOutline();
+                const focusModule: FocusStrategy = this.focusModule;
+                if (focusModule) {
+                    if (!this.currentViewData.length) { return; }
+                    focusModule.focusContent();
+                    focusModule.addOutline();
+                }
             }
             if (e.keyCode === 65) {//alt A
                 this.keyA = true;
@@ -6257,9 +6274,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * Ungroups a column by column name.
-     * 
+     *
      * {% codeBlock src='grid/ungroupColumn/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * @param  {string} columnName - Defines the column name to ungroup.
      * @returns {void}
      */

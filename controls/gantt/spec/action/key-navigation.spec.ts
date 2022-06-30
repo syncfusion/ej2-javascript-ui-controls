@@ -191,7 +191,73 @@ describe('Gantt Selection support', () => {
             ganttObj.keyboardModule.keyAction(args1); 
             expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(907);
         }); 
-		
+    });
+    describe('Gantt delete and add', () => {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        let oldRowIndex: number;
+        beforeAll((done: Function) => {            
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                    },
+                    load: function (args) {
+                        this.keyConfig["customKey"] = "ctrl+82"; //ctr + r
+                    },
+                    actionComplete: function (args:IKeyPressedEventArgs) {
+                        if (args.requestType == "keyPressed" && args.action == "customKey") {
+                            args.keyEvent.preventDefault();
+                            this.selectionModule.selectRow(6);             
+                        }
+			if (args.requestType == 'add') {
+                           expect(args['data'].taskData.ganttProperties).toBe(undefined)
+                        }
+                    },
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: true,
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single'
+                    }
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);               
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+            ganttObj.selectionModule.selectRow(3);
+            oldRowIndex = ganttObj.selectedRowIndex;
+        });
+        it('delete and add record',()=>{
+            oldRowIndex = ganttObj.currentViewData.length;
+            ganttObj.selectionModule.selectRow(5);
+            let args: any = { action: 'delete', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            let args1: any = { action: 'addRow', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args1);
+            expect(oldRowIndex).toBe(ganttObj.currentViewData.length);
+        }); 
     });
         describe('CR-issues', function () {
         let ganttObj: Gantt;
@@ -237,7 +303,7 @@ describe('Gantt Selection support', () => {
             ganttObj.keyboardModule.keyAction(args);
             expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(0);
         });
-        it('Escape key on dependency tab', () => {
+	it('Escape key on dependency tab', () => {
             let Add : HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems > div > div.e-toolbar-right > div:nth-child(1)') as HTMLElement;
             triggerMouseEvent(Add, 'click');
             let args: any = { action: 'escape', preventDefault: preventDefault };

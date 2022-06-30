@@ -63,10 +63,18 @@ export class ColorPickerInput {
                     const fontNode: HTMLInputElement = this.parent.createElement('input') as HTMLInputElement;
                     fontNode.id = targetID;
                     fontNode.classList.add(classes.CLS_FONT_COLOR_TARGET);
+                    if (!isNullOrUndefined(this.parent.cssClass)) {
+                        const allClassName: string[] = this.parent.cssClass.split(' ');
+                        for (let i: number = 0; i < allClassName.length; i++) {
+                            if (allClassName[i].trim() !== '') {
+                                fontNode.classList.add(allClassName[i]);
+                            }
+                        }
+                    }
                     document.body.appendChild(fontNode);
                     options = {
                         cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
-                            + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                            + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS + ' ' + this.parent.cssClass,
                         value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
@@ -81,10 +89,18 @@ export class ColorPickerInput {
                     const backNode: HTMLInputElement = this.parent.createElement('input') as HTMLInputElement;
                     backNode.id = targetID;
                     backNode.classList.add(classes.CLS_BACKGROUND_COLOR_TARGET);
+                    if (!isNullOrUndefined(this.parent.cssClass)) {
+                        const allClassName: string[] = this.parent.cssClass.split(' ');
+                        for (let i: number = 0; i < allClassName.length; i++) {
+                            if (allClassName[i].trim() !== '') {
+                                backNode.classList.add(allClassName[i]);
+                            }
+                        }
+                    }
                     document.body.appendChild(backNode);
                     options = {
                         cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
-                            + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                        + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS + ' ' + this.parent.cssClass,
                         value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
@@ -163,8 +179,8 @@ export class ColorPickerInput {
                 colorPickerObj.setProperties({ cssClass: (colorPickerObj.cssClass + ' ' + e.cssClass).trim() });
                 dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass + ' ' + e.cssClass).trim() });
             } else {
-                colorPickerObj.setProperties({ cssClass: (colorPickerObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
-                dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
+                colorPickerObj.setProperties({ cssClass: (colorPickerObj.cssClass.replace(e.oldCssClass, '').replace('  ', ' ').trim() + ' ' + e.cssClass).trim() });
+                dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass.replace(e.oldCssClass, '').replace('  ', ' ').trim() + ' ' + e.cssClass).trim() });
             }
         }
     }

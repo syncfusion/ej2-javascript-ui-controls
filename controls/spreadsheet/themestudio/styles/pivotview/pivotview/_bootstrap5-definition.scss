@@ -24,14 +24,14 @@ $pivotgrid-button-border-radius: 4px !default;
 $pivotgrid-editor-dialog-footer-padding: 8px !default;
 $pivotgrid-expand-icon-fontsize: 20px !default;
 $pivotgrid-expcoldiv-fontsize: 10px !default;
-$pivotgrid-drill-margintop: 3px !default;
-$pivotgrid-bigger-drill-margintop: 4px !default;
+$pivotgrid-drill-margintop: 0 !default;
+$pivotgrid-bigger-drill-margintop: 0 !default;
 $pivotgrid-rtl-expand-icon-font-size: 10px !default;
-$pivotgrid-collapse-icon-fonsize: 18px !default;
+$pivotgrid-collapse-icon-fonsize: 20px !default;
 $pivotgrid-vsort-mouse-margin: -15px 0 !default;
 $pivotgrid-vsort-row-margin: 0 !default;
 $pivotgrid-vsort-mouse-wrap-margin: -18px !default;
-$pivotgrid-vsort-touch-margin: -23px -15px !default;
+$pivotgrid-vsort-touch-margin: -15px -8px !default;
 $pivotgrid-vsort-touch-wrap-margin: -18px -15px !default;
 $pivotgrid-tooltip-padding: 3px 4px !default;
 $pivotgrid-tooltip-fontsize: 14px !default;
@@ -71,8 +71,8 @@ $pivotgrid-bg-color: $content-bg-color-alt1;
 $pivotgrid-border-color: $border-light;
 $pivotgrid-active-border-color: $border-light;
 $pivotgrid-box-shadow-color: rgba(108, 117, 125, .5);
-
-
+$pivotgrid-value-sort-icon-padding: 6px 0 4px 0 !default;
+$pivotgrid-value-sort-icon-font-size: 12px !default;
 
 // normal
 $pivotgrid-active-color: $icon-color !default;
@@ -118,13 +118,14 @@ $pivotview-axis-indent-padding: $pivotview-grid-indent-padding !default;
 $pivotview-axis-bigger-indent-padding: $pivotview-grid-bigger-indent-padding !default;
 $pivotgrid-button-font-size: 13px !default;
 $pivotgrid-bigger-button-font-size: 13px !default;
-$pivotgrid-button-inner-padding: 5px !default;
+$pivotgrid-button-inner-padding: 3px !default;
 $pivotgrid-bigger-button-inner-padding: 5px !default;
 $pivotgrid-bigger-excel-dialog-min-width: 350px !default;
 $pivotgrid-expand-bigger-icon-fontsize: 24px !default;
-$pivotgrid-collapse-bigger-icon-fontsize: 22px !default;
+$pivotgrid-collapse-bigger-icon-fontsize: 24px !default;
 $pivotgrid-grouping-padding-bottom: 12px !default;
 $pivotgrid-grouping-padding-top: 12px !default;
 $pivotgrid-grouping-bigger-padding-top: 16px !default;
 $pivotgrid-button-icon-wrapper-size: 18px !default;
 $pivotgrid-bigger-button-icon-wrapper-size: 20px !default;
+$pivotgrid-bigger-button-icon-touch-margin-size: 2px !default;

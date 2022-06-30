@@ -1,5 +1,5 @@
 /**
- * Specifies the annotation spec.
+ * Specifies the chart annotation spec.
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { getElement } from '../../../src/common/utils/helper';

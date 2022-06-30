@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.1.61 (2022-06-21)
+
+### Toast
+
+#### Bug Fixes
+
+- `F175544` - Now, the toast will render properly in the target container when the `target` API is set as an HTML element.
+
 ## 20.1.60 (2022-06-14)
 
 ### Toast

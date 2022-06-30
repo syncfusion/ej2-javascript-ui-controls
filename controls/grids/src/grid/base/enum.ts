@@ -583,7 +583,7 @@ export type ExcelVAlign =
 /**
  * Defines excel border line style.
  */
- export type ExcelBorderLineStyle =
+export type ExcelBorderLineStyle =
     /** thin line style  */
     'thin' |
     /** thick line style  */

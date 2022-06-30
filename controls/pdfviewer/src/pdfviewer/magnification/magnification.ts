@@ -1285,18 +1285,20 @@ export class Magnification {
                 let zoomPercentage: number = pdfViewerBase.getZoomFactor() * 100;
                 zoomValue = zoomPercentage * desiredScaleFactor;
                 let prevScrollTop : number = viewerContainer.scrollTop;
+                let prevScrollLeft : number = viewerContainer.scrollLeft;
                 // Zoom to desired zoom value.
                 this.zoomTo(zoomValue);
                 viewerContainer.scrollTop = prevScrollTop;
+                viewerContainer.scrollLeft = prevScrollLeft;
                 let zoomFactor: number = pdfViewerBase.getZoomFactor();
                 let pagepoint : any = { x: zoomRect.x, y: zoomRect.y };
                 // Convert the client point to page point.
                 pagepoint = pdfViewer.convertClientPointToPagePoint(pagepoint, pageNumber);
                 pdfViewerBase.updateScrollTop(pageNumber - 1);
                 // To adjust the container to the left position.
-                viewerContainer.scrollLeft = pagepoint.x * zoomFactor;
+                viewerContainer.scrollLeft = (pagepoint.x - prevScrollLeft)* zoomFactor;
                 // To adjust the container to the top position.
-                viewerContainer.scrollTop = (pagepoint.y + pdfViewerBase.pageSize[pageNumber - 1].top) * zoomFactor;
+                viewerContainer.scrollTop = ((pagepoint.y + pdfViewerBase.pageSize[pageNumber - 1].top) - prevScrollTop) * zoomFactor;
             }
         }
     }

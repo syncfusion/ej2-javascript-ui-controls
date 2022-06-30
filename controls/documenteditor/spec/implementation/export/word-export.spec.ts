@@ -6,7 +6,7 @@ import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
 import { SfdtExport } from '../../../src/document-editor/implementation/writer/sfdt-export';
-import { LineWidget, ParagraphWidget } from '../../../src/document-editor/implementation/viewer/page';
+import { ChartElementBox, LineWidget, ParagraphWidget } from '../../../src/document-editor/implementation/viewer/page';
 import { WordExport } from '../../../src/document-editor/implementation/writer/word-export';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 

@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { SpreadsheetModel, SheetModel, getCell, CellModel } from '../../../src/index';
+import { L10n } from '@syncfusion/ej2-base';
 
 /**
  *  Spreadsheet Number Format spec
@@ -7,7 +8,7 @@ import { SpreadsheetModel, SheetModel, getCell, CellModel } from '../../../src/i
 describe('Spreadsheet Number Format Module ->', (): void => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
-    describe('Custom date format ->', (): void => {
+    describe('Custom number format ->', (): void => {
         let sheet: SheetModel;
         beforeAll((done: Function) => {
             model = {
@@ -19,7 +20,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
         afterAll((): void => {
             helper.invoke('destroy');
         });
-        it('Automatic format deduction based on cell value checking', (done: Function) => {
+        it('Automatic custom date format deduction based on cell value checking', (done: Function) => {
             sheet = helper.invoke('getActiveSheet');
             const cells: CellModel[] = sheet.rows[0].cells;
             const cellEle: Element[] = helper.invoke('getRow', [0]).cells;
@@ -38,6 +39,24 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cells[4].value).toBe('44025');
             expect(cells[4].format).toBe('d-MMM-yy');
             expect(cellEle[4].textContent).toBe('13-Jul-20');
+            done();
+        });
+        it('Custom conditions format checking', (done: Function) => {
+            helper.invoke('numberFormat', ['[Red][<=100];[Blue][>101]', 'A2']);
+            const cell: CellModel = sheet.rows[1].cells[0];
+            const cellEle: HTMLElement = helper.invoke('getCell', [1, 0]);
+            expect(cell.format).toBe('[Red][<=100];[Blue][>101]');
+            expect(cellEle.textContent).toBe('');
+            expect(cellEle.style.color).toBe('');
+            helper.edit('A2', '20');
+            expect(cellEle.textContent).toBe('20');
+            expect(cellEle.style.color).toBe('red');
+            helper.invoke('updateCell', [{ value: '101' }, 'A2']);
+            expect(cellEle.textContent).toBe('#####');
+            expect(cellEle.style.color).toBe('');
+            helper.invoke('updateCell', [{ value: '120' }, 'A2']);
+            expect(cellEle.textContent).toBe('120');
+            expect(cellEle.style.color).toBe('blue');
             done();
         });
     });
@@ -166,6 +185,167 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 helper.getElement('#' + helper.id + '_Accounting').click();
                 expect(sheet.usedRange.colIndex).toBe(3);
                 done();
+            });
+            it('Mistakenly auto detecting as currency format for cell data which contains text with currency number', (done: Function) => {
+                helper.edit('D2', 'Claims greater than $2,500');
+                const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[3];
+                expect(cell.value).toBe('Claims greater than $2,500');
+                const cellEle: HTMLElement = helper.invoke('getCell', [1, 3]);
+                expect(cellEle.textContent).toBe('Claims greater than $2,500');
+                expect(cell.format).toBeUndefined();
+                helper.edit('D2', '$2,500');
+                expect(cell.value).toBe('2500');
+                expect(cell.format).toBe('$#,##0.00');
+                expect(cellEle.textContent).toBe('$2,500.00');
+                done();
+            });
+        });
+    });
+
+    describe('Localization is not updated for placeholder and dialog content in the number format ->',(): void =>{
+        describe('EJ2-55546 ->',()=>{
+            beforeEach((done: Function) => {
+                L10n.load({
+                    'de-DE': {
+                        'spreadsheet': {
+                            'Cut': 'Schneiden',
+                            'Copy': 'Kopieren',
+                            'Paste': 'Paste',
+                            'PasteSpecial': 'paste spezial',
+                            'All': 'Alles',
+                            'Values': 'Werte',
+                            'Formats': 'Formate',
+                            'Font': 'Schriftart',
+                            'FontSize': 'Schriftgröße',
+                            'Bold': 'Fett gedruckt',
+                            'Italic': 'Kursiv',
+                            'Underline': 'Unterstreichen',
+                            'Strikethrough': 'Durchgestrichen',
+                            'TextColor': 'Textfarbe',
+                            'FillColor': 'Füllfarbe',
+                            'HorizontalAlignment': 'Horizontale Ausrichtung',
+                            'AlignLeft': 'Linksbündig ausrichten',
+                            'AlignCenter': 'Center',
+                            'AlignRight': 'Rechtsbündig ausrichten',
+                            'VerticalAlignment': 'Vertikale Ausrichtung',
+                            'AlignTop': 'Oben ausrichten',
+                            'AlignMiddle': 'Mitte ausrichten',
+                            'AlignBottom': 'Unten ausrichten',
+                            'InsertFunction': 'Funktion einfügen',
+                            'Insert': 'Einfügen',
+                            'Delete': 'Löschen',
+                            'Rename': 'Umbenennen',
+                            'Hide': 'verbergen',
+                            'Unhide': 'Sichtbar machen',
+                            'NameBox': 'Namensfeld',
+                            'ShowHeaders': 'Kopfzeilen anzeigen',
+                            'HideHeaders': 'Header ausblenden',
+                            'ShowGridLines': 'Gitternetzlinien anzeigen',
+                            'HideGridLines': 'Gitternetzlinien ausblenden',
+                            'AddSheet': 'Blatt hinzufügen',
+                            'ListAllSheets': 'Alle Blätter auflisten',
+                            'FullScreen': 'Vollbild',
+                            'CollapseToolbar': 'Zusammenbruch symbolleiste',
+                            'ExpandToolbar': 'Erweitern Symbolleiste',
+                            'CollapseFormulaBar': 'Collapse Formelleiste',
+                            'ExpandFormulaBar': 'Expand Formelleiste',
+                            'File': 'Datei',
+                            'Home': 'Huis',
+                            'Formulas': 'Formeln',
+                            'View': 'Aussicht',
+                            'New': 'Neu',
+                            'Open': 'Öffnen',
+                            'SaveAs': 'Speichern als',
+                            'ExcelXlsx': 'Microsoft Excel',
+                            'ExcelXls': 'Microsoft Excel 97-2003',
+                            'CSV': 'Comma-separated values',
+                            'FormulaBar': 'Formelleiste',
+                            'Ok': 'OK',
+                            'Close': 'Schließen',
+                            'Cancel': 'Abbrechen',
+                            'Apply': 'Anwenden',
+                            'MoreColors': 'Mehr Farben',
+                            'StandardColors': 'Standard farben',
+                            'General': 'Allgemeines',
+                            'Number': 'Nummer',
+                            'Currency': 'Währung',
+                            'Accounting': 'Buchhaltung',
+                            'ShortDate': 'Kurzes Date',
+                            'LongDate': 'Langes Datum',
+                            'Time': 'Zeit',
+                            'Percentage': 'Prozentsatz',
+                            'Fraction': 'Fraktion',
+                            'Scientific': 'Wissenschaft',
+                            'Text': 'Text',
+                            'NumberFormat': 'Zahlenformat',
+                            'MobileFormulaBarPlaceHolder': 'Wert oder Formel eingeben',
+                            'PasteAlert': 'Sie können dies hier nicht einfügen, da der Kopierbereich und der Einfügebereich nicht dieselbe Größe haben. Bitte versuchen Sie es in einem anderen Bereich.',
+                            'DestroyAlert': 'Möchten Sie die aktuelle Arbeitsmappe wirklich löschen, ohne sie zu speichern, und eine neue Arbeitsmappe erstellen?',
+                            'SheetRenameInvalidAlert': 'Der Blattname enthält ein ungültiges Zeichen.',
+                            'SheetRenameEmptyAlert': 'Der Blattname darf nicht leer sein.',
+                            'SheetRenameAlreadyExistsAlert': 'Der Blattname ist bereits vorhanden. Bitte geben Sie einen anderen Namen ein.',
+                            'DeleteSheetAlert': 'Möchten Sie dieses Blatt wirklich löschen?',
+                            'DeleteSingleLastSheetAlert': 'Eine Arbeitsmappe muss mindestens ein sichtbares Arbeitsblatt enthalten.',
+                            'PickACategory': 'Wählen Sie eine Kategorie',
+                            'Description': 'Beschreibung',
+                            'UnsupportedFile': 'Nicht unterstützte Datei',
+                            'InvalidUrl': 'Ungültige URL',
+                            'SUM': 'Fügt eine Reihe von Zahlen und / oder Zellen hinzu.',
+                            'SUMIF': 'Fügt die Zellen basierend auf der angegebenen Bedingung hinzu.',
+                            'SUMIFS': 'Fügt die Zellen basierend auf den angegebenen Bedingungen hinzu.',
+                            'ABS': 'Gibt den Wert einer Zahl ohne Vorzeichen zurück.',
+                            'RAND': 'Gibt eine Zufallszahl zwischen 0 und 1 zurück.',
+                            'RANDBETWEEN': 'Gibt eine zufällige Ganzzahl basierend auf angegebenen Werten zurück.',
+                            'FLOOR': 'Rundet eine Zahl auf das nächste Vielfache eines bestimmten Faktors ab.',
+                            'CEILING': 'Rundet eine Zahl auf das nächste Vielfache eines bestimmten Faktors.',
+                            'PRODUCT': 'Multipliziert eine Reihe von Zahlen und / oder Zellen.',
+                            'AVERAGE': 'Berechnen Sie den Durchschnitt für die Reihe von Zahlen und / oder Zellen ohne Text.',
+                            'AVERAGEIF': 'Berechnet den Durchschnitt für die Zellen basierend auf der angegebenen Bedingung.',
+                            'AVERAGEIFS': 'Berechnet den Durchschnitt für die Zellen basierend auf den angegebenen Bedingungen.',
+                            'AVERAGEA': 'Berechnet den Durchschnitt für die Zellen, wobei WAHR als 1, text und FALSCH als 0 ausgewertet werden.',
+                            'COUNT': 'Zählt die Zellen, die numerische Werte in einem Bereich enthalten.',
+                            'COUNTIF': 'Zählt die Zellen basierend auf der angegebenen Bedingung.',
+                            'COUNTIFS': 'Zählt die Zellen basierend auf den angegebenen Bedingungen.',
+                            'COUNTA': 'Zählt die Zellen, die Werte in einem Bereich enthalten.',
+                            'MIN': 'Gibt die kleinste Anzahl der angegebenen Argumente zurück.',
+                            'MAX': 'Gibt die größte Anzahl der angegebenen Argumente zurück.',
+                            'DATE': 'Gibt das Datum basierend auf einem bestimmten Jahr, Monat und Tag zurück.',
+                            'DAY': 'Gibt den Tag ab dem angegebenen Datum zurück.',
+                            'DAYS': 'Gibt die Anzahl der Tage zwischen zwei Daten zurück.',
+                            'IF': 'Gibt einen Wert basierend auf dem angegebenen Ausdruck zurück.',
+                            'IFS': 'Gibt einen Wert zurück, der auf den angegebenen mehreren Ausdrücken basiert.',
+                            'AND': 'Gibt WAHR zurück, wenn alle Argumente WAHR sind, andernfalls wird FALSCH zurückgegeben.',
+                            'OR': 'Gibt WAHR zurück, wenn eines der Argumente WAHR ist, andernfalls wird FALSCH zurückgegeben.',
+                            'IFERROR': 'Gibt einen Wert zurück, wenn kein Fehler gefunden wurde. Andernfalls wird der angegebene Wert zurückgegeben.',
+                            'CHOOSE': 'Gibt einen Wert aus der Werteliste basierend auf der Indexnummer zurück.',
+                            'INDEX': 'Gibt einen Wert der Zelle in einem bestimmten Bereich basierend auf der Zeilen- und Spaltennummer zurück.',
+                            'FIND': 'Gibt die Position eines Strings innerhalb eines anderen Strings zurück, wobei die Groß- und Kleinschreibung beachtet wird.',
+                            'CONCATENATE': 'Kombiniert zwei oder mehr Zeichenfolgen.',
+                            'CONCAT': 'Verkettet eine Liste oder einen Bereich von Textzeichenfolgen.',
+                            'SUBTOTAL': 'Gibt die Zwischensumme für einen Bereich unter Verwendung der angegebenen Funktionsnummer zurück.',
+                            'RADIANS': 'Konvertiert Grad in Bogenmaß.',
+                            'MATCH': 'Gibt die relative Position eines angegebenen Wertes im angegebenen Bereich zurück.',
+                            'DefineNameExists': 'Dieser Name ist bereits vorhanden, versuchen Sie es mit einem anderen Namen.',
+                            'CircularReference': 'Wenn eine Formel auf einen oder mehrere Zirkelverweise verweist, kann dies zu einer falschen Berechnung führen.',
+                            'CustomFormat': 'Geben Sie das Format ein',
+                            'APPLY':'vorgehen',
+                        }
+                    }
+                });
+                helper.initializeSpreadsheet({locale:'de-DE'},done);
+            });
+            afterEach(()=>{
+                helper.invoke('destroy');
+            });
+            it('Locale is not applied for placeholder and dialog content',(done:Function):void => {
+                let inputElement:any;
+                helper.getElement('#'+helper.id+'_number_format').click();
+                helper.getElement('#'+helper.id+'_Custom').click();
+                setTimeout(()=> {
+                    inputElement=helper.getElementFromSpreadsheet('.e-input.e-dialog-input');
+                    expect(inputElement.placeholder).toEqual('Geben Sie das Format ein');
+                    done();
+                });  
             });
         });
     });

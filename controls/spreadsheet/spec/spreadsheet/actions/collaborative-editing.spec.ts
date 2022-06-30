@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { getCell, HyperlinkModel, SheetModel } from "../../../src/index";
-import { EventHandler, getComponent } from "@syncfusion/ej2-base";
+import { EventHandler } from "@syncfusion/ej2-base";
 
 describe('Collaborative Editing ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -15,7 +15,7 @@ describe('Collaborative Editing ->', () => {
                 actionComplete: (args: any) => {
                     if (args.action !== 'gotoSheet') {
                         const copiedArgs: any = JSON.parse(JSON.stringify(args));
-                        if (args.action === 'insertImage' || args.action === 'deleteImage' || args.action === 'insertChart' || args.action === 'deleteChart') {
+                        if (args.action === 'insertImage' || args.action === 'deleteImage' || args.action === 'imageRefresh' || args.action === 'insertChart' || args.action === 'deleteChart') {
                             copiedArgs.eventArgs.id = copiedArgs.eventArgs.id.split('1')[0] + '2';
                         }
                         helper2.getInstance().updateAction(copiedArgs);
@@ -501,7 +501,7 @@ describe('Collaborative Editing ->', () => {
 
         it('Conditional Format', (done: Function) => {
             helper.invoke('selectRange', ['D5']);
-            helper.getInstance().conditionalFormattingModule.setCF({ type: 'GreaterThan', cFColor: 'RedFT', value: '1' });
+            helper.getInstance().workbookConditionalFormattingModule.setCFRule({ cfModel: { type: 'GreaterThan', cFColor: 'RedFT', value: '1', range: 'D5:D5' }, isAction: true });
             setTimeout(() => {
                 expect(JSON.stringify(sheets2[0].conditionalFormats[0])).toBe('{"type":"GreaterThan","cFColor":"RedFT","value":"1","range":"D5:D5"}');
                 expect(JSON.stringify(sheets2[1].conditionalFormats[0])).toBeUndefined();
@@ -526,7 +526,7 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Conditional Format -> Clear rules from selected cells', (done: Function) => {
-            helper.getInstance().workbookConditionalFormattingModule.clearRules({ range: 'D5', isPublic: false });
+            helper.getInstance().workbookConditionalFormattingModule.clearCFRule({ range: 'D5', isAction: true });
             setTimeout(() => {
                 expect(sheets2[0].conditionalFormats[0]).toBeUndefined();
                 expect(sheets2[1].conditionalFormats[0]).toBeUndefined();
@@ -560,7 +560,7 @@ describe('Collaborative Editing ->', () => {
 
         it('Find & Replace', (done: Function) => {
             helper.invoke('selectRange', ['D6']);
-            helper.getInstance().replaceHandler({
+            helper.getInstance().workbookfindAndReplaceModule.replace({
                 value: 'Sneakers',
                 mode: 'Sheet',
                 isCSen: false,
@@ -656,17 +656,19 @@ describe('Collaborative Editing ->', () => {
                     expect(getCell(1, 3, sheets2[0]).value as any).toBe(121);
                     expect(getCell(1, 3, sheets2[1]).value as any).toBe(10);
                     done();
-                });
-            });
+                }, 100);
+            }, 100);
         });
 
         it('Hyperlink', (done: Function) => {
             helper.invoke('insertHyperlink', [{ address: 'www.google.com' }, 'Sheet1!A7', 'Test', false]);
             setTimeout(() => {
-                expect((getCell(6, 0, sheets2[0]).hyperlink as HyperlinkModel).address).toBe('http://www.google.com');
-                expect(getCell(6, 0, sheets2[1]).hyperlink).toBeUndefined();
-                expect(helper2.getInstance().activeSheetIndex).toBe(1);
-                done();
+                setTimeout(() => {
+                    expect((getCell(6, 0, sheets2[0]).hyperlink as HyperlinkModel).address).toBe('www.google.com');
+                    expect(getCell(6, 0, sheets2[1]).hyperlink).toBeUndefined();
+                    expect(helper2.getInstance().activeSheetIndex).toBe(1);
+                    done();
+                })
             });
         });
 
@@ -686,6 +688,7 @@ describe('Collaborative Editing ->', () => {
 
         it('Remove Hyperlink', (done: Function) => {
             helper.setAnimationToNone('#spreadsheet_contextmenu');
+            helper.getElement().focus();
             helper.openAndClickCMenuItem(6, 0, [11]);
             setTimeout(() => {
                 expect(getCell(6, 0, sheets2[0]).hyperlink).toBeUndefined();
@@ -806,9 +809,7 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Chart Insert - Undo & Redo', (done: Function) => {
-            const tabObj: any = getComponent(helper.getElementFromSpreadsheet('.e-tab'), 'tab');
-            tabObj.selectedItem = 1;
-            tabObj.dataBind();
+            helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
                 expect(getCell(5, 3, sheets2[0]).chart.length).toBe(0);
@@ -841,9 +842,7 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
-                const tabObj: any = getComponent(helper.getElementFromSpreadsheet('.e-tab'), 'tab');
-                tabObj.selectedItem = 1;
-                tabObj.dataBind();
+                helper.switchRibbonTab(1);
                 helper.click('#spreadsheet_redo');
                 setTimeout(() => {
                     expect(getCell(5, 3, sheets2[0]).chart.length).toBe(0);
@@ -854,7 +853,7 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Protect sheet', (done: Function) => {
-            (helper.getElementFromSpreadsheet('.e-tab-header').children[0].children[5] as HTMLElement).click();
+            helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
                 helper.setAnimationToNone('.e-protect-dlg');
@@ -938,14 +937,14 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Hide Headers', (done: Function) => {
-            (helper.getElementFromSpreadsheet('.e-tab-header').children[0].children[6] as HTMLElement).click();
+            helper.switchRibbonTab(5);
             helper.click('#' + helper.id + '_headers');
             setTimeout(() => {
                 expect(sheets2[0].showHeaders).toBeFalsy();
                 expect(sheets2[1].showHeaders).toBeTruthy();
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 done();
-            });
+            }, 30);
         });
 
         it('Show Headers', (done: Function) => {
@@ -957,7 +956,6 @@ describe('Collaborative Editing ->', () => {
                 done();
             });
         });
-
 
         it('Hide Gridlines', (done: Function) => {
             helper.click('#' + helper.id + '_gridlines');
@@ -1020,7 +1018,7 @@ describe('Collaborative Editing ->', () => {
                 expect(getCell(2, 7, sheets2[1]).value as any).toBe(50);
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 done();
-            });
+            }, 10);
         });
 
         it('Insert column before - Undo & Redo', (done: Function) => {
@@ -1042,8 +1040,8 @@ describe('Collaborative Editing ->', () => {
                     expect(getCell(1, 7, sheets2[1]).value as any).toBe(10);
                     expect(getCell(2, 7, sheets2[1]).value as any).toBe(50);
                     done();
-                });
-            });
+                }, 10);
+            }, 10);
         });
 
         it('Insert column after', (done: Function) => {
@@ -1356,7 +1354,7 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Filter apply', (done: Function) => {
-            (helper.getElementFromSpreadsheet('.e-tab-header').children[0].children[2] as HTMLElement).click();
+            helper.switchRibbonTab(1);
             helper.getInstance().activeSheetIndex = 1;
             helper.getInstance().dataBind();
             helper2.getInstance().activeSheetIndex = 0;

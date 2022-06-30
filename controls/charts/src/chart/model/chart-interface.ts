@@ -69,7 +69,6 @@ export interface IPointEventArgs extends IChartEventArgs {
     /** Defines current window page y location */
     pageY?: number;
 }
-
 export interface ISharedTooltipRenderEventArgs extends IChartEventArgs {
     /** Defines tooltip text collections */
     text?: string[];
@@ -366,6 +365,7 @@ export interface IThemeStyle {
     selectionRectFill: string;
     selectionRectStroke: string;
     selectionCircleStroke: string;
+    tabColor: string;
 }
 
 export interface IRangeSelectorRenderEventArgs extends IChartEventArgs {

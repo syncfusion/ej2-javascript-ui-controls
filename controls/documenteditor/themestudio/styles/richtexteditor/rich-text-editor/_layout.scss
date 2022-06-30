@@ -995,6 +995,9 @@
     }
 
     .e-rte-table-popup.e-popup-open .e-insert-table-btn {
+      @if $skin-name == 'FluentUI' {
+        margin-top: $rte-table-popup-btn-margin-top;
+      }
       width: 100%;
     }
 

@@ -162,6 +162,10 @@
     .e-sort-descend::before {
         content: '\e7d8' !important;
     }
+
+    .e-field-list-search-icon::before {
+      content: '\e754' !important;
+    }
     // sass-lint:enable-all
   }
 

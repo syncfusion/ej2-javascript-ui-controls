@@ -3,7 +3,7 @@ import { Component, EventHandler, Collection, Property, Event, EmitType, formatU
 import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, Complex, getInstance, L10n } from '@syncfusion/ej2-base';
 import { append, closest, isNullOrUndefined, remove, classList, Touch, SwipeEventArgs, KeyboardEvents, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
-import { CarouselModel, CarouselItemModel, CarouselAnimationSettingsModel } from './carousel-model';
+import { CarouselModel, CarouselItemModel } from './carousel-model';
 
 // Constant variables
 const CLS_CAROUSEL: string = 'e-carousel';
@@ -35,6 +35,7 @@ const CLS_TEMPLATE: string = 'e-template';
 const CLS_SLIDE_ANIMATION: string = 'e-carousel-slide-animation';
 const CLS_FADE_ANIMATION: string = 'e-carousel-fade-animation';
 const CLS_CUSTOM_ANIMATION: string = 'e-carousel-custom-animation';
+const CLS_ANIMATION_NONE: string = "e-carousel-animation-none";
 const CLS_PREV_SLIDE: string = 'e-prev';
 const CLS_NEXT_SLIDE: string = 'e-next';
 const CLS_TRANSITION_START: string = 'e-transition-start';
@@ -64,7 +65,7 @@ export type CarouselButtonVisibility = 'Hidden' | 'Visible' | 'VisibleOnHover';
  * * `Slide` - The carousel item transition happens with slide animation.
  * * `Fade` - The Carousel item transition happens with fade animation.
  */
-export type CarouselAnimationEffect = 'None' | 'Fade' | 'Slide';
+export type CarouselAnimationEffect = 'None' | 'Fade' | 'Slide' | 'Custom';
 
 /** An interface that holds details when changing the slide. */
 export interface SlideChangingEventArgs extends BaseEventArgs {
@@ -137,30 +138,6 @@ export class CarouselItem extends ChildProperty<CarouselItem>  {
 
 }
 
-/** Specifies the animation configuration for carousel items. */
-export class CarouselAnimationSettings extends ChildProperty<CarouselAnimationSettings> {
-
-    /**
-     * Specifies the type of animation. The possible values for this property as follows
-     * * None
-     * * Slide
-     * * Fade
-     *
-     * @default 'Slide'
-     */
-    @Property('Slide')
-    public effect: CarouselAnimationEffect;
-
-    /**
-     * Specifies the custom animation effect.
-     *
-     * @default null
-     */
-    @Property()
-    public customEffect: string;
-
-}
-
 @NotifyPropertyChanges
 export class Carousel extends Component<HTMLElement> implements INotifyPropertyChanged {
     private autoSlideInterval: any;
@@ -180,12 +157,16 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     public items: CarouselItemModel[];
 
     /**
-     * Specifies the animation setting for the carousel component.
-     *
-     * @default { effect: 'Slide', customEffect: null }
-     */
-    @Complex<CarouselAnimationSettingsModel>({}, CarouselAnimationSettings)
-    public animation: CarouselAnimationSettingsModel;
+     *  Specifies the type of animation effects. The possible values for this property as follows
+     *  * None
+     *  * Slide
+     *  * Fade
+     *  * Custom
+     * 
+     *  @default 'Slide'
+     * */
+     @Property('Slide')
+     public animationEffect: CarouselAnimationEffect;
 
     /**
      * Accepts the template for previous navigation button.
@@ -283,6 +264,14 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public autoPlay: boolean;
+
+    /**
+     * Defines whether the slide transition gets pause on hover or not.
+     *
+     * @default true
+     */
+    @Property(true)
+    public pauseOnHover: boolean;
 
     /**
      * Defines whether the slide transitions loop end or not. When set to false, the transition stops at last slide.
@@ -405,12 +394,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         let target: Element;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-            case 'animation':
-                for (const propName of Object.keys(newProp.animation)) {
-                    if (propName === 'customEffect' && !isNullOrUndefined(oldProp.animation.customEffect)) {
-                        removeClass([this.element.querySelector(`.${CLS_ITEMS}`)], oldProp.animation.customEffect);
-                    }
-                }
+            case 'animationEffect':
                 this.applyAnimation();
                 break;
             case 'cssClass':
@@ -692,12 +676,21 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private applyAnimation(): void {
-        const animationTarget: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
-        removeClass([animationTarget], [CLS_CUSTOM_ANIMATION, CLS_FADE_ANIMATION, CLS_SLIDE_ANIMATION]);
-        if (this.animation.customEffect) {
-            addClass([animationTarget], [CLS_CUSTOM_ANIMATION, this.animation.customEffect]);
-        } else if (this.animation.effect !== 'None') {
-            addClass([animationTarget], this.animation.effect === 'Fade' ? CLS_FADE_ANIMATION : CLS_SLIDE_ANIMATION);
+        removeClass([this.element], [CLS_CUSTOM_ANIMATION, CLS_FADE_ANIMATION, CLS_SLIDE_ANIMATION, CLS_ANIMATION_NONE]);
+        switch (this.animationEffect)
+        {
+            case 'Slide':
+                addClass([this.element], CLS_SLIDE_ANIMATION);
+                break;
+            case 'Fade':
+                addClass([this.element], CLS_FADE_ANIMATION);
+                break;
+            case 'None':
+                addClass([this.element], CLS_ANIMATION_NONE);
+                break;
+            case 'Custom':
+                addClass([this.element], CLS_CUSTOM_ANIMATION);
+                break;
         }
     }
 
@@ -802,15 +795,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 isSwiped: isSwiped
             };
             let slideHeight: number;
-            if (this.animation.customEffect) {
-                if (direction === 'Previous') {
-                    addClass([args.nextSlide], CLS_NEXT_SLIDE);
-                    addClass([args.currentSlide], CLS_PREV_SLIDE);
-                } else {
-                    addClass([args.currentSlide], CLS_PREV_SLIDE);
-                    addClass([args.nextSlide], CLS_NEXT_SLIDE);
-                }
-            } else if (this.animation.effect === 'Slide') {
+            if (this.animationEffect === 'Slide') {
                 if (direction === 'Previous') {
                     addClass([args.nextSlide], CLS_PREV_SLIDE);
                     slideHeight = args.nextSlide.offsetHeight;
@@ -821,9 +806,17 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     slideHeight = args.nextSlide.offsetHeight;
                     addClass([args.currentSlide, args.nextSlide], CLS_TRANSITION_START);
                 }
-            } else if (this.animation.effect === 'Fade') {
+            } else if (this.animationEffect === 'Fade') {
                 removeClass([args.currentSlide], CLS_ACTIVE);
                 addClass([args.nextSlide], CLS_ACTIVE);
+            } else if (this.animationEffect === 'Custom') {
+                if (direction === 'Previous') {
+                    addClass([args.nextSlide], CLS_NEXT_SLIDE);
+                    addClass([args.currentSlide], CLS_PREV_SLIDE);
+                } else {
+                    addClass([args.currentSlide], CLS_PREV_SLIDE);
+                    addClass([args.nextSlide], CLS_NEXT_SLIDE);
+                }
             } else {
                 this.onTransitionEnd();
             }
@@ -1019,7 +1012,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             if (this.buttonsVisibility === 'VisibleOnHover' && navigator) {
                 removeClass([].slice.call(navigator.childNodes), CLS_HOVER_ARROWS);
             }
-            addClass([this.element], CLS_HOVER);
+            if (this.pauseOnHover) {
+                addClass([this.element], CLS_HOVER);
+            }
             break;
         case 'mouseleave':
             if (this.buttonsVisibility === 'VisibleOnHover' && navigator) {

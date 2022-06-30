@@ -96,19 +96,19 @@ export class FilterDialog {
             buttons: [
                 {
                     buttonModel: {
-                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE),
+                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE) + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                         iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
                         content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.filterObject ? false : true)
                     }
                 },
                 {
                     buttonModel: {
-                        cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                        cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true
                     }
                 },
                 {
                     click: this.closeFilterDialog.bind(this),
-                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }],
             closeOnEscape: this.parent.renderMode === 'Popup' ? false : true,
             target: target,
@@ -207,7 +207,7 @@ export class FilterDialog {
         this.editorSearch = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('search') + ' ' + '&#8220' + filterCaption + '&#8220',
             enableRtl: this.parent.enableRtl,
-            cssClass: cls.EDITOR_SEARCH_CLASS,
+            cssClass: cls.EDITOR_SEARCH_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             showClearButton: true,
             change: (e: MaskChangeEventArgs) => {
                 if (this.parent.dataType === 'olap') {
@@ -243,7 +243,8 @@ export class FilterDialog {
             nodeSelected: (args: NodeSelectEventArgs) => {
                 removeClass([args.node], 'e-active');
                 args.cancel = true;
-            }
+            },
+            cssClass: this.parent.cssClass
         });
         this.allMemberSelect.isStringTemplate = true;
         if (!isNullOrUndefined(this.parent.currentTreeItems)) {
@@ -268,7 +269,8 @@ export class FilterDialog {
                 removeClass([args.node], 'e-active');
                 args.cancel = true;
             },
-            expandOn: 'None'
+            expandOn: 'None',
+            cssClass: this.parent.cssClass
         });
         this.memberTreeView.isStringTemplate = true;
         this.memberTreeView.appendTo(treeViewContainer);
@@ -279,7 +281,7 @@ export class FilterDialog {
         if (this.parent.dataType === 'pivot' && treeData && treeData.length > 0) {
             let sortOrder: string = this.parent.engineModule.fieldList[fieldName].sort;
             let sortWrapper: HTMLElement = createElement('div', {
-                className: cls.FILTER_SORT_CLASS + ' e-btn-group' + (this.parent.enableRtl ? ' ' + cls.RTL : ''),
+                className: cls.FILTER_SORT_CLASS + ' e-btn-group' + (this.parent.enableRtl ? ' ' + cls.RTL : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 id: this.parent.element.id + '_Member_Sort'
             });
             this.parent.element.appendChild(sortWrapper);
@@ -292,11 +294,11 @@ export class FilterDialog {
                 id: this.parent.element.id + '_Sort_Descend', attrs: { 'type': 'button' }
             });
             let sortBtnElement: Button = new Button({
-                iconCss: cls.ICON + ' ' + cls.SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl
+                iconCss: cls.ICON + ' ' + cls.SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass
             });
             sortBtnElement.appendTo(sortAscendElement);
             sortBtnElement = new Button({
-                iconCss: cls.ICON + ' ' + cls.SORT_DESCEND_ICON_CLASS, enableRtl: this.parent.enableRtl
+                iconCss: cls.ICON + ' ' + cls.SORT_DESCEND_ICON_CLASS, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass
             });
             sortBtnElement.appendTo(sortDescendElement);
             sortWrapper.appendChild(sortAscendElement);
@@ -634,7 +636,8 @@ export class FilterDialog {
             items: items,
             height: '100%',
             selectedItem: selectedIndex,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            cssClass: this.parent.cssClass
         });
         this.tabObj.isStringTemplate = true;
         this.tabObj.appendTo(wrapper);
@@ -944,7 +947,9 @@ export class FilterDialog {
                     } else {
                         return;
                     }
-                }, width: '100%'
+                },
+                width: '100%',
+                cssClass: this.parent.cssClass
             });
             let inputObj2: NumericTextBox = new NumericTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
@@ -962,7 +967,9 @@ export class FilterDialog {
                     } else {
                         return;
                     }
-                }, width: '100%'
+                },
+                width: '100%',
+                cssClass: this.parent.cssClass
             });
             inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);
@@ -981,7 +988,9 @@ export class FilterDialog {
                     } else {
                         return;
                     }
-                }, width: '100%'
+                },
+                width: '100%',
+                cssClass: this.parent.cssClass
             });
             let inputObj2: MaskedTextBox = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('enterValue'),
@@ -995,7 +1004,9 @@ export class FilterDialog {
                     } else {
                         return;
                     }
-                }, width: '100%'
+                },
+                width: '100%',
+                cssClass: this.parent.cssClass
             });
             inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);

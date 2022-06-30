@@ -615,10 +615,10 @@ export class Toolbar {
         this.container.showPropertiesPane = !this.container.restrictEditing;
     }
     /**
-    * @private
-    * @param {boolean} enable - Enable/Disable restrictEditing changes toolbar item.
-    * @returns {void}
-    */
+     * @private
+     * @param {boolean} enable - Enable/Disable restrictEditing changes toolbar item.
+     * @returns {void}
+     */
     public toggleRestrictEditing(enable: boolean): void {
         const restrictEditingId: string = this.container.element.id + TOOLBAR_ID + RESTRICT_EDITING_ID;
         const element: HTMLElement = document.getElementById(restrictEditingId);
@@ -850,6 +850,9 @@ export class Toolbar {
         if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
             (protectionType === 'FormFieldsOnly' || protectionType === 'CommentsOnly'))) {
             this.enableDisableUndoRedo();
+        }
+        if (this.documentEditor.documentHelper.isTrackedOnlyMode) {
+            this.toolbar.enableItems(document.getElementById(id + TRACK_ID).parentElement, false)
         }
     }
     private containsItem(id: string): boolean {

@@ -536,6 +536,18 @@ export class DataManipulation {
                 srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
             }
             const modifiedData: Object = new DataManager(parentData).executeLocal(srtQry);
+            if (this.parent.allowRowDragAndDrop && !isNullOrUndefined(this.parent.rowDragAndDropModule['draggedRecord']) &&
+            this.parent.rowDragAndDropModule['droppedRecord'].hasChildRecords && this.parent.rowDragAndDropModule['dropPosition'] !== 'middleSegment') {
+                var dragdIndex = (modifiedData as ITreeData[]).indexOf(this.parent.rowDragAndDropModule['draggedRecord']);
+                (modifiedData as ITreeData[]).splice(dragdIndex, 1);
+                var dropdIndex = (modifiedData as ITreeData[]).indexOf(this.parent.rowDragAndDropModule['droppedRecord']);
+                if (this.parent.rowDragAndDropModule['droppedRecord'].hasChildRecords && this.parent.rowDragAndDropModule['dropPosition'] === 'topSegment') {
+                    (modifiedData as ITreeData[]).splice(dropdIndex, 0, this.parent.rowDragAndDropModule['draggedRecord']);
+                }
+                else if (this.parent.rowDragAndDropModule['dropPosition'] === 'bottomSegment') {
+                    (modifiedData as ITreeData[]).splice(dropdIndex + 1, 0, this.parent.rowDragAndDropModule['draggedRecord']);
+                }
+            }
             const sortArgs: { modifiedData: ITreeData[], filteredData: ITreeData[], srtQry: Query}
       = {modifiedData: <Object[]>modifiedData, filteredData: results, srtQry: srtQry};
             this.parent.notify('createSort', sortArgs); results = sortArgs.modifiedData;

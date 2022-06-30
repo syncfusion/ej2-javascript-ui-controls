@@ -2,8 +2,9 @@
  * To render holidays and weekends in Gantt
  */
 import { Gantt } from '../base/gantt';
-import { createElement, formatUnit, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, formatUnit, remove } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 export class NonWorkingDay {
     private parent: Gantt;
@@ -64,11 +65,12 @@ export class NonWorkingDay {
         let toDate: Date;
         const container: HTMLElement = createElement('div');
         const height: number = this.parent.contentHeight;
-        let toolbarHeight: number = 0;
-        if(!isNullOrUndefined(this.parent.toolbarModule)) {
+      // eslint-disable-next-line
+         let toolbarHeight: number = 0;
+        if(!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
            toolbarHeight =  this.parent.toolbarModule.element.offsetHeight 
         }
-        const viewportHeight: number = this.parent.ganttHeight- toolbarHeight-this.parent.ganttChartModule.chartTimelineContainer.offsetHeight; 
+        const viewportHeight: number = this.parent.ganttHeight- toolbarHeight-this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
         for (let i: number = 0; i < this.parent.holidays.length; i++) {
             if (this.parent.holidays[i].from && this.parent.holidays[i].to) {
                 fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].from);
@@ -168,6 +170,7 @@ export class NonWorkingDay {
 
     private updateHolidayLabelHeight(): void {
         const height: number = this.parent.getContentHeight();
+        // eslint-disable-next-line
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
            toolbarHeight =  this.parent.toolbarModule.element.offsetHeight 

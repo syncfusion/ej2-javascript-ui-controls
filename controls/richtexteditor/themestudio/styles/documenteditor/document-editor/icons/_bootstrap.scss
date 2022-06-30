@@ -172,25 +172,23 @@
 
   .e-de-table-border-setting {
     border: 1px solid $de-border-dlg-border-setting-inside-border;
-    height: 48px;
+    height: 40px;
     left: 5px;
     position: relative;
     top: 5px;
-    width: 48px;
+    width: 40px;
   }
 
   .e-de-table-border-setting-genral {
     border: 1px solid $de-border-dlg-border-setting-divs-color;
-    display: inline-block;
-    height: 60px;
-    width: 60px;
+    height: 52px;
+    width: 52px;
   }
 
   .e-de-table-border-preview-genral {
     border: 1px solid $de-border-dlg-border-preview-divs-color;
-    display: inline-block;
-    height: 25px;
-    width: 25px;
+    height: 24px;
+    width: 24px;
   }
 
   .e-de-table-border-inside-setting:hover {
@@ -244,10 +242,40 @@
     top: 2px;
   }
 
+  .e-de-para-border-none-setting::before {
+    content: '\e93f';
+    font-size: $de-border-none-setting-font-size;
+    position: absolute;
+  }
+
+  .e-de-para-border-box-setting::before {
+    content: '\e940';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
+  .e-de-para-border-shadow-setting::before {
+    content: '\e942';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
+  .e-de-para-border-custom-setting::before {
+    content: '\e945';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
   .e-de-table-border-toptop-alignment::before {
     content: '\e281';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -255,7 +283,7 @@
   .e-de-table-border-topcenter-alignment::before {
     content: '\e276';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -263,7 +291,7 @@
   .e-de-table-border-topbottom-alignment::before {
     content: '\e298';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -271,7 +299,7 @@
   .e-de-table-border-diagionalup-alignment::before {
     content: '\e262';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -279,7 +307,7 @@
   .e-de-table-border-diagionaldown-alignment::before {
     content: '\e265';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -287,7 +315,7 @@
   .e-de-table-border-bottomleft-alignment::before {
     content: '\e291';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -295,7 +323,7 @@
   .e-de-table-border-bottomcenter-alignment::before {
     content: '\e287';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -303,7 +331,7 @@
   .e-de-table-border-bottomright-alignment::before {
     content: '\e288';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }

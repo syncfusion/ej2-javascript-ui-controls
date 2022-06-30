@@ -1,4 +1,15 @@
 @include export-module('treegrid-tailwind-dark-icons') {
+  #{&}.e-treegrid,
+  .e-grid-menu {
+    .e-indent::before {
+      content: '\e810';
+    }
+
+    .e-outdent::before {
+      content: '\e72a';
+    }
+  }
+
   .e-treegrid {
     .e-treegridexpand::before,
     .e-treegridcollapse::before {

@@ -1488,7 +1488,7 @@ export class WordExport {
             if (item.hasOwnProperty('fieldType') && item.fieldType === 1) {
                 return;
             }
-            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('bookmarkType') && (previousNode.bookmarkType === 0 && !(previousNode.name.indexOf('_Toc') >= 0))) {
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('bookmarkType') && (previousNode.bookmarkType === 0 && !(previousNode.name.indexOf('_Toc') >= 0) && isNullOrUndefined(item.revisionIds))) {
                 return;
             }
 
@@ -1594,6 +1594,9 @@ export class WordExport {
             writer.writeStartElement(undefined, 'r', this.wNamespace);
             this.serializeCharacterFormat(writer, item.characterFormat);
             writer.writeStartElement(undefined, 'footnoteReference', this.wNamespace);
+            if(this.document.footnotes.continuationNotice && this.efRelationShipId === 0) {
+                this.efRelationShipId = 1;
+            }
             efId = this.getEFNextRelationShipID();
             writer.writeAttributeString(undefined, 'id', this.wNamespace, efId);
             this.addFootnotesEndnotes(ef, 'footnote', efId);
@@ -3920,7 +3923,7 @@ export class WordExport {
         this.serializeCellWidth(xmlWriter, cellFormat);
         this.serializeCellMargins(xmlWriter, cellFormat);
         xmlWriter.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-        this.serializeBorders(xmlWriter, cellFormat.borders, 8);
+        this.serializeBorders(xmlWriter, cellFormat.borders, 8, false);
         xmlWriter.writeEndElement(); // end of tcBorders
         this.serializeShading(xmlWriter, cell.cellFormat.shading);
         this.serializeTableCellDirection(xmlWriter, cellFormat);
@@ -4146,7 +4149,7 @@ export class WordExport {
             writer.writeEndElement();
             if (isNullOrUndefined(this.spanCellFormat)) {
                 writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-                this.serializeBorders(writer, cell.cellFormat.borders, 8);
+                this.serializeBorders(writer, cell.cellFormat.borders, 8, false);
                 writer.writeEndElement();
             }
             if (!endProperties) {
@@ -4184,7 +4187,7 @@ export class WordExport {
         }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-        this.serializeBorders(writer, cellFormat.borders, 8);
+        this.serializeBorders(writer, cellFormat.borders, 8, false);
         writer.writeEndElement();
         //w:shd -  Table Cell Shading
         this.serializeShading(writer, cell.cellFormat.shading);
@@ -4310,7 +4313,7 @@ export class WordExport {
         writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
         writer.writeEndElement();
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
-        this.serializeBorders(writer, cell.cellFormat.borders, 8);
+        this.serializeBorders(writer, cell.cellFormat.borders, 8, false);
         writer.writeEndElement();
         writer.writeEndElement(); //end tcPr
         writer.writeStartElement('w', 'p', this.wNamespace);
@@ -4697,26 +4700,37 @@ export class WordExport {
                 return 'clear';
         }
     }
+    //serialize the paragraph border
+    private serializeParagraphBorders(writer: XmlWriter, formatPara: any): void {
+        let borders: any = formatPara.borders;
+        writer.writeStartElement(undefined, 'pBdr', this.wNamespace);
+        this.serializeBorders(writer, formatPara.borders, 8, true);
+        writer.writeEndElement();
+    }
     // Serialize the table borders
     private serializeTableBorders(writer: XmlWriter, format: any): void {
         let borders: any = format.borders;
         // if (IsNoneBorder(borders))
         //     return;
         writer.writeStartElement(undefined, 'tblBorders', this.wNamespace);
-        this.serializeBorders(writer, format.borders, 8);
+        this.serializeBorders(writer, format.borders, 8, false);
         writer.writeEndElement();
     }
     // Serialize the borders.
-    private serializeBorders(writer: XmlWriter, borders: any, multipler: number): void {
+    private serializeBorders(writer: XmlWriter, borders: any, multipler: number, isParagraphBorder: boolean): void {
         this.serializeBorder(writer, borders.top, 'top', multipler);
         this.serializeBorder(writer, borders.left, 'left', multipler);
         this.serializeBorder(writer, borders.bottom, 'bottom', multipler);
         this.serializeBorder(writer, borders.right, 'right', multipler);
-
-        this.serializeBorder(writer, borders.horizontal, 'insideH', multipler);
-        this.serializeBorder(writer, borders.vertical, 'insideV', multipler);
-        this.serializeBorder(writer, borders.diagonalDown, 'tl2br', multipler);
-        this.serializeBorder(writer, borders.diagonalUp, 'tr2bl', multipler);
+        if (isParagraphBorder) {
+            this.serializeBorder(writer, borders.horizontal, 'between', multipler);
+            this.serializeBorder(writer, borders.vertical, 'bar', multipler);
+        } else {
+            this.serializeBorder(writer, borders.horizontal, 'insideH', multipler);
+            this.serializeBorder(writer, borders.vertical, 'insideV', multipler);
+            this.serializeBorder(writer, borders.diagonalDown, 'tl2br', multipler);
+            this.serializeBorder(writer, borders.diagonalUp, 'tr2bl', multipler);
+        }
     }
     // Serialize the table layout element
     private serializeTblLayout(writer: XmlWriter, format: any): void {
@@ -5008,6 +5022,7 @@ export class WordExport {
         if (isNullOrUndefined(paragraphFormat)) {
             return;
         }
+        this.serializeParagraphBorders(writer, paragraphFormat);
         if (!isNullOrUndefined(paragraphFormat.styleName)) {
             writer.writeStartElement(undefined, 'pStyle', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, paragraphFormat.styleName);
@@ -5850,13 +5865,13 @@ export class WordExport {
         writer.writeEndElement();
     }
     //Serialize the levelOverrides
-    private serializeLevelOverrides(writer: XmlWriter, listLevel: any, levelIndex: number): void {
+    private serializeLevelOverrides(writer: XmlWriter, listLevel: any, levelIndex: number) : void {
         writer.writeStartElement(undefined, 'lvlOverride', this.wNamespace);
         writer.writeAttributeString(undefined, 'ilvl', this.wNamespace, levelIndex.toString());
         writer.writeStartElement(undefined, 'startOverride', this.wNamespace);
         writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
         writer.writeEndElement();
-        writer.writeEndElement();
+        writer.writeEndElement();     
     }
     private getLevelPattern(levelPattern: any): string {
         let patternType: string;
@@ -5942,6 +5957,9 @@ export class WordExport {
                     break;
                 case 'CommentsOnly':
                     editMode = 'comments';
+                    break;
+                case 'RevisionsOnly':
+                    editMode = 'trackedChanges';
                     break;
             }
             writer.writeAttributeString('w', 'edit', this.wNamespace, editMode);

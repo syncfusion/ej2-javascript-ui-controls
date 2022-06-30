@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';
@@ -1473,6 +1473,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         this.updateChildCheckState(childItems, this.treeData[index]);
                     }
                 }
+                this.validNodes = (this.enablePersistence) ? this.checkedNodes :  this.validNodes;
             }
             this.setProperties({ checkedNodes: this.validNodes }, true);
         }
@@ -4524,17 +4525,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 for(let j:number=0; j<cNodes.length;j++)
                 {        
                     let returnValue:boolean = (this.sortOrder === 'Ascending')?cNodes[j].textContent.toUpperCase()>li[i].innerText.toUpperCase():cNodes[j].textContent.toUpperCase()<li[i].innerText.toUpperCase();
-                    if(returnValue)
-                    {
-                        refNode = cNodes[j];
-                        dropUl.insertBefore(li[i], refNode);
+                    if (returnValue) {
+                        dropUl.insertBefore(li[i], cNodes[j]);
                         break;
                     }
-                    else
-                    {
-                        refNode = cNodes[cNodes.length];
-                        dropUl.insertBefore(li[i], refNode);
-                    }                     
+                    dropUl.insertBefore(li[i], cNodes[cNodes.length]);  
                 }
             }
         } 

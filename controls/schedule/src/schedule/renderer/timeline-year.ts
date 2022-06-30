@@ -242,6 +242,9 @@ export class TimelineYear extends Year {
                 } else {
                     addClass([td], cls.OTHERMONTH_CLASS);
                 }
+                if (td.classList.contains(cls.OTHERMONTH_CLASS)) {
+                    continue;
+                }
                 td.appendChild(dateHeader);
                 if (isDateAvail) {
                     td.setAttribute('data-date', date.getTime().toString());

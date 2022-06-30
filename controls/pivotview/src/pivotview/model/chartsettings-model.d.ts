@@ -786,7 +786,7 @@ export interface EmptyPointSettingsModel {
 
     /**
      * Allows you To customize the mode of empty points.
-     * @default Gap
+     * @default Zero
      */
     mode?: EmptyPointMode | AccEmptyPointMode;
 
@@ -1522,7 +1522,7 @@ export interface PivotChartSeriesEmptyPointSettingsModel {
 
     /**
      * To customize the mode of empty points.
-     * @default Gap
+     * @default Zero
      */
     mode?: EmptyPointMode | AccEmptyPointMode;
 

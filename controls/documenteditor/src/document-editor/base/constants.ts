@@ -54,3 +54,5 @@ export const beforeFileOpenEvent: string = 'beforeFileOpen';
 export const internalviewChangeEvent: string = 'internalviewChange';
 /** @hidden */
 export const beforeXmlHttpRequestSend: string = 'beforeXmlHttpRequestSend';
+/** @hidden */
+export const protectionTypeChangeEvent: string = 'protectionTypeChange';

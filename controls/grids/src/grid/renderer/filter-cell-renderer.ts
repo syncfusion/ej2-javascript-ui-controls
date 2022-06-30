@@ -107,7 +107,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                     const args: InputArgs = {
                         element: input as HTMLInputElement, floatLabelType: 'Never',
                         properties: {
-                            enableRtl: this.parent.enableRtl, showClearButton: true
+                            enableRtl: this.parent.enableRtl, showClearButton: true, cssClass: this.parent.cssClass
                         }
                     };
                     Input.createInput(args, this.parent.createElement);
@@ -166,7 +166,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
         }
         else if (gObj.filterSettings.columns.length) {
             for (let i: number = 0, a: PredicateModel[] = gObj.filterSettings.columns; i < a.length; i++) {
-                let col: PredicateModel = a[i];
+                const col: PredicateModel = a[i];
                 if (col.field === column.field){
                     operators = col.operator;
                 }

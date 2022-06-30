@@ -171,7 +171,7 @@ export class Reorder implements IAction {
         const parent: Column = this.getColParent(column, this.parent.columns as Column[]);
         const cols: Column[] = parent ? parent.columns as Column[] : isFrozen ? this.parent.getColumns() : this.parent.columns as Column[];
         let srcIdx: number = inArray(column, cols);
-         if (((this.parent.isFrozenGrid() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn &&
+        if (((this.parent.isFrozenGrid() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn &&
             !this.parent.enableColumnVirtualization) {
             for (let i: number = 0; i < cols.length; i++) {
                 if (cols[i].field === column.field) {
@@ -254,10 +254,9 @@ export class Reorder implements IAction {
                     }
                 }
                 if (this.parent.getFrozenRightColumnsCount()) {
-                    let frTh: HTMLElement[];
                     const frRows: Element[] = [].slice.call(this.parent.getHeaderContent().querySelector('.e-frozen-right-header')
                         .getElementsByClassName('e-columnheader'));
-                    frTh = [].slice.call(frRows[0].getElementsByClassName('e-headercell'));
+                    const frTh: HTMLElement[] = [].slice.call(frRows[0].getElementsByClassName('e-headercell'));
                     for (let i: number = 0; i < frTh.length; i++) {
                         fHeaders.push(frTh[i]);
                     }
@@ -581,7 +580,7 @@ export class Reorder implements IAction {
                 }
             }
         }
-        let isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
+        const isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
         this.upArrow.style.top = isSticky ? cliRect.top + cliRect.height + 'px' : cliRect.top + cliRect.height - cliRectBase.top + 'px';
         this.downArrow.style.top = isSticky ? cliRect.top - 7 + 'px' : cliRect.top - cliRectBase.top - 7 + 'px';
         this.upArrow.style.left = this.downArrow.style.left = isSticky ? (isLeft ? cliRect.left : cliRect.right) - 4 + 'px' :

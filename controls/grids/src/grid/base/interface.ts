@@ -503,7 +503,7 @@ export interface IGrid extends Component<HTMLElement> {
 
     /**
      * Defines the own class for the grid element.
-     * 
+     *
      * @default ''
      */
     cssClass?: string;
@@ -545,6 +545,12 @@ export interface IGrid extends Component<HTMLElement> {
     isAutoFitColumns?: boolean;
 
     enableDeepCompare?: boolean;
+
+    totalDataRecordsCount?: number;
+
+    disableSelectedRecords?: Object[];
+
+    partialSelectedRecords?: Object[];
 
     prevPageMoving?: boolean;
 
@@ -1097,6 +1103,7 @@ export interface IRow<T> {
 
     foreignKeyData?: Object;
     parentUid?: string;
+    isSelectable?: boolean;
 }
 /**
  * @hidden
@@ -1352,6 +1359,9 @@ export interface RowDataBoundEventArgs {
     row?: Element;
     /** Defines the row height */
     rowHeight?: number;
+
+    /** Defines whether the row should be select or not */
+    isSelectable?: boolean;
 }
 
 export interface HeaderCellInfoEventArgs {
@@ -1569,6 +1579,8 @@ export interface ExcelStyle {
     hAlign?: ExcelHAlign;
     /** Defines the vertical alignment for cell style */
     vAlign?: ExcelVAlign;
+    /** Defines the rotation degree for cell style */
+    rotation?: number;
     /** Defines the bold style for fonts  */
     bold?: boolean;
     /** Defines the indent for cell style */

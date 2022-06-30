@@ -162,7 +162,7 @@ export class Agenda extends AgendaBase implements IRenderer {
                 for (let day: number = 0; day < this.parent.agendaDaysCount; day++) {
                     const filterData: Record<string, any>[] = this.appointmentFiltering(agendaDate);
                     const nTr: Element = this.createTableRowElement(agendaDate, 'data');
-                    if (this.element.querySelector('tr[aria-rowindex="' + parseInt(nTr.getAttribute('aria-rowindex'), 10) + '"]')) {
+                    if (this.element.querySelector('tr[data-row-index="' + parseInt(nTr.getAttribute('data-row-index'), 10) + '"]')) {
                         agendaDate = util.addDays(agendaDate, 1);
                         continue;
                     }
@@ -223,7 +223,7 @@ export class Agenda extends AgendaBase implements IRenderer {
                 prepend([].slice.call(emptyTBody.childNodes), tBody);
                 this.wireEventActions();
                 for (let s: number = 0, element: HTMLCollection = tBody.children; s < element.length; s++) {
-                    if (element[s].getAttribute('aria-rowindex') === topElement.getAttribute('aria-colindex')) {
+                    if (element[s].getAttribute('data-row-index') === topElement.getAttribute('data-column-index')) {
                         const scrollToValue: number = (<HTMLElement>element[s]).offsetTop -
                             (<HTMLElement>this.element.querySelector('.e-agenda-item')).offsetHeight;
                         target.scrollTop = scrollToValue;

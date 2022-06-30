@@ -19,12 +19,12 @@ import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { TableResizer } from '../editor/table-resizer';
-import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle } from '../format/index';
+import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle} from '../format/index';
 import { ParagraphInfo, HelperMethods } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
 import { DocumentHelper } from '../viewer';
 import { ListLevelPattern} from '../../base/types';
-
+import { WBorder } from '../../index';
 /**
  * @private
  */
@@ -917,7 +917,13 @@ export class BaseHistoryInfo {
                     return undefined;
                 }
             }
-            value = previousFormat.getPropertyValue(property);
+            if (property === 'borders') {
+                value = previousFormat.borders.cloneFormat();
+            } else if (this.action.indexOf('Border') >= 0) {
+                value = previousFormat.borders.getBorder(property.replace('Border', ''));
+            } else {
+                value = previousFormat.getPropertyValue(property);
+            }
             previousFormat.copyFormat(format);
             this.currentPropertyIndex++;
         } else {
@@ -1179,6 +1185,14 @@ export class BaseHistoryInfo {
                 return 'bidi';
             case 'ContextualSpacing':
                 return 'contextualSpacing';
+            case 'LeftBorder':
+            case 'TopBorder':
+            case 'RightBorder':
+            case 'BottomBorder':
+            case 'HorizontalBorder':
+            case 'VerticalBorder':
+            case 'Borders':
+                return (this.action[0].toLowerCase() + this.action.slice(1));
         }
         return undefined;
     }

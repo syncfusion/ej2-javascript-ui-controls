@@ -2291,7 +2291,6 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
     describe('Testing Undo redo - remove the two nodes with out edges using group action ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

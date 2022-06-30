@@ -9,7 +9,7 @@ import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex, beginAction } f
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, closest, EventHandler, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, closest, EventHandler, remove, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/index';
 import { sheetsDestroyed, activeCellChanged, workbookFormulaOperation, InsertDeleteModelArgs, checkIsFormula } from '../../workbook/common/index';
 import { insertModel } from './../../workbook/common/index';
@@ -69,10 +69,11 @@ export class SheetTabs {
                 }
             },
             select: (args: MenuEventArgs): void => this.updateSheetTab({ idx: this.dropDownInstance.items.indexOf(args.item) }),
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.beforeOpenHandler(this.dropDownInstance, args.element),
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.beforeOpenHandler(
+                this.dropDownInstance, args.element, l10n.getConstant('ListAllSheets')),
             open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.dropDownInstance, args.element, 'left'),
             cssClass: 'e-sheets-list e-flat e-caret-hide',
-            close: (): void => focus(this.parent.element)
+            close: (): void => this.focusTab(this.tabInstance.element)
         });
         this.dropDownInstance.createElement = this.parent.createElement;
         this.dropDownInstance.appendTo(ddb);
@@ -139,7 +140,6 @@ export class SheetTabs {
         this.parent.activeSheetIndex = args.selectedIndex;
         this.parent.dataBind();
         this.updateDropDownItems(args.selectedIndex, args.previousIndex);
-        focus(this.parent.element);
         const eventArgs: { action: string, sheetID: string } = {
             action: 'registerGridInCalc',
             sheetID: (args.selectedIndex + 1).toString()
@@ -158,7 +158,7 @@ export class SheetTabs {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
     }
 
-    private beforeOpenHandler(instance: DropDownButton, element: HTMLElement): void {
+    private beforeOpenHandler(instance: DropDownButton, element: HTMLElement, localeText?: string): void {
         const viewportHeight: number = this.parent.viewport.height;
         const actualHeight: number = (parseInt(getComputedStyle(element.firstElementChild).height, 10) *
             instance.items.length) + (parseInt(getComputedStyle(element).paddingTop, 10) * 2);
@@ -166,6 +166,9 @@ export class SheetTabs {
             element.style.height = `${viewportHeight}px`; element.style.overflowY = 'auto';
         }
         element.parentElement.style.visibility = 'hidden';
+        if (localeText) {
+            element.setAttribute('aria-label', localeText);
+        }
     }
 
     private openHandler(instance: DropDownButton, element: HTMLElement, positionX: string): void {
@@ -181,6 +184,7 @@ export class SheetTabs {
             wrapper.style.top = `${offset.top - height}px`;
         }
         wrapper.style.visibility = '';
+        focus(element);
     }
 
     private getSheetTabItems(): { tabItems: TabItemModel[], ddbItems: ItemModel[] } {
@@ -197,16 +201,14 @@ export class SheetTabs {
         const items: { tabItems: TabItemModel[], ddbItems: ItemModel[] } = this.getSheetTabItems();
         this.dropDownInstance.items = items.ddbItems;
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        this.tabInstance.items = items.tabItems; this.tabInstance.selectedItem = this.parent.activeSheetIndex;
+        this.tabInstance.items = items.tabItems;
+        this.tabInstance.selectedItem = this.parent.activeSheetIndex;
         this.tabInstance.dataBind();
     }
 
     private addSheetTab(): void {
-        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
-        this.parent.notify(editOperation, eventArgs);
         this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex + 1,  end:
             this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
-        focus(this.parent.element);
     }
 
     private insertSheetTab(args: { startIdx: number, endIdx: number, preventUpdate?: boolean }): void {
@@ -277,7 +279,7 @@ export class SheetTabs {
                 //this.parent.enableFileMenuItems([`${id}_hide_sheet`, `${id}_delete_sheet`], false, true);
                 disableItems.push(`${id}_hide_sheet`, `${id}_delete_sheet`);
             }
-            if (!this.parent.allowInsert) { disableItems.push(`${id}_insert_sheet`); }
+            if (!this.parent.allowInsert || this.parent.isProtected) { disableItems.push(`${id}_insert_sheet`); }
             if (!this.parent.allowDelete && disableItems.indexOf(`${id}_delete_sheet`) > -1 ) { disableItems.push(`${id}_delete_sheet`); }
         }
         if (this.parent.password.length > 0 || this.parent.isProtected) {
@@ -287,7 +289,7 @@ export class SheetTabs {
             if (disableItems.indexOf(`${id}_delete_sheet`) > -1) {
                 disableItems.push(`${id}_delete_sheet`);
             }
-            disableItems.push(`${id}_duplicate`, `${id}_rename`);
+            disableItems.push(`${id}_duplicate`, `${id}_rename`,`${id}_hide_sheet`, `${id}_delete_sheet`,`${id}_insert_sheet`);
         }
         this.parent.enableContextMenuItems(disableItems, false, true);
     }
@@ -346,7 +348,9 @@ export class SheetTabs {
             closest(target, '.e-dlg-container'))) { return; }
         target = document.getElementById(this.parent.element.id + '_rename_input') as HTMLInputElement;
         if (e.type === 'keydown' && (e as KeyboardEvent).keyCode === 27) {
-            this.removeRenameInput(target); focus(this.parent.element); return;
+            this.removeRenameInput(target);
+            this.focusTab(this.tabInstance.element);
+            return;
         }
         const value: string = target.value;
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -367,7 +371,11 @@ export class SheetTabs {
                     this.parent.setSheetPropertyOnMute(this.parent.sheets[idx], 'name', value);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
-                if (e.type === 'keydown' || (closest(e.target as Element, '.e-spreadsheet'))) { focus(this.parent.element); }
+                if (e.type === 'keydown') {
+                    this.focusTab(items);
+                } else if ((closest(e.target as Element, '.e-spreadsheet'))) {
+                    focus(this.parent.element);
+                }
             } else {
                 this.showRenameDialog(target, l10n.getConstant('SheetRenameInvalidAlert'));
             }
@@ -375,6 +383,10 @@ export class SheetTabs {
             this.showRenameDialog(target, l10n.getConstant('SheetRenameEmptyAlert'));
         }
         this.parent.notify(completeAction, { eventArgs: { index: this.parent.getActiveSheet().id, value: value }, action: 'renameSheet' });
+    }
+
+    private focusTab(context: Element): void {
+        focus(select('.e-toolbar-item.e-active .e-tab-wrap', context));
     }
 
     private updateSheetName(args: { value: string, idx: number, items?: Element }): void {
@@ -435,6 +447,8 @@ export class SheetTabs {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
+                args.element.querySelector('.e-footer-content .e-primary').setAttribute(
+                    'aria-label', `${content} ${this.parent.serviceLocator.getService<L10n>(locale).getConstant('Ok')}`);
                 target.focus();
             },
             close: (): void => target.setSelectionRange(0, target.value.length)
@@ -443,7 +457,9 @@ export class SheetTabs {
 
     private focusRenameInput(): void {
         const input: HTMLElement = document.getElementById(this.parent.element.id + '_rename_input');
-        if (input) { input.focus(); }
+        if (input) {
+            input.focus();
+        }
     }
 
     private removeSheetTab(args: {
@@ -483,12 +499,13 @@ export class SheetTabs {
                             if (dlgArgs.cancel) {
                                 args.cancel = true;
                             }
-                            focus(this.parent.element);
+                            args.element.querySelector('.e-footer-content .e-primary').setAttribute(
+                                'aria-label', `${l10n.getConstant('DeleteSheetAlert')} ${l10n.getConstant('Ok')}`);
+                            const item: Element = this.tabInstance.element.querySelector('.e-toolbar-item.e-active');
+                            focus((item.nextElementSibling || item.previousElementSibling).querySelector('.e-tab-wrap'));
                         },
                         buttons: [{
-                            buttonModel: {
-                                content: l10n.getConstant('Ok'), isPrimary: true
-                            },
+                            buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true },
                             click: (): void => {
                                 dialogInst.hide();
                                 this.forceDelete(sheetIndex);
@@ -524,7 +541,6 @@ export class SheetTabs {
                     if (dlgArgs.cancel) {
                         args.cancel = true;
                     }
-                    focus(this.parent.element);
                 }
             });
         }
@@ -547,10 +563,10 @@ export class SheetTabs {
         this.parent.activeSheetIndex = activeIndex;
         this.parent.setProperties({ activeSheetIndex: activeIndex }, true);
         this.parent.renderModule.refreshSheet();
-        this.tabInstance.selectedItem = activeIndex; this.tabInstance.dataBind();
+        this.tabInstance.selectedItem = activeIndex;
+        this.tabInstance.dataBind();
         this.updateDropDownItems(activeIndex);
         this.parent.notify(protectSheet, null);
-        focus(this.parent.element);
     }
 
     private showAggregate(): void {

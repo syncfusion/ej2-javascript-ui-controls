@@ -130,7 +130,8 @@ export class Toolbar {
             container: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
             items: this.parent.toolbarSettings.items,
             mode: tBarMode,
-            target: ele
+            target: ele,
+            cssClass: this.parent.cssClass
         } as IToolbarRenderOptions);
         if (this.parent.toolbarSettings.type === ToolbarType.Expand) {
             addClass([ele], ['e-rte-tb-mobile']);
@@ -241,7 +242,8 @@ export class Toolbar {
                 container: 'toolbar',
                 items: this.parent.toolbarSettings.items,
                 mode: this.getToolbarMode(),
-                target: this.tbElement
+                target: this.tbElement,
+                cssClass: this.parent.cssClass
             } as IToolbarRenderOptions);
             if (!this.parent.inlineMode.enable) {
                 if (this.parent.toolbarSettings.enableFloating) {

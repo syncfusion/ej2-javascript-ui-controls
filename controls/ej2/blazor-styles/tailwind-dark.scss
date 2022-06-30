@@ -26,6 +26,8 @@
 @import "slider/tailwind-dark.scss";
 @import "color-picker/tailwind-dark.scss";
 @import "combo-box/tailwind-dark.scss";
+@import "h-scroll/tailwind-dark.scss";
+@import "v-scroll/tailwind-dark.scss";
 @import "context-menu/tailwind-dark.scss";
 @import "dashboard-layout/tailwind-dark.scss";
 @import "datepicker/tailwind-dark.scss";
@@ -40,8 +42,7 @@
 @import "textbox/tailwind-dark.scss";
 @import "uploader/tailwind-dark.scss";
 @import "dialog/tailwind-dark.scss";
-@import "h-scroll/tailwind-dark.scss";
-@import "v-scroll/tailwind-dark.scss";
+@import "pager/tailwind-dark.scss";
 @import "toolbar/tailwind-dark.scss";
 @import "tab/tailwind-dark.scss";
 @import "treeview/tailwind-dark.scss";
@@ -54,7 +55,6 @@
 @import "document-editor/tailwind-dark.scss";
 @import "document-editor-container/tailwind-dark.scss";
 @import "splitter/tailwind-dark.scss";
-@import "pager/tailwind-dark.scss";
 @import "excel-filter/tailwind-dark.scss";
 @import "grid/tailwind-dark.scss";
 @import "file-manager/tailwind-dark.scss";

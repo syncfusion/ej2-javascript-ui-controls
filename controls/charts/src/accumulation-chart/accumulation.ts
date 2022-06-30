@@ -46,7 +46,7 @@ import { AccumulationAnnotationSettings } from './model/acc-base';
 import { AccumulationAnnotation } from './annotation/annotation';
 import { IPrintEventArgs } from '../chart/model/chart-interface';
 import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
-import { getTitle } from '../common/utils/helper';
+import { getTitle, AccPointData } from '../common/utils/helper';
 import { Index } from '../common/model/base';
 import { IThemeStyle } from '../chart/model/chart-interface';
 import { IAccResizeEventArgs, IAccBeforeResizeEventArgs } from './model/pie-interface';
@@ -744,6 +744,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /** @private */
     public origin: ChartLocation;
     /** @private */
+    public currentLegendIndex: number = 0;
+    /** @private */
+    public currentPointIndex: number = 0;
+    /** @private */
+    public previousTargetId: string = "";
+    /** @private */
+    public isLegendClicked: boolean = false;
+    /** @private */
     public get type(): AccumulationType {
         if (this.series && this.series.length) {
             return this.series[0].type;
@@ -784,6 +792,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.allowServerDataBinding = false;
 
         this.unWireEvents();
+        this.element.setAttribute('tabindex', "0");
+        this.element.setAttribute("class", this.element.getAttribute("class") + " e-accumulationchart-focused");
         this.setCulture();
         this.animateSeries = true;
         if (this.element.id === '') {
@@ -853,6 +863,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         EventHandler.remove(this.element, 'dblclick', this.accumulationOnDoubleClick);
         EventHandler.remove(this.element, 'contextmenu', this.accumulationRightClick);
         EventHandler.remove(this.element, cancel, this.accumulationMouseLeave);
+        EventHandler.remove(this.element, "keydown", this.accumulationChartKeyDown);
+        EventHandler.remove(document.body, 'keydown', this.documentKeyHandler);
+		EventHandler.remove(this.element, "keyup", this.accumulationChartKeyUp);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.accumulationResizeBound
@@ -884,6 +897,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         EventHandler.add(this.element, 'dblclick', this.accumulationOnDoubleClick, this);
         EventHandler.add(this.element, 'contextmenu', this.accumulationRightClick, this);
         EventHandler.add(this.element, cancel, this.accumulationMouseLeave, this);
+        EventHandler.add(this.element, "keydown", this.accumulationChartKeyDown, this);
+        EventHandler.add(document.body, 'keydown', this.documentKeyHandler, this);
+		EventHandler.add(this.element, "keyup", this.accumulationChartKeyUp, this);
         this.accumulationResizeBound = this.accumulationResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1032,6 +1048,42 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+
+        let tabColor: string = '';
+        switch (this.theme) {
+
+            case "HighContrastLight":
+            case "HighContrast":
+                tabColor = "#969696";
+                break;
+            case "MaterialDark":
+            case "FabricDark":
+            case "BootstrapDark":
+            case "Bootstrap4":
+                tabColor = "#66afe9";
+                break;
+            case "Tailwind":
+            case "TailwindDark":
+                tabColor = "#4f46e5";
+                break;
+            case "Bootstrap5":
+            case "Bootstrap5Dark":
+                tabColor = "#0d6efd";
+                break;
+            case "Fluent":
+            case "FluentDark":
+                tabColor = "#9e9e9e";
+                break;
+            default:
+                tabColor = "#9e9e9e";
+                break;
+        }
+        let style: HTMLStyleElement = document.createElement('style');
+        style.setAttribute('id', element.id + "Keyboard_accumulationchart_focus");
+        style.innerHTML = '.e-accumulationchart-focused:focus,path[id*=_Series_0_Point_]:focus, text[id*=_title]:focus' +
+        '{outline: none} .e-accumulationchart-focused:focus-visible,path[id*=_Series_0_Point_]:focus-visible, text[id*=_title]:focus-visible' +
+            '{outline: 1.5px ' + tabColor + ' solid}';
+        document.body.appendChild(style);
     }
 
     /**
@@ -1108,6 +1160,267 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     }
 
     /**
+     * Handles the keyboard onkeydown on chart.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+     public accumulationChartKeyDown(e: KeyboardEvent): boolean {
+        let actionKey: string = "";
+
+        if (this.tooltip.enable && ((e.code == "Tab" && this.previousTargetId.indexOf("Series") > -1) || e.code === "Escape")) {
+            actionKey = "ESC";
+        }
+        if (e.code.indexOf("Arrow") > -1) {
+            e.preventDefault();
+        }
+
+        if (e.ctrlKey && (e.key === 'p')) {
+            e.preventDefault();
+            actionKey = "CtrlP";
+        }
+
+        if (actionKey != "")
+            this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
+
+        return false;
+   }
+
+   /**
+    * Handles the keyboard onkeydown on chart.
+    *
+    * @returns {boolean} false
+    * @private
+    */
+    public accumulationChartKeyUp(e: KeyboardEvent): boolean {
+       let actionKey: string = "";
+       let targetId: string = e.target['id'];
+
+       let legendElement: HTMLElement = getElement(this.element.id + "_chart_legend_translate_g") as HTMLElement;
+       let pagingElement: HTMLElement = getElement(this.element.id + "_chart_legend_pageup") as HTMLElement;
+
+       if (legendElement) {
+            let firstChild: HTMLElement = legendElement.firstElementChild as HTMLElement;
+            let className: string = firstChild.getAttribute("class");
+            if (className && className.indexOf("e-accumulationchart-focused") === -1) {
+                className = className + " e-accumulationchart-focused";
+            }
+            else if(!className) {
+                className = "e-accumulationchart-focused";
+            }
+            firstChild.setAttribute("class", className);
+       }
+       if (pagingElement) { pagingElement.setAttribute("class", "e-accumulationchart-focused"); }
+
+
+       if (e.code == "Tab") {
+  
+           if (this.previousTargetId != "") {
+               if (this.previousTargetId.indexOf("_Point_") > -1 && targetId.indexOf("_Point_") == -1) {
+                   let groupElement: HTMLElement = document.getElementById(this.previousTargetId).parentElement;
+                   this.setTabIndex(groupElement.children[this.currentPointIndex] as HTMLElement,
+                       groupElement.firstElementChild as HTMLElement);
+                   this.currentPointIndex = 0;
+               }
+               else if (this.previousTargetId.indexOf("_chart_legend_page") > -1 && targetId.indexOf("_chart_legend_page") == -1 &&
+                   targetId.indexOf("_chart_legend_g_") == -1) {
+                   this.setTabIndex(e.target as HTMLElement, pagingElement);
+               }
+               else if (this.previousTargetId.indexOf("_chart_legend_g_") > -1 && targetId.indexOf("chart_legend_g_") == -1) {
+                   this.setTabIndex(legendElement.children[this.currentLegendIndex] as HTMLElement,
+                       legendElement.firstElementChild as HTMLElement);
+               }
+           }
+
+        this.previousTargetId = targetId;
+        if (targetId.indexOf("_chart_legend_g_") > -1 && this.highlightMode != "None") {
+          targetId = e.target['lastElementChild'].id;
+          actionKey = "Tab";
+        } 
+        else if(targetId.indexOf("_Point_") > -1 && (this.highlightMode != "None" || this.tooltip.enable)) {
+          actionKey = "Tab";
+        }
+      }
+        else if (e.code.indexOf("Arrow") > -1) {
+            e.preventDefault();
+
+            if (targetId.indexOf("_chart_legend_page") > -1) {
+                (e.target as HTMLElement).removeAttribute("tabindex");
+                this.previousTargetId = targetId = this.element.id + "_chart_legend_page" + (e.code == "ArrowRight" ? "up" : "down");
+                this.focusTarget(getElement(targetId) as HTMLElement);
+            }
+            else if ((targetId.indexOf("_chart_legend_") > -1)) {
+                (e.target as HTMLElement).removeAttribute("tabindex");
+                this.currentLegendIndex += (e.code == "ArrowUp" || e.code == "ArrowRight") ? + 1 : - 1;
+                this.currentLegendIndex = this.getActualIndex(this.currentLegendIndex, legendElement.children.length);
+
+                var currentLegend = legendElement.children[this.currentLegendIndex];
+                this.focusTarget(currentLegend as HTMLElement);
+                this.previousTargetId = targetId = currentLegend.lastElementChild.id;
+                actionKey = this.highlightMode != "None" ? "ArrowMove" : "";
+            }
+            else if (targetId.indexOf("_Point_") > -1) {
+                (e.target as HTMLElement).removeAttribute("tabindex");
+
+                this.currentPointIndex += (e.code == "ArrowUp" || e.code == "ArrowRight") ? + 1 : - 1;
+                let totalLength: number = 0;
+                for (let i: number = 0; i < e.target['parentElement'].children.length; i++) {
+                    totalLength = e.target['parentElement'].children[i].id.indexOf("_Point_") > -1 ? totalLength + 1 : totalLength;
+                }
+                this.currentPointIndex = this.getActualIndex(this.currentPointIndex, totalLength);
+                targetId = this.element.id + "_Series_0_Point_" + this.currentPointIndex;
+                this.focusTarget(getElement(targetId) as HTMLElement);
+                actionKey = this.tooltip.enable ? "ArrowMove" : "";
+            }
+        }
+        else if ((e.code == "Enter" || e.code == "Space") && ((targetId.indexOf("_chart_legend_") > -1) ||
+            (targetId.indexOf("_Point_") > -1))) {
+            targetId = (targetId.indexOf("_chart_legend_g") > -1) ? e.target['lastElementChild'].id : targetId;
+            actionKey = "Enter";
+        }
+
+        if (actionKey !== "") {
+            this.chartKeyboardNavigations(e, targetId, actionKey);
+        }
+
+
+        return false;
+    }
+
+    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+        if (previousElement) {
+            previousElement.removeAttribute("tabindex");
+        }
+        if (currentElement) {
+            currentElement.setAttribute("tabindex", "0");
+        }
+    }
+
+    private getActualIndex(index: number, totalLength: number): number {
+        return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index)
+    }
+
+    private focusTarget(element: HTMLElement): string {
+        let className: string = element.getAttribute("class");
+        element.setAttribute("tabindex", "0");
+        if (className && className.indexOf("e-accumulationchart-focused") === -1) {
+            className = className + " e-accumulationchart-focused";
+        } else if (!className) {
+            className = "e-accumulationchart-focused";
+        }
+        element.setAttribute("tabindex", "0");
+        element.setAttribute("class", className);
+        element.focus();
+        return element.id;
+    }
+
+    /**
+     * Handles the document onkey.
+     *
+     * @private
+     */
+    private documentKeyHandler(e: KeyboardEvent): void {
+        // 74 - J
+        if (e.altKey && e.keyCode === 74 && !isNullOrUndefined(this.element)) {
+            this.element.focus();
+        }
+    };
+
+
+    private chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
+        this.isLegendClicked = false;
+        switch (actionKey) {
+            case "Tab":
+            case "ArrowMove":
+                if (this.accumulationHighlightModule) {
+                    //  this.accumulationHighlightModule.removeHighlightElements();
+                }
+                if (targetId.indexOf("_Point_") > -1) {
+                    let seriesIndex = +(targetId.split("_Series_")[1].split("_Point_")[0]);
+                    let pointIndex = +(targetId.split("_Series_")[1].replace("_Symbol", "").split("_Point_")[1]);
+
+                    let pointRegion: ChartLocation = this.visibleSeries[seriesIndex].points[pointIndex].symbolLocation;
+                    this.mouseX = pointRegion.x + this.initialClipRect.x;
+                    this.mouseY = pointRegion.y + this.initialClipRect.y;
+                    if (this.accumulationHighlightModule) {
+                        let targetElement: Element = getElement(targetId);
+                        if (!isNullOrUndefined(targetElement)) {
+                            if (targetElement.id.indexOf('text') > 1) {
+                                targetElement = getElement(targetElement.id.replace('text', 'shape'));
+                            }
+                            if ((targetElement).hasAttribute('class') && (targetElement).getAttribute('class').indexOf('highlight') > -1) {
+                                return;
+                        }
+                        this.accumulationHighlightModule.calculateSelectedElements(this, targetElement, "mousemove");
+                        return;
+                    }
+                   }
+                   if (this.accumulationTooltipModule) {
+                    let series: AccumulationSeries =this.visibleSeries[seriesIndex];
+                    let data: AccPointData;
+                    if (series.enableTooltip) {
+                        data = new AccPointData(series.points[pointIndex], series);
+                    }
+                       this.accumulationTooltipModule.renderSeriesTooltip(this, data);
+                   }
+               }
+               if (this.accumulationHighlightModule && this.highlightMode !== 'None') {
+                   targetId = targetId.indexOf("_chart_legend_g_") > -1 ? document.getElementById(targetId).firstChild['id'] : targetId;
+                   let legendID: string = this.element.id + '_chart_legend';
+                   let legendItemsId: string[] = [legendID + '_text_', legendID + '_shape_marker_',
+                   legendID + '_shape_'];
+                   for (let i: number = 0; i < legendItemsId.length; i++) {
+                       let id: string = legendItemsId[i];
+                       if (targetId.indexOf(id) > -1) {
+                           document.getElementById(targetId).setAttribute("class", "")
+                           this.accumulationHighlightModule.legendSelection(this, 0, parseInt(targetId.split(id)[1], 10),
+                               getElement(targetId), "mousemove");
+                           break;
+                       }
+                   }
+               }
+               break;
+
+           case "Enter":
+           case "Space":
+               if (targetId.indexOf("_chart_legend_") > -1 && this.accumulationLegendModule) {
+                   this.isLegendClicked = true;
+                   this.accumulationLegendModule.click(e as Event);
+                   this.focusChild(document.getElementById(targetId).parentElement);
+               } else {
+                   if (this.accumulationSelectionModule) {
+                    this.accumulationSelectionModule.calculateSelectedElements(this, document.getElementById(targetId) , "click");
+                   }
+               }
+               break;
+           case "CtrlP":
+               this.print();
+               break;
+           case "ESC":
+               if (this.accumulationTooltipModule) {
+                this.accumulationTooltipModule.removeTooltip(1);
+               }
+               break;
+       }
+
+    }
+
+    private focusChild(element: HTMLElement): string {
+        element.setAttribute("tabindex", "0");
+        let className: string = element.getAttribute("class");
+        element.setAttribute("tabindex", "0");
+        if (className && className.indexOf("e-accumulationchart-focused") === -1) {
+            className = "e-accumulationchart-focused " + className;
+        } else if (!className) {
+            className = "e-accumulationchart-focused";
+        }
+        element.setAttribute("class", className);
+        element.focus();
+        return element.id;
+    }
+
+
+    /**
      * Handles the mouse double click on accumulation chart.
      *
      * @returns {boolean} Mouse double click of accumulation chart.
@@ -1129,7 +1442,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.accumulationLegendModule.click(e);
         }
         if (this.selectionMode !== 'None' && this.accumulationSelectionModule) {
-            this.accumulationSelectionModule.calculateSelectedElements(this, e);
+            this.accumulationSelectionModule.calculateSelectedElements(this, e.target as Element, e.type);
         }
         if (this.visibleSeries[0].explode) {
             this.accBaseModule.processExplode(e);
@@ -1518,6 +1831,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         );
         if (element) {
             element.setAttribute('aria-label', this.title);
+            element.setAttribute('tabindex', "0");
+            element.parentNode.insertBefore(element, this.svgObject.children[1]);
         }
         if (this.subTitle) {
             this.renderSubTitle(options);

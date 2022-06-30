@@ -1,7 +1,7 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, editingResources} from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 interface EJ2Instance extends HTMLElement {
@@ -721,78 +721,15 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             expect(ganttObj.currentViewData[2].ganttProperties.isMilestone).toBeTruthy;
         });
-        afterAll(() => {
-            destroyGantt(ganttObj);
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 2000);
-        });
-    });
-    describe('Context menu resources-', () => {
-        beforeAll((done: Function) => {
-            ganttObj = createGantt(
-                {
-                    dataSource: editingData,
-                    taskFields: {
-                        id: 'TaskID',
-                        name: 'TaskName',
-                        startDate: 'StartDate',
-                        endDate: 'EndDate',
-                        duration: 'Duration',
-                        progress: 'Progress',
-                        dependency: 'Predecessor',
-                        child: 'subtasks',
-                        notes: 'info',
-                        resourceInfo: 'resources'
-                    },
-                    editSettings: {
-                        allowAdding: true,
-                        allowEditing: true,
-                        allowDeleting: true,
-                        allowTaskbarEditing: true,
-                        showDeleteConfirmDialog: true
-                    },
-                    columns: [
-                        { field: 'TaskID', width: 80 },
-                        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
-                        { field: 'StartDate' },
-                        { field: 'EndDate' },
-                        { field: 'Duration' },
-                        { field: 'Progress' },
-                        { field: 'Predecessor' },
-                        { field: 'resources' },
-                        { field: 'info' },
-                    ],
-                    resourceFields: {
-                        id: 'resourceId',
-                        name: 'resourceName'
-                    },
-                    resources: editingResources,
-                    labelSettings: {
-                        leftLabel: 'TaskName',
-                        rightLabel: 'resources'
-                    },
-                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-                    enableContextMenu: true,
-                    allowSelection: true,
-                    height: '450px',
-                    treeColumnIndex: 1,
-                    highlightWeekends: true,
-                    splitterSettings: {
-                        columnIndex: 2
-                    },
-                    projectStartDate: new Date('03/25/2019'),
-                    projectEndDate: new Date('07/28/2019')
-                }, done);
-        });
-        it('Convert  to milestone resources', () => {
-            (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[2];
+        it('merge Task', () => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
             let e: ContextMenuClickEventArgs = {
-                item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+                item: { id: ganttObj.element.id + '_contextMenu_Right' },
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData[2].ganttProperties.isMilestone).toBeTruthy;
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4]['EndDate'], 'MM/dd/yyyy')).toBe('02/15/2019');
         });
         afterAll(() => {
             destroyGantt(ganttObj);
@@ -1217,6 +1154,64 @@ describe('Context-', () => {
             triggerMouseEvent(selectRow, 'contextmenu', 0, 0, false, false, 2);
             let menu: HTMLElement = document.getElementById('testMenuItem') as HTMLElement;
             expect(menu.classList.contains('e-disabled')).toBe(true);
+        });
+    });
+    describe('Context menu -', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: splitTasksData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        segments: 'Segments'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add','Edit','Update','Delete','Cancel','ExpandAll','CollapseAll'],
+                    enableContextMenu: true,
+                    allowSelection: true,
+                    height: '450px',
+                    treeColumnIndex: 1,
+                    highlightWeekends: true,
+                    projectStartDate: new Date('01/28/2019'),
+                    projectEndDate: new Date('03/10/2019')
+                }, done);
+        });
+        it('split task - margin left for parent div', () => {
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "splitTaskbar") {
+                    args.splitDate = ganttObj.dateValidationModule.setTime(ganttObj.defaultEndTime, args.splitDate);
+                }
+            };
+            let ganttElement: HTMLElement = document.querySelector('#'+ ganttObj.element.id) as HTMLElement;
+            ganttElement.style.marginLeft = '350px';
+            ganttObj.splitTask(4, new Date('02/04/2019'));
+            let segment : HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar > div') as HTMLElement;
+            triggerMouseEvent(segment, 'contextmenu', 0, 0, false, false, 2);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_SplitTask' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData[3].ganttProperties.segments.length).toBe(2);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
         });
     });
 });

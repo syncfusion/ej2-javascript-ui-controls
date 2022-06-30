@@ -311,7 +311,9 @@ export class ResponsiveDialogRenderer implements IAction {
         const outerDiv: HTMLElement = this.parent.createElement(
             'div',
             {
-                id: gObj.element.id + 'customfilter', className: 'e-customfilterdiv e-responsive-dialog'
+                id: gObj.element.id + 'customfilter',
+                className: this.parent.cssClass ?
+                    'e-customfilterdiv e-responsive-dialog ' + this.parent.cssClass : 'e-customfilterdiv e-responsive-dialog'
             }
         );
         this.parent.element.appendChild(outerDiv);
@@ -366,7 +368,9 @@ export class ResponsiveDialogRenderer implements IAction {
         const outerDiv: HTMLElement = this.parent.createElement(
             'div',
             {
-                id: gObj.element.id + 'responsive' + id, className: 'e-res' + id + 'div e-responsive-dialog'
+                id: gObj.element.id + 'responsive' + id,
+                className: this.parent.cssClass ?
+                    'e-res' + id + 'div e-responsive-dialog ' + this.parent.cssClass : 'e-res' + id + 'div e-responsive-dialog'
             }
         );
         this.parent.element.appendChild(outerDiv);

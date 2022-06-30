@@ -171,7 +171,7 @@ export class SfdtReader {
         if (!isNullOrUndefined(data.separator)) {
             this.parseBody(data.separator, endnote.separator);
         }
-        if (!isNullOrUndefined(data.continuationNotice) && !(data.continuationNotice.length === 1 && data.continuationNotice[0].inlines.length === 0)) {
+        if (!isNullOrUndefined(data.continuationNotice)) {
             this.parseBody(data.continuationNotice, endnote.continuationNotice);
         }
         if (!isNullOrUndefined(data.continuationSeparator)) {
@@ -1243,7 +1243,6 @@ export class SfdtReader {
                     textFrame.containerShape = shape;
                 }
                 shape.line = lineWidget;
-                this.checkAndApplyRevision(inline, shape);
                 lineWidget.children.push(shape);
                 if (shape.textWrappingStyle !== 'Inline') {
                     paragraph.floatingElements.push(shape);
@@ -1585,6 +1584,7 @@ export class SfdtReader {
     }
     private parseBorders(sourceBorders: any, destBorder: WBorders): void {
         if (!isNullOrUndefined(sourceBorders)) {
+            destBorder.isParsing=true;
             this.parseBorder(sourceBorders.left, destBorder.left);
             this.parseBorder(sourceBorders.right, destBorder.right);
             this.parseBorder(sourceBorders.top, destBorder.top);
@@ -1593,6 +1593,7 @@ export class SfdtReader {
             this.parseBorder(sourceBorders.horizontal, destBorder.horizontal);
             this.parseBorder(sourceBorders.diagonalDown, destBorder.diagonalDown);
             this.parseBorder(sourceBorders.diagonalUp, destBorder.diagonalUp);
+            destBorder.isParsing=false;
         }
     }
     private parseBorder(sourceBorder: any, destBorder: WBorder): void {
@@ -1608,6 +1609,12 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceBorder.hasNoneStyle)) {
                 destBorder.hasNoneStyle = sourceBorder.hasNoneStyle;
+            }
+            if (!isNullOrUndefined(sourceBorder.space)) {
+                destBorder.space = sourceBorder.space;
+            }
+            if (!isNullOrUndefined(sourceBorder.shadow)) {
+                destBorder.shadow = sourceBorder.shadow;
             }
         }
     }
@@ -1710,6 +1717,9 @@ export class SfdtReader {
     }
     public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
+            if (!isNullOrUndefined(sourceFormat.borders)) {
+                this.parseBorders(sourceFormat.borders, paragraphFormat.borders);
+            }
             if (!isNullOrUndefined(sourceFormat.bidi)) {
                 paragraphFormat.bidi = sourceFormat.bidi;
             }

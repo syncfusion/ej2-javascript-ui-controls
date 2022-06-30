@@ -912,8 +912,14 @@ export class ContextMenu {
         }
         if (this.documentHelper.selection.hasRevisions()) {
             (acceptChange.previousSibling as HTMLElement).style.display = this.documentHelper.owner.enableHeaderAndFooter ? 'none' : 'block';
-            acceptChange.style.display = 'block';
-            rejectChange.style.display = 'block';
+            if (this.documentHelper.isTrackedOnlyMode) {
+                acceptChange.style.display = 'none';
+                rejectChange.style.display = 'none';
+            }
+            else {
+                acceptChange.style.display = 'block';
+                rejectChange.style.display = 'block';
+            }    
         }
         if (this.documentHelper.selection.isinFootnote || this.documentHelper.selection.isinEndnote) {
             editNoteoptions.style.display = 'block';

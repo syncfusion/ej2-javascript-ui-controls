@@ -1198,3 +1198,357 @@ console.log('custom div in bottom  previw div validation borders div click valid
         dialog.closeDialog();
     });
 });
+describe('Border and shading dialog applying testing to paragraph ', () => {
+    let editor: DocumentEditor;
+    let dialog: BordersAndShadingDialog;
+    let tablePropertiesDialog: TablePropertiesDialog;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, TablePropertiesDialog, BordersAndShadingDialog);
+        editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.bordersAndShadingDialogModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        dialog.destroy();
+        dialog = undefined;
+        tablePropertiesDialog = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it('Handle none div check none testing in paragraph', () => {
+        console.log('Handle none div check none testing in paragraph');
+        // debugger;
+        editor.openBlank();
+        dialog.show();
+        let event: any = {
+            target: (dialog as any).noneDivTransparent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.closeDialog();
+    });
+    it('Handle none div check box testing in paragraph', () => {
+        console.log('Handle none div check box testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        let event: any = {
+            target: (dialog as any).boxDivTransparent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.closeDialog();
+    });
+    it('Handle none div check all testing in paragraph', () => {
+        console.log('Handle none div check all testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        let event: any = {
+            target: (dialog as any).allDivTransparent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.closeDialog();
+    });
+    it('Handle none div check custom testing in paragraph', () => {
+        console.log('Handle none div check all testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        let event: any = {
+            target: (dialog as any).customDivTransparent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.closeDialog();
+    });
+});
+describe('Borders dialog preview checkbox validation in paragraph', () => {
+    let editor: DocumentEditor;
+    let dialog: BordersAndShadingDialog;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, BordersAndShadingDialog);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableBordersAndShadingDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.bordersAndShadingDialogModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        dialog.destroy();
+        dialog = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it('Top Top preview div check box testing in paragraph', () => {
+        console.log('Top Top preview div check box testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        let event: any = {
+            target: (dialog as any).previewDivTopTopTransParent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.closeDialog();
+    });
+    it('Top bottom div check box testing in paragraph', () => {
+        console.log('Top bottom div check box testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        let event: any = {
+            target: (dialog as any).previewDivTopBottomTransParent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.closeDialog();
+    });
+    it('bottom right preview div check box testing in paragraph', () => {
+        console.log('bottom right preview div check box testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        document.body.appendChild((dialog as any).target);
+        let event: any = {
+            target: (dialog as any).previewDivBottomRightTransparent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.destroy();
+    });
+    it('bottom right preview div check box testing in paragraph', () => {
+        console.log('bottom right preview div check box testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        document.body.appendChild((dialog as any).target);
+        let event: any = {
+            target: (dialog as any).previewDivBottomLeftTransparent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        (dialog as any).handlePreviewCheckBoxAction(event);
+        dialog.destroy();
+    });
+});
+describe('Apply borders&shadings checkbox values testing to paragraph', () => {
+    let editor: DocumentEditor;
+    let dialog: BordersAndShadingDialog;
+    let tablePropertiesDialog: TablePropertiesDialog;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, TablePropertiesDialog, BordersAndShadingDialog);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.bordersAndShadingDialogModule;
+        tablePropertiesDialog = editor.tablePropertiesDialogModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        dialog.destroy();
+        dialog = undefined;
+        tablePropertiesDialog = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it('Apply Paragraph Preview Boxes value testing', () => {
+        console.log('Apply Paragraph Preview Boxes value testing');
+        editor.openBlank();
+        dialog.show();
+        (dialog as any).ulelementShading.value = 'Paragraph';
+        (dialog as any).applyTableCellPreviewBoxes();
+        expect((dialog as any).previewDivBottomcenterContainer.style.visibility).toBe('hidden');
+    });
+    it('Apply Paragraph Preview Boxes value testing', () => {
+        console.log('Apply Paragraph Preview Boxes value testing');
+        expect((dialog as any).previewDivTopCenterContainer.style.visibility).toBe('hidden');
+    });
+    it('Apply Paragraph Preview Boxes value testing', () => {
+        console.log('Apply Paragraph Preview Boxes value testing');
+        expect((dialog as any).previewVerticalDiv.style.display).toBe('none');
+    });
+    it('Apply Paragraph Preview Boxes value testing', () => {
+        console.log('Apply Paragraph Preview Boxes value testing');
+        expect((dialog as any).previewHorizontalDiv.style.display).toBe('none');
+    });
+    it('Apply Paragraph Preview Boxes value testing', () => {
+        console.log('Apply Paragraph Preview Boxes value testing');
+        expect((dialog as any).previewLeftDiagonalDiv.style.display).toBe('none');
+    });
+    it('Apply Paragraph Preview Boxes value testing', () => {
+        console.log('Apply Paragraph Preview Boxes value testing');
+        expect((dialog as any).previewRightDiagonalDiv.style.display).toBe('none');
+    });
+});
+describe('Apply borders and shadings dialog values testing in paragraph', () => {
+    let editor: DocumentEditor;
+    let dialog: BordersAndShadingDialog;
+    let tablePropertiesDialog: TablePropertiesDialog;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, TablePropertiesDialog, BordersAndShadingDialog);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.bordersAndShadingDialogModule;
+        tablePropertiesDialog = editor.tablePropertiesDialogModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        dialog.destroy();
+        dialog = undefined;
+        tablePropertiesDialog = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it('Apply paragraph properties style testing ', () => {
+        console.log('Apply paragraph properties style testing');
+        editor.openBlank();
+        dialog.show();
+        (dialog as any).ulelementShading.selectedIndex = 0;
+        (dialog as any).borderWidth.value = 2.66;
+        (dialog as any).applyBordersShadingsProperties();
+    });
+    it('Apply none div transparent properties line style testing in paragraph', () => {
+        console.log('Apply none div transparent properties line style testing in paragraph');
+        editor.openBlank();
+        dialog.show();
+        let event: any = {
+            target: (dialog as any).noneDivTransparent,
+            preventDefault: function () { },
+            ctrlKey: false, shiftKey: false, which: 0
+        };
+        document.body.appendChild((dialog as any).target);
+        (dialog as any).handleSettingCheckBoxAction(event);
+        (dialog as any).ulelementShading.selectedIndex = 0;
+        (dialog as any).borderWidth.value = 2.66;
+        (dialog as any).applyBordersShadingsProperties();
+    });
+});
+describe('Border applying testing with none and box validation in paragraph', () => {
+    let editor: DocumentEditor;
+    let dialog: BordersAndShadingDialog;
+    let tablePropertiesDialog: TablePropertiesDialog;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, TablePropertiesDialog, BordersAndShadingDialog);
+        editor = new DocumentEditor({ isReadOnly: false, enableEditor: true, enableTablePropertiesDialog: true, enableBordersAndShadingDialog: true });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.bordersAndShadingDialogModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        dialog.destroy();
+        dialog = undefined;
+        tablePropertiesDialog = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it('Box div in borders div click validation in paragraph', () => {
+        console.log('Box div in borders div click validation in paragraph');
+        editor.openBlank();
+        dialog.show();
+        (dialog as any).boxDiv.click();
+        (dialog as any).applyBordersShadingsProperties();
+    });
+    it('Box div in borders div click validation in paragraph', (done) => {
+        console.log('Box div in borders div click validation in paragraph');
+        dialog.show();
+        setTimeout(() => {
+            expect((dialog as any).boxDiv.classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
+            dialog.closeDialog();
+            done();
+        }, 50);
+    });
+    it('custom div in borders div click validation in paragraph', () => {
+        console.log('custom div in borders div click validation in paragraph');
+        editor.openBlank();
+        dialog.show();
+        (dialog as any).boxDiv.click();
+        (dialog as any).applyBordersShadingsProperties();
+    });
+    it('custom div in borders div click validation in paragraph', (done) => {
+        console.log('custom div in borders div click validation in paragraph');
+        dialog.show();
+        setTimeout(() => {
+            expect((dialog as any).boxDiv.classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
+            dialog.closeDialog();
+            done();
+        }, 50);
+    });
+    it('None div in borders div click validation', () => {
+        console.log('None div in borders div click validation');
+        editor.openBlank();
+        dialog.show();
+        (dialog as any).noneDiv.click();
+        (dialog as any).applyBordersShadingsProperties();
+    });
+    it('None div in borders div click validation in paragraph', (done) => {
+        console.log('None div in borders div click validation in paragraph');
+        editor.selection.start.paragraph.paragraphFormat.borders.top.hasNoneStyle = false;
+        editor.selection.start.paragraph.paragraphFormat.borders.bottom.hasNoneStyle = false;
+        editor.selection.start.paragraph.paragraphFormat.borders.left.hasNoneStyle = false;
+        editor.selection.start.paragraph.paragraphFormat.borders.right.hasNoneStyle = false;
+        dialog.show();
+        setTimeout(() => {
+            expect((dialog as any).noneDiv.classList.contains('e-de-table-border-inside-setting-click')).toBe(true);
+            dialog.closeDialog();
+            done();
+        }, 50);
+    });
+});

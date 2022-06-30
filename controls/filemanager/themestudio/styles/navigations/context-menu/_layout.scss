@@ -82,6 +82,32 @@
         }
       }
     }
+
+    &:not(.e-menu-container) {
+
+      & .e-menu-vscroll.e-vscroll {
+        box-shadow: $cmenu-parent-ul-box-shadow;
+
+        & .e-vscroll-bar {
+          height: 100%;
+          width: inherit;
+        }
+
+        & .e-scroll-nav {
+          height: 16px;
+        }
+
+        &:not(.e-scroll-device) {
+          padding: 16px 0;
+        }
+
+        & ul {
+          box-shadow: none;
+          margin-top: -12px;
+          width: inherit;
+        }
+      }
+    }
   }
 
   .e-rtl.e-contextmenu-wrapper .e-menu-item,

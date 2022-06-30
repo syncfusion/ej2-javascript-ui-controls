@@ -7977,7 +7977,6 @@ describe('Tab Control', () => {
     });
     describe('Getting tab item index using item ID ', () => {
         let tab: Tab;
-        let i: boolean;
         beforeEach((): void => {
             tab = undefined;
             let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
@@ -8004,6 +8003,42 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll(".e-toolbar-item")[1].getAttribute('data-id')).toBe("2");
             tabIndex = tab.getItemIndex(tab.items[1].id);
             expect(tabIndex).toEqual(1);
+        });
+        it ('EJ2-60839 - Tab item index testing for dynamically added tab item', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item3' }, content: 'Content3' },
+                { header: { 'text': 'item4' }, content: 'Content4' }
+            ];
+            tab = new Tab({
+                items: [
+                    { header: { 'text': 'item1' }, content: 'Content1', id: '1' },
+                    { header: { 'text': 'item2' }, content: 'Content2', id: '2' }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            tab.addTab(items, 1);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(4);
+            expect(element.querySelectorAll('.e-toolbar-item')[1].getAttribute('data-id')).toBe('tabitem_2');
+            let tabIndex: number = tab.getItemIndex(tab.items[1].id);
+            expect(tabIndex).toEqual(1);
+            expect(element.querySelectorAll('.e-toolbar-item')[2].getAttribute('data-id')).toBe('tabitem_3');
+            tabIndex = tab.getItemIndex(tab.items[2].id);
+            expect(tabIndex).toEqual(2);
+            items = [
+                { header: { 'text': 'item5' }, content: 'Content5', id: '3' },
+                { header: { 'text': 'item6' }, content: 'Content6', id: '4' }
+            ];
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(4);
+            tab.addTab(items, 3);
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(6);
+            expect(element.querySelectorAll('.e-toolbar-item')[3].getAttribute('data-id')).toBe('3');
+            tabIndex = tab.getItemIndex(tab.items[3].id);
+            expect(tabIndex).toEqual(3);
+            expect(element.querySelectorAll('.e-toolbar-item')[4].getAttribute('data-id')).toBe('4');
+            tabIndex = tab.getItemIndex(tab.items[4].id);
+            expect(tabIndex).toEqual(4);
         });
     });
     describe('Localization - Mouseover on close icon testing', () => {
@@ -10824,8 +10859,7 @@ describe('Tab Control', () => {
             expect(content).toBeTruthy();
             expect(content.textContent).toEqual('Tab content 4');
             expect(tab.element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
-            expect(tab.element.getAttribute('aria-owns')).toEqual(tab.element.id + '_tab_header_items');
-            expect(tab.element.querySelector('.e-toolbar-items').id).toEqual(tab.element.id + '_tab_header_items');
+            expect(tab.element.getAttribute('aria-owns')).toEqual(tab.element.querySelector('.e-toolbar-items').id);
         });
     });
 

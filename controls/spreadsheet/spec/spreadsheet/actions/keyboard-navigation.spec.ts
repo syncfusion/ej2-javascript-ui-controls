@@ -66,10 +66,11 @@ describe('Spreadsheet cell navigation module ->', () => {
             it('Cell navigation occurs while selecting cell template dropdown items', (done: Function) => {
                 const cell: HTMLElement = helper.invoke('getCell', [0, 3]);
                 expect(cell.firstElementChild.classList.contains('e-validation-list')).toBeTruthy();
-                (cell.getElementsByClassName('e-ddl')[0] as HTMLElement).focus();
+                const ddl: HTMLElement = cell.getElementsByClassName('e-ddl')[0] as HTMLElement;
+                ddl.focus();
                 helper.getInstance('#' + helper.id + 'listValid').showPopup();
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('D1:D1');
-                helper.triggerKeyEvent('keydown', 40, null, false, true);
+                helper.triggerKeyEvent('keydown', 40, null, false, true, ddl);
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('D1:D1');
                 helper.getElement('#' + helper.id + 'listValid_popup .e-list-item').click();
                 expect(document.activeElement.classList.contains('e-spreadsheet')).toBeTruthy();
@@ -79,75 +80,53 @@ describe('Spreadsheet cell navigation module ->', () => {
 
         describe('EJ2-59225 ->', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rowCount: 3, colCount: 3 }], scrollSettings: { isFinite: true } }, done);
+                helper.initializeSpreadsheet({ sheets: [{ rowCount: 3, colCount: 3, selectedRange: 'B2:C3' }], scrollSettings: { isFinite: true } }, done);
             });
-
             afterAll(() => {
                 helper.invoke('destroy');
             });
-
             it('The spreadsheet selection moves away from the spreadsheet table when we move it with the keyboard', (done: Function) => {
-                helper.getElement().focus();
-                const instance: any = helper.getInstance();
-                helper.invoke('selectRange', ['B2:B2']);
                 const selectionEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-selection');
                 const autofillEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-autofill');
+                const table: HTMLElement = helper.invoke('getContentTable');
+                const height: number = table.offsetHeight; const width: number = table.offsetWidth;
+                const instance: any = helper.getInstance();
+                const checkFn: Function = (): void => {
+                    expect(instance.sheets[0].selectedRange).toBe('B2:C3');
+                    expect(parseInt(selectionEle.style.height, 10)).toBeLessThan(height);
+                    expect(parseInt(autofillEle.style.top, 10)).toBeLessThan(height);
+                    expect(parseInt(selectionEle.style.width, 10)).toBeLessThan(width);
+                    expect(parseInt(autofillEle.style.left, 10)).toBeLessThan(width);
+                };
+                checkFn()
+                instance.element.focus();
                 helper.triggerKeyEvent('keydown', 39, null, false, true);
                 setTimeout(() => {
-                    expect(instance.sheets[0].selectedRange).toBe('B2:C2');
-                    expect(selectionEle.style.height).toBe('21px');
-                    expect(selectionEle.style.width).toBe('129px');
-                    expect(autofillEle.style.top).toBe('35px');
-                    expect(autofillEle.style.left).toBe('187px');
-                    helper.triggerKeyEvent('keydown', 39, null, false, true);
+                    checkFn();
+                    helper.triggerKeyEvent('keydown', 40, null, false, true);
                     setTimeout(() => {
-                        expect(instance.sheets[0].selectedRange).toBe('B2:C2');
-                        expect(selectionEle.style.height).toBe('21px');
-                        expect(selectionEle.style.width).toBe('129px');
-                        expect(autofillEle.style.top).toBe('35px');
-                        expect(autofillEle.style.left).toBe('187px');
-                        helper.triggerKeyEvent('keydown', 40, null, false, true);
-                        setTimeout(() => {
-                            expect(instance.sheets[0].selectedRange).toBe('B2:C3');
-                            expect(selectionEle.style.height).toBe('41px');
-                            expect(selectionEle.style.width).toBe('129px');
-                            expect(autofillEle.style.top).toBe('55px');
-                            expect(autofillEle.style.left).toBe('187px');
-                            helper.triggerKeyEvent('keydown', 40, null, false, true);
-                            setTimeout(() => {
-                                expect(instance.sheets[0].selectedRange).toBe('B2:C3');
-                                expect(selectionEle.style.height).toBe('41px');
-                                expect(selectionEle.style.width).toBe('129px');
-                                expect(autofillEle.style.top).toBe('55px');
-                                expect(autofillEle.style.left).toBe('187px');
-                                done();
-                            }, 10);
-                        }, 10);
-                    }, 10);
-                }, 10);
+                        checkFn();
+                        done();
+                    });
+                });
             });
         });
         describe('EJ2-59905 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet(
-                    { sheets: [{ rowCount: 10, colCount: 26, rows: [{ index: 4, hidden: true }, { index: 5, hidden: true }, { index: 6, hidden: true }] }], height: 300, scrollSettings: { isFinite: true }} , done);
+                    { sheets: [{ rowCount: 10, colCount: 26, selectedRange: 'A10:A10', rows: [{ index: 4, hidden: true }, { index: 5, hidden: true }, { index: 6, hidden: true }] }], height: 300, scrollSettings: { isFinite: true }} , done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
             });
             it('Keyboard selection issue in finite mode', (done: Function) => {
-                helper.getElement().focus();
                 const instance: any = helper.getInstance();
-                helper.invoke('selectRange', ['A10:A10']);
-                const selectionEle: HTMLElement = helper.getElement('#' + helper.id + ' .e-selection');
+                instance.element.focus();
                 helper.triggerKeyEvent('keydown', 39, null, false, false);
                 setTimeout(() => {
-                    helper.triggerKeyEvent('keydown', 39, null, false, false);
-                    setTimeout(() => {
-                        expect(instance.sheets[0].selectedRange).toBe('C10:C10');
-                        done();
-                    }, 10);
-                }, 10);
+                    expect(instance.sheets[0].selectedRange).toBe('B10:B10');
+                    done();
+                });
             });
         });
     });

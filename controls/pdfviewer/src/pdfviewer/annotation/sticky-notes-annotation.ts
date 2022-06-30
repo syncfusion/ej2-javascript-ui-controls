@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { StickyNotesSettings } from './../pdfviewer';
 import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint } from '../index';
-import { createElement, Browser, Internationalization, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, Browser, Internationalization, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -892,8 +892,6 @@ export class StickyNotesAnnotation {
             const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox', className: 'e-pv-comment-textbox' });
             // eslint-disable-next-line
             let editObj: any = new InPlaceEditor({
-                created: created,
-                beginEdit: beginEdit,
                 mode: 'Inline',
                 type: 'Text',
                 model: { placeholder: this.pdfViewer.localeObj.getConstant('Add a comment') + '..' },
@@ -910,6 +908,16 @@ export class StickyNotesAnnotation {
                 },
                 submitOnEnter: true
             });
+            if (data && (!isNullOrUndefined(data.Note) || !isNullOrUndefined(data.Text))) {
+                editObj.created = function () {
+                    setTimeout(() => {
+                        editObj.element.querySelector('.e-editable-value').innerText = !isNullOrUndefined(data.Note) ? data.Note : !isNullOrUndefined(data.Text) ? data.Text : '' ;
+                    });
+                }
+                editObj.beginEdit = function () {
+                    editObj.value = editObj.valueEle.innerText;
+                }
+            }
             editObj.appendTo(commentTextBox);
             // eslint-disable-next-line
             let textBox: any = document.querySelectorAll('.e-editable-inline');
@@ -932,7 +940,7 @@ export class StickyNotesAnnotation {
             editObj.actionSuccess = this.createCommentDiv.bind(this, editObj);
             commentDiv.appendChild(commentTextBox);
             if (data) {
-                editObj.value = data.Note;
+                editObj.value = !isNullOrUndefined(data.Note) ? data.Note : !isNullOrUndefined(data.Text) ? data.Text : '' ;
                 const isCommentLocked: boolean = this.checkIslockProperty(data);
                 if (isCommentLocked && data.Comments == null) {
                     this.createCommentDiv(this.commentsContainer);
@@ -969,14 +977,6 @@ export class StickyNotesAnnotation {
             commentTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
             commentTextBox.addEventListener('focusin', this.commentDivFocus.bind(this));
             return (this.commentsContainer.id);
-        }
-        function created(): void {
-            setTimeout(() => {
-            this.element.querySelector('.e-editable-value').innerText = data ? data.Note : '';
-            }); 
-        }    
-        function beginEdit(e: BeginEditEventArgs): void {   
-            this.value = this.valueEle.innerText;   
         }
         return '';
     }
@@ -1034,7 +1034,6 @@ export class StickyNotesAnnotation {
         let commentsContainer: HTMLElement;
         let titleContainer: HTMLElement;
         // eslint-disable-next-line
-        this.commentsContainer.addEventListener('mousedown', this.modifyTextProperty.bind(this));
         let newCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + '_newcommentdiv' + this.commentsCount, className: 'e-pv-new-comments-div' });
         if (args.localName) {
             commentsContainer = args;
@@ -1146,8 +1145,6 @@ export class StickyNotesAnnotation {
             replyCommentDiv.style.zIndex = 1002;
             // eslint-disable-next-line
             let saveObj: any = new InPlaceEditor({
-                created: created,
-                beginEdit: beginEdit,
                 mode: 'Inline',
                 type: 'Text',
                 emptyText: '',
@@ -1162,7 +1159,15 @@ export class StickyNotesAnnotation {
                     content: this.pdfViewer.localeObj.getConstant('Cancel'),
                     cssClass: 'e-outline'
                 }
-            });
+            }); 
+            saveObj.created = function () {
+                setTimeout(() => {
+                    saveObj.element.querySelector('.e-editable-value').innerText = commentValue;
+                });
+            }
+            saveObj.beginEdit = function () {
+                saveObj.value = saveObj.valueEle.innerText;
+            }
             saveObj.appendTo(replyTextBox);
             saveObj.actionSuccess = this.modifyProperty.bind(this, saveObj);
             replyCommentDiv.appendChild(replyTextBox);
@@ -1183,14 +1188,6 @@ export class StickyNotesAnnotation {
             this.createCommentDiv(replyCommentDiv.parentElement);
             this.modifyCommentsProperty(commentValue, replyCommentDiv.id, commentsContainer.id);
         }
-        function created(): void {
-            setTimeout(() => {
-            this.element.querySelector('.e-editable-value').innerText = commentValue;
-            });
-            }
-        function beginEdit(e: BeginEditEventArgs): void {
-            this.value = this.valueEle.innerText;
-            }
     }
 
     // eslint-disable-next-line
@@ -1226,8 +1223,6 @@ export class StickyNotesAnnotation {
         replyTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
         // eslint-disable-next-line
         let saveObj: any = new InPlaceEditor({
-            created: created,
-            beginEdit: beginEdit,
             mode: 'Inline',
             type: 'Text',
             emptyText: '',
@@ -1248,16 +1243,16 @@ export class StickyNotesAnnotation {
         } else {
             saveObj.value = data.Note;
         }
+        saveObj.created = function() {
+            setTimeout(() => {
+                saveObj.element.querySelector('.e-editable-value').innerText = undoRedoAction ? data ? data.note : '' : data ? data.Note : '';
+            });
+        }
+        saveObj.beginEdit = function() {
+            saveObj.value = saveObj.valueEle.innerText;
+        }
         saveObj.appendTo(replyTextBox);
         replyDiv.appendChild(replyTextBox);
-        function created(): void {
-            setTimeout(() => {
-            this.element.querySelector('.e-editable-value').innerText = data ? data.Note : '';
-            });
-            }
-        function beginEdit(e: BeginEditEventArgs): void { 
-            this.value = this.valueEle.innerText; 
-            }
         if (undoRedoAction) {
             data.State = data.state;
         }

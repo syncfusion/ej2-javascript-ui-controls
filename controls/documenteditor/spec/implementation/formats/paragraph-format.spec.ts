@@ -6,6 +6,8 @@ import { Selection } from '../../../src/document-editor/implementation/selection
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
 import { TestHelper } from '../../test-helper.spec';
+import { SfdtExport } from '../../../src/document-editor/implementation/writer/sfdt-export';
+import { BodyWidget, DocumentHelper, ParagraphWidget } from '../../../src/index';
 /**
  * Paragraph format spec
  */
@@ -938,5 +940,129 @@ describe('Checking AutoSpacing value is appending or not', () => {
         console.log('spaceBeforeAuto');
         editor.documentHelper.paragraphFormat.spaceBeforeAuto = false;
         expect(editor.documentHelper.paragraphFormat.spaceBeforeAuto).toBe(false);
+    });
+});
+let fieldText: any = {"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false},"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"inlines":[{"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"text":"para 1"}]},{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"inlines":[{"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"fieldType":0,"hasFieldEnd":true},{"characterFormat":{"fontSize":36,"fontFamily":"DokChampa","fontSizeBidi":36,"fontFamilyBidi":"DokChampa"},"text":"MERGEFIELD "},{"characterFormat":{},"fieldType":2},{"characterFormat":{},"fieldType":1}]},{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"inlines":[{"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"text":"para 2"}]}],"headersFooters":{"header":{"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"inlines":[{"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"text":"para 1"}]},{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"inlines":[{"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"fieldType":0,"hasFieldEnd":true},{"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"text":" MERGEFIELD "},{"characterFormat":{},"fieldType":2},{"characterFormat":{},"fieldType":1}]},{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"inlines":[{"characterFormat":{"fontFamily":"Calibri","fontFamilyBidi":"Calibri"},"text":"para 3"}]}]},"footer":{"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]}}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#00000000","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{},"bidi":false,"keepLinesTogether":false,"keepWithNext":false,"widowControl":true},"defaultTabWidth":36,"trackChanges":false,"enforcement":false,"hashValue":"","saltValue":"","formatting":false,"protectionType":"NoProtection","dontUseHTMLParagraphAutoSpacing":false,"formFieldShading":true,"compatibilityMode":"Word2013","styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763FF","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Toc3","type":"Paragraph","paragraphFormat":{"leftIndent":22,"afterSpacing":5,"listFormat":{}},"characterFormat":{},"basedOn":"Normal","next":"Normal"}],"lists":[],"abstractLists":[],"comments":[],"revisions":[],"customXml":[],"footnotes":{"separator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0004"}]}],"continuationNotice":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]},"endnotes":{"separator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"\u0004"}]}],"continuationNotice":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]}]}};
+describe('Check the para height which contains empty field', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check the para height which contains empty field', function () {
+        console.log('Check the para height which contains empty field');
+        container.openBlank();
+        container.open(JSON.stringify(fieldText));
+        let paragraphWidget: ParagraphWidget = (container.documentHelper.pages[0].bodyWidgets[0] as BodyWidget).childWidgets[1] as ParagraphWidget;
+        expect(paragraphWidget.height).toBe(17.930000000000007);
+    });
+    it('Check the para height which contains empty field in header', function () {
+        console.log('Check the para height which contains empty field in header');
+        container.openBlank();
+        container.open(JSON.stringify(fieldText));
+        let paragraphWidget: ParagraphWidget = container.documentHelper.pages[0].headerWidgetIn.childWidgets[1] as ParagraphWidget;
+        expect(paragraphWidget.height).toBe(17.930000000000007);
+    });
+});
+var json: object = { "sections": [{ "blocks": [{ "inlines": [{ "text": "No border-" }, { "text": "default" }] }, { "paragraphFormat": { "borders": { "right": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 4.0, "hasNoneStyle": false, "color": "#FF0000FF" } } }, "inlines": [{ "text": "Inline" }] }, { "paragraphFormat": { "styleName": "Heading 1" }, "inlines": [{ "text": "Style-" }] }, { "paragraphFormat": { "styleName": "Heading 2" }, "inlines": [{ "text": "Based no" }] }, { "paragraphFormat": { "styleName": "Heading 4" }, "inlines": [{ "text": "Based no to -based" }, { "text": " on" }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": false, "restartPageNumbering": false, "pageStartingNumber": 0, "endnoteNumberFormat": "LowerCaseRoman", "footNoteNumberFormat": "Arabic", "restartIndexForFootnotes": "DoNotRestart", "restartIndexForEndnotes": "DoNotRestart", "columns": { "column": [{ "width": 468.0, "space": 36.0 }], "numberOfColumns": 1, "equalWidth": true } } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri", "fontSizeBidi": 11.0, "fontFamilyBidi": "Arial" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "borders": { "left": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 4.0, "hasNoneStyle": false, "color": "#FF0000FF" } } }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Paragraph", "name": "Heading 1", "basedOn": "Normal", "next": "Normal", "link": "Heading 1 Char", "characterFormat": { "fontSize": 16.0, "fontFamily": "Calibri Light", "fontColor": "#2F5496FF", "fontSizeBidi": 16.0, "fontFamilyBidi": "Times New Roman" }, "paragraphFormat": { "beforeSpacing": 12.0, "afterSpacing": 0.0, "outlineLevel": "Level1", "keepWithNext": true, "keepLinesTogether": true, "borders": { "right": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 4.0, "hasNoneStyle": false, "color": "#FF0000FF" }, "bottom": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#00B0F0FF" } } } }, { "type": "Paragraph", "name": "Heading 2", "basedOn": "Heading 1", "next": "Normal", "link": "Heading 2 Char", "characterFormat": { "fontSize": 13.0, "fontSizeBidi": 13.0 }, "paragraphFormat": { "beforeSpacing": 2.0, "outlineLevel": "Level2", "borders": { "top": { "lineStyle": "Double", "lineWidth": 0.5, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#FF0000FF" }, "bottom": { "lineStyle": "Double", "lineWidth": 0.5, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#FF0000FF" } } } }, { "type": "Paragraph", "name": "Heading 3", "basedOn": "Heading 1", "next": "Normal", "link": "Heading 3 Char", "characterFormat": { "fontSize": 12.0, "fontColor": "#1F3763FF", "fontSizeBidi": 12.0 }, "paragraphFormat": { "outlineLevel": "Level3", "borders": { "bottom": { "lineStyle": "None", "lineWidth": 0.0, "shadow": false, "space": 0.0, "hasNoneStyle": true } } } }, { "type": "Paragraph", "name": "Heading 4", "basedOn": "Heading 5", "next": "Normal", "link": "Heading 4 Char", "characterFormat": { "italic": true, "italicBidi": true }, "paragraphFormat": { "outlineLevel": "Level4", "borders": { "top": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#FF0000FF" } } } }, { "type": "Paragraph", "name": "Heading 5", "basedOn": "Heading 3", "next": "Normal", "link": "Heading 5 Char", "characterFormat": { "fontColor": "#2F5496FF" }, "paragraphFormat": { "beforeSpacing": 2.0, "outlineLevel": "Level5" } }, { "type": "Paragraph", "name": "Heading 9", "basedOn": "Normal", "next": "Normal", "link": "Heading 9 Char", "characterFormat": { "italic": true, "fontSize": 10.5, "fontFamily": "Calibri Light", "fontColor": "#272727FF", "italicBidi": true, "fontSizeBidi": 10.5, "fontFamilyBidi": "Times New Roman" }, "paragraphFormat": { "beforeSpacing": 2.0, "afterSpacing": 0.0, "outlineLevel": "Level9", "keepWithNext": true, "keepLinesTogether": true } }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Heading 2 Char", "basedOn": "Default Paragraph Font", "characterFormat": { "fontSize": 13.0, "fontFamily": "Calibri Light", "fontColor": "#2F5496FF", "fontSizeBidi": 13.0, "fontFamilyBidi": "Times New Roman" } }, { "type": "Character", "name": "Heading 1 Char", "basedOn": "Default Paragraph Font", "characterFormat": { "fontSize": 16.0, "fontFamily": "Calibri Light", "fontColor": "#2F5496FF", "fontSizeBidi": 16.0, "fontFamilyBidi": "Times New Roman" } }, { "type": "Character", "name": "Heading 3 Char", "basedOn": "Default Paragraph Font", "characterFormat": { "fontSize": 12.0, "fontFamily": "Calibri Light", "fontColor": "#1F3763FF", "fontSizeBidi": 12.0, "fontFamilyBidi": "Times New Roman" } }, { "type": "Character", "name": "Heading 4 Char", "basedOn": "Default Paragraph Font", "characterFormat": { "italic": true, "fontSize": 12.0, "fontFamily": "Calibri Light", "fontColor": "#2F5496FF", "italicBidi": true, "fontSizeBidi": 12.0, "fontFamilyBidi": "Times New Roman" } }, { "type": "Character", "name": "Heading 5 Char", "basedOn": "Default Paragraph Font", "characterFormat": { "fontSize": 12.0, "fontFamily": "Calibri Light", "fontColor": "#2F5496FF", "fontSizeBidi": 12.0, "fontFamilyBidi": "Times New Roman" } }, { "type": "Paragraph", "name": "Title", "basedOn": "Normal", "next": "Normal", "link": "Title Char", "characterFormat": { "fontSize": 28.0, "fontFamily": "Calibri Light", "fontSizeBidi": 28.0, "fontFamilyBidi": "Times New Roman" }, "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "contextualSpacing": true, "borders": { "bottom": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#00B050FF" } } } }, { "type": "Character", "name": "Title Char", "basedOn": "Default Paragraph Font", "characterFormat": { "fontSize": 28.0, "fontFamily": "Calibri Light", "fontSizeBidi": 28.0, "fontFamilyBidi": "Times New Roman" } }, { "type": "Paragraph", "name": "No Spacing", "next": "No Spacing", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "borders": { "bottom": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#FF0000FF" } } } }, { "type": "Paragraph", "name": "List Paragraph", "basedOn": "Normal", "next": "List Paragraph", "paragraphFormat": { "leftIndent": 36.0, "contextualSpacing": true, "borders": { "bottom": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#FF0000FF" } } } }, { "type": "Paragraph", "name": "Subtitle", "basedOn": "Heading 9", "next": "Normal", "link": "Subtitle Char", "characterFormat": { "fontColor": "#5A5A5AFF" }, "paragraphFormat": { "listFormat": { "listLevelNumber": 1 }, "borders": { "bottom": { "lineStyle": "Single", "lineWidth": 1.0, "shadow": false, "space": 1.0, "hasNoneStyle": false, "color": "#92D050FF" } } } }, { "type": "Character", "name": "Subtitle Char", "basedOn": "Default Paragraph Font", "characterFormat": { "italic": true, "fontSize": 10.5, "fontFamily": "Calibri Light", "fontColor": "#5A5A5AFF", "italicBidi": true, "fontSizeBidi": 10.5, "fontFamilyBidi": "Times New Roman" } }, { "type": "Character", "name": "Heading 9 Char", "basedOn": "Default Paragraph Font", "characterFormat": { "italic": true, "fontSize": 10.5, "fontFamily": "Calibri Light", "fontColor": "#272727FF", "italicBidi": true, "fontSizeBidi": 10.5, "fontFamilyBidi": "Times New Roman" } }], "defaultTabWidth": 36.0, "formatting": false, "trackChanges": false, "protectionType": "NoProtection", "enforcement": false, "dontUseHTMLParagraphAutoSpacing": false, "alignTablesRowByRow": false, "formFieldShading": true, "footnotes": { "separator": [{ "inlines": [{ "text": "\\u0003" }] }], "continuationSeparator": [{ "inlines": [{ "text": "\\u0004" }] }], "continuationNotice": [{ "inlines": [] }] }, "endnotes": { "separator": [{ "inlines": [{ "text": "\\u0003" }] }], "continuationSeparator": [{ "inlines": [{ "text": "\\u0004" }] }], "continuationNotice": [{ "inlines": [] }] }, "compatibilityMode": "Word2013" }
+describe('Selection header and footer  validation weblayout', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
+        document.body.innerHTML = '';
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, EditorHistory, Selection);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true, layoutType: 'Continuous' });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(JSON.stringify(json));
+        editor.selection.selectAll();
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        documentHelper = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Default paragraph border validation', () => {
+        console.log('Default paragraph border validation');
+        editor.selection.moveDown();
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.color).toBe("#FF0000FF");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.isBorderDefined).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.hasNoneStyle).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineStyle).toBe("Single");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineWidth).toBe(1);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.shadow).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.space).toBe(4);
+    });
+    it('inline style paragraph border validation', () => {
+        console.log('inline style paragraph border validation');
+        editor.selection.moveDown();
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.color).toBe("#FF0000FF");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.isBorderDefined).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.hasNoneStyle).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineStyle).toBe("Single");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineWidth).toBe(1);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.shadow).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.space).toBe(4);
+    });
+    it('apply style paragraph border validation', () => {
+        console.log('base style paragraph border validation');
+        editor.selection.moveDown();
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.color).toBe("#FF0000FF");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.isBorderDefined).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.hasNoneStyle).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineStyle).toBe("Single");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineWidth).toBe(1);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.shadow).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.space).toBe(4);
+    });
+    it('based on style paragraph border validation', () => {
+        console.log('based on style paragraph border validation');
+        editor.selection.moveDown();
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.color).toBe("#FF0000FF");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.isBorderDefined).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.hasNoneStyle).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineStyle).toBe("Single");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineWidth).toBe(1);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.shadow).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.space).toBe(4);
+    });
+    it('based on-to based on style paragraph border validation', () => {
+        console.log('based on-to based on style paragraph border validation');
+        editor.selection.moveDown();
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.color).toBe("#FF0000FF");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.isBorderDefined).toBe(true);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.hasNoneStyle).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineStyle).toBe("Single");
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.lineWidth).toBe(1);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.shadow).toBe(false);
+        expect(editor.selection.start.paragraph.paragraphFormat.borders.left.space).toBe(4);
     });
 });

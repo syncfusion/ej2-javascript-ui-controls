@@ -1009,13 +1009,15 @@ export class CalculatedField implements IAction {
                 click: this.applyFormula.bind(this),
                 buttonModel: {
                     content: this.parent.localeObj.getConstant('ok'),
-                    isPrimary: true
+                    isPrimary: true,
+                    cssClass: this.parent.cssClass
                 }
             },
             {
                 click: this.cancelClick.bind(this),
                 buttonModel: {
-                    content: this.parent.localeObj.getConstant('cancel')
+                    content: this.parent.localeObj.getConstant('cancel'),
+                    cssClass: this.parent.cssClass
                 }
             }
         ];
@@ -1023,7 +1025,7 @@ export class CalculatedField implements IAction {
             let clearButton: ButtonPropsModel = {
                 click: this.clearFormula.bind(this),
                 buttonModel: {
-                    cssClass: 'e-calc-clear-btn',
+                    cssClass: 'e-calc-clear-btn' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     content: this.parent.localeObj.getConstant('clear'),
                 }
             };
@@ -1453,7 +1455,8 @@ export class CalculatedField implements IAction {
             change: (args: MaskChangeEventArgs) => {
                 this.formatText = args.value;
                 this.formulaText = (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value;
-            }
+            },
+            cssClass: this.parent.cssClass
         });
         customerFormatObj.isStringTemplate = true;
         customerFormatObj.appendTo('#' + this.parentID + 'Custom_Format_Element');
@@ -1750,7 +1753,7 @@ export class CalculatedField implements IAction {
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null) {
             this.createOlapDropElements();
         }
-        let cancelBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
+        let cancelBtn: Button = new Button({ cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
         cancelBtn.isStringTemplate = true;
         cancelBtn.appendTo('#' + this.parentID + 'cancelBtn');
         if (cancelBtn.element) {
@@ -1758,7 +1761,7 @@ export class CalculatedField implements IAction {
         }
         if ((this.parent as PivotFieldList).
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null && this.parent.isAdaptive) {
-            let okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS, isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
+            let okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
             okBtn.isStringTemplate = true;
             okBtn.appendTo('#' + this.parentID + 'okBtn');
             this.inputObj = new MaskedTextBox({
@@ -1767,7 +1770,8 @@ export class CalculatedField implements IAction {
                 change: (args: MaskChangeEventArgs) => {
                     this.fieldText = args.value;
                     this.formulaText = (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value;
-                }
+                },
+                cssClass: this.parent.cssClass
             });
             this.inputObj.isStringTemplate = true;
             this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
@@ -1778,7 +1782,8 @@ export class CalculatedField implements IAction {
                     change: (args: MaskChangeEventArgs) => {
                         this.formatText = args.value;
                         this.formulaText = (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value;
-                    }
+                    },
+                    cssClass: this.parent.cssClass
                 });
                 formatInputObj.isStringTemplate = true;
                 formatInputObj.appendTo('#' + this.parentID + 'Custom_Format_Element');
@@ -1803,7 +1808,7 @@ export class CalculatedField implements IAction {
                 okBtn.element.onclick = this.applyFormula.bind(this);
             }
         } else if (this.parent.isAdaptive) {
-            let addBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
+            let addBtn: Button = new Button({ cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
             addBtn.isStringTemplate = true;
             addBtn.appendTo('#' + this.parentID + 'addBtn');
             if (this.parent.dataType === 'olap') {
@@ -1860,7 +1865,8 @@ export class CalculatedField implements IAction {
                             name: AGRTYPE + key,
                             checked: args.element.querySelector('[data-type').getAttribute('data-type') === type[i],
                             change: this.onChange.bind(this),
-                            locale: this.parent.locale, enableRtl: this.parent.enableRtl
+                            locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+                            cssClass: this.parent.cssClass
                         });
                         radiobutton.isStringTemplate = true;
                         radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
@@ -1899,7 +1905,8 @@ export class CalculatedField implements IAction {
             }
             let checkbox: CheckBox = new CheckBox({
                 label: this.parent.engineModule.fieldList[key].caption + ' (' + this.parent.localeObj.getConstant(type) + ')',
-                locale: this.parent.locale, enableRtl: this.parent.enableRtl
+                locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+                cssClass: this.parent.cssClass
             });
             checkbox.isStringTemplate = true;
             checkbox.appendTo('#' + this.parentID + '_' + index);
@@ -1994,14 +2001,16 @@ export class CalculatedField implements IAction {
         this.dialog.refresh();
         this.inputObj = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('fieldName'),
-            locale: this.parent.locale, enableRtl: this.parent.enableRtl
+            locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+            cssClass: this.parent.cssClass
         });
         this.inputObj.isStringTemplate = true;
         this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
         if (this.parent.dataType === 'pivot') {
             let customerFormatObj: MaskedTextBox = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('numberFormatString'),
-                locale: this.parent.locale, enableRtl: this.parent.enableRtl
+                locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+                cssClass: this.parent.cssClass
             });
             customerFormatObj.isStringTemplate = true;
             customerFormatObj.appendTo('#' + this.parentID + 'Custom_Format_Element');
@@ -2043,14 +2052,14 @@ export class CalculatedField implements IAction {
                 {
                     click: isRemove ? this.removeCalcField.bind(this, node) : this.replaceFormula.bind(this, calcInfo),
                     buttonModel: {
-                        cssClass: cls.OK_BUTTON_CLASS + ' ' + cls.FLAT_CLASS,
+                        cssClass: cls.OK_BUTTON_CLASS + ' ' + cls.FLAT_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                         content: isRemove ? this.parent.localeObj.getConstant('yes') : this.parent.localeObj.getConstant('ok'), isPrimary: true
                     }
                 },
                 {
                     click: this.removeErrorDialog.bind(this),
                     buttonModel: {
-                        cssClass: cls.CANCEL_BUTTON_CLASS,
+                        cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                         content: isRemove ? this.parent.localeObj.getConstant('no') : this.parent.localeObj.getConstant('cancel'), isPrimary: true
                     }
                 }

@@ -360,18 +360,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @returns {Map<string, string[]>} - get Dependent Cells
      */
     public getDependentCells(): Map<string, string[]> {
-        if (this.isSheetMember()) {
-            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-            if (family.sheetDependentCells == null) {
-                family.sheetDependentCells = new Map<string, string[]>();
-            }
-            return family.sheetDependentCells;
-        } else {
-            if (this.dependentCells == null) {
-                this.dependentCells = new Map<string, string[]>();
-            }
-            return this.dependentCells;
+        if (this.dependentCells == null) {
+            this.dependentCells = new Map<string, string[]>();
         }
+        return this.dependentCells;
     }
 
     /**
@@ -1053,11 +1045,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const criteriaRangeArray: string = argArr[0];
         let sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
         const criteriaRange: string[] | string = this.getCellCollection(criteriaRangeArray);
-        if(criteriaRange.length > sumRange.length) {
-            const sumEndCol: number = this.colIndex(sumRange[sumRange.length-1]) +
-                this.colIndex(criteriaRange[criteriaRange.length-1]) - this.colIndex(criteriaRange[0]);
+        if (criteriaRange.length > sumRange.length) {
+            const sumEndCol: number = this.colIndex(sumRange[sumRange.length - 1]) +
+                this.colIndex(criteriaRange[criteriaRange.length - 1]) - this.colIndex(criteriaRange[0]);
             let sumrange: string[] = argArr[2].split(':')
-            sumrange[1] = (this.convertAlpha(sumEndCol) + this.rowIndex(criteriaRange[criteriaRange.length-1])).toString();
+            sumrange[1] = (this.convertAlpha(sumEndCol) + this.rowIndex(criteriaRange[criteriaRange.length - 1])).toString();
             sumRange = this.getCellCollection(sumrange.join(':'));
         }
         const result: number[] = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt, isAsterisk);
@@ -1237,99 +1229,99 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let count: number = 0;
         // const isFirst: boolean = isAsterisk && criteria && criteria[0] === '*';
         switch (op) {
-        case this.parser.tokenEqual: {
-            const criteriaValue: string = isAsterisk ? criteria.replace(/\*/g, '') : criteria;
-            for (let i: number = 0; i < criteriaRange.length; i++) {
-                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                const val: number = this.parseFloat(value);
-                if (value === criteria && val === checkCriteria) {
-                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                    const val1: number = this.parseFloat(value1);
-                    sum = sum + val1;
-                    count = count + 1;
-                } else if (value === criteria) {
-                    sum = sum + this.getValueFromRange(sumRange, i);
-                    count = count + 1;
-                } else if (isAsterisk && criteriaValue && value) {
-                    if (criteria[0] === '*' && criteriaValue.length <= value.length && criteriaValue === value.slice(
-                        0, criteriaValue.length)) {
+            case this.parser.tokenEqual: {
+                const criteriaValue: string = isAsterisk ? criteria.replace(/\*/g, '') : criteria;
+                for (let i: number = 0; i < criteriaRange.length; i++) {
+                    const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                    const val: number = this.parseFloat(value);
+                    if (value === criteria && val === checkCriteria) {
+                        const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                        const val1: number = this.parseFloat(value1);
+                        sum = sum + val1;
+                        count = count + 1;
+                    } else if (value === criteria) {
                         sum = sum + this.getValueFromRange(sumRange, i);
                         count = count + 1;
+                    } else if (isAsterisk && criteriaValue && value) {
+                        if (criteria[0] === '*' && criteriaValue.length <= value.length && criteriaValue === value.slice(
+                            0, criteriaValue.length)) {
+                            sum = sum + this.getValueFromRange(sumRange, i);
+                            count = count + 1;
+                        }
+                        if (criteria[criteria.length - 1] === '*' && criteriaValue.length <= value.length && criteriaValue ===
+                            value.slice(value.length - criteriaValue.length, value.length)) {
+                            sum = sum + this.getValueFromRange(sumRange, i);
+                            count = count + 1;
+                        }
                     }
-                    if (criteria[criteria.length - 1] === '*' && criteriaValue.length <= value.length && criteriaValue ===
-                        value.slice(value.length - criteriaValue.length, value.length)) {
-                        sum = sum + this.getValueFromRange(sumRange, i);
+                }
+            }
+                break;
+            case this.parser.tokenLess: {
+                for (let i: number = 0; i < criteriaRange.length; i++) {
+                    const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                    const val: number = this.parseFloat(value);
+                    if (val < checkCriteria) {
+                        const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                        const val1: number = this.parseFloat(value1);
+                        sum = sum + val1;
                         count = count + 1;
                     }
                 }
             }
-        }
-            break;
-        case this.parser.tokenLess: {
-            for (let i: number = 0; i < criteriaRange.length; i++) {
-                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                const val: number = this.parseFloat(value);
-                if (val < checkCriteria) {
-                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                    const val1: number = this.parseFloat(value1);
-                    sum = sum + val1;
-                    count = count + 1;
+                break;
+            case this.parser.tokenGreater: {
+                for (let i: number = 0; i < criteriaRange.length; i++) {
+                    const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                    const val: number = this.parseFloat(value);
+                    if (val > checkCriteria) {
+                        const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                        const val1: number = this.parseFloat(value1);
+                        sum = sum + val1;
+                        count = count + 1;
+                    }
                 }
             }
-        }
-            break;
-        case this.parser.tokenGreater: {
-            for (let i: number = 0; i < criteriaRange.length; i++) {
-                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                const val: number = this.parseFloat(value);
-                if (val > checkCriteria) {
-                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                    const val1: number = this.parseFloat(value1);
-                    sum = sum + val1;
-                    count = count + 1;
+                break;
+            case this.parser.tokenLessEq: {
+                for (let i: number = 0; i < criteriaRange.length; i++) {
+                    const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                    const val: number = this.parseFloat(value);
+                    if (val <= checkCriteria) {
+                        const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                        const val1: number = this.parseFloat(value1);
+                        sum = sum + val1;
+                        count = count + 1;
+                    }
                 }
             }
-        }
-            break;
-        case this.parser.tokenLessEq: {
-            for (let i: number = 0; i < criteriaRange.length; i++) {
-                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                const val: number = this.parseFloat(value);
-                if (val <= checkCriteria) {
-                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                    const val1: number = this.parseFloat(value1);
-                    sum = sum + val1;
-                    count = count + 1;
+                break;
+            case this.parser.tokenGreaterEq: {
+                for (let i: number = 0; i < criteriaRange.length; i++) {
+                    const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                    const val: number = this.parseFloat(value);
+                    if (val >= checkCriteria) {
+                        const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                        const val1: number = this.parseFloat(value1);
+                        sum = sum + val1;
+                        count = count + 1;
+                    }
                 }
             }
-        }
-            break;
-        case this.parser.tokenGreaterEq: {
-            for (let i: number = 0; i < criteriaRange.length; i++) {
-                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                const val: number = this.parseFloat(value);
-                if (val >= checkCriteria) {
-                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                    const val1: number = this.parseFloat(value1);
-                    sum = sum + val1;
-                    count = count + 1;
+                break;
+            case this.parser.tokenNotEqual: {
+                for (let i: number = 0; i < criteriaRange.length; i++) {
+                    const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
+                    const val: number = this.parseFloat(value);
+                    if (value !== criteria && val !== checkCriteria) {
+                        const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
+                        const val1: number = this.parseFloat(value1);
+                        sum = sum + val1;
+                        count = count + 1;
+                    }
                 }
             }
-        }
-            break;
-        case this.parser.tokenNotEqual: {
-            for (let i: number = 0; i < criteriaRange.length; i++) {
-                const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
-                const val: number = this.parseFloat(value);
-                if (value !== criteria && val !== checkCriteria) {
-                    const value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
-                    const val1: number = this.parseFloat(value1);
-                    sum = sum + val1;
-                    count = count + 1;
-                }
-            }
-        }
-            break;
+                break;
         }
         return [sum, count];
     }
@@ -1478,12 +1470,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 } else if (this.isUpperChar(pFormula[i])) {
                     let s: string = this.emptyString;
                     let textName: string = '';
-                    while ( i < pFormula.length && this.isUpperChar(pFormula[i])) {
+                    while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
                         const char: string = pFormula[i];
                         s = s + char;
                         i = i + 1;
                     }
-                    while ( i < pFormula.length && this.isDigit(pFormula[i])) {
+                    while (i < pFormula.length && this.isDigit(pFormula[i])) {
                         const digit: string = pFormula[i];
                         s = s + digit;
                         i = i + 1;
@@ -1555,139 +1547,139 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     i += 1;
                 } else {
                     switch (pFormula[i]) {
-                    case '#':
-                        {
-                            let errIndex: number = 0;
-                            if (this.getErrorStrings().indexOf(pFormula.substring(i)) > -1) {
-                                if (pFormula.indexOf('!') === -1 || pFormula.substring(i).indexOf('!') === -1) {
-                                    errIndex = pFormula.indexOf('#N/A') > -1 ?
-                                        (pFormula.indexOf('#N/A') + 4 + i) : pFormula.indexOf('?') + 1 + i;
+                        case '#':
+                            {
+                                let errIndex: number = 0;
+                                if (this.getErrorStrings().indexOf(pFormula.substring(i)) > -1) {
+                                    if (pFormula.indexOf('!') === -1 || pFormula.substring(i).indexOf('!') === -1) {
+                                        errIndex = pFormula.indexOf('#N/A') > -1 ?
+                                            (pFormula.indexOf('#N/A') + 4 + i) : pFormula.indexOf('?') + 1 + i;
+                                    } else {
+                                        errIndex = pFormula.indexOf('!') + 1 + i;
+                                    }
+                                    stack.push(this.substring(pFormula, i, errIndex - i));
                                 } else {
-                                    errIndex = pFormula.indexOf('!') + 1 + i;
+                                    errIndex = i + 1;
+                                    stack.push(this.substring(pFormula, i, errIndex - i));
                                 }
-                                stack.push(this.substring(pFormula, i, errIndex - i));
-                            } else {
-                                errIndex = i + 1;
-                                stack.push(this.substring(pFormula, i, errIndex - i));
+                                i = errIndex;
                             }
-                            i = errIndex;
-                        }
-                        break;
-                    case 'n':
-                        {
-                            i = i + 1;
-                            let s: string = '';
-                            if (pFormula.substring(i).indexOf('Infinity') === 0) {
-                                s = 'Infinity';
-                                i += s.length;
-                            } else {
-                                if (pFormula[i] === 'u' || uFound || pFormula[i] === '-') {
-                                    s = '-';
-                                    if (!uFound) {
-                                        i = i + 1;
-                                    } else {
-                                        uFound = false;
-                                    }
-                                }
-                                while (i < pFormula.length && (this.isDigit(pFormula[i]))
-                                    || pFormula[i] === this.getParseDecimalSeparator()) {
-                                    s = s + pFormula[i];
-                                    i = i + 1;
-                                }
-                                if (i < pFormula.length && pFormula[i] === '%') {
-                                    i = i + 1;
-                                    if (s === '') {
-                                        if (stack.length > 0) {
-                                            const stackValue: string = stack[0];
-                                            const value: number = this.parseFloat(stackValue);
-                                            if (!this.isNaN(value)) {
-                                                stack.pop();
-                                                stack.push((value / 100).toString());
-                                            }
+                            break;
+                        case 'n':
+                            {
+                                i = i + 1;
+                                let s: string = '';
+                                if (pFormula.substring(i).indexOf('Infinity') === 0) {
+                                    s = 'Infinity';
+                                    i += s.length;
+                                } else {
+                                    if (pFormula[i] === 'u' || uFound || pFormula[i] === '-') {
+                                        s = '-';
+                                        if (!uFound) {
+                                            i = i + 1;
+                                        } else {
+                                            uFound = false;
                                         }
-                                    } else {
-                                        s = (this.parseFloat(s) / 100).toString();
+                                    }
+                                    while (i < pFormula.length && (this.isDigit(pFormula[i]))
+                                        || pFormula[i] === this.getParseDecimalSeparator()) {
+                                        s = s + pFormula[i];
+                                        i = i + 1;
+                                    }
+                                    if (i < pFormula.length && pFormula[i] === '%') {
+                                        i = i + 1;
+                                        if (s === '') {
+                                            if (stack.length > 0) {
+                                                const stackValue: string = stack[0];
+                                                const value: number = this.parseFloat(stackValue);
+                                                if (!this.isNaN(value)) {
+                                                    stack.pop();
+                                                    stack.push((value / 100).toString());
+                                                }
+                                            }
+                                        } else {
+                                            s = (this.parseFloat(s) / 100).toString();
+                                        }
                                     }
                                 }
+                                stack.push(s);
                             }
-                            stack.push(s);
+                            break;
+                        case this.parser.tokenAdd:
+                            {
+                                this.getValArithmetic(stack, 'add');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenSubtract:
+                            {
+                                this.getValArithmetic(stack, 'sub');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenMultiply:
+                            {
+                                this.getValArithmetic(stack, 'mul');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenDivide:
+                            {
+                                this.getValArithmetic(stack, 'div');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenLess:
+                            {
+                                this.processLogical(stack, 'less');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenGreater:
+                            {
+                                this.processLogical(stack, 'greater');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenGreaterEq:
+                            {
+                                this.processLogical(stack, 'greaterEq');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenLessEq:
+                            {
+                                this.processLogical(stack, 'lessEq');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenNotEqual:
+                            {
+                                this.processLogical(stack, 'notEq');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenOr:
+                            {
+                                this.processLogical(stack, 'or');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenAnd:
+                            {
+                                this.processLogical(stack, 'and');
+                                i = i + 1;
+                            }
+                            break;
+                        case this.parser.tokenEqual:
+                            {
+                                this.processLogical(stack, 'equal');
+                                i = i + 1;
+                            }
+                            break;
+                        default: {
+                            return this.getErrorStrings()[CommonErrors.value];
                         }
-                        break;
-                    case this.parser.tokenAdd:
-                        {
-                            this.getValArithmetic(stack, 'add');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenSubtract:
-                        {
-                            this.getValArithmetic(stack, 'sub');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenMultiply:
-                        {
-                            this.getValArithmetic(stack, 'mul');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenDivide:
-                        {
-                            this.getValArithmetic(stack, 'div');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenLess:
-                        {
-                            this.processLogical(stack, 'less');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenGreater:
-                        {
-                            this.processLogical(stack, 'greater');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenGreaterEq:
-                        {
-                            this.processLogical(stack, 'greaterEq');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenLessEq:
-                        {
-                            this.processLogical(stack, 'lessEq');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenNotEqual:
-                        {
-                            this.processLogical(stack, 'notEq');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenOr:
-                        {
-                            this.processLogical(stack, 'or');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenAnd:
-                        {
-                            this.processLogical(stack, 'and');
-                            i = i + 1;
-                        }
-                        break;
-                    case this.parser.tokenEqual:
-                        {
-                            this.processLogical(stack, 'equal');
-                            i = i + 1;
-                        }
-                        break;
-                    default: {
-                        return this.getErrorStrings()[CommonErrors.value];
-                    }
                     }
                 }
             }
@@ -2414,8 +2406,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if ((this.parentObject as any).getValueRowCol === undefined) {
             cValue = this.getValueRowCol(gridId, row, col);
         } else {
-            if (fromCell) { fromCell = fromCellGrd === grd ? '' : fromCell + ',' +
-                (fromCellGrd && typeof fromCellGrd === 'string' && Number(fromCellGrd) > -1 ? fromCellGrd : this.getSheetID(fromCellGrd)); }
+            if (fromCell) {
+                fromCell = fromCellGrd === grd ? '' : fromCell + ',' +
+                    (fromCellGrd && typeof fromCellGrd === 'string' && Number(fromCellGrd) > -1 ? fromCellGrd : this.getSheetID(fromCellGrd));
+            }
             cValue = (this.parentObject as any).getValueRowCol(gridId, row, col, fromCell, refresh, isUnique);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
@@ -2823,7 +2817,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 family.sheetNameToToken.delete(refName1);
                 family.tokenToParentObject.delete(token);
                 family.parentObjectToToken.delete(value);
-                if (unRegisterAll) { family.sheetDependentCells = new Map<string, string[]>(); }
             }
         });
     }
@@ -2833,7 +2826,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {string} formula - Specify the formula
      * @returns {string | number} - To compute the expression.
      */
-    public computeExpression(formula: string): string| number {
+    public computeExpression(formula: string): string | number {
         const parsedFormula: string = this.parser.parseFormula(formula);
         const calcValue: string | number = this.computeFormula(parsedFormula);
         return calcValue;
@@ -2894,12 +2887,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     public refresh(cellRef: string, uniqueCell?: string): void {
-        if (this.dependencyLevel === 0) {
-            this.refreshedCells.clear();
-        }
         if (this.getDependentCells().has(cellRef) && this.getDependentCells().get(cellRef) !== null) {
             const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-            this.dependencyLevel = this.dependencyLevel + 1;
             try {
                 const dependentCells: string[] = this.getDependentCells().get(cellRef);
                 let i: number;
@@ -2939,10 +2928,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             } finally {
                 this.grid = family.tokenToParentObject.get(this.getSheetToken(cellRef));
-                this.dependencyLevel--;
-                if (this.dependencyLevel === 0) {
-                    this.refreshedCells.clear();
-                }
             }
         }
     }
@@ -3032,10 +3017,6 @@ export class CalcSheetFamilyItem {
      * @hidden
      */
     public parentObjectToToken: Map<Object, string> = new Map<Object, string>();
-    /**
-     * @hidden
-     */
-    public sheetDependentCells: Map<string, string[]> = new Map<string, string[]>();
     /**
      * @hidden
      */

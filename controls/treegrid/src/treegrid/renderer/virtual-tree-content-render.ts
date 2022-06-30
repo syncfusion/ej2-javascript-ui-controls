@@ -367,7 +367,12 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('aria-rowindex');
             }
             if (firsttdinx === 0) {
-                this.translateY = scrollArgs.offset.top;
+                if (this.parent.allowRowDragAndDrop) {
+                    this.translateY = scrollArgs.offset.top - this.parent.getRowHeight() * 2;
+                }
+                else {
+                    this.translateY = scrollArgs.offset.top;
+                }
             } else {
                 const height: number = this.parent.getRowHeight();
                 this.translateY = (scrollArgs.offset.top - (outBuffer * height) > 0) ?
@@ -390,7 +395,12 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             if (scrollArgs.offset.top > (this.parent.getRowHeight() * this.totalRecords)) {
                 this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
             } else {
-                this.translateY = scrollArgs.offset.top;
+                if (this.parent.allowRowDragAndDrop) {
+                    this.translateY = scrollArgs.offset.top -  this.parent.getRowHeight() * 2;
+                }
+                else {
+                    this.translateY = scrollArgs.offset.top;
+                }
             }
         }
         if (((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))

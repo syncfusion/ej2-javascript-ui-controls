@@ -229,20 +229,21 @@ export class SpellCheckDialog {
      * @param {L10n} localValue - Specifies the locale value.
      * @param {string} error - Specifies the error text.
      * @param {string[]} suggestion - Specifies the suggestion.
+     * @param {boolean} isRtl - Specifies the is rtl
      * @returns {void}
      */
-    public initSpellCheckDialog(localValue: L10n, error?: string, suggestion?: string[]): void {
+    public initSpellCheckDialog(localValue: L10n, error?: string, suggestion?: string[],isRtl?: boolean): void {
         const id: string = this.documentHelper.owner.containerId + '_add_SpellCheck';
         this.target = createElement('div', { id: id, className: 'e-de-insert-spellchecker' });
         this.errorText = error;
         const textContainer: HTMLElement = createElement('div', {
-            className: 'e-de-dlg-spellchecker-subheader', innerHTML: localValue.getConstant('Spelling')
+            className: 'e-de-dlg-sub-header', innerHTML: localValue.getConstant('Spelling')
         });
         this.target.appendChild(textContainer);
 
         const spellContainer: HTMLElement = createElement('div', { className: 'e-de-spellcheck-error-container' });
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-spellcheck-listview', id: 'styles_listview' });
+        const listviewDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-spellcheck-listview' });
 
         spellContainer.appendChild(listviewDiv);
         this.spellingListView = new ListView({
@@ -254,30 +255,28 @@ export class SpellCheckDialog {
 
         const buttonDiv: HTMLElement = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
         spellContainer.appendChild(buttonDiv);
-
         const ignoreButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore') });
         buttonDiv.appendChild(ignoreButtonElement);
-        const ignorebutton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        const ignorebutton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
         ignorebutton.appendTo(ignoreButtonElement);
         ignoreButtonElement.addEventListener('click', this.onIgnoreClicked);
 
         const ignoreAllButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Ignore All') });
         buttonDiv.appendChild(ignoreAllButtonElement);
-        const ignoreAllbutton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        const ignoreAllbutton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
         ignoreAllbutton.appendTo(ignoreAllButtonElement);
         ignoreAllButtonElement.addEventListener('click', this.onIgnoreAllClicked);
         const addDictButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Add to Dictionary') });
         buttonDiv.appendChild(addDictButtonElement);
-        const addDictButton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        const addDictButton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
         addDictButton.appendTo(addDictButtonElement);
         addDictButtonElement.addEventListener('click', this.addToDictClicked);
         this.target.appendChild(spellContainer);
         const suggestionDiv: HTMLElement = createElement('div', {
-            className: 'e-de-dlg-spellchecker-subheaderbtm', innerHTML: localValue.getConstant('Suggestions')
+            className: 'e-de-dlg-sub-header', innerHTML: localValue.getConstant('Suggestions')
         });
 
         this.target.appendChild(suggestionDiv);
-
         const suggestionContainer: HTMLElement = createElement('div', { className: 'e-de-spellcheck-suggestion-container' });
         this.target.appendChild(suggestionContainer);
         const suggestListDiv: HTMLElement = createElement('div', { className: 'e-de-dlg-spellcheck-listview' });
@@ -292,14 +291,14 @@ export class SpellCheckDialog {
         const suggestBtnContainder: HTMLElement = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
         suggestionContainer.appendChild(suggestBtnContainder);
 
-        const changeButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Change'), id: 'Change' });
+        const changeButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Change')});
         suggestBtnContainder.appendChild(changeButtonElement);
-        const changeButton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        const changeButton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
         changeButton.appendTo(changeButtonElement);
         changeButtonElement.addEventListener('click', this.changeButtonClicked);
-        const changeAllButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Change All'), id: 'Change All' });
+        const changeAllButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Change All')});
         suggestBtnContainder.appendChild(changeAllButtonElement);
-        const changeAllbutton: Button = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        const changeAllbutton: Button = new Button({ cssClass: 'e-control e-de-ok-button e-de-spellcheck-btn' });
         changeAllbutton.appendTo(changeAllButtonElement);
         changeAllButtonElement.addEventListener('click', this.changeAllButtonClicked);
         if (isNullOrUndefined(suggestion) || suggestion.length === 0) {

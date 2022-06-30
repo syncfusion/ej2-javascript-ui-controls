@@ -76,7 +76,18 @@ export class Sort {
                 this.flatSortedData[this.storedIndex] = data[d];
             }
             if (data[d].hasChildRecords) {
-                const childSort: ITreeData[] = <ITreeData[]>(new DataManager(data[d].childRecords).executeLocal(srtQry));
+                let childSort: ITreeData[] = <ITreeData[]>(new DataManager(data[d].childRecords).executeLocal(srtQry));
+                if (this.parent.allowRowDragAndDrop && data[d].childRecords.indexOf(this.parent.rowDragAndDropModule['draggedRecord']) !== -1 && this.parent.rowDragAndDropModule['dropPosition'] !== 'middleSegment') {
+                    var dragdIndex = childSort.indexOf(this.parent.rowDragAndDropModule['draggedRecord']);
+                    childSort.splice(dragdIndex, 1);
+                    var dropdIndex = childSort.indexOf(this.parent.rowDragAndDropModule['droppedRecord']);
+                    if (this.parent.rowDragAndDropModule['dropPosition'] === 'topSegment') {
+                        childSort.splice(dropdIndex, 0, this.parent.rowDragAndDropModule['draggedRecord']);
+                    }
+                    else if (this.parent.rowDragAndDropModule['dropPosition'] === 'bottomSegment') {
+                        childSort.splice(dropdIndex + 1, 0, this.parent.rowDragAndDropModule['draggedRecord']);
+                    }
+                }
                 this.iterateSort(childSort, srtQry);
             }
         }

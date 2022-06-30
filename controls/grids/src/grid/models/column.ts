@@ -582,7 +582,8 @@ export class Column {
     private editTemplateFn: Function;
     private filterTemplateFn: Function;
     private sortDirection: string = 'Descending';
-    private freezeTable: freezeTable;
+    /** @hidden */
+    public freezeTable: freezeTable;
 
     /**
      * @returns {Function} returns the edit template

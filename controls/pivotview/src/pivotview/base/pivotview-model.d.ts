@@ -566,6 +566,13 @@ export interface PivotViewModel extends ComponentModel{
     allowCalculatedField?: boolean;
 
     /**
+     * It enables the search option in the field list UI, which can be used to search specific fields at runtime.
+     * > This option is only available when the pivot table's built-in popup field list is enabled using the `showFieldList` property.
+     * @default false
+     */
+    enableFieldSearching?: boolean;
+
+    /**
      * Allows you to sort individual value field and its aggregated values either in row or column axis to ascending or descending order. 
      * You can sort the values by clicking directly on the value field header positioned either in row or column axis of the pivot table.
      * @default false

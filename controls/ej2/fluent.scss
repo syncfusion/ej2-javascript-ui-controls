@@ -26,6 +26,8 @@
 @import "slider/fluent.scss";
 @import "color-picker/fluent.scss";
 @import "combo-box/fluent.scss";
+@import "h-scroll/fluent.scss";
+@import "v-scroll/fluent.scss";
 @import "context-menu/fluent.scss";
 @import "dashboard-layout/fluent.scss";
 @import "datepicker/fluent.scss";
@@ -40,8 +42,7 @@
 @import "textbox/fluent.scss";
 @import "uploader/fluent.scss";
 @import "dialog/fluent.scss";
-@import "h-scroll/fluent.scss";
-@import "v-scroll/fluent.scss";
+@import "pager/fluent.scss";
 @import "toolbar/fluent.scss";
 @import "tab/fluent.scss";
 @import "treeview/fluent.scss";
@@ -54,7 +55,6 @@
 @import "document-editor/fluent.scss";
 @import "document-editor-container/fluent.scss";
 @import "splitter/fluent.scss";
-@import "pager/fluent.scss";
 @import "excel-filter/fluent.scss";
 @import "grid/fluent.scss";
 @import "file-manager/fluent.scss";

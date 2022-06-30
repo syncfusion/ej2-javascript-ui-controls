@@ -154,7 +154,7 @@ export class SpreadsheetHyperlink {
         let value: string;
         let address: string;
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let cellAddress: string = sheet.name + '!' + sheet.activeCell;
+        let cellAddress: string = sheet.name + '!' + sheet.selectedRange;
         const item: HTMLElement = this.parent.element.querySelector('.e-link-dialog').
             getElementsByClassName('e-content')[0].querySelector('.e-item.e-active') as HTMLElement;
         if (item) {
@@ -256,18 +256,21 @@ export class SpreadsheetHyperlink {
 
     private hlOpenHandler(trgt: HTMLElement): void {
         if (trgt.classList.contains('e-hyperlink')) {
+            trgt.style.color = '#551A8B';
+            let cellEle: HTMLElement = closest(trgt, '.e-cell') as HTMLElement;
+            if (cellEle) {
+                cellEle.style.color = '#551A8B';
+            } else {
+                return;
+            }
             let range: string[] = ['', ''];
-            // let selRange: string;
             let rangeIndexes: number[];
             let isEmpty: boolean = true;
-            trgt.style.color = '#551A8B';
-            if (closest(trgt, '.e-cell')) {
-                (closest(trgt, '.e-cell') as HTMLElement).style.color = '#551A8B';
-            }
             let sheet: SheetModel = this.parent.getActiveSheet();
-            const colIdx: number = parseInt(trgt.parentElement.getAttribute('aria-colindex'), 10) - 1;
-            const rowIdx: number = parseInt(trgt.parentElement.parentElement.getAttribute('aria-rowindex'), 10) - 1;
-            let rangeAddr: string | HyperlinkModel = sheet.rows[rowIdx].cells[colIdx].hyperlink;
+            const colIdx: number = parseInt(cellEle.getAttribute('aria-colindex'), 10) - 1;
+            const rowIdx: number = parseInt(cellEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
+            const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+            let rangeAddr: string | HyperlinkModel = cell.hyperlink;
             let address: string;
             const befArgs: BeforeHyperlinkArgs = { hyperlink: rangeAddr, address: sheet.activeCell, target: '_blank', cancel: false };
             this.parent.trigger(beforeHyperlinkClick, befArgs);

@@ -61,8 +61,6 @@ export class Zoom {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private startTouches: any[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private shapeZoomLocation: any = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private zoomshapewidth: any;
     private index: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,25 +109,37 @@ export class Zoom {
         const minZoom: number = map.zoomSettings.minZoom;
         newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
         const prevTilePoint: Point = map.tileTranslatePoint;
-        if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
+        if ((!map.isTileMap) && ((type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)
+            || map.isReset)) {
             const availSize: Rect = map.mapAreaRect;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const minBounds: any = map.baseMapRectBounds['min'] as any;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const maxBounds: any = map.baseMapRectBounds['max'] as any;
-            const mapTotalWidth: number = Math.abs(minBounds['x'] - maxBounds['x']);
-            const mapTotalHeight: number = Math.abs(minBounds['y'] - maxBounds['y']);
-            const point: Point = map.translatePoint;
-            let translatePointX: number = point.x - (((availSize.width / scale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
-            let translatePointY: number = point.y - (((availSize.height / scale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
-            const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * newZoomFactor;
-            translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
-            translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
-            map.translatePoint = new Point(translatePointX, translatePointY);
+            let mapTotalWidth: number = Math.abs(minBounds['x'] - maxBounds['x']);
+            let mapTotalHeight: number = Math.abs(minBounds['y'] - maxBounds['y']);
+            let translatePointX: number;
+            let translatePointY: number;
+            if (newZoomFactor < 1.2 && map.projectionType !== 'Eckert5') {
+                if (mapTotalWidth === 0 || mapTotalHeight === 0 || mapTotalWidth === mapTotalHeight) {
+                    mapTotalWidth = availSize.width / 2;
+                    mapTotalHeight = availSize.height;
+                }
+                newZoomFactor = parseFloat(Math.min(availSize.width / mapTotalWidth, availSize.height / mapTotalHeight).toFixed(2));
+                map.translatePoint = this.calculateInitalZoomTranslatePoint(newZoomFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);                
+            } else {
+                const point: Point = map.translatePoint;
+                translatePointX = point.x - (((availSize.width / scale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
+                translatePointY = point.y - (((availSize.height / scale) - (availSize.height / newZoomFactor)) / (availSize.height / position.y));
+                const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * newZoomFactor;
+                translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
+                translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
+                map.translatePoint = new Point(translatePointX, translatePointY);
+            }
             map.scale = newZoomFactor;
             if (this.triggerZoomEvent(prevTilePoint, prevLevel, type)) {
                 map.translatePoint = map.previousPoint;
-                map.scale = map.previousScale;
+                map.scale = map.mapScaleValue = map.previousScale;
             } else {
                 this.applyTransform();
             }
@@ -181,6 +191,15 @@ export class Zoom {
             }
         }
         this.maps.zoomNotApplied = false;
+    }
+
+    private calculateInitalZoomTranslatePoint(newZoomFactor: number, mapTotalWidth: number, mapTotalHeight: number, availSize: Rect, minBounds: any, map: Maps): Point {
+        mapTotalWidth *= newZoomFactor;
+        mapTotalHeight *= newZoomFactor;
+        let widthDiff: number = minBounds['x'] !== 0 && map.translateType === 'layers' ? map.availableSize.width - availSize.width : 0;
+        var translatePointX = availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2))) - widthDiff;
+        var translatePointY = availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)));
+        return new Point(translatePointX, translatePointY);
     }
 
     private triggerZoomEvent(prevTilePoint: Point, prevLevel: number, type: string): boolean {
@@ -299,7 +318,7 @@ export class Zoom {
         this.lastScale = scale;
         this.pinchFactor *= newScale;
         this.pinchFactor = Math.min(this.maps.zoomSettings.maxZoom, Math.max(this.pinchFactor, this.maps.zoomSettings.minZoom));
-        const zoomCalculationFactor: number = this.pinchFactor;
+        let zoomCalculationFactor: number = this.pinchFactor;
         let zoomArgs: IMapZoomEventArgs;
         let isZoomCancelled: boolean;
         if (!map.isTileMap) {
@@ -307,15 +326,27 @@ export class Zoom {
             const minBounds: any = map.baseMapRectBounds['min'] as any;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const maxBounds: any = map.baseMapRectBounds['max'] as any;
-            const mapTotalHeight: number = Math.abs(minBounds['y'] - maxBounds['y']);
-            const mapTotalWidth: number = Math.abs(minBounds['x'] - maxBounds['x']);
+            let mapTotalHeight: number = Math.abs(minBounds['y'] - maxBounds['y']);
+            let mapTotalWidth: number = Math.abs(minBounds['x'] - maxBounds['x']);
             const translatePoint: Point = map.translatePoint;
-            const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * zoomCalculationFactor;
-            let translatePointX: number = translatePoint.x - (((availSize.width / map.scale) - (availSize.width / zoomCalculationFactor)) / (availSize.width / touchCenter.x));
-            let translatePointY: number = translatePoint.y - (((availSize.height / map.scale) - (availSize.height / zoomCalculationFactor)) / (availSize.height / touchCenter.y));
-            translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
-            translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
-            map.translatePoint = new Point(translatePointX, translatePointY);
+            let translatePointX: number;
+            let translatePointY: number;
+            if (zoomCalculationFactor < 1.2 && map.projectionType !== 'Eckert5') {
+                if (mapTotalWidth === 0 || mapTotalHeight === 0 || mapTotalWidth === mapTotalHeight) {
+                    mapTotalWidth = availSize.width / 2;
+                    mapTotalHeight = availSize.height;
+                }
+                zoomCalculationFactor = parseFloat(Math.min(availSize.width / mapTotalWidth, availSize.height / mapTotalHeight).toFixed(2));
+                map.translatePoint = this.calculateInitalZoomTranslatePoint(zoomCalculationFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);
+            }
+            else {
+                const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * zoomCalculationFactor;
+                translatePointX = translatePoint.x - (((availSize.width / map.scale) - (availSize.width / zoomCalculationFactor)) / (availSize.width / touchCenter.x));
+                translatePointY = translatePoint.y - (((availSize.height / map.scale) - (availSize.height / zoomCalculationFactor)) / (availSize.height / touchCenter.y));
+                translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
+                translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
+                map.translatePoint = new Point(translatePointX, translatePointY);
+            } 
             map.scale = zoomCalculationFactor;
             isZoomCancelled = this.triggerZoomEvent(prevTilePoint, prevLevel, '');
             if (isZoomCancelled) {
@@ -433,11 +464,10 @@ export class Zoom {
                                 } else {
                                     layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index));
                                 }
-                            } else {
+                            } else if (currentEle.id.indexOf('Legend') == -1) {
                                 changeBorderWidth(currentEle, this.index, scale, this.maps);
                                 this.maps.zoomTranslatePoint = this.maps.translatePoint;
                                 this.animateTransform(currentEle, animate, x, y, scale);
-                                this.shapeZoomLocation = currentEle.childNodes;
                             }
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
@@ -540,7 +570,7 @@ export class Zoom {
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                 if (currentEle.childNodes[k]['id'].indexOf('_LabelIndex_') > -1) {
                                     const labelIndex: number = parseFloat(currentEle.childNodes[k]['id'].split('_LabelIndex_')[1].split('_')[0]);
-                                    this.zoomshapewidth = this.shapeZoomLocation[labelIndex].getBoundingClientRect();
+                                    this.zoomshapewidth = (currentEle.childNodes[k] as Element).getBoundingClientRect();
                                     this.maps.zoomShapeCollection.push(this.zoomshapewidth);
                                     this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate);
                                     const dataLabel: DataLabelSettingsModel = this.maps.layers[this.index].dataLabelSettings;
@@ -948,7 +978,7 @@ export class Zoom {
             const layerRect: ClientRect = getElementByID(map.element.id + '_Layer_Collections').getBoundingClientRect();
             const elementRect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
             const panningXDirection: boolean = ((xDifference < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
-                ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
+                ((layerRect.left + layerRect.width + map.mapAreaRect.x) >= (elementRect.width))));
             const panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height + legendHeight + map.margin.top) >= (elementRect.top + elementRect.height))));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1037,16 +1067,27 @@ export class Zoom {
             const min: any = map.baseMapRectBounds['min'] as any;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const max: any = map.baseMapRectBounds['max'] as any;
-            const mapWidth: number = Math.abs(max['x'] - min['x']);
-            const mapHeight: number = Math.abs(min['y'] - max['y']);
-            let translatePointX: number = translatePoint.x - (((size.width / scale) - (size.width / zoomFactor)) / 2);
-            let translatePointY: number = translatePoint.y - (((size.height / scale) - (size.height / zoomFactor)) / 2);
-            const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * zoomFactor;
-            translatePointX = (currentHeight < map.mapAreaRect.height) ? (size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2))))
-                : translatePointX;
-            translatePointY = (currentHeight < map.mapAreaRect.height) ? (size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2))))
-                : translatePointY;
-            map.translatePoint = new Point(translatePointX, translatePointY);
+            let mapWidth: number = Math.abs(max['x'] - min['x']);
+            let mapHeight: number = Math.abs(min['y'] - max['y']);
+            let translatePointX: number;
+            let translatePointY: number;
+            if (zoomFactor < 1.2 && map.projectionType !== 'Eckert5') {
+                if (mapHeight === 0 || mapWidth === 0 || mapHeight === mapWidth) {
+                    mapWidth = size.width / 2;
+                    mapHeight = size.height;
+                }
+                zoomFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                map.translatePoint = this.calculateInitalZoomTranslatePoint(zoomFactor, mapWidth, mapHeight, size, min, map);
+            } else {
+                translatePointX = translatePoint.x - (((size.width / scale) - (size.width / zoomFactor)) / 2);
+                translatePointY = translatePoint.y - (((size.height / scale) - (size.height / zoomFactor)) / 2);
+                const currentHeight: number = Math.abs(map.baseMapRectBounds['max']['y'] - map.baseMapRectBounds['min']['y']) * zoomFactor;
+                translatePointX = (currentHeight < map.mapAreaRect.height) ? (size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2))))
+                    : translatePointX;
+                translatePointY = (currentHeight < map.mapAreaRect.height) ? (size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2))))
+                    : translatePointY;
+                map.translatePoint = new Point(translatePointX, translatePointY);
+            }
             map.zoomTranslatePoint = map.translatePoint;
             map.scale = zoomFactor;
             if (this.triggerZoomEvent(prevTilePoint, prevLevel, type)) {
@@ -1378,7 +1419,11 @@ export class Zoom {
             x = (size.width / 2) - (toolBarSize.width / 2);
             break;
         case 'Far':
-            x = (size.width - toolBarSize.width) - padding;
+            if (!isNullOrUndefined(map.legendModule) && map.legendSettings.position === 'Left') {
+                x = size.width + size.x - toolBarSize.width - padding;
+            } else {
+                x = (size.width - toolBarSize.width) - padding;
+            }
             break;
         }
         let extraPosition: Point = map.getExtraPosition();
@@ -1435,6 +1480,7 @@ export class Zoom {
                     this.performZooming(position, (value + delta), direction);
                 } else {
                     map.mapScaleValue = value - delta;
+                    map.isReset = (map.mapScaleValue < 1) ? true : false;
                     map.staticMapZoom = map.tileZoomLevel;
                     if (map.mapScaleValue === 1) {
                         map.markerCenterLatitude = null;

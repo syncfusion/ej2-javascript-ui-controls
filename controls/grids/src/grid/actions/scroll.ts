@@ -304,11 +304,12 @@ export class Scroll implements IAction {
         if (node === null) {
             return null;
         }
-        const parent = isNullOrUndefined(node.tagName) ? (node as any).scrollingElement : node;
-        const overflowY = document.defaultView.getComputedStyle(parent, null).overflowY;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parent: HTMLElement = isNullOrUndefined(node.tagName) ? (node as any).scrollingElement : node;
+        const overflowY: string = document.defaultView.getComputedStyle(parent, null).overflowY;
         if (parent.scrollHeight > parent.clientHeight && overflowY !== 'hidden'
-            && overflowY !== 'visible' || node.tagName === "HTML" || node.tagName === "BODY") {
-            return node
+            && overflowY !== 'visible' || node.tagName === 'HTML' || node.tagName === 'BODY') {
+            return node;
         } else {
             return this.getScrollbleParent(node.parentNode as HTMLElement);
         }
@@ -457,44 +458,44 @@ export class Scroll implements IAction {
         if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent()) {
             const contentRect: ClientRect = this.parent.getContent().getClientRects()[0];
             if (contentRect) {
-            const headerEle: HTMLElement = this.parent.getHeaderContent() as HTMLElement;
-            const toolbarEle: HTMLElement = this.parent.element.querySelector('.e-toolbar') as HTMLElement;
-            const groupHeaderEle: HTMLElement = this.parent.element.querySelector('.e-groupdroparea') as HTMLElement;
-            const height: number = headerEle.offsetHeight + (toolbarEle ? toolbarEle.offsetHeight : 0) +
-                (groupHeaderEle ? groupHeaderEle.offsetHeight : 0);
-            const parentTop: number = this.parentElement.getClientRects()[0].top;
-            const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
-            const left: number = contentRect.left;
-            if (top < height && contentRect.bottom > 0) {
-                headerEle.classList.add('e-sticky');
-                let elemTop: number = 0;
-                if (groupHeaderEle && this.parent.groupSettings.showDropArea) {
-                    this.setSticky(groupHeaderEle, elemTop, contentRect.width, left, true);
-                    elemTop += groupHeaderEle.getClientRects()[0].height;
-                }
-                if (toolbarEle) {
-                    this.setSticky(toolbarEle, elemTop, contentRect.width, left, true);
-                    elemTop += toolbarEle.getClientRects()[0].height;
-                }
-                this.setSticky(headerEle, elemTop, contentRect.width, left, true);
-            }
-            else {
-                if (headerEle.classList.contains('e-sticky')) {
-                    this.setSticky(headerEle, null, null, null, false);
+                const headerEle: HTMLElement = this.parent.getHeaderContent() as HTMLElement;
+                const toolbarEle: HTMLElement = this.parent.element.querySelector('.e-toolbar') as HTMLElement;
+                const groupHeaderEle: HTMLElement = this.parent.element.querySelector('.e-groupdroparea') as HTMLElement;
+                const height: number = headerEle.offsetHeight + (toolbarEle ? toolbarEle.offsetHeight : 0) +
+                    (groupHeaderEle ? groupHeaderEle.offsetHeight : 0);
+                const parentTop: number = this.parentElement.getClientRects()[0].top;
+                const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
+                const left: number = contentRect.left;
+                if (top < height && contentRect.bottom > 0) {
+                    headerEle.classList.add('e-sticky');
+                    let elemTop: number = 0;
+                    if (groupHeaderEle && this.parent.groupSettings.showDropArea) {
+                        this.setSticky(groupHeaderEle, elemTop, contentRect.width, left, true);
+                        elemTop += groupHeaderEle.getClientRects()[0].height;
+                    }
                     if (toolbarEle) {
-                        this.setSticky(toolbarEle, null, null, null, false);
+                        this.setSticky(toolbarEle, elemTop, contentRect.width, left, true);
+                        elemTop += toolbarEle.getClientRects()[0].height;
                     }
-                    if (groupHeaderEle) {
-                        this.setSticky(groupHeaderEle, null, null, null, false);
-                    }
-                    const ccDlg: HTMLElement = this.parent.element.querySelector('.e-ccdlg');
-                    if (ccDlg) {
-                        ccDlg.classList.remove('e-sticky');
+                    this.setSticky(headerEle, elemTop, contentRect.width, left, true);
+                }
+                else {
+                    if (headerEle.classList.contains('e-sticky')) {
+                        this.setSticky(headerEle, null, null, null, false);
+                        if (toolbarEle) {
+                            this.setSticky(toolbarEle, null, null, null, false);
+                        }
+                        if (groupHeaderEle) {
+                            this.setSticky(groupHeaderEle, null, null, null, false);
+                        }
+                        const ccDlg: HTMLElement = this.parent.element.querySelector('.e-ccdlg');
+                        if (ccDlg) {
+                            ccDlg.classList.remove('e-sticky');
+                        }
                     }
                 }
+                this.parent.notify(events.stickyScrollComplete, {});
             }
-            this.parent.notify(events.stickyScrollComplete, {});
-        }
         }
     }
 

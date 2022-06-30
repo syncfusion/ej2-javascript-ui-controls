@@ -455,7 +455,7 @@ export class SpellChecker {
             this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary'));
         } else {
 
-            allsuggestions = (allsuggestions.length === 5) ? this.constructInlineMenu(allsuggestions) : allsuggestions;
+            allsuggestions = (allsuggestions.length > 3 ) ? this.constructInlineMenu(allsuggestions) : allsuggestions;
             this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary'));
         }
         /* eslint-disable @typescript-eslint/no-explicit-any */

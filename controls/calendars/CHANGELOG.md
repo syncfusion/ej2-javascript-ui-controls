@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 20.1.58 (2022-05-31)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#F34697` - Issue with "able to clear the input value using clear button when component in readonly mode" has been resolved.
-
-## 20.1.57 (2022-05-24)
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#I378357` - Issue with "tab key navigation is not working between calendars" has been resolved.
-
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

@@ -4,15 +4,15 @@ import { HideShowEventArgs, invalidData } from './../common/index';
 import { Cell, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
-import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, cFUndo } from '../../workbook/index';
+import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
 import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow, updateCell } from '../../workbook/index';
-import { getCell, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
+import { getCell, setChart, ApplyCFArgs } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
-import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat } from '../../workbook/index';
-import { checkUniqueRange, checkConditionalFormat, ActionEventArgs, skipHiddenIdx, isFilterHidden } from '../../workbook/index';
-import { applyProtect, chartDesignTab, copy, cut, freeze, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet, updateToggleItem } from './event';
+import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
+import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
+import { applyProtect, chartDesignTab, copy, cut, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -1267,16 +1267,12 @@ export function updateAction(
                 const style: CellStyleModel = {};
                 Object.assign(style, eventArgs.style, null, true);
                 eventArgs.style.border = undefined;
-                spreadsheet.notify(
-                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range,
-                        onActionUpdate: !isFromUpdateAction });
+                spreadsheet.notify(setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range });
                 eventArgs.style.border = style.border;
                 spreadsheet.setBorder(eventArgs.style, eventArgs.range, eventArgs.borderType);
                 eventArgs.style = style;
             } else {
-                spreadsheet.notify(
-                    setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range,
-                        onActionUpdate: !isFromUpdateAction });
+                spreadsheet.notify(setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range });
             }
             getUpdateUsingRaf((): void => spreadsheet.selectRange(spreadsheet.getActiveSheet().selectedRange));
         } else {
@@ -1464,36 +1460,43 @@ export function updateAction(
         eventArgs.model = model;
         break;
     case 'clear':
-        spreadsheet.notify(clearViewer, { options: options.eventArgs, isPublic: true, isFromUpdateAction: isFromUpdateAction });
+        const clearArgs: { options: object, isFromUpdateAction: boolean, cfClearActionArgs?: { previousConditionalFormats: object,
+            conditionalFormats: object } } = { options: options.eventArgs, isFromUpdateAction: isFromUpdateAction };
+        spreadsheet.notify(clearViewer, clearArgs);
+        if (!isFromUpdateAction && clearArgs.cfClearActionArgs) {
+            eventArgs.cfClearActionArgs.previousConditionalFormats = clearArgs.cfClearActionArgs.previousConditionalFormats;
+            eventArgs.cfClearActionArgs.conditionalFormats = clearArgs.cfClearActionArgs.conditionalFormats;
+        }
         break;
     case 'conditionalFormat':
         if (isRedo === false) {
-            spreadsheet.notify(clearCFRule, { range: eventArgs.range, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true, isFromUpdateAction: isFromUpdateAction });
-            for (let undoCollIdx: number = 0; undoCollIdx < undoCollections.length; undoCollIdx++) {
-                if (undoCollections[undoCollIdx].action === 'conditionalFormat') {
-                    const conditionalFormat: ConditionalFormatModel = {
-                        type: undoCollections[undoCollIdx].eventArgs.type as (HighlightCell | TopBottom | DataBar | ColorScale | IconSet),
-                        cFColor: undoCollections[undoCollIdx].eventArgs.cFColor as CFColor,
-                        value: undoCollections[undoCollIdx].eventArgs.value, range: undoCollections[undoCollIdx].eventArgs.range
-                    };
-                    spreadsheet.notify(
-                        cFUndo, { conditionalFormat: conditionalFormat, sheetIdx: undoCollections[undoCollIdx].eventArgs.sheetIdx });
-                }
-            }
-        } else {
-            const conditionalFormat: ConditionalFormatModel = { type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
-                range: eventArgs.range };
             spreadsheet.notify(
-                setCFRule, { conditionalFormat: conditionalFormat, sheetIdx: eventArgs.sheetIdx, isRedo: true, isAction: false, isFromUpdateAction: isFromUpdateAction });
+                clearCFRule, <CFArgs>{ range: eventArgs.range, cfModel: { type: eventArgs.type, cFColor: eventArgs.cFColor,
+                    value: eventArgs.value }, sheetIdx: eventArgs.sheetIdx, isUndoRedo: !eventArgs.cancel,
+                    isFromUpdateAction: isFromUpdateAction });
+        } else {
+            spreadsheet.notify(
+                setCFRule, <CFArgs>{ cfModel: { type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
+                    range: eventArgs.range }, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true, isFromUpdateAction: isFromUpdateAction });
         }
         break;
     case 'clearCF':
         if (isRedo === false) {
-            spreadsheet.notify(clearCells,
-                { conditionalFormats: eventArgs.cFormats, oldRange: eventArgs.oldRange, selectedRange: eventArgs.selectedRange });
+            spreadsheet.notify(
+                clearCFRule, <CFArgs>{ oldCFModel: eventArgs.previousConditionalFormats, updatedCFModel: eventArgs.conditionalFormats,
+                    range: eventArgs.selectedRange, isUndo: true, sheetIdx: eventArgs.sheetIdx });
         } else {
-            spreadsheet.notify(clearCFRule,
-                { range: eventArgs.selectedRange, sheetIdx: eventArgs.sheetIdx, isClearCF: true, isUndoRedo: true, isFromUpdateAction: isFromUpdateAction });
+            const clearArgs: CFArgs = { range: eventArgs.selectedRange, sheetIdx: eventArgs.sheetIdx,
+                isUndoRedo: true, isFromUpdateAction: isFromUpdateAction };
+            spreadsheet.notify(clearCFRule, clearArgs);
+            if (!isFromUpdateAction) {
+                eventArgs.previousConditionalFormats = clearArgs.oldCFModel;
+                if (clearArgs.updatedCFModel.length) {
+                    eventArgs.conditionalFormats = clearArgs.updatedCFModel;
+                } else {
+                    delete eventArgs.conditionalFormats;
+                }
+            }
         }
         break;
     case 'insertImage':
@@ -2022,6 +2025,8 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
     const sheet: SheetModel = getSheet(context, sheetIdx);
     let skip: boolean; let cell: CellModel; let newCell: CellModel; let td: HTMLElement;
     const uiRefresh: boolean = sheetIdx === context.activeSheetIndex;
+    const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
+    const cfRule: ConditionalFormatModel[] = [];
     for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
         if (isFilterHidden(sheet, sRIdx)) { continue; }
         for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
@@ -2059,10 +2064,14 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                             td.removeChild(td.querySelector('.e-iconsetspan'));
                         }
                     }
-                    context.notify(
-                        checkConditionalFormat, { rowIdx: sRIdx, colIdx: sCIdx, cell: getCell(sRIdx, sCIdx, sheet), isAction: true });
+                    if (cf) {
+                        updateCFModel(cf, cfRule, sRIdx, sCIdx);
+                    }
                 }
             }
         }
+    }
+    if (cfRule.length) {
+        context.notify(applyCF, <ApplyCFArgs>{ cfModel: cfRule, sheetIdx: sheetIdx, otherSheets: !uiRefresh, isAction: true });
     }
 }

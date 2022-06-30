@@ -68,9 +68,12 @@ describe('Diagram Control', () => {
                 id: 'node7', width: 100, height: 100, offsetX: 500, offsetY: 300,
                 shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'None' } } as BpmnShapeModel,
             };
-
+            let node8: NodeModel = {
+                id: 'node8', width: 100, height: 100, offsetX: 100, offsetY: 500,
+                shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'Exclusive' } } as BpmnShapeModel,
+            };
             diagram = new Diagram({
-                width: 1500, height: 800, nodes: [node, node1, node2, node3, node4, node5, node6, node7]
+                width: 1500, height: 800, nodes: [node, node1, node2, node3, node4, node5, node6, node7,node8]
             });
             diagram.appendTo('#diagram96gateway');
         });
@@ -79,7 +82,23 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
-
+        it('Checking size while Changing gateway type at runtime', (done: Function)=>{
+            (diagram.nodes[8].shape as BpmnShapeModel).gateway.type = 'Inclusive';
+            diagram.dataBind();
+            expect((diagram.nodes[8].wrapper.children[0] as Canvas).children[1].width === 45 &&
+            (diagram.nodes[8].wrapper.children[0] as Canvas).children[1].height === 45 ).toBe(true);
+            done();
+        });
+        it('Checking undo redo',(done:Function)=>{
+            diagram.undo();
+            diagram.dataBind();
+            let prevType = (diagram.nodes[8].shape as BpmnShapeModel).gateway.type;
+            diagram.redo();
+            diagram.dataBind();
+            let currType = (diagram.nodes[8].shape as BpmnShapeModel).gateway.type;
+            expect(prevType ==='Exclusive' && currType === 'Inclusive').toBe(true);
+            done();
+        });
         it('Checking before, after,  BPMN Gateway shape and type as Exclusive', (done: Function) => {
             let wrapper: Canvas = (diagram.nodes[0] as NodeModel).wrapper.children[0] as Canvas;
             expect((wrapper.children[0].actualSize.width === 100

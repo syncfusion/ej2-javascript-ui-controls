@@ -135,6 +135,7 @@ describe('Chart Range Color Mapping Legend', () => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 let legendContainer: HTMLElement = document.getElementById(legendId + '_translate_g');
+                console.log(legendId + '_translate_g');
                 expect(chartObj.rangeColorSettings.length).toEqual(legendContainer.childElementCount);
                 done();
             };

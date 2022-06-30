@@ -659,6 +659,7 @@ describe('Cell Edit module', () => {
         'cancelable': true
       });      
       gridObj.getCellFromIndex(0, 2).dispatchEvent(event);
+      debugger;
       (gridObj.editModule as any).doubleClickTarget.getElementsByTagName("input")[0].value = "20";
       (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
@@ -1149,6 +1150,7 @@ describe('update rows method', () => {
       );
     });
     it('Edit mode continued to the next cell on tab click', (done: Function) => {
+      debugger;
       gridObj.editCell(2,'taskName');
       expect(gridObj.getRows()[2].classList.contains("e-editedrow")).toBe(true);
       gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);

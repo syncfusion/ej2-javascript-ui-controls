@@ -1,6 +1,7 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel } from './../index';
-import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, InsertDeleteModelArgs, getColumnHeaderText } from './index';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs } from './index';
+import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel } from './index';
+import { isUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Check whether the text is formula or not.
@@ -359,7 +360,8 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             context.notify(
                 workbookEditOperation, { action: 'updateCellValue', address: [args.rowIndex, args.colIndex], sheetIndex:
                 getSheetIndex(context, sheet.name), value: isFormulaCell && !cell.formula ? (cell.value ||
-                (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value || (<unknown>cell.value === 0 ? '0' : '')) });
+                    (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value ||
+                        (<unknown>cell.value === 0 ? '0' : '')) });
             if (prop.requestType && args.cell === null) {
                 setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
             }
@@ -370,7 +372,7 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             }
             if (prop.uiRefresh) {
                 context.serviceLocator.getService<{ refresh: Function }>('cell').refresh(
-                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCf, prop.checkWrap);
+                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCF, prop.checkWrap);
             }
             if (!prop.preventEvt) {
                 const cellDisplayText: string = context.getDisplayText(cell);
@@ -400,56 +402,57 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
  * @hidden
  */
 export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel): number[] {
-    let i: number = 0; let j: number = 0; let loopLength: number = 0;
-    const length: number = sheet.usedRange.rowIndex + sheet.usedRange.colIndex;
-    const startCell: { rowIndex: number, colIndex: number } = { rowIndex: rowIdx, colIndex: colIdx };
-    const endCell: { rowIndex: number, colIndex: number } = { rowIndex: rowIdx, colIndex: colIdx };
-    for (i = 1; i < length + 1; i++) {
-        for (j = -loopLength; j < loopLength + 1; j++) {                            // start from right
-            if (getCell(rowIdx + j, colIdx + i, sheet, null, true).value) {
-                endCell.rowIndex = endCell.rowIndex > rowIdx + j ? endCell.rowIndex : rowIdx + j;
-                endCell.colIndex = endCell.colIndex > colIdx + i ? endCell.colIndex : colIdx + i;
+    let sRowIdx: number = rowIdx;
+    let eRowIdx: number = rowIdx;
+    let sColIdx: number = colIdx;
+    let eColIdx: number = colIdx;
+    const usedRowIdx: number = sheet.usedRange.rowIndex;
+    const usedColIdx: number = sheet.usedRange.colIndex;
+    const isEmptyRow: Function = (idx: number): boolean => {
+        for (let i: number = 0; i <= usedColIdx; i++) {
+            if (!isUndefined(getCell(idx, i, sheet, null, true).value)) {
+                return false;
             }
         }
-        if (getCell(rowIdx + i, colIdx + i, sheet, null, true).value) {
-            endCell.rowIndex = endCell.rowIndex > rowIdx + i ? endCell.rowIndex : rowIdx + i;
-            endCell.colIndex = endCell.colIndex > colIdx + i ? endCell.colIndex : colIdx + i;
-        }
-        for (j = -loopLength; j < loopLength + 1; j++) {
-            if (getCell(rowIdx + i, colIdx + j, sheet, null, true).value) {
-                endCell.rowIndex = endCell.rowIndex > rowIdx + i ? endCell.rowIndex : rowIdx + i;
-                endCell.colIndex = endCell.colIndex > colIdx + j ? endCell.colIndex : colIdx + j;
-            }
-        }
-        if (getCell(rowIdx + i, colIdx - i, sheet, null, true).value) {
-            endCell.rowIndex = endCell.rowIndex > rowIdx + i ? endCell.rowIndex : rowIdx + i;
-            startCell.colIndex = startCell.colIndex < colIdx - i ? startCell.colIndex : colIdx - i;
-        }
-        for (j = -loopLength; j < loopLength + 1; j++) {
-            if (getCell(rowIdx + j, colIdx - i, sheet, null, true).value) {
-                startCell.rowIndex = startCell.rowIndex < rowIdx + j ? startCell.rowIndex : rowIdx + j;
-                startCell.colIndex = startCell.colIndex < colIdx - i ? startCell.colIndex : colIdx - i;
-                endCell.rowIndex = endCell.rowIndex > rowIdx + j ? endCell.rowIndex : rowIdx + j;
-            }
-        }
-        if (getCell(rowIdx - i, colIdx - i, sheet, null, true).value) {
-            startCell.rowIndex = startCell.rowIndex < rowIdx - i ? startCell.rowIndex : rowIdx - i;
-            startCell.colIndex = startCell.colIndex < colIdx - i ? startCell.colIndex : colIdx - i;
-        }
-        for (j = -loopLength; j < loopLength + 1; j++) {
-            if (getCell(rowIdx - i, colIdx + j, sheet, null, true).value) {
-                startCell.rowIndex = startCell.rowIndex < rowIdx - i ? startCell.rowIndex : rowIdx - i;
-                startCell.colIndex = startCell.colIndex < colIdx + j ? startCell.colIndex : colIdx + j;
-                endCell.colIndex = endCell.colIndex > colIdx + j ? endCell.colIndex : colIdx + j;
-            }
-        }
-        if (getCell(rowIdx - i, colIdx + i, sheet, null, true).value) {
-            startCell.rowIndex = startCell.rowIndex < rowIdx - i ? startCell.rowIndex : rowIdx - i;
-            endCell.colIndex = endCell.colIndex > colIdx + i ? endCell.colIndex : colIdx + i;
-        }
-        loopLength++;
+        return true;
     }
-    return [startCell.rowIndex, startCell.colIndex, endCell.rowIndex, endCell.colIndex];
+    const isEmptyColumn: Function = (idx: number): boolean => {
+        for (let i: number = sRowIdx; i <= eRowIdx; i++) {
+            if (!isUndefined(getCell(i, idx, sheet, null, true).value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    for (let i: number = sRowIdx; i <= usedRowIdx; i++) { // To find end row index
+        if (isUndefined(getCell(i, colIdx, sheet, null, true).value) && isEmptyRow(i)) {
+            break;
+        } else {
+            eRowIdx = i;
+        }
+    }
+    for (let i: number = sRowIdx; i >= 0; i--) { // To find start row index
+        if (isUndefined(getCell(i, colIdx, sheet, null, true).value) && isEmptyRow(i)) {
+            break;
+        } else {
+            sRowIdx = i;
+        }
+    }
+    for (let i: number = sColIdx; i <= usedColIdx; i++) { // To find end column index
+        if (isUndefined(getCell(rowIdx, i, sheet, null, true).value) && isEmptyColumn(i)) {
+            break;
+        } else {
+            eColIdx = i;
+        }
+    }
+    for (let i: number = sColIdx; i >= 0; i--) { // To find start column index
+        if (isUndefined(getCell(rowIdx, i, sheet, null, true).value) && isEmptyColumn(i)) {
+            break;
+        } else {
+            sColIdx = i;
+        }
+    }
+    return [sRowIdx, sColIdx, eRowIdx, eColIdx];
 }
 /**
  * @param {InsertDeleteModelArgs} args - row index
@@ -547,5 +550,21 @@ export function deleteFormatRange(args: InsertDeleteModelArgs, formatRange: numb
             deleteEndIndex = cellRange[2] - cellRange[0] + 1;
         }
         return [formatRange[0] - deleteStartIndex, formatRange[1], formatRange[2] - deleteEndIndex, formatRange[3]];
+    }
+}
+
+/** @hidden */
+export function updateCFModel(curCF: ConditionalFormat[], cfRule: ConditionalFormatModel[], rowIdx: number, colIdx: number): void {
+    let cfRange: string[]; let indexes: number[];
+    for (let i: number = curCF.length - 1; i >= 0; i--) {
+        cfRange = curCF[i].range.trim().split(',');
+        for (let j: number = 0; j < cfRange.length; j++) {
+            indexes = getRangeIndexes(cfRange[j].includes(':') ? cfRange[j] : `${cfRange[j]}:${cfRange[j]}`);
+            if (rowIdx >= indexes[0] && colIdx >= indexes[1] && rowIdx <= indexes[2] && colIdx <= indexes[3]) {
+                cfRule.push(curCF[i]);
+                curCF.splice(i, 1);
+                break;
+            }
+        }
     }
 }

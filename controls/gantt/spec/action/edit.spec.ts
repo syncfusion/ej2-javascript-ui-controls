@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Selection, IGanttData, Filter, IActionBeginEventArgs } from '../../src/index';
-import { cellEditData, resourcesData, projectData, normalResourceData, resourceCollection } from '../base/data-source.spec';
+import { cellEditData, resourcesData, projectData,normalResourceData, resourceCollection } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 
@@ -207,7 +207,7 @@ describe('Gantt Edit support', () => {
             ganttObj.dataBind();
             let data: object[] = [{ TaskID: 15, TaskName: 'New Task', Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
-            ganttObj.editModule.addRecord(data[0],'Below',2);
+            ganttObj.editModule.addRecord(data[0], 'Below', 2);
             expect(ganttObj.flatData.length).toBe(15);
             expect(ganttObj.dataSource[0].subtasks[1].TaskName).toBe('New Task');
         });       
@@ -424,6 +424,99 @@ describe('Gantt Edit support', () => {
             expect(ganttObj_tree.treeGrid.flatData.length).toBe(1);
             expect(ganttObj_tree.flatData.length).toBe(1);
         });
+        afterAll(() => {
+            destroyGantt(ganttObj_tree);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+
+    describe('Empty Gantt', () => {
+        let ganttObj_tree: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_tree = createGantt(
+                {
+                    dataSource: [],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                    },
+                    editSettings: {
+                        allowAdding: true
+                    },
+                    renderBaseline: true,
+                    dayWorkingTime : [{ from: 0, to: 24 }],
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019')
+                }, done);
+        });
+        it('Add data with same start and end date', () => {
+            let data: object[] = [ { TaskID: 1, TaskName: 'Child Task 1',BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/02/2019'), StartDate: new Date('04/02/2019'), Duration: 1}];
+            ganttObj_tree.addRecord(data[0]);
+            expect(ganttObj_tree.currentViewData[0].ganttProperties['baselineWidth']).toBe(0);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj_tree);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+
+    describe('Empty Gantt', () => {
+        let ganttObj_tree: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_tree = createGantt(
+                {
+                    dataSource: [],
+                    taskFields: {
+                        id: 'taskID',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        dependency: 'predecessor',
+                        baselineStartDate: 'baselineStartDate',
+                        baselineEndDate: 'baselineEndDate',
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true,
+                      },
+                    renderBaseline: true,
+                    timezone: 'UTC',
+                    height: '450px',
+                }, done);
+        });
+        it('UTC TimeZone', () => {
+            let data: object[] = [{ taskID: 2, taskName: 'Task 2', startDate: '2022-05-17T08:00:00Z', endDate: '2022-05-17T08:00:00Z', duration: 0,
+                                    baselineStartDate: '2022-05-17T08:00:00Z', baselineEndDate: '2022-05-17T08:00:00Z' }];
+            ganttObj_tree.addRecord(data[0]);
+            expect(ganttObj_tree.getFormatedDate(ganttObj_tree.currentViewData[0].ganttProperties.baselineEndDate, 'MM/dd/yyyy')).toBe('05/17/2022');
+            ganttObj_tree.dataSource = [];
+            ganttObj_tree.dataBind();
+        });
+        it('baseline End date Time', () => {
+            let data: object[] = [{ taskID: 1, taskName: 'Task 1', startDate: new Date('04/02/2019'), endDate: new Date('04/02/2019'), duration: 0,
+                                    baselineStartDate: new Date('04/02/2019'), baselineEndDate: new Date('04/02/2019') }];
+            ganttObj_tree.addRecord(data[0]);
+            let baselineEndDateTime = ganttObj_tree.currentViewData[0].ganttProperties.baselineEndDate.getHours();
+            expect(baselineEndDateTime).toBe(8);
+        });
+
         afterAll(() => {
             destroyGantt(ganttObj_tree);
         });
@@ -781,109 +874,6 @@ describe('Gantt Edit support', () => {
         });
         beforeEach((done: Function) => {
             setTimeout(done, 2000);
-        });
-    });
-    describe('parent task-', () => {
-        let ganttObj_tree: Gantt;
-        beforeAll((done: Function) => {
-            ganttObj_tree = createGantt(
-                {
-                    dataSource: normalResourceData,
-                    resources: resourceCollection,
-                    showOverAllocation: true,
-                    enableContextMenu: true,
-                    allowSorting: true,
-                    allowReordering: true,
-                    taskFields: {
-                        id: 'TaskID',
-                        name: 'TaskName',
-                        startDate: 'StartDate',
-                        endDate: 'EndDate',
-                        duration: 'Duration',
-                        progress: 'Progress',
-                        dependency: 'Predecessor',
-                        resourceInfo: 'resources',
-                        work: 'work',
-                        child: 'subtasks'
-                    },
-                    resourceFields: {
-                        id: 'resourceId',
-                        name: 'resourceName',
-                        unit: 'resourceUnit',
-                        group: 'resourceGroup'
-                    },
-                    editSettings: {
-                        allowAdding: true,
-                        allowEditing: true,
-                        allowDeleting: true,
-                        allowTaskbarEditing: true,
-                        showDeleteConfirmDialog: true
-                    },
-                    columns: [
-                        { field: 'TaskID', visible: false },
-                        { field: 'TaskName', headerText: 'Name', width: 250 },
-                        { field: 'resources' },
-                        { field: 'work', headerText: 'Work' },
-                        { field: 'Progress' },
-                        { field: 'resourceGroup', headerText: 'Group' },
-                        { field: 'StartDate' },
-                        { field: 'Duration' },
-                    ],
-                    labelSettings: {
-                        rightLabel: 'resources',
-                        taskLabel: 'Progress'
-                    },
-                    splitterSettings: {
-                        columnIndex: 3
-                    },
-                    selectionSettings: {
-                        mode: 'Row',
-                        type: 'Single',
-                        enableToggle: false
-                    },
-                    tooltipSettings: {
-                        showTooltip: true
-                    },
-                    timelineSettings: {
-                        showTooltip: true,
-                        topTier: {
-                            unit: 'Week',
-                            format: 'dd/MM/yyyy'
-                        },
-                        bottomTier: {
-                            unit: 'Day',
-                            count: 1
-                        }
-                    },
-                    readOnly: false,
-                    allowRowDragAndDrop: true,
-                    allowResizing: true,
-                    allowFiltering: true,
-                    allowSelection: true,
-                    highlightWeekends: true,
-                    treeColumnIndex: 1,
-                    taskbarHeight: 20,
-                    rowHeight: 40,
-                    height: '550px',
-                    projectStartDate: new Date('03/28/2019'),
-                    projectEndDate: new Date('05/18/2019')
-                }, done);
-        });
-        beforeEach((done: Function) => {
-            ganttObj_tree.openEditDialog(1);
-            let resourceTab: HTMLElement = document.getElementById('e-item-' + ganttObj_tree.element.id + '_Tab_2') as HTMLElement;
-            triggerMouseEvent(resourceTab,'click');
-            setTimeout(done, 2000);
-        });
-        it('work value', () => {
-            ganttObj_tree.dataBind();
-            let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj_tree.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-            let resourceCheckbox2: HTMLElement = document.querySelector('#' + ganttObj_tree.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
-            triggerMouseEvent(resourceCheckbox1, 'click')
-            triggerMouseEvent(resourceCheckbox2, 'click')
-            let saveButton: HTMLElement = document.querySelector('#' + ganttObj_tree.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
-            triggerMouseEvent(saveButton, 'click');
-            expect(ganttObj_tree.currentViewData[0].ganttProperties.work).toBe(152);
         });
     });
 });

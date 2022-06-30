@@ -203,7 +203,7 @@ export class Render {
      * @returns {void}
      */
     private refreshDataManager(args: NotifyArgs = {}): void {
-       if (args.requestType !== 'virtualscroll' && !(<{ isCaptionCollapse?: boolean }>args).isCaptionCollapse) {
+        if (args.requestType !== 'virtualscroll' && !(<{ isCaptionCollapse?: boolean }>args).isCaptionCollapse) {
             this.parent.showSpinner();
         }
         this.parent.notify(events.resetInfiniteBlocks, args);
@@ -415,6 +415,9 @@ export class Render {
             this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
             gObj.currentViewData = <Object[]>dataArgs.result;
             gObj.notify(events.refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
+            if (dataArgs.count && !gObj.allowPaging && (gObj.enableVirtualization || gObj.enableInfiniteScrolling)) {
+                gObj.totalDataRecordsCount = dataArgs.count;
+            }
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
                 if (this.parent.groupSettings.enableLazyLoading
                     && (args.requestType === 'grouping' || args.requestType === 'ungrouping')) {

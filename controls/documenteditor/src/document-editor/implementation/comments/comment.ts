@@ -15,7 +15,6 @@ import { HelperMethods } from '../editor/editor-helper';
 export class CommentReviewPane {
     public owner: DocumentEditor;
     public reviewPane: HTMLElement;
-
     public toolbarElement: HTMLElement;
     public toolbar: Toolbar;
     public commentPane: CommentPane;
@@ -179,8 +178,7 @@ export class CommentReviewPane {
         }
         this.reviewTab.enablePersistence = true;
         this.parentPaneElement.appendChild(this.element);
-
-
+        
         return this.parentPaneElement;
     }
 
@@ -642,7 +640,8 @@ export class CommentPane {
     public deleteComment(comment: CommentElementBox): void {
         const commentView: CommentView = this.comments.get(comment);
         if (!isNullOrUndefined(commentView)) {
-            if(commentView.comment.commentId == this.currentEditingComment.comment.commentId){
+            if (!isNullOrUndefined(this.currentEditingComment)
+                && commentView.comment.commentId == this.currentEditingComment.comment.commentId) {
                 this.isEditMode = false;
             }
             if (commentView.parentElement && commentView.parentElement.parentElement) {

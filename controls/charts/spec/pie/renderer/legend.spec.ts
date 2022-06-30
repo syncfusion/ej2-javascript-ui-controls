@@ -328,7 +328,7 @@ describe('Legend checking for the pie series', () => {
             legendEle = getElement(legendId + '_element_clipPath_rect');
 
             expect(legendEle.getAttribute('x') == '308' || legendEle.getAttribute('x') == '310').toBe(true);
-            expect(legendEle.getAttribute('y')).toBe('18');
+            expect(legendEle.getAttribute('y')).toBe('10');
             expect(legendEle.getAttribute('width') == '74' || legendEle.getAttribute('width') == '72').toBe(true);
             expect(legendEle.getAttribute('height') === '360' || legendEle.getAttribute('height') === '350').toBe(true);
             done();

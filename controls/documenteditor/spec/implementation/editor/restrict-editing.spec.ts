@@ -1,5 +1,5 @@
-import { createElement, select } from '@syncfusion/ej2-base';
-import { DocumentHelper,Editor, TableWidget, TextElementBox, TextFormFieldDialog, TableCellWidget,DocumentEditor,CommentCharacterElementBox, ParagraphWidget, LineWidget } from '../../../src/index';
+import { createElement,select } from '@syncfusion/ej2-base';
+import { DocumentHelper,Editor, TableWidget, TextElementBox, TextFormFieldDialog, TableCellWidget,DocumentEditor,CommentCharacterElementBox, ParagraphWidget, LineWidget, FormFieldData } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -1681,6 +1681,152 @@ describe('Adding CommentsOnly Protection to the file', () => {
         expect(editor.documentHelper.restrictEditingPane.restrictPaneWholeDiv.style.display).toBe('block');
     });
 });
+
+describe('Restricting Editing with Tracked changes', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('should return true if document is Protected with RevisionsOnly', () => {
+        console.log('should return true if document is Protected with RevisionsOnly');
+        editor.editor.addProtection('', 'RevisionsOnly');
+        expect(editor.documentHelper.protectionType).toBe('RevisionsOnly');
+        expect(editor.documentHelper.isDocumentProtected).toBe(true);
+        expect(editor.enableTrackChanges).toBe(true);
+    });
+    it('should return true if document is Unprotected ', () => {
+        console.log('should return false if document is Unprotected');
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        expect(editor.documentHelper.isDocumentProtected).toBe(false);
+        expect(editor.enableTrackChanges).toBe(false);
+    });
+    it('if protection Type in RevisionsOnly trackedchanges cannot be AcceptAll in edit region', () => {
+        editor.openBlank();
+        console.log(' if protection Type in RevisionsOnly trackedchanges cannot be AcceptAll in edit region');
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.editor.insertText("Hello");
+        editor.revisions.acceptAll();
+        expect(editor.revisions.length).toBe(1);
+    });
+    it('if protection Type in RevisionsOnly trackedchanges cannot be RejectAll in edit region', () => {
+        console.log('if protection Type in RevisionsOnly trackedchanges cannot be RejectAll in edit region');
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.editor.insertText("world");
+        editor.revisions.rejectAll();
+        expect(editor.revisions.length).toBe(1);
+    });
+    it('if unProtectionType text values can be accept Acceptall in document', () => {
+        console.log('if unProtectionType text values can be accept Acceptall in document');
+        editor.openBlank();
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.editor.insertText("world");
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        editor.revisions.acceptAll();
+        expect(editor.revisions.length).toBe(0);
+    });
+    it('if unProtectionType text values can be reject in document should be show', () => {
+        console.log('if unProtectionType text values can be rejectall in document should be show');
+        editor.openBlank();
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.editor.insertText("world");
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        editor.revisions.rejectAll();
+        expect(editor.revisions.length).toBe(0);
+    });
+    it('if document  protectionType is  RevisionsOnly in contextmenu it will be hide the accept changes', () => {
+        console.log('if document  protectionType is  RevisionsOnly in contextmenu it will be hide the accept changes');
+        editor.openBlank();
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.selection.hasRevisions();
+        editor.editor.insertText("Hello");
+        editor.revisions.acceptAll();
+        expect(editor.revisions.length).toBe(1);
+    });
+    it('if document protectionType is RevisionOnly in contextmenu it will be hide the reject changes', () => {
+        console.log('if document protectionType is RevisionOnly in contextmenu it will be hide the reject changes');
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.selection.hasRevisions();
+        editor.editor.insertText("Hello");
+        editor.revisions.rejectAll();
+        expect(editor.revisions.length).toBe(1);
+    }); 
+    it('if document  is  UnProtected in contextmenu it will be show the accept changes', () => {
+        console.log('if document  protectionType is  RevisionsOnly in contextmenu it will be hide the accept changes');
+        editor.openBlank();
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.selection.hasRevisions();
+        editor.editor.insertText("Hello");
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        editor.revisions.acceptAll();
+        expect(editor.revisions.length).toBe(0);
+    });
+    it('if document UnProtected  in contextmenu it will be show  the reject changes', () => {
+        console.log('if document protectionType is RevisionOnly in contextmenu it will be hide the reject changes');
+        editor.editor.addProtection('', 'RevisionsOnly');
+        editor.selection.hasRevisions();
+        editor.editor.insertText("Hello");
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        editor.revisions.rejectAll();
+        expect(editor.revisions.length).toBe(0);
+    }); 
+    it('The Undo and Redo clears History while protecting RevisionsOnly and unprotecting  with all four Types', () => {
+        console.log('The Undo and Redo clears History while protecting The RevisionsOnly and unprotecting  with all four Types')
+        editor.editor.addProtection('', 'RevisionsOnly');
+        expect(editor.documentHelper.protectionType).toBe('RevisionsOnly');
+        expect(editor.documentHelper.isDocumentProtected).toBe(true);
+        editor.editor.insertText("Hello");
+        expect(editor.enableTrackChanges).toBe(true);
+        expect(editor.revisions.length).toBe(1);
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        expect(editor.documentHelper.isDocumentProtected).toBe(false);
+        expect(editor.enableTrackChanges).toBe(false);
+        expect(editor.editorHistory.canUndo()).toBe(false);
+    });
+    it('The Undo and Redo clears History while protecting ReadOnlyand unprotecting  with all four Types', () => {
+        console.log('The Undo and Redo clears History while protecting the ReadOnly Protection and unprotecting  with all four Types')
+        editor.editor.addProtection('', 'ReadOnly');
+        expect(editor.documentHelper.protectionType).toBe('ReadOnly');
+        expect(editor.documentHelper.isDocumentProtected).toBe(true);
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        expect(editor.documentHelper.isDocumentProtected).toBe(false);
+        expect(editor.editorHistory.canUndo()).toBe(false);
+    });
+    it('The Undo and Redo clears History while protecting CommentsOnlyand unprotecting  with all four Types', () => {
+        console.log('The Undo and Redo clears History while protecting the CommentsOnly Protection and unprotecting  with all four Types')
+        editor.editor.addProtection('', 'CommentsOnly');
+        expect(editor.documentHelper.protectionType).toBe('CommentsOnly');
+        expect(editor.documentHelper.isDocumentProtected).toBe(true);
+        editor.editor.unProtectDocument();
+        expect(editor.documentHelper.protectionType).toBe('NoProtection');
+        expect(editor.documentHelper.isDocumentProtected).toBe(false);
+        expect(editor.editorHistory.canUndo()).toBe(false);
+    });
+});
 describe('Editing in production mode not to throw error', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
@@ -1780,4 +1926,84 @@ describe('Inline form filling mode importing validation', () => {
         expect(() => { editor.importFormData([textformField]); }).not.toThrowError();
         expect(((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as any).childWidgets[0] as any).childWidgets[0] as any).childWidgets[1] as any).childWidgets[0].children[4].text).toBe("Hello World");
     });
-}); 
+    it('Importing Single form field data replacing Multiple Pargraphs', () => {
+        console.log('Importing Single form field data replacing Multiple Pargraphs');
+        editor.openBlank();
+        editor.open(JSON.stringify(file));
+        let textformFieldData = { fieldName: 'NUIPC', value: 'Hello World' };
+        editor.selection.moveToNextParagraph();
+        editor.selection.moveNextPosition();
+        editor.editor.insertText("Adventure");
+        editor.editor.onEnter();
+        editor.editor.insertText("Document");
+        editor.importFormData([textformFieldData]);
+        let exportedData: FormFieldData[] = editor.exportFormData();
+        expect(exportedData[0].value).toBe(textformFieldData.value +"\r");
+    });
+    it('Importing Multiple Pargraphs form field data replacing Single Pargraph', () => {
+        console.log('Importing Multiple Pargraphs form field data replacing Single Pargraph');
+        editor.openBlank();
+        editor.open(JSON.stringify(file));
+        let textformFieldData = { fieldName: 'NUIPC', value: 'Hello World\rdocument' };
+        editor.selection.moveToNextParagraph();
+        editor.selection.moveNextPosition();
+        editor.editor.insertText("Adventure");
+        editor.importFormData([textformFieldData]);
+        let exportedData: FormFieldData[] = editor.exportFormData();
+        expect(exportedData[0].value).toBe(textformFieldData.value);
+    });
+    it('Importing Multiple Pargraphs form field data replacing Multiple Pargraph', () => {
+        console.log('Importing Multiple Pargraphs form field data replacing Multiple Pargraph');
+        editor.openBlank();
+        editor.open(JSON.stringify(file));
+        let textformFieldData = { fieldName: 'NUIPC', value: 'Hello World\rdocument' };
+        editor.selection.moveToNextParagraph();
+        editor.selection.moveNextPosition();
+        editor.editor.insertText("Adventure");
+        editor.editor.onEnter();
+        editor.editor.insertText('document');
+        editor.importFormData([textformFieldData]);
+        let exportedData: FormFieldData[] = editor.exportFormData();
+        expect(exportedData[0].value).toBe(textformFieldData.value + "\r");
+    });
+});
+
+describe('Inline form filling mode export validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    let file : any = {"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false,"pageNumberStyle":"Arabic"},"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"fieldType":0,"hasFieldEnd":true,"formFieldData":{"name":"Text1","enabled":true,"helpText":"","statusText":"","textInput":{"type":"Text","maxLength":0,"defaultValue":"","format":""}}},{"characterFormat":{},"bookmarkType":0,"name":"Text1"},{"characterFormat":{},"text":"FORMTEXT"},{"characterFormat":{},"fieldType":2},{"characterFormat":{},"text":"     "},{"characterFormat":{},"fieldType":1},{"characterFormat":{},"bookmarkType":1,"name":"Text1"}]}],"headersFooters":{"header":{"blocks":[{"paragraphFormat":{"listFormat":{}},"characterFormat":{},"inlines":[]}]},"footer":{"blocks":[{"paragraphFormat":{"listFormat":{}},"characterFormat":{},"inlines":[]}]},"evenHeader":{},"evenFooter":{},"firstPageHeader":{},"firstPageFooter":{}}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#00000000","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{},"bidi":false,"keepLinesTogether":false,"keepWithNext":false,"widowControl":true},"defaultTabWidth":36,"trackChanges":false,"enforcement":true,"hashValue":"","saltValue":"","formatting":false,"protectionType":"FormFieldsOnly","dontUseHTMLParagraphAutoSpacing":false,"formFieldShading":true,"compatibilityMode":"Word2013","styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"}],"lists":[],"abstractLists":[],"comments":[],"revisions":[],"customXml":[]};
+    it('Export Multiple paragraph form field data ', () => {
+        console.log('Export Multiple paragraph form field data');
+        editor.openBlank();
+        editor.open(JSON.stringify(file));
+        editor.selection.moveNextPosition();
+        editor.editor.insertText('document');
+        editor.editor.onEnter();
+        editor.editor.insertText('hello world');
+        editor.editor.onEnter();
+        editor.editor.insertText('adventure');
+        let data : FormFieldData[] = editor.exportFormData();
+        expect(data[0].value).toBe("document\rhello world\radventure");
+    });
+});

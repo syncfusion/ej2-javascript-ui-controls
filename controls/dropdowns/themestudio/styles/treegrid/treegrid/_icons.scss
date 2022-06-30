@@ -1,4 +1,15 @@
 @include export-module('treegrid-icons') {
+  #{&}.e-treegrid,
+  .e-grid-menu {
+    .e-indent::before {
+      content: $treegrid-toolbar-indent-icon;
+    }
+
+    .e-outdent::before {
+      content: $treegrid-toolbar-outdent-icon;
+    }
+  }
+
   .e-treegrid {
     .e-treegridexpand::before,
     .e-treegridcollapse::before {

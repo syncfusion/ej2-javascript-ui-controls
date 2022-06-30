@@ -268,21 +268,21 @@ export class Link {
         const textPlace: string = this.i10n.getConstant('textPlaceholder');
         const title: string = this.i10n.getConstant('linkTitle');
         const linkDialogEle: HTMLElement = this.parent.createElement('div', {
-            className: 'e-rte-link-dialog', id: this.rteID + '_rtelink' });
+            className: 'e-rte-link-dialog' + ' ' + this.parent.cssClass, id: this.rteID + '_rtelink' });
         this.parent.element.appendChild(linkDialogEle);
         const linkContent: HTMLElement = this.parent.createElement('div', {
-            className: 'e-rte-linkcontent', id: this.rteID + '_linkContent'
+            className: 'e-rte-linkcontent' + ' ' + this.parent.cssClass, id: this.rteID + '_linkContent'
         });
         const htmlTextbox: string = (this.parent.editorMode === 'HTML') ? '<label>' + linkTooltip +
-            '</label></div><div class="e-rte-field">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '" class="e-input e-rte-linkTitle"></div>' +
-            '<div class="e-rte-label"></div>' + '<div class="e-rte-field">' +
-            '<input type="checkbox" class="e-rte-linkTarget"  data-role ="none"></div>' : '';
-        const content: string = '<div class="e-rte-label"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '" class="e-input e-rte-linkurl"/></div>' +
-            '<div class="e-rte-label">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field"> ' +
-            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText" placeholder="' + textPlace + '">' +
-            '</div><div class="e-rte-label">' + htmlTextbox;
+            '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '" class="e-input e-rte-linkTitle' + ' ' + this.parent.cssClass + '"></div>' +
+            '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
+            '<input type="checkbox" class="e-rte-linkTarget' + ' ' + this.parent.cssClass + '"  data-role ="none"></div>' : '';
+        const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '" class="e-input e-rte-linkurl' + ' ' + this.parent.cssClass + '"/></div>' +
+            '<div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"> ' +
+            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText' + ' ' + this.parent.cssClass + '" placeholder="' + textPlace + '">' +
+            '</div><div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + htmlTextbox;
         const contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);
         const linkTarget: HTMLInputElement = linkContent.querySelector('.e-rte-linkTarget') as HTMLInputElement;
@@ -310,9 +310,9 @@ export class Link {
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertlink.bind(selectObj),
-                buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink', isPrimary: true }
+                buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink' + ' ' + this.parent.cssClass, isPrimary: true }
             },
-            { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
+            { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat' + ' ' + this.parent.cssClass, content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
@@ -459,10 +459,12 @@ export class Link {
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
+        const selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
         this.parent.formatter.process(
             this.parent, e.args, e.args,
             {
                 selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
+                text: selectParentEle.innerText,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
         if (isIDevice() && this.parent.iframeSettings.enable) {
@@ -478,7 +480,7 @@ export class Link {
             this.parent.formatter.process(
                 this.parent, e.args, e.args,
                 {
-                    url: (selectParentEle as HTMLAnchorElement).href,
+                    url: (selectParentEle as HTMLAnchorElement).href, text: selectParentEle.innerText,
                     target: (selectParentEle as HTMLAnchorElement).target === '' ? '_self' : '_blank', selectNode: e.selectNode,
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });

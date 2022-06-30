@@ -1,10 +1,10 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
-import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, getDPRValue } from '../common/index';
+import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, getDPRValue, completeAction } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
-import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule, activeCellChanged } from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells, getSwapRange } from '../../workbook/index';
+import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
-import { setRowHeight, CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded } from '../../workbook/index';
+import { setRowHeight, CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
 import { removeClass } from '@syncfusion/ej2-base';
 import { deleteChart, deleteImage } from '../common/index';
 /**
@@ -124,7 +124,7 @@ export class CellFormat {
         if (this.checkHeight) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
-            if (!cell.rowSpan && !cell.colSpan) {
+            if (!cell.rowSpan) {
                 let hgt: number = 0;
                 hgt = getTextHeightWithBorder(
                     this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle,
@@ -282,13 +282,13 @@ export class CellFormat {
         return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
             (parseInt(size, 10) ? parseInt(size, 10) : 1)));
     }
-    private clearObj(args: { options: ClearOptions, isPublic: boolean, isFromUpdateAction?: boolean }): void {
+    private clearObj(args: { options: ClearOptions, isAction?: boolean, isFromUpdateAction?: boolean }): void {
         const options: ClearOptions = args.options;
         const range: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
         const sheetIndex: number = (options.range && options.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent as Workbook, options.range.split('!')[0]) : this.parent.activeSheetIndex;
-        const rangeIdx: number[] = getRangeIndexes(range);
+        const rangeIdx: number[] = getSwapRange(getRangeIndexes(range));
         const sheet: SheetModel = this.parent.sheets[sheetIndex];
         let sRIdx: number = rangeIdx[0];
         const eRIdx: number = rangeIdx[2];
@@ -296,33 +296,51 @@ export class CellFormat {
         let eCIdx: number;
         const overlayElements: HTMLCollection = this.parent.element.getElementsByClassName('e-ss-overlay-active');
         const isOverlay: boolean = overlayElements.length > 0;
-        let eventArgs: object = { range: range, type: options.type, requestType: 'clear', sheetIndex: sheetIndex };
-        if (!args.isPublic) {
-            this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
-        }
-        if (options.type === 'Clear Formats' || options.type === 'Clear All') {
-            if (!isOverlay) {
-                this.parent.notify(clearCFRule, { range: range, isPublic: false, isclearFormat: true });
+        let clearCFArgs: CFArgs;
+        let eventArgs: { [key: string]: object | string | number } = { range: range, type: options.type, requestType: 'clear',
+            sheetIndex: sheetIndex };
+        const actionBegin: Function = (): void => {
+            if (args.isAction) {
+                this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
             }
-            if (options.type === "Clear All") {
-                if (isOverlay) {
-                    if (overlayElements[0].classList.contains('e-datavisualization-chart')) {
-                        this.parent.notify(deleteChart, {
-                            id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
-                        });
-                    } else {
-                        this.parent.notify(deleteImage, {
-                            id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
-                        });
-                    }
-                } else {
+        }
+        const actionComplete: Function = (): void => {
+            if (args.isAction) {
+                eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
+                if (clearCFArgs) {
+                    eventArgs.cfClearActionArgs = clearCFArgs.cfClearActionArgs;
+                }
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clear' });
+            }
+        };
+        if (isOverlay) {
+            if (overlayElements[0].classList.contains('e-datavisualization-chart')) {
+                if (options.type === 'Clear Contents' || options.type === 'Clear All') {
+                    actionBegin();
+                    this.parent.notify(deleteChart, {
+                        id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                    });
+                    actionComplete();
+                }
+            } else if (options.type === 'Clear All') {
+                actionBegin();
+                this.parent.notify(deleteImage, {
+                    id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                });
+                actionComplete();
+            }
+        } else {
+            actionBegin();
+            if (options.type === 'Clear Formats' || options.type === 'Clear All') {
+                clearCFArgs = { range: range, sheetIdx: sheetIndex, isClear: true };
+                this.parent.notify(clearCFRule, clearCFArgs);
+                (args as { cfClearActionArgs?: object }).cfClearActionArgs = clearCFArgs.cfClearActionArgs;
+                if (options.type === 'Clear All') {
                     this.parent.notify(cellValidation, { range: range, isRemoveValidation: true });
-                    if (sRIdx === 0 && rangeIdx[1] === 0 && eRIdx >= sheet.usedRange.rowIndex && rangeIdx[3] >= sheet.usedRange.colIndex) {
+                    if (sRIdx === 0 && rangeIdx[1] === 0 && eRIdx >= sheet.usedRange.rowIndex  && rangeIdx[3] >= sheet.usedRange.colIndex) {
                         this.parent.setUsedRange(sRIdx, rangeIdx[1], sheet, false, true);
                     }
                 }
-            }
-            if (!isOverlay) {
                 for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
                     sCIdx = rangeIdx[1];
                     eCIdx = rangeIdx[3];
@@ -346,24 +364,19 @@ export class CellFormat {
                     }
                 }
             }
-        }
-        if (!isOverlay) {
             if (options.type === 'Clear Hyperlinks') {
                 this.parent.removeHyperlink(sheet.name + '!' + range);
             }
             this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(range));
-        }
-        if (!args.isPublic) {
-            eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
-            this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'clear' });
-        }
-        if (!isOverlay) {
+            this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
+            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getSwapRange(getRangeIndexes(range)));
             this.parent.notify(addHighlight, { range: range, isclearFormat: true });
             if (!args.isFromUpdateAction) {
                 this.parent.notify(selectRange, { address: range });
             }
             this.parent.notify(activeCellChanged, null);
+            actionComplete();
         }
     }
 

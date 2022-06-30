@@ -52,7 +52,7 @@ export class AccumulationSelection extends BaseSelection {
         if (this.accumulation.isDestroyed) { return; }
         let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.accumulation.on(Browser.touchMoveEvent, this.mouseMove, this);
-        this.accumulation.on('click', this.calculateSelectedElements, this);
+        this.accumulation.on('click', this.mouseClick, this);
     }
     /**
      * UnBinding events for selection module.
@@ -60,7 +60,7 @@ export class AccumulationSelection extends BaseSelection {
     private removeEventListener(): void {
         if (this.accumulation.isDestroyed) { return; }
         this.accumulation.off(Browser.touchMoveEvent, this.mouseMove);
-        this.accumulation.off('click', this.calculateSelectedElements);
+        this.accumulation.off('click', this.mouseClick);
     }
     /**
      * To initialize the private variables
@@ -93,10 +93,10 @@ export class AccumulationSelection extends BaseSelection {
     /**
      * To get series selection style while hovering legend
      */
-     private generateLegendClickStyle(series: AccumulationSeriesModel, event ?: Event | PointerEvent): string {
-        if (event.type === 'mousemove') {
+     private generateLegendClickStyle(series: AccumulationSeriesModel, eventType: string): string {
+        if (eventType === 'mousemove') {
             this.styleId = this.accumulation.element.id + '_ej2_chart_highlight';
-        } else if (event.type === 'click') {
+        } else if (eventType === 'click') {
             this.styleId = this.accumulation.element.id + '_ej2_chart_selection';
         }
         return (series.selectionStyle || this.styleId + '_series_' + (<AccumulationSeries>series).index);
@@ -119,21 +119,20 @@ export class AccumulationSelection extends BaseSelection {
      * @return {void}
      * @private
      */
-     public isAlreadySelected(event : Event | PointerEvent): boolean {
-        if (event.type === 'mousemove') {
+     public isAlreadySelected(targetElement: Element, eventType: string): boolean {
+        if (eventType === 'mousemove') {
             this.currentMode = this.accumulation.highlightMode;
             this.highlightDataIndexes = [];
             this.styleId = this.accumulation.element.id + '_ej2_chart_highlight';
-        } else if (event.type === 'click') {
+        } else if (eventType === 'click') {
             this.currentMode = this.accumulation.selectionMode;
             this.styleId = this.accumulation.element.id + '_ej2_chart_selection';
         }  
         if (this.accumulation.highlightMode !== 'None' && this.accumulation.selectionMode === 'None') {
-            if (event.type === 'click') {
+            if (eventType === 'click') {
                 return false;
             }
         }
-        let targetElement: Element = <Element>event.target;
         if ((this.accumulation.highlightMode !== 'None' && this.previousSelectedElement && this.previousSelectedElement[0])) {
             let parentNodeId: string = (<Element>targetElement.parentNode).id; let isValidElement: boolean;
             if (targetElement.parentNode) {
@@ -142,7 +141,7 @@ export class AccumulationSelection extends BaseSelection {
             }
             for (let i: number = 0; i < this.previousSelectedElement.length; i++) {
                 if (this.previousSelectedElement[i].hasAttribute('class')) {
-                    if (this.previousSelectedElement[i].getAttribute('class').indexOf('highlight') > -1 && (isValidElement || event.type === 'click')) {
+                    if (this.previousSelectedElement[i].getAttribute('class').indexOf('highlight') > -1 && (isValidElement || eventType === 'click')) {
                         this.previousSelectedElement[i].removeAttribute('class');
                         this.addOrRemoveIndex(this.highlightDataIndexes, indexFinder((<HTMLElement>this.previousSelectedElement[i]).id));
                     } else if (!isValidElement && this.previousSelectedElement[i].getAttribute('class').indexOf('highlight') > -1) {
@@ -153,21 +152,30 @@ export class AccumulationSelection extends BaseSelection {
         }
         return true;
     }
+
     /**
      * To calculate selected elements on mouse click or touch
      *
      * @private
      */
-    public calculateSelectedElements(accumulation: AccumulationChart, event: Event): void {
-        if (isNullOrUndefined(event.target)) {
+     public mouseClick(accumulation: AccumulationChart, event: Event): void {
+       this.calculateSelectedElements(accumulation, event.target as Element, event.type)
+     }
+
+    /**
+     * To calculate selected elements on mouse click or touch
+     *
+     * @private
+     */
+    public calculateSelectedElements(accumulation: AccumulationChart, targetEle: Element, eventType: string): void {
+        if (isNullOrUndefined(targetEle)) {
             return;
-        }
-        let targetEle: HTMLElement = <HTMLElement>event.target;        
+        }       
         if ((accumulation.highlightMode === 'None' && accumulation.selectionMode === 'None') ||
             targetEle.id.indexOf(accumulation.element.id + '_') === -1) {
             return;
         }
-        if (event.type === 'mousemove') {
+        if (eventType === 'mousemove') {
             if (!isNullOrUndefined(targetEle.parentNode) && (
                 <Element>targetEle.parentNode).hasAttribute('class') &&
                 ((<Element>targetEle.parentNode).getAttribute('class').indexOf('highlight') > 0 ||
@@ -177,9 +185,9 @@ export class AccumulationSelection extends BaseSelection {
         } if (targetEle.getAttribute('id').indexOf('_connector_') > -1) {
             return;
         } else {
-            this.isAlreadySelected(event);
+            this.isAlreadySelected(targetEle as HTMLElement, eventType);
             if (targetEle.id.indexOf('_Series_') > -1 || targetEle.id.indexOf('_datalabel_') > -1) {
-                this.performSelection(indexFinder(targetEle.id), accumulation, <Element>event.target);
+                this.performSelection(indexFinder(targetEle.id), accumulation, targetEle);
             }
         }
     }
@@ -297,11 +305,10 @@ export class AccumulationSelection extends BaseSelection {
      *
      * @private
      */
-    public legendSelection(accumulation: AccumulationChart, series: number, pointIndex: number, event: Event): void {
-        let targetEle: Element = <Element>event.target;
-        if (event.type === 'mousemove') {
-            if ((<Element>event.target).id.indexOf('text') > 1) {
-                targetEle = getElement((<Element>event.target).id.replace('text', 'shape'));
+    public legendSelection(accumulation: AccumulationChart, series: number, pointIndex: number, targetEle: Element, eventType: string): void {
+        if (eventType === 'mousemove') {
+            if (targetEle.id.indexOf('text') > 1) {
+                targetEle = getElement(targetEle.id.replace('text', 'shape'));
             }
             if (targetEle.hasAttribute('class') && (targetEle.getAttribute('class').indexOf('highlight') > -1 ||
                 targetEle.getAttribute('class').indexOf('selection') > -1)) {
@@ -309,10 +316,10 @@ export class AccumulationSelection extends BaseSelection {
             }
             this.currentMode = this.accumulation.highlightMode;
         }
-        let isPreSelected: boolean = this.isAlreadySelected(event);
+        let isPreSelected: boolean = this.isAlreadySelected(targetEle, eventType);
         if (isPreSelected) {
             let element: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
-            let seriesStyle: string = this.generateLegendClickStyle(accumulation.visibleSeries[series], event);
+            let seriesStyle: string = this.generateLegendClickStyle(accumulation.visibleSeries[series], eventType);
             let seriesElements: Element = <Element>accumulation.getSeriesElement().childNodes[series].childNodes[pointIndex];
             this.selection(accumulation, new Index(series, pointIndex), [seriesElements]);
             this.blurEffect(accumulation.element.id, accumulation.visibleSeries);            
@@ -480,7 +487,7 @@ export class AccumulationSelection extends BaseSelection {
                 if ((targetElement).hasAttribute('class') && (targetElement).getAttribute('class').indexOf('highlight') > -1) {
                     return;
                 }
-                this.calculateSelectedElements(accumulation, event);
+                this.calculateSelectedElements(accumulation, event.target as Element, event.type);
                 return;
             }
         }

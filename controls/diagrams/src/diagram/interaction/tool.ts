@@ -17,7 +17,7 @@ import { IEndChangeEventArgs, FixedUserHandleClickEventArgs } from '../objects/i
 import { IBlazorConnectionChangeEventArgs, IConnectionChangeEventArgs } from '../objects/interface/IElement';
 import { IBlazorDropEventArgs } from '../objects/interface/IElement';
 import { IRotationEventArgs, IDoubleClickEventArgs, IClickEventArgs, IDropEventArgs } from '../objects/interface/IElement';
-import { CommandHandler } from './command-manager'; 
+import { CommandHandler } from './command-manager';
 import { IBlazorDraggingEventArgs } from '../objects/interface/IElement';
 import { rotatePoint, cloneObject } from '../utility/base-util';
 import { Rect } from '../primitives/rect';
@@ -381,7 +381,8 @@ export class SelectTool extends ToolBase {
                     this.commandHandler.clearSelection(args.source === null ? true : false);
                     if (this.action === 'LabelSelect') {
                         this.commandHandler.labelSelect(args.source, args.sourceWrapper);
-                    } else if (args.source) {
+                    } 
+                    else if (args.source) {
                         this.commandHandler.selectObjects([args.source], false, arrayNodes);
                     }
                 } else {
@@ -804,14 +805,14 @@ export class MoveTool extends ToolBase {
     private initialOffset: PointModel;
 
     /**   @private  */
-    public currentTarget: IElement = null;
+    public currentTarget:IElement = null;
 
     private objectType: ObjectTypes;
 
     private portId: string;
 
     private source: NodeModel | PortModel;
- 
+
     private canCancel: boolean = false;
     private tempArgs: IDraggingEventArgs | IBlazorDraggingEventArgs;
     constructor(commandHandler: CommandHandler, objType?: ObjectTypes) {
@@ -965,6 +966,21 @@ export class MoveTool extends ToolBase {
             if (args.source && this.currentTarget && canAllowDrop(this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget)) {
                 this.commandHandler.drop(this.currentElement, this.currentTarget, this.currentPosition);
+                if(this.currentTarget && this.currentTarget instanceof Connector){               
+                    if(this.commandHandler.diagram.enableConnectorSplit == true){
+                        if(this.currentElement){
+                            if (this.currentElement && this.currentElement instanceof Node) {
+                                this.commandHandler.connectorSplit(this.currentElement,this.currentTarget)
+                            }
+                            else if (this.currentElement instanceof Selector && !(this.commandHandler.PreventConnectorSplit)) {
+                                if (this.currentElement.nodes.length > 0) {
+                                    this.commandHandler.connectorSplit(this.currentElement.nodes[0],this.currentTarget);
+                                    this.commandHandler.PreventConnectorSplit = false;
+                                }
+                            } 
+                        }
+                    }
+                }
                 let arg: IDropEventArgs | IBlazorDropEventArgs = {
                     element: args.source, target: this.currentTarget, position: this.currentPosition, cancel: false
                 };
@@ -1175,7 +1191,7 @@ export class MoveTool extends ToolBase {
             const position: PointModel = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
             this.commandHandler.portDrag(args.source, args.sourceWrapper, position.x - prevPosition.x, position.y - prevPosition.y);
         }
-        this.prevPosition = this.currentPosition; 
+        this.prevPosition = this.currentPosition;
         return !this.blocked;
     }
 

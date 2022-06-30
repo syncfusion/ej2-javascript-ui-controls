@@ -1355,7 +1355,7 @@ describe('Batch Edit module', () => {
         done
       );
     });
-    it('Addrecordmethod - Adding as child for single record', (done: Function) => {
+    it('Addrecordmethod - Adding child for single record', (done: Function) => {
       gridObj.addRecord({
         taskID: 2,
         taskName: 'CHILD',
@@ -1399,7 +1399,7 @@ describe('Batch Edit module', () => {
     });
     it('Add - Batch Editing ExpandCollapse Icon check', (done: Function) => {
       gridObj.selectRow(2);
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });      
       (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
       select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();

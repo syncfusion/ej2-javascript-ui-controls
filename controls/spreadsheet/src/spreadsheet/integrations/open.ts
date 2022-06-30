@@ -149,7 +149,7 @@ export class Open {
             }
             this.parent.notify(clearFormulaDependentCells, { cellRef: null, isOpen: true });
             this.parent.renderModule.refreshSheet(response.isOpenFromJson);
-            this.parent.notify(refreshSheetTabs, this);
+            this.parent.notify(refreshSheetTabs, null);
             this.isImportedFile = true;
             this.unProtectSheetIdx = [];
             this.parent.hideSpinner();

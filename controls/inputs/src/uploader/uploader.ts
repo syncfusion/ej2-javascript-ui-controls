@@ -3236,7 +3236,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private sendRequest(file: FileInfo, metaData: MetaData, custom?: boolean, fileIndex?: number): void {
         const formData: FormData = new FormData();
         const blob: string | Blob = file.rawFile.slice(metaData.start, metaData.end);
-        formData.append('chunkFile', blob, file.name);
         formData.append(this.uploaderName, blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
         formData.append('chunkIndex', metaData.chunkIndex.toString());

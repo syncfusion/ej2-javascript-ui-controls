@@ -10539,6 +10539,19 @@ describe("Footnote relayout validation", () => {
 		let paragraph: IWidget = bodyWidget.childWidgets.length as IWidget;
 		expect(paragraph).toBe(6);
 	});
+	it('Footnote shifting validation', () => {
+		console.log('Footnote reference text line layout validation');
+		editor.openBlank();
+		for (let i = 0; i < 25; i++) {
+			editor.editor.onEnter();
+		}
+		editor.editor.insertFootnote();
+		for (let i = 0; i < 50; i++) {
+			editor.editor.onEnter();
+		}
+		expect(editor.documentHelper.pages.length).toBe(2);
+		expect(editor.documentHelper.pages[1].bodyWidgets[0].childWidgets.length).toBe(1);
+	});
 	it('Footnote splitting validation', () => {
 		editor.openBlank();
 		editor.editor.insertPageNumber();

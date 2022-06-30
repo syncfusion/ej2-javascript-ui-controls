@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, addClass } from '@syncfusion/ej2-base';
 import { attributes } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
@@ -88,6 +88,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             const checkAllWrap: Element = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
             this.chkAllBox.id = 'checkbox-' + column.uid;
             checkAllWrap.insertBefore(this.chkAllBox.cloneNode(), checkAllWrap.firstChild);
+            if (this.parent.cssClass) {
+                addClass([checkAllWrap], [this.parent.cssClass]);
+            }
             innerDIV.appendChild(checkAllWrap);
             innerDIV.classList.add('e-headerchkcelldiv');
         }

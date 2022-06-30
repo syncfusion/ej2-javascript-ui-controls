@@ -572,6 +572,20 @@ export interface PdfAnnotationBaseModel {
      */
     isReadonly?: boolean;
 
+    /**
+     * Represents the page rotation angle
+     * @private
+     *
+     */
+    pageRotation?: number;
+
+    /**
+     * Represents the annotation is added programmatically.
+     * @private
+     *
+     */
+    isAddAnnotationProgrammatically?: boolean;
+
 }
 
 /**

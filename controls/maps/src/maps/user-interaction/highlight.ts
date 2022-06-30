@@ -64,7 +64,8 @@ export class Highlight {
             targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch &&
             targetEle.getAttribute('class') !== 'MarkerselectionMapStyle' &&
             targetEle.getAttribute('class') !== 'BubbleselectionMapStyle' &&
-            targetEle.getAttribute('class') !== 'navigationlineselectionMapStyle') {
+            targetEle.getAttribute('class') !== 'navigationlineselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'LineselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let shapeData: any;
@@ -74,8 +75,9 @@ export class Highlight {
             let dataIndex: number;
             if (targetEle.id.indexOf('shapeIndex') > -1) {
                 shapeIn = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
-                    this.maps.layers[layerIndex].shapeData['features'][shapeIn]['properties'] : null;
+                shapeData = this.maps.layers[layerIndex].shapeData['features'] &&
+                !isNullOrUndefined(this.maps.layersCollection[layerIndex].layerData[shapeIn]) ?
+                this.maps.layersCollection[layerIndex].layerData[shapeIn]['property'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex].dataSource[dataIndex];
                 this.highlightSettings = this.maps.layers[layerIndex].highlightSettings;
@@ -142,7 +144,8 @@ export class Highlight {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public handleHighlight(targetElement: Element, layerIndex: number, data: any, shapeData: any): void {
-        if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1 && this.maps.legendModule) {
+        if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1 && this.maps.legendModule
+            && this.maps.legendSettings.type === 'Layers') {
             this.maps.legendModule.shapeHighLightAndSelection(
                 targetElement, data, this.highlightSettings, 'highlight', layerIndex);
         }
@@ -162,7 +165,7 @@ export class Highlight {
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
         }
         const border: BorderModel = {
-            color: (targetEle.parentElement.id.indexOf('LineString') === -1) ? this.highlightSettings.border.color : (this.highlightSettings.border.color || this.highlightSettings.fill),
+            color: (targetEle.parentElement.id.indexOf('LineString') === -1) ? this.highlightSettings.border.color : (this.highlightSettings.fill || this.highlightSettings.border.color),
             width: (targetEle.parentElement.id.indexOf('LineString') === -1) ? (this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)) : (this.highlightSettings.border.width / this.maps.scale),
             opacity: this.highlightSettings.border.opacity
         };

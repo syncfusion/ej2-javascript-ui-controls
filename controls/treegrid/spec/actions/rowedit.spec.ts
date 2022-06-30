@@ -1977,41 +1977,41 @@ describe('Edit module', () => {
     });
   });
 
-	describe('EJ2-31696-Default contextmenu Expand collapse throw script error in All platform', () => {
-		let gridObj: TreeGrid;
-		beforeAll((done: Function) => {
-			gridObj = createGrid(
-				{
-					dataSource: sampleData,
-					childMapping: 'subtasks',
-					editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-					allowSorting: true,
-					sortSettings: { columns: [{ field: 'taskName', direction: 'Ascending' }] },
-					treeColumnIndex: 1,
-					toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-					columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-					{ field: 'taskName', headerText: 'Task Name' },
-					{ field: 'progress', headerText: 'Progress' },
-					{ field: 'startDate', headerText: 'Start Date' }
-					]
-				},
-				done
-			);
-		});
-		it('Throw script error while expand collapse', () => {
-			let event: MouseEvent = new MouseEvent('dblclick', {
-				'view': window,
-				'bubbles': true,
-				'cancelable': true
-			});
-			gridObj.getCellFromIndex(0, 1).querySelector(".e-treegridexpand").dispatchEvent(event);      
-			gridObj.selectRow(2);
-			expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell').length > 0).toBe(true);
-		});
-		afterAll(() => {
-			destroy(gridObj);
-		});
-	});
+  describe('EJ2-31696-Default contextmenu Expand collapse throw script error in All platform', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+            allowSorting: true,
+            sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+              columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'progress', headerText: 'Progress' },
+              { field: 'startDate', headerText: 'Start Date' }
+            ]
+        },
+        done
+      );
+    });
+    it('Throw script error while expand collapse', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0,1).querySelector(".e-treegridexpand").dispatchEvent(event);
+      gridObj.selectRow(2);
+      expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell').length > 0).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   
   
   describe('Expand Collapse with Editing', () => {
@@ -2049,6 +2049,43 @@ describe('Edit module', () => {
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
     });
     
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+  describe('EJ2-31696-Default contextmenu Expand collapse throw script error in All platform', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+          allowSorting: true,
+          sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+      done
+      );
+    });
+    it('Throw script error while expand collapse', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0,1).querySelector(".e-treegridexpand").dispatchEvent(event);
+      gridObj.selectRow(2);
+      expect(gridObj.getRows()[2].getElementsByClassName('e-active').length >= 0).toBe(true);
+      expect(gridObj.grid.editModule.formObj !== undefined).toBe(true);
+    });
     afterAll(() => {
       destroy(gridObj);
     });
@@ -3019,6 +3056,39 @@ describe('EJ2-48935 - Adding record with addRecord method at last to second row 
     gridObj.grid.actionComplete = actionComplete;
     gridObj.addRecord(arr[0], 3, "Below");
   });
+});
+
+describe('Editing - double click on icon', () => {
+	let gridObj: TreeGrid;
+	let actionComplete: () => void;
+	let rows: Element[];
+	beforeAll((done: Function) => {
+		gridObj = createGrid(
+			{
+				dataSource: [],
+				childMapping: 'subtasks',
+				editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+				treeColumnIndex: 1,
+				toolbar: ['Add', 'Edit', 'Update', 'Delete'],
+				columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+				{ field: 'taskName', headerText: 'Task Name' },
+				{ field: 'progress', headerText: 'Progress' },
+				{ field: 'startDate', headerText: 'Start Date' }
+				]
+			},
+			done
+		);
+	});
+	it('double click on icon', () => {
+		for (let i: number = 0; i<gridObj.getInjectedModules().length; i++) {
+			if (gridObj.getInjectedModules()[i].name != "Freeze") {
+				expect(gridObj.getInjectedModules()[i].name != "Freeze").toBe(true);
+			}
+		}		
+	});
+	afterAll(() => {
+		destroy(gridObj);
+	});
 });
 
 describe('EJ2-54664 - delete the parent and child record using deleteRecord method', () => {

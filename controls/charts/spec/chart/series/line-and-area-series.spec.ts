@@ -57,6 +57,8 @@ describe('Chart Control Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: HTMLElement;
+        let x: number; let y: number;
+        let trigger: MouseEvents = new MouseEvents();
         element = createElement('div', { id: 'container' });
         beforeAll(() => {
             document.body.appendChild(element);
@@ -264,14 +266,14 @@ describe('Chart Control Series', () => {
                 color: 'red'
             };
             chartObj.refresh();
+
         });
         it('Checking Marker highlight explode', (done: Function) => {
             loaded = (): void => {
-                let trigger: MouseEvents = new MouseEvents();
                 let  series1:HTMLElement = document.getElementById('container_Series_2_Point_4_Symbol');
                 let chartArea: Element = document.getElementById('container_ChartAreaBorder');
-                let y:number =  parseFloat(series1.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
-                let x:number =  parseFloat(series1.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
+                 y =  parseFloat(series1.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
+                 x =  parseFloat(series1.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
                 trigger.mousemovetEvent(series1, Math.ceil(x), Math.ceil(y));
                 expect(document.getElementById('container_Series_2_Point_4_Trackball_1')).toBe(null);
                 expect(document.getElementById('container_Series_2_Point_4_Trackball_0')).toBe(null);

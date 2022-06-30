@@ -120,11 +120,12 @@ export class Marker {
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
                             this.maps.element.appendChild(this.maps.svgObject);
-                            if (currentLayer.layerType !== 'OSM' || !this.maps.zoomSettings.enable) {
-                                clusterTemplate(currentLayer, this.markerSVGObject,
-                                                this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
-                            } else {
+                            if ((currentLayer.layerType === 'OSM' || (currentLayer.urlTemplate.indexOf('openstreetmap') !== -1 && isNullOrUndefined(currentLayer.shapeData)))
+                                && this.maps.zoomSettings.enable) {
                                 layerElement.appendChild(this.markerSVGObject);
+                            } else {
+                                clusterTemplate(currentLayer, this.markerSVGObject,
+                                    this.maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                             }
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (this.maps as any).renderReactTemplates();

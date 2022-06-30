@@ -67,6 +67,8 @@ export class Edit implements IAction {
     public isLastRow?: boolean;
     /* @hidden */
     public deleteRowUid: string;
+    /* @hidden */
+    public editCellDialogClose: boolean = false;
     /**
      * Constructor for the Grid editing module
      *
@@ -793,7 +795,7 @@ export class Edit implements IAction {
             break;
         case 'delete':
             if (((e.target as HTMLElement).tagName !== 'INPUT' || (e.target as HTMLElement).classList.contains('e-checkselect'))
-                && !document.querySelector('.e-popup-open')) {
+                && !document.querySelector('.e-popup-open.e-edit-dialog')) {
                 this.deleteRecord();
             }
             break;
@@ -810,14 +812,89 @@ export class Edit implements IAction {
             }
             break;
         case 'escape':
-            if (this.parent.isEdit) {
+            if (this.parent.isEdit && !this.editCellDialogClose) {
                 if (this.parent.editSettings.mode === 'Batch') {
                     this.editModule.escapeCellEdit();
                 } else {
-                    this.closeEdit();
+                    this.curretRowFocus(e);
                 }
             }
+            if (this.editCellDialogClose) {
+                this.editCellDialogClose = false;
+            }
             break;
+        case 'tab':
+        case 'shiftTab':
+            this.curretRowFocus(e);
+            break;
+        }
+    }
+
+    private curretRowFocus(e: KeyboardEventArgs): void {
+        if (this.parent.isEdit && this.parent.editSettings.mode !== 'Batch') {
+            const editedRow: Element = parentsUntil(e.target as Element, 'e-editedrow') || parentsUntil(e.target as Element, 'e-addedrow');
+            if (editedRow) {
+                const selector: string = editedRow.classList.contains('e-addedrow') ? 'e-addedrow' : 'e-editedrow';
+                let focusableEditCells: HTMLElement[] = [].slice.call(editedRow.querySelectorAll('.e-input:not(.e-disabled)'));
+                const commandColCell: HTMLElement[] = [].slice.call(editedRow.querySelectorAll('.e-unboundcell'));
+                if (commandColCell) {
+                    for (let i: number = 0; i < commandColCell.length; i++) {
+                        focusableEditCells = focusableEditCells.concat([].slice
+                            .call(commandColCell[i].querySelectorAll('.e-btn:not(.e-hide)')));
+                    }
+                }
+                if (this.parent.isFrozenGrid()) {
+                    if (!isNullOrUndefined(this.parent.frozenRows) && (!isNullOrUndefined(parentsUntil(e.target as Element, 'e-frozenheader')) ||
+                        !isNullOrUndefined(parentsUntil(e.target as Element, 'e-movableheader')))) {
+                        const movableHeditedRow: Element = this.parent.getHeaderContent().querySelector('.e-movableheader ' + '.' + selector);
+                        focusableEditCells.push(...[].slice.call(movableHeditedRow.querySelectorAll('.e-input:not(.e-disabled)')));
+                        if (this.parent.getFrozenMode() === 'Left-Right' || this.parent.getFrozenMode() === 'Right') {
+                            const rightHEditRow: Element = this.parent.getHeaderContent().querySelector('.e-frozen-right-header ' + '.' + selector);
+                            focusableEditCells.push(...[].slice.call(rightHEditRow.querySelectorAll('.e-input:not(.e-disabled)')));
+                        }
+
+                    }
+                    else {
+                        const movableEditRow: Element = this.parent.getContent().querySelector('.e-movablecontent ' + '.' + selector);
+                        focusableEditCells.push(...[].slice.call(movableEditRow.querySelectorAll('.e-input:not(.e-disabled)')));
+                        if (this.parent.getFrozenMode() === 'Left-Right' || this.parent.getFrozenMode() === 'Right') {
+                            const rightFrEditRow: Element = this.parent.getContent().querySelector('.e-frozen-right-content ' + '.' + selector);
+                            focusableEditCells.push(...[].slice.call(rightFrEditRow.querySelectorAll('.e-input:not(.e-disabled)')));
+
+                        }
+                    }
+
+                }
+                const rowCell: Element = parentsUntil(e.target as Element, 'e-rowcell');
+                if ((rowCell === parentsUntil(focusableEditCells[focusableEditCells.length - 1], 'e-rowcell')
+                    && e.action === 'tab' && !rowCell.classList.contains('e-unboundcell'))
+                    || (rowCell === parentsUntil(focusableEditCells[0], 'e-rowcell') && e.action === 'shiftTab')
+                    || e.action === 'escape') {
+                    const uid: string = editedRow.getAttribute('data-uid');
+                    let rows: Element[] = this.parent.getRows();
+                    if (this.parent.getFrozenMode() === 'Left-Right' || this.parent.getFrozenMode() === 'Right') {
+                        rows = this.parent.getFrozenRightRows();
+                    }
+                    if (this.parent.getFrozenColumns() || this.parent.getFrozenMode() === 'Left') {
+                        rows = this.parent.getMovableRows();
+                    }
+                    let rowIndex: number = rows.map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
+                    if (this.parent.frozenRows && parentsUntil(editedRow, 'e-content')) {
+                        rowIndex = rowIndex - this.parent.frozenRows;
+                    }
+                    if (editedRow.classList.contains('e-addedrow')) {
+                        rowIndex = 0;
+                    }
+                    if (e.action === 'escape') {
+                        this.closeEdit();
+                    } else {
+                        this.endEdit();
+                    }
+                    if (this.parent.focusModule.active) {
+                        this.parent.focusModule.active.matrix.current = [rowIndex, 0];
+                    }
+                }
+            }
         }
     }
 
@@ -1037,6 +1114,9 @@ export class Edit implements IAction {
                 (inputClient.left - left + table.scrollLeft + inputClient.width / 2) + 'px;' +
                 'max-width:' + inputClient.width + 'px;text-align:center;'
         });
+        if (this.parent.cssClass) {
+            div.classList.add(this.parent.cssClass);
+        }
 
         if (isInline && client.left < left) {
             div.style.left = parseInt(div.style.left, 10) - client.left + left + 'px';

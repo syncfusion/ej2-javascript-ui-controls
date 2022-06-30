@@ -16,7 +16,7 @@ import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProp
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend } from '../document-editor/base/constants';
+import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 
 /**
@@ -565,14 +565,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Heading 5': 'Heading 5',
         'Heading 6': 'Heading 6',
         'ZoomLevelTooltip': 'Zoom level. Click or tap to open the Zoom options.',
-        'None': 'None'
+        'None': 'None',
+        'Borders': 'Borders'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
     public getModuleName(): string {
         return 'DocumentEditorContainer';
     }
-
     /**
      * @private
      */
@@ -587,6 +587,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
                     break;
                 case 'enableTrackChanges':
+                    if(this.documentEditor.documentHelper.isTrackedOnlyMode && !newModel.enableTrackChanges){
+                        this.enableTrackChanges = true;
+                     }
                     if (this.documentEditor) {
                         this.documentEditor.enableTrackChanges = newModel.enableTrackChanges;
                         if (this.toolbarModule) {
@@ -751,7 +754,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.showPropertiesPane = !restrictEditing;
         this.showHidePropertiesPane(!restrictEditing);
-        this.documentEditor.trackChangesPane.enableDisableButton(!restrictEditing);
+        this.documentEditor.trackChangesPane.enableDisableButton(!restrictEditing && !this.documentEditor.documentHelper.isDocumentProtected);
     }
 
     private setFormat(): void {
@@ -926,6 +929,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     private wireEvents(): void{
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
         this.documentEditor.on(internalviewChangeEvent, this.onViewChange, this);
+        this.documentEditor.on(protectionTypeChangeEvent,this.showPropertiesPaneOnSelection,this);
     }
     private unWireEvents(): void {
         if (isNullOrUndefined(this.documentEditor)) {
@@ -1105,7 +1109,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPropertiesPaneOnSelection(): void {
-        if ((this.restrictEditing) && !this.showPropertiesPane) {
+        if (((this.restrictEditing) && !this.showPropertiesPane) || isNullOrUndefined(this.tableProperties) ) {
             return;
         }
         let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType !== 'NoProtection';

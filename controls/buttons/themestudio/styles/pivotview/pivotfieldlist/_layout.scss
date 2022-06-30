@@ -15,7 +15,6 @@
   .e-pivot-formatting-dialog {
     // sass-lint:disable-all
     max-height: 480px !important;
-    min-width: $format-dialog-width !important;
     width: $format-dialog-width !important;
     // sass-lint:enable-all
     .e-format-table tr:nth-child(odd) {
@@ -28,7 +27,7 @@
       font-weight: normal;
       @if ($field-list-skin == 'bootstrap4') {
         // sass-lint:disable-all
-        color: #000;
+        color: $black;
         // sass-lint:enable-all
         opacity: .5;
       }
@@ -45,6 +44,7 @@
       td {
         padding-bottom: 14px;
         padding-right: 18px;
+        white-space: nowrap;
 
         @if ($skin-name == 'bootstrap5') {
           padding-right: 8px;
@@ -71,6 +71,7 @@
     .e-format-inner-div {
       padding-left: 14px;
       padding-top: 14px;
+      width: 579px;
     }
 
     .e-format-outer-div {
@@ -198,6 +199,9 @@
       // sass-lint:disable-all
       min-width: 320px !important;
       width: 100%  !important;
+      .e-format-inner-div {
+        width: 100% !important;
+      }
       // sass-lint:enable-all
 
       .e-format-value1,
@@ -267,7 +271,6 @@
   .e-bigger.e-pivot-formatting-dialog,
   .e-bigger .e-pivot-formatting-dialog {
     // sass-lint:disable-all
-    min-width: $format-dialog-bigger-width !important;
     width: $format-dialog-bigger-width !important;
     // sass-lint:enable-all
 
@@ -285,6 +288,7 @@
     .e-format-inner-div {
       padding-left: 16px;
       padding-top: 16px;
+      width: 656px;
     }
 
     .e-format-outer-div {
@@ -847,9 +851,9 @@
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
     //sass-lint:disable-all
-    max-height: 580px !important;
+    max-height: 600px !important;
+    min-width: 401px !important;
     // sass-lint:enable-all
-    min-width: 310px;
 
     .e-pivot-all-field-title,
     .e-pivot-field-name-title,
@@ -860,9 +864,6 @@
       font-size: $field-list-bigger-header-font-size;
       padding: $pivot-calculated-bigger-header-padding 0;
       padding-bottom: 0;
-
-
-
 
       @if ($skin-name == 'FluentUI') {
         font-weight: 600;
@@ -911,8 +912,8 @@
 
     // sass-lint:disable-all
     &.e-olap-calc-dialog-div {
-      max-height: 700px !important;
-      min-width: 580px;
+      max-height: 750px !important;
+      min-width: 580px !important;
 
       .e-pivot-calc-outer-div {
         .e-olap-field-tree-div {
@@ -1013,8 +1014,10 @@
       }
 
       .e-member-editor-container ul {
+        // sass-lint:disable-all
         margin-left: $field-list-member-filter-list-padding-size;
-        overflow: hidden;
+        overflow: auto !important;
+        // sass-lint:enable-all
 
         li {
           .e-list-text {
@@ -1070,6 +1073,10 @@
     }
 
     .e-member-editor-dialog {
+      .e-toolbar .e-toolbar-items {
+        margin-left: $field-list-filter-toolbar-items-margin;
+      }
+
       .e-clear-filter-button {
         float: left;
         margin: 0;
@@ -1113,9 +1120,9 @@
 
           &:hover {
             @if ($field-list-skin == 'bootstrap4') {
-              background-color: #6c757d !important;
-              border-color: #6c757d !important;
-              color: #fff !important;
+              background-color: $gray-600 !important;
+              border-color: $gray-600 !important;
+              color: $white !important;
             }
           }
 
@@ -1135,9 +1142,9 @@
 
           &:focus {
             @if ($field-list-skin == 'bootstrap4') {
-              background-color: #6c757d !important;
-              border-color: #6c757d !important;
-              color: #fff !important;
+              background-color: $gray-600 !important;
+              border-color: $gray-600 !important;
+              color: $white !important;
             }
 
             &.e-active {
@@ -1261,6 +1268,11 @@
       }
 
       &.e-rtl {
+        .e-toolbar .e-toolbar-items {
+          margin-left: 0;
+          margin-right: $field-list-filter-toolbar-items-margin;
+        }
+
         .e-member-editor-outer-container {
           .e-editor-search-container {
             .e-filter-sort {
@@ -1314,6 +1326,10 @@
     }
 
     .e-adaptive-field-list-dialog {
+      ul {
+        min-height: 170px;
+        overflow: auto;
+      }
       .e-member-editor-container ul {
         li {
           // sass-lint:disable-all
@@ -1448,13 +1464,13 @@
 
       .e-dlg-content {
         overflow: hidden;
-        padding: 0;
+        padding: 0 !important;
         @if ($skin-name == 'FluentUI') {
           padding-top: 1px;
         }
 
         @if ($skin-name == 'tailwind') {
-          padding-top: 12px;
+          padding: 12px 0 0 0 !important;
         }
 
         // sass-lint:disable-all
@@ -1792,7 +1808,7 @@
       }
 
       &.e-excel-filter {
-        min-width: $field-list-bigger-excel-dialog-min-width;
+        min-width: $field-list-bigger-excel-dialog-min-width !important;
       }
     }
 

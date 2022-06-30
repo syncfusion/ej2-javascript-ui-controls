@@ -323,6 +323,11 @@
     .e-sort-descend::before {
         content: '\e665' !important;
     }
+
+    .e-field-list-search-icon::before {
+      content: '\e275' !important;
+    }
+
     // sass-lint:enable-all
 
     .e-pivot-calc-outer-div .e-pivot-accord .e-edited.e-icons::before {

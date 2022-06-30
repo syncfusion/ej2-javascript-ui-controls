@@ -953,6 +953,160 @@ describe('Schedule base module', () => {
             schObj.eventSettings.dataSource = eventDatas;
             schObj.dataBind();
         });
+
+        it('openQuickInfoPopup - Event', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventObj: Record<string, any> = {
+                    Id: 2,
+                    Subject: 'Event',
+                    StartTime: new Date(2017, 10, 5, 13),
+                    EndTime: new Date(2017, 10, 5, 14),
+                    IsAllDay: false
+                };
+                schObj.openQuickInfoPopup(eventObj);
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup.classList).toContain('e-popup-open');
+                expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 5, 2017 (1:00 PM&nbsp;-&nbsp;2:00 PM)');
+                expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Event');
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();
+                done();
+            };
+            const eventData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Recurring Event',
+                StartTime: new Date(2017, 10, 5, 10),
+                EndTime: new Date(2017, 10, 5, 11, 30),
+                IsAllDay: false,
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10'
+            },
+            {
+                Id: 2,
+                Subject: 'Event',
+                StartTime: new Date(2017, 10, 5, 13),
+                EndTime: new Date(2017, 10, 5, 14),
+                IsAllDay: false
+            }];
+            schObj.eventSettings.dataSource = eventData;
+            schObj.dataBind();
+        });
+
+        it('openQuickInfoPopup - Recurring Event', () => {
+            const eventObj: Record<string, any> = {
+                Id: 1,
+                Subject: 'Recurring Event',
+                StartTime: new Date(2017, 10, 6, 10),
+                EndTime: new Date(2017, 10, 6, 11, 30),
+                IsAllDay: false,
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+            };
+            schObj.openQuickInfoPopup(eventObj);
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup.classList).toContain('e-popup-open');
+            expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:30 AM)');
+            expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Recurring Event');
+            (<HTMLElement>eventPopup.querySelector('.e-close')).click();
+        });
+
+        it('openQuickInfoPopup - Cell', () => {
+            const eventObj: Record<string, any> = { StartTime : new Date(2017, 10, 6,10), EndTime: new Date(2017, 10, 6,11) };
+            schObj.openQuickInfoPopup(eventObj);
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup.classList).toContain('e-popup-open');
+            expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:00 AM)');
+            (<HTMLElement>eventPopup.querySelector('.e-close')).click();
+        });
+
+        it('openQuickInfoPopup - in Timeline views for cells', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventObj: Record<string, any> = { StartTime: new Date(2017, 10, 6, 10), EndTime: new Date(2017, 10, 6, 11)};
+                schObj.openQuickInfoPopup(eventObj);
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup.classList).toContain('e-popup-open');
+                expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:00 AM)');
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();
+                schObj.currentView = 'TimelineMonth';
+                schObj.dataBind();
+                schObj.openQuickInfoPopup(eventObj);
+                expect(eventPopup.classList).toContain('e-popup-open');
+                expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:00 AM)');
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();
+                schObj.currentView = 'TimelineYear';
+                schObj.dataBind();
+                schObj.openQuickInfoPopup(eventObj);
+                expect(eventPopup.classList).toContain('e-popup-open');
+                expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:00 AM)');
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();
+                done();
+            };
+            schObj.views = ['TimelineDay', 'TimelineMonth', 'TimelineYear'];
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+
+        it('openQuickInfoPopup - in Timeline day view for events', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventObj: Record<string, any> = {
+                    Id: 1,
+                    Subject: 'Recurring Event',
+                    StartTime: new Date(2017, 10, 6, 10),
+                    EndTime: new Date(2017, 10, 6, 11, 30),
+                    IsAllDay: false,
+                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+                };
+                schObj.openQuickInfoPopup(eventObj);
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup.classList).toContain('e-popup-open');
+                expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:30 AM)');
+                expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Recurring Event');
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();               
+                done();
+            };
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+        it('openQuickInfoPopup - in TimeineYear view for events', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventObj: Record<string, any> = {
+                    Id: 1,
+                    Subject: 'Recurring Event',
+                    StartTime: new Date(2017, 10, 6, 10),
+                    EndTime: new Date(2017, 10, 6, 11, 30),
+                    IsAllDay: false,
+                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+                };
+                schObj.openQuickInfoPopup(eventObj);
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup.classList).toContain('e-popup-open');
+                expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:30 AM)');
+                expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Recurring Event');
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();                
+                done();
+            };
+            schObj.currentView = 'TimelineYear';
+            schObj.dataBind();
+        });
+        it('openQuickInfoPopup - in Timeline Month view for events', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventObj: Record<string, any> = {
+                    Id: 1,
+                    Subject: 'Recurring Event',
+                    StartTime: new Date(2017, 10, 6, 10),
+                    EndTime: new Date(2017, 10, 6, 11, 30),
+                    IsAllDay: false,
+                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+                };
+                schObj.openQuickInfoPopup(eventObj);
+                const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup.classList).toContain('e-popup-open');
+                expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('November 6, 2017 (10:00 AM&nbsp;-&nbsp;11:30 AM)');
+                expect(eventPopup.querySelector('.e-subject').innerHTML).toEqual('Recurring Event');
+                (<HTMLElement>eventPopup.querySelector('.e-close')).click();                
+                done();
+            };
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+        });
+
     });
 
     describe('Testing resetWorkHours without parameters in Vertical view', () => {
@@ -1943,6 +2097,39 @@ describe('Schedule base module', () => {
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
         });
+        it('openQuickInfoPopup with resource - Event', () => {
+            const element: Element = schObj.element.querySelector('.e-appointment');
+            const eventObj: Record<string, any> = {
+                Id: 1,
+                Subject: 'Event',
+                StartTime: new Date(2020, 0, 1, 10),
+                EndTime: new Date(2020, 0, 1, 12),
+                IsAllDay: false,
+                RoomId: 1,
+                OwnerId: 1
+            };
+            schObj.openQuickInfoPopup(eventObj);
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup.classList).toContain('e-popup-open');
+            expect(eventPopup.querySelector('.e-date-time-details').innerHTML).toEqual('January 1, 2020 (10:00 AM&nbsp;-&nbsp;12:00 PM)');
+            expect(eventPopup.querySelector('.e-resource-details').innerHTML).toEqual('Nancy');
+            (<HTMLElement>eventPopup.querySelector('.e-close')).click();
+        });
+        it('openQuickInfoPopup with resource - Cell', () => {
+            const eventObj: Record<string, any> = {
+                StartTime: new Date(2020, 0, 4, 10),
+                EndTime: new Date(2020, 0, 4, 12),
+                IsAllDay: false,
+                RoomId: 2,
+                OwnerId: 2
+            };
+            schObj.openQuickInfoPopup(eventObj);
+            const cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(cellPopup.classList).toContain('e-popup-open');
+            expect(cellPopup.querySelector('.e-date-time-details').innerHTML).toEqual('January 4, 2020 (10:00 AM&nbsp;-&nbsp;12:00 PM)');
+            expect(cellPopup.querySelector('.e-resource-details').innerHTML).toEqual('Steven');
+            (<HTMLElement>cellPopup.querySelector('.e-close')).click();
+        });
     });
 
     describe('Capitalization checking on french culture', () => {
@@ -2139,6 +2326,62 @@ describe('Schedule base module', () => {
             const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
             expect((document.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('此字段是必需的。');
+        });
+    });
+
+    describe('EJ2-59128 - Events are not displayed when min-max date set to schedule', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2022, 3, 4),
+                minDate: new Date(2022, 3, 5),
+                maxDate: new Date(2022, 3, 7),
+                eventSettings: {
+                    dataSource: [
+                        {
+                            Id: 1,
+                            Subject: 'Explosion of Betelgeuse Star',
+                            Location: 'Space Centre USA',
+                            StartTime: new Date(2022, 3, 4, 9, 30),
+                            EndTime: new Date(2022, 3, 4, 11, 0),
+                            CategoryColor: '#1aaa55',
+                        },
+                        {
+                            Id: 2,
+                            Subject: 'Thule Air Crash Report',
+                            Location: 'Newyork City',
+                            StartTime: new Date(2022, 3, 6, 12, 0),
+                            EndTime: new Date(2022, 3, 6, 14, 0),
+                            CategoryColor: '#357cd2',
+                        },
+                        {
+                            Id: 3,
+                            Subject: 'MaxDate Appointments',
+                            Location: 'Newyork City',
+                            StartTime: new Date(2022, 3, 8, 12, 0),
+                            EndTime: new Date(2022, 3, 8, 14, 0),
+                            CategoryColor: '#357cd2',
+                        }
+                    ],
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointments rendering in min-max date range in week and Month view ', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsProcessed.length).toEqual(3);
+                const renderedAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+                expect(renderedAppointments.length).toEqual(1);
+                done();
+            }
+            expect(schObj.eventsProcessed.length).toEqual(3);
+            const renderedAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+            expect(renderedAppointments.length).toEqual(1);
+            schObj.currentView = 'Month';
+            schObj.dataBind();
         });
     });
 

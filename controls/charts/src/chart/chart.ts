@@ -1555,6 +1555,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     // eslint-disable-next-line
     public longPressBound: any;
 
+    /** @private */
+    public isLegendClicked: boolean = false;
+
+    public isZoomed: boolean = false;
+    private previousTargetId: string = "";
+    private currentPointIndex: number = 0;
+    private currentSeriesIndex: number = 0;
+    private currentLegendIndex: number = 0;
+
     /**
      * Constructor for creating the widget
      *
@@ -1656,6 +1665,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.tooltipModule) {
             this.tooltipModule.previousPoints = [];
         }
+        this.element.setAttribute('tabindex', "0");
+        this.element.setAttribute("class", this.element.getAttribute("class") + " e-chart-focused");
         if (this.element.id === '') {
             const collection: number = document.getElementsByClassName('e-chart').length;
             this.element.id = 'chart_' + this.chartid + '_' + collection;
@@ -1695,9 +1706,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.theme = this.isBlazor ? beforeRenderData.theme : this.theme;
 
-        this.createChartSvg();
-
         this.setTheme();
+
+        this.createChartSvg();        
 
         this.markerRender = new Marker(this);
 
@@ -2188,7 +2199,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             dataSource = series.dataSource || this.dataSource;
         }
         series.dataModule = new Data(dataSource, series.query);
-        (series as TechnicalIndicator).refreshDataManager(this, series);
+        series.points = [];
+        (series as TechnicalIndicator).refreshDataManager(this);
     }
 
     private calculateBounds(): void {
@@ -2438,7 +2450,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 );
             if (element) {
                 element.setAttribute('aria-label', this.description || this.title);
-                element.setAttribute('tabindex', this.tabIndex.toString());
+                element.setAttribute('tabindex', '0');
+                element.setAttribute('class', 'e-chart-focused');
             }
             if (this.subTitle) {
                 this.renderSubTitle(options);
@@ -2474,7 +2487,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             );
         if (element) {
             element.setAttribute('aria-label', this.description || this.subTitle);
-            element.setAttribute('tabindex', this.tabIndex.toString());
+            element.setAttribute('tabindex', '0');
         }
     }
     private renderBorder(): void {
@@ -2712,6 +2725,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         EventHandler.remove(this.element, 'dblclick', this.chartOnDoubleClick);
         EventHandler.remove(this.element, 'contextmenu', this.chartRightClick);
         EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
+        EventHandler.remove(this.element, "keydown", this.chartKeyDown);
+        EventHandler.remove(document.body, 'keydown', this.documentKeyHandler);
+		EventHandler.remove(this.element, "keyup", this.chartKeyUp);
 
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -2748,6 +2764,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         EventHandler.add(this.element, 'dblclick', this.chartOnDoubleClick, this);
         EventHandler.add(this.element, 'contextmenu', this.chartRightClick, this);
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
+        EventHandler.add(this.element, "keydown", this.chartKeyDown, this);
+        EventHandler.add(document.body, 'keydown', this.documentKeyHandler, this);
+		EventHandler.add(this.element, "keyup", this.chartKeyUp, this);
 
         this.resizeBound = this.chartResize.bind(this);
         window.addEventListener(
@@ -2952,13 +2971,351 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.trigger(chartDoubleClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         return false;
     }
+
+    /**
+     * Handles the keyboard onkeydown on chart.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+     public chartKeyDown(e: KeyboardEvent): boolean {
+         let actionKey: string = "";
+         if ((this.isZoomed && e.code == "Tab") || e.code == "Space") {
+             e.preventDefault();
+         }
+         if (this.tooltip.enable && ((e.code == "Tab" && this.previousTargetId.indexOf("Series") > -1) || e.code === "Escape")) {
+             actionKey = "ESC";
+         }
+         if (this.highlightMode != "None" && e.code == "Tab" && this.previousTargetId.indexOf("_chart_legend_") > -1) {
+            if (this.highlightModule) {
+                this.highlightModule.removeLegendHighlightStyles();
+            }
+        }
+         if (e.ctrlKey && (e.key === '+' || e.code === 'Equal' || e.key === '-' || e.code === 'Minus')) {
+             e.preventDefault();
+             this.isZoomed = this.zoomModule && (this.zoomSettings.enableDeferredZooming || this.zoomSettings.enableSelectionZooming ||
+                 this.zoomSettings.enablePinchZooming || this.zoomSettings.enableMouseWheelZooming);
+             //this.tooltipModule.fadeOut(this.element);
+             actionKey = this.isZoomed ? e.code : "";
+         }
+         else if (e["keyCode"] === 82 && this.isZoomed) { // KeyCode 82 (R) for reseting
+             e.preventDefault();
+             this.isZoomed = false;
+             actionKey = "R";
+         }
+         else if (e.code.indexOf("Arrow") > -1) {
+             e.preventDefault();
+             actionKey = this.isZoomed ? e.code : "";
+         }
+
+         if (e.ctrlKey && (e.key === 'p')) {
+             e.preventDefault();
+             actionKey = "CtrlP";
+         }
+
+         if (actionKey != "")
+             this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
+
+         return false;
+    }
+
+    /**
+     * Handles the keyboard onkeydown on chart.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+     public chartKeyUp(e: KeyboardEvent): boolean {
+        let actionKey: string = "";
+        let targetId: string = e.target['id'];
+        let groupElement: HTMLElement;
+        let markerGroup: HTMLElement;
+        let targetElement: HTMLElement = e.target as HTMLElement;
+
+        let titleElement: HTMLElement = getElement(this.element.id + "_ChartTitle") as HTMLElement;
+        let seriesElement: HTMLElement = getElement(this.element.id + "SeriesCollection") as HTMLElement;
+        let legendElement: HTMLElement = getElement(this.element.id + "_chart_legend_translate_g") as HTMLElement;
+        let pagingElement: HTMLElement = getElement(this.element.id + "_chart_legend_pageup") as HTMLElement;
+
+        if (titleElement) { titleElement.setAttribute("class", "e-chart-focused"); }
+        if (seriesElement && seriesElement.firstElementChild && seriesElement.firstElementChild.children[1]) {
+            let firstChild: HTMLElement = seriesElement.firstElementChild.children[1] as HTMLElement;
+            let className: string = firstChild.getAttribute("class");
+            if (className && className.indexOf("e-chart-focused") === -1) {
+                className = className + " e-chart-focused";
+            } else if (!className) {
+                className = "e-chart-focused";
+            }
+            firstChild.setAttribute("class", className);
+        }
+        if (legendElement) {
+            let firstChild: HTMLElement = legendElement.firstElementChild as HTMLElement;
+            let className: string = firstChild.getAttribute("class");
+            if (className && className.indexOf("e-chart-focused") === -1) {
+                className = className + " e-chart-focused";
+            }
+            else if (!className) {
+                className = "e-chart-focused";
+            }
+            firstChild.setAttribute("class", className);
+        }
+        if (pagingElement) { pagingElement.setAttribute("class", "e-chart-focused"); }
+
+
+        if (e.code == "Tab") {
+
+            if (this.previousTargetId != "") {
+                if ((this.previousTargetId.indexOf("_Series_") > -1 && targetId.indexOf("_Series_") == -1)) {
+                    groupElement = getElement(this.element.id + "SeriesCollection") as HTMLElement;
+                    let previousElement = this.previousTargetId.indexOf("_Symbol") > -1 ?
+                        getElement(this.element.id + "SymbolGroup" + this.currentSeriesIndex).children[this.currentPointIndex + 1] :
+                        (this.previousTargetId.indexOf("_Point_") > -1 ?
+                            groupElement.children[this.currentSeriesIndex].children[this.currentPointIndex + 1] :
+                            groupElement.children[this.currentSeriesIndex]);
+                    this.setTabIndex(previousElement as HTMLElement, groupElement.firstElementChild as HTMLElement);
+                    this.currentPointIndex = 0;
+                    this.currentSeriesIndex = 0;
+                }
+                else if (this.previousTargetId.indexOf("_chart_legend_page") > -1 && targetId.indexOf("_chart_legend_page") == -1
+                    && targetId.indexOf("_chart_legend_g_") == -1) {
+                    this.setTabIndex(e.target as HTMLElement, getElement(this.element.id + "_chart_legend_pageup") as HTMLElement);
+                }
+                else if (this.previousTargetId.indexOf("_chart_legend_g_") > -1 && targetId.indexOf("_chart_legend_g_") == -1) {
+                    groupElement = getElement(this.element.id + "_chart_legend_translate_g") as HTMLElement;
+                    this.setTabIndex(groupElement.children[this.currentLegendIndex] as HTMLElement, groupElement.firstElementChild as HTMLElement);
+                }
+            }
+
+            this.previousTargetId = targetId;
+
+            if (targetId.indexOf("SeriesGroup") > -1) {
+                this.currentSeriesIndex = +targetId.split("SeriesGroup")[1];
+                targetElement.removeAttribute("tabindex");
+                targetElement.blur();
+                if (targetElement.children[1].id.indexOf("_Point_") == -1) {
+                    markerGroup = getElement(this.element.id + "SymbolGroup" + targetId.split("SeriesGroup")[1]) as HTMLElement;
+                }
+                targetId = this.focusChild((markerGroup != null ? markerGroup.children[1] : targetElement.children[1]) as HTMLElement);
+            }
+            actionKey = this.highlightMode !== "None" || this.tooltip.enable ? "Tab" : "";
+        }
+        else if (e.code.indexOf("Arrow") > -1) {
+            e.preventDefault();
+            this.previousTargetId = targetId;
+            if (targetId.indexOf("_chart_legend_page") > -1) {
+                if (e.code == "ArrowLeft") {
+                    getElement(this.element.id + "_chart_legend_pagedown").removeAttribute("tabindex");
+                    this.focusChild(getElement(this.element.id + "_chart_legend_pageup") as HTMLElement);
+                }
+                else if (e.code == "ArrowRight") {
+                    getElement(this.element.id + "_chart_legend_pageup").removeAttribute("tabindex");
+                    this.focusChild(getElement(this.element.id + "_chart_legend_pagedown") as HTMLElement);
+                }
+            }
+            else if ((targetId.indexOf("_chart_legend_") > -1)) {
+                let legendElement: HTMLCollection = targetElement.parentElement.children;
+                legendElement[this.currentLegendIndex].removeAttribute("tabindex");
+
+                this.currentLegendIndex += (e.code == "ArrowUp" || e.code == "ArrowRight") ? + 1 : - 1;
+                this.currentLegendIndex = this.getActualIndex(this.currentLegendIndex, legendElement.length);
+
+                let currentLegend: Element = legendElement[this.currentLegendIndex];
+                this.focusChild(currentLegend as HTMLElement);
+                targetId = currentLegend.children[1].id;
+                actionKey = this.highlightMode !== "None" ? "ArrowMove" : "";
+            }
+            else if (targetId.indexOf("_Series_") > -1) {
+                groupElement = targetElement.parentElement.parentElement;
+                let currentPoint: Element = e.target as Element;
+                targetElement.removeAttribute("tabindex");
+                targetElement.blur();
+
+                if (e.code == "ArrowRight" || e.code == "ArrowLeft") {
+                    let seriesIndexes: number[] = [];
+                    for (let i: number = 0; i < groupElement.children.length; i++) {
+                        if (groupElement.children[i].id.indexOf("SeriesGroup") > -1) {
+                            seriesIndexes.push(+groupElement.children[i].id.split("SeriesGroup")[1]);
+                        }
+                    }
+                    this.currentSeriesIndex = seriesIndexes.indexOf(this.currentSeriesIndex) + (e.code == "ArrowRight" ? 1 : -1);
+                    this.currentPointIndex = 0;
+                    this.currentSeriesIndex = seriesIndexes[this.getActualIndex(this.currentSeriesIndex, seriesIndexes.length)];
+                    groupElement = getElement(this.element.id + "SeriesGroup" + this.currentSeriesIndex) as HTMLElement;
+                    markerGroup = getElement(this.element.id + "SymbolGroup" + this.currentSeriesIndex) as HTMLElement;
+                    currentPoint = groupElement.children[1].id.indexOf("_Point_") == -1 && markerGroup ? markerGroup.children[1] :
+                        groupElement.children[1];
+                }
+                else {
+                    this.currentPointIndex += e.code == "ArrowUp" ? 1 : -1;
+                    if (targetId.indexOf("_Symbol") > -1) {
+                        this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                            getElement(this.element.id + "SymbolGroup" + this.currentSeriesIndex).childElementCount - 1);
+                        currentPoint = getElement(this.element.id + "_Series_" + this.currentSeriesIndex + "_Point_" +
+                            this.currentPointIndex + "_Symbol");
+                    }
+                    else if (targetId.indexOf("_Point_") > -1) {
+                        this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                            getElement(this.element.id + "SeriesGroup" + this.currentSeriesIndex).childElementCount - 1);
+                        currentPoint = getElement(this.element.id + "_Series_" + this.currentSeriesIndex + "_Point_" +
+                            this.currentPointIndex);
+                    }
+                }
+
+                targetId = this.focusChild(currentPoint as HTMLElement);
+                actionKey = this.tooltip.enable || this.highlightMode !== "None" ? "ArrowMove" : "";
+            }
+        }
+        else if ((e.code == "Enter" || e.code == "Space") && ((targetId.indexOf("_chart_legend_") > -1) ||
+            (targetId.indexOf("_Point_") > -1))) {
+            targetId = (targetId.indexOf("_chart_legend_page") > -1) ? targetId : ((targetId.indexOf("_chart_legend_") > -1) ?
+                targetElement.children[1].id : targetId);
+            actionKey = "Enter";
+        }
+        if (actionKey !== "") {
+            this.chartKeyboardNavigations(e, targetId, actionKey);
+        }
+
+
+        return false;
+    }
+
+    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+        if (previousElement) {
+            previousElement.removeAttribute("tabindex");
+        }
+        if (currentElement) {
+            currentElement.setAttribute("tabindex", "0");
+        }
+    }
+
+    private getActualIndex(index: number, totalLength: number): number {
+        return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index)
+    }
+
+    private focusChild(element: HTMLElement): string {
+        element.setAttribute("tabindex", "0");
+        let className: string = element.getAttribute("class");
+        element.setAttribute("tabindex", "0");
+        if (className && className.indexOf("e-chart-focused") === -1) {
+            className = "e-chart-focused " + className;
+        } else if (!className) {
+            className = "e-chart-focused";
+        }
+        element.setAttribute("class", className);
+        element.focus();
+        return element.id;
+    }
+
+    /**
+     * Handles the document onkey.
+     *
+     * @private
+     */
+    private documentKeyHandler(e: KeyboardEvent): void {
+        // 74 - J
+        if (e.altKey && e.keyCode === 74 && !isNullOrUndefined(this.element)) {
+            this.element.focus();
+        }
+    };
+
+
+    private chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
+        this.isLegendClicked = false;
+        switch (actionKey) {
+            case "Tab":
+            case "ArrowMove":
+                if(this.highlightModule) {
+                    this.highlightModule.removeLegendHighlightStyles();
+                }
+                if (targetId.indexOf("_Point_") > -1) {
+                    let seriesIndex = +(targetId.split("_Series_")[1].split("_Point_")[0]);
+                    let pointIndex = +(targetId.split("_Series_")[1].replace("_Symbol", "").split("_Point_")[1]);
+
+                    let pointRegion: ChartLocation = this.visibleSeries[seriesIndex].points[pointIndex].symbolLocations[0];
+                    this.mouseX = pointRegion.x + this.initialClipRect.x;
+                    this.mouseY = pointRegion.y + this.initialClipRect.y;
+                    if (this.highlightModule) {
+                        this.highlightModule.highlightChart(document.getElementById(targetId), "mousemove");
+                        this.highlightModule.completeSelection(document.getElementById(targetId), "mousemove");
+                    }
+                    if (this.tooltipModule) {
+                        this.tooltipModule.tooltip();
+                    }
+                }
+                if (this.highlightModule && this.highlightMode !== 'None') {
+                    targetId = targetId.indexOf("_chart_legend_g_") > -1 ? document.getElementById(targetId).firstChild['id'] : targetId;
+                    let legendID: string = this.element.id + '_chart_legend';
+                    let legendItemsId: string[] = [legendID + '_text_', legendID + '_shape_marker_',
+                    legendID + '_shape_'];
+                    for (let i: number = 0; i < legendItemsId.length; i++) {
+                        let id: string = legendItemsId[i];
+                        if (targetId.indexOf(id) > -1) {
+                            document.getElementById(targetId).setAttribute("class", "")
+                            this.highlightModule.legendSelection(this, parseInt(targetId.split(id)[1], 10),
+                                document.getElementById(targetId), "mousemove");
+                            break;
+                        }
+                    }
+                }
+                break;
+
+            case "Enter":
+            case "Space":
+                if (targetId.indexOf("_chart_legend_") > -1) {
+                    this.isLegendClicked = true;
+                    this.legendModule.click(e as Event);
+                    this.focusChild(document.getElementById(targetId).parentElement);
+                } else {
+                    this.selectionModule.calculateSelectedElements(document.getElementById(targetId) , "click")
+                }
+                break;
+            case "CtrlP":
+                this.print();
+                break;
+            case "ESC":
+                this.tooltipModule.removeTooltip(1);
+                break;
+            case "Equal":
+            case "Minus":
+                this.zoomModule.isZoomed = this.zoomModule.performedUI = true;
+                this.zoomModule.isPanning = this.isChartDrag = false;
+                if (actionKey == "Equal") {
+                    this.zoomModule.toolkit.zoomInOutCalculation(1, this, this.axisCollections, this.zoomSettings.mode);
+                }
+                else {
+                    this.zoomModule.toolkit.zoomInOutCalculation(-1, this, this.axisCollections, this.zoomSettings.mode);
+                }
+                this.zoomModule.performZoomRedraw(this);
+                this.element.focus();
+                break;
+            case "ArrowUp":
+            case "ArrowDown":
+            case "ArrowLeft":
+            case "ArrowRight":
+                let yArrowPadding = actionKey == "ArrowUp" ? 10 : (actionKey == "ArrowDown" ? -10 : 0);
+                let xArrowPadding = actionKey == "ArrowLeft" ? -10 : (actionKey == "ArrowRight" ? 10 : 0);
+                this.zoomModule.isPanning = this.isChartDrag = true;
+                this.zoomModule.doPan(this, this.axisCollections, xArrowPadding, yArrowPadding);
+                this.zoomModule.performZoomRedraw(this);
+                this.element.focus();
+                break;
+            case "R":
+                this.zoomModule.toolkit.reset();
+                break;
+        }
+
+    }
+
+   
+
+
     /**
      * Handles the mouse click on chart.
      *
      * @returns {boolean} false
      * @private
      */
-    public chartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
+    public chartOnMouseClick(e:  PointerEvent | TouchEvent): boolean {
         const element: Element = <Element>e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.clickCount++;
@@ -3243,6 +3600,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private setTheme(): void {
         /*! Set theme */
         this.themeStyle = getThemeColor(this.theme);
+
+        let style: HTMLStyleElement = document.createElement('style');
+        style.setAttribute('id', (<HTMLElement>this.element).id + "Keyboard_chart_focus");
+        style.innerHTML = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
+        'path[id*=_Point_]:focus, text[id*=_ChartTitle]:focus {outline: none } .e-chart-focused:focus-visible, path[class*=_ej2_chart_selection_series]:focus-visible,' +
+            'path[id*=_Point_]:focus-visible, text[id*=_ChartTitle]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
+        document.body.appendChild(style);
     }
 
     /**

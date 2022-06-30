@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, SheetModel } from '../../../src';
+import { CellModel, SheetModel } from '../../../src/index';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -209,5 +209,179 @@ describe('Spreadsheet context menu module ->', () => {
             });
         });
     });
-
+    describe('Insert, Delete, Hide Option need to be disabled after Protect the Workbook->', function () {
+        beforeAll(function (done) {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(function () {
+            helper.invoke('destroy');
+        });
+        it('Insert, Delete, Hide Option need to be disabled', function (done) {
+            helper.getElement('#' + helper.id + '_sheet_tab_panel button:nth-child(1)').click();
+            helper.switchRibbonTab(4);
+            helper.getElement('#' + helper.id + '_protectworkbook').click();
+            (helper.getElementFromSpreadsheet('.e-protectworkbook-dlg input') as HTMLInputElement).value = '123';
+            (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = '123';
+            helper.click('.e-protectworkbook-dlg .e-primary');
+            
+            var cElem:HTMLElement = helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-item:nth-child(3)');
+            var cMenu: DOMRect = <DOMRect>cElem.getBoundingClientRect()
+            helper.triggerMouseAction('contextmenu', { x:  cMenu.left + 1, y: cMenu.top + 1 }, null, cElem);
+              
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(1)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(5)').classList).toContain('e-disabled');
+                expect(helper.getInstance().activeSheetIndex).toBe(1);
+                done();
+            });
+        });
+    });
+    describe('CR-Issues->', () => {
+        describe('EJ2-51327', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Hide Column option need to remove when there is no row selected', (done: Function) => {
+                helper.invoke('selectRange', ['B1']);
+                let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+                let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                setTimeout(() => {
+                    helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['A1:C1']);
+                        let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+                        let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                        setTimeout(() => {
+                            expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Hide Row option need to remove when there is no row selected', (done: Function) => {
+                helper.invoke('selectRange', ['A2']);
+                let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+                let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                setTimeout(() => {
+                    helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['A1:A3']);
+                        let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+                        let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                        setTimeout(() => {
+                            expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-55488->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to disable the paste action when the select-all is performed ->', (done: Function) => {
+                const selectAl:  HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+                helper.triggerMouseAction(
+                    'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
+                    selectAl);
+                helper.triggerMouseAction(
+                    'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
+                    selectAl);
+                setTimeout(() => {
+                    const td: HTMLTableCellElement = helper.invoke('getCell', [1, 1]);
+                    const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                    setTimeout(() => {
+                        expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').classList).toContain('e-disabled');
+                        expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(4)').classList).toContain('e-disabled');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-55491->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix the performance issue with column insert with select-all action->', (done: Function) => {
+                const selectAl:  HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+                helper.triggerMouseAction(
+                    'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
+                selectAl);
+                helper.triggerMouseAction(
+                    'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
+                    selectAl);
+                setTimeout(() => {
+                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                    setTimeout(() => {
+                        expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2CORE-607->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.cellFormat(
+                          { fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' },
+                          'A1:H1'
+                        );
+                        spreadsheet.enableContextMenuItems(['Enable'], true, true);
+                        spreadsheet.enableContextMenuItems(['To be show'], true, true);
+                    },
+                    contextMenuBeforeOpen: (args: any) => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.addContextMenuItems([{ text: 'Row Rule Conditions', id: 'condition' }, { text: 'Enable' }], 'Duplicate',false);
+                        spreadsheet.addContextMenuItems([], 'Row Rule Conditions', false);
+                        spreadsheet.addContextMenuItems([{ text: 'To be shown' }], 'Duplicate', true );
+                        spreadsheet.enableContextMenuItems(['Enable'], true, true);
+                        spreadsheet.enableContextMenuItems(['To be show'], true, true);
+                        spreadsheet.removeContextMenuItems(['Hide', 'Rename', 'Protect Sheet', 'Insert'], false );
+                    },
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Spreadsheet context menu items disable issue->', (done: Function) => {
+                const td: HTMLTableCellElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').textContent).toBe('Row Rule Conditions');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').classList).toContain('e-menu-item');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(5)').textContent).toBe('To be shown');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(5)').classList).toContain('e-menu-item');
+                    done();
+                });
+            });
+        });
+    });
 });

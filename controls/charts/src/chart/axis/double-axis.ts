@@ -147,6 +147,7 @@ export class Double {
                 if (!isNullOrUndefined(series.points)) {
                     axis.maxPointLength = series.points.length;
                 }
+                axis.maxPointLength = series.points.length;
                 if (((series.type.indexOf('Column') > -1 || series.type.indexOf('Histogram') > -1) && axis.orientation === 'Horizontal')
                     || (series.type.indexOf('Bar') > -1 && axis.orientation === 'Vertical')) {
                     if ((series.xAxis.valueType === 'Double' || series.xAxis.valueType === 'DateTime')
@@ -242,7 +243,7 @@ export class Double {
             let delta: number = maximum - minimum;
             interval = this.calculateNumericNiceInterval(axis, delta, size);
         }
-        
+
         this.updateActualRange(axis, minimum, maximum, interval);
     }
 

@@ -8,21 +8,21 @@ import { Grid } from '../../../src/grid/base/grid';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Page } from '../../../src/grid/actions/page';
-import { data } from '../base/datasource.spec';
+import { data, infiniteGroupData } from '../base/datasource.spec';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { Filter } from '../../../src/grid/actions/filter';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { QueryCellInfoEventArgs, RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs } from '../../../src/grid/base/interface';
-import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
+import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
-import { rowSelecting } from '../../../src';
 
-Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze, VirtualScroll);
+Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze, VirtualScroll, Filter);
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -4803,6 +4803,87 @@ describe('EJ2-56885 - Previously selected data is not returned in selection even
     });
 });
 
+describe('EJ2-53014 - specific row selection feature', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                selectionSettings: { persistSelection: true },
+                rowDataBound: (args) => {
+                    args.isSelectable = args.data.OrderID % 2 === 0;
+                },
+                columns: [
+                    { type: "checkbox" },
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250 },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('checking selected row Index', (done: Function) => {
+        let rowSelected = (e: any) => {
+            let row: Element = gridObj.getRows()[1];
+            expect(gridObj.getSelectedRecords().length).toBe(6);
+            expect(gridObj.getSelectedRows().length).toBe(6);
+            expect(gridObj.getSelectedRowIndexes().length).toBe(6);
+            expect(gridObj.selectionModule.isPartialSelection).toBe(true);
+            expect(row.querySelectorAll('.e-selectionbackground').length).toBe(0);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click()
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-53014 - specific row selection with virtualization feature', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: infiniteGroupData,
+                enableVirtualization: true,
+                pageSettings: { pageSize: 30 },
+                selectionSettings: { persistSelection: true },
+                rowDataBound: (args) => {
+                    args.isSelectable = args.data.OrderID % 2 === 0;
+                },
+                columns: [
+                    { type: "checkbox"},
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250 },
+                ],
+                height: 400,
+            }, done);
+    });
+    it('checking selected row Index', (done: Function) => {
+        let rowSelected = (e: any) => {
+            let row: Element = gridObj.getRows()[1];
+            expect(gridObj.getSelectedRecords().length).toBe(15);
+            expect(gridObj.getSelectedRows().length).toBe(15);
+            expect(row.querySelectorAll('.e-selectionbackground').length).toBe(0);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click()
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('EJ2-59308 Preventing keyboard actions when allow keyboard set to false', () =>{
     let gridObj: Grid;
     let rowSelected: () => void;
@@ -4862,7 +4943,216 @@ describe('EJ2-59308 Preventing keyboard actions when allow keyboard set to false
     });
 });
 
-describe('EJ2-60026 Row selection is not updated properly inside the rowDeselected event while data actions', () => {
+describe('Focus strategy coverage', () =>{
+    let gridObj: Grid;
+    let rows: Element[];
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+                dataSource: data,
+                columns: [
+                { field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' }],
+        }, done);
+    });
+    it('focus navigation by Tab and ShiftTab', () => {
+        rows = gridObj.getRows();
+        (rows[0] as HTMLTableRowElement).cells[0].focus();
+        gridObj.focusModule.setActive(true);
+        gridObj.focusModule.active.matrix.current = [0, 0];
+        let args: any = { action: 'tab', preventDefault: preventDefault, target: (rows[0] as HTMLTableRowElement).cells[0] };
+        (gridObj.focusModule as any).onKeyPress(args);
+        expect((rows[0] as HTMLTableRowElement).cells[1].classList.contains('e-focused')).toBeTruthy();
+        args = { action: 'shiftTab', preventDefault: preventDefault, target: (rows[0] as HTMLTableRowElement).cells[1] };
+        (gridObj.focusModule as any).onKeyPress(args);
+        expect((rows[0] as HTMLTableRowElement).cells[0].classList.contains('e-focused')).toBeTruthy();
+    });
+    it('focus navigation from header to content', () => {
+        rows = gridObj.getRows();
+        (gridObj.element.querySelectorAll('.e-headercell')[2] as HTMLElement).focus();
+        gridObj.focusModule.setActive(false);
+        gridObj.focusModule.active.matrix.current = [0, 2];
+        let args: any = { action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelectorAll('.e-headercell')[2] };
+        (gridObj.focusModule as any).onKeyPress(args);
+        expect((rows[0] as HTMLTableRowElement).cells[0].classList.contains('e-focused')).toBeTruthy();
+        args = { action: 'shiftTab', preventDefault: preventDefault, target: (rows[0] as HTMLTableRowElement).cells[0] };
+        (gridObj.focusModule as any).onKeyPress(args);
+        expect(gridObj.element.querySelectorAll('.e-headercell')[2].classList.contains('e-focused')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-59499 - implementation on Persist Selection misbehaves while sort, filter and search with virtualization => ', () => {
+    let gridObj: Grid;
+    let actionComplete: (e?: any) => void;
+    let cols: any;
+    let clearFilter: Function = (gridObj: Grid, done: Function) => {
+        let actionComplete: any = (args?: Object): void => {
+            if (gridObj.element.querySelectorAll('.e-row').length === (data.slice(0, 10)).length &&
+                gridObj.filterSettings.columns.length === 0) {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.clearFiltering();
+    };
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 10),
+                selectionSettings:{ persistSelection: true },
+                enableVirtualization: true,
+                allowSorting: true,
+                allowFiltering: true,
+                toolbar: ['Search'],
+                columns: [
+                    { type: "checkbox", width: "60" },
+                    { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+                actionComplete: actionComplete,
+                height: 300,
+            }, done);
+    });
+
+    it('select the row action', () => {
+        gridObj.selectRow(1, true);
+    });
+
+    it('check normal selection action', () => {
+        var rows = gridObj.getRows();
+        expect(gridObj.element.querySelectorAll('tr[aria-selected="true"]')[0].getAttribute('aria-rowindex')).toBe('1');
+        expect(rows[1].querySelectorAll('.e-selectionbackground').length).toBe(6);
+    });
+
+    it('Check Single sort orderID dsc action', (done: Function) => {
+        actionComplete = (args: any): any => {
+            expect(cols[1].querySelectorAll('.e-descending').length).toBe(1);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(0);
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.sortColumn("OrderID", "Descending", false);
+        cols = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+    });
+
+    it('check persist selection after sorting operation', () => {
+        var rows = gridObj.getRows();
+        expect(gridObj.element.querySelectorAll('tr[aria-selected="true"]')[0].getAttribute('aria-rowindex')).not.toBe('1');
+        expect(rows[1].querySelectorAll('.e-selectionbackground').length).not.toBe(6);
+        expect(gridObj.element.querySelectorAll('tr[aria-selected="true"]')[0].getAttribute('aria-rowindex')).toBe('8');
+        expect(rows[8].querySelectorAll('.e-selectionbackground').length).toBe(6);
+    });
+
+    it('filter action', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('OrderID', 'equal', 10249);
+    });
+
+    it('check persist selection after filtering operation', () => {
+        var rows = gridObj.getRows();
+        expect(gridObj.element.querySelectorAll('tr[aria-selected="true"]')[0].getAttribute('aria-rowindex')).toBe('0');
+        expect(rows[0].querySelectorAll('.e-selectionbackground').length).toBe(6);
+    });
+
+    it('clear Filtering testing', (done: Function) => {
+        clearFilter(gridObj, done);
+    });
+
+    it('Search method testing', (done: Function) => {
+        actionComplete = (args: any): void => {
+            if (args.requestType == 'searching') {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.searchModule.search('10249');
+    });
+
+    it('check persist selection after searching operation', () => {
+        var rows = gridObj.getRows();
+        expect(gridObj.element.querySelectorAll('tr[aria-selected="true"]')[0].getAttribute('aria-rowindex')).toBe('0');
+        expect(rows[0].querySelectorAll('.e-selectionbackground').length).toBe(6);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj.actionComplete = null;
+        gridObj = null;
+    });
+});
+
+describe('EJ2-59308 Preventing keyboard actions when allow keyboard set to false', () =>{
+    let gridObj: Grid;
+    let rowSelected: () => void;
+    let rows: Element[];
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+                dataSource: data,
+                allowKeyboard: false,
+                columns: [
+                { type: 'checkbox', width: 50 },
+                { field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' }],
+                allowPaging: true,
+                rowSelected: rowSelected
+        }, done);
+    });
+    it('checkbox selection through ctrl click testing', (done: Function) => {
+        rowSelected = (): void => {
+            expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+        (gridObj.selectionModule as any).clickHandler({target: gridObj.element.querySelectorAll('.e-row')[3]
+        .querySelectorAll('.e-rowcell')[2], ctrlKey: true});
+    });
+    it('Selecting First row', (done: Function) => {
+        gridObj.rowSelected = rowSelected;
+        gridObj.isCheckBoxSelection = false;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+        done();
+    });
+    it('checkbox selection through Shift click testing', (done: Function) => {
+        rowSelected = (): void => {
+            expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.selectionModule as any)
+        .clickHandler({target: gridObj.element.querySelectorAll('.e-row')[3].querySelectorAll('.e-rowcell')[2], shiftKey: true});
+    });
+    it('checkbox selection through space key testing', () => {
+        let args: any = { action: 'space', preventDefault: preventDefault };
+        rows = gridObj.getRows();
+        let chkBox: HTMLElement = (rows[2].querySelector('.e-checkselect') as HTMLElement);
+        chkBox.click();
+        args.target = chkBox;
+        gridObj.keyboardModule.keyAction(args);
+        expect(chkBox.nextElementSibling.classList.contains('e-check')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-60999 Row selection is not updated properly inside the rowDeselected event while data actions', () => {
     let gridObj: Grid;
     let rowSelected: () => void;
     let rowDeselected: (args: any) => void;
@@ -4894,9 +5184,9 @@ describe('EJ2-60026 Row selection is not updated properly inside the rowDeselect
         gridObj.rowDeselected = rowDeselected;
         (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[4].querySelector('.e-rowcell')).click();
         (gridObj.getHeaderContent().querySelectorAll('.e-headercell')[0] as HTMLElement).click();
-
     });
     afterAll(() => {
         destroy(gridObj);
+        gridObj = null;
     });
 });

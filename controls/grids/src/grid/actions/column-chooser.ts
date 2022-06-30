@@ -75,6 +75,9 @@ export class ColumnChooser implements IAction {
         if (this.parent.enableRtl) {
             addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
         }
+        if (this.parent.cssClass) {
+            addClass([this.cBoxTrue, this.cBoxFalse], [this.parent.cssClass]);
+        }
     }
 
     private destroy(): void {
@@ -200,7 +203,7 @@ export class ColumnChooser implements IAction {
             this.dlgObj.element.style.maxHeight = '430px';
             const elementVisible: string = this.dlgObj.element.style.display;
             this.dlgObj.element.style.display = 'block';
-            let isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
+            const isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
             const toolbarItem: HTMLElement = <HTMLElement>closest(target, '.e-toolbar-item');
             let newpos: { top: number, left: number };
             if (isSticky) {
@@ -209,7 +212,7 @@ export class ColumnChooser implements IAction {
             } else {
                 this.dlgObj.element.classList.remove('e-sticky');
                 newpos = calculateRelativeBasedPosition(toolbarItem, this.dlgObj.element);
-            }  
+            }
             this.dlgObj.element.style.display = elementVisible;
             this.dlgObj.element.style.top = newpos.top + closest(target, '.e-cc-toolbar').getBoundingClientRect().height + 'px';
             const dlgWidth: number = 250;
@@ -336,7 +339,7 @@ export class ColumnChooser implements IAction {
                 click: this.clearBtnClick.bind(this),
                 buttonModel: { cssClass: this.parent.cssClass ?
                     'e-flat e-cc e-cc-cnbtn' + ' ' + this.parent.cssClass : 'e-flat e-cc e-cc-cnbtn',
-                    content: this.l10n.getConstant('CancelButton') }
+                content: this.l10n.getConstant('CancelButton') }
             }],
             content: this.renderChooserList(),
             width: 250,
@@ -354,7 +357,7 @@ export class ColumnChooser implements IAction {
         const searchDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cc-searchdiv e-cc e-input-group' });
         const ccsearchele: HTMLElement = this.parent.createElement('input', {
             className: 'e-ccsearch e-cc e-input',
-            attrs: { placeholder: this.l10n.getConstant('Search') }
+            attrs: { placeholder: this.l10n.getConstant('Search'), cssClas: this.parent.cssClass }
         });
         const ccsearchicon: HTMLElement = this.parent.createElement('span', {
             className: 'e-ccsearch-icon e-icons e-cc e-input-group-icon',
@@ -634,6 +637,9 @@ export class ColumnChooser implements IAction {
             cclist.appendChild(selectAll);
             this.ulElement.appendChild(cclist);
         }
+        if (this.parent.cssClass) {
+            addClass([selectAll], [this.parent.cssClass]);
+        }
         for (let i: number = 0; i < gdCol.length; i++) {
             const columns: Column = (gdCol[i] as Column);
             this.renderCheckbox(columns);
@@ -690,6 +696,9 @@ export class ColumnChooser implements IAction {
             const cccheckboxlist: Element =
                 this.createCheckBox(column.headerText, (column.visible && !hideColState) || showColState, column.uid);
             cclist.appendChild(cccheckboxlist);
+            if (this.parent.cssClass) {
+                addClass([cccheckboxlist], [this.parent.cssClass]);
+            }
             this.ulElement.appendChild(cclist);
         }
         if (this.isInitialOpen) {

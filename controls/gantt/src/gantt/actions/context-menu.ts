@@ -246,9 +246,8 @@ export class ContextMenu {
     private getClickedDate(element: HTMLElement): Date {
         // context menu click position
         const ganttElementPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.element);
-        const ganttLeft: number = ganttElementPosition.left - this.parent.element.offsetLeft;
         // task left position
-        const pageLeft: number = ganttLeft + this.parent.ganttChartModule.chartElement.offsetLeft +
+        const pageLeft: number = ganttElementPosition.left + this.parent.ganttChartModule.chartElement.offsetLeft +
             this.rowData.ganttProperties.left - this.parent.ganttChartModule.scrollElement.scrollLeft;
 
         // difference from task start date to current click position.
@@ -438,7 +437,7 @@ export class ContextMenu {
                 break;
             case 'Indent':
             {
-               if (!this.parent.allowSelection) {
+               if (!this.parent.allowSelection || !this.parent.editModule || !this.parent.editSettings) {
                    this.hideItems.push(item.text);
                } else {
                    const index: number = this.parent.selectedRowIndex;
@@ -454,7 +453,7 @@ export class ContextMenu {
             }
             case 'Outdent':
             {
-                if (!this.parent.allowSelection) {
+                if (!this.parent.allowSelection || !this.parent.editModule || !this.parent.editSettings) {
                     this.hideItems.push(item.text);
                 } else {
                     const ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];

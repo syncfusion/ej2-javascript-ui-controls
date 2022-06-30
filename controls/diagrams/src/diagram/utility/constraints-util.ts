@@ -4,7 +4,7 @@ import { Node } from './../objects/node';
 import { ConnectorModel } from './../objects/connector-model';
 import { NodeConstraints, ConnectorConstraints, DiagramConstraints, DiagramTools, DiagramAction, RendererAction } from '../enum/enum';
 import { AnnotationConstraints, PortConstraints } from '../enum/enum';
-import { Connector } from './../objects/connector';
+import { BezierSegment, Connector } from './../objects/connector';
 import { AnnotationModel, PathAnnotationModel, ShapeAnnotationModel } from './../objects/annotation-model';
 import { PointPortModel } from './../objects/port-model';
 import { Selector } from './../objects/node';

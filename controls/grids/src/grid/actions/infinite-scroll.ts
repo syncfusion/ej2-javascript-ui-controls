@@ -620,13 +620,13 @@ export class InfiniteScroll implements IAction {
     }
 
     private refreshInfiniteCacheRowVisibleLength(args: {[x: number]: Row<Column>[]}, currentPage: number): number {
-        let cPageRowArray: Row<Column>[] = args[currentPage];
+        const cPageRowArray: Row<Column>[] = args[currentPage];
         if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
             let length: number = 0;
             let vRowLen: number = 0;
             let hRowLen: number = 0;
-            for(let i: number = 0; i < cPageRowArray.length; i++) {
-                if(cPageRowArray[i].visible || isNullOrUndefined(cPageRowArray[i].visible)) {
+            for (let i: number = 0; i < cPageRowArray.length; i++) {
+                if (cPageRowArray[i].visible || isNullOrUndefined(cPageRowArray[i].visible)) {
                     vRowLen++;
                 }
                 else {
@@ -888,7 +888,6 @@ export class InfiniteScroll implements IAction {
         const rowIdx: number = this.lastFocusInfo.rowIdx + (e.keyArgs.action === literals.upArrow ? -1 : 1);
         const cellIdx: number = this.lastFocusInfo.cellIdx;
         let row: HTMLTableRowElement = gObj.getRowByIndex(rowIdx) as HTMLTableRowElement;
-        const content: Element = gObj.getContent().firstElementChild;
         if (!row) {
             const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
             const page: number = Math.floor(rowIdx / this.parent.pageSettings.pageSize) + 1;
@@ -897,6 +896,7 @@ export class InfiniteScroll implements IAction {
             remove(gObj.getContent().querySelector('tbody'));
             gObj.getContent().querySelector('table').appendChild(gObj.createElement('tbody', { attrs: { 'role': 'rowgroup' } }));
             let focusRows: Row<Column>[] = [];
+            // eslint-disable-next-line @typescript-eslint/tslint/config
             for (let i: number = (page === 1 || this.maxPage === page) ? 0 : -1, k = 0;
                 k < gObj.infiniteScrollSettings.maxBlocks; this.maxPage === page ? i-- : i++, k++) {
                 const rows: Row<Column>[] = this.infiniteCache[page + i];
@@ -925,7 +925,7 @@ export class InfiniteScroll implements IAction {
             || (!this.isFocusScroll && <{ target?: Element }>e).target) as Element;
         if (cell && cell.classList.contains('e-rowcell')) {
             const cellIdx: number = parseInt(cell.getAttribute('aria-colindex'), 10);
-            const rowIdx: number = parseInt(cell.parentElement.getAttribute('aria-rowindex'));
+            const rowIdx: number = parseInt(cell.parentElement.getAttribute('aria-rowindex'), 10);
             this.lastFocusInfo = { rowIdx: rowIdx, cellIdx: cellIdx };
         }
     }
@@ -1114,6 +1114,7 @@ export class InfiniteScroll implements IAction {
         this.isInfiniteScroll = false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private selectNewRow(args: { direction: string }): void {
         const gObj: IGrid = this.parent;
         const row: Element = gObj.getRowByIndex(this.rowIndex);
@@ -1200,7 +1201,7 @@ export class InfiniteScroll implements IAction {
 
         if (args.direction === 'up') {
             if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && !this.isInitialCollapse) {
-                let len: number = this.refreshInfiniteCacheRowVisibleLength(this.infiniteCache, this.parent.pageSettings.currentPage);
+                const len: number = this.refreshInfiniteCacheRowVisibleLength(this.infiniteCache, this.parent.pageSettings.currentPage);
                 top = len * this.parent.getRowHeight();
             } else if (this.isInitialCollapse) {
                 const groupedData: Row<Column>[] = this.infiniteCache[this.parent.pageSettings.currentPage];

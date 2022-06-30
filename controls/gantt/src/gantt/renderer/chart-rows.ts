@@ -177,7 +177,7 @@ export class ChartRows extends DateProcessor {
                     '</div>');
 
             }
-            let tempDiv: Element = createElement('div');
+            const tempDiv: Element = createElement('div');
             if (this.taskLabelTemplateFunction && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
                 const taskLabelTemplateNode: NodeList = this.taskLabelTemplateFunction(
                     extend({ index: i }, data), this.parent, 'TaskLabelTemplate',
@@ -191,7 +191,8 @@ export class ChartRows extends DateProcessor {
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
             if (labelString.indexOf('null') === -1) {
-                if (this.getTaskLabel(this.parent.labelSettings.taskLabel) === 'isCustomTemplate' && !this.isTemplate(this.parent.labelSettings.taskLabel)) {
+                if (this.getTaskLabel(this.parent.labelSettings.taskLabel) === 'isCustomTemplate' &&
+                    !this.isTemplate(this.parent.labelSettings.taskLabel)) {
                     labelString = '';
                 }
                 if (isNaN(parseInt(labelString))) {
@@ -233,15 +234,15 @@ export class ChartRows extends DateProcessor {
                 if (template !== '' && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
                     let templateElement: Node = this.createDivElement(template)[0];
                     let childLabel: string = this.parent.labelSettings.taskLabel;
-                    if(childLabel && childLabel['elementRef'])
+                    if (childLabel && childLabel['elementRef'])
                         templateElement.appendChild(tempDiv);
                     progressDiv[0].appendChild(templateElement);
-                    if ((progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent !== '' &&
-                        !this.isTemplate(childLabel) && 
+                    if ((progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent !== '' && 
+                        !this.isTemplate(childLabel) &&
                         (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0])
                         (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0].remove();
                     if ((progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent == '' &&
-                        childLabel && !childLabel['elementRef'] && tempDiv.innerHTML != '')
+                        childLabel && !childLabel['elementRef'] && tempDiv.innerHTML !== '')
                         (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent = childLabel;
                 }
                 if (!isNullOrUndefined(taskbarInnerDiv) && taskbarInnerDiv.length > 0) {
@@ -259,6 +260,13 @@ export class ChartRows extends DateProcessor {
         let splitTasks: string = '';
         for (let i: number = 0; i < data.ganttProperties.segments.length; i++) {
             const segment: ITaskSegment = data.ganttProperties.segments[i];
+            let progressBarVisible: string;
+            if (!segment.showProgress) {
+                progressBarVisible = 'hidden';
+            }
+            else {
+                progressBarVisible = 'initial';
+            }
             const segmentPosition: string = (i === 0) ? 'e-segment-first' : (i === data.ganttProperties.segments.length - 1)
                 ? 'e-segment-last' : 'e-segment-inprogress';
             splitTasks += (
@@ -266,7 +274,7 @@ export class ChartRows extends DateProcessor {
                 '<div class="' + cls.childTaskBarInnerDiv + ' ' + segmentPosition + ' ' + cls.traceChildTaskBar + ' ' +
                 ' e-segmented-taskbar' +
                 '"style="width:' + segment.width + 'px;position: absolute; left:' + segment.left + 'px;height:' +
-                (this.taskBarHeight) + 'px; overflow: initial;" data-segment-index = "' + i + '" aria-label = "' +
+                (this.taskBarHeight) + 'px; overflow:' + progressBarVisible + ';" data-segment-index = "' + i + '" aria-label = "' +
                 this.generateSpiltTaskAriaLabel(segment, data.ganttProperties) + '"> ' +
                 this.getSplitTaskbarLeftResizerNode() +
                 //split progress bar
@@ -399,6 +407,7 @@ export class ChartRows extends DateProcessor {
             this.parent.dataOperation.updateMappingData(mergeData, 'segments');
             if (segments.length === 1) {
                 this.parent.setRecordValue('endDate', endDate, mergeData.ganttProperties, true);
+                this.parent.setRecordValue('EndDate', endDate, mergeData, true);
                 this.parent.setRecordValue('segments', null, mergeData.ganttProperties, true);
                 this.parent.dataOperation.updateMappingData(mergeData, 'segments');
             } else if (mergeData.ganttProperties.endDate !== segments[segments.length - 1].endDate) {
@@ -588,6 +597,7 @@ export class ChartRows extends DateProcessor {
             } else {
                 startDate = new Date(splitDate.getTime());
                 startDate.setDate(startDate.getDate() + 1 + increment);
+                this.setTime(this.parent.defaultStartTime, startDate);
                 startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
                 segmentEndDate = new Date(endDate.getTime());
                 segmentEndDate.setDate(segmentEndDate.getDate() + 1);
@@ -858,7 +868,7 @@ export class ChartRows extends DateProcessor {
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
                 'border-top-right-radius:' + this.getBorderRadius(data) + 'px;' +
                 'border-bottom-right-radius:' + this.getBorderRadius(data) + 'px;height:100%;"></div>');
-            let div: Element = createElement('div');
+            const div: Element = createElement('div');
             if (this.taskLabelTemplateFunction) {
                 const parentTaskLabelNode: NodeList = this.taskLabelTemplateFunction(
                     extend({ index: i }, data), this.parent, 'TaskLabelTemplate',
@@ -872,7 +882,8 @@ export class ChartRows extends DateProcessor {
                 labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
             }
             if (labelString.indexOf('null') === -1) {
-                if (this.getTaskLabel(this.parent.labelSettings.taskLabel) === 'isCustomTemplate' && !this.isTemplate(this.parent.labelSettings.taskLabel)) {
+                if (this.getTaskLabel(this.parent.labelSettings.taskLabel) === 'isCustomTemplate' &&
+                    !this.isTemplate(this.parent.labelSettings.taskLabel)) {
                     labelString = '';
                 }
                 if (isNaN(parseInt(labelString))) {
@@ -892,15 +903,15 @@ export class ChartRows extends DateProcessor {
                 }
                 let labelElement: Node = this.createDivElement(labelDiv)[0];
                 let parentLabel: string = this.parent.labelSettings.taskLabel;
-                if(parentLabel && parentLabel['elementRef'])
+                if (parentLabel && parentLabel['elementRef'])
                     labelElement.appendChild(div);
                 progressBarInnerDiv[0].appendChild(labelElement);
                 if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent !== '' &&
-                   !this.isTemplate(parentLabel) && 
+                   !this.isTemplate(parentLabel) &&
                    (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0])
                     (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0].remove();
                 if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent == '' &&
-                   parentLabel && !parentLabel['elementRef'] && div.innerHTML != '')
+                   parentLabel && !parentLabel['elementRef'] && div.innerHTML !== '')
                     (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent = parentLabel;
             }
             const milestoneTemplate: string = '<div class="' + cls.parentMilestone + '" style="position:absolute;">' +

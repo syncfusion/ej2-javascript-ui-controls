@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-querybuilder/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-querybuilder)
+
 # ej2-querybuilder
 
 [JavaScript Query Builder](https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm) is a rich and responsive UI for filtering large amounts of data by creating or editing conditions that can be combined with data visualization controls like DataGrid and Charts to view the filtered data. It outputs structured JSON filters that can be easily parsed to create SQL queries. It allows you to create conditions and group them using AND/OR logic.

@@ -674,7 +674,7 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
-
+        
         describe('EJ2-60037 - Console error occurs when list applied in fire fox testing', () => {
             let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
             let defaultUA: string = navigator.userAgent;
@@ -1346,6 +1346,48 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+
+        describe(' OL format apply with toolbar icon, when applying the new list with OL ', () => {
+            revertListHTML = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ol style="list-style-image: none; list-style-type: lower-greek;">
+
+            <li>
+            <p class='revertPara-1'>Testing 1</p>
+            
+            </li>
+            
+            <li>
+            <p>Testing 2</p>
+            </li>
+            
+            <li><p class='revertPara-3'>Testing 3</p></li>
+            
+            </ol></div>`;
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: revertListHTML.trim()
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+
+            it(' apply the OL format to selected "p"and revert with content with space', () => {
+                startNode = editNode.querySelector('.revertPara-1');
+                endNode = editNode.querySelector('.revertPara-3');
+                startNode = startNode.childNodes[0] as HTMLElement;
+                endNode = endNode.childNodes[0] as HTMLElement;
+                editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 9);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+                expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+                startNode = editNode.querySelector('.revertPara-1');
+                expect(startNode.parentElement.parentElement.hasAttribute('style')).toBe(false);
+                editorObj.nodeSelection.Clear(document);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
     });
 
     describe(' UL testing', () => {
@@ -1845,6 +1887,48 @@ describe ('left indent testing', () => {
             });
         });
         
+        describe(' UL format apply with toolbar icon, when applying the new list with UL ', () => {
+            let ulFrmtHTML: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ul style="list-style-image: none; list-style-type: circle;">
+
+            <li>
+            <p class='revertPara-1'>Testing 1</p>
+            
+            </li>
+            
+            <li>
+            <p>Testing 2</p>
+            </li>
+            
+            <li><p class='revertPara-3'>Testing 3</p></li>
+            
+            </ul></div>`;
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: ulFrmtHTML.trim()
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+
+            it(' apply the OL format to selected "p"and revert with content with space', () => {
+                startNode = editNode.querySelector('.revertPara-1');
+                endNode = editNode.querySelector('.revertPara-3');
+                startNode = startNode.childNodes[0] as HTMLElement;
+                endNode = endNode.childNodes[0] as HTMLElement;
+                editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 9);
+                editorObj.execCommand("Lists", 'UL', null);
+                expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+                expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+                startNode = editNode.querySelector('.revertPara-1');
+                expect(startNode.parentElement.parentElement.hasAttribute('style')).toBe(false);
+                editorObj.nodeSelection.Clear(document);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+        
     });
 
     describe(' EJ2-29800 - Reactive form validation not working properly', () => {
@@ -1953,6 +2037,80 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
+    
+    describe(' Shift+tab with the sublist checking', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: NodeListOf<HTMLLIElement>;
+        let endNode: HTMLElement;
+        let content: string = `<div style=\"color:red;\" id=\"content-edit\" contenteditable=\"true\" class=\"e-node-deletable e-node-inner\"><ol><li>content1</li><ol><li>content2</li></ol><li>content3</li></ol></div>`;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let elem: HTMLElement;
+        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: content.trim()
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' shift+tab key to revert the list to main OL', () => {
+            startNode = editNode.querySelectorAll('li');
+            endNode = startNode[1].firstChild as HTMLElement;
+            setCursorPoint(endNode, 0);
+            keyBoardEvent.event.key = "Tab";
+            keyBoardEvent.event.which = 9;
+            keyBoardEvent.event.shiftKey = true;
+            editNode.focus();
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(startNode[2].parentElement.childElementCount).toBe(3);
+        });
+
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Shift+tab with the sublist checking', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: NodeListOf<HTMLLIElement>;
+        let endNode: HTMLElement;
+        let content: string = `<div style=\"color:red;\" id=\"content-edit\" contenteditable=\"true\" class=\"e-node-deletable e-node-inner\"><ul><li>content1</li><ul><li>content2</li></ul><li>content3</li></ul></div>`;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let elem: HTMLElement;
+        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: content.trim()
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' shift+tab key to revert the list to main UL', () => {
+            startNode = editNode.querySelectorAll('li');
+            endNode = startNode[1].firstChild as HTMLElement;
+            setCursorPoint(endNode, 0);
+            keyBoardEvent.event.key = "Tab";
+            keyBoardEvent.event.which = 9;
+            keyBoardEvent.event.shiftKey = true;
+            editNode.focus();
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(startNode[2].parentElement.childElementCount).toBe(3);
+        });
+
+        afterAll(() => {
+            detach(elem);
+        });
+    });
 
     describe('EJ2-45885 - Bold with list to Backspace key press testing', () => {
         let elem: HTMLElement;
@@ -1997,7 +2155,7 @@ describe ('left indent testing', () => {
             expect(isNullOrUndefined(liNode)).toBe(true);
             innerValue = `<div id="content-edit" contenteditable="true"><ol><li class="startNode">List Element 1</li><li class="endNode">List Element 2</li></ol><div>`;
         });
-
+        
         it(' EJ2-60036 - List all selection', () => {
             startNode = editNode.querySelector('.startNode');
             endNode = editNode.querySelector('.endNode');

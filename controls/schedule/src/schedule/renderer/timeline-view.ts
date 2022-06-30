@@ -250,6 +250,20 @@ export class TimelineViews extends VerticalView {
         this.parent.notify(event.eventsLoaded, {});
     }
 
+    public getAdjustedDate(date: Date): Date {
+        if (!this.parent.activeViewOptions.timeScale.enable) {
+            return new Date(date.setHours(0, 0, 0, 0));
+        } else {
+            const timeSlots: TdData[] = this.colLevels[this.colLevels.length - 1];
+            for (let i: number = 0; i < timeSlots.length; i++) {
+                if (timeSlots[i].date.getTime() > date.getTime()) {
+                    return timeSlots[i - 1].date;
+                }
+            }
+        }
+        return null;
+    }
+
     public destroy(): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         if (this.timelineAppointment) {

@@ -548,7 +548,7 @@ export class GroupingBar implements IAction {
         }
         element.prepend(createElement('div', { id: this.parent.element.id + '_AllFields' }));
         let toolbarObj: Toolbar = new Toolbar({
-            cssClass: cls.ALL_FIELDS_PANEL_CLASS,
+            cssClass: cls.ALL_FIELDS_PANEL_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             enableRtl: this.parent.enableRtl,
             items: [{ template: '<div class=' + cls.GROUP_ALL_FIELDS_CLASS + '></div>' }],
             allowKeyboard: false,

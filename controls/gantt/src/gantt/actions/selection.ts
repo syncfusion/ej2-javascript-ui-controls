@@ -149,7 +149,7 @@ export class Selection {
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
         if (this.selectedRowIndexes.length === 1) {
-            this.parent.setProperties({ selectedRowIndex: this.selectedRowIndexes[0] }, true);
+           this.parent.setProperties({ selectedRowIndex: this.selectedRowIndexes[0] }, true);
         }
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
@@ -486,6 +486,9 @@ export class Selection {
             this.popUpClickHandler(e);
             if (this.parent.selectionSettings.mode !== 'Cell' && isSelected) {
                 if (closest((e.target as Element), 'tr.e-chart-row')) {
+                    if (this.parent.enableVirtualization) {
+                        this.parent.treeGrid.grid.selectionModule.isInteracted = true;
+                    }
                     this.highlightSelectedRows(e, true);
                 } else {
                     this.highlightSelectedRows(e, false);

@@ -1718,8 +1718,8 @@ export class PivotEngine {
                     let mPos: number = this.fieldList[measure].index;
                     let aggregate: string = this.fieldList[measure].aggregateType;
                     this.rawIndexObject = {};
-                    value = (type === 'row' ? this.getAggregateValue(rows[i].index, columns.indexObject, mPos, aggregate) :
-                        this.getAggregateValue(columns.index, rows[i].indexObject, mPos, aggregate));
+                    value = (type === 'row' ? this.getAggregateValue(rows[i].index, columns.indexObject, mPos, aggregate, false) :
+                        this.getAggregateValue(columns.index, rows[i].indexObject, mPos, aggregate, false));
                     let cellDetails: AggregateEventArgs = {
                         fieldName: measure,
                         row: rows[i],
@@ -2358,67 +2358,92 @@ export class PivotEngine {
         return headers;
     }
     private performFilterCommonUpdate(filterItem: IFilter, headersInfo: IHeadersInfo, addPos: number[]): void {
-        let rawHeaders: IAxisSet[] = headersInfo.axis === 'row' ? this.rMembers : this.cMembers;
-        let filterObjects: INumberIndex = {};
-        for (let item of this.filterMembers) {
-            filterObjects[item] = item;
-        }
-        if (this.fieldFilterMem[filterItem.name]) {
-            rawHeaders = this.performFilterDeletion(headersInfo.headers, filterItem, headersInfo, filterObjects, 0);
-        }
-        if (addPos.length > 0 && headersInfo.fields.length > 0) {
-            this.frameHeaderObjectsCollection = true;
-            if (headersInfo.fields.filter((item) => { return item.showNoDataItems; }).length > 0) {
-                for (let i: number = 0; i < this.data.length; i++) {
-                    addPos.push(i);
+        if (headersInfo.axis === 'row' || headersInfo.axis === 'column') {
+            let rawHeaders: IAxisSet[] = headersInfo.axis === 'row' ? this.rMembers : this.cMembers;
+            let filterObjects: INumberIndex = {};
+            for (let item of this.filterMembers) {
+                filterObjects[item] = item;
+            }
+            if (this.fieldFilterMem[filterItem.name]) {
+                rawHeaders = this.performFilterDeletion(headersInfo.headers, filterItem, headersInfo, filterObjects, 0);
+            }
+            if (addPos.length > 0 && headersInfo.fields.length > 0) {
+                this.frameHeaderObjectsCollection = true;
+                if (headersInfo.fields.filter((item) => { return item.showNoDataItems; }).length > 0) {
+                    for (let i: number = 0; i < this.data.length; i++) {
+                        addPos.push(i);
+                    }
+                    //addPos = (this.data as any).map((item, pos) => { return pos; });
                 }
-                //addPos = (this.data as any).map((item, pos) => { return pos; });
+                /* eslint-disable */
+                this.headerObjectsCollection['parent'] = this.getIndexedHeaders(headersInfo.fields, this.data, 0, addPos, headersInfo.axis, '');
+                rawHeaders = this.performFilterAddition(rawHeaders, headersInfo.fields, headersInfo);
+                let headerNames: IStringIndex = {};
+                for (let header of rawHeaders) {
+                    headerNames[header.valueSort.levelName.toString()] = header.valueSort.levelName.toString();
+                }
+                let excessHeaders: IAxisSet[] = this.headerObjectsCollection['parent'].filter((header) => {
+                    return !headerNames[header.valueSort.levelName.toString()];
+                });
+                let grandHeader: IAxisSet[] = rawHeaders.filter((item) => { return item.type === 'grand sum'; });
+                if (grandHeader.length > 0) {
+                    rawHeaders.pop();
+                }
+                /* eslint-enable */
+                rawHeaders = this.getSortedHeaders(
+                    rawHeaders.concat(excessHeaders), this.fieldList[headersInfo.fields[0].name].sort).concat(grandHeader);
+                if (headersInfo.axis === 'row') {
+                    this.cMembers = this.getIndexedHeaders(this.columns, this.data, 0, this.filterMembers, 'column', '');
+                    this.insertAllMember(this.cMembers, this.filterMembers, '', 'column');
+                }
+                else {
+                    this.rMembers = this.getIndexedHeaders(this.rows, this.data, 0, this.filterMembers, 'row', '');
+                    this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
+                }
             }
-            /* eslint-disable */
-            this.headerObjectsCollection['parent'] = this.getIndexedHeaders(headersInfo.fields, this.data, 0, addPos, headersInfo.axis, '');
-            rawHeaders = this.performFilterAddition(rawHeaders, headersInfo.fields, headersInfo);
-            let headerNames: IStringIndex = {};
-            for (let header of rawHeaders) {
-                headerNames[header.valueSort.levelName.toString()] = header.valueSort.levelName.toString();
-            }
-            let excessHeaders: IAxisSet[] = this.headerObjectsCollection['parent'].filter((header) => {
-                return !headerNames[header.valueSort.levelName.toString()];
-            });
-            let grandHeader: IAxisSet[] = rawHeaders.filter((item) => { return item.type === 'grand sum'; });
-            if (grandHeader.length > 0) {
-                rawHeaders.pop();
-            }
-            /* eslint-enable */
-            rawHeaders = this.getSortedHeaders(
-                rawHeaders.concat(excessHeaders), this.fieldList[headersInfo.fields[0].name].sort).concat(grandHeader);
             if (headersInfo.axis === 'row') {
-                this.cMembers = this.getIndexedHeaders(this.columns, this.data, 0, this.filterMembers, 'column', '');
-                this.insertAllMember(this.cMembers, this.filterMembers, '', 'column');
+                this.rowCount = 0;
+            } else {
+                this.columnCount = 0;
             }
-            else {
-                this.rMembers = this.getIndexedHeaders(this.rows, this.data, 0, this.filterMembers, 'row', '');
-                this.insertAllMember(this.rMembers, this.filterMembers, '', 'row');
+            this.updateHeadersCount(rawHeaders, headersInfo.axis, 0, headersInfo.fields, 'plus', false);
+            if (headersInfo.axis === 'row') {
+                if (headersInfo.position > 0) {
+                    this.insertPosition(this.rows, this.data, 0, this.filterMembers, 'row', '', rawHeaders);
+                }
+                this.insertTotalPosition(rawHeaders);
+                this.rMembers = this.headerCollection.rowHeaders = rawHeaders;
+                this.headerCollection.rowHeadersCount = this.rowCount;
+            } else {
+                if (headersInfo.position > 0) {
+                    this.insertPosition(this.columns, this.data, 0, this.filterMembers, 'column', '', rawHeaders);
+                }
+                this.insertTotalPosition(rawHeaders);
+                this.cMembers = this.headerCollection.columnHeaders = rawHeaders;
+                this.headerCollection.columnHeadersCount = this.columnCount;
             }
         }
-        if (headersInfo.axis === 'row') {
+        else {
+            let showNoDataItems: boolean = (this.rows[0] && this.rows[0].showNoDataItems) || (
+                this.columns[0] && this.columns[0].showNoDataItems);
+            if (this.rows.length > 0) {
+                this.rMembers = this.getIndexedHeaders(this.rows, this.data, 0, showNoDataItems ? addPos : this.filterMembers, 'row', '');
+            }
+            if (this.columns.length > 0) {
+                this.cMembers = this.getIndexedHeaders(this.columns, this.data, 0, showNoDataItems ? addPos : this.filterMembers, 'column', '');
+            }
+            this.insertAllMembersCommon();
             this.rowCount = 0;
-        } else {
             this.columnCount = 0;
-        }
-        this.updateHeadersCount(rawHeaders, headersInfo.axis, 0, headersInfo.fields, 'plus', false);
-        if (headersInfo.axis === 'row') {
-            if (headersInfo.position > 0) {
-                this.insertPosition(this.rows, this.data, 0, this.filterMembers, 'row', '', rawHeaders);
+            this.updateHeadersCount(this.cMembers, 'column', 0, this.columns, 'plus', false);
+            this.updateHeadersCount(this.rMembers, 'row', 0, this.rows, 'plus', false);
+            if (showNoDataItems) {
+                this.insertPosition(this.rows, this.data, 0, this.filterMembers, 'row', '', this.rMembers);
+                this.insertPosition(this.columns, this.data, 0, this.filterMembers, 'column', '', this.cMembers);
             }
-            this.insertTotalPosition(rawHeaders);
-            this.rMembers = this.headerCollection.rowHeaders = rawHeaders;
+            this.headerCollection.rowHeaders = this.rMembers;
             this.headerCollection.rowHeadersCount = this.rowCount;
-        } else {
-            if (headersInfo.position > 0) {
-                this.insertPosition(this.columns, this.data, 0, this.filterMembers, 'column', '', rawHeaders);
-            }
-            this.insertTotalPosition(rawHeaders);
-            this.cMembers = this.headerCollection.columnHeaders = rawHeaders;
+            this.headerCollection.columnHeaders = this.cMembers;
             this.headerCollection.columnHeadersCount = this.columnCount;
         }
         this.applyValueSorting();
@@ -2538,15 +2563,13 @@ export class PivotEngine {
                     }
                     else {
                         alphaNumbervalue.push(headers[i]);
+                        break;
                     }
-                }
-                if (stringValue.length > 1) {
-                    stringValue = this.sortHeaders(fieldName, childrens, headers, childrens.sort, childrens.type);
                 }
                 if (alphaNumbervalue.length > 0) {
                     alphaNumbervalue = this.sortHeaders(fieldName, childrens, headers, childrens.sort, childrens.isAlphanumeric);
                 }
-                return headers = nullValue.concat(alphaNumbervalue, stringValue);
+                return headers;
             }
             else {
                 return this.sortHeaders(fieldName, childrens, headers, sortOrder, childrens.type);
@@ -2697,7 +2720,7 @@ export class PivotEngine {
                 aggreColl.push({ 'header': header });
             } else {
                 this.rawIndexObject = {};
-                let value: number = this.getAggregateValue(header.index, member.indexObject, mIndex, mType);
+                let value: number = this.getAggregateValue(header.index, member.indexObject, mIndex, mType, false);
                 let cellDetails: AggregateEventArgs = {
                     fieldName: this.fields[mIndex],
                     row: header,
@@ -3090,7 +3113,7 @@ export class PivotEngine {
                         this.colValuesLength : 0;
                     let filterPosition: number[] = hierarchy[iln].index;
                     hierarchy[iln].members = this.getIndexedHeaders(keys, data, keyInd + 1,
-                        (filterPosition === undefined ? [] : filterPosition), axis, parentMember);
+                        (filterPosition === undefined ? [] : filterPosition), axis, parentMember, valueFil);
                     if (this.frameHeaderObjectsCollection) {
                         this.headerObjectsCollection[parentMember] = hierarchy[iln].members;
                     }
@@ -3100,37 +3123,61 @@ export class PivotEngine {
             if (this.enableSort) {
                 // return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
                 if (isDateType) {
-                    return this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.type);
+                    return this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, 'date');
                 } else {
                     if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string')) {
                         let stringValue: IAxisSet[] = [];
+                        let outOfRange: IAxisSet;
                         let alphaNumbervalue: IAxisSet[] = [];
                         let nullValue: IAxisSet[] = [];
                         for (let i: number = 0; i < hierarchy.length; i++) {
                             if (isNaN(hierarchy[i].actualText.toString().charAt(0) as any)) {
                                 stringValue.push(hierarchy[i]);
+                                if (!outOfRange && childrens.sort !== 'None') {
+                                    if (hierarchy[i].actualText === 'Out of Range') {
+                                        outOfRange = hierarchy[i];
+                                        hierarchy.splice(i, 1);
+                                    }
+                                }
                             }
                             else if (hierarchy[i].actualText === "") {
                                 nullValue.push(hierarchy[i]);
                             }
                             else {
+                                this.fieldList[fieldName].isAlphanumeric = true;
                                 alphaNumbervalue.push(hierarchy[i]);
+                                break;
                             }
                         }
-                        if (stringValue.length > 0) {
-                            stringValue = this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.type);
+                        if (outOfRange) {
+                            if (childrens.sort === 'Ascending') {
+                                if (hierarchy[0].actualText === 'Grand Total') {
+                                    hierarchy.splice(1, 0, outOfRange);
+                                }
+                                else {
+                                    hierarchy.splice(0, 0, outOfRange);
+                                }
+                            }
+                            else {
+                                if (hierarchy[hierarchy.length - 1].actualText === 'Grand Total') {
+                                    hierarchy.splice(hierarchy.length - 1, 0, outOfRange);
+                                }
+                                else {
+                                    hierarchy.splice(hierarchy.length, 0, outOfRange);
+                                }
+                            }
                         }
                         if (alphaNumbervalue.length > 0) {
-                            this.fieldList[fieldName].isAlphanumeric = true;
-                            alphaNumbervalue = this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.isAlphanumeric);
+                            this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.isAlphanumeric);
                         }
-                        return hierarchy = nullValue.concat(alphaNumbervalue, stringValue);
+                        return hierarchy;
                     }
                     else {
                         return this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, childrens.type);
                     }
                 }
-            } else {
+            }
+            else {
                 return hierarchy;
             }
             /* eslint-enable  */
@@ -3928,7 +3975,7 @@ export class PivotEngine {
                                 let selectedColumnValue: number = 0;
                                 if ((selectedColumnValues as []).length === 0) {
                                     let selectedRow: IAxisSet = this.getSelectedRow(currentSet.rowHeaders as string, rowheads);
-                                    selectedColumnValue = this.getAggregateValue(selectedRow.index, selectedColumn.indexObject, this.fieldList[name].index, headers.type);
+                                    selectedColumnValue = this.getAggregateValue(selectedRow.index, selectedColumn.indexObject, this.fieldList[name].index, headers.type, false);
                                 } else {
                                     selectedColumnValue = (selectedColumnValues[index[0]] as IAxisSet).value;
                                 }
@@ -3981,7 +4028,7 @@ export class PivotEngine {
                                 // let cVal: number = currentSet.value / (selectedRowValues[i[1]] as IAxisSet).value;
                                 let selectedRowValue: number = 0;
                                 if (selectedRowValues.length === 0 && activeValues) {
-                                    selectedRowValue = this.getAggregateValue(activeValues.index, colheads[i[1] - 1].indexObject, this.fieldList[name].index, headers.type);
+                                    selectedRowValue = this.getAggregateValue(activeValues.index, colheads[i[1] - 1].indexObject, this.fieldList[name].index, headers.type, false);
                                 } else {
                                     selectedRowValue = selectedRowValues[i[1]] ? (selectedRowValues[i[1]] as IAxisSet).actualValue : 0;
                                 }
@@ -4021,7 +4068,7 @@ export class PivotEngine {
                                 let selectedColValue: number = 0;
                                 if ((selectedColumnValues as []).length === 0) {
                                     let selectedRow: IAxisSet = this.getSelectedRow(currentSet.rowHeaders as string, rowheads);
-                                    selectedColValue = this.getAggregateValue(selectedRow.index, selectedCol.indexObject, this.fieldList[name].index, headers.type);
+                                    selectedColValue = this.getAggregateValue(selectedRow.index, selectedCol.indexObject, this.fieldList[name].index, headers.type, false);
                                 } else {
                                     selectedColValue = (selectedColumnValues[i[0]] as IAxisSet).value;
                                 }
@@ -4049,7 +4096,7 @@ export class PivotEngine {
                                                 rowheads[rlen].level === item.level && currentSet.axis === 'value' &&
                                                 currentSet.actualText === name) {
                                                 if (rowheads[rlen].type !== 'grand sum') {
-                                                    cVal += (!currentSet.showSubTotals && !(!isNullOrUndefined(currentSet.actualValue) && isNaN(currentSet.actualValue))) ? currentSet.actualValue : currentSet.value;
+                                                    cVal += (!currentSet.showSubTotals && !(!isNullOrUndefined(currentSet.actualValue) && isNaN(currentSet.actualValue))) ? currentSet.actualValue : (!isNullOrUndefined(currentSet.value) && !isNaN(currentSet.value)) ? currentSet.value : null;
                                                     currentSet.formattedText = currentSet.showSubTotals ? (cVal === 0 && (currentSet.actualValue && currentSet.actualValue !== 0) ? '' : this.getFormattedValue(cVal, name).formattedText) : currentSet.formattedText;
                                                     if (!this.aggregatedValueMatrix[rlen]) {
                                                         this.aggregatedValueMatrix[rlen] = [];
@@ -4152,7 +4199,7 @@ export class PivotEngine {
                     let valueContent: string[] = ['cVal', 'rTotalVal', 'cTotalVal', 'gTotalVal'];
                     let i: number = 0;
                     for (let rIndex of gTotalIndex) {
-                        totalValues[valueContent[i]] = this.getAggregateValue((rIndex[0]).index, (rIndex[1]).indexObject, mPos, aggregate);
+                        totalValues[valueContent[i]] = this.getAggregateValue((rIndex[0]).index, (rIndex[1]).indexObject, mPos, aggregate, i === 0 ? false : true);
                         i++;
                     }
                     let val: number = ((totalValues.cVal) * (totalValues.gTotalVal)) / ((totalValues.rTotalVal) * (totalValues.cTotalVal));
@@ -4172,7 +4219,7 @@ export class PivotEngine {
                     let valueContent: string[] = ['cVal', 'gTotalVal'];
                     let i: number = 0;
                     for (let rIndex of gTotalIndex) {
-                        totalValues[valueContent[i]] = this.getAggregateValue((rIndex[0]).index, (rIndex[1]).indexObject, mPos, aggregate);
+                        totalValues[valueContent[i]] = this.getAggregateValue((rIndex[0]).index, (rIndex[1]).indexObject, mPos, aggregate, i === 0 ? false : true);
                         i++;
                     }
                     let val: number = ((totalValues.cVal) / (totalValues.gTotalVal));
@@ -4183,7 +4230,7 @@ export class PivotEngine {
                 }
                 break;
             default:
-                let val: number = this.getAggregateValue(rows[rln].index, columns[cln].indexObject, mPos, aggregate);
+                let val: number = this.getAggregateValue(rows[rln].index, columns[cln].indexObject, mPos, aggregate, false);
                 value = (rows[rln].members.length > 0 && rows[rln].hasChild && rows[rln].isDrilled && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                     !this.showSubTotals || !this.showRowSubTotals)) ? undefined : val;
                 actualValue = val;
@@ -4520,7 +4567,7 @@ export class PivotEngine {
         }
     }
     /* eslint-disable */
-    public getAggregateValue(rowIndex: number[], columnIndex: INumberIndex, value: number, type: string): number {
+    public getAggregateValue(rowIndex: number[], columnIndex: INumberIndex, value: number, type: string, isGrandTotal: boolean): number {
         //rowIndex = rowIndex.sort();
         //columnIndex = columnIndex.sort();
         let rlt: number = rowIndex.length;
@@ -4693,7 +4740,7 @@ export class PivotEngine {
                         let value: number = <number>aggregateField[<string>aggregatedValue.formula];
                         if (value === undefined) {
                             let type: string = <string>aggregatedValue.type;
-                            value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type);
+                            value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type, false);
                             aggregateField[<string>aggregatedValue.formula] = value;
                         }
                         actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, String(value));
@@ -4707,7 +4754,9 @@ export class PivotEngine {
                 while (rowIndex[ri] !== undefined) {
                     if (columnIndex[rowIndex[ri]] !== undefined) {
                         isValueExist = true;
-                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        if (!isGrandTotal) {
+                            this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        }
                         //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
                         let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
                         if (isNullOrUndefined(cellValue) && isNullOrUndefined(currentVal)) {

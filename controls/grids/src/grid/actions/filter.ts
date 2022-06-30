@@ -55,7 +55,8 @@ export class Filter implements IAction {
     public filterModule: {
         openDialog: Function, closeDialog: Function, destroy: Function
         isresetFocus: boolean, getFilterUIInfo: Function, clearCustomFilter: Function,
-        closeResponsiveDialog: Function, applyCustomFilter: Function, renderCheckBoxMenu?: Function
+        closeResponsiveDialog: Function, applyCustomFilter: Function, renderCheckBoxMenu?: Function,
+        afterRenderFilterUI?: Function
     };
     /** @hidden */
     public filterOperators: IFilterOperator = {
@@ -438,7 +439,8 @@ export class Filter implements IAction {
 
     private refreshClearIcon(e: Event): void {
         if (this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar' &&
-            (e.target as Element).classList.contains('e-clear-icon')) {
+         (e.target as Element).closest('th') && (e.target as Element).closest('th').classList.contains('e-filterbarcell') &&
+         (e.target as Element).classList.contains('e-clear-icon')) {
             const targetText: HTMLInputElement = (e.target as Element).previousElementSibling as  HTMLInputElement;
             Input.setValue(null, targetText as HTMLInputElement | HTMLTextAreaElement, 'Never', true);
             if (this.filterSettings.mode === 'Immediate') {

@@ -184,7 +184,7 @@ describe('Keyboard interaction', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
-            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
+            expect(firstWorkCell[0].getAttribute('aria-pressed')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
             const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toEqual(true);
@@ -196,7 +196,7 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
-            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
+            expect(firstWorkCell[0].getAttribute('aria-pressed')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
             const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList).toContain('e-popup-open');
@@ -286,7 +286,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(selectedElement[0].classList).toContain('e-appointment-border');
-            expect(selectedElement[0].getAttribute('aria-selected')).toEqual('true');
+            expect(selectedElement[0].getAttribute('aria-pressed')).toEqual('true');
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
@@ -1431,7 +1431,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
             const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(selectedElement[0].classList).toContain('e-appointment-border');
-            expect(selectedElement[0].getAttribute('aria-selected')).toEqual('true');
+            expect(selectedElement[0].getAttribute('aria-pressed')).toEqual('true');
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
@@ -1725,7 +1725,7 @@ describe('Keyboard interaction', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
-            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
+            expect(firstWorkCell[0].getAttribute('aria-pressed')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
             const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList.contains('e-popup-open')).toEqual(true);
@@ -1737,7 +1737,7 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
-            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
+            expect(firstWorkCell[0].getAttribute('aria-pressed')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
             const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList).toContain('e-popup-open');
@@ -1826,7 +1826,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             const selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(selectedElement[0].classList).toContain('e-appointment-border');
-            expect(selectedElement[0].getAttribute('aria-selected')).toEqual('true');
+            expect(selectedElement[0].getAttribute('aria-pressed')).toEqual('true');
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
@@ -3714,8 +3714,8 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'escape' });
             const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
-            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
-            expect(firstWorkCell[0].getAttribute('aria-readonly')).toEqual('true');
+            expect(firstWorkCell[0].getAttribute('aria-pressed')).toEqual('true');
+            expect(firstWorkCell[0].getAttribute('aria-disabled')).toEqual('true');
             keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
             const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(popup.classList).toContain('e-popup-open');

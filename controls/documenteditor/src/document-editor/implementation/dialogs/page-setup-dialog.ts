@@ -358,6 +358,10 @@ export class PageSetupDialog {
         }];
         this.documentHelper.dialog.dataBind();
         this.documentHelper.dialog.show();
+        const dialogElement: HTMLElement = this.documentHelper.dialog.element;
+        if (dialogElement) {
+            this.documentHelper.updateDialogTabHeight(dialogElement, this.target);
+        }
     }
     /**
      * @private

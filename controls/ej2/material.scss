@@ -26,6 +26,8 @@
 @import "slider/material.scss";
 @import "color-picker/material.scss";
 @import "combo-box/material.scss";
+@import "h-scroll/material.scss";
+@import "v-scroll/material.scss";
 @import "context-menu/material.scss";
 @import "dashboard-layout/material.scss";
 @import "datepicker/material.scss";
@@ -40,8 +42,7 @@
 @import "textbox/material.scss";
 @import "uploader/material.scss";
 @import "dialog/material.scss";
-@import "h-scroll/material.scss";
-@import "v-scroll/material.scss";
+@import "pager/material.scss";
 @import "toolbar/material.scss";
 @import "tab/material.scss";
 @import "treeview/material.scss";
@@ -54,7 +55,6 @@
 @import "document-editor/material.scss";
 @import "document-editor-container/material.scss";
 @import "splitter/material.scss";
-@import "pager/material.scss";
 @import "excel-filter/material.scss";
 @import "grid/material.scss";
 @import "file-manager/material.scss";

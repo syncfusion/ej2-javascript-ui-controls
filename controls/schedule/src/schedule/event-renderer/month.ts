@@ -161,9 +161,7 @@ export class MonthEvent extends EventBase {
         this.sortByDateTime(blockList);
         if (this.parent.currentView === 'Month' && this.parent.rowAutoHeight && this.parent.activeViewOptions.group.resources.length === 0) {
             const totalCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
-            const height: number = this.parent.height === 'auto' ? (this.parent.element.querySelector('.e-content-wrap').clientHeight +
-                this.parent.element.querySelector('.e-date-header-wrap').clientHeight) / totalCells.length
-                : this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
+            const height: number = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS).clientHeight / totalCells.length;
             totalCells.forEach((cell: HTMLElement) => {
                 setStyleAttribute(cell, { 'height': height + 'px' });
             });
@@ -378,7 +376,7 @@ export class MonthEvent extends EventBase {
         const attrs: { [key: string]: string } = {
             'data-id': 'Appointment_' + record[this.fields.id],
             'role': 'button', 'tabindex': '0',
-            'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+            'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record), 'aria-pressed': 'false', 'aria-grabbed': 'true',
             'aria-label': this.parent.getAnnouncementString(newRecord, eventSubject)
         };
         if (!isCloneElement) {
@@ -670,8 +668,7 @@ export class MonthEvent extends EventBase {
                 'tabindex': '0',
                 'data-count': count.toString(),
                 'data-start-date': startDate.getTime().toString(),
-                'data-end-date': endDate.getTime().toString(),
-                'role': 'list'
+                'data-end-date': endDate.getTime().toString()
             }
         });
         return moreIndicatorElement;

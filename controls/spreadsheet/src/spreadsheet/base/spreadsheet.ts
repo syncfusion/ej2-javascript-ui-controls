@@ -743,9 +743,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public sheetModule: IRenderer;
 
     /** @hidden */
-    public isValidationHighlighted: boolean = false;
-
-    /** @hidden */
     public createdHandler: Function | object;
 
     /** @hidden */
@@ -755,6 +752,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     };
 
     protected needsID: boolean = true;
+    ribbonModule: any;
 
     /**
      * Constructor for creating the widget.
@@ -1616,17 +1614,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             cellIdx = getRangeIndexes(address);
             const prevELem: HTMLElement = this.getCell(cellIdx[0], cellIdx[1]);
             const classList: string[] = [];
-            for (let i: number = cellIdx[0]; i <= cellIdx[2]; i++) {
-                for (let j: number = cellIdx[1]; j <= cellIdx[3]; j++) {
-                    if (sheet.rows[i].cells[j] && sheet.rows[i].cells[j].validation) {
-                        if (sheet.rows[i].cells[j].validation.isHighlighted) {
-                            if (prevELem && prevELem.style.backgroundColor === 'rgb(255, 255, 0)') {
-                                sheet.rows[i].cells[j].style = { backgroundColor : '#ffff00'};
-                            }
-                        }
-                    }
-                }
-            }
             for (let i: number = 0; prevELem && i < prevELem.classList.length; i++) {
                 classList.push(prevELem.classList[i]);
             }
@@ -1710,7 +1697,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public addInvalidHighlight(range?: string): void {
         let ranges: string = range ? range : this.dataValidationRange;
-        this.isValidationHighlighted = true;
         if (ranges.indexOf(',') > - 1) {
             let sheetName: string = '';
             if (ranges.includes('!')) {
@@ -1736,7 +1722,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public removeInvalidHighlight(range?: string): void {
         let address: string = range ? range : this.dataValidationRange;
-        this.isValidationHighlighted = false;
         if (address.indexOf(',') > - 1) {
             let sheetName: string = '';
             if (address.includes('!')) {
@@ -1845,7 +1830,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} -  Used to Clear contents, formats and hyperlinks in spreadsheet
      */
     public clear(options: ClearOptions): void {
-        this.notify(clearViewer, { options: options, isPublic: true });
+        this.notify(clearViewer, { options: options });
     }
     /**
      * Used to refresh the spreadsheet in UI level.
@@ -1866,7 +1851,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(sheetsDestroyed, {});
             this.createSheet();
             this.activeSheetIndex = this.sheets.length - 1;
-            this.notify(refreshSheetTabs, {});
+            this.notify(refreshSheetTabs, null);
             this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
             this.renderModule.refreshSheet();
             this.openModule.isImportedFile = false;
@@ -2779,6 +2764,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 });
                 break;
             case 'locale':
+            case 'currencyCode':
                 this.refresh();
                 break;
             case 'password':

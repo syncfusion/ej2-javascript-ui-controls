@@ -137,7 +137,7 @@ export class Zoom {
     }
 
     // Panning performed here
-    private doPan(chart: Chart, axes: AxisModel[]): void {
+    public doPan(chart: Chart, axes: AxisModel[], xDifference: number = 0, yDifference: number = 0): void {
         if (chart.startMove && chart.crosshair.enable) {
             return null;
         }
@@ -159,10 +159,10 @@ export class Zoom {
             };
             currentScale = Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1);
             if (axis.orientation === 'Horizontal') {
-                offset = (chart.previousMouseMoveX - chart.mouseX) / axis.rect.width / currentScale;
+                offset = (xDifference != 0 ? xDifference : (chart.previousMouseMoveX - chart.mouseX)) / axis.rect.width / currentScale;
                 argsData.currentZoomPosition = minMax(axis.zoomPosition + offset, 0, (1 - axis.zoomFactor));
             } else {
-                offset = (chart.previousMouseMoveY - chart.mouseY) / axis.rect.height / currentScale;
+                offset = (yDifference != 0 ? yDifference : (chart.previousMouseMoveY - chart.mouseY)) / axis.rect.height / currentScale;
                 argsData.currentZoomPosition = minMax(axis.zoomPosition - offset, 0, (1 - axis.zoomFactor));
             }
             if (!argsData.cancel) {
@@ -684,6 +684,7 @@ export class Zoom {
             this.toolkit.removeTooltip();
             this.isPanning = false;
             this.isZoomed = false;
+            chart.isZoomed = false;
             chart.svgObject.setAttribute('cursor', 'auto');
         }
     }

@@ -118,7 +118,7 @@ export class MsWordPaste {
         this.checkVShape(elm);
         let imgElem: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
         for (let i: number = 0; i < imgElem.length; i++) {
-            if (!isNOU(imgElem[i].getAttribute('v:shapes')) && imgElem[i].getAttribute('v:shapes').indexOf('Picture') < 0) {
+            if (!isNOU(imgElem[i].getAttribute('v:shapes')) && imgElem[i].getAttribute('v:shapes').indexOf('Picture') < 0 && imgElem[i].getAttribute('v:shapes').indexOf('Image') < 0) {
                 detach(imgElem[i]);
             }
         }

@@ -62,6 +62,8 @@ $diagram-highlighter-border-stroke-width: 2;
 $diagram-border-strokes: $selection-bg;
 $diagram-lane-border-strokes: #0078ff;
 
+$diagram-multiselect-stroke: $diagram-resize-handle-stroke;
+
 .e-icons {
   font-family: 'e-icons';
   font-style: normal;

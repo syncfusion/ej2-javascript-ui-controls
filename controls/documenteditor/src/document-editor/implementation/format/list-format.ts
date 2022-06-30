@@ -5,6 +5,8 @@ import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle } from './style';
 import { WList } from '../list/list';
 import { WListLevel } from '../list/list-level';
+import { DocumentHelper } from '../viewer';
+import { WParagraphFormat } from './paragraph-format';
 /* eslint-disable */
 /**
  * @private
@@ -20,6 +22,17 @@ export class WListFormat {
         return this.getPropertyValue('listId') as number;
     }
     public set listId(listId: number) {
+        if (listId >= 0) {
+            if (!isNullOrUndefined(this.ownerBase)) {
+                let helper: DocumentHelper = (this.ownerBase as WParagraphFormat).getDocumentHelperObject();
+                if (!isNullOrUndefined(helper)) {
+                    this.list = helper.getListById(listId);
+                }
+            }
+        }
+        else if (!isNullOrUndefined(this.list) && listId < 0) {
+            this.list = undefined;
+        }
         this.setPropertyValue('listId', listId);
     }
     public get listLevelNumber(): number {

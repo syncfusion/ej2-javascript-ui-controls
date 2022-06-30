@@ -187,7 +187,8 @@
     }
 
     .e-ccsearch-icon.e-cc-cancel::before,
-    .e-chkcancel-icon::before {
+    .e-chkcancel-icon::before,
+    .e-input-group .e-clear-icon::before {
       content: '\e7a7';
     }
    }

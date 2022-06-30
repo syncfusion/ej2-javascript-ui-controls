@@ -276,7 +276,7 @@ describe('Adaptive renderer', () => {
         it('Open custom sort dialog', (done: Function) => {
             expect(gridObj.sortModule.responsiveDialogRenderer.action).toBe(ResponsiveDialogAction.isSort);
             gridObj.sortModule.responsiveDialogRenderer.showResponsiveDialog();
-            expect(document.getElementsByClassName('e-ressort').length).toBe(1);
+            expect(document.getElementsByClassName('e-ressortdiv').length).toBe(1);
             expect(document.getElementsByClassName('e-ressortbutton').length).toBe(gridObj.getColumns().length);
             (document.getElementsByClassName('e-ressortbutton')[0] as HTMLElement).click();
             (document.getElementsByClassName('e-ressortbutton')[0] as HTMLElement).click();

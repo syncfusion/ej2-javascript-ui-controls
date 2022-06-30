@@ -253,7 +253,7 @@ export class DataLabel {
                                     }
                                 }
                                 // Checking the font color
-                                let backgroundColor: string = this.fontBackground === 'transparent' ? (this.chart.theme.indexOf('Dark') > -1 ? 'black' : 'white') : this.fontBackground;
+                                let backgroundColor: string = this.fontBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme == "HighContrast") ? 'black' : 'white') : this.fontBackground;
                                 rgbValue = convertHexToColor(colorNameToHex(backgroundColor));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
                                 xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
@@ -447,7 +447,7 @@ export class DataLabel {
                 - (clipRect.y + clipRect.height) + padding : 0;
             this.fontBackground = this.fontBackground === 'transparent' ? this.chartBackground : this.fontBackground;
         }
-        
+
         let dataLabelOutRegion: boolean;
         if (this.inverted && series.isRectSeries && (rect.x + rect.width > labelRegion.x + labelRegion.width)) {
             dataLabelOutRegion = true;

@@ -1702,7 +1702,6 @@ describe('Check annotation horizontalAlignment value ', () => {
     });
 });
 
-
 describe('Check Connector annotation Alignment value ', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -1978,7 +1977,6 @@ describe('Check Node annotation Alignment value ', () => {
         done();
     });
 });
-
 
 describe('Hyperlink Link target',()=>{
     let diagram: Diagram;

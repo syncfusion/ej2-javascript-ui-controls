@@ -186,7 +186,7 @@ export class Lists {
         }
         this.removeList(range, e);
     }
-
+    
     private removeList(range: Range, e: IHtmlKeyboardEvent) {
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
@@ -560,7 +560,7 @@ export class Lists {
 
     private applyLists(elements: HTMLElement[], type: string, selector?: string, item?: IAdvanceListItem, e?: IHtmlSubCommands): void {
         let isReverse: boolean = true;
-        if (this.isRevert(elements, type) && isNOU(item)) {
+        if (this.isRevert(elements, type, item) && isNOU(item)) {
             this.revertList(elements, e);
             this.removeEmptyListElements();
         } else {
@@ -623,13 +623,14 @@ export class Lists {
             }
         }
     }
-    private isRevert(nodes: Element[], tagName: string): boolean {
+    private isRevert(nodes: Element[], tagName: string, item?: IAdvanceListItem): boolean {
         let isRevert: boolean = true;
         for (let i: number = 0; i < nodes.length; i++) {
             if (nodes[i].tagName !== 'LI') {
                 return false;
             }
-            if ((nodes[i].parentNode as Element).tagName !== tagName) {
+            if ((nodes[i].parentNode as Element).tagName !== tagName ||
+            isNOU(item) && (nodes[i].parentNode as HTMLElement).style.listStyleType !== '') {
                 isRevert = false;
             }
         }
@@ -652,6 +653,12 @@ export class Lists {
             if ((nodes[i].tagName === 'LI' && node.tagName !== tagName && nodesTemp.indexOf(node) < 0) ||
              (nodes[i].tagName === 'LI' && node.tagName === tagName && nodesTemp.indexOf(node) < 0 && item !== null)) {
                 nodesTemp.push(node);
+            }
+            if (isNOU(item) && (node.tagName === tagName ||
+            ((node.tagName === 'UL' || node.tagName === 'OL') && node.hasAttribute('style')))) {
+                if (node.hasAttribute('style')) {
+                    node.removeAttribute('style');
+                }
             }
         }
         for (let j: number = nodesTemp.length - 1; j >= 0; j--) {
@@ -758,7 +765,8 @@ export class Lists {
                 }
             }
             if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
-            'LI' === (parentNode.parentNode as Element).tagName) {
+            'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
+            'UL' === (parentNode.parentNode as Element).tagName) {
                 element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
             } else {
                 let classAttr: string = '';

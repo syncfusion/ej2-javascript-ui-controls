@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 20.2.36 (2022-06-30)
+
+### RichTextEditor
+
+#### New Features
+
+- `#I380086` - Provided support to resize the first and last columns of a table without resizing the other columns.
+
+- `#I362331`, `F173395`, `I318486` - Provided support to insert text programmatically in the Markdown editor at the current cursor position using the `executeCommand` public method.
+
+## 20.1.61 (2022-06-21)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I384191` - Now, pasting text content alone with images from MS Word works properly in the Rich Text Editor.
+
 ## 20.1.60 (2022-06-14)
 
 ### RichTextEditor

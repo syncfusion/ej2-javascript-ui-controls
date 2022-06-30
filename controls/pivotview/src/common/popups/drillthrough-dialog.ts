@@ -64,9 +64,8 @@ export class DrillThroughDialog {
         }
         let actualText: string = eventArgs.currentCell.actualText.toString();
         try {
-            if (this.parent.currentView === 'Table' && this.engine.fieldList[actualText].aggregateType !== 'Count' && this.parent.editSettings.allowInlineEditing &&
-                this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1 &&
-                this.engine.fieldList[actualText].aggregateType !== 'DistinctCount' && typeof (eventArgs.rawData[0][actualText]) !== 'string') {
+            if (this.parent.currentView === 'Table' && this.parent.editSettings.allowInlineEditing &&
+                this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1) {
                 this.parent.actionObj.actionName = events.editRecord;
                 if (this.parent.actionBeginMethod()) {
                     return;
@@ -221,9 +220,9 @@ export class DrillThroughDialog {
         let previousData: any = this.frameHeaderWithKeys(eventArgs.rawData[eventArgs.rawData.length - 1]);
         let currentData: any = eventArgs.rawData[eventArgs.rawData.length - 1];
         /* eslint-enable */
-        if (eventArgs.currentCell.actualText in previousData) {
-            currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
-        }
+        // if (eventArgs.currentCell.actualText in previousData) {
+        //     currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
+        // }
         let actionInfo: PivotActionInfo = {
             editInfo: { type: 'Inline editing', action: 'update', data: this.gridData }
         }
@@ -234,6 +233,7 @@ export class DrillThroughDialog {
             enabled: true,
             format: '####.##',
             locale: this.parent.locale,
+            cssClass: this.parent.cssClass,
             change: () => {
                 let textBoxValue: number = this.numericTextBox.value;
                 let indexValue: number = eventArgs.currentCell.indexObject[indexObject];
@@ -406,10 +406,10 @@ export class DrillThroughDialog {
                     (this.drillThroughGrid.columns as ColumnModel[]).push({
                         headerText: this.parent.localeObj.getConstant('manageRecords'), width: 160, showInColumnChooser: false,
                         commands: [
-                            { type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
-                            { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
-                            { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
-                            { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                            { type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '') } },
+                            { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '') } },
+                            { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '') } },
+                            { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '') } }]
                     });
                 } else {
                     this.drillThroughGrid.editSettings.allowEditOnDblClick = this.parent.editSettings.allowEditOnDblClick;

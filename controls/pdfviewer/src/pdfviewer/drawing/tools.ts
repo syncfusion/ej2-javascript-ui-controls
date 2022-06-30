@@ -609,7 +609,9 @@ export class MoveTool extends ToolBase {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([(args.source as PdfAnnotationBaseModel).id], currentSelctor);
             // eslint-disable-next-line max-len
+            if(this.pdfViewerBase.activeElements.activePageID == args.source.pageIndex){            
             this.commandHandler.dragSelectedObjects(this.calculateMouseActionXDiff(args), this.calculateMouseActionYDiff(args), this.pdfViewerBase.activeElements.activePageID, currentSelctor , null);
+            }
             if (args.source && (args.source.formFieldAnnotationType === 'Textbox' || args.source.formFieldAnnotationType === 'Checkbox'
             || args.source.formFieldAnnotationType === 'RadioButton' || args.source.formFieldAnnotationType === 'ListBox'
             || args.source.formFieldAnnotationType === 'SignatureField' || args.source.formFieldAnnotationType === 'InitialField' || args.source.formFieldAnnotationType === 'DropdownList'

@@ -180,7 +180,7 @@ export class Formatter {
         }
         self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
             self.setPlaceHolder();
-            if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {
+            if ((callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links') && self.editorMode === 'HTML') {
                 const args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
                 if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
                     (callbackArgs.event as KeyboardEvent).type === 'keydown' &&

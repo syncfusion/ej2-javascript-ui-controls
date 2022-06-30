@@ -75,7 +75,7 @@ export function getData(
                                 key = getColumnHeaderText(i + 1);
                                 if (valueOnly) {
                                     cells[key] = row ? getValueFromFormat(context, getCell(sRow, i, sheet)) : '';
-                                    if (typeof cells[key] === 'string' && isNumber(Number(cells[key]))) {
+                                    if (typeof cells[key] === 'string' && isNumber(<string>cells[key])) {
                                         cells[key] = parseFloat(<string>cells[key]);
                                     }
                                 } else {
@@ -84,7 +84,7 @@ export function getData(
                                         if (i === dateValueForSpecificColIdx) {
                                             cells[key] = extend({}, cell, { value: getValueFromFormat(context, cell, true) });
                                             if (typeof (cells[key] as CellModel).value === 'string' &&
-                                                isNumber(Number((cells[key] as CellModel).value))) {
+                                                isNumber((cells[key] as CellModel).value)) {
                                                 cells[key]['value'] = parseFloat((cells[key] as CellModel).value);
                                             }
                                         } else {

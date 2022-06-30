@@ -2610,6 +2610,36 @@ describe('Quick Popups', () => {
         });
     });
 
+    describe('quickinfo Popup for appointment subject', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: '<A href="https://www.milletsoftware.com" title="Millet Software" target="_blank">MS</A>User Group',
+            StartTime: new Date(2022, 5, 6, 10),
+            EndTime: new Date(2022, 5, 6, 12)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2022, 5, 6)
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('CRIssue EJ2-60854 - subject passed as link', () => {
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+            target.click();
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            expect((eventPopup.querySelector('.e-subject') as HTMLElement).innerText).toEqual('MSUser Group');
+            expect((eventPopup.querySelector('.e-subject') as HTMLElement).getAttribute('title'))
+                .toBe("<A href='https://www.milletsoftware.com' title='Millet Software' target='_blank'>MS</A>User Group");
+            (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

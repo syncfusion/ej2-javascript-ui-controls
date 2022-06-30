@@ -12,6 +12,7 @@ import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 import { VirtualContentRenderer } from '../renderer/virtual-content-render';
+import { CriticalPath } from '../actions/critical-path';
 
 /**
  * module to render gantt chart - project view
@@ -118,6 +119,10 @@ export class GanttChart {
                 this.parent.predecessorModule.createConnectorLinesCollection();
             }
             this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
+            if (this.parent.enableCriticalPath) {
+                let crtiticalModule: CriticalPath = this.parent.criticalPathModule;
+                this.parent.criticalPathModule.criticalConnectorLine(crtiticalModule.criticalPathCollection,crtiticalModule.detailPredecessorCollection,this.parent.enableCriticalPath,crtiticalModule.predecessorCollectionTaskIds,)
+            }
             if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
                 this.renderOverAllocationContainer();
             }
@@ -640,7 +645,7 @@ export class GanttChart {
             } else {
                 return null;
             }
-        }
+    }
 
     /**
      * Expand Collapse operations from gantt chart side
@@ -1006,14 +1011,14 @@ export class GanttChart {
                     this.parent.treeGrid.grid.notify('key-pressed', e);
                 }
             }
-            if (!isInEditedState) {
+            if (!isNullOrUndefined(isInEditedState) && !this.parent.editModule.cellEditModule.isCellEdit) {
                 if (nextElement) {
                     if ($target.classList.contains('e-rowcell')) {
                         this.manageFocus($target as HTMLElement, 'remove', false);
                     } else {
                         this.manageFocus($target as HTMLElement, 'remove', true);
                     }
-                    if (nextElement.classList.contains('e-rowcell') && $target.nextElementSibling) {
+                    if ((nextElement.classList.contains('e-rowcell') && $target.nextElementSibling) || $target.classList.contains('e-right-label-container')) {
                         if (!$target.classList.contains('e-rowcell')) {
                             this.parent.treeGrid.grid.notify('key-pressed', e);
                             const fmodule: FocusStrategy = getValue('focusModule', this.parent.treeGrid.grid);

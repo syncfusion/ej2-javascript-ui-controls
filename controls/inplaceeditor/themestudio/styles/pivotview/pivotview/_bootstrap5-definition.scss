@@ -24,8 +24,8 @@ $pivotgrid-button-border-radius: 4px !default;
 $pivotgrid-editor-dialog-footer-padding: 8px !default;
 $pivotgrid-expand-icon-fontsize: 20px !default;
 $pivotgrid-expcoldiv-fontsize: 10px !default;
-$pivotgrid-drill-margintop: 3px !default;
-$pivotgrid-bigger-drill-margintop: 4px !default;
+$pivotgrid-drill-margintop: 0 !default;
+$pivotgrid-bigger-drill-margintop: 0 !default;
 $pivotgrid-rtl-expand-icon-font-size: 10px !default;
 $pivotgrid-collapse-icon-fonsize: 18px !default;
 $pivotgrid-vsort-mouse-margin: -15px 0 !default;
@@ -71,8 +71,8 @@ $pivotgrid-bg-color: $content-bg-color-alt1;
 $pivotgrid-border-color: $border-light;
 $pivotgrid-active-border-color: $border-light;
 $pivotgrid-box-shadow-color: rgba(108, 117, 125, .5);
-
-
+$pivotgrid-value-sort-icon-padding: 6px 0 4px 0 !default;
+$pivotgrid-value-sort-icon-font-size: 12px !default;
 
 // normal
 $pivotgrid-active-color: $icon-color !default;

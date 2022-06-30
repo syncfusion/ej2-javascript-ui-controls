@@ -561,6 +561,88 @@ describe('Map layer testing', () => {
             label.refresh();
         });
     });
+    describe('datalabel for layer with linestring data', () => {
+        let id: string = 'label';
+        let label: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+
+            label = new Maps({
+                layers: [{
+                    shapeSettings: {
+                        fill: '#C3E6ED'
+                    },
+                    dataLabelSettings: {
+                        visible: true,
+                        labelPath: 'id'
+                    },
+                    shapeData: {
+                        'type': 'FeatureCollection',
+                        'features': [
+                            {
+                                'type': 'Feature',
+                                'geometry': {
+                                    'type': 'MultiLineString',
+                                    'coordinates': [
+                                        [
+                                            [
+                                                100.0,
+                                                0.0
+                                            ],
+                                            [
+                                                101.0,
+                                                1.0
+                                            ],
+                                            [
+                                                102.9,
+                                                1.0
+                                            ]
+                                        ],
+                                        [
+                                            [
+                                                103.0,
+                                                3.0
+                                            ],
+                                            [
+                                                102.0,
+                                                2.0
+                                            ],
+                                            [
+                                                100.9,
+                                                -0.6
+                                            ]
+                                        ]
+                                    ]
+                                },
+                                'properties': {
+                                    'id': 'three',
+                                }
+                            },
+                        ]
+                    },
+                },
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            label.destroy();
+        });
+        it('checking with datalabel with intersection', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById('label_LayerIndex_0_shapeIndex_0_LabelIndex_0');
+                expect(element.innerHTML).toBe("three");
+            };
+            label.layers[0].dataLabelSettings.intersectionAction = "Hide"; 
+            label.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

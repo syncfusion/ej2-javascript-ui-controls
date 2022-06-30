@@ -702,7 +702,6 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'Customer ').toBe(true);
         });
     });
-
     describe('EJ2-59194 - More space between the text and Inserting a new link removes the space between the words issue', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -915,6 +914,54 @@ describe('IE 11 insert link', () => {
         });
 
         it(' Test - link toolbar - remove link', (done) => {
+            let link: HTMLElement = rteObj.element.querySelector("#link");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
+            dispatchEvent(link, 'mousedown');
+            link.click();
+            dispatchEvent(link, 'mouseup');
+            setTimeout(() => {
+                let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_RemoveLink");
+                linkBtn.click();
+                let link: HTMLAnchorElement = rteObj.element.querySelector("#link");
+                expect(isNullOrUndefined(link)).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('BLAZ-23495 - BLAZ-23469 - Open and remove link not working when max length is set issue - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><a id="link" href="https://ej2.syncfusion.com/home/" target='_blank'><strong>HTML</strong></a></p>`,
+                showCharCount: true,
+                maxLength: 1000
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            rteObj.showCharCount = false;
+            rteObj.maxLength = -1;
+            destroy(rteObj);
+            done();
+        });
+
+        it(' Open the link', (done) => {
+            let link: HTMLElement = rteObj.element.querySelector("#link");
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
+            dispatchEvent(link, 'mousedown');
+            link.click();
+            dispatchEvent(link, 'mouseup');
+            setTimeout(() => {
+                let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_OpenLink");
+                linkBtn.click();
+                done();
+            }, 100);
+        });
+
+        it(' remove link', (done) => {
             let link: HTMLElement = rteObj.element.querySelector("#link");
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
             dispatchEvent(link, 'mousedown');

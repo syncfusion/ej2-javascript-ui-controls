@@ -318,6 +318,7 @@ describe('Ensure freeze direction after removing freeze in columns', () => {
     });
        
     it('remove columns', (done: Function) => {
+		debugger;
       var column = gridObj.getColumnFieldNames()[1];
 	  gridObj.grid.getColumnByField(column).freeze = 'Right';
 	  gridObj.refreshColumns();
@@ -330,65 +331,65 @@ describe('Ensure freeze direction after removing freeze in columns', () => {
   });
 
 describe('RowEdit in Frozen Rows and columns', () => {
-	let gridObj: TreeGrid;
-	let rows: Element[];
-	let actionBegin: () => void;
-	let actionComplete: () => void;
-	let dataBound: () => void;
-	let actionFailure: () => void;
-	beforeAll((done: Function) => {
-
-		gridObj = createGrid(
-			{
-				dataSource: sampleData,
-				childMapping: 'subtasks',
-				allowPaging: true,
-				frozenRows: 6,
-				frozenColumns: 2,
-				editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
-				pageSettings: { pageSize: 12, pageSizes: true },
-				toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
-				treeColumnIndex: 1,
-				columns: [
-					{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
-					{ field: 'taskName', headerText: 'Task Name', width: 190 },
-					{ field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
-					{ field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 100 },
-					{ field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 120 },
-				],
-				height: 315
-			},
-			done
-		);
-	});
-	it('Editing in frozen rows', (done: Function) => {
-		gridObj.selectRow(1);
-		actionComplete = (args?: any): void => {
-			if (args.requestType === "add") {
-				expect((<any>gridObj.element.getElementsByClassName('e-movableheader')[0].getElementsByClassName('e-addedrow')[0]).sectionRowIndex).toBe(2);
-				done();
-			}
-		};
-		gridObj.actionComplete = actionComplete;
-		(<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-		(<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
-	});
-	it('Record double click', (done: Function) => {
-		gridObj.actionBegin = (args?: any): void => {
-			if (gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow').length > 0) {
-				expect((<any>+gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow')[0].getAttribute('aria-rowindex'))).toBe(2);
-				done();
-			}
-		};
-		let event: MouseEvent = new MouseEvent('dblclick', {
-			'view': window,
-			'bubbles': true,
-			'cancelable': true
-		});
-		gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
-		gridObj.freezeModule.destroy();
-	});
-	afterAll(() => {
-		destroy(gridObj);
-	});
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionBegin: () => void;
+  let actionComplete: () => void;
+  let dataBound: () => void;
+  let actionFailure: () => void;
+  beforeAll((done: Function) => {
+      
+    gridObj = createGrid(
+      {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging:true,
+          frozenRows: 6,
+          frozenColumns: 2,
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below'},
+          pageSettings: {pageSize: 12, pageSizes: true},
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+              { field: 'taskName', headerText: 'Task Name', width: 190 },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 100 },
+              { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 120 },
+          ],
+          height: 315
+      },
+      done
+    );
+  });
+  it('Editing in frozen rows', (done: Function) => {
+    gridObj.selectRow(1);
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "add") {
+      expect((<any>gridObj.element.getElementsByClassName('e-movableheader')[0].getElementsByClassName('e-addedrow')[0]).sectionRowIndex).toBe(2);
+      done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+ });
+  it('Record double click', (done: Function) => {
+   gridObj.actionBegin = (args?: any): void => {
+     if (gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow').length > 0) {
+    expect((<any>+gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow')[0].getAttribute('aria-rowindex'))).toBe(2);
+     done();
+     }
+   };
+   let event: MouseEvent = new MouseEvent('dblclick', {
+     'view': window,
+     'bubbles': true,
+     'cancelable': true
+   });
+   gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+   gridObj.freezeModule.destroy();
+ });
+      afterAll(() => {
+      destroy(gridObj);
+    });
 });

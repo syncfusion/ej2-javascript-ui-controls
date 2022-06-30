@@ -18,6 +18,33 @@
             border-top-color: $ribbon-border-color;
           }
         }
+
+        .e-tab-wrap:focus {
+          background: $ribbon-focus-bg-color;
+
+          @if $ribbon-skin == 'fabric' or $ribbon-skin == 'highcontrast' {
+            border-color: $ribbon-focused-wrap-focus-border-color;
+          }
+
+          @if $ribbon-skin == 'bootstrap5' {
+            border: 1px solid $ribbon-focused-wrap-focus-border-color;
+          }
+
+          @if $ribbon-skin == 'highcontrast' {
+            border-style: solid;
+          }
+
+          @if $ribbon-skin == 'bootstrap5' or $ribbon-skin == 'FluentUI' {
+            .e-tab-icon {
+              color: $ribbon-comb-icon-color;
+            }
+          }
+        }
+
+        .e-tab-wrap:focus .e-tab-icon,
+        .e-tab-wrap:focus .e-tab-text {
+          color: $ribbon-focus-text-color;
+        }
       }
 
       @if $skin-name == 'material' {

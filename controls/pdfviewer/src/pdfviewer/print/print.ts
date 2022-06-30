@@ -207,98 +207,125 @@ export class Print {
     private renderFieldsForPrint(pageIndex: number, heightRatio: number, widthRatio: number): any {
         // eslint-disable-next-line
         let data: any = null;
-        if (this.pdfViewer.formFieldsModule) {
-            data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
-        }
         let targetField: any;
         if (this.pdfViewer.printMode === 'Default') {
             targetField = this.frameDoc.document.getElementById('fields_' + pageIndex);
         } else {
             targetField = this.printWindow.document.getElementById('fields_' + pageIndex);
         }
-        if (data) {
-            // eslint-disable-next-line
-            let formFieldsData: any = JSON.parse(data);
-            for (let i: number = 0; i < formFieldsData.length; i++) {
+        if (this.pdfViewer.formFieldsModule) {
+            data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        }
+        if (!this.pdfViewer.formDesignerModule) {
+            if (data) {
                 // eslint-disable-next-line
-                let currentData: any = formFieldsData[i];
-                // eslint-disable-next-line
-                if (parseFloat(currentData['PageIndex']) === pageIndex) {
+                let formFieldsData: any = JSON.parse(data);
+                for (let i: number = 0; i < formFieldsData.length; i++) {
                     // eslint-disable-next-line
-                    let field: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
+                    let currentData: any = formFieldsData[i];
                     // eslint-disable-next-line
-                    let inputField: any = field.currentField;
-                    if (inputField) {
+                    if (parseFloat(currentData['PageIndex']) === pageIndex) {
                         // eslint-disable-next-line
-                        let bounds: any = currentData['LineBounds'];
+                        let field: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
                         // eslint-disable-next-line
-                        let font: any = currentData['Font'];
-                        this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
-                        inputField.InsertSpaces = currentData.InsertSpaces;
-                        if (inputField.InsertSpaces) {
+                        let inputField: any = field.currentField;
+                        if (inputField) {
                             // eslint-disable-next-line
-                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.6;
-                            inputField.style.letterSpacing = '' + font + 'px';
-                            inputField.style.fontFamily = 'monospace';
+                            let bounds: any = currentData['LineBounds'];
+                            // eslint-disable-next-line
+                            let font: any = currentData['Font'];
+                            this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
+                            inputField.InsertSpaces = currentData.InsertSpaces;
+                            if (inputField.InsertSpaces) {
+                                // eslint-disable-next-line
+                                let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseFloat(inputField.style.fontSize) / 2)) - 0.6;
+                                inputField.style.letterSpacing = '' + font + 'px';
+                                inputField.style.fontFamily = 'monospace';
+                            }
+                            // eslint-disable-next-line
+                            let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+                            if ((pageDetails.width > pageDetails.height) && this.pdfViewer.enablePrintRotation) {
+
+
+                                /* 
+                                The below logig have been modified for the bug https://syncfusion.atlassian.net/browse/EJ2-57986
+                                This code changes is specific for form field elements.
+    
+                                    inputField.style.transform = 'rotate(-90deg)';
+                                    let previousLeft: number = parseFloat(inputField.style.left);
+                                    let currentWidthPosition: number = parseFloat(inputField.style.width) / 2;
+                                    let currentHeightPosition: number = parseFloat(inputField.style.height) / 2;
+                                    let currentTop: number = parseFloat(inputField.style.top);
+                                    let currentHeight: number = parseFloat(inputField.style.height);
+                                    inputField.style.left = (currentHeightPosition - currentWidthPosition + currentTop) + 'px';
+                                    inputField.style.top = (pageDetails.width / widthRatio) - (currentHeight / heightRatio) - ((currentWidthPosition / heightRatio) - (currentHeightPosition / heightRatio) + previousLeft) + 'px';
+                                */
+                                var x = this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X);
+                                var y = this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Y);
+                                var width = this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width);
+                                var height = this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height);
+                                var pageHeight = pageDetails.width;
+                                var top = pageHeight - x - height;
+                                var left = (y + height);
+                                var width = (width);
+                                var height = (height);
+                                inputField.style.transform = "rotate(-90deg)";
+                                inputField.style.transformOrigin = "left bottom";
+                                inputField.style.left = left + 'px';
+                                inputField.style.top = top + 'px';
+                                inputField.style.height = height + 'px';
+                                inputField.style.width = width + 'px';
+
+                            }
+                            inputField.style.backgroundColor = 'transparent';
+                            if (!currentData.IsSignatureField) {
+                                inputField.style.borderColor = 'transparent';
+                            }
+                            targetField.appendChild(inputField);
                         }
-                        // eslint-disable-next-line
-                        let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
-                        if ((pageDetails.width > pageDetails.height) && this.pdfViewer.enablePrintRotation) {
-                            inputField.style.transform = 'rotate(-90deg)';
-                            let previousLeft: number = parseFloat(inputField.style.left);
-                            let currentWidthPosition: number = parseFloat(inputField.style.width) / 2;
-                            let currentHeightPosition: number = parseFloat(inputField.style.height) / 2;
-                            let currentTop: number = parseFloat(inputField.style.top);
-                            let currentHeight: number = parseFloat(inputField.style.height);
-                            inputField.style.left = (currentHeightPosition - currentWidthPosition + currentTop) + 'px';
-                            inputField.style.top = (pageDetails.width / widthRatio) - (currentHeight / heightRatio) - ((currentWidthPosition/heightRatio) - (currentHeightPosition/heightRatio) + previousLeft) + 'px';
-                        }
-                        inputField.style.backgroundColor = 'transparent';
-                        if (!currentData.IsSignatureField) {
-                            inputField.style.borderColor = 'transparent';
-                        }
-                        targetField.appendChild(inputField);
                     }
                 }
             }
         }
+        else {
+            let formDesignerData: any = null;
 
-        let formDesignerData: any = null;
-        if (this.pdfViewer.formDesignerModule) {
-            formDesignerData = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
-        }
-        if (formDesignerData) {
-            var formDesignerFieldsData = JSON.parse(formDesignerData);
-            for (let i: number = 0; i < formDesignerFieldsData.length; i++) {
-                // eslint-disable-next-line
-                let currentData: any = formDesignerFieldsData[i].FormField;
-                if (currentData.pageNumber - 1 === pageIndex && currentData.isPrint) {
-                    let signatureField: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[formDesignerFieldsData[i].Key.split("_")[0]];
-                    let element: DiagramHtmlElement = signatureField.wrapper.children[0] as DiagramHtmlElement;
-                    let htmlElement: HTMLElement;
-                    if (element) {
-                        if (currentData.formFieldAnnotationType === "RadioButton") {
-                            for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
-                                signatureField = (this.pdfViewer.nameTable as any)[currentData.radiobuttonItem[j].id.split("_")[0]];
-                                htmlElement = this.createFormDesignerFields(currentData.radiobuttonItem[j], element, signatureField);
+            if (this.pdfViewer.formDesignerModule) {
+                formDesignerData = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+            }
+            if (formDesignerData) {
+                var formDesignerFieldsData = JSON.parse(formDesignerData);
+                for (let i: number = 0; i < formDesignerFieldsData.length; i++) {
+                    // eslint-disable-next-line
+                    let currentData: any = formDesignerFieldsData[i].FormField;
+                    if (currentData.pageNumber - 1 === pageIndex && currentData.isPrint) {
+                        let signatureField: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[formDesignerFieldsData[i].Key.split("_")[0]];
+                        let element: DiagramHtmlElement = signatureField.wrapper.children[0] as DiagramHtmlElement;
+                        let htmlElement: HTMLElement;
+                        if (element) {
+                            if (currentData.formFieldAnnotationType === "RadioButton") {
+                                for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
+                                    signatureField = (this.pdfViewer.nameTable as any)[currentData.radiobuttonItem[j].id.split("_")[0]];
+                                    htmlElement = this.createFormDesignerFields(currentData.radiobuttonItem[j], element, signatureField);
+                                    if (htmlElement) {
+                                        // eslint-disable-next-line
+                                        let bounds: any = currentData.radiobuttonItem[j].lineBound;
+                                        // eslint-disable-next-line
+                                        let font: any = currentData.radiobuttonItem[j].fontFamily;
+                                        this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.radiobuttonItem[j].zoomValue, currentData.pageNumber - 1);
+                                        targetField.appendChild(htmlElement);
+                                    }
+                                }
+                            } else {
+                                htmlElement = this.createFormDesignerFields(currentData, element, signatureField);
                                 if (htmlElement) {
                                     // eslint-disable-next-line
-                                    let bounds: any = currentData.radiobuttonItem[j].lineBound;
+                                    let bounds: any = currentData.lineBound;
                                     // eslint-disable-next-line
-                                    let font: any = currentData.radiobuttonItem[j].fontFamily;
-                                    this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.radiobuttonItem[j].zoomValue);
+                                    let font: any = currentData.fontFamily;
+                                    this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.zoomValue, currentData.pageNumber - 1);
                                     targetField.appendChild(htmlElement);
                                 }
-                            }
-                        } else {
-                            htmlElement = this.createFormDesignerFields(currentData, element, signatureField);
-                            if (htmlElement) {
-                                // eslint-disable-next-line
-                                let bounds: any = currentData.lineBound;
-                                // eslint-disable-next-line
-                                let font: any = currentData.fontFamily;
-                                this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.zoomValue);
-                                targetField.appendChild(htmlElement);
                             }
                         }
                     }
@@ -320,14 +347,14 @@ export class Print {
         htmlElement = this.pdfViewer.formDesignerModule.createHtmlElement('div', HtmlElementAttribute);
         if (currentData.formFieldAnnotationType === "SignatureField" || currentData.formFieldAnnotationType === "InitialField") {
             this.pdfViewer.formDesignerModule.disableSignatureClickEvent = true;
-            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createSignatureDialog(this.pdfViewer, signatureField,null,true));
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createSignatureDialog(this.pdfViewer, signatureField, null, true));
             this.pdfViewer.formDesignerModule.disableSignatureClickEvent = false;
         } else if (currentData.formFieldAnnotationType === "DropdownList") {
             element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createDropDownList(element, signatureField));
         } else if (currentData.formFieldAnnotationType === "ListBox") {
             element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createListBox(element, signatureField));
         } else {
-            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createInputElement(currentData.formFieldAnnotationType, signatureField,null,true));
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createInputElement(currentData.formFieldAnnotationType, signatureField, null, true));
         }
         parentHtmlElement.appendChild(htmlElement);
         return htmlElement;
@@ -346,12 +373,46 @@ export class Print {
      * @private
      */
     // eslint-disable-next-line
-    public applyPosition(inputField: any, bounds: any, font: any, heightRatio: number, widthRatio: number, isFormDesignerField?: boolean, zoomValue?: number): any {
+    public applyPosition(inputField: any, bounds: any, font: any, heightRatio: number, widthRatio: number, isFormDesignerField?: boolean, zoomValue?: number, pageIndex?: number): any {
         if (bounds) {
-            const left: number = isFormDesignerField ? (bounds.X / zoomValue) / widthRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X)) / widthRatio;
-            let top: number = isFormDesignerField ? (bounds.Y / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Y)) / heightRatio;
-            const width: number = isFormDesignerField ? (bounds.Width / zoomValue) / widthRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width)) / widthRatio;
-            const height: number = isFormDesignerField ? (bounds.Height / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
+
+            let pageHeight;
+            let left: number;
+            let top: number;
+            let width: number;
+            let height: number;
+            // This code changes is specific for form designer elements. https://syncfusion.atlassian.net/browse/EJ2-57986 
+            var pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+            const actualWidth: number = pageDetails ? pageDetails.width : 0;
+            const actualHeight: number = pageDetails ? pageDetails.height : 0;
+            if (isFormDesignerField && actualHeight < actualWidth && this.pdfViewer.enablePrintRotation) {
+                /* 
+                The below logig have been modified for the bug https://syncfusion.atlassian.net/browse/EJ2-57986
+                This code changes is specific for form designer elements.                   
+                pageHeight = actualWidth; 
+                top=  pageHeight - bounds.X / zoomValue;
+                left = bounds.Y / zoomValue;
+                width = (bounds.Width / zoomValue);
+                height = (bounds.Height / zoomValue);
+                inputField.style.transform = "rotate(-90deg)";
+                inputField.style.transformOrigin = "top left";           
+                */
+
+                // need to set inverse page height and width  
+                pageHeight = actualWidth;
+                top = pageHeight - bounds.X / zoomValue - bounds.Height / zoomValue;
+                left = (bounds.Y + bounds.Height) / zoomValue;
+                width = (bounds.Width / zoomValue);
+                height = (bounds.Height / zoomValue);
+                inputField.style.transform = "rotate(-90deg)";
+                inputField.style.transformOrigin = "left bottom";
+            }
+            else {
+                left = isFormDesignerField ? (bounds.X / zoomValue) / widthRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X)) / widthRatio;
+                top = isFormDesignerField ? (bounds.Y / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Y)) / heightRatio;
+                width = isFormDesignerField ? (bounds.Width / zoomValue) / widthRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width)) / widthRatio;
+                height = isFormDesignerField ? (bounds.Height / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
+            }
             let fontHeight: number = 0;
             if (font !== null && font.Height) {
                 inputField.style.fontFamily = font.Name;
@@ -366,7 +427,7 @@ export class Print {
             if (Browser.isIE) {
                 top = top - 1;
             }
-           this.pdfViewerBase.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, true);
+            this.pdfViewerBase.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, true);
         }
     }
     private printWindowOpen(): void {

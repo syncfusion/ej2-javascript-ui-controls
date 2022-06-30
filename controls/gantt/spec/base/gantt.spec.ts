@@ -617,7 +617,48 @@ describe('Gantt - Base', () => {
             let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
             triggerMouseEvent(collapseallToolbar, 'click');
             expect(ganttObj.ganttChartModule.chartElement.offsetHeight).toBe(115);
+        });
         
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+    describe('Self reference data', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: selfReference,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        progress: 'Progress',
+                        parentID: 'parentID'
+                    },
+                    editSettings: {
+                        allowEditing: true
+                    }
+                }, done);
+        });
+        it('Add record invalid parent id', () => {
+            var record = [{
+                taskID: 10,
+                taskName: 'Identify Site location',
+                StartDate: new Date('02/05/2019'),
+                duration: 3,
+                Progress: 50,
+                parentID: 1
+            }];
+            ganttObj.dataSource = record;
+            ganttObj.dataBound = (args: any): void => {
+                expect(ganttObj.currentViewData.length).toEqual(0);
+            };
+            ganttObj.dataBind();
         });
         
         afterAll(() => {

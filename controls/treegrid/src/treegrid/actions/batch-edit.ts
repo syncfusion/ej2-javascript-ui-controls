@@ -594,7 +594,12 @@ export class BatchEdit {
 
     private nextCellIndex(args: NotifyArgs): void {
         const index: string = 'index'; const rowIndex: string = 'rowIndex';
-        args[index] = this.parent.getSelectedRows()[0][rowIndex];
+        if (this.parent.getSelectedRows().length) {
+            args[index] = this.parent.getSelectedRows()[0][rowIndex];
+        }
+        else {
+            args[index] = this.batchIndex;
+        }
     }
 
 }

@@ -1,9 +1,9 @@
-import { Workbook, SheetModel, CellModel, getCell, setCell, getData, getSheet } from '../base/index';
+import { Workbook, SheetModel, CellModel, getCell, setCell, getData, getSheet, isHiddenRow } from '../base/index';
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
-import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange } from '../common/index';
+import { getCellIndexes, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
 import { parseIntValue, SortCollectionModel } from '../common/index';
-import { initiateSort } from '../common/event';
+import { initiateSort, updateSortedDataOnCell } from '../common/event';
 import { extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 
 /**
@@ -33,11 +33,13 @@ export class WorkbookSort {
 
     private addEventListener(): void {
         this.parent.on(initiateSort, this.initiateSortHandler, this);
+        this.parent.on(updateSortedDataOnCell, this.updateSortedDataOnCell, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateSort, this.initiateSortHandler);
+            this.parent.off(updateSortedDataOnCell, this.updateSortedDataOnCell);
         }
     }
 
@@ -59,13 +61,11 @@ export class WorkbookSort {
         let range: number[] = getSwapRange(addressInfo.indices);
         const sortOptions: SortOptions = args.sortOptions || { sortDescriptors: {}, containsHeader: true };
         let isSingleCell: boolean = false;
-
         eventArgs.promise = deferred.promise;
         if (range[0] > sheet.usedRange.rowIndex || range[1] > sheet.usedRange.colIndex) {
             deferred.reject(this.parent.serviceLocator.getService<L10n>(workbookLocale).getConstant('SortOutOfRangeError'));
             return;
         }
-
         let containsHeader: boolean = sortOptions.containsHeader;
         const checkForHeader: boolean = (args as { checkForHeader?: boolean }).checkForHeader;
         if (range[0] === range[2] || checkForHeader) { //if selected range is a single cell
@@ -93,9 +93,7 @@ export class WorkbookSort {
                 }
             }
         }
-        let sRIdx: number = range[0] = containsHeader ? range[0] + 1 : range[0];
-        let sCIdx: number;
-        let eCIdx: number;
+        range[0] = containsHeader ? range[0] + 1 : range[0];
         const cell: number[] = getCellIndexes(sheet.activeCell);
         const header: string = getColumnHeaderText(cell[1] + 1);
         delete sortOptions.containsHeader;
@@ -127,25 +125,8 @@ export class WorkbookSort {
                 query.sortBy(sortDescriptors.field, comparerFn);
             }
             dataManager.executeQuery(query).then((e: ReturnOption) => {
-                let colName: string;
-                let cell: CellModel = {};
-                const rowKey: string = '__rowIndex';
-                Array.prototype.forEach.call(e.result, (data: { [key: string]: CellModel }, index: number) => {
-                    if (!data) { return; }
-                    sCIdx = range[1];
-                    eCIdx = range[3];
-                    sRIdx = parseInt(jsonData[index][rowKey] as string, 10) - 1;
-                    for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
-                        colName = getColumnHeaderText(sCIdx + 1);
-                        cell = extend({}, data[colName] as CellModel, null, true);
-                        this.skipBorderOnSorting(sRIdx, sCIdx, sheet, cell);
-                        if (cell && cell.formula) {
-                            cell.formula =
-                            getUpdatedFormula([sRIdx, sCIdx], [parseInt(data[rowKey] as string, 10) - 1, sCIdx], sheet, cell);
-                        }
-                        setCell(sRIdx, sCIdx, sheet, cell);
-                    }
-                });
+                this.parent.notify('setActionData', { args: { action: 'beforeSort', eventArgs: { range: address, cellDetails: jsonData, sortedCellDetails: e.result } } });
+                this.updateSortedDataOnCell({ result: e.result, range: range, sheet: sheet, jsonData: jsonData });
                 const sortArgs: { range: string, sortOptions: SortOptions, previousSort?: SortCollectionModel } = { range:
                     `${sheet.name}!${address}`, sortOptions: args.sortOptions };
                 if (eventArgs.previousSort) { sortArgs.previousSort = eventArgs.previousSort; }
@@ -154,7 +135,53 @@ export class WorkbookSort {
         });
     }
 
-    private skipBorderOnSorting(rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel): void {
+    private updateSortedDataOnCell(args: { result: ReturnOption, range: number[], sheet: SheetModel, jsonData: { [key: string]: CellModel }[], isUndo?: boolean }): void {
+        let fields: string[] = []; let cell: CellModel;
+        const updateCell: Function = (rowIdx: number, data: { [key: string]: CellModel }): void => {
+            for (let j: number = args.range[1], k: number = 0; j <= args.range[3]; j++, k++) {
+                if (!fields[k]) {
+                    fields[k] = getColumnHeaderText(j + 1);
+                }
+                if (data[fields[k]]) {
+                    cell = extend({}, data[fields[k]], null, true)
+                } else {
+                    if (!getCell(rowIdx, j, args.sheet)) {
+                        continue;
+                    }
+                    cell = null;
+                }
+                cell = this.skipBorderOnSorting(rowIdx, j, args.sheet, cell);
+                if (cell && cell.formula) {
+                    cell.formula = getUpdatedFormula([rowIdx, j], [parseInt(data['__rowIndex'] as string, 10) - 1, j], args.sheet, cell);
+                }
+                setCell(rowIdx, j, args.sheet, cell);
+            }
+        };
+        let updatedCellDetails: { [key: string]: boolean } = args.isUndo && {}; let rIdx: number;
+        for (let i: number = args.range[0], idx: number = 0; i <= args.range[2]; i++, idx++) {
+            if (isHiddenRow(args.sheet, i)) {
+                idx--;
+                continue;
+            }
+            if (args.isUndo) {
+                if (args.result[idx]) {
+                    rIdx = parseInt(args.result[idx]['__rowIndex'] as string, 10) - 1;
+                    updatedCellDetails[rIdx] = true;
+                    updateCell(rIdx, args.result[idx]);
+                    if (i === rIdx) {
+                        continue;
+                    }
+                }
+                if (!updatedCellDetails[i] && args.sheet.rows[i]) {
+                    updateCell(i, {});
+                }
+            } else {
+                updateCell(i, args.result[idx] || {});
+            }
+        }
+    }
+
+    private skipBorderOnSorting(rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel): CellModel {
         const prevCell: CellModel = getCell(rowIndex, colIndex, sheet);
         const borders: string[] = ['borderBottom', 'borderTop', 'borderRight', 'borderLeft', 'border'];
         if (cell && cell.style) {
@@ -175,6 +202,7 @@ export class WorkbookSort {
                 }
             }
         }
+        return cell;
     }
 
     private isSameStyle(firstCellStyle: CellStyleModel, secondCellStyle: CellStyleModel): boolean {
@@ -206,7 +234,6 @@ export class WorkbookSort {
         const direction: string = sortDescriptor.order || '';
         const comparer: Function = DataUtil.fnSort(direction);
         let isXStringVal: boolean = false; let isYStringVal: boolean = false;
-        const caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
         if (x && y && (typeof x.value === 'string' || typeof y.value === 'string') && (x.value !== '' && y.value !== '')) {
             if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
                 x.value = <string>parseIntValue(x.value);
@@ -217,6 +244,7 @@ export class WorkbookSort {
                 isYStringVal = true;
             }
             if (!isYStringVal && !isYStringVal) {
+                const caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
                 const collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
                 if (!direction || direction.toLowerCase() === 'ascending') {
                     return collator.compare(x.value as string, y.value as string);
@@ -225,13 +253,15 @@ export class WorkbookSort {
                 }
             }
         }
-        if ((x === null || x && (isNullOrUndefined(x.value) || x.value === '')) && (y === null || y && (isNullOrUndefined(y.value) || y.value === ''))) {
+        const isXNull: boolean = (isNullOrUndefined(x) || x && (isNullOrUndefined(x.value) || x.value === ''));
+        const isYNull: boolean = (isNullOrUndefined(y) || y && (isNullOrUndefined(y.value) || y.value === ''));
+        if (isXNull && isYNull) {
             return -1;
         }
-        if (x === null || x && (isNullOrUndefined(x.value) || x.value === '')) {
+        if (isXNull) {
             return 1;
         }
-        if (y === null || y && (isNullOrUndefined(y.value) || y.value === '')) {
+        if (isYNull) {
             return -1;
         }
         return comparer(x ? x.value : x, y ? y.value : y);

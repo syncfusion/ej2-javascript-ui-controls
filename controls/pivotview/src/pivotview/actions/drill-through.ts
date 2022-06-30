@@ -80,7 +80,7 @@ export class DrillThrough {
         let valueCaption: string = '';
         let aggType: string = '';
         let rawData: IDataSet[] = [];
-        if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && !isNullOrUndefined(pivotValue.value)) {
+        if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined) {
             if (this.parent.dataType === 'olap') {
                 let tupleInfo: ITupInfo;
                 if (this.parent.dataSourceSettings.valueAxis === 'row') {
@@ -149,7 +149,7 @@ export class DrillThrough {
                     }
                 }
                 if (!isNullOrUndefined(rawData[k])) {
-                    let calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k])], colIndex as any, indexValue, 'calculatedfield');
+                    let calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k])], colIndex as any, indexValue, 'calculatedfield', false);
                     rawData[k][this.parent.dataSourceSettings.calculatedFieldSettings[i].name] = (isNaN(calculatedFeildValue) && isNullOrUndefined(calculatedFeildValue)) ? '#DIV/0!' : calculatedFeildValue;
                 }
             }

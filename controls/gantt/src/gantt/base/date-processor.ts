@@ -191,14 +191,14 @@ export class DateProcessor {
      * @returns {Date} .
      * @private
      */
-    public checkBaselineEndDate(date: Date): Date {
+    public checkBaselineEndDate(date: Date, ganttProp?: ITaskData): Date {
         if (isNullOrUndefined(date)) {
             return null;
         } else {
             const cloneDate: Date = new Date(date.getTime()); const hour: number = this.getSecondsInDecimal(cloneDate);
             if (hour > this.parent.defaultEndTime) {
                 this.setTime(this.parent.defaultEndTime, cloneDate);
-            } else if (hour <= this.parent.defaultStartTime) {
+            } else if (hour <= this.parent.defaultStartTime && !ganttProp.isMilestone) {
                 cloneDate.setDate(cloneDate.getDate() - 1);
                 this.setTime(this.parent.defaultEndTime, cloneDate);
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
@@ -1144,6 +1144,12 @@ export class DateProcessor {
      * @private
      */
     public calculateProjectDates(editArgs?: Object): void {
+        if (this.parent.isLoad && this.parent.enablePersistence &&
+            this.parent.cloneProjectStartDate && this.parent.cloneProjectEndDate) {
+               this.parent.cloneProjectStartDate = this.getDateFromFormat(this.parent.cloneProjectStartDate);
+               this.parent.cloneProjectEndDate = this.getDateFromFormat(this.parent.cloneProjectEndDate);
+               return;
+       }
         const sDate: Date = typeof this.parent.projectStartDate === 'string' ?
             new Date(this.parent.projectStartDate) : this.parent.projectStartDate;
         const eDate: Date = typeof this.parent.projectEndDate === 'string' ?

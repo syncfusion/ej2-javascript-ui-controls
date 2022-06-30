@@ -1,7 +1,7 @@
 import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
-import { CFColor } from '../index';
+import { CFColor, Workbook } from '../index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
 export interface SaveOptions {
@@ -467,7 +467,7 @@ export interface CellUpdateArgs {
     uiRefresh?: boolean;
     td?: HTMLElement;
     lastCell?: boolean;
-    checkCf?: boolean;
+    checkCF?: boolean;
     checkWrap?: boolean;
     eventOnly?: boolean;
     requestType?: string;
@@ -512,4 +512,34 @@ export interface checkCellValid {
     sheetIdx?: number;
     td?: HTMLElement;
     isValid?: boolean;
+}
+/** @hidden */
+export interface ExtendedWorkbook extends Workbook {
+    viewport: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number };
+}
+/** @hidden */
+export interface ApplyCFArgs {
+    indexes?: number[];
+    cell?: CellModel;
+    ele?: HTMLElement;
+    cfModel?: ConditionalFormatModel[];
+    isAction?: boolean;
+    prevVal?: string;
+    sheetIdx?: number;
+    otherSheets?: boolean;
+    isRender?: boolean;
+}
+/** @hidden */
+export interface CFArgs {
+    range?: string | number[];
+    sheetIdx?: number;
+    isFromUpdateAction?: boolean;
+    isAction?: boolean;
+    isClear?: boolean;
+    isUndo?: boolean;
+    isUndoRedo?: boolean;
+    cfModel?: ConditionalFormatModel;
+    oldCFModel?: ConditionalFormatModel[];
+    updatedCFModel?: ConditionalFormatModel[];
+    cfClearActionArgs?: object;
 }

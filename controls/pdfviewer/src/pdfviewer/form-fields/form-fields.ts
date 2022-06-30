@@ -153,9 +153,16 @@ export class FormFields {
                             let borderWidth: number = currentData['BorderWidth'];
                             this.selectedIndex = [];
  
+                            var elementValue = "";
+                            if (currentData.Name === 'RadioButton') {
+                                elementValue = currentData['Text'] ? currentData['Text'] : currentData['Value'];
+                            }
+                            else {
+                                elementValue = currentData['Text'];
+                            } 
                             let fieldProperties: any = {
                                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
-                                value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
+                                value: elementValue, isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
                                 isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
                             };
                               if (!currentData.id && this.pdfViewer.formFieldCollections[i] && !isNullOrUndefined(currentData['ActualFieldName'])) {
@@ -978,8 +985,8 @@ export class FormFields {
         var formFieldsData = JSON.parse(data);
         let targetName: string = target ? target.name ? target.name : target.offsetParent.name : this.currentTarget.name;
         for (var i = 0; i < formFieldsData.length; i++) {
-            let fieldName: string = this.pdfViewer.formDesigner ? formFieldsData[i].FormField.name : formFieldsData[i].ActualFieldName;
-            if (fieldName === targetName) {
+            let fieldName: string = this.pdfViewer.formDesigner ? formFieldsData[i].FormField.name : formFieldsData[i].FieldName;
+            if (this.pdfViewer.formDesigner ? fieldName === targetName : fieldName === targetName && (!isNullOrUndefined(formFieldsData[i].ActualFieldName))) {
                 target = this.pdfViewer.formDesigner ? document.getElementById(formFieldsData[i].Key.split("_")[0]) : document.getElementById(formFieldsData[i].uniqueID);
                 // eslint-disable-next-line
                 let currentField: any = target;
@@ -2189,7 +2196,7 @@ export class FormFields {
                 // eslint-disable-next-line
                 let currentData: any = formFieldsData[m];
                 // eslint-disable-next-line max-len
-                if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.ActualFieldName + '_' + count && currentData.Value && currentData.Value !== '') {
+                if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && this.pdfViewer.formDesigner ? currentData.FieldName === signData.ActualFieldName + '_' + count || currentData.FieldName === signData.FieldName + '_' + count : ((currentData.FieldName === signData.FieldName + '_' + count || currentData.FieldName === signData.ActualFieldName + '_' + count) && !isNullOrUndefined(signData.ActualFieldName)) && currentData.Value && currentData.Value !== '') {
                     signData.Value = currentData.Value;
                     signData.FontFamily = currentData.FontFamily;
                     signData.FontSize = currentData.FontSize;

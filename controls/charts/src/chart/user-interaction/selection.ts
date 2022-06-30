@@ -90,10 +90,10 @@ export class Selection extends BaseSelection {
         if (this.chart.isDestroyed || (this.chart.stockChart && this.chart.stockChart.onPanning)) { return; }
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.chart.on(Browser.touchMoveEvent, this.mouseMove, this);
-        this.chart.on(cancelEvent, this.completeSelection, this);
-        this.chart.on('click', this.calculateSelectedElements, this);
+        this.chart.on(cancelEvent, this.mouseLeave, this);
+        this.chart.on('click', this.mouseClick, this);
         this.chart.on(Browser.touchStartEvent, this.mousedown, this);
-        this.chart.on(Browser.touchEndEvent, this.completeSelection, this);
+        this.chart.on(Browser.touchEndEvent, this.mouseLeave, this);
     }
     /**
      * Chart mouse down
@@ -113,10 +113,10 @@ export class Selection extends BaseSelection {
     private removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
         this.chart.off(Browser.touchMoveEvent, this.mouseMove);
-        this.chart.off('pointerleave' || 'mouseleave', this.completeSelection);
-        this.chart.off('click', this.calculateSelectedElements);
+        this.chart.off('pointerleave' || 'mouseleave', this.mouseLeave);
+        this.chart.off('click', this.mouseClick);
         this.chart.off(Browser.touchStartEvent, this.mousedown);
-        this.chart.off(Browser.touchEndEvent, this.completeSelection);
+        this.chart.off(Browser.touchEndEvent, this.mouseLeave);
     }
     /**
      * To find private variable values
@@ -256,18 +256,17 @@ export class Selection extends BaseSelection {
      * @returns {void}
      * @private
      */
-    public isAlreadySelected(event : Event | PointerEvent): boolean {
-        const targetElem: Element = <Element>event.target;
-        if (event.type === 'click') {
+    public isAlreadySelected(targetElem: Element, eventType: string): boolean {
+        if (eventType === 'click') {
             this.currentMode = this.chart.selectionMode;
             this.styleId = this.chart.element.id + '_ej2_chart_selection';
-        } else if (event.type === 'mousemove' || event.type === 'pointermove') {
+        } else if (eventType === 'mousemove' || eventType === 'pointermove') {
             this.currentMode = this.chart.highlightMode;
             this.highlightDataIndexes = [];
             this.styleId = this.chart.element.id + '_ej2_chart_highlight';
         }
         if (this.chart.highlightMode !== 'None' && this.chart.selectionMode === 'None') {
-            if (event.type === 'click') {
+            if (eventType === 'click') {
                 return false;
             }
         }
@@ -280,7 +279,7 @@ export class Selection extends BaseSelection {
             for (let i: number = 0; i < this.previousSelectedEle.length; i++) {
                 if (this.previousSelectedEle[i].hasAttribute('class')) {
                     if (this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1 &&
-                        (isElement || event.type === 'click')) {
+                        (isElement || eventType === 'click')) {
                         this.previousSelectedEle[i].removeAttribute('class');
                         if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None') {
                             if (this.previousSelectedEle[i].id.indexOf('Group') > 0) {
@@ -301,22 +300,26 @@ export class Selection extends BaseSelection {
         return true;
     }
 
+
+    private mouseClick(event: Event) {
+        this.calculateSelectedElements(event.target as HTMLElement, event.type);
+    }
+
     /**
      * To find the selected element.
      *
      * @returns {void}
      * @private
      */
-    public calculateSelectedElements(event: Event): void {
-        if (isNullOrUndefined(event.target)) {
+    public calculateSelectedElements(targetElement: HTMLElement, eventType: string): void {
+        if (isNullOrUndefined(targetElement)) {
             return;
         }
-        const targetElement: HTMLElement = <HTMLElement>event.target;
         if ((this.chart.selectionMode === 'None' && this.chart.highlightMode === 'None') ||
-            targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
+            targetElement.id && targetElement.id.indexOf(this.chart.element.id + '_') === -1) {
             return;
         }
-        if (event.type === 'mousemove' || event.type === 'pointermove') {
+        if (eventType === 'mousemove' || eventType === 'pointermove') {
             if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
                 targetElement.getAttribute('class').indexOf('selection') > -1)) {
                 return;
@@ -327,8 +330,8 @@ export class Selection extends BaseSelection {
                 return;
             }
         }
-        this.isAlreadySelected(event);
-        if (targetElement.id.indexOf('_Series_') > -1) {
+        this.isAlreadySelected(targetElement, eventType);
+        if (targetElement.id && targetElement.id.indexOf('_Series_') > -1 && targetElement.id.indexOf('_Text_') == -1) {
             let element: Element;
             if (targetElement.id.indexOf('_Trackball_1') > -1) {
                 element = getElement(targetElement.id.split('_Trackball_')[0] + '_Symbol');
@@ -355,13 +358,13 @@ export class Selection extends BaseSelection {
             const className: string = this.generateStyle(chart.series[index.series]);
             const selectionEle: NodeListOf<HTMLElement> = document.querySelectorAll('.' + className);
             this.findTrackballElements(selectionEle, className);
-            this.blurEffect(chart.element.id, chart.visibleSeries);
+            this.blurEffect(chart.element.id, chart.visibleSeries, false, index.point);
         }
         switch (this.currentMode) {
         case 'Series':
             this.selection(chart, index, this.getSeriesElements(chart.series[index.series]));
             this.selectionComplete(chart, index, this.currentMode);
-            this.blurEffect(chart.element.id, chart.visibleSeries);
+            this.blurEffect(chart.element.id, chart.visibleSeries, false, index.point);
             break;
         case 'Point':
             if (!isNaN(index.point) && element) {
@@ -377,14 +380,14 @@ export class Selection extends BaseSelection {
                 }
                 this.selection(chart, index, pointElements);
                 this.selectionComplete(chart, index, this.currentMode);
-                this.blurEffect(chart.element.id, chart.visibleSeries);
+                this.blurEffect(chart.element.id, chart.visibleSeries, false, index.point);
             }
             break;
         case 'Cluster':
             if (!isNaN(index.point)) {
                 this.clusterSelection(chart, index);
                 this.selectionComplete(chart, index, this.currentMode);
-                this.blurEffect(chart.element.id, chart.visibleSeries);
+                this.blurEffect(chart.element.id, chart.visibleSeries, false, index.point);
             }
             break;
         }
@@ -486,18 +489,19 @@ export class Selection extends BaseSelection {
                 this.removeMultiSelectElements(chart, this.selectedDataIndexes, index, chart.series);
             }
         }
+        let indexValue : number = (this.rangeColorMappingEnabled()) ? 0 : index.series;
         if (!isNullOrUndefined(selectedElements[0])) {
-            if ((<Series>chart.series[index.series]).isRectSeries) {
-                if (selectedElements[0].id) {
-                    if (document.getElementById(selectedElements[0].id + '_Symbol')) {
-                        selectedElements.push(getElement(selectedElements[0].id + '_Symbol'));
-                    } else if (selectedElements[0].id.indexOf('SeriesGroup') !== -1) {
-                        if (document.getElementById(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup'))) {
-                            selectedElements.push(getElement(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup')));
+                if ((<Series>chart.series[indexValue]).isRectSeries) {
+                    if (selectedElements[0].id) {
+                        if (document.getElementById(selectedElements[0].id + '_Symbol')) {
+                            selectedElements.push(getElement(selectedElements[0].id + '_Symbol'));
+                        } else if (selectedElements[0].id.indexOf('SeriesGroup') !== -1) {
+                            if (document.getElementById(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup'))) {
+                                selectedElements.push(getElement(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup')));
+                            }
                         }
                     }
                 }
-            }
             let isAdd: boolean;
             const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
             const pClassName: string = selectedElements[0].parentNode &&
@@ -555,19 +559,34 @@ export class Selection extends BaseSelection {
      *
      * @private
      */
-    public blurEffect(chartId: string, visibleSeries: Series[], legendClick: boolean = false): void {
-        const visibility: boolean = (this.checkVisibility(this.highlightDataIndexes) ||
-            this.checkVisibility(this.selectedDataIndexes)); // legend click scenario
+    public blurEffect(chartId: string, visibleSeries: Series[], isLegend: boolean = false, index: number = 0): void {
+        const visibility: boolean = (this.checkVisibility(this.highlightDataIndexes, this.chart ) ||
+            this.checkVisibility(this.selectedDataIndexes, this.chart)); // legend click scenario
         for (const series of visibleSeries) {
+            let legendIndex: number; let legendStrokeColor: string;
+            if (this.rangeColorMappingEnabled()) {
+                if (isLegend == false) {
+                    legendIndex = Object.keys(series.rangeColorPoints).indexOf(series.points[index].interior);
+                    legendStrokeColor = series.points[index].interior;
+                }
+                else {
+                    legendIndex = index;
+                    legendStrokeColor = document.getElementById(chartId + '_chart_legend_shape_' + index).getAttribute('fill');
+                }
+            }
+            else {
+                legendIndex = series.index;
+                legendStrokeColor = this.chart.visibleSeries[series.index].interior;
+            }
             if (series.visible) {
                 this.checkSelectionElements(
                     getElement(chartId + 'SeriesGroup' + series.index),
-                    this.generateStyle(series), visibility, legendClick, series.index
+                    this.generateStyle(series), visibility, isLegend, legendIndex, legendStrokeColor
                 );
                 if (!isNullOrUndefined(getElement(chartId + 'SymbolGroup' + series.index))) {
                     this.checkSelectionElements(
                         getElement(chartId + 'SymbolGroup' + series.index),
-                        this.generateStyle(series), visibility, legendClick, series.index
+                        this.generateStyle(series), visibility, isLegend, legendIndex, legendStrokeColor
                     );
                 }
             }
@@ -578,10 +597,10 @@ export class Selection extends BaseSelection {
      *
      * @private
      */
-    public checkSelectionElements(element: Element, className: string, visibility: boolean, legendClick: boolean, series: number): void {
-        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes);
+    public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = ''): void {
+        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes || element);
         if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
-            children = (element.childNodes as any);
+            children = (element.childNodes as any || element);
         }
         let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
         for (let i: number = 0; i < children.length; i++) {
@@ -622,13 +641,13 @@ export class Selection extends BaseSelection {
             if (legendShape) {
                 if (legendShape.hasAttribute('class')) {
                     this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
-                    if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '')) {
-                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series].interior);
-                        if (this.chart.highlightPattern === 'None') {
-                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series].interior);
+                        if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '')) {
+                            legendShape.setAttribute('stroke', legendStrokeColor);
+                            if (this.chart.highlightPattern === 'None') {
+                                legendShape.setAttribute('fill', legendStrokeColor);
+                            }
                         }
                     }
-                }
                 elementClassName = selectElement.getAttribute('class') || '';
                 parentClassName = (<Element>selectElement.parentNode).getAttribute('class') || '';
                 if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
@@ -660,7 +679,22 @@ export class Selection extends BaseSelection {
                         }
                     }
                 }
-                if (legendClick && parentClassName.indexOf(className) > -1) {
+                let legendItemsId: Element;
+                if (this.rangeColorMappingEnabled()) {
+                    for (let i: number = 0; i < this.chart.rangeColorSettings.length; i++) {
+                        legendItemsId = document.getElementById(this.chart.element.id + '_chart_legend_shape_' + i);
+                        if (legendShape != legendItemsId) {
+                            this.addSvgClass(legendItemsId, this.unselected);
+                        }
+                        else if (isLegend == true) {
+                            this.addSvgClass(legendItemsId, className);
+                        }
+                        if (elementClassName.indexOf(className) === -1 && isLegend == false) {
+                            this.removeSvgClass(legendItemsId, this.unselected);
+                        }
+                    }
+                }
+                if (isLegend && parentClassName.indexOf(className) > -1) {
                     this.addSvgClass(legendShape, className);
                 }
             }
@@ -676,6 +710,21 @@ export class Selection extends BaseSelection {
             if (element) {
                 this.removeSvgClass(<Element>element.parentNode, this.unselected);
                 this.removeSvgClass(element, this.unselected);
+                if (this.chart.series[0].pointColorMapping =='fill' || this.rangeColorMappingEnabled()) {
+                    let className: string = this.getSelectionClass(element.id);
+                    let patternName: string = this.styleId.indexOf('highlight') > 0 ? this.chart.highlightPattern : this.chart.selectionPattern;
+                    let pattern: Element;
+                    let index: number = className.indexOf('highlight') > -1 ? parseInt(className.split(this.chart.element.id+'_ej2_chart_highlight_series_')[1], 10) : parseInt(className.split(this.chart.element.id+'_ej2_chart_selection_series_')[1], 10);
+                    if (className.indexOf('highlight') > -1 || className.indexOf('selection') > -1) {
+                        pattern = document.getElementById(this.chart.element.id + '_' + patternName + '_' + 'Selection' + '_' + index);
+                    }
+                    if (element.id.indexOf('legend') == -1 && element.id.indexOf('Group') == -1 && pattern != null) {
+                        for (let i: number = 1; i < pattern.children.length; i++) {
+                            pattern.children[i].setAttribute('fill', element.getAttribute('fill'));
+                            pattern.children[i].setAttribute('stroke', element.getAttribute('fill'));
+                        }
+                    }
+                }
                 this.addSvgClass(element, this.getSelectionClass(element.id));
                 if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None') {
                     if (element.id.indexOf('Group') > 0) {
@@ -766,15 +815,14 @@ export class Selection extends BaseSelection {
         } else {
             this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
         }
-        this.blurEffect(chart.element.id, chart.visibleSeries);
+        this.blurEffect(chart.element.id, chart.visibleSeries, false);
         this.selectDataIndex(chart, selectedDataIndexes);
     }
     /** @private */
-    public legendSelection(chart: Chart, series: number, event : Event | PointerEvent): void {
-        let targetElement: Element = <Element>event.target;
-        if (event.type === 'mousemove') {
-            if ((<Element>event.target).id.indexOf('text') > 1) {
-                targetElement = getElement((<Element>event.target).id.replace('text', 'shape'));
+    public legendSelection(chart: Chart, series: number, targetElement: Element, eventType: string): void {
+        if (eventType === 'mousemove') {
+            if (targetElement.id.indexOf('text') > 1) {
+                targetElement = getElement(targetElement.id.replace('text', 'shape'));
             }
             if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
                 targetElement.getAttribute('class').indexOf('selection') > -1)) {
@@ -782,7 +830,7 @@ export class Selection extends BaseSelection {
             }
             this.currentMode = this.chart.highlightMode;
         }
-        const isPreSelected: boolean = this.isAlreadySelected(event);
+        const isPreSelected: boolean = this.isAlreadySelected(targetElement, eventType);
         if (isPreSelected) {
             let seriesStyle: string = this.generateStyle(chart.visibleSeries[series]);
             let selectedElements: NodeListOf<HTMLElement> =  <NodeListOf<HTMLElement>>(document.querySelectorAll('.' + seriesStyle));
@@ -798,21 +846,48 @@ export class Selection extends BaseSelection {
                         this.removeSelection(chart, series, selectedElements, seriesStyle, isBlurEffectNeeded);
                     }
                 }
-                const seriesElements: Element[] = this.getSeriesElements(chart.visibleSeries[series]);
-                for (const seriesElement of seriesElements) {
-                    if (isNullOrUndefined(seriesElement)) {
-                        return;
+                let seriesElements: Element[] = [];
+                if (this.rangeColorMappingEnabled()) {
+                    for (let i: number = 0, a = chart.visibleSeries[0].seriesElement.children; i < a.length; i++) {
+                        const point = a[i];
+                        if (targetElement.getAttribute('fill') === point.getAttribute('fill')) {
+                            seriesElements.push(point);
+                        }
                     }
-                    this.checkSelectionElements(seriesElement, seriesStyle, false, true, series);
+                    for (const element of seriesElements) {
+                        if (isNullOrUndefined(element)) {
+                            return;
+                        }
+                        this.checkSelectionElements(element, seriesStyle, false, true, series);
+                    }
+                }
+                else {
+                    seriesElements = this.getSeriesElements(chart.visibleSeries[series]);
+                    for (const seriesElement of seriesElements) {
+                        if (isNullOrUndefined(seriesElement)) {
+                            return;
+                        }
+                        this.checkSelectionElements(seriesElement, seriesStyle, false);
+                    }
                 }
                 this.isSeriesMode = true;
                 this.selection(chart, new Index(series, NaN), seriesElements);
                 this.isSeriesMode = chart.selectionMode === 'Series';
-                this.blurEffect(chart.element.id, chart.visibleSeries, true);
+                this.blurEffect(chart.element.id, chart.visibleSeries, true, series);
             }
         }
     }
-
+    /** @private */
+    public rangeColorMappingEnabled(): boolean {
+        if ((this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 &&
+            (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
+                this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble'))) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
     public removeSelection(
         chart: Chart, series: number, selectedElements: NodeListOf<HTMLElement>,
         seriesStyle: string, isBlurEffectNeeded: boolean): void {
@@ -1131,11 +1206,11 @@ export class Selection extends BaseSelection {
      * @private
      */
 
-    public removeDraggedElements(chart: Chart, event: Event): void {
-        if (((<HTMLElement>event.target).id.indexOf(this.closeIconId) > -1) && (event.type.indexOf('move') === -1)) {
+    public removeDraggedElements(chart: Chart, targetElement: HTMLElement, eventType: string): void {
+        if ((targetElement.id && targetElement.id.indexOf(this.closeIconId) > -1) && (eventType.indexOf('move') === -1)) {
             let isSelectedvalues: boolean = true;
             if ((chart.allowMultiSelection)) {
-                const index: number = this.getIndex((<HTMLElement>event.target).id);
+                const index: number = this.getIndex(targetElement.id);
                 const multiRectGroupElement: Element = getElement(this.multiRectGroup);
                 remove(getElement(this.draggedRectGroup + index));
                 this.dragRectArray[index] = null;
@@ -1325,13 +1400,17 @@ export class Selection extends BaseSelection {
             this.calculateDragSelectedElements(chart, rect);
         }
     }
+
+    private mouseLeave(event: Event) {
+        this.completeSelection(event.target as HTMLElement, event.type)
+    }
     /**
      * To complete the selection.
      *
      * @returns {void}
      * @private
      */
-    public completeSelection(e: Event): void {
+    public completeSelection(target: HTMLElement, eventType: string): void {
         const chart: Chart = this.chart;
         if (chart.selectionMode === 'None') {
             return;
@@ -1362,7 +1441,7 @@ export class Selection extends BaseSelection {
         this.dragging = false;
         this.rectGrabbing = false;
         this.resizing = false;
-        this.removeDraggedElements(chart, e);
+        this.removeDraggedElements(chart, target, eventType);
     }
     private getDragRect(chart: Chart, seriesClipRect: Rect): Rect {
         return getDraggedRectLocation(chart.mouseDownX, chart.mouseDownY, chart.mouseX, chart.mouseY, seriesClipRect);
@@ -1419,16 +1498,33 @@ export class Selection extends BaseSelection {
     public mouseMove(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
         let target: Element = <Element>event.target;
-        if (chart.highlightMode !== 'None') {
+        let eventType: string = event.type;
+        this.highlightChart(target, eventType);
+        if (chart.selectionMode === 'None') {
+            return;
+        }
+        if (eventType === 'touchmove' && (Browser.isIos || Browser.isIos7) && this.dragging && event.preventDefault) {
+            event.preventDefault();
+        }
+        this.selectionAndDrag(chart, target, eventType);
+    }
+
+    /**
+     * highlight parts
+     * 
+     * @private
+     */
+    public highlightChart(target: Element, eventType: string) {
+        if (this.chart.highlightMode !== 'None') {
             if (!isNullOrUndefined(target)) {
-                if ((<Element>event.target).id.indexOf('text') > 1) {
-                    target = getElement((<Element>event.target).id.replace('text', 'shape'));
+                if (target.id.indexOf('text') > 1) {
+                    target = getElement(target.id.replace('text', 'shape'));
                 }
                 if ((target).hasAttribute('class') && ((target).getAttribute('class').indexOf('highlight') > -1 ||
                     target.getAttribute('class').indexOf('selection') > -1)) {
                     return;
                 }
-                this.calculateSelectedElements(event);
+                this.calculateSelectedElements(target as HTMLElement, eventType);
                 if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&
                     target.id.indexOf("_chart_legend_") == -1 && target.id.indexOf("_Series_") == -1) {
                     this.removeLegendHighlightStyles();
@@ -1436,12 +1532,14 @@ export class Selection extends BaseSelection {
                 return;
             }
         }
-        if (chart.selectionMode === 'None') {
-            return;
-        }
-        if (event.type === 'touchmove' && (Browser.isIos || Browser.isIos7) && this.dragging && event.preventDefault) {
-            event.preventDefault();
-        }
+    }
+
+    /**
+     * selection and drag selection
+     * 
+     * @private
+     */
+    public selectionAndDrag(chart: Chart, target: Element, eventType: string) {
         const insideMoving: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
         if (insideMoving) {
             if (this.rectGrabbing && !this.resizing) {
@@ -1461,10 +1559,10 @@ export class Selection extends BaseSelection {
                 this.resizingSelectionRect(chart, new ChartLocation(chart.mouseX, chart.mouseY), null, target);
             }
         } else {
-            this.completeSelection(event);
+            this.completeSelection(target as HTMLElement, eventType);
         }
     }
-
+    
     /** 
      * remove highlighted legend when not focused.
      *
@@ -1474,6 +1572,7 @@ export class Selection extends BaseSelection {
         this.chart.highlightModule.highlightDataIndexes = [];
         let elementCollection: HTMLCollection;
         for (let i = 0; i < this.chart.series.length; i++) {
+            elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
             if (this.selectedDataIndexes.length === 0) {
                 elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
                 while (elementCollection.length > 0) {
@@ -1489,8 +1588,7 @@ export class Selection extends BaseSelection {
                         this.removeSvgClass(element, element.getAttribute("class"));
                     }
                 }
-            }
-            else {
+            } else {
                 elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
                 while (elementCollection.length > 0) {
                     let element: HTMLElement = elementCollection[0] as HTMLElement;

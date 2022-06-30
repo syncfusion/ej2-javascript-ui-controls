@@ -511,6 +511,7 @@ let displayLocale: { [ket: string]: string }[] = [
     { locale: 'imageDisplayDropDownInline', value: 'Inline' },
     { locale: 'imageDisplayDropDownBreak', value: 'Break' }
 ];
+
 export let imageDisplayItems: IDropDownItemModel[] = [
     { text: 'Inline', cssClass: 'e-inline', command: 'Images', subCommand: 'Inline' },
     { text: 'Break', cssClass: 'e-break', command: 'Images', subCommand: 'Break' },

@@ -184,7 +184,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         result = getDropDownValue(formatItems, value, 'subCommand', 'text');
                         dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
-                                '<span class="e-rte-dropdown-btn-text">'
+                                '<span class="e-rte-dropdown-btn-text' + ' ' + e.parent.cssClass + '">'
                                 + (isNOU(result) ? formatContent : result) +
                                 '</span></span>');
                         dropDown.formatDropDown.dataBind();
@@ -212,7 +212,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         e.tbElements[j].title = name;
                         dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontFamily.width + '" >' +
-                            '<span class="e-rte-dropdown-btn-text">'
+                            '<span class="e-rte-dropdown-btn-text' + ' ' + e.parent.cssClass + '">'
                             + name + '</span></span>');
                         dropDown.fontNameDropDown.dataBind();
                         break; }
@@ -228,7 +228,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                         dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontSize.width + '" >' +
-                            '<span class="e-rte-dropdown-btn-text">'
+                            '<span class="e-rte-dropdown-btn-text' + ' ' + e.parent.cssClass + '">'
                             + getFormattedFontSize(result) + '</span></span>');
                         dropDown.fontSizeDropDown.dataBind();
                         break; }

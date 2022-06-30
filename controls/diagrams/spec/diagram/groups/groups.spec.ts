@@ -1731,6 +1731,7 @@ describe('Group Node padding', () => {
     });
     it('Resize group node with padding', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.selectedItems.selectedObjects = [];
         diagram.select([diagram.nodes[3]]);
         let resizeOptions: HTMLElement = document.getElementById('resizeEast');
         let bounds: any = resizeOptions.getBoundingClientRect();

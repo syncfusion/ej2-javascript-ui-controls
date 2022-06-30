@@ -2,64 +2,6 @@
 
 ## [Unreleased]
 
-## 20.1.60 (2022-06-14)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I377914`, `#I383863` - The issue with "The toolbar view icon shows the HTML code instead of text and icon in the File Manager component" has been resolved.
-
-- '#I379214' - The issue with browsing files in File Manager while switching the view after sorting is resolved.
-
-## 20.1.59 (2022-06-07)
-
-### File Manager
-
-#### Bug Fixes
-
-- '#I368438' - The issue with "Copy/paste MAC keyboard shortcuts doesn't work for File Manager" has been resolved.
-
-## 20.1.58 (2022-05-31)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#F174002` - The issue with "Toolbar sorting throws an error for the date-modified column of the File Manager" has been resolved.
-
-## 20.1.57 (2022-05-24)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#F173974` - The issue with "Cut and paste files from a parent folder to a sub folder using the toolbar doesn't show any alert for users in File Manager" has been resolved.
-
-## 20.1.56 (2022-05-17)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#F174002` - The issue with "Drag and drop throws an error for the date-modified column of the File Manager" has been resolved.
-
-## 20.1.55 (2022-05-12)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I368832`, `#I374668` - The issue with "Not able to upload an excel file in the File Manager component with SQL file provider" has been resolved.
-
-## 20.1.52 (2022-05-04)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I371623` - The issue with "Unable to perform file operations on the filtered file items in File Manager" has been resolved.
-
 ## 19.2.56 (2021-08-17)
 
 ### File Manager

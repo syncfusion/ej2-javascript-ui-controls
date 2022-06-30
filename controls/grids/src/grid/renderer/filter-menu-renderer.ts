@@ -43,6 +43,7 @@ export class FilterMenuRenderer {
     protected options: IFilterArgs;
     private maxHeight: string = '350px';
     private isMenuCheck: boolean = false;
+    private currentDialogCreatedColumn: Column;
 
     private colTypes: Object = {
         'string': StringFilterUI, 'number': NumberFilterUI, 'date': DateFilterUI, 'boolean': BooleanFilterUI, 'datetime': DateFilterUI
@@ -136,7 +137,7 @@ export class FilterMenuRenderer {
             {
                 click: this.clearBtnClick.bind(this, column),
                 buttonModel: { content: this.l10n.getConstant('ClearButton'),
-                cssClass: this.parent.cssClass ? 'e-flmenu-cancelbtn' + ' ' + this.parent.cssClass : 'e-flmenu-cancelbtn' }
+                    cssClass: this.parent.cssClass ? 'e-flmenu-cancelbtn' + ' ' + this.parent.cssClass : 'e-flmenu-cancelbtn' }
             }],
             content: mainDiv,
             width: (!isNullOrUndefined(parentsUntil(target, 'e-bigger'))) || this.parent.element.classList.contains('e-device') ? 260 : 250,
@@ -164,7 +165,21 @@ export class FilterMenuRenderer {
         if (!Browser.isDevice && target) {
             getFilterMenuPostion(target, this.dlgObj);
         }
+        this.currentDialogCreatedColumn = column;
         this.renderFilterUI(target, column);
+        if (!column.isForeignColumn()) {
+            this.afterRenderFilterUI();
+        }
+    }
+
+    /**
+     * Function to notify filterDialogCreated and trigger actionComplete
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public afterRenderFilterUI(): void {
+        const column: Column = this.currentDialogCreatedColumn;
         if (column.showColumnMenu) {
             this.parent.notify(events.filterDialogCreated, {});
         }

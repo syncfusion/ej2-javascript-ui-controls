@@ -1,6 +1,6 @@
 import { Spreadsheet, SpreadsheetModel } from '../../../src/spreadsheet/index';
 import { TestHelper } from '../../common/helper.spec';
-import { createElement, EmitType, EventHandler } from '@syncfusion/ej2-base';
+import { createElement, EmitType, EventHandler, getComponent } from '@syncfusion/ej2-base';
 
 /**
  * Represents the class which contains Helper functions to test Spreadsheet component.
@@ -220,5 +220,11 @@ export class SpreadsheetHelper extends TestHelper {
                 this.triggerMouseAction('mouseover', { x: item.getBoundingClientRect().left + 10, y: item.getBoundingClientRect().top + 10 }, cMenu, item);
             }
         });
+    }
+
+    public switchRibbonTab(selectedItem: number): void {
+        const ribbonTabObj: any = getComponent(this.getElementFromSpreadsheet('.e-tab'), 'tab');
+        ribbonTabObj.selectedItem = selectedItem;
+        ribbonTabObj.dataBind();
     }
 }

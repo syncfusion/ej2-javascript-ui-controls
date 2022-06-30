@@ -212,7 +212,7 @@ export class Toolkit {
      * @private
      */
     public wireEvents(element: Element, process: Function): void {
-        EventHandler.add(element, 'touchend mousedown', process, this);
+        EventHandler.add(element, 'mousedown touchstart', process, this);
         EventHandler.add(element, 'mouseover', this.showTooltip, this);
         EventHandler.add(element, 'mouseout', this.removeTooltip, this);
     }
@@ -369,7 +369,7 @@ export class Toolkit {
         return false;
     }
 
-    private zoomInOutCalculation(scale: number, chart: Chart, axes: AxisModel[], mode: ZoomMode): void {
+    public zoomInOutCalculation(scale: number, chart: Chart, axes: AxisModel[], mode: ZoomMode): void {
         if (!chart.zoomModule.isPanning && this.elementOpacity !== '0.2') {
             let zoomFactor: number;
             let zoomPosition: number;

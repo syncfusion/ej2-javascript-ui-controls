@@ -479,7 +479,7 @@ export class PdfExport {
         const depth: number = measureColumnDepth(eCols);
         const cols: Column[] | string[] | ColumnModel[] = eCols;
         let index: number = 0;
-        let rowNumber: number[] = [];
+        const rowNumber: number[] = [];
         for (let i: number = 0; i < rows.length; i++) {
             rowNumber[i] = 0;
         }
@@ -522,9 +522,18 @@ export class PdfExport {
             const setCellBorder: PdfBorders = args.style.borders;
             const setCellFont: PdfFont = args.style.font;
             const setHeaderBrush: PdfBrush = args.style.textBrush;
-            gridHeader.style.setBorder(setCellBorder);
-            gridHeader.style.setFont(setCellFont);
-            gridHeader.style.setTextBrush(setHeaderBrush);
+            if (!isNullOrUndefined(setCellBorder)) {
+                gridHeader.style.setBorder(setCellBorder);
+            }
+            if (!isNullOrUndefined(setCellFont)) {
+                gridHeader.style.setFont(setCellFont);
+            }
+            if (!isNullOrUndefined(setHeaderBrush)) {
+                gridHeader.style.setTextBrush(setHeaderBrush);
+            }
+            if (!isNullOrUndefined(evtArgs.style.verticalAlignment)) {
+                pdfCell.style.stringFormat = this.getVerticalAlignment(evtArgs.style.verticalAlignment, pdfCell.style.stringFormat);
+            }
             if (!isNullOrUndefined(evtArgs.image)) {
                 pdfCell.value = new PdfBitmap(evtArgs.image.base64);
             }

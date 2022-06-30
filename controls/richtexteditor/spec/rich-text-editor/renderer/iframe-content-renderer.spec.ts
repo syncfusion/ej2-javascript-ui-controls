@@ -115,4 +115,27 @@ describe('Iframe Content renderer module', () => {
             destroy(rteObj);
         });
     });
+    
+    describe('EJ2-49376 - Table cell have different padding in HTML and Iframe mode', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                iframeSettings: {
+                    enable: true
+                },
+                value: `<table class='e-rte-table' style='width: 100%; min-width: 0px;'>
+                <tbody><tr><td class='' style='width: 33.3333%;'><br></td><td style='width: 33.3333%;' class=''><br></td><td style='width: 33.3333%;'><br></td></tr><tr><td style='width: 33.3333%;'><br></td><td style='width: 33.3333%;' class=''><br></td><td style='width: 33.3333%;'><br></td></tr><tr><td style='width: 33.3333%;'><br></td><td style='width: 33.3333%;'><br></td><td style='width: 33.3333%;' class=''><br></td></tr></tbody></table><p><br></p>`
+            });
+        });
+
+        it('- Iframe mode table padding testing', () => {
+            expect(getComputedStyle((rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument.querySelector('table td')).padding === '2px 5px').toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    
 });

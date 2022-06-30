@@ -181,25 +181,23 @@
 
   .e-de-table-border-setting {
     border: 1px solid $de-border-dlg-border-setting-inside-border;
-    height: 48px;
+    height: 40px;
     left: 5px;
     position: relative;
     top: 5px;
-    width: 48px;
+    width: 40px;
   }
 
   .e-de-table-border-setting-genral {
     border: 1px solid $de-border-dlg-border-setting-divs-color;
-    display: inline-block;
-    height: 60px;
-    width: 60px;
+    height: 52px;
+    width: 52px;
   }
 
   .e-de-table-border-preview-genral {
     border: 1px solid $de-border-dlg-border-preview-divs-color;
-    display: inline-block;
-    height: 25px;
-    width: 25px;
+    height: 24px;
+    width: 24px;
   }
 
   .e-de-table-border-inside-setting:hover {
@@ -258,12 +256,46 @@
     top: 2px;
   }
 
+  .e-de-para-border-none-setting::before {
+    color: $icon-color;
+    content: '\e890';
+    font-size: $de-border-none-setting-font-size;
+    position: absolute;
+  }
+
+  .e-de-para-border-box-setting::before {
+    color: $icon-color;
+    content: '\e891';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
+  .e-de-para-border-shadow-setting::before {
+    color: $icon-color;
+    content: '\e892';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
+  .e-de-para-border-custom-setting::before {
+    color: $icon-color;
+    content: '\e88f';
+    font-size: $de-border-setting-font-size;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+
   .e-de-table-border-toptop-alignment::before {
     color: $icon-color;
     content: '\e7e0';
     font-family: 'e-icons';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -272,7 +304,7 @@
     color: $icon-color;
     content: '\e83b';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -281,7 +313,7 @@
     color: $icon-color;
     content: '\e766';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -290,7 +322,7 @@
     color: $icon-color;
     content: '\e79d';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -299,7 +331,7 @@
     color: $icon-color;
     content: '\e784';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -308,7 +340,7 @@
     color: $icon-color;
     content: '\e806';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -317,7 +349,7 @@
     color: $icon-color;
     content: '\e792';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
@@ -326,7 +358,7 @@
     color: $icon-color;
     content: '\e7ab';
     font-size: 16px;
-    left: 4px;
+    left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }

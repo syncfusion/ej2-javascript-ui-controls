@@ -7,7 +7,7 @@ import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY } 
 import { Overlay, Dialog } from '../services/index';
 import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData } from '../common/index';
 import { removeClass, L10n, isUndefined } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress } from '../../workbook/index';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {
@@ -182,7 +182,8 @@ export class SpreadsheetImage {
     }
 
     private refreshImgCellObj(args: BeforeImageRefreshData): void {
-        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIndex: number =  isUndefined(args.sheetIdx) ? this.parent.activeSheetIndex : args.sheetIdx;
+        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const prevCellObj: CellModel = getCell(args.prevRowIdx, args.prevColIdx, sheet);
         const currCellObj: CellModel = getCell(args.currentRowIdx, args.currentColIdx, sheet);
         const prevCellImg: object[] = prevCellObj ? prevCellObj.image : [];

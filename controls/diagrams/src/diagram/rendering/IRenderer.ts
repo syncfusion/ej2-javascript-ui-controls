@@ -13,7 +13,7 @@ export interface IRenderer {
     drawRectangle(canvas: HTMLCanvasElement | SVGElement, options: RectAttributes, diagramId: string,
         onlyRect?: boolean, isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object): void;
     drawPath(canvas: HTMLCanvasElement | SVGElement, options: PathAttributes, diagramId: string,
-        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object): void;
+        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object, scale?: number): void;
     renderPath(canvas: HTMLCanvasElement | SVGElement, options: PathAttributes,
         collection: Object[]): void;
     drawText(canvas: HTMLCanvasElement | SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object,

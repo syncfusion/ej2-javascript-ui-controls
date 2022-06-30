@@ -870,9 +870,9 @@ export class PivotUtil {
         }
         else if (type === true) {
             sortOrder === 'Ascending' ?
-                (sortMembersOrder.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (Number(a.actualText.toString().match(/\d+/)[0]) > Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) > Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                (sortMembersOrder.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 : (b.actualText === 'Out of Range') ? -1 : (Number(a.actualText.toString().match(/\d+/)) > Number(b.actualText.toString().match(/\d+/))) ? 1 : ((Number(b.actualText.toString().match(/\d+/)) > Number(a.actualText.toString().match(/\d+/))) ? -1 : 0))) :
                 sortOrder === 'Descending' ?
-                    (sortMembersOrder.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
+                    (sortMembersOrder.sort((a, b) => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? -1 : (b.actualText === 'Out of Range') ? 1 : (Number(a.actualText.toString().match(/\d+/)) < Number(b.actualText.toString().match(/\d+/))) ? 1 : ((Number(b.actualText.toString().match(/\d+/)) < Number(a.actualText.toString().match(/\d+/))) ? -1 : 0))) :
                     sortMembersOrder;
         }
         else {

@@ -26,6 +26,8 @@
 @import "slider/bootstrap.scss";
 @import "color-picker/bootstrap.scss";
 @import "combo-box/bootstrap.scss";
+@import "h-scroll/bootstrap.scss";
+@import "v-scroll/bootstrap.scss";
 @import "context-menu/bootstrap.scss";
 @import "dashboard-layout/bootstrap.scss";
 @import "datepicker/bootstrap.scss";
@@ -40,8 +42,7 @@
 @import "textbox/bootstrap.scss";
 @import "uploader/bootstrap.scss";
 @import "dialog/bootstrap.scss";
-@import "h-scroll/bootstrap.scss";
-@import "v-scroll/bootstrap.scss";
+@import "pager/bootstrap.scss";
 @import "toolbar/bootstrap.scss";
 @import "tab/bootstrap.scss";
 @import "treeview/bootstrap.scss";
@@ -54,7 +55,6 @@
 @import "document-editor/bootstrap.scss";
 @import "document-editor-container/bootstrap.scss";
 @import "splitter/bootstrap.scss";
-@import "pager/bootstrap.scss";
 @import "excel-filter/bootstrap.scss";
 @import "grid/bootstrap.scss";
 @import "file-manager/bootstrap.scss";

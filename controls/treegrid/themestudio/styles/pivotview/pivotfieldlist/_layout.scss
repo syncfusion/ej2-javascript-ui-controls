@@ -71,6 +71,7 @@
     .e-format-inner-div {
       padding-left: 14px;
       padding-top: 14px;
+      width: 579px;
     }
 
     .e-format-outer-div {
@@ -285,6 +286,7 @@
     .e-format-inner-div {
       padding-left: 16px;
       padding-top: 16px;
+      width: 656px;
     }
 
     .e-format-outer-div {
@@ -847,9 +849,9 @@
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
     //sass-lint:disable-all
-    max-height: 580px !important;
+    max-height: 590px !important;
+    min-width: 401px !important;
     // sass-lint:enable-all
-    min-width: 310px;
 
     .e-pivot-all-field-title,
     .e-pivot-field-name-title,
@@ -860,9 +862,6 @@
       font-size: $field-list-bigger-header-font-size;
       padding: $pivot-calculated-bigger-header-padding 0;
       padding-bottom: 0;
-
-
-
 
       @if ($skin-name == 'FluentUI') {
         font-weight: 600;
@@ -911,7 +910,7 @@
 
     // sass-lint:disable-all
     &.e-olap-calc-dialog-div {
-      max-height: 700px !important;
+      max-height: 750px !important;
       min-width: 580px;
 
       .e-pivot-calc-outer-div {
@@ -1013,8 +1012,10 @@
       }
 
       .e-member-editor-container ul {
+        // sass-lint:disable-all
         margin-left: $field-list-member-filter-list-padding-size;
-        overflow: hidden;
+        overflow: auto !important;
+        // sass-lint:enable-all
 
         li {
           .e-list-text {
@@ -1070,6 +1071,10 @@
     }
 
     .e-member-editor-dialog {
+      .e-toolbar .e-toolbar-items {
+        margin-left: $field-list-filter-toolbar-items-margin;
+      }
+
       .e-clear-filter-button {
         float: left;
         margin: 0;
@@ -1261,6 +1266,11 @@
       }
 
       &.e-rtl {
+        .e-toolbar .e-toolbar-items {
+          margin-left: 0;
+          margin-right: $field-list-filter-toolbar-items-margin;
+        }
+
         .e-member-editor-outer-container {
           .e-editor-search-container {
             .e-filter-sort {
@@ -1314,6 +1324,10 @@
     }
 
     .e-adaptive-field-list-dialog {
+      ul {
+        min-height: 170px;
+        overflow: auto;
+      }
       .e-member-editor-container ul {
         li {
           // sass-lint:disable-all
@@ -1448,13 +1462,13 @@
 
       .e-dlg-content {
         overflow: hidden;
-        padding: 0;
+        padding: 0 !important;
         @if ($skin-name == 'FluentUI') {
           padding-top: 1px;
         }
 
         @if ($skin-name == 'tailwind') {
-          padding-top: 12px;
+          padding: 12px 0 0 0 !important;
         }
 
         // sass-lint:disable-all
@@ -1792,7 +1806,7 @@
       }
 
       &.e-excel-filter {
-        min-width: $field-list-bigger-excel-dialog-min-width;
+        min-width: $field-list-bigger-excel-dialog-min-width !important;
       }
     }
 

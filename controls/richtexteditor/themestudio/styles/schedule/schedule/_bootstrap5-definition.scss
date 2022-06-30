@@ -25,7 +25,7 @@ $schedule-time-scale-bgr-font-size: $text-sm !default;
 $schedule-time-scale-device-font-size: 11px !default;
 $schedule-current-time-nrml-font-size: $text-xxs !default;
 $schedule-current-time-bgr-font-size: $text-xs !default;
-$schedule-current-time-bgr-device-font-size: $text-xs !default;
+$schedule-current-time-bgr-device-font-size: 9px !default;
 $schedule-recurrence-font-size: 11px !default;
 $schedule-tbar-down-arrow-font-size: $text-lg !default;
 $schedule-content-nrml-font-text-transform: none !default;
@@ -160,7 +160,7 @@ $schedule-month-agenda-item-padding: 10px 0 !default;
 // resource definitions
 $schedule-timeline-resources-width: 200px !default;
 $schedule-resource-color-margin-top: 10px !default;
-$schedule-bigger-resource-color-margin-top: 14px !default;
+$schedule-bigger-resource-color-margin-top: 8px !default;
 $schedule-resource-color-size: 14px !default;
 $schedule-bigger-resource-color-size: 16px !default;
 

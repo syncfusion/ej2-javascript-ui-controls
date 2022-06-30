@@ -495,7 +495,7 @@ export class HtmlExport {
         }
         return borderStyle;
     }
-    private serializeCellBordersStyle(WCell:any): string {
+    private serializeCellBordersStyle(WCell: any): string {
         let borderStyle: string = '';
 
         //borderStyle = 'border:solid 1px;';

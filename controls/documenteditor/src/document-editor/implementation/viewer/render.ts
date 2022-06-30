@@ -12,7 +12,7 @@ import {
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
-import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo } from '../editor/editor-helper';
+import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo, RevisionInfo, BorderInfo, BorderRenderInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo, WColor, CharacterRangeType } from '../../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
@@ -457,15 +457,120 @@ export class Renderer {
             page.documentHelper.layout.updateChildLocationForTable(top, widget);
         }
     }
-
     private renderParagraphWidget(page: Page, paraWidget: ParagraphWidget): void {
         let top: number = paraWidget.y;
         let left: number = paraWidget.x;
+        this.renderParagraphBorder(page, paraWidget);
         for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
             let widget: LineWidget = paraWidget.childWidgets[i] as LineWidget;
             top += widget.marginTop;
             this.renderLine(widget, page, left, top);
             top += widget.height;
+        }
+    }
+    private renderParagraphBorder(page: Page, paragraphWidet: ParagraphWidget) {
+        let leftBorder: WBorder = paragraphWidet.paragraphFormat.borders.left;
+        let topBorder: WBorder = paragraphWidet.paragraphFormat.borders.top;
+        let rightBorder: WBorder = paragraphWidet.paragraphFormat.borders.right;
+        let bottomBorder: WBorder = paragraphWidet.paragraphFormat.borders.bottom;
+        let startX: number = 0;
+        let startY: number = 0;
+        let endX: number = 0;
+        let endY: number = 0;
+        let firstLine: LineWidget = paragraphWidet.firstChild as LineWidget;
+        let lastLine: LineWidget = paragraphWidet.lastChild as LineWidget;
+        let canRenderParagraphBorders: BorderRenderInfo = this.documentHelper.canRenderBorder(paragraphWidet);
+        if (leftBorder.lineStyle !== 'None') {
+            startX = paragraphWidet.x - HelperMethods.convertPointToPixel(leftBorder.space);
+            endX = startX;
+            endY = startY + paragraphWidet.height;
+            if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
+                startY = paragraphWidet.y + this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space));
+                endY = startY + paragraphWidet.height - (this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space)));
+            }
+            else {
+                startY = paragraphWidet.y;
+                endY = startY + paragraphWidet.height;
+            }
+            if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
+                endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
+            }
+            this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, leftBorder.lineWidth);
+        }
+        if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
+            startX = paragraphWidet.x;
+            endX = startX + this.getContainerWidth(paragraphWidet, page);
+            startY = paragraphWidet.y + this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space));
+            endY = startY;
+            if (leftBorder.lineStyle !== 'None') {
+                startX -= HelperMethods.convertPointToPixel(leftBorder.space);
+            }
+            if (rightBorder.lineStyle !== 'None') {
+                endX += HelperMethods.convertPointToPixel(rightBorder.space);
+            }
+            this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, topBorder.lineWidth);
+        }
+        if (rightBorder.lineStyle !== 'None') {
+            startX = paragraphWidet.x + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space);
+            startY = endY;
+            endX = startX;
+            endY = startY + paragraphWidet.height;
+            if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
+                startY = paragraphWidet.y + this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space));
+                endY = startY + paragraphWidet.height - (this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space)));
+            }
+            else {
+                startY = paragraphWidet.y;
+                endY = startY + paragraphWidet.height
+            }
+            if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
+                endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
+            }
+            this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, rightBorder.lineWidth);
+        }
+        if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
+            startX = paragraphWidet.x;
+            endX = startX + this.getContainerWidth(paragraphWidet, page);
+            startY = (paragraphWidet.y + paragraphWidet.height + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - (this.getBottomMargin(paragraphWidet));
+            endY = startY;
+            if (leftBorder.lineStyle !== 'None') {
+                startX -= HelperMethods.convertPointToPixel(leftBorder.space);
+            }
+            if (rightBorder.lineStyle !== 'None') {
+                endX += HelperMethods.convertPointToPixel(rightBorder.space);
+            }
+            this.renderSingleBorder(bottomBorder.color, startX, startY, endX, endY, bottomBorder.lineWidth);
+        }
+    }
+    private getContainerWidth(paraWidget: ParagraphWidget, page: Page): any {
+        if (paraWidget.isInsideTable) {
+            let cell = paraWidget.associatedCell;
+            return (cell.width + cell.margin.left + cell.margin.right) - cell.leftBorderWidth;
+        } else {
+            if (this.viewer instanceof WebLayoutViewer) {
+                let indent: number = HelperMethods.convertPointToPixel(paraWidget.leftIndent + paraWidget.rightIndent);
+                return (this.documentHelper.visibleBounds.width - (indent) - (this.viewer.padding.right * 4) - (this.viewer.padding.left * 2)) / this.documentHelper.zoomFactor;
+            } else {
+                let sectionFormat: WSectionFormat = page.bodyWidgets[0].sectionFormat;
+                let width: number = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
+                return HelperMethods.convertPointToPixel(width - (paraWidget.rightIndent + paraWidget.leftIndent));
+            }
+        }
+    }
+    private getTopMargin(paragraph: ParagraphWidget) {
+        if (paragraph.isEmpty()) {
+            return (paragraph.childWidgets[0] as LineWidget).margin.top;
+        } else {
+            let widget: LineWidget = paragraph.childWidgets[0] as LineWidget;
+            return (widget.children[0] as ElementBox).margin.top;
+        }
+    }
+    private getBottomMargin(paragarph: ParagraphWidget) {
+        if (paragarph.isEmpty()) {
+            return (paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget).margin.bottom;
+        } else {
+            let widget: LineWidget = paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget;
+            return (widget.children[widget.children.length - 1] as ElementBox).margin.bottom;
         }
     }
 
@@ -488,9 +593,9 @@ export class Renderer {
                 let widget: BlockWidget = bodyWidget.childWidgets[j] as BlockWidget;
                 if (i === 0 && j === 0) {
                     let ctx: CanvasRenderingContext2D = this.pageContext;
-                    this.renderSolidLine(ctx, this.getScaledValue(96, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), (isEmptyPage ? 624 : 210) * this.documentHelper.zoomFactor, '#000000');
+                    this.renderSolidLine(ctx, this.getScaledValue(96, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
                 }
-                if (j === 0 && !isNullOrUndefined(footNoteReference) && widget.index === 0 && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editor.isFootNoteInsert) {
+                if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editor.isFootNoteInsert) {
                     //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
                     ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text = ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text.replace(((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text, footNoteReference.text);
                     //}
@@ -698,8 +803,8 @@ export class Renderer {
                     }
                     this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(height));
                     if (isAltered) {
-                       isAltered = false;
-                       top = top - HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.beforeSpacing);
+                        isAltered = false;
+                        top = top - HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.beforeSpacing);
                     }
                 }
             }
@@ -970,6 +1075,8 @@ export class Renderer {
                 text = tabElement.tabText;
             }
         }
+        //this.pageContext.direction = 'ltr';
+
         let isRTL: boolean = format.bidi || this.documentHelper.textHelper.isRTLText(elementBox.text);
         text = this.documentHelper.textHelper.setText(text, isRTL, format.bdo, true);
         if (format.allCaps) {
@@ -984,10 +1091,9 @@ export class Renderer {
 
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
 
-        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || !elementBox.canTrigger || elementBox.isSpellChecked) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
-            && (!this.documentHelper.selection.isSelectionInsideElement(elementBox)))) {
-                if(!elementBox.canTrigger)
-                elementBox.canTrigger = true;
+        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
+            && (!this.documentHelper.selection.isSelectionInsideElement(elementBox) || this.documentHelper.triggerElementsOnLoading || this.documentHelper.owner.editor.triggerPageSpellCheck))) {
+            elementBox.canTrigger = true;
             this.leftPosition = this.pageLeft;
             this.topPosition = this.pageTop;
             let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
@@ -1000,7 +1106,7 @@ export class Renderer {
                         this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
-            } else if (elementBox.ischangeDetected || elementBox.line.paragraph.isChangeDetected) {
+            } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
                 elementBox.ischangeDetected = false;
                 this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
             }
@@ -1129,7 +1235,7 @@ export class Renderer {
                                 let hasSpellingError: boolean = this.spellChecker.isErrorWord(retrievedText) ? true : false;
                                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                                 this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
-                            } else {
+                            } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
                                 this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1160,7 +1266,7 @@ export class Renderer {
                     let hasSpellingError: boolean = this.spellChecker.isErrorWord(currentText) ? true : false;
                     let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                     this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                } else {
+                } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */

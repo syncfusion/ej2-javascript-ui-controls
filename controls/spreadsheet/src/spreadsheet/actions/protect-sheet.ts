@@ -513,7 +513,9 @@ export class ProtectSheet {
         } else if ((pwdVal as CellModel).value !== (cnfrmPwd as CellModel).value) {
             pwdSpan.textContent = l10n.getConstant('PasswordAlert');
         }
-        (this.parent.element.querySelector('.e-protectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
+        if (dialogInst.dialogInstance) {
+            (this.parent.element.querySelector('.e-protectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
+        }   
     }
 
     private protectWorkbookHandler(args: { password: string }): void {

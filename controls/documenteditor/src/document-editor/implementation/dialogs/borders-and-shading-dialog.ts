@@ -1,14 +1,14 @@
 import { Dialog } from '@syncfusion/ej2-popups';
-import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { classList, createElement, isNullOrUndefined, L10n, Property } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { WTableFormat, WBorder, WBorders, WShading, WCellFormat } from '../format/index';
+import { WTableFormat, WBorder, WBorders, WShading, WCellFormat, WParagraphFormat } from '../format/index';
 import { LineStyle } from '../../base/types';
 import { TablePropertiesDialog } from './table-properties-dialog';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { TableCellWidget } from '../viewer/page';
+import { ParagraphWidget, TableCellWidget } from '../viewer/page';
 import { Editor } from '../index';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
-import { DocumentHelper } from '../viewer';
+import { DocumentHelper, SelectionBorders, SelectionBorder } from '../../index';
 
 /**
  * The Borders and Shading dialog is used to modify borders and shading options for selected table or cells.
@@ -17,12 +17,10 @@ export class BordersAndShadingDialog {
     public documentHelper: DocumentHelper;
     private dialog: Dialog;
     private target: HTMLElement;
-    private tableFormatIn: WTableFormat;
-    private cellFormatIn: WCellFormat;
-    private applyTo: number;
 
     private cellFormat: WCellFormat = new WCellFormat();
     private tableFormat: WTableFormat = new WTableFormat();
+    private paragraphFormat: WParagraphFormat;
 
     // Dialog elements
     private borderStyle: DropDownList;
@@ -92,39 +90,31 @@ export class BordersAndShadingDialog {
             className: 'e-de-table-border-shading-dlg'
         });
         const displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            innerHTML: localeValue.getConstant('Borders'), styles: 'position: absolute;top: 65px;',
-            id: this.target.id + '_border_label', className: 'e-de-table-border-heading'
+            innerHTML: localeValue.getConstant('Borders'),
+            className: 'e-de-table-border-heading'
+        });
+        const settingAndPreviewContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-dlg-row'
         });
         const settingsContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'display: inline-block;position: absolute;top: 105px;width: 100px;height: 235px;border-style: none;',
-            id: this.target.id + '_border_settings'
         });
-        let styleContainerPosition: string;
-        if (isRtl) {
-            styleContainerPosition = 'left: 148px;';
-        } else {
-            styleContainerPosition = 'left: 125px;';
-        }
         const styleContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'display: inline-block;position: absolute;' + styleContainerPosition + 'top: 125px;width: 150px;height: 235px;padding-left: 40px;border-style: none;padding-right: 40px;',
-            id: this.target.id + '_border_style'
         });
-        let previewContinerPosition: string;
-        if (isRtl) {
-            previewContinerPosition = 'right: 342px;';
-        } else {
-            previewContinerPosition = 'left: 339px;';
-        }
         const previewContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'display: inline-block;position: absolute;' + previewContinerPosition + 'top: 87px;width: 180px;height: 235px;padding: 0px;border-style: none;',
-            id: this.target.id + '_border_preview'
+            className: 'e-de-table-border-preview-container'
         });
-        const styleText: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            innerHTML: localeValue.getConstant('Style'), styles: 'width: 100%;padding-bottom: 10px;',
-            className: 'e-de-table-element-subheading'
+        const previewSubContainer1: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-dlg-row'
+        });
+        const previewSubContainer2: HTMLDivElement = <HTMLDivElement>createElement('div', {
+        });
+        const styleSubContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-container-row'
+        });
+        const dropdownListDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-subcontainer-left'
         });
         const dropDownList: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
-            id: this.target.id + '_border_style_dropDown'
         });
         dropDownList.innerHTML = '<option value="None">' + localeValue.getConstant('None') + '</option><option value="Single">'
             + localeValue.getConstant('Single') + '</option><option value="Dot">' + localeValue.getConstant('Dot') + '</option><option value="DashSmallGap">'
@@ -142,47 +132,45 @@ export class BordersAndShadingDialog {
             + '</option><option value="Emboss3D">' + localeValue.getConstant('Emboss3D') + '</option><option value="Engrave3D">' + localeValue.getConstant('Engrave3D')
             + '</option><option value="Outset">' + localeValue.getConstant('Outset') + '</option><option value="Inset">'
             + localeValue.getConstant('Inset') + '</option><option value="Thick">' + localeValue.getConstant('Thick') + '</option>';
-        const widthText: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            innerHTML: localeValue.getConstant('Width'), styles: 'width:100%;padding-top: 20px;padding-bottom: 10px;',
-            className: 'e-de-table-element-subheading'
+        const widthcontainerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-container-row'
+        });
+        const widthNumericDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-subcontainer-left'
         });
         const widthNumeric: HTMLInputElement = <HTMLInputElement>createElement('input', {
-            id: this.target.id + '_width'
+        });
+        const colorDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-subcontainer-right'
         });
         const colorText: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            innerHTML: localeValue.getConstant('Color'), styles: 'padding-top: 25px;',
-            className: 'e-de-table-setting-heading'
+            innerHTML: localeValue.getConstant('Color'),
+            className: 'e-de-table-border-clr-heading'
         });
         const borderColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'color' },
-            id: this.target.id + '_border_color',
-            styles: 'width: 30px;position: absolute;left: 90px;',
             className: 'e-dlg-clr-pkr-top'
         });
         const settingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            innerHTML: localeValue.getConstant('Setting'), styles: 'width: 100%;position: absolute;',
+            innerHTML: localeValue.getConstant('Setting'),
             className: 'e-de-table-setting-heading'
         });
+        const settingsSubContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            className: 'e-de-dlg-row'
+        })
         const noneDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_None_Div_Container', className: 'e-de-table-border-none'
+            id: this.target.id + '_None_Div_Container',
         });
-        let divLabelPadding: string;
-        if (isRtl) {
-            divLabelPadding = 'padding-right:10px;';
-        } else {
-            divLabelPadding = 'padding-left:10px;';
-        }
         this.noneDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_None_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
         const noneDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('None'), className: 'e-de-table-setting-labels-heading',
-            styles: divLabelPadding + 'top: 20px;position: absolute;',
             id: this.target.id + '_None_Div_Label'
         });
         const boxDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Box_Div_Container', className: 'e-de-table-border-box'
+            id: this.target.id + '_Box_Div_Container',
         });
         this.boxDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div',
@@ -190,11 +178,10 @@ export class BordersAndShadingDialog {
         });
         const boxDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Box'), className: 'e-de-table-setting-labels-heading',
-            styles: divLabelPadding + 'top: 20px;position: absolute;',
             id: this.target.id + '_Box_Div_Label'
         });
         const allDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_All_Div_Container', className: 'e-de-table-border-all'
+            id: this.target.id + '_All_Div_Container',
         });
         this.allDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div',
@@ -202,11 +189,10 @@ export class BordersAndShadingDialog {
         });
         const allDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('All'), className: 'e-de-table-setting-labels-heading',
-            styles: divLabelPadding + 'top: 25px;position: absolute;',
             id: this.target.id + '_All_Div_Label'
         });
         const customDivContainer: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Custom_Div_Container', className: 'e-de-table-border-custom'
+            id: this.target.id + '_Custom_Div_Container',
         });
         this.customDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div',
@@ -214,7 +200,6 @@ export class BordersAndShadingDialog {
         });
         const customDivLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
             innerHTML: localeValue.getConstant('Custom'), className: 'e-de-table-setting-labels-heading',
-            styles: divLabelPadding + 'top: 25px;position: absolute;',
             id: this.target.id + '_Custom_Div_Label'
         });
         this.noneDivTransparent = createElement('div', {
@@ -235,112 +220,95 @@ export class BordersAndShadingDialog {
             this.allDivTransparent.classList.add('e-de-rtl');
             this.customDivTransparent.classList.add('e-de-rtl');
         }
-        let previewTextPosition: string;
-        if (isRtl) {
-            previewTextPosition = 'margin-right: 10px;';
-        } else {
-            previewTextPosition = 'margin-left: 10px;';
-        }
         const previewText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Preview'), className: 'e-de-table-setting-heading',
-            styles: 'position: absolute;top: 20px;' + previewTextPosition
         });
         this.previewDiv = createElement('div', {
-            styles: 'width: 80px;height: 80px;position: absolute; left: 50px;top: 50px;',
-            id: this.target.id + '_Preview_Div', className: 'e-de-border-dlg-preview-div'
+            id: this.target.id + '_Preview_Div', className: 'e-de-border-dlg-preview-div',
+            styles: 'position: relative'
         }) as HTMLDivElement;
         this.previewRightDiagonalDiv = createElement('div', {
-            styles: 'position: absolute;width:1px;height:113px;left: 90px;top: 34px;transform: rotate(135deg);',
+            styles: 'position: absolute;width:1px;height:111px;left: 38px;top: -17px;transform: rotate(135deg); background-color: black',
             id: this.target.id + '_Preview_Div_Right_Diagonal',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
         this.previewLeftDiagonalDiv = createElement('div', {
-            styles: 'position: absolute;width: 1px;height: 113px;left: 90px;top: 34px;transform:rotate(45deg);',
+            styles: 'position: absolute;width: 1px;height: 111px;left: 38px;top: -17px;transform:rotate(45deg); background-color: black',
             id: this.target.id + '_Preview_Div_Left_Diagonal',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
         this.previewVerticalDiv = createElement('div', {
-            styles: 'width: 1px;height: 81px;position: absolute;left: 90px;top: 50px;',
+            styles: 'width: 1px;height: 80px;position: absolute;left: 39px;top: -1px; background-color: black',
             id: this.target.id + '_Preview_Div_Vertical',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
         this.previewHorizontalDiv = createElement('div', {
-            styles: 'width: 81px;height: 1px;position: absolute;left: 50px;top: 90px;',
+            styles: 'width: 80px;height: 1px;position: absolute;left: -1px;top: 41px; background-color: black',
             id: this.target.id + '_Preview_Div_Horizontal',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
-        let previewDivTopPosition: string;
-        if (isRtl) {
-            previewDivTopPosition = 'right: 10px;';
-        } else {
-            previewDivTopPosition = 'left: 10px;';
-        }
+        const previewDivVerticalContainer = createElement('div') as HTMLDivElement;
         this.previewDivTopTopContainer = createElement('div', {
-            styles: 'top: 50px;position: absolute;' + previewDivTopPosition, id: this.target.id + '_Preview_Div_TopTop_Container'
+            styles: 'margin-top: 0',
+            className: 'e-de-table-border-icon-container',
+            id: this.target.id + '_Preview_Div_TopTop_Container'
         }) as HTMLDivElement;
         this.previewDivTopTop = createElement('div', {
             id: this.target.id + '_Preview_Div_TopTop',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
         this.previewDivTopCenterContainer = createElement('div', {
-            styles: 'top: 80px;position: absolute;' + previewDivTopPosition, id: this.target.id + '_Preview_Div_TopCenter_Container'
+            className: 'e-de-table-border-icon-container',
+            id: this.target.id + '_Preview_Div_TopCenter_Container'
         }) as HTMLDivElement;
         this.previewDivTopCenter = createElement('div', {
             id: this.target.id + '_Preview_Div_TopCenter',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
         this.previewDivTopBottomContainer = createElement('div', {
-            styles: 'top: 110px;position: absolute;' + previewDivTopPosition, id: this.target.id + '_Preview_Div_TopBottom_Container'
+            className: 'e-de-table-border-icon-container',
+            id: this.target.id + '_Preview_Div_TopBottom_Container'
         }) as HTMLDivElement;
         this.previewDivTopBottom = createElement('div', {
             id: this.target.id + '_Preview_Div_TopBottom',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
         this.previewDivLeftDiagonalContainer = createElement('div', {
-            styles: 'top: 145px;position: absolute;left: 10px;', id: this.target.id + '_Preview_Div_LeftDiagonal_Container'
+            className: 'e-de-table-border-icon-container',
+            id: this.target.id + '_Preview_Div_LeftDiagonal_Container'
         }) as HTMLDivElement;
         this.previewDivLeftDiagonal = createElement('div', {
             id: this.target.id + '_Preview_Div_LeftDiagonal',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
-        let previewDivBottomLeftPosition: string;
-        let previewDivBottomCenterPosition: string;
-        let previewDivBottomRightPosition: string;
-        if (isRtl) {
-            previewDivBottomLeftPosition = 'left: 104px';
-            previewDivBottomCenterPosition = 'left: 74px';
-            previewDivBottomRightPosition = 'left: 44px';
-        } else {
-            previewDivBottomLeftPosition = 'left: 50px;';
-            previewDivBottomCenterPosition = 'left : 80px;';
-            previewDivBottomRightPosition = 'left : 110px';
-        }
+        const previewDivHorizontalContainer = createElement('div', { className: 'e-de-dlg-row' }) as HTMLDivElement;
         this.previewDivBottomLeftContainer = createElement('div', {
-            styles: 'top: 145px;position: absolute;' + previewDivBottomLeftPosition,
-            id: this.target.id + '_Preview_Div_BottomLeft_Container'
+            id: this.target.id + '_Preview_Div_BottomLeft_Container',
+            className: 'e-de-table-border-icon-container'
         }) as HTMLDivElement;
         this.previewDivBottomLeft = createElement('div', {
             id: this.target.id + '_Preview_Div_BottomLeft',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
         this.previewDivBottomcenterContainer = createElement('div', {
-            styles: 'top: 145px;position: absolute;' + previewDivBottomCenterPosition,
-            id: this.target.id + '_Preview_Div_BottomCenter_Container'
+            id: this.target.id + '_Preview_Div_BottomCenter_Container',
+            className: 'e-de-table-border-icon-container'
         }) as HTMLDivElement;
         this.previewDivBottomcenter = createElement('div', {
             id: this.target.id + '_Preview_Div_BottomCenter',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
         this.previewDivBottomRightContainer = createElement('div', {
-            styles: 'top: 145px;position: absolute;' + previewDivBottomRightPosition,
-            id: this.target.id + '_Preview_Div_BottomRight_Container'
+            id: this.target.id + '_Preview_Div_BottomRight_Container',
+            className: 'e-de-table-border-icon-container'
         }) as HTMLDivElement;
         this.previewDivBottomRight = createElement('div', {
             id: this.target.id + '_Preview_Div_BottomRight',
             className: 'e-de-table-border-inside-preview e-de-table-border-preview-genral'
         }) as HTMLDivElement;
         this.previewDivDiagonalRightContainer = createElement('div', {
-            styles: 'top: 145px; position: absolute; left: 110px;', id: this.target.id + '_Preview_Div_RightDiagonal_Container'
+            className: 'e-de-table-border-icon-container',
+            id: this.target.id + '_Preview_Div_RightDiagonal_Container'
         }) as HTMLDivElement;
         this.previewDivDiagonalRight = createElement('div', {
             id: this.target.id + '_Preview_Div_RightDiagonal',
@@ -378,48 +346,33 @@ export class BordersAndShadingDialog {
             id: this.target.id + '_previewDivDiagonalRightTransparent',
             className: 'e-icons e-de-table-border-preview e-de-table-border-diagionaldown-alignment'
         }) as HTMLDivElement;
-        let shadingContainerPosition: string;
-        if (isRtl) {
-            shadingContainerPosition = 'left:60px;';
-        }
         this.shadingContiner = createElement('div', {
-            /* eslint-disable max-len */
-            styles: 'display:inline-block;position:absolute;' + shadingContainerPosition + ';width:400px;height:100px;padding:0px;border-style: none;',
-            id: this.target.id + '_shading_preview', className: 'e-de-table-shading-preview'
         }) as HTMLDivElement;
         const shadingText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Shading'), className: 'e-de-table-border-heading',
-            styles: 'padding-top: 30px;'
         });
-        const shadings: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display:flex;' });
+        const shadings: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-dlg-row' });
+        const colorPickerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-border-clr-left-container' });
         const label: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            innerHTML: localeValue.getConstant('Fill'), className: 'e-de-table-setting-heading e-de-table-border-fill',
-            styles: 'top: 50px;left: 10px;'
+            innerHTML: localeValue.getConstant('Fill'), className: 'e-de-table-border-clr-heading',
         });
         const shadingColorPickerElement: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'color' },
-            id: this.target.id + '_shading_color', styles: 'position: absolute;top: 75px;left: 40px;width: 30px;'
+            id: this.target.id + '_shading_color',
         });
-        let shdApplyPosition: string;
-        if (isRtl) {
-            shdApplyPosition = 'left: 75px;';
-        } else {
-            shdApplyPosition = 'left: 150px;';
-        }
         const shdApply: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'position:absolute;top:44px;' + shdApplyPosition + 'width:180px;'
+            className: 'e-de-subcontainer-right'
         });
-        const div: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'width:100px;padding-bottom: 10px;', innerHTML: localeValue.getConstant('Apply To'),
-            className: 'e-de-table-element-subheading'
-        });
-        const divsion: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width:100px;position:absolute;' });
-        const ulelementShading: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
-            innerHTML: '<option value="Cell">' + localeValue.getConstant('Cell') + '</option>'
-                + '<option value="Table">' + localeValue.getConstant('Table') + '</option>',
+        let ulelementShading: HTMLSelectElement = <HTMLSelectElement>createElement('input', {
             id: this.target.id + '_shading'
         });
-        divsion.appendChild(ulelementShading);
+        let ulelementShadingValue: { [Key: string]: Object }[] =
+            [
+                { Value: 'Cell', Name: localeValue.getConstant('Cell ') },
+                { Value: 'Table', Name: localeValue.getConstant('Table') },
+                { Value: 'Paragraph', Name: localeValue.getConstant('Paragraph') }
+            ]
+        shdApply.appendChild(ulelementShading);
 
         this.noneDiv.appendChild(this.noneDivTransparent);
         this.boxDiv.appendChild(this.boxDivTransparent);
@@ -435,10 +388,11 @@ export class BordersAndShadingDialog {
         customDivContainer.appendChild(customDivLabel);
 
         settingsContiner.appendChild(settingText);
-        settingsContiner.appendChild(noneDivContainer);
-        settingsContiner.appendChild(boxDivContainer);
-        settingsContiner.appendChild(allDivContainer);
-        settingsContiner.appendChild(customDivContainer);
+        settingsContiner.appendChild(settingsSubContiner);
+        settingsSubContiner.appendChild(noneDivContainer);
+        settingsSubContiner.appendChild(boxDivContainer);
+        settingsSubContiner.appendChild(allDivContainer);
+        settingsSubContiner.appendChild(customDivContainer);
 
         this.previewDivBottomcenter.appendChild(this.previewDivBottomcenterTransparent);
         this.previewDivBottomRight.appendChild(this.previewDivBottomRightTransparent);
@@ -459,41 +413,53 @@ export class BordersAndShadingDialog {
         this.previewDivTopTopContainer.appendChild(this.previewDivTopTop);
 
         previewContiner.appendChild(previewText);
-        previewContiner.appendChild(this.previewDiv);
-        previewContiner.appendChild(this.previewRightDiagonalDiv);
-        previewContiner.appendChild(this.previewHorizontalDiv);
-        previewContiner.appendChild(this.previewLeftDiagonalDiv);
-        previewContiner.appendChild(this.previewVerticalDiv);
-        previewContiner.appendChild(this.previewDivBottomcenterContainer);
-        previewContiner.appendChild(this.previewDivBottomLeftContainer);
-        previewContiner.appendChild(this.previewDivBottomRightContainer);
-        previewContiner.appendChild(this.previewDivDiagonalRightContainer);
-        previewContiner.appendChild(this.previewDivLeftDiagonalContainer);
-        previewContiner.appendChild(this.previewDivTopBottomContainer);
-        previewContiner.appendChild(this.previewDivTopCenterContainer);
-        previewContiner.appendChild(this.previewDivTopTopContainer);
+        previewContiner.appendChild(previewSubContainer1);
 
-        shdApply.appendChild(div);
-        shdApply.appendChild(divsion);
-        shadings.appendChild(label);
-        shadings.appendChild(shadingColorPickerElement);
+        previewSubContainer1.appendChild(previewDivVerticalContainer);
+        previewSubContainer1.appendChild(previewSubContainer2)
+
+        previewSubContainer2.appendChild(this.previewDiv);
+        previewSubContainer2.appendChild(previewDivHorizontalContainer);
+
+        this.previewDiv.appendChild(this.previewLeftDiagonalDiv);
+        this.previewDiv.appendChild(this.previewRightDiagonalDiv);
+        this.previewDiv.appendChild(this.previewHorizontalDiv);
+        this.previewDiv.appendChild(this.previewVerticalDiv);
+
+        previewDivHorizontalContainer.appendChild(this.previewDivBottomLeftContainer);
+        previewDivHorizontalContainer.appendChild(this.previewDivBottomcenterContainer);
+        previewDivHorizontalContainer.appendChild(this.previewDivBottomRightContainer);
+        previewDivHorizontalContainer.appendChild(this.previewDivDiagonalRightContainer);
+
+        previewDivVerticalContainer.appendChild(this.previewDivTopTopContainer);
+        previewDivVerticalContainer.appendChild(this.previewDivTopCenterContainer);
+        previewDivVerticalContainer.appendChild(this.previewDivTopBottomContainer);
+        previewDivVerticalContainer.appendChild(this.previewDivLeftDiagonalContainer);
+
+        shadings.appendChild(colorPickerDiv);
+        colorPickerDiv.appendChild(label);
+        colorPickerDiv.appendChild(shadingColorPickerElement);
         shadings.appendChild(shdApply);
 
         this.shadingContiner.appendChild(shadingText);
         this.shadingContiner.appendChild(shadings);
 
+        styleContainer.appendChild(styleSubContainer);
+        styleSubContainer.appendChild(dropdownListDiv)
+        dropdownListDiv.appendChild(dropDownList);
+        styleContainer.appendChild(widthcontainerDiv)
+        widthcontainerDiv.appendChild(widthNumericDiv);
+        widthNumericDiv.appendChild(widthNumeric)
+        widthcontainerDiv.appendChild(colorDiv);
+        colorDiv.appendChild(colorText)
+        colorDiv.appendChild(borderColorPickerElement);
 
-        styleContainer.appendChild(styleText);
-        styleContainer.appendChild(dropDownList);
-        styleContainer.appendChild(widthText);
-        styleContainer.appendChild(widthNumeric);
-        styleContainer.appendChild(colorText);
-        styleContainer.appendChild(borderColorPickerElement);
+        settingAndPreviewContainer.appendChild(settingsContiner);
+        settingAndPreviewContainer.appendChild(previewContiner);
 
         this.target.appendChild(displayText);
-        this.target.appendChild(settingsContiner);
+        this.target.appendChild(settingAndPreviewContainer);
         this.target.appendChild(styleContainer);
-        this.target.appendChild(previewContiner);
         this.target.appendChild(this.shadingContiner);
 
         // Handling Setting Container
@@ -515,16 +481,21 @@ export class BordersAndShadingDialog {
         // handling dropdown change
         this.borderWidth = new NumericTextBox({
             value: 0, min: 0, max: 6, decimals: 2,
-            width: 150, enablePersistence: false
+            floatLabelType: 'Always', placeholder: localeValue.getConstant('Width'),
+            enablePersistence: false
         });
         this.borderWidth.appendTo(widthNumeric);
         this.borderStyle = new DropDownList({
-            width: '150px', popupHeight: '150px', index: 1,
+            popupHeight: '150px', index: 1,
+            floatLabelType: 'Always', placeholder: localeValue.getConstant('Style'),
             enableRtl: isRtl
         });
         this.borderStyle.appendTo(dropDownList);
         this.ulelementShading = new DropDownList({
-            width: '150px', change: this.applyTableCellPreviewBoxes, index: 1,
+            dataSource: ulelementShadingValue,
+            fields: { text: 'Name', value: 'Value' },
+            change: this.applyTableCellPreviewBoxes, index: 1,
+            floatLabelType: 'Always', placeholder: localeValue.getConstant('Apply To'),
             enableRtl: isRtl
         });
         this.ulelementShading.appendTo(ulelementShading);
@@ -557,35 +528,34 @@ export class BordersAndShadingDialog {
             || this.checkClassName(this.previewDivDiagonalRight) || this.checkClassName(this.previewDivLeftDiagonal)) {
             borders = new WBorders();
             if (this.checkClassName(this.previewDivTopTop)) {
-                borders.top = this.getBorder();
+                borders.top = this.getBorder('top');
             }
             if (this.checkClassName(this.previewDivTopBottom)) {
-                borders.bottom = this.getBorder();
+                borders.bottom = this.getBorder('bottom');
             }
             if (this.checkClassName(this.previewDivBottomLeft)) {
-                borders.left = this.getBorder();
+                borders.left = this.getBorder('left');
             }
             if (this.checkClassName(this.previewDivBottomRight)) {
-                borders.right = this.getBorder();
+                borders.right = this.getBorder('right');
             }
             if (this.checkClassName(this.previewDivTopCenter)) {
-                borders.horizontal = this.getBorder();
+                borders.horizontal = this.getBorder('horizontal');
             }
             if (this.checkClassName(this.previewDivBottomcenter)) {
-                borders.vertical = this.getBorder();
+                borders.vertical = this.getBorder('vertical');
             }
             if (this.checkClassName(this.previewDivLeftDiagonal)) {
-                borders.diagonalDown = this.getBorder();
+                borders.diagonalDown = this.getBorder('diagonalDown');
             }
             if (this.checkClassName(this.previewDivDiagonalRight)) {
-                borders.diagonalUp = this.getBorder();
+                borders.diagonalUp = this.getBorder('diagonalUp');
             }
         }
         const shading: WShading = new WShading();
         const editorModule: Editor = this.documentHelper.owner.editorModule;
         shading.backgroundColor = this.shadingColorPicker.value;
-        if (this.ulelementShading.index === 0) {
-            this.applyTo = 0;
+        if (this.ulelementShading.value === 'Cell') {
             if (tablePropertiesDialog) {
                 tablePropertiesDialog.isCellBordersAndShadingUpdated = true;
             }
@@ -602,11 +572,10 @@ export class BordersAndShadingDialog {
             }
             this.cellFormat.shading = new WShading();
             editorModule.applyShading(this.cellFormat.shading, shading);
-        } else {
+        } else if (this.ulelementShading.value === 'Table') {
             if (tablePropertiesDialog) {
                 tablePropertiesDialog.isTableBordersAndShadingUpdated = true;
             }
-            this.applyTo = 1;
             const currentTableFormat: WTableFormat = this.documentHelper.owner.selection.tableFormat.table.tableFormat;
             this.tableFormat.copyFormat(currentTableFormat);
             this.tableFormat.borders = new WBorders();
@@ -623,6 +592,13 @@ export class BordersAndShadingDialog {
             this.tableFormat.shading = new WShading();
             this.isShadingChanged = currentTableFormat.shading.backgroundColor !== shading.backgroundColor;
             editorModule.applyShading(this.tableFormat.shading, shading);
+        } else if (this.ulelementShading.value === 'Paragraph') {
+            let isNoneBorder: boolean = this.noneDiv.classList.contains('e-de-table-border-inside-setting-click');
+            if (!isNullOrUndefined(this.paragraphFormat)) {
+                editorModule.applyBordersInternal(this.paragraphFormat.borders, isNoneBorder ? new WBorders() : borders);
+            } else {
+                editorModule.onApplyParagraphFormat('borders', isNoneBorder ? new WBorders() : borders, false, false);
+            }
         }
         this.applyFormat();
         this.closeDialog();
@@ -630,25 +606,35 @@ export class BordersAndShadingDialog {
     private applyFormat(): void {
         // const selection: Selection = this.documentHelper.selection;
         const editorModule: Editor = this.documentHelper.owner.editorModule;
-        editorModule.initComplexHistory('BordersAndShading');
-        editorModule.isBordersAndShadingDialog = true;
-        if (this.applyTo === 0) {
-            editorModule.onCellFormat(this.cellFormat);
-        } else {
-            editorModule.onTableFormat(this.tableFormat, this.isShadingChanged);
+        if (this.ulelementShading.value !== 'Paragraph') {
+            editorModule.initComplexHistory('BordersAndShading');
+            editorModule.isBordersAndShadingDialog = true;
+            if (this.ulelementShading.value === 'Cell') {
+                editorModule.onCellFormat(this.cellFormat);
+            } else if (this.ulelementShading.value === 'Table') {
+                editorModule.onTableFormat(this.tableFormat, this.isShadingChanged);
+            }
+            if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
+                this.documentHelper.owner.editorHistory.updateComplexHistory();
+            }
         }
-        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
-            this.documentHelper.owner.editorHistory.updateComplexHistory();
-        }
+
         editorModule.isBordersAndShadingDialog = false;
     }
-    private getBorder(): WBorder {
+
+    private getBorder(type: string): WBorder {
         const border: WBorder = new WBorder();
         border.color = this.borderColorPicker.value;
         border.lineStyle = <LineStyle>this.borderStyle.text;
         border.lineWidth = this.borderWidth.value;
+        if (type === 'left' || type === 'right') {
+            border.space = 4;
+        } else {
+            border.space = 1;
+        }
         return border;
     }
+
     private checkClassName(element: HTMLDivElement): boolean {
         return element.classList.contains('e-de-table-border-inside-preview-click');
     }
@@ -665,6 +651,7 @@ export class BordersAndShadingDialog {
      * @returns {void}
      */
     private closeBordersShadingsDialog = (): void => {
+        this.paragraphFormat = undefined;
         this.documentHelper.dialog2.element.style.pointerEvents = '';
         this.documentHelper.updateFocus();
     };
@@ -678,7 +665,7 @@ export class BordersAndShadingDialog {
         if (!this.target) {
             this.initBordersAndShadingsDialog(localeValue, this.documentHelper.owner.enableRtl);
         }
-        this.loadBordersShadingsPropertiesDialog();
+        this.loadBordersShadingsPropertiesDialog(localeValue);
         this.documentHelper.dialog.content = this.target;
         this.documentHelper.dialog.header = localeValue.getConstant('Borders and Shading');
         this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
@@ -722,9 +709,15 @@ export class BordersAndShadingDialog {
             this.allDiv.classList.add('e-de-table-border-inside-setting-click');
             this.setSettingPreviewDivElement('all');
         } else {
-            this.updateClassForSettingDivElements();
-            this.customDiv.classList.add('e-de-table-border-inside-setting-click');
-            this.setSettingPreviewDivElement('customDiv');
+            if (this.ulelementShading.value === 'Paragraph') {
+                this.updateClassForSettingDivElements();
+                this.customDiv.classList.add('e-de-table-border-inside-setting-click');
+                this.setSettingPreviewDivElement('customDiv');
+            } else {
+                this.updateClassForSettingDivElements();
+                this.customDiv.classList.add('e-de-table-border-inside-setting-click');
+                this.setSettingPreviewDivElement('customDiv');
+            }
         }
     };
     private updateClassForSettingDivElements(): void {
@@ -739,64 +732,84 @@ export class BordersAndShadingDialog {
     }
     private setSettingPreviewDivElement(position: string): void {
         switch (position) {
-        case 'none':
-            this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
-            this.isShowHidePreviewTableElements('none');
-            break;
-        case 'box':
-            this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
-            this.isShowHidePreviewTableElements('box');
-            break;
-        case 'all':
-            this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
-            this.previewDivBottomcenter.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
-            this.previewDivTopCenter.classList.add('e-de-table-border-inside-preview-click');
-            this.isShowHidePreviewTableElements('all');
-            break;
+            case 'none':
+                this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
+                this.isShowHidePreviewTableElements('none');
+                break;
+            case 'box':
+                this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
+                this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+                this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+                this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+                this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+                this.isShowHidePreviewTableElements('box');
+                break;
+            case 'all':
+                if (this.ulelementShading.value === 'Cell' || this.ulelementShading.value === 'Table') {
+                    this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
+                    this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
+                    this.previewDivBottomcenter.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivTopCenter.classList.add('e-de-table-border-inside-preview-click');
+                    this.isShowHidePreviewTableElements('all');
+                } else {
+                    this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
+                    this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
+                    this.previewDivBottomcenter.classList.remove('e-de-table-border-inside-preview-click');
+                    this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+                    this.previewDivTopCenter.classList.remove('e-de-table-border-inside-preview-click');
+                    this.isShowHidePreviewTableElements('all');
+                }
+                break;
         }
     }
     private isShowHidePreviewTableElements(settingDiv: string): void {
         switch (settingDiv) {
-        case 'none':
-            this.previewDiv.style.border = 'none';
-            this.previewRightDiagonalDiv.style.display = 'none';
-            this.previewLeftDiagonalDiv.style.display = 'none';
-            this.previewHorizontalDiv.style.display = 'none';
-            this.previewVerticalDiv.style.display = 'none';
-            break;
-        case 'box':
-            this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
-            this.previewRightDiagonalDiv.style.display = 'none';
-            this.previewLeftDiagonalDiv.style.display = 'none';
-            this.previewHorizontalDiv.style.display = 'none';
-            this.previewVerticalDiv.style.display = 'none';
-            break;
-        case 'all':
-            this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
-            this.previewRightDiagonalDiv.style.display = 'none';
-            this.previewLeftDiagonalDiv.style.display = 'none';
-            this.previewHorizontalDiv.style.display = 'block';
-            this.previewVerticalDiv.style.display = 'block';
-            break;
+            case 'none':
+                this.previewDiv.style.border = 'none';
+                this.previewRightDiagonalDiv.style.display = 'none';
+                this.previewLeftDiagonalDiv.style.display = 'none';
+                this.previewHorizontalDiv.style.display = 'none';
+                this.previewVerticalDiv.style.display = 'none';
+                break;
+            case 'box':
+                this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+                this.previewRightDiagonalDiv.style.display = 'none';
+                this.previewLeftDiagonalDiv.style.display = 'none';
+                this.previewHorizontalDiv.style.display = 'none';
+                this.previewVerticalDiv.style.display = 'none';
+                break;
+            case 'all':
+                if (this.ulelementShading.value === 'Cell' || this.ulelementShading.value === 'Table') {
+                    this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+                    this.previewRightDiagonalDiv.style.display = 'none';
+                    this.previewLeftDiagonalDiv.style.display = 'none';
+                    this.previewHorizontalDiv.style.display = 'block';
+                    this.previewVerticalDiv.style.display = 'block';
+                } else {
+                    this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+                    this.previewRightDiagonalDiv.style.display = 'none';
+                    this.previewLeftDiagonalDiv.style.display = 'none';
+                    this.previewHorizontalDiv.style.display = 'none';
+                    this.previewVerticalDiv.style.display = 'none';
+                }
+                break;
         }
     }
     /**
@@ -895,24 +908,46 @@ export class BordersAndShadingDialog {
      * @returns {void}
      */
     private applyTableCellPreviewBoxes = (): void => {
-        this.customDiv.click();
+        //this.customDiv.click();
         if (!isNullOrUndefined(this.ulelementShading)) {
-            if (this.ulelementShading.index === 0) {
-                this.previewDivBottomcenterContainer.style.display = 'none';
-                this.previewDivTopCenterContainer.style.display = 'none';
+            if (this.ulelementShading.value === 'Cell') {
+                this.shadingColorPicker.disabled = false;
+                this.previewDivBottomcenterContainer.style.visibility = 'hidden';
+                this.previewDivTopCenterContainer.style.visibility = 'hidden';
                 this.previewVerticalDiv.style.display = 'none';
                 this.previewHorizontalDiv.style.display = 'none';
                 this.previewDivLeftDiagonal.style.display = '';
                 this.previewDivDiagonalRight.style.display = '';
                 this.previewDivBottomRightContainer.style.left = '80px';
-            } else {
+                classList(this.noneDivTransparent, ['e-de-table-border-none-setting'], ['e-de-para-border-none-setting']);
+                classList(this.boxDivTransparent, ['e-de-table-border-box-setting'], ['e-de-para-border-box-setting']);
+                classList(this.allDivTransparent, ['e-de-table-border-all-setting'], ['e-de-para-border-shadow-setting']);
+                classList(this.customDivTransparent, ['e-de-table-border-custom-setting'], ['e-de-para-border-custom-setting']);
+            } else if (this.ulelementShading.value === 'Table') {
+                this.shadingColorPicker.disabled = false;
                 this.previewDivLeftDiagonal.style.display = 'none';
                 this.previewDivDiagonalRight.style.display = 'none';
-                this.previewDivBottomcenterContainer.style.display = '';
-                this.previewDivTopCenterContainer.style.display = '';
+                this.previewDivBottomcenterContainer.style.visibility = 'visible';
+                this.previewDivTopCenterContainer.style.visibility = 'visible';
                 this.previewVerticalDiv.style.display = '';
                 this.previewHorizontalDiv.style.display = '';
                 this.previewDivBottomRightContainer.style.left = '110px';
+                classList(this.noneDivTransparent, ['e-de-table-border-none-setting'], ['e-de-para-border-none-setting']);
+                classList(this.boxDivTransparent, ['e-de-table-border-box-setting'], ['e-de-para-border-box-setting']);
+                classList(this.allDivTransparent, ['e-de-table-border-all-setting'], ['e-de-para-border-shadow-setting']);
+                classList(this.customDivTransparent, ['e-de-table-border-custom-setting'], ['e-de-para-border-custom-setting']);
+            } else {
+                this.shadingColorPicker.disabled = true;
+                this.previewDivBottomcenterContainer.style.visibility = 'hidden';
+                this.previewDivTopCenterContainer.style.visibility = 'hidden';
+                this.previewVerticalDiv.style.display = 'none';
+                this.previewHorizontalDiv.style.display = 'none';
+                this.previewLeftDiagonalDiv.style.display = 'none';
+                this.previewRightDiagonalDiv.style.display = 'none';
+                classList(this.noneDivTransparent, ['e-de-para-border-none-setting'], ['e-de-table-border-none-setting']);
+                classList(this.boxDivTransparent, ['e-de-para-border-box-setting'], ['e-de-table-border-box-setting']);
+                classList(this.allDivTransparent, ['e-de-para-border-shadow-setting'], ['e-de-table-border-all-setting']);
+                classList(this.customDivTransparent, ['e-de-para-border-custom-setting'], ['e-de-table-border-custom-setting']);
             }
         }
     };
@@ -942,47 +977,91 @@ export class BordersAndShadingDialog {
             this.previewHorizontalDiv.style.backgroundColor = color;
         }
     };
-    private loadBordersShadingsPropertiesDialog(): void {
-        const tableFormat: WTableFormat = this.documentHelper.selection.tableFormat.table.tableFormat;
+    private loadBordersShadingsPropertiesDialog(localeValue: L10n): void {
         let lineStyle: number;
         let borderColor: string;
         let fillColor: string;
         let borderWidth: number;
-        if (!isNullOrUndefined(tableFormat) && !isNullOrUndefined(tableFormat.borders)) {
-            this.cloneBorders(tableFormat.borders);
-            if (isNullOrUndefined(tableFormat.borders) || isNullOrUndefined(tableFormat.borders.top)) {
+        if (!isNullOrUndefined(this.documentHelper.selection.tableFormat.table)) {
+            this.shadingContiner.style.display = 'block';
+            this.ulelementShading.dataSource = [
+                { Value: 'Cell', Name: localeValue.getConstant('Cell') },
+                { Value: 'Table', Name: localeValue.getConstant('Table') },
+                { Value: 'Paragraph', Name: localeValue.getConstant('Paragraph') }
+            ]
+            this.ulelementShading.dataBind();
+            const tableFormat: WTableFormat = this.documentHelper.selection.tableFormat.table.tableFormat;
+            if (!isNullOrUndefined(tableFormat) && !isNullOrUndefined(tableFormat.borders)) {
+                this.cloneBorders(tableFormat.borders);
+                if (isNullOrUndefined(tableFormat.borders) || isNullOrUndefined(tableFormat.borders.top)) {
+                    lineStyle = 1;
+                    borderColor = '#000000';
+                    borderWidth = 0;
+                    fillColor = '#000000';
+                } else {
+                    lineStyle = this.getLineStyle(tableFormat.borders.top.lineStyle);
+                    borderColor = tableFormat.borders.top.color;
+                    borderWidth = tableFormat.borders.top.getLineWidth();
+                    fillColor = tableFormat.shading.backgroundColor;
+                }
+                this.ulelementShading.value = 'Table';
+                this.shadingColorPicker.value = fillColor;
+                this.shadingColorPicker.disabled = false;
+            }
+        } else {
+            this.shadingContiner.style.display = 'none';
+            this.ulelementShading.dataSource = [
+                { Value: 'Paragraph', Name: localeValue.getConstant('Paragraph') }
+            ]
+            this.ulelementShading.dataBind();
+            const paraFormat: WParagraphFormat = this.documentHelper.selection.start.paragraph.paragraphFormat;
+            this.ulelementShading.value = 'Paragraph';
+            this.cloneBorders(paraFormat.borders);
+            let border = this.getSelectionBorderFormat();
+            if (!border.hasValues()) {
                 lineStyle = 1;
                 borderColor = '#000000';
-                borderWidth = 0;
-                fillColor = '#000000';
+                borderWidth = 0.5;
             } else {
-                lineStyle = this.getLineStyle(tableFormat.borders.top.lineStyle);
-                borderColor = tableFormat.borders.top.color;
-                borderWidth = tableFormat.borders.top.getLineWidth();
-                fillColor = tableFormat.shading.backgroundColor;
+                lineStyle = this.getLineStyle(border.lineStyle);
+                borderColor = border.color;
+                borderWidth = border.lineWidth;
             }
+            this.shadingColorPicker.disabled = true;
         }
         this.borderColorPicker.value = borderColor;
-        this.shadingColorPicker.value = fillColor;
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        const colorPickerEvent: any = {
-            target: this.borderColorPicker, ctrlKey: false,
-            shiftKey: false, which: 0
-        };
-        const fillColorEvent: any = {
-            target: this.shadingColorPicker, ctrlKey: false,
-            shiftKey: false, which: 0
-        };
-        /* eslint-enable @typescript-eslint/no-explicit-any */
-        this.applyPreviewTableBackgroundColor(fillColorEvent);
-        this.applyPreviewTableBorderColor(colorPickerEvent);
-        this.ulelementShading.index = 1;
         this.previewDivLeftDiagonal.style.display = 'none';
         this.previewDivDiagonalRight.style.display = 'none';
         this.borderWidth.value = borderWidth;
         this.borderStyle.index = lineStyle;
     }
+    private getSelectionBorderFormat() {
+        let border: WBorder = new WBorder();
+        const borders: SelectionBorders = this.documentHelper.selection.paragraphFormat.borders;
+        if (borders.top.lineStyle !== "None") {
+            return this.copyToBorder(border, borders.top);
+        } else if (borders.left.lineStyle !== "None") {
+            return this.copyToBorder(border, borders.left);
+        } else if (borders.bottom.lineStyle !== "None") {
+            return this.copyToBorder(border, borders.bottom);
+        } else if (borders.right.lineStyle !== "None") {
+            return this.copyToBorder(border, borders.right);
+        }
+        return border;
+    }
 
+    private copyToBorder(border: WBorder, selectionBorder: SelectionBorder): WBorder {
+        if (!isNullOrUndefined(selectionBorder.lineStyle)) {
+            border.lineStyle = selectionBorder.lineStyle;
+        }
+        if (!isNullOrUndefined(selectionBorder.color)) {
+            border.color = selectionBorder.color;
+        }
+        if (!isNullOrUndefined(selectionBorder.lineWidth)) {
+            border.lineWidth = selectionBorder.lineWidth;
+        }
+        return border;
+    }
     /* eslint-disable  */
     private cloneBorders(borders: WBorders): void {
         let topBorder: boolean = false;
@@ -1065,35 +1144,83 @@ export class BordersAndShadingDialog {
             this.previewDivLeftDiagonal.classList.remove('e-de-table-border-inside-preview-click');
             this.previewDivDiagonalRight.classList.remove('e-de-table-border-inside-preview-click');
             if (!topBorder && !bottomBorder && !leftBorder && !rightBorder && !horizontalBorder && !verticalBorder) {
-                this.customDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.noneDiv.classList.add('e-de-table-border-inside-setting-click');
-                this.boxDiv.classList.remove('e-de-table-border-inside-setting-click');
-                this.allDiv.classList.remove('e-de-table-border-inside-setting-click');
+                if (this.ulelementShading.value === 'Cell' || this.ulelementShading.value === 'Table') {
+                    this.customDiv.classList.remove('e-de-table-border-inside-setting-click');
+                    this.noneDiv.classList.add('e-de-table-border-inside-setting-click');
+                    this.boxDiv.classList.remove('e-de-table-border-inside-setting-click');
+                    this.allDiv.classList.remove('e-de-table-border-inside-setting-click');
+                } else {
+                    this.setSettingPreviewDivElement('none')
+                    this.customDiv.classList.remove('e-de-table-border-inside-setting-click');
+                    this.noneDiv.classList.add('e-de-table-border-inside-setting-click');
+                    this.boxDiv.classList.remove('e-de-table-border-inside-setting-click');
+                    this.allDiv.classList.remove('e-de-table-border-inside-setting-click');
+                }
             } else if (customBorder) {
                 this.customDiv.classList.add('e-de-table-border-inside-setting-click');
                 this.noneDiv.classList.remove('e-de-table-border-inside-setting-click');
                 this.boxDiv.classList.remove('e-de-table-border-inside-setting-click');
                 this.allDiv.classList.remove('e-de-table-border-inside-setting-click');
-                if (topBorder) {
-                    this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+                if (this.ulelementShading.value === 'Cell' || this.ulelementShading.value === 'Table') {
+                    if (topBorder) {
+                        this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+                    } else {
+                        this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
+                    }
                 } else {
-                    this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
+                    if (topBorder) {
+                        this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderTop = '1px solid rgba(0,0,0,.54)';
+                    } else {
+                        this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderTop = '0px';
+                    }
                 }
-                if (bottomBorder) {
-                    this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+                if (this.ulelementShading.value == 'Cell' || this.ulelementShading.value === 'Table') {
+                    if (bottomBorder) {
+                        this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+                    } else {
+                        this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
+                    }
                 } else {
-                    this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
+                    if (bottomBorder) {
+                        this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderBottom = '1px solid rgba(0,0,0,.54)';
+                    } else {
+                        this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderBottom = '0px';
+                    }
                 }
-                if (leftBorder) {
-                    this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+                if (this.ulelementShading.value == 'Cell' || this.ulelementShading.value === 'Table') {
+                    if (leftBorder) {
+                        this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+                    } else {
+                        this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
+                    }
                 } else {
-                    this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
+                    if (leftBorder) {
+                        this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderLeft = '1px solid rgba(0,0,0,.54)';
+                    } else {
+                        this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderLeft = '0px';
+                    }
                 }
-                if (rightBorder) {
-                    this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+                if (this.ulelementShading.value == 'Cell' || this.ulelementShading.value === 'Table') {
+                    if (rightBorder) {
+                        this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+                    } else {
+                        this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
+                    }
                 } else {
-                    this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
-                }
+                    if (rightBorder) {
+                        this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderRight = '1px solid rgba(0,0,0,.54)';
+                    } else {
+                        this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderRight = '0px';
+                    }
+                }   
                 if (verticalBorder) {
                     this.previewDivBottomcenter.classList.add('e-de-table-border-inside-preview-click');
                 } else {

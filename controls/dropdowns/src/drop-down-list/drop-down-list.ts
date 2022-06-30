@@ -582,7 +582,7 @@ export class DropDownList extends DropDownBase implements IInput {
         return {
             'aria-disabled': 'false',
             'aria-owns': this.element.id + '_options',
-            'role': 'listbox',
+            'role': 'combobox',
             'aria-haspopup': 'true',
             'aria-expanded': 'false',
             'aria-activedescendant': 'null',
@@ -863,7 +863,7 @@ export class DropDownList extends DropDownBase implements IInput {
             history.back();
         } else {
             const delay: number = 100;
-            this.closePopup(delay);
+            this.closePopup(delay, e);
         }
     }
 
@@ -1023,7 +1023,7 @@ export class DropDownList extends DropDownBase implements IInput {
         const focusEle: Element = this.list.querySelector('.' + dropDownListClasses.focus);
         if (this.isSelectFocusItem(focusEle)) {
             this.setSelection(focusEle, e);
-        }  else if (!isNullOrUndefined(this.liCollections)) {
+        }  else if(!isNullOrUndefined(this.liCollections)) {
             let index: number = e.action === 'down' ? this.activeIndex + 1 : this.activeIndex - 1;
             let startIndex: number = 0;
             if (this.getModuleName() === 'autocomplete') {
@@ -1098,7 +1098,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isSelectCustom = false;
                 this.onChangeEvent(e);
             }
-            this.hidePopup();
+            this.hidePopup(e);
             this.focusDropDown(e);
         } else {
             this.showPopup();
@@ -1309,9 +1309,9 @@ export class DropDownList extends DropDownBase implements IInput {
             detach(this.valueTempElement);
             this.inputElement.style.display = 'block';
         }
-        const clearIcon: string = dropDownListClasses.clearIcon;
-        const isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');
-        const clearElement: HTMLElement = isFilterElement && this.filterInput.parentElement.querySelector('.' + clearIcon);
+        let clearIcon: string = dropDownListClasses.clearIcon;
+        let isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');
+        let clearElement: HTMLElement = isFilterElement && this.filterInput.parentElement.querySelector('.' + clearIcon);
         if (this.isFiltering() && clearElement) {
             clearElement.style.removeProperty('visibility');
         }
@@ -1345,11 +1345,9 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.setValue(e as KeyboardEventArgs)) {
             return;
         }
-        if (this.isPopupOpen) {
-            attributes(this.targetElement(), { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
-            if (this.isFilterLayout() && this.filterInput) {
-                attributes(this.filterInput, { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
-            }
+        attributes(this.targetElement(), { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
+        if (this.isFilterLayout() && this.filterInput) {
+            attributes(this.filterInput, { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
         }
         if ((!this.isPopupOpen && !isNullOrUndefined(li)) || (this.isPopupOpen && !isNullOrUndefined(e) &&
             (e.type !== 'keydown' || e.type === 'keydown' && (e as KeyboardEventArgs).action === 'enter'))) {
@@ -1700,7 +1698,7 @@ export class DropDownList extends DropDownBase implements IInput {
         query?: Query, fields?: FieldSettingsModel): void {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = (!this.isPopupOpen && this.getModuleName() === 'combobox' && this.filterInput.value === '') ?
-                false : true;
+            false : true;
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
@@ -2296,7 +2294,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    private closePopup(delay?: number): void {
+    private closePopup(delay: number, e: MouseEvent | KeyboardEventArgs): void {
         this.isTyped = false;
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
@@ -2332,7 +2330,7 @@ export class DropDownList extends DropDownBase implements IInput {
             EventHandler.remove(this.filterInput, 'paste', this.pasteHandler);
             this.filterInput = null;
         }
-        attributes(this.targetElement(), { 'aria-expanded': 'false', 'aria-activedescendant': null });
+        attributes(this.targetElement(), { 'aria-expanded': 'false' });
         this.inputWrapper.container.classList.remove(dropDownListClasses.iconAnimation);
         if (this.isFiltering()) {
             this.actionCompleteData.isUpdated = false;
@@ -2344,7 +2342,7 @@ export class DropDownList extends DropDownBase implements IInput {
             delay: delay ? delay : 0
         };
         const popupInstance: Popup = this.popupObj;
-        const eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel };
+        const eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel , event: e || null};
         this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
             if (!isNullOrUndefined(this.popupObj) &&
                 !isNullOrUndefined(this.popupObj.element.querySelector('.e-fixed-head'))) {
@@ -2568,7 +2566,7 @@ export class DropDownList extends DropDownBase implements IInput {
         || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
             this.clearAll(null, props);
         }
-        if ((this.fields.groupBy && props.fields) && !this.isGroupChecking) {
+        if ((this.fields.groupBy && props.fields) && !this.isGroupChecking && this.list) {
             EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
             EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
         }
@@ -2734,7 +2732,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (this.allowFiltering) {
                     this.actionCompleteData = { ulElement: this.ulElement,
                         list: this.listData as { [key: string]: Object }[], isUpdated: true };
-                    this.actionData = this.actionCompleteData;
+                        this.actionData = this.actionCompleteData;
                     this.updateSelectElementData(this.allowFiltering);
                 }
                 break;
@@ -2789,7 +2787,7 @@ export class DropDownList extends DropDownBase implements IInput {
             }
         };
     }
-
+    
     protected setReadOnly(): void {
         if (this.readonly) {
             addClass([this.inputWrapper.container], ['e-readonly']);
@@ -2828,7 +2826,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
-        if (this.isFiltering() && this.dataSource instanceof DataManager && (this.actionData.list !== this.actionCompleteData.list) &&
+        if (this.isFiltering() && this.dataSource instanceof DataManager && (this.actionData.list != this.actionCompleteData.list) &&
             this.actionData.list && this.actionData.ulElement) {
             this.actionCompleteData = this.actionData;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
@@ -2891,7 +2889,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.resetSelection();
             }
         }
-        this.closePopup();
+        this.closePopup(0, e);
         const dataItem: { [key: string]: string } = this.getItemData();
         const isSelectVal: boolean = !isNullOrUndefined(this.selectedLI);
         if (this.inputElement && this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||

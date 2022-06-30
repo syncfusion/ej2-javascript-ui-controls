@@ -1674,16 +1674,7 @@ export class TextPosition {
             this.offset = this.offset - 1;
         }
         const currentLine: LineWidget = selection.getLineWidgetInternal(this.currentWidget, this.offset, moveToPreviousLine);
-        let firstElement: ElementBox;
-        const isParaBidi: boolean = this.currentWidget.paragraph.paragraphFormat.bidi;
-        if (isParaBidi && currentLine.children.length > 0 && this.containsRtlText(currentLine)) {
-            firstElement = currentLine.children[currentLine.children.length - 1];
-            if (firstElement instanceof ListTextElementBox) {
-                firstElement = undefined;
-            }
-        } else {
-            firstElement = selection.getFirstElementInternal(currentLine);
-        }
+        let firstElement: ElementBox = selection.getFirstElementInternal(currentLine);
         this.documentHelper.moveCaretPosition = 1;
         const startOffset: number = selection.getStartOffset(this.currentWidget.paragraph);
         if (isNullOrUndefined(firstElement) && this.offset > startOffset) {

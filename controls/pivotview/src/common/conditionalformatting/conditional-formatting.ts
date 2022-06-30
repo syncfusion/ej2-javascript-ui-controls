@@ -68,8 +68,8 @@ export class ConditionalFormatting {
             {
                 click: this.addButtonClick.bind(this),
                 buttonModel: {
-                    cssClass: this.parent.isAdaptive ? (cls.FORMAT_ROUND_BUTTON + ' ' + cls.FORMAT_CONDITION_BUTTON) :
-                        cls.FORMAT_CONDITION_BUTTON,
+                    cssClass: (this.parent.isAdaptive ? (cls.FORMAT_ROUND_BUTTON + ' ' + cls.FORMAT_CONDITION_BUTTON) :
+                        cls.FORMAT_CONDITION_BUTTON) + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
                     content: this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('condition')
                 }
@@ -78,7 +78,7 @@ export class ConditionalFormatting {
                 click: this.applyButtonClick.bind(this),
                 isFlat: true,
                 buttonModel: {
-                    isPrimary: true, cssClass: cls.FORMAT_APPLY_BUTTON,
+                    isPrimary: true, cssClass: cls.FORMAT_APPLY_BUTTON + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     content: this.parent.localeObj.getConstant('apply')
                 }
             },
@@ -86,7 +86,7 @@ export class ConditionalFormatting {
                 click: this.cancelButtonClick.bind(this),
                 isFlat: true,
                 buttonModel: {
-                    cssClass: cls.FORMAT_CANCEL_BUTTON,
+                    cssClass: cls.FORMAT_CANCEL_BUTTON + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     content: this.parent.localeObj.getConstant('cancel')
                 }
             }
@@ -434,7 +434,7 @@ export class ConditionalFormatting {
         addClass([this.backgroundColor[i].element.nextElementSibling.querySelector('.e-selected-color')], cls.ICON);
         let toggleBtn: Button = new Button({
             iconCss: cls.ICON + ' ' + cls.FORMAT_DELETE_ICON,
-            cssClass: cls.FLAT, locale: this.parent.locale, enableRtl: this.parent.enableRtl
+            cssClass: cls.FLAT + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         toggleBtn.isStringTemplate = true;
         toggleBtn.appendTo('#' + this.parentID + 'removeButton' + i);

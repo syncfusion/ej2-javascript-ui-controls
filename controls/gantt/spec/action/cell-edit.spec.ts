@@ -1441,4 +1441,72 @@ describe('taskType with resourceUnit mapping', () => {
             expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
         });
     });
+    describe('Milestone date cell edit', () => {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' }, 
+                    { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+            
+                height: '550px',
+                allowUnscheduledTasks: true,
+              //  connectorLineBackground: "red",
+              //  connectorLineWidth: 3,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),            
+              }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+        });
+        it('Cell edit milestone', () => {
+            ganttObj.dataBind();
+            let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
+            triggerMouseEvent(customColumn, 'dblclick');
+            let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
+            input.value = new Date('2/8/2017');
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(3)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate,'M/d/yyyy')).toBe('2/8/2017');
+        });
+    });
 });

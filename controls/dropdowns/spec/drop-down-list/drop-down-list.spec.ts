@@ -876,7 +876,7 @@ describe('DDList', () => {
             expect(listObj.element.parentElement.classList.contains('e-ddl-list')).toBe(true);
             expect(listObj.element.parentElement.classList.contains('e-disabled')).toBe(true);
             expect(listObj.element.getAttribute('placeholder')).toBe('new text');
-            expect(listObj.element.parentElement.getAttribute('role')).toBe('listbox');
+            expect(listObj.element.parentElement.getAttribute('role')).toBe('combobox');
             expect(listObj.element.parentElement.getAttribute('style')).toBe('margin: 0');
         })
         /**
@@ -1364,7 +1364,7 @@ describe('DDList', () => {
         it('select event trigger at initialize and check aria-activedescendant', (done) => {
             expect(changeAction).not.toHaveBeenCalled();
             expect(selectAction).not.toHaveBeenCalled();
-            expect(listObj.inputWrapper.container.getAttribute('aria-activedescendant')).toBe('null');
+            expect(listObj.inputWrapper.container.getAttribute('aria-activedescendant') !== 'null').toBe(true);
             listObj.showPopup();
             setTimeout(() => {
                 expect(listObj.inputWrapper.container.getAttribute('aria-activedescendant') !== 'null').toBe(true);
@@ -5620,4 +5620,73 @@ describe('DDList', () => {
             }, 1000);
         });
     });
-});
+    describe('EJ2CORE-663-Additem method not working properly for x-template script', () => {
+        let listObj: any;
+        let dataSource : { [key: string]: Object }[] = [
+            { text: "JavaScript", pic: "javascript", description: "It is a lightweight interpreted or JIT-compiled programming language."},
+            { text: "TypeScript", pic: "typescript", description: "It is a typed superset of JavaScript that compiles to plain JavaScript."},
+            { text: "Angular", pic: "angular", description: "It is a TypeScript-based open-source web application framework."},
+            { text: "React", pic: "react", description: "A JavaScript library for building user interfaces. It can also render on the server using Node."},
+            { text: "Vue", pic: "vue", description: "A progressive framework for building user interfaces. it is incrementally adoptable."}
+        ]
+        beforeAll(() => {
+            let element: HTMLElement = createElement('input', { id: 'list' });
+            document.body.appendChild(element);
+        });
+        it('AddItem testing ', () => {
+            let element1: string = "<script id='xtemplate' type='text/x-template'><div class='list-wrapper'><span class='${pic} e-avatar e-avatar-xlarge e-avatar-circle'></span><span class='text'>${text}</span><span class='description'> +${description}</span></div></script>"
+            document.body.innerHTML = element1;
+            let select: HTMLSelectElement = document.getElementById('xtemplate') as HTMLSelectElement;
+            listObj = new DropDownList({ 
+                dataSource: dataSource,
+                sortOrder: 'Ascending',
+                width: '250px',
+                index: 2,
+                popupHeight: '500px',
+                popupWidth: '500px',
+                itemTemplate: '#xtemplate'  });
+            listObj.appendTo(select);
+            listObj.addItem({ text: "JavaScript1", pic: "javascript1", description: "added item" });
+            expect(listObj.liCollections[2].textContent).not.toBe('#xtemplate');
+            expect(listObj.liCollections[2].textContent).toBe('JavaScript1 +added item');
+        });
+    });
+    describe('EJ2-60347', () => {
+        let dropDowns: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            dropDowns.destroy();
+            element.remove();
+        });
+        it('Need to provide the dynamic property support for groupby infields property', (done) => {
+            let groupData = [
+                { vegetable: 'Cabbage', category: 'Leafy and Salad' }, { vegetable: 'Spinach', category: 'Leafy and Salad' },
+                { vegetable: 'Wheatgrass', category: 'Leafy and Salad' }, { vegetable: 'Yarrow', category: 'Leafy and Salad' },
+                { vegetable: 'Chickpea', category: 'Beans' }, { vegetable: 'Green bean', category: 'Beans' },
+                { vegetable: 'Horse gram', category: 'Beans' }, { vegetable: 'Garlic', category: 'Bulb and Stem' },
+                { vegetable: 'Nopal', category: 'Bulb and Stem' }, { vegetable: 'Onion', category: 'Bulb and Stem' }
+            ];
+            dropDowns = new DropDownList({
+                dataSource: groupData,
+                fields: { text: 'vegetable' },
+                placeholder: 'Select a vegetable'
+            });
+            dropDowns.appendTo(element);
+            dropDowns.fields.groupBy = 'category';
+            dropDowns.dataBind();
+            dropDowns.open = function(args: any){
+                let groupElemenet: HTMLElement = dropDowns.list.querySelector(".e-list-group-item");
+                let groupText: string = groupElemenet.innerText;
+                expect(groupText).toEqual('Leafy and Salad');
+                dropDowns.open = null;
+                dropDowns.hidePopup();
+                dropDowns.destroy();
+                done();
+            };
+            dropDowns.showPopup();
+            });
+        });
+    });

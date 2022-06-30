@@ -472,8 +472,10 @@ export class ConnectorEditing extends ToolBase {
                 isNextUpdate = this.updatePreviousSegment(tx, ty, obj, index);
             }
             if (obj.segments.length - 1 > index && isNextUpdate) {
-                const nextSegment: OrthogonalSegment = obj.segments[index + 1] as OrthogonalSegment;
-                this.updateNextSegment(obj, current, nextSegment, tx, ty);
+                if (!obj.maxSegmentThumb) {
+                    const nextSegment: OrthogonalSegment = obj.segments[index + 1] as OrthogonalSegment;
+                    this.updateNextSegment(obj, current, nextSegment, tx, ty);
+                }
             }
         }
     }
@@ -597,16 +599,18 @@ export class ConnectorEditing extends ToolBase {
                 this.updateFirstSegment(connector as Connector, current);
             }
             if (isSourceNode) {
-                this.changeSegmentDirection(prev);
+                this.changeSegmentDirection(prev, connector);
             }
         }
         return isNextUpdate;
     }
 
-    private changeSegmentDirection(segment: OrthogonalSegment): void {
-        if (segment.length < 0) {
-            segment.direction = getOppositeDirection(segment.direction) as Direction;
-            segment.length *= -1;
+    private changeSegmentDirection(segment: OrthogonalSegment, connector: ConnectorModel): void {
+        if (!connector.maxSegmentThumb) {
+            if (segment.length < 0) {
+                segment.direction = getOppositeDirection(segment.direction) as Direction;
+                segment.length *= -1;
+            }
         }
     }
 
@@ -618,14 +622,14 @@ export class ConnectorEditing extends ToolBase {
                     if (tx !== 0) {
                         next.length = (next.direction === 'Right') ? next.length - tx : next.length + tx;
                         if (next.length || next.length === 0) {
-                            this.changeSegmentDirection(next);
+                            this.changeSegmentDirection(next, obj);
                         }
                     }
                 } else {
                     if (ty !== 0) {
                         next.length = (next.direction === 'Bottom') ? next.length - ty : next.length + ty;
                         if (next.length || next.length === 0) {
-                            this.changeSegmentDirection(next);
+                            this.changeSegmentDirection(next, obj);
                         }
                     }
                 }
@@ -642,14 +646,14 @@ export class ConnectorEditing extends ToolBase {
         if (prev.length < 0 && connector.sourceID) {
             const sourceNode: Corners = (connector as Connector).sourceWrapper.corners;
             const segments: OrthogonalSegmentModel[] = []; let segValues: Object; let removeCurrentPrev: boolean = false;
-            this.changeSegmentDirection(current);
+            this.changeSegmentDirection(current, connector);
             const next: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
             const nextNext: OrthogonalSegment = connector.segments[index + 2] as OrthogonalSegment;
             if (next) {
-                this.changeSegmentDirection(next);
+                this.changeSegmentDirection(next, connector);
             }
             if (nextNext) {
-                this.changeSegmentDirection(nextNext);
+                this.changeSegmentDirection(nextNext, connector);
             }
             switch (prev.direction) {
             case 'Top':
@@ -695,8 +699,8 @@ export class ConnectorEditing extends ToolBase {
                 }
                 break;
             }
-            this.changeSegmentDirection(prev);
-            this.changeSegmentDirection(current);
+            this.changeSegmentDirection(prev, connector);
+            this.changeSegmentDirection(current, connector);
             if (insertfirst) {
                 segValues = { type: 'Orthogonal', direction: current.direction, length: 20 };
                 segments.push(new OrthogonalSegment(connector, 'segments', segValues, true));

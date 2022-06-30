@@ -84,6 +84,15 @@ describe('Diagram Control', () => {
                 id: 'node7', offsetX: 150, offsetY: 340, width: 100, height: 100,
                 ports: [{ id: 'left', offset: { x: 0, y: 0.5 } }], style: { opacity: 0.5 }
             };
+            let node8: NodeModel = {
+                id: 'node8', offsetX: 250, offsetY: 150, width: 100, height: 100,
+                ports: [{ id: 'right1', offset: { x: 1, y: 0.5 } }], style: { opacity: 0.5 }
+            };
+
+            let node9: NodeModel = {
+                id: 'node9', offsetX: 450, offsetY: 350, width: 100, height: 100,
+                ports: [{ id: 'left1', offset: { x: 0, y: 0.5 } }], style: { opacity: 0.5 }
+            };
 
             let connector1: ConnectorModel = {};
             connector1.id = 'conn1'; connector1.type = 'Orthogonal';
@@ -108,10 +117,18 @@ describe('Diagram Control', () => {
                 type: 'Orthogonal'
             };
             connector4.annotations = [{ content: 'conn4' }];
+            let connector5: ConnectorModel = {
+                id:'con5',
+                type: 'Orthogonal',
+                sourceID: 'node8',
+                targetID: 'node9',
+                sourcePortID:'right1',targetPortID:'left1',
+                connectorSpacing:5
+            }
 
             diagram = new Diagram({
-                width: '1500px', height: '1500px', nodes: [node, node1, node2, node3, node4, node5, node6, node7],
-                connectors: [connector1, connector2, connector3, connector4],
+                width: '1500px', height: '1500px', nodes: [node, node1, node2, node3, node4, node5, node6, node7,node8,node9],
+                connectors: [connector1, connector2, connector3, connector4,connector5],
                 snapSettings: { constraints: SnapConstraints.None }
             });
             diagram.appendTo('#diagram63');
@@ -120,6 +137,59 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+        });
+
+        it('checking right to left with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[9].offsetX = 360;
+            diagram.dataBind();
+            expect((diagram.connectors[4] as Connector).intermediatePoints.length === 6).toBe(true);
+            console.log('Right to left port Connection');
+            done();
+        });
+        it('checking right to right with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[9].ports[0].offset = {x:1,y:0.5};
+            diagram.nodes[9].offsetX = 450;
+            diagram.nodes[9].offsetY = 205;
+            diagram.dataBind();
+            expect((diagram.connectors[4] as Connector).intermediatePoints.length === 6).toBe(true);
+            console.log('Right to right port Connection');
+            done();
+        });
+        it('checking right to top with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[9].ports[0].offset = {x:0.5,y:0};
+            diagram.nodes[9].offsetX = 305;
+            diagram.nodes[9].offsetY = 350;
+            diagram.dataBind();
+            expect((diagram.connectors[4] as Connector).intermediatePoints.length === 5).toBe(true);
+            console.log('Right to top port Connection');
+            done();
+        });
+        it('checking right to bottom with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[9].ports[0].offset = {x:0.5,y:1};
+            diagram.nodes[9].offsetX = 450;
+            diagram.nodes[9].offsetY = 96;
+            diagram.dataBind();
+            expect((diagram.connectors[4] as Connector).intermediatePoints.length === 5).toBe(true);
+            console.log('Right to bottom port Connection');
+            done();
+        });
+        it('checking bottom to bottom with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[8].ports[0].offset = {x:0.5,y:1};
+            diagram.nodes[9].offsetX = 304;
+            diagram.nodes[9].offsetY = 350;
+            diagram.dataBind();
+            expect((diagram.connectors[4] as Connector).intermediatePoints.length === 6).toBe(true);
+            console.log('Bottom to bottom port Connection');
+            done();
+        });
+        it('checking bottom to top with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[9].ports[0].offset = {x:0.5,y:0};
+            diagram.nodes[9].offsetX = 450;
+            diagram.nodes[9].offsetY = 260;
+            diagram.dataBind();
+            expect((diagram.connectors[4] as Connector).intermediatePoints.length === 6).toBe(true);
+            console.log('Bottom to top port Connection');
+            done();
         });
 
         it('Checking right to left connection', (done: Function) => {
@@ -1048,6 +1118,12 @@ describe('Diagram Control', () => {
                 annotations: [{
                     id: 'label7', content: 'Reject and write report', offset: { x: 0.5, y: 0.5 },
                 }]
+            },
+            {
+                id: 'node001', width: 100, height: 100, offsetX: 250, offsetY: 250,
+            },
+            {
+                id: 'node002', width: 100, height: 100, offsetX: 450, offsetY: 450,
             }
             ]
             diagram = new Diagram({
@@ -1061,7 +1137,10 @@ describe('Diagram Control', () => {
                     },
                     {
                         id: 'connector3', sourceID: 'BoardDecision', targetID: 'Reject', type: 'Orthogonal'
-                    }],
+                    },
+                    {
+                        id: 'connector4', type: 'Orthogonal', sourceID: 'node001', targetID: 'node002',connectorSpacing: 5
+                    },],
                 snapSettings: { constraints: SnapConstraints.None }
             });
             diagram.appendTo('#diagramTargetNodeOverlap');
@@ -1071,6 +1150,37 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
+
+        it('Checking top to bottom connection with connectorSpacing 5',(done: Function)=>{
+           diagram.nodes[7].offsetX = 250;
+           diagram.nodes[7].offsetY = 355;
+           diagram.dataBind();
+           expect((diagram.connectors[3] as Connector).intermediatePoints.length === 6).toBe(true);
+           console.log('Top to bottom node connection');
+           done();
+        });
+        it('Checking bottom to top connection with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[7].offsetY = 145;
+            diagram.dataBind();
+            expect((diagram.connectors[3] as Connector).intermediatePoints.length === 6).toBe(true);
+           console.log('Bottom to top node connection');
+            done();
+         });
+         it('Checking right to left connection with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[7].offsetX = 145;
+            diagram.nodes[7].offsetY = 300;
+            diagram.dataBind();
+            expect((diagram.connectors[3] as Connector).intermediatePoints.length === 6).toBe(true);
+           console.log('Right to left node connection');
+            done();
+         });
+         it('Checking left to right connection with connectorSpacing 5',(done: Function)=>{
+            diagram.nodes[7].offsetX = 305;
+            diagram.dataBind();
+            expect((diagram.connectors[3] as Connector).intermediatePoints.length === 6).toBe(true);
+           console.log('Left to right node connection');
+            done();
+         });
 
         it('Checking Top to Bottom connection - third segment(direction - left) overlap to target node', (done: Function) => {
             expect((diagram.connectors[0] as Connector).intermediatePoints.length == 6 &&
@@ -1112,5 +1222,4 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
-
 });

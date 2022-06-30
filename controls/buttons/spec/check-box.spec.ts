@@ -140,14 +140,6 @@ describe('CheckBox', () => {
             expect(element.parentElement.children[1].classList.contains('e-stop')).toEqual(true);
         });
 
-        it('Checkbox with ARIA attribute', () => {
-            checkbox = new CheckBox({}, '#checkbox');
-            expect(element.parentElement.parentElement.getAttribute('aria-checked')).toEqual('false');
-            checkbox.checked = true;
-            checkbox.dataBind();
-            expect(element.parentElement.parentElement.getAttribute('aria-checked')).toEqual('true');
-        });
-
         it('Hidden input', () => {
             attributes(element, { 'ejs-for': 'true', 'name': 'check' });
             checkbox = new CheckBox({}, '#checkbox');

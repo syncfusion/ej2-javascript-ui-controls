@@ -51,6 +51,10 @@ export interface IGanttData {
     indicators?: IIndicator[];
     /** Defines the delete . */
     isDelete?: boolean;
+    /** Defines the critical path of task. */
+    isCritical?: boolean;
+    /** Defines the slack value of critical path task. */
+    slack?: string | number;
 }
 
 export interface IParent {
@@ -89,6 +93,10 @@ export interface ITaskData {
     isMilestone?: boolean;
     /** Defines the left of task. */
     left?: number;
+    /** Defines the critical path of task. */
+    isCritical?: boolean;
+    /** Defines the slack value of critical path task. */
+    slack?: string | number;
     /** Defines the progress of task. */
     progress?: number;
     /** Defines the progress width of task. */
@@ -380,6 +388,7 @@ export interface IConnectorLineObject {
     milestoneChild?: boolean;
     parentIndexInCurrentView?: number;
     childIndexInCurrentView?: number;
+    isCritical?: boolean;
 }
 
 export interface ISplitterResizedEventArgs {
@@ -886,6 +895,12 @@ export interface ITaskbarStyle {
     milestoneColor?: PdfColor;
     /** Defines the progress text color */
     progressFontColor?: PdfColor;
+    /** Defines the critical task color */
+    criticalTaskColor?: PdfColor;
+    /** Defines the critical child progressbar background color */
+    criticalProgressColor?: PdfColor;
+    /** Defines the child taskbar border color */
+    criticalTaskBorderColor?: PdfColor;
 }
 
 export interface IGanttStyle {
@@ -897,6 +912,7 @@ export interface IGanttStyle {
     timeline?: PdfGanttCellStyle;
     chartGridLineColor?: PdfColor;
     connectorLineColor?: PdfColor;
+    criticalConnectorLineColor?: PdfColor;
     footer?: PdfGanttCellStyle;
 }
 
@@ -952,4 +968,3 @@ export enum PdfHorizontalOverflowType {
      */
     LastPage
 }
-

@@ -190,7 +190,7 @@ export class NormalEdit {
         gObj.showSpinner();
         if (gObj.enableInfiniteScrolling) {
             this.uid = (args.row as Element).getAttribute('data-uid');
-            const index =  parseInt((args.row as Element).getAttribute('aria-rowindex'));
+            const index: number =  parseInt((args.row as Element).getAttribute('aria-rowindex'), 10);
             this.parent.notify(events.refreshInfiniteEditrowindex, { index: index });
         }
         gObj.notify(events.updateData, args);

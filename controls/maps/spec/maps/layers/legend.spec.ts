@@ -2269,6 +2269,84 @@ describe('Map marker properties tesing', () => {
                                 map.legendSettings.title.text = '';
                                 map.refresh();
                             })
+                            it('Check the legend shape balloon', () => {
+                                map.loaded = (args: ILoadedEventArgs) => {
+                                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                                }
+                                map.legendSettings.shape = 'Balloon';
+                                map.refresh();
+                            })
+                        });
+                        
+                    describe('Legend selection and toggle with legend text trim', () => {
+                        let id: string = 'container';
+                        let map: Maps;
+                        let ele: HTMLDivElement;
+                        let trigger: MouseEvents = new MouseEvents();
+                        let spec: Element;
+                        beforeAll(() => {
+                            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+                            document.body.appendChild(ele);
+                            map = new Maps({
+                                titleSettings: {
+                                    text: 'Population density (per square kilometers) - 2015',
+                                    textStyle: {
+                                        size: '16px'
+                                    }
+                                },
+                                legendSettings: {
+                                    visible: true,
+                                    position: 'Top',
+                                    width: '10%',
+                                    height: '10%',
+                                },
+                                layers: [
+                                    {
+                                        shapeData: World_Map,
+                                        shapeDataPath: 'name',
+                                        shapePropertyPath: 'name',
+                                        dataSource: populationDetails,
+                                        shapeSettings: {
+                                            colorValuePath: 'density',
+                                            fill: '#E5E5E5',
+                                            colorMapping: [
+                                                {
+                                                    from: 0.00001, to: 25, color: 'rgb(153,174,214)', label: 'hello world program for typescripts'
+                                                },
+                                                {
+                                                    from: 25, to: 50, color: 'rgb(153,174,214)', label: '25 - 50'
+                                                },
+                                                {
+                                                    from: 50, to: 100, color: 'rgb(153,174,214)', label: '50 - 100'
+                                                },
+                                                {
+                                                    from: 100, to: 200, color: 'rgb(115,143,199)', label: '100 - 200'
+                                                },
+                                                {
+                                                    from: 200, to: 300, color: 'rgb(77,112,184)', label: '200 - 300'
+                                                },
+                                                {
+                                                    from: 300, to: 500, color: 'rgb(38,82,168)', label: '300 - 500'
+                                                },
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }, '#' + id);
+                        });
+                        afterAll(() => {
+                            remove(ele);
+                            map.destroy();
+                        });
+                            it('Check the legend shape balloon', () => {
+                                map.loaded = (args: ILoadedEventArgs) => {
+                                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                                }
+                                map.legendSettings.shape = 'Balloon';
+                                map.refresh();
+                            })
                         });
     it('memory leak', () => {
         profile.sample();

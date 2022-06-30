@@ -75,7 +75,7 @@ export class YearEvent extends TimelineEvent {
     }
 
     private timelineYearViewEvents(): void {
-        const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS);
+        const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')');
         this.cellWidth = workCell.offsetWidth;
         this.cellHeader = util.getOuterHeight(workCell.querySelector('.' + cls.DATE_HEADER_CLASS));
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
@@ -345,7 +345,7 @@ export class YearEvent extends TimelineEvent {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'data-guid': record.Guid as string,
                 'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record), 'aria-pressed': 'false', 'aria-grabbed': 'true',
                 'aria-label': this.parent.getAnnouncementString(record)
             }
         });

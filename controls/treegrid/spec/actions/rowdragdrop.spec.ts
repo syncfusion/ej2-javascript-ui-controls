@@ -404,6 +404,47 @@ describe('Treegrid Row Reorder', () => {
       destroy(TreeGridObj);
     });
   });
+
+  describe('EJ2-48275-Issue in Row Drag and Drop of TreeGrid', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+            allowRowDragAndDrop: true,
+            childMapping: 'subtasks',
+            height: '400',
+            allowSelection: true,
+            selectionSettings: { type: 'Multiple' },
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+                { field: 'taskName', headerText: 'Task Name', width: 250 },
+                { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+                { field: 'endDate', headerText: 'End Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+                { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+                { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
+                { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+            ],
+        },done); 
+      });
+    
+    it('---colapse testing---', (done: Function) => {
+      ((TreeGridObj.getRows()[0] as HTMLTableRowElement).getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      TreeGridObj.rowDragAndDropModule.reorderRows([0], 6, 'below');
+      expect(TreeGridObj.grid.dataSource[0].taskID).toBe(6);
+      done();
+    });
+   
+    it('---expand testing---', (done: Function) => {
+      ((TreeGridObj.getRows()[2] as HTMLTableRowElement).getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+      expect((TreeGridObj.getRows()[3] as HTMLTableRowElement).style.display).toBe('table-row');
+      done();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
   
   describe('Parent node disappearing on unordered list of data', () => {
     let TreeGridObj: TreeGrid;

@@ -158,6 +158,7 @@ import { UserHandleModel } from './interaction/selector-model';
 import { ConnectorFixedUserHandle, NodeFixedUserHandle } from './objects/fixed-user-handle';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel, FixedUserHandleModel } from './objects/fixed-user-handle-model';
 import { LinearGradient, RadialGradient } from './core/appearance';
+import { SegmentThumbShapes } from './enum/enum';
 
 /**
  * Represents the Diagram control
@@ -307,6 +308,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public width: string | number;
 
     /**
+     * Split the connector, when the node is dropped onto it and establish connection with that dropped node.
+     *
+     * @default false
+    */
+    @Property(false)
+    public enableConnectorSplit: boolean;
+
+    /**
      * Defines the diagram rendering mode.
      * * SVG - Renders the diagram objects as SVG elements
      * * Canvas - Renders the diagram in a canvas
@@ -323,6 +332,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property('100%')
     public height: string | number;
+
+    /**
+     * Defines the segmentThumbShape 
+     * 
+     * @default 'Rhombus'
+     */
+     @Property('Rhombus')
+     public segmentThumbShape : SegmentThumbShapes;
 
     /**
      * Defines type of menu that appears when you perform right-click operation
@@ -1786,6 +1803,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         break;
                     case 'layout':
                         refreshLayout = true; break;
+                    case 'segmentThumbShape':
+                        this.updateSelector();
+                        break;
                     case 'dataSourceSettings':
                         this.clear(); this.initObjects();
                         if (this.layout.type === 'None') {
@@ -4924,7 +4944,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        }
+    }
+        
         this.tooltipObject.close();
         if (isBlazor() && selectedItems && selectedItems.length > 0) {
             let check: boolean = true;
@@ -7930,8 +7951,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if (renderNode instanceof Connector && renderNode.type === 'Bezier') {
                         getCenterPoint = this.getMidPoint(renderNode);
-                        // (EJ2-58802) - Added the below code to add the transform x and y values to center point value in canvas mode
-                        if (this.mode === 'Canvas' && transform) {
+                         // (EJ2-58802) - Added the below code to add the transform x and y values to center point value in canvas mode
+                         if (this.mode === 'Canvas' && transform) {
                             (getCenterPoint as any).cx += transformValue.tx;
                             (getCenterPoint as any).cy += transformValue.ty;
                         }
@@ -8421,7 +8442,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         connector, selectorElement, selectorModel.thumbsConstraints, selectorModel.constraints,
                         this.scroller.transform, connector.sourceWrapper !== undefined,
                         connector.targetWrapper !== undefined,
-                        (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
+                        (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false, this.connectorEditingToolModule ? true : false);
                 }
             } else {
                 this.diagramRenderer.renderResizeHandle(
@@ -8439,7 +8460,28 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+        // EJ2-56919 - Add below code to render the selection rectangle for node if selected objects length is greater than one
+        if (this.selectedItems.selectedObjects.length > 1) {
+            this.updateSelectionRectangle();
+        }
         this.isProtectedOnChange = isProtectedOnChangeValue;
+    }
+
+    private updateSelectionRectangle() {
+        const selectorElement: (SVGElement | HTMLCanvasElement) = getSelectorElement(this.element.id);
+        let isFirst: boolean = false;
+        for (let i: number = 0; i < this.selectedItems.selectedObjects.length; i++) {
+            // EJ2-56919 - For first selected object we need to set stroke as 2, so check below condition as i is zero or not
+            // For first element we passed isFirst argument(last arg) as true in both render selection line and rectangle method
+            isFirst = i==0? true : false;
+            if (getObjectType(this.selectedItems.selectedObjects[i]) === Connector) {
+                // EJ2-56919 - If selected object type is connector means then render selection line for connector
+                this.diagramRenderer.renderSelectionLine(this.selectedItems.selectedObjects[i].wrapper.children[0] as PathElement, selectorElement, this.scroller.transform, isFirst);
+            } else {
+                // EJ2-56919 - If selected object type is node means then render selection rectangle for node
+                this.diagramRenderer.renderSelectionRectangle(this.selectedItems.selectedObjects[i].wrapper, selectorElement, this.scroller.transform, isFirst);
+            }
+        }
     }
 
     /**
@@ -8523,7 +8565,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.diagramRenderer.renderEndPointHandle(
                             connector, selectorEle, selector.thumbsConstraints, selectorConstraints,
                             this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined,
-                            (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
+                            (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false, this.connectorEditingToolModule ? true : false);
                     } else if (selector.nodes[0] instanceof Node) {
                         const stackPanel: NodeModel = selector.nodes[0];
                         if (checkParentAsContainer(this, selector.nodes[0])) {
@@ -8558,6 +8600,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
                 }
             }
+        }
+        // EJ2-56919 - Add below code to render selection rectangle for node if selected objects length is greater than one
+        if (this.selectedItems.selectedObjects.length > 1) {
+            this.updateSelectionRectangle();
         }
         this.enableServerDataBinding(severDataBind);
     }
@@ -10891,12 +10937,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const selectedSymbols: string = 'selectedSymbols';
         this.droppable = new Droppable(this.element);
         // this.droppable.accept = '.e-dragclone';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any 
         this.droppable.over = (args: any) => { 
             //EJ2-59341- SelectionChange OldValue argument is null
             if (this.previousSelectedObjects.length === 0 && !this.currentSymbol) {
                 this.previousSelectedObjects = this.commandHandler.getSelectedObject(); 
             }
+            this.commandHandler.PreventConnectorSplit = true;
             if (!this.currentSymbol) {
                 let dragDataHelper = null;
                 if (!args.dragData && args.name === 'drag') {
@@ -11188,6 +11235,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     // eslint-disable-next-line max-len
                     this.getDropEventArgs(arg); arg = await this.triggerEvent(DiagramEvent.drop, arg) as IDropEventArgs | IBlazorDropEventArgs || arg;
                 } else {
+                    this.commandHandler.PreventConnectorSplit = false;
                     this.triggerEvent(DiagramEvent.drop, arg);
                 }
                 const id: string = 'id';
@@ -11235,6 +11283,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         if ((clonedObject || value) && canSingleSelect(this)) {
                             this.select([this.nameTable[clonedObject[id]]], false, this.previousSelectedObjects);
+                        }
+                        if(arg.target && arg.target instanceof Connector){  
+                            if(this.enableConnectorSplit == true){
+                                if (this.nameTable[clonedObject[id]] instanceof Node) {
+                                    this.commandHandler.connectorSplit(this.nameTable[clonedObject[id]],arg.target);
+                                    this.commandHandler.PreventConnectorSplit = false;
+                                }
+                            } 
                         }
                     }
                 } else {

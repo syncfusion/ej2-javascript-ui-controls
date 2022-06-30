@@ -836,6 +836,24 @@ export class ExcelExport {
         return undefined;
     }
 
+    private headerRotation(args: ExcelHeaderQueryCellInfoEventArgs): void {
+        let degree: number = args.style.rotation;
+        if (degree <= 90 && degree >= 0)
+        {
+            args.style.hAlign = 'Left';
+        }
+        else if (degree > 90 && degree <= 180)
+        {
+            args.style.hAlign = 'Right';
+        }
+        else
+        {
+            degree = 180;
+            args.style.hAlign = 'Right';
+        }
+        args.style.rotation = degree;
+    }
+
     private processHeaderContent(gObj: IGrid, headerRow: IHeader, indent: number, excelRows: ExcelRow[]): ExcelRow[] {
         const rowIndex: number = 1;
         const gridRows: Row<Column>[] = headerRow.rows;
@@ -903,6 +921,9 @@ export class ExcelExport {
 
                 const excelHeaderCellArgs: ExcelHeaderQueryCellInfoEventArgs = { cell: cell, gridCell: gridCell, style: style };
                 gObj.trigger(events.excelHeaderQueryCellInfo, excelHeaderCellArgs);
+                if (excelHeaderCellArgs.style.rotation) {
+                    this.headerRotation(excelHeaderCellArgs);
+                }
                 if (!isNullOrUndefined(excelHeaderCellArgs.image) && !isNullOrUndefined(excelHeaderCellArgs.image.base64)) {
                     templateRowHeight = this.setImage(excelHeaderCellArgs, currentCellIndex);
                 }

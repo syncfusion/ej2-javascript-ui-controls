@@ -371,10 +371,10 @@ describe('Agenda View', () => {
             expect(eventWraps.length).toEqual(16);
             const firstEventTd: Element = closest((eventWraps[0] as Element), 'td');
             expect(parseInt(firstEventTd.getAttribute('data-date'), 10)).toEqual(new Date(2017, 10, 10).getTime());
-            expect(firstEventTd.getAttribute('aria-colindex')).toEqual('-21');
+            expect(firstEventTd.getAttribute('data-column-index')).toEqual('-21');
             const lastEventTd: Element = closest((eventWraps[eventWraps.length - 1] as Element), 'td');
             expect(parseInt(lastEventTd.getAttribute('data-date'), 10)).toEqual(new Date(2019, 0, 16).getTime());
-            expect(lastEventTd.getAttribute('aria-colindex')).toEqual('411');
+            expect(lastEventTd.getAttribute('data-column-index')).toEqual('411');
         });
     });
 

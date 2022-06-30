@@ -16,7 +16,8 @@ import * as events from '../base/constant';
 /** @hidden */
 export class EventBase {
     public parent: PivotCommon;
-
+    /** @hidden */
+    public searchListItem: HTMLElement[] = [];
     /**
      * Constructor for the dialog action.
      * @param {PivotCommon} parent - parent.
@@ -118,6 +119,15 @@ export class EventBase {
                 /* eslint-disable  */
                 let membersInfo: string[] | number[] = fieldInfo && fieldInfo.membersOrder ?
                     [...fieldInfo.membersOrder] as string[] | number[] : [];
+                let outOfRange: IAxisSet;
+                if (members[0].actualText === 'Out of Range') {
+                    outOfRange = members[0];
+                    members.splice(0, 1);
+                }
+                else if (members[members.length - 1].actualText === 'Out of Range') {
+                    outOfRange = members[members.length - 1];
+                    members.splice(members.length - 1, 1);
+                }
                 let sortDetails: HeadersSortEventArgs = {
                     fieldName: fieldName,
                     sortOrder: fieldInfo.sort as Sorting,
@@ -138,6 +148,24 @@ export class EventBase {
                 if (!isNullOrUndefined(filterObj)) {
                     isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
                     filterItems = filterObj.items ? filterObj.items : [];
+                }
+                if (outOfRange) {
+                    if (sortDetails.sortOrder === 'Ascending') {
+                        if (members[members.length - 1].actualText === 'Grand Total') {
+                            members.splice(members.length - 1, 0, outOfRange);
+                        }
+                        else {
+                            members.splice(members.length, 0, outOfRange);
+                        }
+                    }
+                    else {
+                        if (members[0].actualText === 'Grand Total') {
+                            members.splice(1, 0, outOfRange);
+                        }
+                        else {
+                            members.splice(0, 0, outOfRange);
+                        }
+                    }
                 }
                 if (isHeaderSortByDefault) {
                     let copyOrder: string[] | number[] = [];
@@ -178,15 +206,19 @@ export class EventBase {
         let isItemAvail: boolean = false;
         let filterTypes: FilterType[] = ['Include', 'Exclude'];
         if (filterObj && filterTypes.indexOf(filterObj.type) >= 0) {
-            let engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
-            let field: IField = engineModule.fieldList[fieldName];
-            let members: IMembers = (engineModule.formatFields[fieldName] &&
-                (['date', 'dateTime', 'time'].indexOf(engineModule.formatFields[fieldName].type) > -1)) ?
-                field.formattedMembers : field.members;
-            for (let item of filterObj.items) {
-                if (members[item]) {
-                    isItemAvail = true;
-                    break;
+            if (filterObj.type === 'Include' && filterObj.items.length === 0) {
+                isItemAvail = true;
+            } else {
+                let engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
+                let field: IField = engineModule.fieldList[fieldName];
+                let members: IMembers = (engineModule.formatFields[fieldName] &&
+                    (['date', 'dateTime', 'time'].indexOf(engineModule.formatFields[fieldName].type) > -1)) ?
+                    field.formattedMembers : field.members;
+                for (let item of filterObj.items) {
+                    if (members[item]) {
+                        isItemAvail = true;
+                        break;
+                    }
                 }
             }
         }
@@ -340,7 +372,7 @@ export class EventBase {
         return headers;
     }
 
-    private getParentIDs(treeObj: TreeView, id: string, parent: string[]): string[] {
+    public getParentIDs(treeObj: TreeView, id: string, parent: string[]): string[] {
         /* eslint-disable */
         let data: { [key: string]: Object }[] = treeObj.fields.dataSource as { [key: string]: Object }[];
         /* eslint-enable */
@@ -357,7 +389,7 @@ export class EventBase {
         }
         return parent;
     }
-    private getChildIDs(treeObj: TreeView, id: string, children: string[]): string[] {
+    public getChildIDs(treeObj: TreeView, id: string, children: string[]): string[] {
         /* eslint-disable */
         let data: { [key: string]: Object }[] = treeObj.fields.dataSource as { [key: string]: Object }[];
         /* eslint-enable */
@@ -424,6 +456,7 @@ export class EventBase {
             } else {
                 treeObj.expandAll(undefined, undefined, true);
             }
+            this.searchListItem = searchList;
         } else {
             this.parent.searchTreeItems = [];
             if (this.parent.dataType === 'olap' && !isHierarchy) {

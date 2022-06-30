@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, ConnectorConstraints } from '../../../src/diagram/enum/enum';
+import { Segments, ConnectorConstraints} from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
@@ -1686,3 +1686,70 @@ describe('Diagram Control', () => {
         });
     });
 });
+describe('Connector Segment shapes and style', () => {
+  
+    describe(' Segment thumb and segement Thumb shape', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+
+            let connector2: ConnectorModel = {};
+            connector2.id = 'connector2';
+            connector2.type = 'Orthogonal';
+            connector2.sourcePoint = { x: 250, y: 250 };
+            connector2.targetPoint = { x: 350, y: 350 };
+            connector2.segments = [{ type: 'Orthogonal', direction: "Right", length: 70 }, { type: 'Orthogonal', direction: "Bottom", length: 20 }];
+
+            diagram = new Diagram({
+                width: 900, height: 500,
+                connectors: [connector2],
+                snapSettings: { constraints: SnapConstraints.ShowLines },
+                getConnectorDefaults: function (connector: ConnectorModel) {
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                }
+            });
+            diagram.appendTo('#diagram');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            
+            
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking the Thumbshape at initial rendering', function (done) {
+             diagram.select([diagram.connectors[0]]);
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("d")==="M10,5 L5,10 L0,5 L5,0 L10,5 Z ").toBe(true);
+            done();
+        });
+        it('Check the segment thumb visibility for hidden thumbs', function (done) {
+            diagram.select([diagram.connectors[0]]);
+            diagram.connectors[0].segments[0].allowDrag = false;
+            diagram.connectors[0].segments[2].allowDrag = false;
+            diagram.dataBind();
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("visibility") == 'hidden' &&
+            document.getElementById("orthoThumb_3_2").getAttribute("visibility") == 'hidden').toBe(true);
+            diagram.connectors[0].segments[0].allowDrag = true;
+            diagram.connectors[0].segments[2].allowDrag = true;
+            diagram.dataBind();
+            done();
+        });
+        it('Checking connector segments', function (done) {
+            diagram.select([diagram.connectors[0]]);
+            diagram.dataBind();
+            expect(diagram.connectors[0].segments.length === 3).toBe(true);
+            done();
+        });
+        it('Checking the orthogonal thumbshape rendering dynamically', function (done) {
+            diagram.select([diagram.connectors[0]]);
+            diagram.segmentThumbShape = "OpenArrow";
+            diagram.dataBind();
+            expect(document.getElementById("orthoThumb_1_1").getAttribute("d") === "M15.9,23 L5,16 L15.9,9 L17,10.7 L8.7,16 L17,21.3 Z ").toBe(true);
+            done();
+            }); 
+    });
+});
+

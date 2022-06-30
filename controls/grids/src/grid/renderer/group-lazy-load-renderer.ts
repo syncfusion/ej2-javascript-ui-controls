@@ -59,6 +59,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         'filterbeforeopen', 'filterchoicerequest'];
 
     /** @hidden */
+    public refRowsObj: { [x: number]: Row<Column>[] } = {};
+    /** @hidden */
     public pageSize: number;
     /** @hidden */
     public cacheMode: boolean = false;
@@ -328,8 +330,10 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 break;
             } else {
                 remove(trs[i]);
+                this.refRowsObj[page].splice(trIdx + 1, 1);
             }
         }
+        this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[page] });
     }
 
     private addClass(rows: Row<Column>[]): void {
@@ -412,6 +416,10 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         this.rowIndex = undefined;
         this.rowObjectIndex = undefined;
         this.childCount = 0;
+        for (let i: number = 0; i < rows.length; i++) {
+            this.refRowsObj[this.parent.pageSettings.currentPage].splice(captionIndex + i + 1, 0, rows[i]);
+        }
+        this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[this.parent.pageSettings.currentPage] });
     }
 
     private setRowIndexes(capIdx: number, row: IRow<Column>): void {

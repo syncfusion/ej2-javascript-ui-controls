@@ -54,7 +54,7 @@ $tab-focus-outline: 0 !default;
 $tab-active-focus-outline: 0 !default;
 $tab-active-text-item-border: 0 !default;
 $tab-disable-active-text-item-border: 0 !default;
-$tab-active-item-border: $tab-border-style $accent !default;
+$tab-active-item-border: none !default;
 $tab-alt-active-item-border: $tab-border-style $primary-font !default;
 $tab-accent-active-item-border: $tab-border-style $accent !default;
 $tab-fill-hdr-border: $tab-border-style $accent !default;

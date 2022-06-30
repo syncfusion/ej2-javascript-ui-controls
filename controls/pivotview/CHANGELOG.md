@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
-## 20.1.60 (2022-06-14)
+## 20.2.36 (2022-06-30)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I387410` - The pivot table with OLAP cube can now render properly with calculated fields when virtual scrolling is enabled.
+
+#### New Features
+
+- Provided support to search for a specific field in the field list UI.
+
+## 20.1.61 (2022-06-21)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I382188` - When there is only one record, inline editing for value fields with advanced aggregate types now works properly.
+
+## 20.1.58 (2022-05-31)
 
 ### Pivot Table
 

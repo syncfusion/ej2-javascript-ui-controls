@@ -3,7 +3,6 @@
  */
 import { isNullOrUndefined, Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { IToolbarStatus } from './interface';
-import * as classes from '../rich-text-editor/base/classes';
 
 const inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
     'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
@@ -97,18 +96,18 @@ export function updateTextNode(value: string): string {
                     tdElm[j].style.removeProperty('border');
                 }
             }
-            if (!tableElm[i].classList.contains(classes.CLS_TABLE)) {
-                tableElm[i].classList.add(classes.CLS_TABLE);
+            if (!tableElm[i].classList.contains('e-rte-table')) {
+                tableElm[i].classList.add('e-rte-table');
             }
         }
         const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
         for (let i: number = 0; i < imageElm.length; i++) {
-            if (!imageElm[i].classList.contains(classes.CLS_RTE_IMAGE)) {
-                imageElm[i].classList.add(classes.CLS_RTE_IMAGE);
+            if (!imageElm[i].classList.contains('e-rte-image')) {
+                imageElm[i].classList.add('e-rte-image');
             }
-            if (!(imageElm[i].classList.contains(classes.CLS_IMGINLINE) ||
-            imageElm[i].classList.contains(classes.CLS_IMGBREAK))) {
-                imageElm[i].classList.add(classes.CLS_IMGINLINE);
+            if (!(imageElm[i].classList.contains('e-imginline') ||
+            imageElm[i].classList.contains('e-imgbreak'))) {
+                imageElm[i].classList.add('e-imginline');
             }
         }
     }

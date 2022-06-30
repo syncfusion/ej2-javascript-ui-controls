@@ -2519,6 +2519,6 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
              dropDowns.onFilterUp(e);
              expect(dropDowns.inputElement.value).toBe("@");
              expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
-         });
+        });
     });
 });

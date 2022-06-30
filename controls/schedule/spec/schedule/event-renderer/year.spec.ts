@@ -449,6 +449,37 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('EJ2-58944 - Horizontal timeline year view event rendered arguments checking', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Normal event',
+            StartTime: new Date(2017, 10, 8, 10),
+            EndTime: new Date(2017, 10, 8, 12)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: ['TimelineYear'],
+                height: 'auto', width: '100%',
+                selectedDate: new Date(2017, 10, 31)
+            };
+            schObj = util.createSchedule(model, sampleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking event rendered event args', (done: DoneFn) => {
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                expect((args.data[schObj.eventFields.startTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 10).getTime());
+                expect((args.data[schObj.eventFields.endTime] as Date).getTime()).toEqual(new Date(2017, 10, 8, 12).getTime());
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(1);
+            expect(schObj.eventsProcessed.length).toEqual(1);
+            schObj.refreshEvents();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -300,6 +300,11 @@ export interface ExportOptions {
      * the occurrences as separate instances on an exported Excel file.
      */
     includeOccurrences?: boolean;
+    /**
+     * Defines the delimiter for csv file export.
+     * By default, csv files are using comma(,) as separator. You can specify this property to change the delimiter in csv file.
+    */
+    separator?: string;
 }
 
 /** An interface that holds the field name and its header text to export to excel. */
@@ -445,6 +450,7 @@ export interface IRenderer {
     isTimelineView(): boolean;
     setColWidth(content: HTMLElement): void;
     resetColWidth(): void;
+    getAdjustedDate?(date: Date): Date;
     viewIndex: number;
 }
 

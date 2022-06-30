@@ -2,7 +2,7 @@ import { Spreadsheet } from '../base/index';
 import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs } from '../common/index';
 import { autoFit, virtualContentLoaded, completeAction } from '../common/index';
 import { hiddenMerge, updateTableWidth, updateTranslate } from '../common/index';
-import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet } from '../../workbook/index';
+import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow } from '../../workbook/index';
 import { beginAction, getCellIndexes, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
 import { activeCellMergedRange, setMerge, ExtendedRowModel, getRowHeight, getRangeIndexes, hideShow } from '../../workbook/index';
 import { ActionEventArgs, skipHiddenIdx } from '../../workbook/index';
@@ -71,7 +71,27 @@ export class ShowHide {
             performHideShow();
         }
         if (args.actionUpdate) {
+            this.updateIndexOnlyForHiddenColumnsAndRows(args, sheet);
             this.parent.notify(completeAction, actionArgs);
+        }
+    }
+    private updateIndexOnlyForHiddenColumnsAndRows(args: HideShowEventArgs, sheet: SheetModel): void {
+        let startIndex: number = args.startIndex;
+        let endIndex: number = args.endIndex;
+        let model: ColumnModel | RowModel;
+        for (let sIdx: number = args.startIndex; sIdx <= endIndex; sIdx++) {
+            model = args.isCol ? getColumn(sheet, sIdx) : getRow(sheet, sIdx) || {};
+            if (model.hidden == false) {
+                args.startIndex = sIdx;
+                break;
+            }
+        }
+        for (let eIdx: number = args.endIndex; eIdx >= startIndex; eIdx--) {
+            model = args.isCol ? getColumn(sheet, eIdx) : getRow(sheet, eIdx) || {};
+            if (model.hidden == false) {
+                args.endIndex = eIdx;
+                break;
+            }
         }
     }
     private hideRow(eventArgs: HideShowEventArgs): void {
@@ -153,6 +173,9 @@ export class ShowHide {
                     }
                 }
             }
+            if (args.refreshUI) {
+                return;
+            }
             if (merge && (args.startIndex >= this.parent.viewport.topIndex || !this.parent.scrollSettings.enableVirtualization)) {
                 if (args.isFiltering) {
                     eventArgs.refreshUI = true;
@@ -160,6 +183,7 @@ export class ShowHide {
                     this.parent.selectRange(sheet.selectedRange);
                     if (sheet.frozenRows || sheet.frozenColumns) {
                         this.parent.renderModule.refreshSheet(false, false, true);
+                        eventArgs.refreshUI = true;
                     } else {
                         this.parent.renderModule.refreshUI(
                             { rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row' });

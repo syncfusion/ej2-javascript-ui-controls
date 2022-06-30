@@ -44,6 +44,7 @@ export class Paragraph {
     private splitButtonClass: string = 'e-de-prop-splitbutton';
     private bulletListBtn: SplitButton;
     private numberedListBtn: SplitButton;
+    private borders: HTMLElement
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
@@ -98,9 +99,12 @@ export class Paragraph {
         this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', decreaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
         this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', increaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         const listDiv: HTMLElement = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
+        const paraDiv: HTMLElement = this.createDivElement(element + '_paraDiv', paragraphDiv, 'display:flex');
         classList(listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
+        classList(paraDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
         if (isRtl) {
             classList(listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
+            classList(paraDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
         }
         const lineHeight: HTMLElement = createElement('button', { id: element + '_lineHeight', attrs: { type: 'button' } });
         listDiv.appendChild(lineHeight);
@@ -120,6 +124,7 @@ export class Paragraph {
         }
         this.createBulletListDropButton(bulletIconCss, bulletButton);
         this.createNumberListDropButton(numberIconCss, numberingList);
+        this.borders = this.createButtonTemplate(element + '_borders', 'e-de-ctnr-borders e-icons', paraDiv, 'e-de-ctnr-group-btn', '37', this.localObj.getConstant('Borders'));
     }
     private createSeparator(parentDiv: HTMLElement): void {
         const separator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
@@ -209,8 +214,8 @@ export class Paragraph {
             beforeOpen: (): void => {
                 div.style.display = 'block';
                 let levelPattern: string = 'None';
-                if (!isNullOrUndefined(this.documentEditor.selection.paragraphFormat)) {
-                    if (this.documentEditor.selection.paragraphFormat.listId == -1) {
+                if(!isNullOrUndefined(this.documentEditor.selection.paragraphFormat)) {
+                    if (isNullOrUndefined(this.documentEditor.selection.paragraphFormat.listId) || this.documentEditor.selection.paragraphFormat.listId == -1) {
                         levelPattern = 'None';
                     }
                     else {
@@ -522,6 +527,9 @@ export class Paragraph {
         });
         this.lineSpacing.addEventListener('select', (args: MenuEventArgs): void => {
             this.lineSpacingAction(args);
+        });
+        this.borders.addEventListener('click', (): void => {
+             this.documentEditor.showBordersAndShadingDialog();
         });
     }
     public unwireEvents(): void {

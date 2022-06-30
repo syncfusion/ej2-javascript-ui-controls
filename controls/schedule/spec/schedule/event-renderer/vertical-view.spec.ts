@@ -806,6 +806,44 @@ describe('Vertical View Event Render Module', () => {
             expect(schObj.eventsData.length).toEqual(9);
             schObj.deleteEvent(data);
         });
+
+        it('EJ2-60623 - ScrollTo method checking when date alone is passed', (done: DoneFn) => {
+            schObj.width = '600px';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(0);
+            schObj.scrollTo(null, new Date(2018, 3, 3));
+            expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(216);
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(0);
+                schObj.scrollTo(null, new Date(2018, 3, 2));
+                expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(108);
+                done();
+            };
+        });
+
+        it('EJ2-60623 - ScrollTo method checking when date alone is passed with enable rtl', (done: DoneFn) => {
+            schObj.enableRtl = true;
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(0);
+                schObj.scrollTo(null, new Date(2018, 3, 2));
+                expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(-108);
+                done();
+            };
+        });
+
+        it ('EJ2-60623 - ScrollTo method checking when date alone is passed with enable rtl in WeekView', (done: DoneFn) => {
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(0);
+                schObj.scrollTo(null, new Date(2018, 3, 3));
+                expect(schObj.element.querySelector('.e-content-wrap').scrollLeft).toBe(-216);
+                done();
+            };
+        });
     });
 
     describe('Vertical view resource grouping appointment rendering allowGroupEdit', () => {

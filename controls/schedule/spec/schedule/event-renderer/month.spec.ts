@@ -306,14 +306,14 @@ describe('Month Event Render Module', () => {
         });
         it('checking work-cells height when height is auto', (done: DoneFn) => {
             schObj.dataBound = () => {
-                expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('76px');
-                expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('76px');
+                expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('70px');
+                expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('70px');
                 expect(schObj.eventsData.length).toEqual(1);
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
                 done();
             };
-            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('76px');
-            expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('76px');
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('70px');
+            expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('70px');
             expect(schObj.eventsData.length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
             schObj.refreshEvents();

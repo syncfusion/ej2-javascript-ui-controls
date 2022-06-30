@@ -6,7 +6,7 @@ import { SubTreeAlignments, Direction, DiagramAction } from '../enum/enum';
 import { Rect } from '../primitives/rect';
 import { PointModel } from '../primitives/point-model';
 import { OrthogonalSegmentModel } from '../objects/connector-model';
-import { OrthogonalSegment } from '../objects/connector';
+import { BezierSegment, OrthogonalSegment } from '../objects/connector';
 import { getFunction } from '../utility/base-util';
 import { Point } from '../primitives/point';
 import { updateLayoutValue } from '../utility/diagram-util';
@@ -1278,6 +1278,9 @@ export class HierarchicalTree {
                     } else {
                         if (info && info.tree.children.indexOf(conn.targetID) !== -1) {
                             conn.segments = [];
+                            if (conn.type === 'Bezier') {
+                                (conn.segments).push(new BezierSegment(conn, 'segments', { type: 'Bezier'}, true));
+                            }
                             if (layout.type === 'OrganizationalChart' && conn.type === 'Orthogonal') {
                                 this.updateSegments(layout, conn, node, target, i);
                             }

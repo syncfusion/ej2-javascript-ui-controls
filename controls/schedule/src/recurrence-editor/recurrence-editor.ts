@@ -443,7 +443,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 value: VALUEFIELD
             },
             placeholder: this.localeObj.getConstant(REPEAT),
-            htmlAttributes: { 'title': this.localeObj.getConstant(REPEAT) },
+            htmlAttributes: { 'title': this.localeObj.getConstant(REPEAT), role: 'option' },
             change: (args: ChangeEventArgs) => {
                 self.setProperties({ selectedType: this.frequencies.indexOf(args.value as RepeatType) }, false);
                 self.element.querySelector('.' + REPEATCONTENT).innerHTML =
@@ -466,6 +466,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 text: TEXTFIELD,
                 value: VALUEFIELD
             },
+            htmlAttributes: { role: 'option' },
             change: (args: ChangeEventArgs) => {
                 self.freshOnEndForm();
                 self.updateEndOnForm(<string>args.value);
@@ -484,6 +485,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                     text: TEXTFIELD,
                     value: VALUEFIELD
                 },
+                htmlAttributes: { role: 'option' },
                 index: 1,
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 change: (args: ChangeEventArgs) => {
@@ -506,6 +508,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 text: TEXTFIELD,
                 value: VALUEFIELD
             },
+            htmlAttributes: { role: 'option' },
             enableRtl: this.enableRtl,
             index: 7,
             // eslint-disable-next-line @typescript-eslint/no-unused-vars

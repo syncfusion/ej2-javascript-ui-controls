@@ -915,6 +915,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public allowCalculatedField: boolean;
 
     /**
+     * It enables the search option in the field list UI, which can be used to search specific fields at runtime.
+     * > This option is only available when the pivot table's built-in popup field list is enabled using the `showFieldList` property.
+     * @default false
+     */
+    @Property(false)
+    public enableFieldSearching: boolean;
+     
+    /**
      * Allows you to sort individual value field and its aggregated values either in row or column axis to ascending or descending order. 
      * You can sort the values by clicking directly on the value field header positioned either in row or column axis of the pivot table.
      * @default false
@@ -2057,8 +2065,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.showTooltip) {
             if (this.tooltipTemplate) {
                 this.tooltip = new Tooltip({
-                    target: 'td.e-valuescontent' + (this.cssClass ? (' ' + this.cssClass) : ''),
-                    cssClass: 'e-pivottooltiptemplate',
+                    target: 'td.e-valuescontent',
+                    cssClass: 'e-pivottooltiptemplate' + (this.cssClass ? (' ' + this.cssClass) : ''),
                     showTipPointer: false,
                     position: 'BottomRight',
                     mouseTrail: true,
@@ -2069,7 +2077,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 });
             } else {
                 this.tooltip = new Tooltip({
-                    target: 'td.e-valuescontent' + (this.cssClass ? (' ' + this.cssClass) : ''),
+                    target: 'td.e-valuescontent',
+                    cssClass: this.cssClass,
                     showTipPointer: false,
                     position: 'BottomRight',
                     mouseTrail: true,
@@ -2990,6 +2999,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         this.pivotFieldListModule.axisFieldModule.render();
                     }
                     break;
+                case 'enableFieldSearching':
+                    this.pivotFieldListModule.enableFieldSearching = this.enableFieldSearching;
             }
         }
     }

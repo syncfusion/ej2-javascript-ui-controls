@@ -10,7 +10,7 @@ import { Rect } from '../primitives/rect';
 import { PointModel } from '../primitives/point-model';
 import { ConnectorModel } from '../objects/connector-model';
 import { wordBreakToString, whiteSpaceToString, textAlignToString, randomId } from '../utility/base-util';
-import { getUserHandlePosition, canShowCorner, getInterval, getSpaceValue } from '../utility/diagram-util';
+import { getUserHandlePosition, canShowCorner, getInterval, getSpaceValue, canShowControlPoints } from '../utility/diagram-util';
 import { getDiagramElement, getAdornerLayer, getGridLayer, getHTMLLayer, updatePath } from '../utility/dom-util';
 import { measurePath, getBackgroundLayerSvg, getBackgroundImageLayer, setAttributeSvg } from '../utility/dom-util';
 import { SnapSettingsModel } from '../../diagram/diagram/grid-lines-model';
@@ -18,7 +18,7 @@ import { Gridlines } from '../../diagram/diagram/grid-lines';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
-import { WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection } from '../enum/enum';
+import { WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection, ControlPointsVisibility } from '../enum/enum';
 import { ThumbsConstraints, SelectorConstraints, ElementAction } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { SelectorModel } from '../objects/node-model';
@@ -36,6 +36,7 @@ import { RulerModel, Ruler } from '../../ruler';
 import { canDrawThumbs, avoidDrawSelector } from '../utility/constraints-util';
 import { AnnotationConstraints} from '../enum/enum';
 import { Diagram } from '../diagram';
+import { getSegmentThumbShapeHorizontal, getSegmentThumbShapeVertical } from '../objects/dictionary/common';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -268,6 +269,67 @@ export class DiagramRenderer {
     }
 
     /**
+     * Method used to render the node selection rectangle \
+     *
+     * @returns {void }  Method used to render the node selection rectangle  .\
+     *
+     * @param {DiagramElement} element - Provide the DiagramElement value.
+     * @param {SVGElement } canvas - Provide the SVGElement value.
+     * @param {Transforms } transform - Provide the Transforms value.
+     * @param {number } isFirst - Provide the boolean value.
+     * @private
+     */
+     public renderSelectionRectangle(element: DiagramElement, canvas: SVGElement, transform: Transforms, isFirst: boolean): void {
+        const width: number = element.actualSize.width || 2;
+        const height: number = element.actualSize.height || 2;
+        let x: number = element.offsetX - width * element.pivot.x;
+        let y: number = element.offsetY - height * element.pivot.y;
+        x = (x + transform.tx) * transform.scale;
+        y = (y + transform.ty) * transform.scale;
+        const options: RectAttributes = {
+            width: width * transform.scale, height: height * transform.scale,
+            x: x, y: y, fill: 'transparent', stroke: '#00cc00', angle: element.rotateAngle,
+            pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: isFirst? 2 : 1,
+            dashArray: '', opacity: 1, cornerRadius: 0,
+            visible: true, id: element.id + '_highlighter', class: 'e-diagram-selection-rect'
+        };
+        const parentSvg: SVGSVGElement = this.getParentSvg(element, 'selector');
+        this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
+    }
+
+    /**
+     * Method used to render the selection line for connector  \
+     *
+     * @returns {void } Method used to render the selection line for connector .\
+     *
+     * @param {PathElement} element - Provide the path element of the diagram .
+     * @param { HTMLCanvasElement | SVGElement } canvas - Provide the canvas element value.
+     * @param { Transforms } transform - Provide the transform value.
+     * @param { boolean } isFirst - Provide the boolean value.
+     * @private
+     */
+    public renderSelectionLine(
+        element: PathElement, canvas: HTMLCanvasElement | SVGElement, transform: Transforms, isFirst: boolean): void {
+        const options: BaseAttributes = this.getBaseAttributes(element, transform);
+        (options as PathAttributes).data = element.absolutePath;
+        options.id = options.id + '_highlighter';
+        const ariaLabel: Object = element.description ? element.description : element.id;
+        if (!this.isSvgMode) {
+            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
+            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
+        }
+        if(transform) {
+            options.x = options.x * transform.scale;
+            options.y = options.y * transform.scale;
+        }
+        options.stroke = "#00cc00";
+        options.strokeWidth = isFirst ? 2 : 1;
+        options.class = "e-diagram-selection-line";
+        const parentSvg: SVGSVGElement = this.getParentSvg(element, 'selector');
+        this.svgRenderer.drawPath(canvas as SVGElement, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel, transform.scale);
+    }
+
+    /**
      * Method used to render the stack highlighter \
      *
      * @returns {void }  Method used to render the stack highlighter  .\
@@ -489,7 +551,7 @@ export class DiagramRenderer {
     public renderEndPointHandle(
         selector: ConnectorModel, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints,
         selectorConstraints: SelectorConstraints, transform: Transforms, connectedSource: boolean,
-        connectedTarget?: boolean, isSegmentEditing?: boolean): void {
+        connectedTarget?: boolean, isSegmentEditing?: boolean, canShowBezierPoints?: boolean): void {
         const sourcePoint: PointModel = selector.sourcePoint;
         const targetPoint: PointModel = selector.targetPoint;
         const wrapper: DiagramElement = selector.wrapper; let i: number; let segment: StraightSegment;
@@ -514,43 +576,77 @@ export class DiagramRenderer {
                         constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i);
                 }
             } else {
-                for (i = 0; i < selector.segments.length; i++) {
-                    const seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
-                    this.renderOrthogonalThumbs(
-                        'orthoThumb_' + (i + 1), wrapper, seg, canvas,
-                        canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform);
+                // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
+                if (!selector.maxSegmentThumb) {
+                    for (i = 0; i < selector.segments.length; i++) {
+                        const seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
+                        this.renderOrthogonalThumbs(
+                            'orthoThumb_' + (i + 1), wrapper, seg, canvas,
+                            canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
+                    }
+                } else {
+                    // (EJ2-57115) - Added below code to check if maxSegmentThumb is non zero then we have ignore the rendering of
+                    // first and last segment thumb
+                    let start: number = selector.segments.length <= selector.maxSegmentThumb ? 0 : 1;
+                    let end: number = selector.segments.length <= selector.maxSegmentThumb ? selector.segments.length : selector.segments.length - 1;
+                    // (EJ2-57115) - If maxSegmentThumb is greater than or equal to 3 means then set start as second segment(1) and end as last before segment
+                    if (selector.maxSegmentThumb >= 3 && selector.segments.length === 3) {
+                        start = 1;
+                        end = selector.segments.length - 1;
+                    }
+                    // (EJ2-57115) - If segments length is greater than maxSegmentThumb + 2 means then set start as 2 
+                    start = selector.segments.length > selector.maxSegmentThumb + 2 ? 2 : start;
+                    // (EJ2-57115) - If segments length is greater than maxSegmentThumb + 2 means then set end as last before segment 
+                    end = selector.segments.length > selector.maxSegmentThumb + 2 ? selector.segments.length - 2 : end;
+                    for (i = start; i < end; i++) {
+                        const seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
+                        this.renderOrthogonalThumbs(
+                            'orthoThumb_' + (i + 1), wrapper, seg, canvas,
+                            canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
+                    }
                 }
             }
         }
-        if (selector.type === 'Bezier') {
-            for (i = 0; i < selector.segments.length; i++) {
+
+        if (selector.type === 'Bezier' && canShowBezierPoints) {
+            const segmentCount: number = selector.segments.length - 1;
+            const controlPointsVisibility: ControlPointsVisibility = selector.bezierSettings != null ? selector.bezierSettings.controlPointsVisibility : null;
+            for (i = 0; i <= segmentCount; i++) {
                 const segment: BezierSegment = (selector.segments[i] as BezierSegment);
+
                 let bezierPoint: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1
                     : segment.bezierPoint1;
-                this.renderCircularHandle(
-                    'bezierPoint_' + (i + 1) + '_1', wrapper, bezierPoint.x, bezierPoint.y, canvas,
-                    canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
-                    constraints & ThumbsConstraints.ConnectorSource, transform, undefined, undefined,
-                    { 'aria-label': 'Thumb to move the source point of the connector' }, undefined,
-                    'e-diagram-bezier-handle e-source');
-                if (canShowCorner(selectorConstraints, 'ConnectorSourceThumb')) {
-                    this.renderBezierLine(
-                        'bezierLine_' + (i + 1) + '_1', wrapper, canvas, segment.points[0],
-                        !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1,
-                        transform);
+                if (controlPointsVisibility != null && (i == 0 && canShowControlPoints(controlPointsVisibility, 'Source'))
+                    || (i != 0 && canShowControlPoints(controlPointsVisibility, 'Intermediate'))) {
+                    this.renderCircularHandle(
+                        'bezierPoint_' + (i + 1) + '_1', wrapper, bezierPoint.x, bezierPoint.y, canvas,
+                        canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
+                        constraints & ThumbsConstraints.ConnectorSource, transform, undefined, undefined,
+                        { 'aria-label': 'Thumb to move the source point of the connector' }, undefined,
+                        'e-diagram-bezier-handle e-source');
+                    if (canShowCorner(selectorConstraints, 'ConnectorSourceThumb')) {
+                        this.renderBezierLine(
+                            'bezierLine_' + (i + 1) + '_1', wrapper, canvas, segment.points[0],
+                            !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1,
+                            transform);
+                    }
                 }
+
                 bezierPoint = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
-                this.renderCircularHandle(
-                    'bezierPoint_' + (i + 1) + '_2', wrapper, bezierPoint.x, bezierPoint.y,
-                    canvas, canShowCorner(selectorConstraints, 'ConnectorTargetThumb'),
-                    constraints & ThumbsConstraints.ConnectorTarget, transform, undefined,
-                    undefined, { 'aria-label': 'Thumb to move the target point of the connector' }, undefined,
-                    'e-diagram-bezier-handle e-target');
-                if (canShowCorner(selectorConstraints, 'ConnectorTargetThumb')) {
-                    this.renderBezierLine(
-                        'bezierLine_' + (i + 1) + '_2', wrapper, canvas, segment.points[1],
-                        !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2,
-                        transform);
+                if (controlPointsVisibility != null && (i == segmentCount && canShowControlPoints(controlPointsVisibility, 'Target'))
+                    || (i != segmentCount && canShowControlPoints(controlPointsVisibility, 'Intermediate'))) {
+                    this.renderCircularHandle(
+                        'bezierPoint_' + (i + 1) + '_2', wrapper, bezierPoint.x, bezierPoint.y,
+                        canvas, canShowCorner(selectorConstraints, 'ConnectorTargetThumb'),
+                        constraints & ThumbsConstraints.ConnectorTarget, transform, undefined,
+                        undefined, { 'aria-label': 'Thumb to move the target point of the connector' }, undefined,
+                        'e-diagram-bezier-handle e-target');
+                    if (canShowCorner(selectorConstraints, 'ConnectorTargetThumb')) {
+                        this.renderBezierLine(
+                            'bezierLine_' + (i + 1) + '_2', wrapper, canvas, segment.points[1],
+                            !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2,
+                            transform);
+                    }
                 }
             }
         }
@@ -569,17 +665,37 @@ export class DiagramRenderer {
      * @param { Transforms } t - Provide the Transforms value.
      * @private
      */
-    public renderOrthogonalThumbs(
+     public renderOrthogonalThumbs(
         id: string, selector: DiagramElement, segment: OrthogonalSegment, canvas: HTMLCanvasElement | SVGElement,
-        visibility: boolean, t: Transforms): void {
+        visibility: boolean, t: Transforms, connector: ConnectorModel): void {
         let orientation: string; let visible: boolean; let length: number; let j: number = 0;
-        for (j = 0; j < segment.points.length - 1; j++) {
-            length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
-            orientation = (segment.points[j].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
-            visible = (length >= 50 && segment.allowDrag) ? true : false;
-            this.renderOrthogonalThumb(
-                (id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)),
-                (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
+        // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
+        if (!connector.maxSegmentThumb) {
+            for (j = 0; j < segment.points.length - 1; j++) {
+                length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
+                orientation = (segment.points[j].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
+                visible = (length >= 50 && segment.allowDrag) ? true : false;
+                this.renderOrthogonalThumb(
+                    (id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)),
+                    (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
+            }
+        } else {
+            // (EJ2-57115) - Added below code to check if maxSegmentThumb greater then 3 means then we have ignore the rendering of
+            // first and last segment thumb
+            // Set the start value as 1 if segment points is greater than 3
+            let start = segment.points.length < 3 ? 0 : 1;
+            // set the end value as segment.points.length - 2 if segment points is greater then 3
+            let end = segment.points.length < 3 ? segment.points.length-1 : segment.points.length - 2;
+            start = connector.segments.length === 1 ? start: 0;
+            end = connector.segments.length === 1 ? end: segment.points.length-1;
+            for (j = start; j < end; j++) {
+                length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
+                orientation = (segment.points[j].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
+                visible = (length >= 50 && segment.allowDrag) ? true : false;
+                this.renderOrthogonalThumb(
+                    (id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)),
+                    (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
+            }
         }
     }
 
@@ -602,13 +718,88 @@ export class DiagramRenderer {
         id: string, selector: DiagramElement, x: number, y: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, orientation: string, t: Transforms): void {
         let path: string; let h: number; let v: number;
+        let diagramElement = document.getElementById(this.diagramId);
+        let instance = 'ej2_instances';
+        let diagram;
+        if (diagramElement) {
+            diagram = diagramElement[instance][0];
+        }
         if (orientation === 'horizontal') {
-            path = 'M0,7 L15,0 L30,7 L15,14 z'; h = -15; v = -7;
-        } else { path = 'M7,0 L0,15 L7,30 L14,15 z'; h = -7; v = -15; }
+            path = getSegmentThumbShapeHorizontal(diagram.segmentThumbShape);
+            switch(diagram.segmentThumbShape)
+            {
+                case 'Arrow':
+                case 'OpenArrow':
+                case 'DoubleArrow':
+                    h = -15;
+                    v = -15;
+                    break;
+                case 'Square':
+                case 'Rectangle':
+                case 'Ellipse':
+                    h = -5;
+                    v = -5;
+                    break;
+                case 'Rhombus':
+                case 'Circle':
+                case 'Diamond':
+                    h = -10;
+                    v = -5;
+                    break;
+                case 'IndentedArrow':
+                case 'OutdentedArrow':
+                    h = -5;
+                    v = -4;
+                    break;
+                case 'Fletch':
+                case 'OpenFetch':
+                    h = -5;
+                    v = -4.5;
+                    break;
+            }
+        }
+        else {
+            path = getSegmentThumbShapeVertical(diagram.segmentThumbShape);
+            switch(diagram.segmentThumbShape)
+            {
+                case 'Arrow':
+                case 'OpenArrow':
+                case  'DoubleArrow':
+                    h = -15;
+                    v = -15;
+                    break;
+                case 'Square':
+                case 'IndentedArrow':
+                case 'OutdentedArrow':
+                case 'Fletch':
+                case 'OpenFetch':
+                    h = -5;
+                    v = -5;
+                    break;
+                case 'Rhombus':
+                case 'Diamond':
+                    h = -5;
+                    v = -15;
+                    break;
+                case 'Rectangle':
+                    h = -7;
+                    v = -5;
+                    break;
+                case 'Circle':
+                    h = -5;
+                    v = -7;
+                   break;
+                case 'Ellipse':
+                    h = -7;
+                    v = -7;
+                    break;
+            }
+         }
         const options: PathAttributes = {
             x: ((x + t.tx) * t.scale) + h, y: ((y + t.ty) * t.scale) + v, angle: 0,
             fill: '#e2e2e2', stroke: 'black', strokeWidth: 1, dashArray: '', data: path,
-            width: 20, height: 20, pivotX: 0, pivotY: 0, opacity: 1, visible: visible, id: id
+            width: 20, height: 20, pivotX: 0, pivotY: 0, opacity: 1, visible: visible, id: id,
+            class:'e-orthogonal-thumb'
         };
         this.svgRenderer.drawPath(canvas as SVGElement, options, this.diagramId);
     }

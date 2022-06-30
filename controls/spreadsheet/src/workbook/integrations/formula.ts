@@ -121,8 +121,12 @@ export class WorkbookFormula {
     }
     private performFormulaOperation(args: { [key: string]: Object }): void {
         const action: string = <string>args.action;
-        const formulas: Map<string, IFormulaColl> = this.calculateInstance.getLibraryFormulas();
-        const formulaInfo: IFormulaColl[] = (Array.from(formulas.values()));
+        let formulas: Map<string, IFormulaColl>;
+        let formulaInfo: IFormulaColl[];
+        if (action !== 'refreshCalculate') {
+            formulas = this.calculateInstance.getLibraryFormulas();
+            formulaInfo = (Array.from(formulas.values()));
+        }
         let collection: string[];
         switch (action) {
         case 'getLibraryFormulas':

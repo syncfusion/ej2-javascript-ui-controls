@@ -2,6 +2,7 @@ import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel,
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { createElement } from '@syncfusion/ej2-base';
+import { getRangeAddress } from "../../../src/index";
 
 /**
  *  Clipboard test cases
@@ -37,6 +38,283 @@ describe('Clipboard ->', () => {
                     expect(getCell(6, 3, sheet).style.fontSize).toBe('20pt');
                     done();
                 });
+            });
+        });
+    });
+
+    describe('Paste Method ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Cut/paste the Merged cells->', (done: Function) => {
+            helper.invoke('merge', [getRangeAddress([12, 0, 14, helper.getInstance().sheets[0].colCount - 1])]);
+            expect(helper.getInstance().sheets[0].rows[12].cells[0].rowSpan).toBe(3);
+            expect(helper.getInstance().sheets[0].rows[12].cells[0].colSpan).toBe(100);
+            helper.invoke('cut', ['A13']).then(() => {
+                helper.invoke('paste', ['A18']);
+                expect(helper.getInstance().sheets[0].rows[17].cells[0].rowSpan).toBe(3);
+                expect(helper.getInstance().sheets[0].rows[17].cells[0].colSpan).toBe(100);
+                done();
+            });
+        });
+
+        it('Copy/paste the Merged cells->', (done: Function) => {
+            helper.invoke('copy', ['A18']).then(() => {
+                helper.invoke('paste', ['A22']);
+                expect(helper.getInstance().sheets[0].rows[21].cells[0].rowSpan).toBe(3);
+                expect(helper.getInstance().sheets[0].rows[21].cells[0].colSpan).toBe(100);
+                done();
+            });
+        });
+
+        it('Cut/paste the wrap applied cells->', (done: Function) => {
+            helper.edit('A1', 'Item Name');
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.wrap('A1', true);
+            expect(helper.invoke('getCell', [0,0]).classList).toContain('e-wraptext');
+            helper.invoke('cut', ['A1']).then(() => {
+                helper.invoke('paste', ['B1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].value.toString()).toBe('Item Name');
+                expect(helper.invoke('getCell', [0,1]).classList).toContain('e-wraptext');
+                done();
+            });
+        });
+
+        it('Copy/paste the wrap applied cells->', (done: Function) => {
+            helper.invoke('copy', ['B1']).then(() => {
+                helper.invoke('paste', ['A1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].value.toString()).toBe('Item Name');
+                expect(helper.invoke('getCell', [0,0]).classList).toContain('e-wraptext');
+                expect(helper.invoke('getCell', [0,1]).classList).toContain('e-wraptext');
+                done();
+            });
+        });
+
+        it('Cut/paste the conditional formatting highligted cells->', (done: Function) => {
+            helper.invoke('selectRange', ['H2:H11']);
+            helper.getInstance().workbookConditionalFormattingModule.setCFRule({ cfModel: { type: 'BlueDataBar', range: 'H2:H11' }, isAction: true });
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            helper.invoke('cut', ['H2:H11']).then(() => {
+                helper.invoke('paste', ['I2']);
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 8]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                expect(helper.invoke('getCell', [9, 8]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                done();
+            });
+        });
+
+        it('Copy/paste the conditional formatting highligted cells->', (done: Function) => {
+            helper.invoke('selectRange', ['I2:I11']);
+            expect(helper.invoke('getCell', [1, 8]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [9, 8]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            helper.invoke('copy', ['I2:I11']).then(() => {
+                helper.invoke('paste', ['H2']);
+                expect(helper.invoke('getCell', [1, 8]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                expect(helper.invoke('getCell', [9, 8]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                done();
+            });
+        });
+
+        it('Cut/paste the Filtered cell values->', (done: Function) => {
+            helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).children[0].classList).toContain('e-filter-btn');
+                expect(helper.invoke('getCell', [0, 4]).children[0].children[0].classList).toContain('e-filtered');
+                helper.invoke('cut', ['E1:E11']).then(() => {
+                    helper.invoke('paste', ['J1']);
+                    expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toEqual('Price');
+                    expect(helper.getInstance().sheets[0].rows[5].cells[9].value).toEqual(10);
+                    expect(helper.getInstance().sheets[0].rows[7].cells[9].value).toEqual(10);
+                    expect(helper.getInstance().sheets[0].rows[8].cells[9].value).toEqual(10);
+                    expect(helper.getInstance().sheets[0].rows[10].cells[9].value).toEqual(10);
+                    done();
+                });
+            });
+        });
+
+        it('Copy/paste the Filtered cell values->', (done: Function) => {
+            helper.invoke('copy', ['F1:F11']).then(() => {
+                helper.invoke('paste', ['K1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[10].value).toEqual('Amount');
+                expect(helper.getInstance().sheets[0].rows[1].cells[10].value).toEqual(300);
+                expect(helper.getInstance().sheets[0].rows[2].cells[10].value).toEqual(200);
+                expect(helper.getInstance().sheets[0].rows[3].cells[10].value).toEqual(310);
+                expect(helper.getInstance().sheets[0].rows[4].cells[10].value).toEqual(500);
+                done();
+            });
+        });
+    });
+
+    describe('Paste Method - II>', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Cut/Paste for Sorted Cells->', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.sort({ containsHeader: true}, 'A1:A11');
+            setTimeout(() => {
+                helper.invoke('cut', ['A1:A11']).then(() => {
+                    helper.invoke('paste', ['I1']);
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toEqual('Item Name');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[8].value).toEqual('Casual Shoes');
+                    expect(helper.getInstance().sheets[0].rows[2].cells[8].value).toEqual('Cricket Shoes');
+                    expect(helper.getInstance().sheets[0].rows[9].cells[8].value).toEqual('Sports Shoes');
+                    expect(helper.getInstance().sheets[0].rows[10].cells[8].value).toEqual('T-Shirts');
+                    done();
+                });
+            }, 10);
+        });
+
+        it('Copy/Paste for Sorted Cells->', (done: Function) => {
+            helper.invoke('selectRange', ['H1']);
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.sort({ containsHeader: true}, 'H1:H11');
+            setTimeout(() => {
+                helper.invoke('copy', ['H1:H11']).then(() => {
+                    helper.invoke('paste', ['J1']);
+                    expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toEqual('Profit');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toEqual(10);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toEqual(14);
+                    expect(helper.getInstance().sheets[0].rows[9].cells[9].value).toEqual(70);
+                    expect(helper.getInstance().sheets[0].rows[10].cells[9].value).toEqual(166);
+                    done();
+                });
+            }, 10);
+        });
+
+        it('Cut/Paste Unique Formula applied Cells->', (done: Function) => {
+            helper.edit('K1', '=UNIQUE(E1:E11)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[10].formula).toEqual('=UNIQUE(E1:E11)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[10].value).toEqual('Price');
+            expect(helper.getInstance().sheets[0].rows[1].cells[10].value).toEqual('20');
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].value).toEqual('30');
+            expect(helper.getInstance().sheets[0].rows[3].cells[10].value).toEqual('15');
+            expect(helper.getInstance().sheets[0].rows[4].cells[10].value).toEqual('10');
+            helper.invoke('cut', ['K1:K5']).then(() => {
+                helper.invoke('paste', ['L1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[11].formula).toEqual('=UNIQUE(E1:E11)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[11].value).toEqual('Price');
+                expect(helper.getInstance().sheets[0].rows[1].cells[11].value).toEqual('20');
+                expect(helper.getInstance().sheets[0].rows[2].cells[11].value).toEqual('30');
+                expect(helper.getInstance().sheets[0].rows[3].cells[11].value).toEqual('15');
+                expect(helper.getInstance().sheets[0].rows[4].cells[11].value).toEqual('10');
+                done();
+            });
+        });
+
+        it('Copy/Paste Unique Formula applied Cells->', (done: Function) => {
+            helper.edit('K1', '=UNIQUE(E1:E11)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[10].formula).toEqual('=UNIQUE(E1:E11)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[10].value).toEqual('Price');
+            expect(helper.getInstance().sheets[0].rows[1].cells[10].value).toEqual('20');
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].value).toEqual('30');
+            expect(helper.getInstance().sheets[0].rows[3].cells[10].value).toEqual('15');
+            expect(helper.getInstance().sheets[0].rows[4].cells[10].value).toEqual('10');
+            helper.invoke('copy', ['K1:K5']).then(() => {
+                helper.invoke('paste', ['M1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[12].formula).toEqual('=UNIQUE(G1:G11)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[12].value).toEqual('Discount');
+                expect(helper.getInstance().sheets[0].rows[1].cells[12].value).toEqual('1');
+                expect(helper.getInstance().sheets[0].rows[2].cells[12].value).toEqual('5');
+                expect(helper.getInstance().sheets[0].rows[3].cells[12].value).toEqual('7');
+                expect(helper.getInstance().sheets[0].rows[4].cells[12].value).toEqual('11');
+                expect(helper.getInstance().sheets[0].rows[9].cells[12].value).toEqual('12');
+                expect(helper.getInstance().sheets[0].rows[10].cells[12].value).toEqual('9');
+                done();
+            });
+        });
+    });
+
+    describe('Paste Method - III', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {  }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Copy and Paste-Values for alt+wrap applied Cells->', (done: Function) => {
+            helper.edit('A1', 'Sync \n fusion');
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-wraptext');
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Sync \n fusion');
+            helper.invoke('copy', ['A1']).then(() => {
+                helper.invoke('paste', ['B2', 'Values']);
+                expect(helper.invoke('getCell', [1, 1]).textContent).toBe('Sync \n fusion');
+                expect(helper.invoke('getCell', [1, 1]).classList).toContain('e-alt-unwrap');
+                done();
+            });
+        });
+
+        it('Cut and Paste Full Row with Increased Row Height->', (done: Function) => {
+            helper.invoke('setRowHeight', [40, 12]);
+            expect(helper.getInstance().sheets[0].rows[12].height).toBe(40);
+            helper.invoke('cut', [getRangeAddress([12, 0, 12, helper.getInstance().sheets[0].colCount - 1])]).then(() => {
+                helper.invoke('paste', ['A14']);
+                expect(helper.getInstance().sheets[0].rows[12].height).toBe(20);
+                expect(helper.getInstance().sheets[0].rows[13].height).toBe(40);
+                done();
+            });
+        });
+
+        it('Copy and Paste Full Row with Increased Row Height->', (done: Function) => {
+            helper.invoke('copy', [getRangeAddress([13, 0, 13, helper.getInstance().sheets[0].colCount - 1])]).then(() => {
+                helper.invoke('paste', ['A15']);
+                expect(helper.getInstance().sheets[0].rows[13].height).toBe(40);
+                expect(helper.getInstance().sheets[0].rows[14].height).toBe(40);
+                done();
+            });
+        });
+
+        it('Copy date Formatted cell->', (done: Function) => {
+            helper.invoke('copy', ['B5']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('11/21/2014');
+                expect(helper.getInstance().sheets[0].rows[4].cells[1].value).toEqual('41964');
+                done();
+            });
+        });
+
+        it('Insert Column between two Copied Cell->', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('Time');
+            helper.invoke('copy', ['B1:C1']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                helper.invoke('insertColumn', [2]);
+                expect(helper.getInstance().sheets[0].rows[0].cells[2]).toBeNull();
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toBe('Time');
+                done();
+            });
+        });
+
+        it('Insert Row above Copied Cell->', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+            helper.invoke('copy', ['A2']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                helper.invoke('insertRow', [2]);
+                expect(helper.getInstance().sheets[0].rows[2]).toEqual({});
+                expect(helper.getInstance().sheets[0].rows[3].cells[0].value).toBe('Sports Shoes');
+                done();
+            });
+        });
+
+        it('Insert Row between Copied Cell->', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[4].cells[0].value).toBe('Formal Shoes');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe('Sandals & Floaters');
+            helper.invoke('copy', ['A5:A6']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                helper.invoke('insertRow', [5]);
+                expect(helper.getInstance().sheets[0].rows[5]).toEqual({});
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toBe('Sandals & Floaters');
+                done();
             });
         });
     });
@@ -112,12 +390,8 @@ describe('Clipboard ->', () => {
         describe('F162960 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{
-                        rows: [{ cells: [{ value: '100' }, { value: '25' }, { value: '1001' }] }, {
-                            cells: [{ value: '100' },
-                            { value: '25' }, { value: '1001' }]
-                        }], selectedRange: 'A1:B2'
-                    }],
+                    sheets: [{ rows: [{ cells: [{ value: '100' }, { value: '25' }, { value: '1001' }] }, { cells: [{ value: '100' },
+                    { value: '25' }, { value: '1001' }] }], selectedRange: 'A1:B2' }],
                     created: (): void => helper.getInstance().setRowHeight(45)
                 }, done);
             });
@@ -217,15 +491,9 @@ describe('Clipboard ->', () => {
         describe('I329167, I328868 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{
-                        rows: [{ cells: [{ index: 5, value: '10' }, { value: '11' }, { value: '8' }] }, {
-                            cells: [{
-                                index: 5,
-                                formula: '=IF(F1>10,"Pass","Fail")'
-                            }, { index: 7, value: '10' }]
-                        }, { cells: [{ index: 7, formula: '=SUM(H1:H2)' }] }],
-                        selectedRange: 'F2'
-                    }]
+                    sheets: [{ rows: [{ cells: [{ index: 5, value: '10' }, { value: '11' }, { value: '8' }] }, { cells: [{ index: 5,
+                    formula: '=IF(F1>10,"Pass","Fail")' }, { index: 7, value: '10' }] }, { cells: [{ index: 7, formula: '=SUM(H1:H2)' }] }],
+                    selectedRange: 'F2' }]
                 }, done);
             });
             afterAll(() => {
@@ -380,7 +648,7 @@ describe('Clipboard ->', () => {
         });
         describe('EJ2-56522 ->', () => {
             beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({}, done);
+                helper.initializeSpreadsheet({ }, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
@@ -450,25 +718,25 @@ describe('Clipboard ->', () => {
             });
             it('External copy and paste cell model with style creation - copied from PowerPoint', (done: Function) => {
                 const tableStr: string = '<style>col{mso-width-source:auto;}td{color:windowtext;vertical-align:bottom;border:none;}' +
-                    '.oa1{border:1.0pt solid black;vertical-align:top;}</style>' +
-                    '<table><tbody>' +
-                    '<tr height="42" style="height:20.93pt">' +
+                '.oa1{border:1.0pt solid black;vertical-align:top;}</style>' +
+                '<table><tbody>' +
+                '<tr height="42" style="height:20.93pt">' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single">' +
-                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">115</span>' +
+                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">115</span>' +
                     '</s></p></td>' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single">' +
-                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">313</span>' +
+                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-weight:bold;font-style:italic;">313</span>' +
                     '</s></p></td>' +
-                    '</tr>' +
-                    '<tr>' +
+                '</tr>' +
+                '<tr>' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
-                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;"">225</span></u></s></p>' +
+                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;"">225</span></u></s></p>' +
                     '</td>' +
                     '<td class="oa1"><p style="text-align:left;"><s style="text-line-through:single"><u style="text-underline:single">' +
-                    '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;">406</span></u></s></p>' +
+                        '<span style="font-size:18.0pt;font-family:Calibri;color:#2E75B6;font-style:italic;">406</span></u></s></p>' +
                     '</td>' +
-                    '</tr>' +
-                    '</tbody></table>';
+                '</tr>' +
+                '</tbody></table>';
                 const tableCont: Element = createElement('span', { innerHTML: tableStr });
                 const spreadsheet: any = helper.getInstance();
                 let rows: RowModel[] = [];
@@ -477,39 +745,197 @@ describe('Clipboard ->', () => {
                 expect(rows[0].cells.length).toBe(2);
                 expect(rows[0].cells[0].value as any).toBe(115);
                 let style: string = '{"verticalAlign":"top","textAlign":"left","fontSize":"18pt","fontFamily":"Calibri","color":"#2E75B6",'
-                    + '"fontWeight":"bold","fontStyle":"italic","textDecoration":"line-through","borderBottom":"1.33px solid black",' +
-                    '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
+                + '"fontWeight":"bold","fontStyle":"italic","textDecoration":"line-through","borderBottom":"1.33px solid black",' +
+                '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
                 expect(JSON.stringify(rows[0].cells[0].style)).toBe(style);
                 expect(rows[0].cells[1].value as any).toBe(313);
                 expect(JSON.stringify(rows[0].cells[1].style)).toBe(style);
                 expect(rows[1].cells.length).toBe(2);
                 expect(rows[1].cells[0].value as any).toBe(225);
                 style = '{"verticalAlign":"top","textAlign":"left","textDecoration":"underline line-through","fontSize":"18pt",' +
-                    '"fontFamily":"Calibri","color":"#2E75B6","fontStyle":"italic","borderBottom":"1.33px solid black",' +
-                    '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
+                '"fontFamily":"Calibri","color":"#2E75B6","fontStyle":"italic","borderBottom":"1.33px solid black",' +
+                '"borderTop":"1.33px solid black","borderLeft":"1.33px solid black","borderRight":"1.33px solid black"}';
                 expect(JSON.stringify(rows[1].cells[0].style)).toBe(style);
                 expect(rows[1].cells[1].value as any).toBe(406);
                 expect(JSON.stringify(rows[1].cells[1].style)).toBe(style);
                 done();
             });
         });
-        describe('EJ2-58124 ->', () => {
-            beforeAll((done: Function) => {
+        describe('EJ2-53129->', () => {
+            beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{
-                        ranges: [{
-                            dataSource: defaultData
-                        }]
-                    }]
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
                 }, done);
             });
-            afterAll(() => {
+            afterEach(() => {
                 helper.invoke('destroy');
             });
-            it('copy the unique formula and paste same sheet', (done: Function) => {
-                helper.getInstance().selectRange('I1:I1')
-                helper.invoke('startEdit');
-                helper.getElement('.e-spreadsheet-edit').textContent = '=UNIQUE(D2:D6)';
+            it('Need to provide the paste option while the dialog is open->', (done: Function) => {
+                var spreadsheet = helper.getInstance();
+                helper.invoke('selectRange', ['A1:B5']);
+                helper.triggerKeyNativeEvent(70, true);
+                setTimeout(function () {
+                    var dialog = helper.getElement('.e-findtool-dlg');
+                    expect(!!dialog).toBeTruthy();
+                    expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                    helper.invoke('copy', ['A1:B5']).then(() => {
+                        helper.invoke('paste', ['J1']);
+                        setTimeout(function () {
+                            expect(spreadsheet.sheets[0].rows[0].cells[9].value.toString()).toEqual('Item Name');
+                            expect(spreadsheet.sheets[0].rows[4].cells[9].value.toString()).toEqual('Sandals & Floaters');
+                            helper.triggerKeyNativeEvent(27);
+                            expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).toBeNull();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-53620->', () => {
+            beforeEach((done: Function) => {    
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], topLeftCell: 'AZ1', selectedRange: 'AZ1:AZ200' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cut and copy issue in spreadsheet->', (done: Function) => {
+                helper.invoke('cut').then(function () {
+                    helper.invoke('selectRange', ['A1']);
+                    setTimeout(function () {
+                        helper.invoke('paste', ['Sheet1!A1:A1']);
+                        helper.invoke('goTo', ['A1']);
+                        setTimeout(function () {
+                            expect(helper.getInstance().sheets[0].rows[0].cells[0].textContent).toBeUndefined();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-55989->', () => {
+            beforeEach((done: Function) => {
+                model = {
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2' }],
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' },'A1:H1');
+                        spreadsheet.cellFormat({ backgroundColor: 'rgba(241, 23, 9, 0.4)' },'A1:A10');
+                        spreadsheet.cellFormat({ backgroundColor: '#B3DFFF' }, 'B1:B10');
+                    },
+                    actionBegin(args: any) {
+                        if (args.action === 'clipboard') {
+                          args.args.eventArgs.type = 'Values';
+                        }
+                    }
+                }
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cannot prevent pasting format using actionBegin while using Ctrl+V shortcut->', (done: Function) => {
+                helper.invoke('copy', ['A2']).then(function () {
+                    helper.invoke('paste', ['B2']);
+                    setTimeout(function () {
+                        expect(helper.invoke('getCell', [1, 1]).textContent).toBe('Casual Shoes');
+                        expect(helper.getInstance().sheets[0].rows[1].cells[1].style.backgroundColor).toBe('#B3DFFF');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-55119->', () => {
+            let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B1:B200' }],
+                    actionBegin: (args: any): void => {
+                        if (args.action === 'clipboard') { actionBeginCalled = true; }
+                    },
+                    actionComplete: (args: any): void => {
+                        if (args.action === 'clipboard') { actionCompleteCalled = true; }
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Action Begin is not triggered on Undo in Coluimn Cut Paste->', (done: Function) => {
+                expect(actionBeginCalled).toBeFalsy();
+                expect(actionCompleteCalled).toBeFalsy();
+                helper.getElement('#' + helper.id + '_cut').click();
+                helper.invoke('insertColumn', [2, 2]);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['C1']);
+                    helper.getElement('#' + helper.id + '_paste').click();
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Date');
+                        helper.getElement('#' + helper.id + '_undo').click();
+                        setTimeout(() => {
+                            expect(actionBeginCalled).toBeTruthy();
+                            expect(actionCompleteCalled).toBeTruthy();
+                            expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Date');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-54233->', () => {
+            let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    actionBegin: (args: any): void => {
+                        if (args.action === 'clipboard') { actionBeginCalled = true; }
+                    },
+                    actionComplete: (args: any): void => {
+                        if (args.action === 'clipboard') { actionCompleteCalled = true; }
+                    },
+                    cellSave: (args: CellSaveEventArgs): void => {
+                        expect(args.address).toEqual('Sheet1!B1');
+                        expect(args.oldValue).toEqual('Date');
+                        expect(args.value as any).toEqual('Item Name');
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Events not triggered in uniformity when Copy paste->', (done: Function) => {
+                expect(actionBeginCalled).toBeFalsy();
+                expect(actionCompleteCalled).toBeFalsy();
+                helper.invoke('copy').then(function () {
+                    helper.invoke('paste', ['B1']);
+                    setTimeout(function () {
+                        expect(actionBeginCalled).toBeTruthy();
+                        expect(actionCompleteCalled).toBeTruthy();
+                        expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Item Name');
+                        done();
+                    });
+                });
+            });
+        });
+    });
+    describe('EJ2-58124 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{
+                        dataSource: defaultData
+                    }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('copy the unique formula and paste same sheet', (done: Function) => {
+            helper.getInstance().selectRange('I1:I1')
+            helper.invoke('startEdit');
+            helper.getElement('.e-spreadsheet-edit').textContent = '=UNIQUE(D2:D6)';
                 helper.triggerKeyNativeEvent(13);
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rows[0].cells[8].formula).toBe('=UNIQUE(D2:D6)');
@@ -559,5 +985,4 @@ describe('Clipboard ->', () => {
                 });
             });
         });
-    });
 });

@@ -316,6 +316,7 @@ export class ToolbarRenderer implements IRenderer {
         const proxy: this = this;
         let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
         css += (' ' + ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_DROPDOWN : CLS_FONT_COLOR_DROPDOWN));
+        css += ' ' + this.parent.cssClass;
         const content: HTMLElement = proxy.parent.createElement('span', { className: CLS_COLOR_CONTENT });
         const inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass });
         let range: Range;
@@ -489,6 +490,14 @@ export class ToolbarRenderer implements IRenderer {
             beforeTileRender: (args: PaletteTileEventArgs) => {
                 args.element.classList.add(CLS_COLOR_PALETTE);
                 args.element.classList.add(CLS_CUSTOM_TILE);
+                if (!isNullOrUndefined(this.parent.cssClass)) {
+                    const allClassName: string[] = this.parent.cssClass.split(' ');
+                    for (let i: number = 0; i < allClassName.length; i++) {
+                        if (allClassName[i].trim() !== '') {
+                            args.element.classList.add(allClassName[i]);
+                        }
+                    }
+                }
                 if (args.value === '') {
                     args.element.classList.add(CLS_NOCOLOR_ITEM);
                 }
@@ -523,7 +532,7 @@ export class ToolbarRenderer implements IRenderer {
         colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
         colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
             this.parent.fontColor.colorCode;
-        colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
+        colorPicker.cssClass = ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass;
         colorPicker.createElement = this.parent.createElement;
         colorPicker.appendTo(document.getElementById(args.target) as HTMLElement);
         return colorPicker;

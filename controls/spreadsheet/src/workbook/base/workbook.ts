@@ -12,7 +12,7 @@ import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsMod
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType, dateToInt } from '../common/index';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
-import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress, unMerge } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn, InsertDeleteEventArgs } from '../index';
@@ -24,7 +24,7 @@ import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
 import { setLinkModel, setImage, setChart, activeCellChanged, setAutoFill, BeforeCellUpdateArgs, updateCell } from '../common/index';
 import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';
-import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation } from '../index';
+import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
 import { checkCellValid } from '../common/interface';
@@ -954,6 +954,18 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx });
     }
 
+    /**
+     * Used to split the merged cell into multiple cells.
+     *
+     * {% codeBlock src='spreadsheet/unMerge/index.md' %}{% endcodeBlock %}
+     *
+     * @param {string} range - Specifies the range of cells as address.
+     * @returns {void} - To split the merged cell into multiple cells.
+     */
+    public unMerge(range?: string): void {
+        this.notify(unMerge, { range });
+    }
+
     /** Used to compute the specified expression/formula.
      *
      * {% codeBlock src='spreadsheet/computeExpression/index.md' %}{% endcodeBlock %}
@@ -1341,12 +1353,20 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     public conditionalFormat(conditionalFormat: ConditionalFormatModel): void {
         conditionalFormat.range = conditionalFormat.range || this.getActiveSheet().selectedRange;
-        this.notify(events.setCFRule, { conditionalFormat: conditionalFormat });
+        this.notify(setCFRule, <CFArgs>{ cfModel: conditionalFormat });
     }
 
     public clearConditionalFormat(range: string): void {
-        range = range || this.getActiveSheet().selectedRange;
-        this.notify(events.clearCFRule, { range: range });
+        const clearCFArgs: CFArgs = {};
+        if (!range || !range.includes('!')) {
+            clearCFArgs.range = range || this.getActiveSheet().selectedRange;
+            clearCFArgs.sheetIdx = this.activeSheetIndex;
+        } else {
+            const addrInfo: string[] = range.split('!');
+            clearCFArgs.range = addrInfo[1];
+            clearCFArgs.sheetIdx = getSheetIndex(this, addrInfo[0]);
+        }
+        this.notify(clearCFRule, clearCFArgs);
     }
 
     /**
@@ -1374,11 +1394,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             sheetIdx = this.activeSheetIndex;
         }
         updateCell(this, this.sheets[sheetIdx], { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
-        if (cell.value || cell.value === '' || <unknown>cell.value === 0) {
-            this.notify(workbookEditOperation, { action: 'updateCellValue', address: range, value: cell.value, sheetIndex: sheetIdx });
+        let val: string = isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
+        if (val !== null) {
+            this.notify(workbookEditOperation, { action: 'updateCellValue', address: range, value: val, sheetIndex: sheetIdx });
         }
         if (sheetIdx === this.activeSheetIndex) {
-            this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true);
+            this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true, null, val !== null);
             this.notify(activeCellChanged, null);
             if (inRange(getRangeIndexes(this.sheets[sheetIdx].activeCell), range[0], range[1])) {
                 this.notify(formulaBarOperation, { action: 'refreshFormulabar', value: this.getDisplayText(cell) || cell.formula });

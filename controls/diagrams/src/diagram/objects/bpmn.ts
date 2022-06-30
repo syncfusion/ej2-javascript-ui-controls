@@ -37,6 +37,7 @@ import { Size } from '../primitives/size';
 import { getDiagramElement } from '../utility/dom-util';
 import { Segment } from '../interaction/scroller';
 import { isBlazor } from '@syncfusion/ej2-base';
+import { removeElement } from '../utility/dom-util';
 
 /**
  * BPMN Diagrams contains the BPMN functionalities
@@ -1464,21 +1465,30 @@ export class BpmnDiagrams {
         const sizeChanged: boolean = changedProp.width !== undefined || changedProp.height !== undefined;
         if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Gateway') || newShape.shape === 'Gateway') &&
             newShape.gateway) {
+                this.removeBPMNElementFromDOM(actualObject,diagram);
             actualObject.wrapper.children[0] = this.getBPMNGatewayShape(actualObject);
         } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'DataObject') || newShape.shape === 'DataObject') &&
             newShape.dataObject) {
+                this.removeBPMNElementFromDOM(actualObject,diagram);
             actualObject.wrapper.children[0] = this.getBPMNDataObjectShape(actualObject);
         } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Activity') || newShape.shape === 'Activity') &&
             newShape.activity) {
+                this.removeBPMNElementFromDOM(actualObject,diagram);
             actualObject.wrapper.children[0] = this.getBPMNActivityShape(actualObject);
-        } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Event' ||
-        (actualObject.shape as DiagramShapeModel).bpmnShape === 'Event') || newShape.shape === 'Event') &&
+        } 
+             /**
+             * EJ2-EJ2-60644 - Bpmn event fill color does not applied while changing event in runtime.
+             */
+        else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Event' ||
+        (actualObject.shape as DiagramShapeModel).bpmnShape === 'Event' || (actualObject.shape as BpmnShape).shape === 'Event') || newShape.shape === 'Event') &&
             newShape.event) {
+                this.removeBPMNElementFromDOM(actualObject,diagram);
             const shapeEvent: Object = newShape.event;
             actualObject.wrapper.children[0] = this.getBPMNEventShape(actualObject, shapeEvent);
         } else if (((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'Message') || newShape.shape === 'Message') ||
             ((isBlazor() && (newShape as DiagramShapeModel).bpmnShape === 'DataSource') || newShape.shape === 'DataSource')) {
-            actualObject.wrapper.children[0] = this.getBPMNShapes(actualObject);
+                this.removeBPMNElementFromDOM(actualObject,diagram);
+                actualObject.wrapper.children[0] = this.getBPMNShapes(actualObject);
             //}
             // else if (newShape.shape === 'Group') {
             //     actualObject.wrapper.children[0] = this.getBPMNGroup(actualObject, diagram);
@@ -1519,6 +1529,15 @@ export class BpmnDiagrams {
         }
     }
 
+    /** 
+    * EJ2-60574 -BPMN shape do not get changed at runtime properly 
+    */
+    private removeBPMNElementFromDOM(actualObject:Node,diagram:Diagram):void{
+        for (const elementId of diagram.views) {
+            removeElement(actualObject.id + '_groupElement', elementId);
+        }   
+    }
+
     /** @private */
     public updateBPMNStyle(elementWrapper: DiagramElement, changedProp: string): void {
         for (let i: number = 0; i < (elementWrapper as Container).children.length; i++) {
@@ -1533,14 +1552,41 @@ export class BpmnDiagrams {
         const elementWrapper: Canvas = node.wrapper.children[0] as Canvas;
         if (bpmnShape) {
             updateStyle(node.style, elementWrapper.children[0]);
-            const bpmnshapeGatewaydata: string = getBpmnGatewayShapePathData(bpmnShape.gateway.type);
-            ((elementWrapper as Canvas).children[1] as PathModel).data = bpmnshapeGatewaydata;
+            const pathData: string = getBpmnGatewayShapePathData(bpmnShape.gateway.type);
+            const dataobjTypeNode =this.updateGatewaySubType(elementWrapper, node , pathData);
+            removeElement(elementWrapper.children[1].id);
+            elementWrapper.children.splice(1,1);
+            elementWrapper.children.push(dataobjTypeNode);
         }
         if (changedProp.width !== undefined || changedProp.height !== undefined) {
             this.setSizeForBPMNGateway(
                 (node.shape as BpmnShapeModel).gateway, elementWrapper, changedProp.width || node.width, changedProp.height || node.height);
         }
     }
+       /**
+     * Used to update Bpmn gateway child in runtime 
+     * EJ2-60581
+     * @param elementWrapper 
+     * @param node 
+     * @param pathData 
+     * @returns 
+     */
+        updateGatewaySubType(elementWrapper: Canvas,node: Node,pathData: string)
+        {
+            const dataobjTypeNode: PathElement = new PathElement();
+            dataobjTypeNode.id = node.id + '_1_gatewayType';
+            dataobjTypeNode.width = elementWrapper.children[1].width; dataobjTypeNode.height =elementWrapper.children[1].height;
+            dataobjTypeNode.margin.left = elementWrapper.children[1].margin.left; dataobjTypeNode.margin.top =elementWrapper.children[1].margin.top;
+            dataobjTypeNode.data = pathData;
+            dataobjTypeNode.offsetX = elementWrapper.children[1].offsetX;
+            dataobjTypeNode.offsetY = elementWrapper.children[1].offsetY;
+            dataobjTypeNode.style = elementWrapper.children[1].style;
+            dataobjTypeNode.horizontalAlignment = elementWrapper.children[1].horizontalAlignment;
+            dataobjTypeNode.verticalAlignment = elementWrapper.children[1].verticalAlignment;
+            dataobjTypeNode.relativeMode = elementWrapper.children[1].relativeMode;
+            dataobjTypeNode.transform = elementWrapper.children[1].transform;
+            return dataobjTypeNode;
+        }
     /** @private */
     public updateBPMNDataObject(node: Node, newObject: Node, oldObject: Node): void {
         const bpmnShape: BpmnShapeModel = newObject.shape as BpmnShapeModel;
@@ -1764,18 +1810,18 @@ export class BpmnDiagrams {
                 /**
                  * Used to update the Bpmn activity task type at runtime
                  * EJ2-60586 
-                 */
+                */
                 if(task.type === 'Receive' || task.type === 'Send')
-                {
-                    taskTypeNode.width = 18;
-                    taskTypeNode.height = 16;
-                    elementWrapper.children.splice(1, 0, taskTypeNode);
-                }
+                  {
+                      taskTypeNode.width = 18;
+                      taskTypeNode.height = 16;
+                      elementWrapper.children.splice(1, 0, taskTypeNode);
+                  }
                 else if(task.type !== 'Service')
-                {
-                    taskTypeNode.width = 20; taskTypeNode.height = 20;
-                    elementWrapper.children.splice(1, 0, taskTypeNode);
-                }
+                  {
+                      taskTypeNode.width = 20; taskTypeNode.height = 20;
+                      elementWrapper.children.splice(1, 0, taskTypeNode);
+                  }
                 else{
                 taskTypeNode.width = 20; taskTypeNode.height = 20;
                 elementWrapper.children.splice(1, 0, taskTypeNode);
@@ -1787,7 +1833,7 @@ export class BpmnDiagrams {
                 taskTypeNodeService.style.fill = 'white';
                 taskTypeNodeService.style.opacity = node.style.opacity;
                 elementWrapper.children.splice(2, 0, taskTypeNodeService);
-                }
+                  }
             }
         if (bpmnShape.activity.task.call !== undefined) {
             if (bpmnShape.activity.task.call !== false) { elementWrapper.children[0].style.strokeWidth = 4; } else {

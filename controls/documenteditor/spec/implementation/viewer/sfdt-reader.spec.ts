@@ -6681,7 +6681,7 @@ describe('import textbox margin validation', () => {
             done();
         }, 1000);
     });
-
+    
     it('TextFrame magin validation', () => {
         editor.open(text);
         let leftMargin: number = ((editor.documentHelper.pages[0].headerWidgetIn.floatingElements[2])as ShapeElementBox).textFrame.marginLeft;

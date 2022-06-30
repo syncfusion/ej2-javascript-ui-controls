@@ -1,12 +1,12 @@
-import { formatUnit, detach, attributes, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { formatUnit, detach, attributes, isNullOrUndefined, Browser, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { getCellIndexes, getRangeIndexes, skipHiddenIdx } from './../../workbook/common/index';
-import { getColumnsWidth, getColumnWidth } from '../../workbook/base/column';
+import { getCellIndexes, getRangeIndexes, skipHiddenIdx, applyCF, ApplyCFArgs } from './../../workbook/common/index';
+import { getColumnsWidth, getColumnWidth, ConditionalFormat } from '../../workbook/index';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
 import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, isReact, getDPRValue } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, renderReactTemplates, rowHeightChanged } from '../common/index';
-import { colWidthChanged, clearUndoRedoCollection, getUpdatedScrollPosition } from '../common/index';
+import { colWidthChanged, clearUndoRedoCollection, getUpdatedScrollPosition, locale } from '../common/index';
 import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getFormattedCellObject, getColorCode, getRowHeight } from '../../workbook/index';
 
 /**
@@ -42,8 +42,9 @@ export class SheetRender implements IRenderer {
         } else {
             cell = this.headerPanel.firstElementChild; cell.classList.add('e-select-all-cell');
         }
-        cell.appendChild(this.parent.createElement('button', { className: 'e-selectall',
-            id: `${this.parent.element.id}_select_all` }));
+        cell.appendChild(
+            this.parent.createElement('button', { className: 'e-selectall', id: `${this.parent.element.id}_select_all`,
+            attrs: { 'aria-label': this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll') } }));
     }
 
     private updateLeftColGroup(width?: number, rowHdr?: HTMLElement): void {
@@ -298,6 +299,9 @@ export class SheetRender implements IRenderer {
             }
             sheetContent.appendChild(frag);
             sheetContent.style.backgroundColor = '';
+            if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
+                this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: args.indexes });
+            }
             this.checkRowHeightChanged(args, sheet);
             if (args.top) {
                 content.parentElement.scrollTop = args.top;
@@ -390,6 +394,15 @@ export class SheetRender implements IRenderer {
         }
     }
 
+    private clearCFResult(sheet: SheetModel): void {
+        if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
+            const cfRule: ConditionalFormat[] = sheet.conditionalFormats as ConditionalFormat[];
+            for (let i: number = 0; i < cfRule.length; i++) {
+                delete cfRule[i].result;
+            }
+        }
+    }
+
     public refreshColumnContent(args: SheetRenderArgs): void {
         let indexes: number[]; let row: Element; let table: Element; let count: number = 0; let cell: Element; let col: Element;
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -409,6 +422,7 @@ export class SheetRender implements IRenderer {
         const lastFrozenRow: number = skipHiddenIdx(sheet, frozenRow - 1, false);
         const notFirstRow: boolean =  this.parent.scrollSettings.enableVirtualization && this.parent.viewport.topIndex !==
             skipHiddenIdx(sheet, 0, true);
+        this.clearCFResult(sheet);
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[0] === args.indexes[0]) {
@@ -434,7 +448,7 @@ export class SheetRender implements IRenderer {
             cell = this.cellRenderer.render(<CellRenderArgs>{
                 colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
                 first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' :
-                (notFirstRow && indexes[0] === args.indexes[0] ? 'Row' : ''), isRefreshing: true });
+                (notFirstRow && indexes[0] === args.indexes[0] ? 'Row' : ''), isRefreshing: true, checkCF: true });
             this.checkColMerge(indexes, args.indexes, cell, value);
             if (frozenRow && indexes[0] === lastFrozenRow) { count = 0; }
         });
@@ -474,6 +488,7 @@ export class SheetRender implements IRenderer {
         const lastFrozenCol: number = skipHiddenIdx(sheet, frozenCol - 1, false, 'columns');
         const notFirstCol: boolean = this.parent.scrollSettings.enableVirtualization && this.parent.viewport.leftIndex !==
             skipHiddenIdx(sheet, 0, true, 'columns');
+        this.clearCFResult(sheet);
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
             indexes = getRangeIndexes(key);
             if (indexes[1] === args.indexes[1] || !row) {
@@ -495,7 +510,7 @@ export class SheetRender implements IRenderer {
                 rowIdx: indexes[0], colIdx: indexes[1], cell: value, address:
                     key, lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling,
                 pHRow: hdrRow.previousSibling, isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
-                    'Row' : (notFirstCol && indexes[1] === args.indexes[1] ? 'Column' : ''), isRefreshing: true });
+                    'Row' : (notFirstCol && indexes[1] === args.indexes[1] ? 'Column' : ''), isRefreshing: true, checkCF: true });
             this.checkRowMerge(indexes, args.indexes, cell, value);
             if (frozenCol && indexes[1] === lastFrozenCol) { row = null; }
         });
@@ -551,6 +566,7 @@ export class SheetRender implements IRenderer {
             const lastFrozenRow: number = skipHiddenIdx(sheet, frozenRow - 1, false);
             const firstRow: number = skipHiddenIdx(sheet, args.indexes[0], true);
             let cellArgs: CellRenderArgs;
+            this.clearCFResult(sheet);
             (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
                 if (skipRender) { return; }
                 indexes = getRangeIndexes(key);
@@ -595,7 +611,7 @@ export class SheetRender implements IRenderer {
                 cellArgs = { colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row,
                     lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: args.direction === 'first', first: args.direction ===
                     'last' && !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : '', checkNextBorder: args.direction
-                    === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', isRefreshing: args.direction === 'first' };
+                    === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', isRefreshing: args.direction === 'first', checkCF: true };
                 if (args.direction === 'last') {
                     cellArgs.refChild = refChild;
                     cell = this.cellRenderer.render(cellArgs);
@@ -634,6 +650,8 @@ export class SheetRender implements IRenderer {
         let indexes: number[]; const frag: DocumentFragment = document.createDocumentFragment();
         this.parent.showSpinner(); const frozenCol: number = this.parent.frozenColCount(sheet);
         const frozenRow: number = this.parent.frozenRowCount(sheet); let firstRow: HTMLTableRowElement;
+        const firstCol: number = skipHiddenIdx(sheet, args.indexes[1], true, 'columns');
+        this.clearCFResult(sheet);
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, cKey: string): void => {
             indexes = getRangeIndexes(cKey);
             if (args.direction ===  'first' && indexes[0] === args.indexes[0]) {
@@ -645,20 +663,20 @@ export class SheetRender implements IRenderer {
                     (firstRow || { cells: [] }).cells[indexes[1] < frozenCol ? count + 1 : count],
                     getCell(this.parent.viewport.topIndex + frozenRow, indexes[1], sheet) || {});
             }
-            if (indexes[1] === args.indexes[1] || !row) {
+            if (indexes[1] === firstCol || !row) {
                 hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
                 if (frozenCol && indexes[1] < frozenCol) {
                     rFrag.appendChild(hRow); row = hRow;
                 } else {
                     row = this.rowRenderer.render(indexes[0]) as HTMLElement;
                     frag.appendChild(row);
-                    if (indexes[1] === args.indexes[1]) { rFrag.appendChild(hRow); }
+                    if (indexes[1] === firstCol) { rFrag.appendChild(hRow); }
                     if (this.parent.scrollSettings.enableVirtualization && args.direction) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         detach((tBody as any)[args.direction + 'ElementChild']);
                     }
                 }
-                if (indexes[1] === args.indexes[1]) {
+                if (indexes[1] === firstCol) {
                     this.cellRenderer.renderRowHeader(indexes[0], hRow);
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                     if (this.parent.scrollSettings.enableVirtualization && args.direction) {
@@ -672,7 +690,8 @@ export class SheetRender implements IRenderer {
                 cKey, lastCell: indexes[1] === args.indexes[3], row: row, pHRow: hRow.previousSibling,
             checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,
             isHeightCheckNeeded: args.direction === 'first' || args.direction === '', hRow: hRow, first: args.direction === 'last' &&
-                !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first' });
+                !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first',
+                checkCF: true });
             if (args.direction ===  'last' && tBody.rows.length) {
                 this.checkRowMerge(
                     indexes, args.indexes, cell, value, (indexes[1] < frozenCol ? rTBody : tBody).rows[0].cells[indexes[1] < frozenCol ?

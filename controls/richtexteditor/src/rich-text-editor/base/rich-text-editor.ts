@@ -72,18 +72,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private timeInterval: number;
     private idleInterval: number;
     private touchModule: EJ2Touch;
-    private defaultResetValue: string = null;
-    private isResizeInitialized: boolean = false;
+    private defaultResetValue: string;
+    private isResizeInitialized: boolean;
     /**
      * @hidden
      * @deprecated
      */
-    public currentTarget: HTMLElement;
+     public currentTarget: HTMLElement;
     /**
      * @hidden
      * @deprecated
      */
-    public isFocusOut: boolean = false;
+    public isFocusOut: boolean;
     /**
      * @hidden
      * @deprecated
@@ -93,12 +93,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
-    public isRTE: boolean = false;
+    public isRTE: boolean;
     /**
      * @hidden
      * @deprecated
      */
-    public isBlur: boolean = true;
+    public isBlur: boolean;
     /**
      * @hidden
      * @deprecated
@@ -191,7 +191,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public fileManagerModule: FileManager;
 
-    public needsID: boolean = true;
+    public needsID: boolean;
     /**
      * Specifies the group of items aligned horizontally in the toolbar as well as defined the toolbar rendering type.
      * By default, toolbar is float at the top of the RichTextEditor.
@@ -1163,6 +1163,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         // eslint-disable-next-line
         (this.enabled) ? this.eventInitializer() : this.unWireEvents();
     }
+    private initializeValue(): void{
+        this.isFocusOut = false;
+        this.isRTE = false;
+        this.isBlur = true;
+        this.needsID = true;
+        this.defaultResetValue = null;
+        this.isResizeInitialized = false;
+
+    }
 
     /**
      * For internal use only - Initialize the event handler;
@@ -1172,6 +1181,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     protected preRender(): void {
+        this.initializeValue();
         this.onBlurHandler = this.blurHandler.bind(this);
         this.onFocusHandler = this.focusHandler.bind(this);
         this.onResizeHandler = this.resizeHandler.bind(this);
@@ -1229,11 +1239,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.element = rteOuterWrapper;
         } else {
             this.valueContainer = this.createElement('textarea', {
-                id: this.getID() + '-value'
+                id: this.getID() + '-value',
+                attrs: { 'aria-labelledby': this.getID() }
             }) as HTMLTextAreaElement;
         }
         this.valueContainer.name = this.getID();
         addClass([this.valueContainer], classes.CLS_RTE_HIDDEN);
+        if (!isNOU(this.cssClass)) {
+            let currentClassList: string[] = this.cssClass.split(' ');
+            for (let i: number = 0; i < currentClassList.length; i++) {
+                addClass([this.valueContainer], currentClassList[i]);
+            }
+        }
         this.element.appendChild(this.valueContainer);
     }
 
@@ -1500,27 +1517,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     protected eventInitializer(): void {
         this.wireEvents();
     }
-    
-    public cleanList(e: KeyboardEvent):void {
+
+    public cleanList(e: KeyboardEvent): void {
         const range: Range = this.getRange();
         const currentStartContainer: Node = range.startContainer;
         const currentEndContainer: Node = range.endContainer;
-        let currentStartOffset: number = range.startOffset;
-        let isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
+        const currentStartOffset: number = range.startOffset;
+        const isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
         let currentEndOffset: number;
         const endNode: Element = range.endContainer.nodeName === '#text' ? range.endContainer.parentElement :
             range.endContainer as Element;
-        let closestLI: Element = closest(endNode, 'LI');
+        const closestLI: Element = closest(endNode, 'LI');
         if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
         !range.collapsed && isNOU(endNode.nextElementSibling)) {
             closestLI.textContent = closestLI.textContent.trim();
             currentEndOffset = closestLI.textContent.length - 1;
             let currentLastElem: Element = closestLI;
-            while(currentLastElem.nodeName !== '#text') {
+            while (currentLastElem.nodeName !== '#text') {
                 currentLastElem = currentLastElem.lastChild as Element;
             }
             this.formatter.editorManager.nodeSelection.setSelectionText(
-                this.contentModule.getDocument(), isSameContainer ? currentLastElem : currentStartContainer, currentLastElem, 
+                this.contentModule.getDocument(), isSameContainer ? currentLastElem : currentStartContainer, currentLastElem,
                 currentStartOffset, currentLastElem.textContent.length);
         }
     }
@@ -1893,6 +1910,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             for (let i: number = 0; i < this.originalElement.classList.length; i++) {
                 addClass([this.element], this.originalElement.classList[i]);
             }
+            if (!isNOU(this.cssClass)) {
+                let currentClassList: string[] = this.cssClass.split(' ');
+                for (let i: number = 0; i < currentClassList.length; i++) {
+                    addClass([this.element], currentClassList[i]);
+                }
+            }
             removeClass([this.element], classes.CLS_RTE_HIDDEN);
         } else {
             if (this.originalElement.innerHTML.trim() !== '') {
@@ -2254,7 +2277,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
                 if (!this.placeHolderWrapper) {
-                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' });
+                    this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' + ' ' + this.cssClass });
                     if (this.inputElement) {
                         this.inputElement.parentElement.insertBefore(this.placeHolderWrapper, this.inputElement);
                     }
@@ -2504,7 +2527,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (regEx.test(this.valueTemplate)) {
                 this.setProperties({ value: this.valueTemplate });
             } else {
-                const compiledTemplate: NodeList = compile(this.valueTemplate)("", this, 'valueTemplate');
+                const compiledTemplate: NodeList = compile(this.valueTemplate)('', this, 'valueTemplate');
                 for (let i: number = 0; i < compiledTemplate.length; i++) {
                     const item: Element = compiledTemplate[i] as Element;
                     append([item], this.element);

@@ -659,7 +659,7 @@ export class RowDD {
         window.clearInterval(this.timer);
     }
 
-     /**
+    /**
      * To trigger action complete event.
      *
      * @param {NotifyArgs} e - specifies the NotifyArgs

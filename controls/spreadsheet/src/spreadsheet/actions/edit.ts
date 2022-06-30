@@ -5,7 +5,7 @@ import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, compl
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getSheet, selectionComplete, beforeCellUpdate, BeforeCellUpdateArgs, isHiddenRow, isHiddenCol } from '../../workbook/index';
+import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs } from '../../workbook/index';
 import { beginAction, updateCell, checkCellValid } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
@@ -349,9 +349,8 @@ export class Edit {
     private renderEditor(): void {
         if (!this.editorElem || !select('#' + this.parent.element.id + '_edit', this.parent.element)) {
             const editor: HTMLElement = this.parent.createElement(
-                'div', { id: this.parent.element.id + '_edit', className: 'e-spreadsheet-edit' });
-            editor.contentEditable = 'true';
-            editor.spellcheck = false;
+                'div', { id: this.parent.element.id + '_edit', className: 'e-spreadsheet-edit', attrs: { 'contentEditable': 'true',
+                'role': 'textbox', 'spellcheck': 'false', 'aria-multiline': 'true' } });
             if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
                 this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].remove();
             }
@@ -540,7 +539,7 @@ export class Edit {
         return cursorOffset;
     }
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        if (!closest(e.target as Element, '.e-findtool-dlg')) {
+        if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')) {
             if (this.isEdit) {
                 const curOffset: { start?: number, end?: number } = this.getCurPosition();
                 if (curOffset.start) { this.curStartPos = this.selectionStart = curOffset.start; }
@@ -861,7 +860,11 @@ export class Edit {
             let validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: null, isValid: true };
             this.parent.notify(isValidation, validEventArgs);
             isValidate = validEventArgs.isValid;
-            this.editCellData.value = isValidate ? value : this.editCellData.value;
+            if (isValidate) {
+                this.editCellData.value = value;
+            } else {
+                this.isCellEdit = true;
+            }
         }
         if ((oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
             oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) && isValidate) {
@@ -884,8 +887,12 @@ export class Edit {
                 this.updateUniqueRange('');
             }
             this.parent.notify(
-                workbookEditOperation,
-                { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
+                workbookEditOperation, { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
+            if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
+                this.parent.notify(
+                    applyCF, <ApplyCFArgs>{ indexes: [this.editCellData.rowIndex, this.editCellData.colIndex, this.editCellData.rowIndex,
+                        this.editCellData.colIndex], isAction: true });
+            }
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
             const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
             this.editCellData.value = <string>eventArgs.value;
@@ -1044,14 +1051,6 @@ export class Edit {
     }
 
     public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs): void {
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const actCell: number[] = getCellIndexes(sheet.activeCell);
-        const cell: HTMLElement = this.parent.getCell(actCell[0], actCell[1]);
-        let fSize: string = '';
-        if (this.editCellData.element && this.editCellData.element.children[0] &&
-            this.editCellData.element.children[0].className === 'e-cf-databar') {
-            fSize = (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize;
-        }
         if (refreshFormulaBar) { this.refreshEditor(this.editCellData.oldValue, false, true, false, false); }
         const triggerEventArgs: CellEditEventArgs = this.triggerEvent('beforeCellSave');
         if (triggerEventArgs.cancel) {
@@ -1072,14 +1071,8 @@ export class Edit {
         } else if (event) {
             event.preventDefault();
         }
-        if (fSize !== '') {
-            (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = fSize;
-        }
         if (this.parent.showSheetTabs && !this.parent.isProtected) {
             this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
-        }
-        if (this.parent.isValidationHighlighted && getCell(actCell[0], actCell[1], sheet).validation) {
-            this.parent.addInvalidHighlight();
         }
     }
 

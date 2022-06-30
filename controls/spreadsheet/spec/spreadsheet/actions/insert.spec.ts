@@ -1,6 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress } from "../../../src/index";
+import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress } from "../../../src/index";
+import { L10n } from '@syncfusion/ej2-base';
 
 describe('Insert & Delete ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -95,6 +96,236 @@ describe('Insert & Delete ->', () => {
             done();
         });
     });
+
+    describe('Insert row and column before applying freeze pane  ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert row and column before applying freeze pane', (done: Function) => {
+            helper.invoke('insertRow', [2, 3]);
+            expect(helper.getInstance().sheets[0].rows[2]).toEqual({});
+            expect(helper.getInstance().sheets[0].rows[3]).toEqual({});
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('');
+                expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Sports Shoes');
+
+                helper.invoke('insertColumn', [3, 4]);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[3]).toBeNull();
+                    expect(helper.getInstance().sheets[0].rows[1].cells[3]).toBeNull();
+                    expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('Quantity');
+                    expect(helper.invoke('getCell', [0, 3]).textContent).toBe('');
+                    expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Quantity');
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.freezePanes(3,3,0);
+                    let sheet: SheetModel; let childCount: number; let usedRange: string;
+                    sheet = helper.getInstance().getActiveSheet();
+                    expect(sheet.paneTopLeftCell).toBe('D4');
+                    done();
+                },0);
+            },0);
+        });
+    });
+
+    describe('UI-Interaction->', () => {
+        beforeAll((done: Function) => {
+            L10n.load({
+                'de-DE': {
+                    'spreadsheet': {
+                        'InsertRow': 'Zeile einf�gen',
+                        'DeleteRow': 'Zeile l�schen',
+                        'InsertColumn': 'Spalte einf�gen',
+                        'DeleteColumn': 'Spalte l�schen',
+                    }
+                }
+            });
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] , locale:'de-DE' }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert Row-Before->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                cell = helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)');
+                coords = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('mouseover', { x: coords.x, y: coords.y }, cell.parentElement.parentElement, cell);
+                setTimeout(() => {
+                    helper.click('.e-spreadsheet-contextmenu .e-ul li:nth-child(1)');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[1]).toEqual({});
+                        expect(helper.invoke('getCell', [1, 0]).textContent).toBe('');
+                        expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Casual Shoes');
+                        done();
+                    });
+                }, 50);
+            });
+        });
+
+        it('Insert Row-after->', (done: Function) => {
+            helper.invoke('selectRange', ['A3']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[2].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                cell = helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)');
+                coords = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('mouseover', { x: coords.x, y: coords.y }, cell.parentElement.parentElement, cell);
+                setTimeout(() => {
+                    helper.click('.e-spreadsheet-contextmenu .e-ul li:nth-child(2)');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[3]).toEqual({});
+                        expect(helper.invoke('getCell', [3, 0]).textContent).toBe('');
+                        expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Sports Shoes');
+                        done();
+                    });
+                }, 50);
+            });
+        });
+
+        it('Delete Row->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').click();
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
+                    expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                    done();
+                }, 50);
+            });
+        });
+
+        it('Insert Column-Before->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                cell = helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)');
+                coords = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('mouseover', { x: coords.x, y: coords.y }, cell.parentElement.parentElement, cell);
+                setTimeout(() => {
+                    helper.click('.e-spreadsheet-contextmenu .e-ul li:nth-child(1)');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[0].cells[1]).toBeNull();
+                        expect(helper.invoke('getCell', [0, 1]).textContent).toBe('');
+                        expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Date');
+                        done();
+                    });
+                }, 50);
+            });
+        });
+
+        it('Insert Column-After->', (done: Function) => {
+            helper.invoke('selectRange', ['C1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[2];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                cell = helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)');
+                coords = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('mouseover', { x: coords.x, y: coords.y }, cell.parentElement.parentElement, cell);
+                setTimeout(() => {
+                    helper.click('.e-spreadsheet-contextmenu .e-ul li:nth-child(2)');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[0].cells[3]).toBeNull();
+                        expect(helper.invoke('getCell', [0, 3]).textContent).toBe('');
+                        expect(helper.invoke('getCell', [0, 4]).textContent).toBe('Time');
+                        done();
+                    });
+                }, 50);
+            });
+        });
+
+        it('Delete Column->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').click();
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('Date');
+                    expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Date');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[2]).toBeNull();
+                    done();
+                }, 50);
+            });
+        });
+    });
+    
+    describe('UI-Interaction with Localization and Protect Sheet->', () => {
+        beforeAll((done: Function) => {
+            L10n.load({
+                'de-DE': {
+                    'spreadsheet': {
+                        'InsertRow': 'Zeile einf�gen',
+                        'DeleteRow': 'Zeile l�schen',
+                        'InsertColumn': 'Spalte einf�gen',
+                        'DeleteColumn': 'Spalte l�schen',
+                    }
+                }
+            });
+            helper.initializeSpreadsheet({ sheets: [{ isProtected: true, protectSettings: { selectCells: true, formatCells: true, formatRows: true, insertLink:
+                false, formatColumns: true }, ranges: [{ dataSource: defaultData }] }] , locale:'de-DE' }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert/Delete Row Checking ->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+        
+        it('Insert/Delete Column Checking ->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+
+        it('Hyperlink Checking ->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('I289560 ->', () => {
             beforeEach((done: Function) => {
@@ -261,9 +492,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_before").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:E18");
-                        expect(cFormatCln[1].range).toEqual("F3:H18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:E18");
+                        expect(cfRule[1].range).toEqual("F3:H18");
                         done();
                     }, 50);
                 });
@@ -271,13 +502,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column before -  1 Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("C3:C18");
-                expect(cFormatCln[1].range).toEqual("D3:F18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("C3:C18");
+                expect(cfRule[1].range).toEqual("D3:F18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:E18");
-                expect(cFormatCln[1].range).toEqual("F3:H18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:E18");
+                expect(cfRule[1].range).toEqual("F3:H18");
                 done();
             });
             it('Insert column before - 2 using contextmenu', (done: Function) => {
@@ -292,9 +523,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_before").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("G3:G18");
-                        expect(cFormatCln[1].range).toEqual("H3:J18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("G3:G18");
+                        expect(cfRule[1].range).toEqual("H3:J18");
                         done();
                     }, 50);
                 });
@@ -302,13 +533,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column before -  2 Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:E18");
-                expect(cFormatCln[1].range).toEqual("F3:H18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:E18");
+                expect(cfRule[1].range).toEqual("F3:H18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:G18");
-                expect(cFormatCln[1].range).toEqual("H3:J18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:G18");
+                expect(cfRule[1].range).toEqual("H3:J18");
                 done();
             });
 
@@ -324,9 +555,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_before").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("G3:H18");
-                        expect(cFormatCln[1].range).toEqual("I3:K18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("G3:H18");
+                        expect(cfRule[1].range).toEqual("I3:K18");
                         done();
                     }, 50);
                 });
@@ -334,13 +565,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column before -  3 Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:G18");
-                expect(cFormatCln[1].range).toEqual("H3:J18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:G18");
+                expect(cfRule[1].range).toEqual("H3:J18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:K18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:H18");
+                expect(cfRule[1].range).toEqual("I3:K18");
                 done();
             });
 
@@ -356,9 +587,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_before").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("G3:J18");
-                        expect(cFormatCln[1].range).toEqual("K3:M18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("G3:J18");
+                        expect(cfRule[1].range).toEqual("K3:M18");
                         done();
                     }, 50);
                 });
@@ -367,13 +598,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column before -  4 Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:K18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:H18");
+                expect(cfRule[1].range).toEqual("I3:K18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:J18");
-                expect(cFormatCln[1].range).toEqual("K3:M18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:J18");
+                expect(cfRule[1].range).toEqual("K3:M18");
                 done();
             });
 
@@ -389,9 +620,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_before").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("G3:J18");
-                        expect(cFormatCln[1].range).toEqual("K3:O18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("G3:J18");
+                        expect(cfRule[1].range).toEqual("K3:O18");
                         done();
                     }, 50);
                 });
@@ -399,13 +630,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column before -  5 Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:J18");
-                expect(cFormatCln[1].range).toEqual("K3:M18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:J18");
+                expect(cfRule[1].range).toEqual("K3:M18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:J18");
-                expect(cFormatCln[1].range).toEqual("K3:O18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:J18");
+                expect(cfRule[1].range).toEqual("K3:O18");
                 done();
             });
             it('Insert column before - 6 using contextmenu', (done: Function) => {
@@ -420,9 +651,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_before").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("G3:J18");
-                        expect(cFormatCln[1].range).toEqual("K3:Q18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("G3:J18");
+                        expect(cfRule[1].range).toEqual("K3:Q18");
                         done();
                     }, 50);
                 });
@@ -431,13 +662,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column before -  6 Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:J18");
-                expect(cFormatCln[1].range).toEqual("K3:O18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:J18");
+                expect(cfRule[1].range).toEqual("K3:O18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:J18");
-                expect(cFormatCln[1].range).toEqual("K3:Q18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:J18");
+                expect(cfRule[1].range).toEqual("K3:Q18");
                 done();
             });
 
@@ -453,9 +684,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_before").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("G3:J18");
-                        expect(cFormatCln[1].range).toEqual("K3:Q18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("G3:J18");
+                        expect(cfRule[1].range).toEqual("K3:Q18");
                         done();
                     }, 50);
                 });
@@ -463,18 +694,18 @@ describe('Insert & Delete ->', () => {
             it('Insert column before -  7 Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("G3:J18");
-                expect(cFormatCln[1].range).toEqual("K3:Q18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("G3:J18");
+                expect(cfRule[1].range).toEqual("K3:Q18");
                 helper.click('#spreadsheet_undo');
                 helper.click('#spreadsheet_undo');
                 helper.click('#spreadsheet_undo');
                 helper.click('#spreadsheet_undo');
                 helper.click('#spreadsheet_undo');
                 helper.click('#spreadsheet_undo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("C3:C18");
-                expect(cFormatCln[1].range).toEqual("D3:F18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("C3:C18");
+                expect(cfRule[1].range).toEqual("D3:F18");
                 done();
             });
 
@@ -490,9 +721,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_after").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:E18");
-                        expect(cFormatCln[1].range).toEqual("F3:H18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:E18");
+                        expect(cfRule[1].range).toEqual("F3:H18");
                         done();
                     });
                 });
@@ -501,13 +732,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column after - 1 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("C3:C18");
-                expect(cFormatCln[1].range).toEqual("D3:F18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("C3:C18");
+                expect(cfRule[1].range).toEqual("D3:F18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:E18");
-                expect(cFormatCln[1].range).toEqual("F3:H18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:E18");
+                expect(cfRule[1].range).toEqual("F3:H18");
                 done();
             });
 
@@ -523,9 +754,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_after").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:F18");
-                        expect(cFormatCln[1].range).toEqual("G3:I18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:F18");
+                        expect(cfRule[1].range).toEqual("G3:I18");
                         done();
                     }, 500);
                 });
@@ -534,13 +765,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column after - 2 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:E18");
-                expect(cFormatCln[1].range).toEqual("F3:H18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:E18");
+                expect(cfRule[1].range).toEqual("F3:H18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:F18");
-                expect(cFormatCln[1].range).toEqual("G3:I18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:F18");
+                expect(cfRule[1].range).toEqual("G3:I18");
                 done();
             });
 
@@ -556,9 +787,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_after").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:H18");
-                        expect(cFormatCln[1].range).toEqual("I3:K18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:H18");
+                        expect(cfRule[1].range).toEqual("I3:K18");
                         done();
                     }, 50);
                 });
@@ -567,13 +798,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column after - 3 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:F18");
-                expect(cFormatCln[1].range).toEqual("G3:I18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:F18");
+                expect(cfRule[1].range).toEqual("G3:I18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:K18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:K18");
                 done();
             });
 
@@ -589,9 +820,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_after").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:H18");
-                        expect(cFormatCln[1].range).toEqual("I3:K18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:H18");
+                        expect(cfRule[1].range).toEqual("I3:K18");
                         done();
                     }, 50);
                 });
@@ -600,13 +831,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column after - 4 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:K18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:K18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:K18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:K18");
                 done();
             });
 
@@ -622,9 +853,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_after").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:H18");
-                        expect(cFormatCln[1].range).toEqual("I3:L18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:H18");
+                        expect(cfRule[1].range).toEqual("I3:L18");
                         done();
                     }, 50);
                 });
@@ -633,13 +864,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column after - 5 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:K18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:K18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:L18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:L18");
                 done();
             });
 
@@ -655,9 +886,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_after").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:H18");
-                        expect(cFormatCln[1].range).toEqual("I3:L18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:H18");
+                        expect(cfRule[1].range).toEqual("I3:L18");
                         done();
                     }, 50);
                 });
@@ -666,13 +897,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column after - 6 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:L18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:L18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:L18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:L18");
                 done();
             });
 
@@ -688,9 +919,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_column_after").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("E3:K18");
-                        expect(cFormatCln[1].range).toEqual("L3:O18");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("E3:K18");
+                        expect(cfRule[1].range).toEqual("L3:O18");
                         done();
                     }, 50);
                 });
@@ -699,13 +930,13 @@ describe('Insert & Delete ->', () => {
             it('Insert column after - 7 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:H18");
-                expect(cFormatCln[1].range).toEqual("I3:L18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:H18");
+                expect(cfRule[1].range).toEqual("I3:L18");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("E3:K18");
-                expect(cFormatCln[1].range).toEqual("L3:O18");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("E3:K18");
+                expect(cfRule[1].range).toEqual("L3:O18");
                 done();
             });
 
@@ -745,9 +976,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_row_above").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("A4:AA4");
-                        expect(cFormatCln[1].range).toEqual("A7:AA9");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("A4:AA4");
+                        expect(cfRule[1].range).toEqual("A7:AA9");
                         done();
                     }, 50);
                 });
@@ -756,13 +987,13 @@ describe('Insert & Delete ->', () => {
             it('Insert row above - 1 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:AA3");
-                expect(cFormatCln[1].range).toEqual("A6:AA8");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:AA3");
+                expect(cfRule[1].range).toEqual("A6:AA8");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A4:AA4");
-                expect(cFormatCln[1].range).toEqual("A7:AA9");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A4:AA4");
+                expect(cfRule[1].range).toEqual("A7:AA9");
                 done();
             });
 
@@ -778,9 +1009,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_row_above").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("A4:AA5");
-                        expect(cFormatCln[1].range).toEqual("A8:AA10");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("A4:AA5");
+                        expect(cfRule[1].range).toEqual("A8:AA10");
                         done();
                     }, 50);
                 });
@@ -788,13 +1019,13 @@ describe('Insert & Delete ->', () => {
             it('Insert row above - 2 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A4:AA4");
-                expect(cFormatCln[1].range).toEqual("A7:AA9");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A4:AA4");
+                expect(cfRule[1].range).toEqual("A7:AA9");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A4:AA5");
-                expect(cFormatCln[1].range).toEqual("A8:AA10");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A4:AA5");
+                expect(cfRule[1].range).toEqual("A8:AA10");
                 done();
             });
             it('Insert row above - 3 - using contextmenu', (done: Function) => {
@@ -809,9 +1040,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_row_above").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("A7:AA8");
-                        expect(cFormatCln[1].range).toEqual("A11:AA13");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("A7:AA8");
+                        expect(cfRule[1].range).toEqual("A11:AA13");
                         done();
                     }, 50);
                 });
@@ -819,13 +1050,13 @@ describe('Insert & Delete ->', () => {
             it('Insert row above - 3 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A4:AA5");
-                expect(cFormatCln[1].range).toEqual("A8:AA10");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A4:AA5");
+                expect(cfRule[1].range).toEqual("A8:AA10");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A7:AA8");
-                expect(cFormatCln[1].range).toEqual("A11:AA13");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A7:AA8");
+                expect(cfRule[1].range).toEqual("A11:AA13");
                 done();
             });
             it('Insert row above - 4 - using contextmenu', (done: Function) => {
@@ -840,9 +1071,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_row_above").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("A7:AA8");
-                        expect(cFormatCln[1].range).toEqual("A11:AA15");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("A7:AA8");
+                        expect(cfRule[1].range).toEqual("A11:AA15");
                         done();
                     }, 50);
                 });
@@ -850,13 +1081,13 @@ describe('Insert & Delete ->', () => {
             it('Insert row above - 4 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A7:AA8");
-                expect(cFormatCln[1].range).toEqual("A11:AA13");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A7:AA8");
+                expect(cfRule[1].range).toEqual("A11:AA13");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A7:AA8");
-                expect(cFormatCln[1].range).toEqual("A11:AA15");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A7:AA8");
+                expect(cfRule[1].range).toEqual("A11:AA15");
                 done();
             });
             it('Insert row above - 5 - using contextmenu', (done: Function) => {
@@ -871,9 +1102,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_row_above").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("A7:AA8");
-                        expect(cFormatCln[1].range).toEqual("A11:AA17");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("A7:AA8");
+                        expect(cfRule[1].range).toEqual("A11:AA17");
                         done();
                     }, 500);
                 });
@@ -891,9 +1122,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_row_above").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("A7:AA8");
-                        expect(cFormatCln[1].range).toEqual("A11:AA17");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("A7:AA8");
+                        expect(cfRule[1].range).toEqual("A11:AA17");
                         done();
                     }, 500);
                 });
@@ -911,9 +1142,9 @@ describe('Insert & Delete ->', () => {
                     helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                     setTimeout(function () {
                         document.getElementById("spreadsheet_cmenu_insert_row_above").click();
-                        let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                        expect(cFormatCln[0].range).toEqual("A7:AA8");
-                        expect(cFormatCln[1].range).toEqual("A20:AA26");
+                        let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                        expect(cfRule[0].range).toEqual("A7:AA8");
+                        expect(cfRule[1].range).toEqual("A20:AA26");
                         done();
                     }, 50);
                 });
@@ -989,9 +1220,9 @@ describe('Insert & Delete ->', () => {
                 helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                 setTimeout(function () {
                     document.getElementById("spreadsheet_cmenu_insert_row_below").click();
-                    let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                    expect(cFormatCln[0].range).toEqual("A4:AA4");
-                    expect(cFormatCln[1].range).toEqual("A7:AA9");
+                    let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                    expect(cfRule[0].range).toEqual("A4:AA4");
+                    expect(cfRule[1].range).toEqual("A7:AA9");
                     done();
                 }, 50);
             });
@@ -999,13 +1230,13 @@ describe('Insert & Delete ->', () => {
         it('Insert row below - 1 - Undo and Redo', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.click('#spreadsheet_undo');
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:AA3");
-                expect(cFormatCln[1].range).toEqual("A6:AA8");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:AA3");
+                expect(cfRule[1].range).toEqual("A6:AA8");
                 helper.click('#spreadsheet_redo');
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A4:AA4");
-                expect(cFormatCln[1].range).toEqual("A7:AA9");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A4:AA4");
+                expect(cfRule[1].range).toEqual("A7:AA9");
                 done();
             });
         it('Insert row below - 2 - using contextmenu', (done: Function) => {
@@ -1020,9 +1251,9 @@ describe('Insert & Delete ->', () => {
                 helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                 setTimeout(function () {
                     document.getElementById("spreadsheet_cmenu_insert_row_below").click();
-                    let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                    expect(cFormatCln[0].range).toEqual("A4:AA5");
-                    expect(cFormatCln[1].range).toEqual("A8:AA10");
+                    let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                    expect(cfRule[0].range).toEqual("A4:AA5");
+                    expect(cfRule[1].range).toEqual("A8:AA10");
                     done();
                 }, 50);
             });
@@ -1030,13 +1261,13 @@ describe('Insert & Delete ->', () => {
         it('Insert row below - 2 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A4:AA4");
-            expect(cFormatCln[1].range).toEqual("A7:AA9");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A4:AA4");
+            expect(cfRule[1].range).toEqual("A7:AA9");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A4:AA5");
-            expect(cFormatCln[1].range).toEqual("A8:AA10");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A4:AA5");
+            expect(cfRule[1].range).toEqual("A8:AA10");
             done();
         });
         it('Insert row below - 3 - using contextmenu', (done: Function) => {
@@ -1051,9 +1282,9 @@ describe('Insert & Delete ->', () => {
                 helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 10, y: target.getBoundingClientRect().top + 10 }, document.getElementsByClassName("e-contextmenu-wrapper")[0] as HTMLElement, target);
                 setTimeout(function () {
                     document.getElementById("spreadsheet_cmenu_insert_row_below").click();
-                    let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                    expect(cFormatCln[0].range).toEqual("A4:AA5");
-                    expect(cFormatCln[1].range).toEqual("A10:AA12");
+                    let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                    expect(cfRule[0].range).toEqual("A4:AA5");
+                    expect(cfRule[1].range).toEqual("A10:AA12");
                     done();
                 }, 50);
             });
@@ -1061,13 +1292,13 @@ describe('Insert & Delete ->', () => {
         it('Insert row below - 3 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A4:AA5");
-            expect(cFormatCln[1].range).toEqual("A8:AA10");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A4:AA5");
+            expect(cfRule[1].range).toEqual("A8:AA10");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A4:AA5");
-            expect(cFormatCln[1].range).toEqual("A10:AA12");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A4:AA5");
+            expect(cfRule[1].range).toEqual("A10:AA12");
             done();
         });
     });
@@ -1094,66 +1325,66 @@ describe('Insert & Delete ->', () => {
         });
         it('Public method - Insert column conditional formaating cells 1', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(0,0);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A2:B11");
-                expect(cFormatCln[1].range).toEqual("C2:C11");
-                expect(cFormatCln[2].range).toEqual("D2:D11");
-                expect(cFormatCln[3].range).toEqual("F2:I11");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A2:B11");
+                expect(cfRule[1].range).toEqual("C2:C11");
+                expect(cfRule[2].range).toEqual("D2:D11");
+                expect(cfRule[3].range).toEqual("F2:I11");
                 done();
                 }, 50);
         });
         it('Public method - Insert column conditional formaating cells 2', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(4,4);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A2:B11");
-                expect(cFormatCln[1].range).toEqual("C2:C11");
-                expect(cFormatCln[2].range).toEqual("D2:D11");
-                expect(cFormatCln[3].range).toEqual("G2:J11");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A2:B11");
+                expect(cfRule[1].range).toEqual("C2:C11");
+                expect(cfRule[2].range).toEqual("D2:D11");
+                expect(cfRule[3].range).toEqual("G2:J11");
                 done();
                 }, 50);
         });
         it('Public method - Insert column conditional formaating cells 3', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(7,8);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A2:B11");
-                expect(cFormatCln[1].range).toEqual("C2:C11");
-                expect(cFormatCln[2].range).toEqual("D2:D11");
-                expect(cFormatCln[3].range).toEqual("G2:L11");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A2:B11");
+                expect(cfRule[1].range).toEqual("C2:C11");
+                expect(cfRule[2].range).toEqual("D2:D11");
+                expect(cfRule[3].range).toEqual("G2:L11");
                 done();
                 }, 50);
         });
         it('Public method - Insert column conditional formaating cells 4', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(11,12);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A2:B11");
-                expect(cFormatCln[1].range).toEqual("C2:C11");
-                expect(cFormatCln[2].range).toEqual("D2:D11");
-                expect(cFormatCln[3].range).toEqual("G2:L11");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A2:B11");
+                expect(cfRule[1].range).toEqual("C2:C11");
+                expect(cfRule[2].range).toEqual("D2:D11");
+                expect(cfRule[3].range).toEqual("G2:L11");
                 done();
                 }, 50);
         });
         it('Public method - Insert column conditional formaating cells 5', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertColumn(5,6);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A2:B11");
-                expect(cFormatCln[1].range).toEqual("C2:C11");
-                expect(cFormatCln[2].range).toEqual("D2:D11");
-                expect(cFormatCln[3].range).toEqual("G2:N11");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A2:B11");
+                expect(cfRule[1].range).toEqual("C2:C11");
+                expect(cfRule[2].range).toEqual("D2:D11");
+                expect(cfRule[3].range).toEqual("G2:N11");
                 done();
                 }, 50);
         });
@@ -1181,53 +1412,53 @@ describe('Insert & Delete ->', () => {
         });
         it('Public method - Insert row conditional formaating cells 1', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertRow(0,0);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:A12");
-                expect(cFormatCln[1].range).toEqual("B3:B12");
-                expect(cFormatCln[2].range).toEqual("C3:C12");
-                expect(cFormatCln[3].range).toEqual("E3:H12");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:A12");
+                expect(cfRule[1].range).toEqual("B3:B12");
+                expect(cfRule[2].range).toEqual("C3:C12");
+                expect(cfRule[3].range).toEqual("E3:H12");
                 done();
                 }, 50);
         });
         it('Public method - Insert row conditional formaating cells 2', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertRow(2, 2);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:A13");
-                expect(cFormatCln[1].range).toEqual("B3:B13");
-                expect(cFormatCln[2].range).toEqual("C3:C13");
-                expect(cFormatCln[3].range).toEqual("E3:H13");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:A13");
+                expect(cfRule[1].range).toEqual("B3:B13");
+                expect(cfRule[2].range).toEqual("C3:C13");
+                expect(cfRule[3].range).toEqual("E3:H13");
                 done();
             }, 50);
         });
         it('Public method - Insert row conditional formaating cells 3', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertRow(11, 12);
                 setTimeout(function () {
-                    cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                    expect(cFormatCln[0].range).toEqual("A3:A15");
-                    expect(cFormatCln[1].range).toEqual("B3:B15");
-                    expect(cFormatCln[2].range).toEqual("C3:C15");
-                    expect(cFormatCln[3].range).toEqual("E3:H15");
+                    cfRule = spreadsheet.sheets[0].conditionalFormats;
+                    expect(cfRule[0].range).toEqual("A3:A15");
+                    expect(cfRule[1].range).toEqual("B3:B15");
+                    expect(cfRule[2].range).toEqual("C3:C15");
+                    expect(cfRule[3].range).toEqual("E3:H15");
                     done();
                 }, 50);
         });
         it('Public method - Insert row conditional formaating cells 4', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            let cFormatCln: ConditionalFormatModel[];
+            let cfRule: ConditionalFormatModel[];
             spreadsheet.insertRow(17, 18);
             setTimeout(function () {
-                cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:A15");
-                expect(cFormatCln[1].range).toEqual("B3:B15");
-                expect(cFormatCln[2].range).toEqual("C3:C15");
-                expect(cFormatCln[3].range).toEqual("E3:H15");
+                cfRule = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:A15");
+                expect(cfRule[1].range).toEqual("B3:B15");
+                expect(cfRule[2].range).toEqual("C3:C15");
+                expect(cfRule[3].range).toEqual("E3:H15");
                 done();
             }, 50);
         });
@@ -1263,22 +1494,22 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_column").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("B3:B18");
-                expect(cFormatCln[1].range).toEqual("C3:E18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("B3:B18");
+                expect(cfRule[1].range).toEqual("C3:E18");
                 done();
             },50);
         });
         it('Delete column  - 1 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("C3:C18");
-            expect(cFormatCln[1].range).toEqual("D3:F18");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("C3:C18");
+            expect(cfRule[1].range).toEqual("D3:F18");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:B18");
-            expect(cFormatCln[1].range).toEqual("C3:E18");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:B18");
+            expect(cfRule[1].range).toEqual("C3:E18");
             done();
         });
         it('Delete column - 2 - using contextmenu', (done: Function) => {
@@ -1290,20 +1521,20 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_column").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("B3:D18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("B3:D18");
                 done();
             },50);
         });
         it('Delete column  - 2 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:B18");
-            expect(cFormatCln[1].range).toEqual("C3:E18");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:B18");
+            expect(cfRule[1].range).toEqual("C3:E18");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:D18");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:D18");
             done();
         });
         it('Delete column - 3 - using contextmenu', (done: Function) => {
@@ -1315,19 +1546,19 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_column").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("B3:C18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("B3:C18");
                 done();
             },50);
         });
         it('Delete column  - 3 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:D18");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:D18");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:C18");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:C18");
             done();
         });
         it('Delete column - 4 - using contextmenu', (done: Function) => {
@@ -1339,19 +1570,19 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_column").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("B3:B18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("B3:B18");
                 done();
             },50);
         });
         it('Delete column  - 4 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:C18");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:C18");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:B18");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:B18");
             done();
         });
         it('Delete column - 5 - using contextmenu', (done: Function) => {
@@ -1363,19 +1594,19 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_column").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("B3:B18");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("B3:B18");
                 done();
             },50);
         });
         it('Delete column  - 5 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:B18");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:B18");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:B18");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:B18");
             done();
         });
         it('Delete column - 6 - using contextmenu', (done: Function) => {
@@ -1387,19 +1618,19 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_column").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln.length).toEqual(0);
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule.length).toEqual(0);
                 done();
             },50);
         });
         it('Delete column  - 6 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("B3:B18");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("B3:B18");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln.length).toEqual(0);
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule.length).toEqual(0);
             done();
         });
     });
@@ -1434,22 +1665,22 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_row").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A2:AA2");
-                expect(cFormatCln[1].range).toEqual("A5:AA7");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A2:AA2");
+                expect(cfRule[1].range).toEqual("A5:AA7");
                 done();
             },50);
         });
         it('Delete row  - 1 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A3:AA3");
-            expect(cFormatCln[1].range).toEqual("A6:AA8");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A3:AA3");
+            expect(cfRule[1].range).toEqual("A6:AA8");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A2:AA2");
-            expect(cFormatCln[1].range).toEqual("A5:AA7");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A2:AA2");
+            expect(cfRule[1].range).toEqual("A5:AA7");
             done();
         });
         it('Delete row - 2 - using contextmenu', (done: Function) => {
@@ -1461,20 +1692,20 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_row").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:AA5");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:AA5");
                 done();
             },50);
         });
         it('Delete row  - 2 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A2:AA2");
-            expect(cFormatCln[1].range).toEqual("A5:AA7");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A2:AA2");
+            expect(cfRule[1].range).toEqual("A5:AA7");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A3:AA5");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A3:AA5");
             done();
         });
         it('Delete row - 3 - using contextmenu', (done: Function) => {
@@ -1486,19 +1717,19 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_row").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:AA4");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:AA4");
                 done();
             },50);
         });
         it('Delete row  - 3 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A3:AA5");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A3:AA5");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A3:AA4");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A3:AA4");
             done();
         });
         it('Delete row - 4 - using contextmenu', (done: Function) => {
@@ -1510,19 +1741,19 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_row").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln[0].range).toEqual("A3:AA4");
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule[0].range).toEqual("A3:AA4");
                 done();
             },50);
         });
         it('Delete row  - 4 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A3:AA4");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A3:AA4");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A3:AA4");
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A3:AA4");
             done();
         });
         it('Delete row - 5 - using contextmenu', (done: Function) => {
@@ -1534,8 +1765,8 @@ describe('Insert & Delete ->', () => {
                 cell);
             setTimeout((): void => {
                 document.getElementById("spreadsheet_cmenu_delete_row").click();
-                let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-                expect(cFormatCln.length).toEqual(0);
+                let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+                expect(cfRule.length).toEqual(0);
                 done();
             },50);
             
@@ -1543,12 +1774,257 @@ describe('Insert & Delete ->', () => {
         it('Delete row  - 5 - Undo and Redo', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.click('#spreadsheet_undo');
-            let cFormatCln: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln[0].range).toEqual("A3:AA4");
+            let cfRule: ConditionalFormatModel[] = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule[0].range).toEqual("A3:AA4");
             helper.click('#spreadsheet_redo');
-            cFormatCln = spreadsheet.sheets[0].conditionalFormats;
-            expect(cFormatCln.length).toEqual(0);
+            cfRule = spreadsheet.sheets[0].conditionalFormats;
+            expect(cfRule.length).toEqual(0);
             done();
+        });
+    });
+    describe('CR - Issues->', () => {
+        describe('EJ2-50688', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('data loss in cut paste for newly inserted column', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.applyFilter([{ field: 'E', predicate: 'or', operator: 'contains', value: '10' }]);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['E1']);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(0, 4, [6, 2], false, true);
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['E1:E20']);
+                        helper.getElement('#' + helper.id + '_cut').click();
+                        setTimeout(() => {
+                            helper.invoke('selectRange', ['F1']);
+                            helper.getElement('#' + helper.id + '_paste').click();
+                            setTimeout(() => {
+                                expect(helper.invoke('getCell', [0, 5]).querySelector('.e-filtered')).toBeNull();
+                                expect(helper.getInstance().sheets[0].rows[5].cells[5].value).toBe(10);
+                                expect(helper.getInstance().sheets[0].rows[7].cells[5].value).toBe(10);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-50565', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange:'H1:H20' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('cut paste not working for inserted column in spreadsheet', (done: Function) => {
+                helper.getElement('#' + helper.id + '_cut').click();
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['E1']);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(0, 4, [6, 1], false, true);
+                    setTimeout(() => {
+                        helper.getElement('#' + helper.id + '_paste').click();
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].rows[0].cells[4].value.toString()).toBe('Profit');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[4].value.toString()).toBe('10');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-51865', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Delete empty row is not working', (done: Function) => {
+                helper.invoke('selectRange', ['A11:H11']);
+                helper.getElement('#' + helper.id + '_copy').click();
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['A14:H14']);
+                    helper.getElement('#' + helper.id + '_paste').click();
+                    expect(helper.getInstance().sheets[0].rows[13].cells[0].value).toBe('T-Shirts');
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['A13']);
+                        helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                        helper.openAndClickCMenuItem(12, 0, [7], true);
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].rows[12].cells[0].value).toBe('T-Shirts');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-52375->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rowCount: 10, colCount: 5, rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] },
+                    { cells: [{ value: '3' }] }, { cells: [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ value: '6' }] },
+                    { cells: [{ value: '7' }] },  { cells: [{ value: '8' }] },  { cells: [{ value: '9' }] }, { cells: [{ value: '10' }] }] }],
+                    scrollSettings: { isFinite: true}
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Update row height based on cell template and update range on insert row->', (done: Function) => {
+                helper.invoke('selectRange', ['A2']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(1, 0, [6, 2], true);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[10].cells[0].value.toString()).toBe('10');
+                    expect(spreadsheet.sheets[0].rowCount).toBe(11);
+                    done();
+                });
+            });
+        });
+        describe('EJ2-53476->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('getRowData not working while inserting row using insertRow method->', (done: Function) => {
+                helper.invoke('insertRow', [11, 11]);
+                expect(helper.getInstance().sheets[0].rows[11]).toEqual({});
+                setTimeout(() => {
+                    expect(helper.invoke('getRow', [11]).getRowData).toBeNull;
+                    done();
+                });
+            });
+        });
+        describe('EJ2-54284->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rowCount: 11, colCount: 8, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true }
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Insert / delete rows not working properly in finite mode->', (done: Function) => {
+                helper.invoke('selectRange', ['A8:A11']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(7, 0, [6, 1], true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[7]).toEqual({});
+                    expect(helper.getInstance().sheets[0].rows[10]).toEqual({});
+                    expect(helper.getInstance().sheets[0].rowCount).toBe(15);
+                    expect(helper.getInstance().sheets[0].usedRange.rowIndex).toBe(14);
+                    helper.invoke('selectRange', ['A8:A11']);
+                    helper.openAndClickCMenuItem(7, 0, [7], true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rowCount).toBe(11);
+                        expect(helper.getInstance().sheets[0].usedRange.rowIndex).toBe(10);
+                        done();
+                    });
+                });
+            });
+            it('Insert / delete columns not working properly in finite mode->', (done: Function) => {
+                helper.invoke('selectRange', ['F1:H1']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 5, [6, 1], false, true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].columns[5]).toEqual({});
+                    expect(helper.getInstance().sheets[0].columns[7]).toEqual({});
+                    expect(helper.getInstance().sheets[0].colCount).toBe(11);
+                    expect(helper.getInstance().sheets[0].usedRange.colIndex).toBe(10);
+                    helper.invoke('selectRange', ['F1:H1']);
+                    helper.openAndClickCMenuItem(0, 7, [7], false, true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].colCount).toBe(8);
+                        expect(helper.getInstance().sheets[0].usedRange.colIndex).toBe(7);
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-54600->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Undo/redo keyboard action working improperly when insert row in multiple times->', (done: Function) => {
+                helper.invoke('selectRange', ['A1']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 0, [6, 1], true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0]).toEqual({});
+                    helper.invoke('selectRange', ['A3:A5']);
+                    helper.openAndClickCMenuItem(3, 0, [6, 2], true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[5]).toEqual({});
+                        expect(helper.getInstance().sheets[0].rows[6]).toEqual({});
+                        expect(helper.getInstance().sheets[0].rows[7]).toEqual({});
+                        helper.invoke('selectRange', ['A9']);
+                        helper.triggerKeyNativeEvent(90, true);
+                        helper.triggerKeyNativeEvent(90, true);
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].rows[0]).not.toEqual({});
+                            expect(helper.getInstance().sheets[0].rows[5]).not.toEqual({});
+                            expect(helper.getInstance().sheets[0].rows[6]).not.toEqual({});
+                            expect(helper.getInstance().sheets[0].rows[7]).not.toEqual({});
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-54240->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData, showFieldAsHeader: false }] }] 
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Range details not updated properly while insert rows using method in showFieldAsHeader as false->', (done: Function) => {
+                helper.invoke('insertRow', [0, 0]);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.getRowData(0,0)).toBe[ Object({}) ];
+                    done();
+                });
+            });
+        });
+        describe('EJ2-57000->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets:[{ rowCount:10 }], scrollSettings: { isFinite: true} }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix the row not visible issue while inserting a new row at the end->', (done: Function) => {
+                helper.invoke('insertRow', [10, 10]);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rowCount).toBe(11);
+                    done();
+                });
+            });
         });
     });
 });

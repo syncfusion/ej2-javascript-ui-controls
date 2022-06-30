@@ -671,7 +671,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     }
     if (isNOU(this.toastContainer)) {
         this.toastContainer = this.getContainer();
-        const target: HTEle = typeof (this.target) === 'string' ? <HTEle>document.querySelector(this.target) : <HTEle>document.body;
+        const target: HTEle = typeof (this.target) === 'string' ? <HTEle>document.querySelector(this.target) :
+        (typeof (this.target) === 'object' ? (this.target as HTMLElement) : <HTEle>document.body);
         if (isNOU(target)) {
           return;
         }
@@ -972,8 +973,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       element: toastEle,
       toastContainer: this.toastContainer
     };
-    const hideAnimate: ToastAnimationsModel = this.animation.hide;
-    const animate: AnimationModel = {
+    let hideAnimate: ToastAnimationsModel = this.animation.hide;
+    let animate: AnimationModel = {
       duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
     };
     const intervalId: number = parseInt(toastEle.id.split('toast_')[1], 10);
@@ -999,8 +1000,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           if (this.toastContainer.childElementCount === 0) {
             this.clearContainerPos(true);
           }
+          hideAnimate = null;
+          animate = null;
         };
-        new Animation({}).animate(toastEle, animate);
+        new Animation(animate).animate(toastEle);
       }
     });
   }
@@ -1241,8 +1244,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
   }
 
   private displayToast(toastEle: HTEle, toastObj?: ToastModel): void {
-    const showAnimate: ToastAnimationsModel = this.animation.show;
-    const animate: AnimationModel = {
+    let showAnimate: ToastAnimationsModel = this.animation.show;
+    let animate: AnimationModel = {
         duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
     };
     const toastOpen: ToastOpenArgs = this.isBlazorServer() ? {

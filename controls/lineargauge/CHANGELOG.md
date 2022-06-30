@@ -8,23 +8,6 @@
 
 ## [Unreleased]
 
-## 20.1.55 (2022-05-12)
-
-### LinearGauge
-
-#### Bug Fixes
-
-- `#I377447` - When the bar pointer value is set to zero, the start of the pointer curve is properly rendered.
-- `#I377616` - The Linear Gauge, which is embedded in its root element, is now rendered in 50% height.
-
-## 20.1.48 (2022-04-12)
-
-### LinearGauge
-
-#### Bug Fixes
-
-- `#365344` - Dash array can now be customized in the border of the Linear Gauge.
-
 ## 18.3.47 (2020-11-05)
 
 ### LinearGauge

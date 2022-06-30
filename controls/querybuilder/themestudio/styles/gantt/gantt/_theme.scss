@@ -191,6 +191,11 @@
         border: $gantt-manualchild-progress-bar-border;
       }
 
+      .e-gantt-critical-child-manualprogressbar {
+        background-color: $gantt-manualchild-progress-bar;
+        border: $gantt-manualchild-progress-bar-border;
+      }
+
       .e-holiday {
         background: $holiday-background;
 
@@ -233,7 +238,6 @@
 
       .e-gantt-unscheduled-taskbar {
         background: $gantt-unscheduled-taskbar-background;
-        background-color: $gantt-unscheduled-taskbar-background-color;
         border: $gantt-unscheduled-taskbar-border;
         border-radius: $gantt-unscheduled-taskbar-border-radius;
       }
@@ -662,4 +666,55 @@
 
   }
 
+  .e-gantt .e-gantt-chart .e-criticalconnector-line {
+    border-color: $critical-connector-line-color;
+  }
+
+  .e-gantt .e-gantt-chart .e-criticalconnector-line-right-arrow {
+    border-left-color: $critical-connector-line-color;
+  }
+
+  .e-gantt .e-gantt-chart .e-criticalconnector-line-left-arrow {
+    border-right-color: $critical-connector-line-color;
+  }
+
+  .e-gantt .e-gantt-chart .e-critical-connector-line-hover {
+    border-color: $critical-connector-line-hover-color;
+    outline-color: $critical-connector-line-hover-color;
+  }
+
+  .e-gantt .e-gantt-chart .e-critical-connector-line-right-arrow-hover {
+    border-left-color: $critical-connector-line-hover-color;
+  }
+
+  .e-gantt .e-gantt-chart .e-critical-connector-line-left-arrow-hover {
+    border-right-color: $critical-connector-line-hover-color;
+  }
+
+  .e-gantt .e-gantt-chart .e-gantt-child-critical-taskbar-inner-div {
+    background-color: $gantt-critical-child-task-bar;
+    border: $gantt-critical-child-task-bar-border;
+    border-radius: $gantt-parent-progress-bar-border-radius;
+  }
+
+  .e-gantt .e-gantt-chart .e-gantt-child-critical-progressbar-inner-div {
+    background-color: $gantt-critical-child-progress-bar;
+    border: $gantt-child-progress-bar-border;
+    border-radius: $gantt-child-progress-bar-border-radious;
+  }
+
+  .e-gantt .e-gantt-chart .e-gantt-critical-unscheduled-taskbar {
+    background: $gantt-unscheduled-critical-taskbar-background;
+    background-color: $gantt-unscheduled-critical-taskbar-background-color;
+    border: $gantt-unscheduled-taskbar-border;
+    border-radius: $gantt-unscheduled-taskbar-border-radius;
+  }
+
+  .e-gantt .e-gantt-chart .e-critical-milestone-top {
+    border-bottom-color: $gantt-critical-milestone-border-color;
+  }
+
+  .e-gantt .e-gantt-chart .e-critical-milestone-bottom {
+    border-top-color: $gantt-critical-milestone-border-color;
+  }
 }

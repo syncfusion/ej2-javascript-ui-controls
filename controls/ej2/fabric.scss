@@ -26,6 +26,8 @@
 @import "slider/fabric.scss";
 @import "color-picker/fabric.scss";
 @import "combo-box/fabric.scss";
+@import "h-scroll/fabric.scss";
+@import "v-scroll/fabric.scss";
 @import "context-menu/fabric.scss";
 @import "dashboard-layout/fabric.scss";
 @import "datepicker/fabric.scss";
@@ -40,8 +42,7 @@
 @import "textbox/fabric.scss";
 @import "uploader/fabric.scss";
 @import "dialog/fabric.scss";
-@import "h-scroll/fabric.scss";
-@import "v-scroll/fabric.scss";
+@import "pager/fabric.scss";
 @import "toolbar/fabric.scss";
 @import "tab/fabric.scss";
 @import "treeview/fabric.scss";
@@ -54,7 +55,6 @@
 @import "document-editor/fabric.scss";
 @import "document-editor-container/fabric.scss";
 @import "splitter/fabric.scss";
-@import "pager/fabric.scss";
 @import "excel-filter/fabric.scss";
 @import "grid/fabric.scss";
 @import "file-manager/fabric.scss";

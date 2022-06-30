@@ -445,7 +445,8 @@ export class AccumulationLegend extends BaseLegend {
      * @returns {void}
      */
     public click(event: Event): void {
-        const targetId: string = (<HTMLElement>event.target).id;
+        const targetId: string = (<HTMLElement>event.target).id.indexOf("_chart_legend_g_") > -1 ?
+            (event.target as HTMLElement).firstChild['id'] : (<HTMLElement>event.target).id;
         const chart: AccumulationChart = this.chart as AccumulationChart;
         const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_', this.legendID + '_shape_marker_'];
         if ((<AccumulationChart>this.chart).accumulationSelectionModule) {
@@ -472,10 +473,10 @@ export class AccumulationLegend extends BaseLegend {
                     (<AccumulationChart>this.chart).renderElements();
                 } else if ((<AccumulationChart>this.chart).accumulationSelectionModule && !isNaN(pointIndex)) {
                     (<AccumulationChart>this.chart).accumulationSelectionModule.legendSelection(
-                        <AccumulationChart>this.chart, 0, pointIndex, event);
+                        <AccumulationChart>this.chart, 0, pointIndex, event.target as Element, event.type);
                 } else if ((<AccumulationChart>this.chart).accumulationHighlightModule && !isNaN(pointIndex)) {
                     (<AccumulationChart>this.chart).accumulationHighlightModule.legendSelection(
-                        <AccumulationChart>this.chart, 0, pointIndex, event);
+                        <AccumulationChart>this.chart, 0, pointIndex, event.target as Element, event.type);
                 }
             }
         }

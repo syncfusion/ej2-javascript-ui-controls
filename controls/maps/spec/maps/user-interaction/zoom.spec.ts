@@ -1813,6 +1813,27 @@ describe('Zoom feature tesing for map control', () => {
             map.zoomSettings.zoomOnClick = true;
             map.refresh();
         });
+        it('Checking with zoom event double Click event', () => {
+            map.zoom = (args: IMapsEventArgs) => {
+                args.cancel = true;
+            };
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_26_dataIndex_undefined');
+                let rect: ClientRect = element.getBoundingClientRect();
+                let event: Object = {
+                    type: 'click',
+                    target: element,
+                    pageX: rect.left,
+                    pageY: rect.top
+                };
+                map.zoomModule.zoomColor = '#e61576';
+                map.zoomModule.doubleClick(<PointerEvent>event);
+            };
+            map.zoomSettings.toolbars = ['ZoomIn', 'Zoom', 'ZoomOut', 'Pan', 'Reset'];
+            map.zoomSettings.doubleClickZoom = true;
+            map.zoomSettings.zoomOnClick = false;
+            map.refresh();
+        });
         it('Checking with center position zooming', () => {
             map.loaded = (args: ILoadedEventArgs) => {
 
@@ -1864,13 +1885,6 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.performToolBarAction(eventObj as PointerEvent);
                 eventObj['target'] = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
                 map.zoomModule.performToolBarAction(eventObj as PointerEvent);
-            };
-            map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
             };
             map.layers[0].layerType = 'OSM';
             map.refresh();

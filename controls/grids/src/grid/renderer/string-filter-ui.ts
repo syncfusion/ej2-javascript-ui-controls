@@ -2,7 +2,7 @@ import { IGrid, EJ2Intance, IFilterMUI, IFilterCreate } from '../base/interface'
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
-import { DataManager, Query, Deferred } from '@syncfusion/ej2-data';
+import { DataManager, Query, Deferred, Predicate } from '@syncfusion/ej2-data';
 import { Browser, isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
@@ -11,6 +11,8 @@ import { getZIndexCalcualtion, eventPromise } from '../base/util';
 import * as events from '../base/constant';
 import { FilterStateObj } from '../common/filter-interface';
 import * as literals from '../base/string-literals';
+import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
+import { ReturnType } from '../base/type';
 
 /**
  * `string filterui` render string column.
@@ -44,15 +46,35 @@ export class StringFilterUI implements IFilterMUI {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'strui-' + args.column.uid });
         args.target.appendChild(this.instance);
         this.dialogObj = args.dialogObj;
-        this.actObj = this.getAutoCompleteOptions(args);
-        this.actObj.appendTo(this.instance);
+        this.processDataOperation(args);
     }
 
-    private getAutoCompleteOptions(args: IFilterCreate): AutoComplete {
+    private processDataOperation(args: IFilterCreate): void {
+        if (args.column.isForeignColumn()) {
+            (<Promise<Object>>this.parent.getDataModule().dataManager.executeQuery(this.parent.getDataModule().generateQuery(true)))
+                .then((result: ReturnType) => { this.getAutoCompleteOptions(args, result); });
+            return;
+        }
+        this.getAutoCompleteOptions(args);
+    }
+
+    private getAutoCompleteOptions(args: IFilterCreate, result?: ReturnType): void {
         const isForeignColumn: boolean = args.column.isForeignColumn();
         let foreignColumnQuery: Query;
         if (isForeignColumn) {
-            foreignColumnQuery = new Query();
+            const filteredData: Object[] = (CheckBoxFilterBase.getDistinct(result.result, args.column.field) as { records: Object[] })
+                .records || [];
+            let filterQuery: Predicate;
+            for (let i: number = 0; i < filteredData.length; i++) {
+                if (filterQuery) {
+                    filterQuery = filterQuery.or(args.column.field, 'contains', filteredData[i][args.column.field], this.parent
+                        .filterSettings.enableCaseSensitivity, this.parent.filterSettings.ignoreAccent);
+                } else {
+                    filterQuery = new Predicate(args.column.field, 'contains', filteredData[i][args.column.field], this.parent
+                        .filterSettings.enableCaseSensitivity, this.parent.filterSettings.ignoreAccent);
+                }
+            }
+            foreignColumnQuery = new Query().where(filterQuery);
             foreignColumnQuery.params = this.parent.query.params;
         }
         const dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
@@ -63,7 +85,7 @@ export class StringFilterUI implements IFilterMUI {
                 fields: fields,
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl,
-                query: isForeignColumn ? foreignColumnQuery : this.parent.query.clone(),
+                query: isForeignColumn ? foreignColumnQuery : this.parent.getDataModule().generateQuery(true),
                 sortOrder: 'Ascending',
                 cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
                 autofill: true,
@@ -86,7 +108,11 @@ export class StringFilterUI implements IFilterMUI {
                 autoComplete.dataSource = new DataManager(e);
             });
         }
-        return autoComplete;
+        this.actObj = autoComplete;
+        this.actObj.appendTo(this.instance);
+        if (isForeignColumn) {
+            this.parent.filterModule.filterModule.afterRenderFilterUI();
+        }
     }
 
     public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {

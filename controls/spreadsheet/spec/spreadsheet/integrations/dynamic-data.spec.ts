@@ -164,7 +164,7 @@ describe('Dynamic data binding - ', () => {
 
     it('Checking dataChangeEventArgs for clear', (done: Function) => {
         helper.invoke('selectRange', ['G6:G8']);
-        helper.getInstance().cellformatModule.clearObj({ options: { type: 'Clear All' } });
+        helper.getInstance().cellformatModule.clearObj({ options: { type: 'Clear All' }, isAction: true });
         expect(dataChangeArgs.action).toBe('edit');
         expect(dataChangeArgs.data[0]['Discount']).toBeNull();
         expect(dataChangeArgs.data[0]['Item Name']).toBe('Casual Shoes');

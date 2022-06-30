@@ -43,11 +43,25 @@ export const OLAP_FIELD_LIST_CLASS: string = 'e-olap-field-list-tree';
 /** @hidden */
 export const FIELD_LIST_TREE_CLASS: string = 'e-field-list-tree';
 /** @hidden */
+export const FIELD_LIST_TREE_OUTER_DIV_CLASS: string = 'e-field-list-tree-outer-div';
+/** @hidden */
+export const FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS: string = 'e-field-list-tree-outer-div-searchMode';
+/** @hidden */
+export const FIELD_LIST_SEARCH_MODE_CLASS: string = 'e-search-mode';
+/** @hidden */
 export const FIELD_HEADER_CLASS: string = 'e-field-header';
+/** @hidden */
+export const FIELD_HEADER_CONTAINER_CLASS: string = 'e-field-header-container';
 /** @hidden */
 export const FIELD_LIST_TITLE_CLASS: string = 'e-field-list-title';
 /** @hidden */
 export const FIELD_LIST_TITLE_CONTENT_CLASS: string = 'e-title-content';
+/** @hidden */
+export const FIELD_LIST_SEARCH_CLASS: string = 'e-field-list-search';
+/** @hidden */
+export const FIELD_LIST_SEARCH_INPUT_CLASS: string = 'e-field-list-search-input';
+/** @hidden */
+export const FIELD_LIST_SEARCH_ICON_CLASS: string = 'e-field-list-search-icon';
 /** @hidden */
 export const FIELD_LIST_FOOTER_CLASS: string = 'e-field-list-footer';
 /** @hidden */
@@ -359,6 +373,8 @@ export const FORMULA: string = 'e-pivot-formula';
 export const TREEVIEW: string = 'e-pivot-treeview';
 /** @hidden */
 export const TREEVIEWOUTER: string = 'e-pivot-treeview-outer';
+/** @hidden */
+export const TREE_CONTAINER: string = 'e-treeContainer';
 /** @hidden */
 export const CALCCANCELBTN: string = 'e-pivot-cancel-button';
 /** @hidden */

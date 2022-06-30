@@ -1,0 +1,11 @@
+@include export-module('datetimepicker-fusionnew-icons') {
+  /*! component icons */
+  .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      content: '\e705';
+      font-family: 'e-icons';
+    }
+  }
+}
+

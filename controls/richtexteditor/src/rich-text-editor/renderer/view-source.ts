@@ -57,7 +57,7 @@ export class ViewSource {
     }
 
     private getSourceCode(): HTMLElement | HTMLTextAreaElement | void {
-        return this.parent.createElement('textarea', { className: 'e-rte-srctextarea' });
+        return this.parent.createElement('textarea', { className: 'e-rte-srctextarea' + ' ' + this.parent.cssClass });
     }
     private wireEvent(element: HTMLElement): void {
         this.keyboardModule = new KeyboardEvents(element, {

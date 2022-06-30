@@ -223,7 +223,7 @@ export class Print {
         if (!depth) {
             return;
         }
-        const groupCaption: HTMLElement[] = selectAll(`.e-groupcaption`, element);
+        const groupCaption: HTMLElement[] = selectAll('.e-groupcaption', element);
         const colSpan: string = (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
         for (let i: number = 0; i < groupCaption.length; i++) {
             (<HTMLElement>groupCaption[i]).setAttribute('colspan', colSpan);

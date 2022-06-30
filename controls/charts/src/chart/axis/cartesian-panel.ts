@@ -671,7 +671,7 @@ export class CartesianAxisLayoutPanel {
         optionsLine = {
             'id': chart.element.id + 'AxisLine_' + index,
             'd': 'M ' + (rect.x - plotX - plotLeft) + ' ' + (rect.y - plotY - plotTop) +
-                    ' L ' + (rect.x + rect.width + plotX + plotRight) + ' ' + (rect.y + rect.height + plotY + plotBottom),
+                ' L ' + (rect.x + rect.width + plotX + plotRight) + ' ' + (rect.y + rect.height + plotY + plotBottom),
             'stroke-dasharray': axis.lineStyle.dashArray,
             'stroke-width': axis.lineStyle.width,
             'stroke': axis.lineStyle.color || chart.themeStyle.axisLine
@@ -865,7 +865,7 @@ export class CartesianAxisLayoutPanel {
             }
             pointX = isOpposed ? (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
             if (isVerticalAngle) {
-                pointX += 10;
+                pointX += (isOpposed) ? -10 : 10;
             }
             yAxisLabelX = labelPadding;
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, 'middle', label.text, '', 'middle');
@@ -1033,7 +1033,7 @@ export class CartesianAxisLayoutPanel {
                 chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent, null, null,
                 null, null, null, null, null, null, chart.enableCanvas
             );
-            element.setAttribute('tabindex', axis.tabIndex.toString());
+           // element.setAttribute('tabindex', axis.tabIndex.toString());
             element.setAttribute('aria-label', axis.description || axis.title);
         }
     }
@@ -1644,7 +1644,7 @@ export class CartesianAxisLayoutPanel {
                 null, null, null, null, null, null, null, null, chart.enableCanvas
             );
             element.setAttribute('aria-label', axis.description || axis.title);
-            element.setAttribute('tabindex', axis.tabIndex.toString());
+           // element.setAttribute('tabindex', axis.tabIndex.toString());
         }
     }
 

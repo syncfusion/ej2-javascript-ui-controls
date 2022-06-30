@@ -266,10 +266,12 @@ export class ExportUtils {
 
             });
             backgroundColor = (svg.childNodes[0] as HTMLElement) ? (svg.childNodes[0] as HTMLElement).getAttribute('fill') : 'transparent';
-            if ((control.theme === 'Tailwind' || control.theme === 'TailwindDark' || control.theme === "Fluent")
-                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
-                (svg.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
-                backgroundColor = 'rgba(255,255,255, 1)';
+            if (backgroundColor === 'transparent') {
+                if (control.theme.indexOf("Dark") > -1 || control.theme === "HighContrast") {
+                    backgroundColor = 'rgba(0, 0, 0, 1)';
+                } else {
+                    backgroundColor = 'rgba(255, 255, 255, 1)';
+                }
             }
             if (!isCanvas) {
                 groupEle.appendChild(svg);

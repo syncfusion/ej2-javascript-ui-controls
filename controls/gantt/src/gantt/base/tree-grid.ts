@@ -137,7 +137,8 @@ export class GanttTreeGrid {
         const scrollWidth: number = this.getScrollbarWidth();
         const isMobile: boolean = /Android|Mac|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (scrollWidth !== 0) {
-            content.style.cssText += 'width: calc(100% + ' + (scrollWidth + 1) + 'px);';
+             content.style.cssText += 'width: calc(100% + ' + (scrollWidth + 1) + 'px);'; //actual scrollbar width 17 px but here scrollbar width set to 16px hence adding increment of 1
+
         } else {
             content.classList.add('e-gantt-scroll-padding');
         }

@@ -1,8 +1,9 @@
 import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs } from '../common/index';
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
-import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, checkConditionalFormat } from '../index';
+import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel } from '../index';
 import { getRow, ExtendedRowModel, updateCell, CellUpdateArgs, isHeightCheckNeeded, workbookFormulaOperation } from '../index';
+import { ExtendedWorkbook, ConditionalFormat, ConditionalFormatModel, applyCF, ApplyCFArgs } from '../common/index';
 
 /**
  * Workbook Cell format.
@@ -412,9 +413,11 @@ export class WorkbookCellFormat {
         const sheetIdx: number = (options.range && options.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent, options.range.split('!')[0]) : this.parent.activeSheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
-        const range: number[] = getIndexesFromAddress(clrRange);
+        const range: number[] = getSwapRange(getIndexesFromAddress(clrRange));
         let sRowIdx: number = range[0];
         const eRowIdx: number = range[2];
+        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
+        const cfRule: ConditionalFormatModel[] = [];
         let sColIdx: number;
         let eColIdx: number; let isValExist: boolean;
         for (sRowIdx; sRowIdx <= eRowIdx; sRowIdx++) {
@@ -434,7 +437,9 @@ export class WorkbookCellFormat {
                         }
                         isValExist = !!(cell.value || cell.formula);
                         delete cell.value; delete cell.formula;
-                        this.parent.notify(checkConditionalFormat, { rowIdx: sRowIdx, colIdx: sColIdx, cell: cell, isAction: true });
+                        if (cf) {
+                            updateCFModel(cf, cfRule, sRowIdx, sColIdx);
+                        }
                         if (isValExist) {
                             this.parent.notify(
                                 workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx,
@@ -457,6 +462,11 @@ export class WorkbookCellFormat {
                 }
             }
         }
+        if (cfRule.length) {
+            this.parent.notify(
+                applyCF, <ApplyCFArgs>{ cfModel: cfRule, sheetIdx: sheetIdx, otherSheets: sheetIdx !== this.parent.activeSheetIndex,
+                    isAction: true });
+        }
     }
     /**
      * To destroy workbook cell format.
@@ -475,8 +485,4 @@ export class WorkbookCellFormat {
     public getModuleName(): string {
         return 'workbookcellformat';
     }
-}
-
-interface ExtendedWorkbook extends Workbook {
-    viewport: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number };
 }

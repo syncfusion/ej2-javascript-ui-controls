@@ -13,9 +13,9 @@ import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
-import { Segments, DecoratorShapes, Transform, ConnectorConstraints } from '../enum/enum';
-import { Direction, LayoutOrientation, Status, PortConstraints } from '../enum/enum';
-import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, DiagramConnectorShapeModel } from './connector-model';
+import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation } from '../enum/enum';
+import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness } from '../enum/enum';
+import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, DiagramConnectorShapeModel, BezierSettingsModel } from './connector-model';
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
@@ -198,6 +198,35 @@ export class Vector extends ChildProperty<Vector> {
     @Property(0)
     public distance: number;
 
+}
+
+/**
+ * Describes the length and angle between the control point and the start point of bezier segment
+ */
+export class BezierSettings extends ChildProperty<BezierSettings> {
+    /**
+    * Defines the visibility of the control points in the Bezier connector
+    *
+    * @default 'All'
+    */
+    @Property(ControlPointsVisibility.All)
+    public controlPointsVisibility: ControlPointsVisibility;
+
+    /**
+    * Defines the editing mode of intermediate point of two bezier curve
+    *
+    * @default 'FreeForm'
+    */
+    @Property('FreeForm')
+    public segmentEditOrientation: BezierSegmentEditOrientation;
+
+    /**
+    * Defines the value to maintain the smoothness between the neighboring bezier curves.
+    *
+    * @default 'Default'
+    */
+    @Property(BezierSmoothness.Default)
+    public smoothness: BezierSmoothness;
 }
 
 /**
@@ -384,6 +413,20 @@ export class StraightSegment extends ConnectorSegment {
  * Defines the behavior of bezier segments
  */
 export class BezierSegment extends StraightSegment {
+    /**
+     * Sets the orientation of endpoint dragging
+     *
+     * @private
+     */
+    @Property('Horizontal')
+    public orientation: Orientation;
+
+    /**
+     * Identifies whether the segment is internal
+     *
+     * @private
+     */
+    public isInternalSegment: boolean;
 
     /**
      * Sets the first control point of the bezier connector
@@ -1214,12 +1257,36 @@ export class Connector extends NodeBase implements IElement {
     public targetPadding: number;
 
     /**
+     * Sets the distance between source node and connector
+     *
+     * @default 13
+     */
+    @Property(13)
+    public connectorSpacing: number;
+
+    /**
      * Defines the appearance of the connection path
      *
      * @default ''
      */
     @Complex<StrokeStyleModel>({ strokeWidth: 1, strokeColor: 'black' }, StrokeStyle)
     public style: StrokeStyleModel;
+
+    /**
+     * Sets the maximum segment thumb for the connector
+     *
+     * @default null
+     */
+     @Property(null)
+     public maxSegmentThumb: number;
+
+    /**
+     * Sets the bezier settings of editing the segments.
+     *
+     * @default null
+     */
+    @Complex<BezierSettingsModel>({ }, BezierSettings)
+    public bezierSettings: BezierSettingsModel;
 
     /** @private */
     public parentId: string = '';
@@ -1247,6 +1314,8 @@ export class Connector extends NodeBase implements IElement {
     public intermediatePoints: PointModel[];
     /** @private */
     public status: Status = 'None';
+    /** @private */
+    public isBezierEditing: boolean;
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
@@ -1295,7 +1364,7 @@ export class Connector extends NodeBase implements IElement {
         segment = this.getSegmentElement(this, segment);
         //let bounds: Rect;
         let points: PointModel[] = [];
-        points = this.getConnectorPoints(this.type);
+        points = this.type === 'Bezier' ? this.intermediatePoints : this.getConnectorPoints(this.type);
         points = this.clipDecorators(this, points);
         const bounds: Rect = Rect.toBounds(points);
         container.width = bounds.width;
@@ -2023,4 +2092,5 @@ export class Connector extends NodeBase implements IElement {
         return 'Connector';
     }
 }
+
 

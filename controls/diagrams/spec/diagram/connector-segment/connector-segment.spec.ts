@@ -1750,6 +1750,3419 @@ describe('Diagram Control', () => {
         });
     });
 
+    /*Bezier Testcases*/
+
+    describe('Conectors with segments - Bezier Segment Rendering(Node To Node)', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramBezierSegmentNodeToNodeRendering' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [];
+            let connectors: ConnectorModel[] = [];
+            let offsetY = 200; let offsetX = 200;
+            let extra1 = 25; let extra2 = 125;
+            for (var x = 0; x < 3; x++) {
+                for (var y = 0; y < 4; y++) {
+                    var rootnode = {
+                        id: 'rootNode' + x + y, offsetX: offsetX, offsetY: offsetY, width: 50, height: 50,
+                        ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                        { id: 'port2', offset: { x: 0.5, y: 0 } },
+                        { id: 'port3', offset: { x: 1, y: 0.5 } },
+                        { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                    };
+                    nodes.push(rootnode);
+
+                    let node1: NodeModel = { id: 'node' + x + y + 1, offsetX: offsetX + extra2, offsetY: offsetY - extra1 };
+                    let node2: NodeModel = { id: 'node' + x + y + 2, offsetX: offsetX + extra2, offsetY: offsetY + extra1 };
+                    let node3: NodeModel = { id: 'node' + x + y + 3, offsetX: offsetX - extra2, offsetY: offsetY - extra1 };
+                    let node4: NodeModel = { id: 'node' + x + y + 4, offsetX: offsetX - extra2, offsetY: offsetY + extra1 };
+                    let node5: NodeModel = { id: 'node' + x + y + 5, offsetX: offsetX + extra1, offsetY: offsetY - extra2 };
+                    let node6: NodeModel = { id: 'node' + x + y + 6, offsetX: offsetX + extra1, offsetY: offsetY + extra2 };
+                    let node7: NodeModel = { id: 'node' + x + y + 7, offsetX: offsetX - extra1, offsetY: offsetY - extra2 };
+                    let node8: NodeModel = { id: 'node' + x + y + 8, offsetX: offsetX - extra1, offsetY: offsetY + extra2 };
+                    nodes.push(node1);
+                    nodes.push(node2);
+                    nodes.push(node3);
+                    nodes.push(node4);
+                    nodes.push(node5);
+                    nodes.push(node6);
+                    nodes.push(node7);
+                    nodes.push(node8);
+
+                    let connector1: ConnectorModel = { id: 'connector' + x + y + 1, type: 'Bezier', sourceID: rootnode.id, targetID: node1.id, targetDecorator: { shape: 'None' } };
+                    let connector2: ConnectorModel = { id: 'connector' + x + y + 2, type: 'Bezier', sourceID: rootnode.id, targetID: node2.id, targetDecorator: { shape: 'None' } };
+                    let connector3: ConnectorModel = { id: 'connector' + x + y + 3, type: 'Bezier', sourceID: rootnode.id, targetID: node3.id, targetDecorator: { shape: 'None' } };
+                    let connector4: ConnectorModel = { id: 'connector' + x + y + 4, type: 'Bezier', sourceID: rootnode.id, targetID: node4.id, targetDecorator: { shape: 'None' } };
+                    let connector5: ConnectorModel = { id: 'connector' + x + y + 5, type: 'Bezier', sourceID: rootnode.id, targetID: node5.id, targetDecorator: { shape: 'None' } };
+                    let connector6: ConnectorModel = { id: 'connector' + x + y + 6, type: 'Bezier', sourceID: rootnode.id, targetID: node6.id, targetDecorator: { shape: 'None' } };
+                    let connector7: ConnectorModel = { id: 'connector' + x + y + 7, type: 'Bezier', sourceID: rootnode.id, targetID: node7.id, targetDecorator: { shape: 'None' } };
+                    let connector8: ConnectorModel = { id: 'connector' + x + y + 8, type: 'Bezier', sourceID: rootnode.id, targetID: node8.id, targetDecorator: { shape: 'None' } };
+                    connectors.push(connector1);
+                    connectors.push(connector2);
+                    connectors.push(connector3);
+                    connectors.push(connector4);
+                    connectors.push(connector5);
+                    connectors.push(connector6);
+                    connectors.push(connector7);
+                    connectors.push(connector8);
+
+                    offsetX += 350;
+                    extra1 = y == 0 ? 50 : y == 1 ? 65 : 75;
+                }
+
+                offsetX = 200;
+                offsetY += 350;
+                extra1 = 25;
+                extra2 = x == 0 ? 75 : 65;
+            }
+
+            diagram = new Diagram({
+                width: 1500, height: 1200, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramBezierSegmentNodeToNodeRendering');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Bezier segment - Node to Node Rendering', (done: Function) => {
+            expect(((diagram.connectors[0]).wrapper.children[0] as PathElement).data === 'M225 200C243.5 200 262 193.75 262 187.5C262 181.25 281 175 300 175').toBe(true);
+            expect(((diagram.connectors[1]).wrapper.children[0] as PathElement).data === 'M225 200C243.5 200 262 206.25 262 212.5C262 218.75 281 225 300 225').toBe(true);
+            expect(((diagram.connectors[2]).wrapper.children[0] as PathElement).data === 'M175 200C156.5 200 138 193.75 138 187.5C138 181.25 119 175 100 175').toBe(true);
+            expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M175 200C156.5 200 138 206.25 138 212.5C138 218.75 119 225 100 225').toBe(true);
+            expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M200 175C200 156.5 206.25 138 212.5 138C218.75 138 225 119 225 100').toBe(true);
+            expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M200 225C200 243.5 206.25 262 212.5 262C218.75 262 225 281 225 300').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M200 175C200 156.5 193.75 138 187.5 138C181.25 138 175 119 175 100').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M200 225C200 243.5 193.75 262 187.5 262C181.25 262 175 281 175 300').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M575 200C593.5 200 612 187.5 612 175C612 162.5 631 150 650 150').toBe(true);
+            expect(((diagram.connectors[9]).wrapper.children[0] as PathElement).data === 'M575 200C593.5 200 612 212.5 612 225C612 237.5 631 250 650 250').toBe(true);
+            expect(((diagram.connectors[10]).wrapper.children[0] as PathElement).data === 'M525 200C506.5 200 488 187.5 488 175C488 162.5 469 150 450 150').toBe(true);
+            expect(((diagram.connectors[11]).wrapper.children[0] as PathElement).data === 'M525 200C506.5 200 488 212.5 488 225C488 237.5 469 250 450 250').toBe(true);
+            expect(((diagram.connectors[12]).wrapper.children[0] as PathElement).data === 'M550 175C550 156.5 562.5 138 575 138C587.5 138 600 119 600 100').toBe(true);
+            expect(((diagram.connectors[13]).wrapper.children[0] as PathElement).data === 'M550 225C550 243.5 562.5 262 575 262C587.5 262 600 281 600 300').toBe(true);
+            expect(((diagram.connectors[14]).wrapper.children[0] as PathElement).data === 'M550 175C550 156.5 537.5 138 525 138C512.5 138 500 119 500 100').toBe(true);
+            expect(((diagram.connectors[15]).wrapper.children[0] as PathElement).data === 'M550 225C550 243.5 537.5 262 525 262C512.5 262 500 281 500 300').toBe(true);
+            expect(((diagram.connectors[16]).wrapper.children[0] as PathElement).data === 'M900 175C900 165 915.63 155 931.25 155C946.88 155 962.5 161.25 962.5 167.5C962.5 173.75 978.13 180 993.75 180C1009.38 180 1025 170 1025 160').toBe(true);
+            expect(((diagram.connectors[17]).wrapper.children[0] as PathElement).data === 'M900 225C900 235 915.63 245 931.25 245C946.88 245 962.5 238.75 962.5 232.5C962.5 226.25 978.13 220 993.75 220C1009.38 220 1025 230 1025 240').toBe(true);
+            expect(((diagram.connectors[18]).wrapper.children[0] as PathElement).data === 'M900 175C900 165 884.38 155 868.75 155C853.13 155 837.5 161.25 837.5 167.5C837.5 173.75 821.88 180 806.25 180C790.63 180 775 170 775 160').toBe(true);
+            expect(((diagram.connectors[19]).wrapper.children[0] as PathElement).data === 'M900 225C900 235 884.38 245 868.75 245C853.13 245 837.5 238.75 837.5 232.5C837.5 226.25 821.88 220 806.25 220C790.63 220 775 230 775 240').toBe(true);
+            expect(((diagram.connectors[20]).wrapper.children[0] as PathElement).data === 'M900 175C900 156.5 916.25 138 932.5 138C948.75 138 965 119 965 100').toBe(true);
+            expect(((diagram.connectors[21]).wrapper.children[0] as PathElement).data === 'M900 225C900 243.5 916.25 262 932.5 262C948.75 262 965 281 965 300').toBe(true);
+            expect(((diagram.connectors[22]).wrapper.children[0] as PathElement).data === 'M900 175C900 156.5 883.75 138 867.5 138C851.25 138 835 119 835 100').toBe(true);
+            expect(((diagram.connectors[23]).wrapper.children[0] as PathElement).data === 'M900 225C900 243.5 883.75 262 867.5 262C851.25 262 835 281 835 300').toBe(true);
+            expect(((diagram.connectors[24]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 165 1265.63 155 1281.25 155C1296.88 155 1312.5 160 1312.5 165C1312.5 170 1328.13 175 1343.75 175C1359.38 175 1375 162.5 1375 150').toBe(true);
+            expect(((diagram.connectors[25]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 235 1265.63 245 1281.25 245C1296.88 245 1312.5 240 1312.5 235C1312.5 230 1328.13 225 1343.75 225C1359.38 225 1375 237.5 1375 250').toBe(true);
+            expect(((diagram.connectors[26]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 165 1234.38 155 1218.75 155C1203.13 155 1187.5 160 1187.5 165C1187.5 170 1171.88 175 1156.25 175C1140.63 175 1125 162.5 1125 150').toBe(true);
+            expect(((diagram.connectors[27]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 235 1234.38 245 1218.75 245C1203.13 245 1187.5 240 1187.5 235C1187.5 230 1171.88 225 1156.25 225C1140.63 225 1125 237.5 1125 250').toBe(true);
+            expect(((diagram.connectors[28]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 156.5 1268.75 138 1287.5 138C1306.25 138 1325 119 1325 100').toBe(true);
+            expect(((diagram.connectors[29]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 243.5 1268.75 262 1287.5 262C1306.25 262 1325 281 1325 300').toBe(true);
+            expect(((diagram.connectors[30]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 156.5 1231.25 138 1212.5 138C1193.75 138 1175 119 1175 100').toBe(true);
+            expect(((diagram.connectors[31]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 243.5 1231.25 262 1212.5 262C1193.75 262 1175 281 1175 300').toBe(true);
+            expect(((diagram.connectors[32]).wrapper.children[0] as PathElement).data === 'M225 550C231 550 237 543.75 237 537.5C237 531.25 243.5 525 250 525').toBe(true);
+            expect(((diagram.connectors[33]).wrapper.children[0] as PathElement).data === 'M225 550C231 550 237 556.25 237 562.5C237 568.75 243.5 575 250 575').toBe(true);
+            expect(((diagram.connectors[34]).wrapper.children[0] as PathElement).data === 'M175 550C169 550 163 543.75 163 537.5C163 531.25 156.5 525 150 525').toBe(true);
+            expect(((diagram.connectors[35]).wrapper.children[0] as PathElement).data === 'M175 550C169 550 163 556.25 163 562.5C163 568.75 156.5 575 150 575').toBe(true);
+            expect(((diagram.connectors[36]).wrapper.children[0] as PathElement).data === 'M200 525C200 519 206.25 513 212.5 513C218.75 513 225 506.5 225 500').toBe(true);
+            expect(((diagram.connectors[37]).wrapper.children[0] as PathElement).data === 'M200 575C200 581 206.25 587 212.5 587C218.75 587 225 593.5 225 600').toBe(true);
+            expect(((diagram.connectors[38]).wrapper.children[0] as PathElement).data === 'M200 525C200 519 193.75 513 187.5 513C181.25 513 175 506.5 175 500').toBe(true);
+            expect(((diagram.connectors[39]).wrapper.children[0] as PathElement).data === 'M200 575C200 581 193.75 587 187.5 587C181.25 587 175 593.5 175 600').toBe(true);
+            expect(((diagram.connectors[40]).wrapper.children[0] as PathElement).data === 'M575 550C581 550 587 537.5 587 525C587 512.5 593.5 500 600 500').toBe(true);
+            expect(((diagram.connectors[41]).wrapper.children[0] as PathElement).data === 'M575 550C581 550 587 562.5 587 575C587 587.5 593.5 600 600 600').toBe(true);
+            expect(((diagram.connectors[42]).wrapper.children[0] as PathElement).data === 'M525 550C519 550 513 537.5 513 525C513 512.5 506.5 500 500 500').toBe(true);
+            expect(((diagram.connectors[43]).wrapper.children[0] as PathElement).data === 'M525 550C519 550 513 562.5 513 575C513 587.5 506.5 600 500 600').toBe(true);
+            expect(((diagram.connectors[44]).wrapper.children[0] as PathElement).data === 'M550 525C550 519 562.5 513 575 513C587.5 513 600 506.5 600 500').toBe(true);
+            expect(((diagram.connectors[45]).wrapper.children[0] as PathElement).data === 'M550 575C550 581 562.5 587 575 587C587.5 587 600 593.5 600 600').toBe(true);
+            expect(((diagram.connectors[46]).wrapper.children[0] as PathElement).data === 'M550 525C550 519 537.5 513 525 513C512.5 513 500 506.5 500 500').toBe(true);
+            expect(((diagram.connectors[47]).wrapper.children[0] as PathElement).data === 'M550 575C550 581 537.5 587 525 587C512.5 587 500 593.5 500 600').toBe(true);
+            expect(((diagram.connectors[48]).wrapper.children[0] as PathElement).data === 'M900 525C900 521.5 918.75 518 937.5 518C956.25 518 975 514 975 510').toBe(true);
+            expect(((diagram.connectors[49]).wrapper.children[0] as PathElement).data === 'M900 575C900 578.5 918.75 582 937.5 582C956.25 582 975 586 975 590').toBe(true);
+            expect(((diagram.connectors[50]).wrapper.children[0] as PathElement).data === 'M900 525C900 521.5 881.25 518 862.5 518C843.75 518 825 514 825 510').toBe(true);
+            expect(((diagram.connectors[51]).wrapper.children[0] as PathElement).data === 'M900 575C900 578.5 881.25 582 862.5 582C843.75 582 825 586 825 590').toBe(true);
+            expect(((diagram.connectors[52]).wrapper.children[0] as PathElement).data === 'M900 525C900 519 916.25 513 932.5 513C948.75 513 965 506.5 965 500').toBe(true);
+            expect(((diagram.connectors[53]).wrapper.children[0] as PathElement).data === 'M900 575C900 581 916.25 587 932.5 587C948.75 587 965 593.5 965 600').toBe(true);
+            expect(((diagram.connectors[54]).wrapper.children[0] as PathElement).data === 'M900 525C900 519 883.75 513 867.5 513C851.25 513 835 506.5 835 500').toBe(true);
+            expect(((diagram.connectors[55]).wrapper.children[0] as PathElement).data === 'M900 575C900 581 883.75 587 867.5 587C851.25 587 835 593.5 835 600').toBe(true);
+            expect(((diagram.connectors[56]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 519 1268.75 513 1287.5 513C1306.25 513 1325 506.5 1325 500').toBe(true);
+            expect(((diagram.connectors[57]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581 1268.75 587 1287.5 587C1306.25 587 1325 593.5 1325 600').toBe(true);
+            expect(((diagram.connectors[58]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 519 1231.25 513 1212.5 513C1193.75 513 1175 506.5 1175 500').toBe(true);
+            expect(((diagram.connectors[59]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581 1231.25 587 1212.5 587C1193.75 587 1175 593.5 1175 600').toBe(true);
+            expect(((diagram.connectors[60]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 519 1268.75 513 1287.5 513C1306.25 513 1325 506.5 1325 500').toBe(true);
+            expect(((diagram.connectors[61]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581 1268.75 587 1287.5 587C1306.25 587 1325 593.5 1325 600').toBe(true);
+            expect(((diagram.connectors[62]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 519 1231.25 513 1212.5 513C1193.75 513 1175 506.5 1175 500').toBe(true);
+            expect(((diagram.connectors[63]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581 1231.25 587 1212.5 587C1193.75 587 1175 593.5 1175 600').toBe(true);
+            expect(((diagram.connectors[64]).wrapper.children[0] as PathElement).data === 'M225 900C228.5 900 232 893.75 232 887.5C232 881.25 236 875 240 875').toBe(true);
+            expect(((diagram.connectors[65]).wrapper.children[0] as PathElement).data === 'M225 900C228.5 900 232 906.25 232 912.5C232 918.75 236 925 240 925').toBe(true);
+            expect(((diagram.connectors[66]).wrapper.children[0] as PathElement).data === 'M175 900C171.5 900 168 893.75 168 887.5C168 881.25 164 875 160 875').toBe(true);
+            expect(((diagram.connectors[67]).wrapper.children[0] as PathElement).data === 'M175 900C171.5 900 168 906.25 168 912.5C168 918.75 164 925 160 925').toBe(true);
+            expect(((diagram.connectors[68]).wrapper.children[0] as PathElement).data === 'M200 875C200 871.5 206.25 868 212.5 868C218.75 868 225 864 225 860').toBe(true);
+            expect(((diagram.connectors[69]).wrapper.children[0] as PathElement).data === 'M200 925C200 928.5 206.25 932 212.5 932C218.75 932 225 936 225 940').toBe(true);
+            expect(((diagram.connectors[70]).wrapper.children[0] as PathElement).data === 'M200 875C200 871.5 193.75 868 187.5 868C181.25 868 175 864 175 860').toBe(true);
+            expect(((diagram.connectors[71]).wrapper.children[0] as PathElement).data === 'M200 925C200 928.5 193.75 932 187.5 932C181.25 932 175 936 175 940').toBe(true);
+            expect(((diagram.connectors[72]).wrapper.children[0] as PathElement).data === 'M575 900C578.5 900 582 887.5 582 875C582 862.5 586 850 590 850').toBe(true);
+            expect(((diagram.connectors[73]).wrapper.children[0] as PathElement).data === 'M575 900C578.5 900 582 912.5 582 925C582 937.5 586 950 590 950').toBe(true);
+            expect(((diagram.connectors[74]).wrapper.children[0] as PathElement).data === 'M525 900C521.5 900 518 887.5 518 875C518 862.5 514 850 510 850').toBe(true);
+            expect(((diagram.connectors[75]).wrapper.children[0] as PathElement).data === 'M525 900C521.5 900 518 912.5 518 925C518 937.5 514 950 510 950').toBe(true);
+            expect(((diagram.connectors[76]).wrapper.children[0] as PathElement).data === 'M550 875C550 871.5 562.5 868 575 868C587.5 868 600 864 600 860').toBe(true);
+            expect(((diagram.connectors[77]).wrapper.children[0] as PathElement).data === 'M550 925C550 928.5 562.5 932 575 932C587.5 932 600 936 600 940').toBe(true);
+            expect(((diagram.connectors[78]).wrapper.children[0] as PathElement).data === 'M550 875C550 871.5 537.5 868 525 868C512.5 868 500 864 500 860').toBe(true);
+            expect(((diagram.connectors[79]).wrapper.children[0] as PathElement).data === 'M550 925C550 928.5 537.5 932 525 932C512.5 932 500 936 500 940').toBe(true);
+            expect(((diagram.connectors[80]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.5 916.25 868 932.5 868C948.75 868 965 864 965 860').toBe(true);
+            expect(((diagram.connectors[81]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.5 916.25 932 932.5 932C948.75 932 965 936 965 940').toBe(true);
+            expect(((diagram.connectors[82]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.5 883.75 868 867.5 868C851.25 868 835 864 835 860').toBe(true);
+            expect(((diagram.connectors[83]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.5 883.75 932 867.5 932C851.25 932 835 936 835 940').toBe(true);
+            expect(((diagram.connectors[84]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.5 916.25 868 932.5 868C948.75 868 965 864 965 860').toBe(true);
+            expect(((diagram.connectors[85]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.5 916.25 932 932.5 932C948.75 932 965 936 965 940').toBe(true);
+            expect(((diagram.connectors[86]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.5 883.75 868 867.5 868C851.25 868 835 864 835 860').toBe(true);
+            expect(((diagram.connectors[87]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.5 883.75 932 867.5 932C851.25 932 835 936 835 940').toBe(true);
+            expect(((diagram.connectors[88]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 869 1266.25 863 1282.5 863C1298.75 863 1315 856.5 1315 850').toBe(true);
+            expect(((diagram.connectors[89]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 931 1266.25 937 1282.5 937C1298.75 937 1315 943.5 1315 950').toBe(true);
+            expect(((diagram.connectors[90]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 869 1233.75 863 1217.5 863C1201.25 863 1185 856.5 1185 850').toBe(true);
+            expect(((diagram.connectors[91]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 931 1233.75 937 1217.5 937C1201.25 937 1185 943.5 1185 950').toBe(true);
+            expect(((diagram.connectors[92]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 871.5 1268.75 868 1287.5 868C1306.25 868 1325 864 1325 860').toBe(true);
+            expect(((diagram.connectors[93]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 928.5 1268.75 932 1287.5 932C1306.25 932 1325 936 1325 940').toBe(true);
+            expect(((diagram.connectors[94]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 871.5 1231.25 868 1212.5 868C1193.75 868 1175 864 1175 860').toBe(true);
+            expect(((diagram.connectors[95]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 928.5 1231.25 932 1212.5 932C1193.75 932 1175 936 1175 940').toBe(true);
+
+            done();
+        });
+    });
+
+    describe('Conectors with segments - Bezier Segment Rendering(Node To Port)', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramBezierSegmentNodeToPortRendering' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [];
+            let connectors: ConnectorModel[] = [];
+            let offsetY = 200; let offsetX = 200;
+            let extra1 = 25; let extra2 = 125;
+
+            for (var z = 1; z <= 4; z++) {
+                for (var x = 0; x < 3; x++) {
+                    for (var y = 0; y < 4; y++) {
+                        var rootnode = {
+                            id: 'rootNode' + z + x + y, offsetX: offsetX, offsetY: offsetY, width: 50, height: 50,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(rootnode);
+
+                        let node1: NodeModel = {
+                            id: 'node' + z + x + y + 1, offsetX: offsetX + extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node2: NodeModel = {
+                            id: 'node' + z + x + y + 2, offsetX: offsetX + extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node3: NodeModel = {
+                            id: 'node' + z + x + y + 3, offsetX: offsetX - extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node4: NodeModel = {
+                            id: 'node' + z + x + y + 4, offsetX: offsetX - extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node5: NodeModel = {
+                            id: 'node' + z + x + y + 5, offsetX: offsetX + extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node6: NodeModel = {
+                            id: 'node' + z + x + y + 6, offsetX: offsetX + extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node7: NodeModel = {
+                            id: 'node' + z + x + y + 7, offsetX: offsetX - extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node8: NodeModel = {
+                            id: 'node' + z + x + y + 8, offsetX: offsetX - extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(node1);
+                        nodes.push(node2);
+                        nodes.push(node3);
+                        nodes.push(node4);
+                        nodes.push(node5);
+                        nodes.push(node6);
+                        nodes.push(node7);
+                        nodes.push(node8);
+
+                        let connector1: ConnectorModel = { id: 'connector' + z + x + y + 1, type: 'Bezier', sourceID: rootnode.id, targetID: node1.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector2: ConnectorModel = { id: 'connector' + z + x + y + 2, type: 'Bezier', sourceID: rootnode.id, targetID: node2.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector3: ConnectorModel = { id: 'connector' + z + x + y + 3, type: 'Bezier', sourceID: rootnode.id, targetID: node3.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector4: ConnectorModel = { id: 'connector' + z + x + y + 4, type: 'Bezier', sourceID: rootnode.id, targetID: node4.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector5: ConnectorModel = { id: 'connector' + z + x + y + 5, type: 'Bezier', sourceID: rootnode.id, targetID: node5.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector6: ConnectorModel = { id: 'connector' + z + x + y + 6, type: 'Bezier', sourceID: rootnode.id, targetID: node6.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector7: ConnectorModel = { id: 'connector' + z + x + y + 7, type: 'Bezier', sourceID: rootnode.id, targetID: node7.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector8: ConnectorModel = { id: 'connector' + z + x + y + 8, type: 'Bezier', sourceID: rootnode.id, targetID: node8.id, targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        connectors.push(connector1);
+                        connectors.push(connector2);
+                        connectors.push(connector3);
+                        connectors.push(connector4);
+                        connectors.push(connector5);
+                        connectors.push(connector6);
+                        connectors.push(connector7);
+                        connectors.push(connector8);
+
+                        offsetX += 350;
+                        extra1 = y == 0 ? 50 : y == 1 ? 65 : 75;
+                    }
+
+                    offsetX = 200 + ((z - 1) * 350 * 4);
+                    offsetY += 350;
+                    extra1 = 25;
+                    extra2 = x == 0 ? 75 : 65;
+                }
+
+                offsetX = 200 + (z * 350 * 4);
+                offsetY = 200;
+                extra2 = 125;
+            }
+
+            diagram = new Diagram({
+                width: 6000, height: 1200, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramBezierSegmentNodeToPortRendering');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Bezier segment - Node to Port Rendering', (done: Function) => {
+            expect(((diagram.connectors[0]).wrapper.children[0] as PathElement).data === 'M225 200C243.5 200 262 193.75 262 187.5C262 181.25 281 175 300 175').toBe(true);
+            expect(((diagram.connectors[1]).wrapper.children[0] as PathElement).data === 'M225 200C243.5 200 262 206.25 262 212.5C262 218.75 281 225 300 225').toBe(true);
+            expect(((diagram.connectors[2]).wrapper.children[0] as PathElement).data === 'M175 200C156.25 200 137.5 181.25 137.5 162.5C137.5 143.75 110.63 125 83.75 125C56.88 125 30 137.5 30 150C30 162.5 40 175 50 175').toBe(true);
+            expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M175 200C156.25 200 137.5 218.75 137.5 237.5C137.5 256.25 110.63 275 83.75 275C56.88 275 30 262.5 30 250C30 237.5 40 225 50 225').toBe(true);
+            expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M200 175C200 156.25 195 137.5 190 137.5C185 137.5 180 121.88 180 106.25C180 90.63 190 75 200 75').toBe(true);
+            expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M200 225C200 243.75 195 262.5 190 262.5C185 262.5 180 278.13 180 293.75C180 309.38 190 325 200 325').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M200 175C200 156.25 182.5 137.5 165 137.5C147.5 137.5 130 121.88 130 106.25C130 90.63 140 75 150 75').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M200 225C200 243.75 182.5 262.5 165 262.5C147.5 262.5 130 278.13 130 293.75C130 309.38 140 325 150 325').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M575 200C593.5 200 612 187.5 612 175C612 162.5 631 150 650 150').toBe(true);
+            expect(((diagram.connectors[9]).wrapper.children[0] as PathElement).data === 'M575 200C593.5 200 612 212.5 612 225C612 237.5 631 250 650 250').toBe(true);
+            expect(((diagram.connectors[10]).wrapper.children[0] as PathElement).data === 'M525 200C452.5 200 380 187.5 380 175C380 162.5 390 150 400 150').toBe(true);
+            expect(((diagram.connectors[11]).wrapper.children[0] as PathElement).data === 'M525 200C452.5 200 380 212.5 380 225C380 237.5 390 250 400 250').toBe(true);
+            expect(((diagram.connectors[12]).wrapper.children[0] as PathElement).data === 'M550 175C550 125 562.5 75 575 75').toBe(true);
+            expect(((diagram.connectors[13]).wrapper.children[0] as PathElement).data === 'M550 225C550 275 562.5 325 575 325').toBe(true);
+            expect(((diagram.connectors[14]).wrapper.children[0] as PathElement).data === 'M550 175C550 156.25 526.25 137.5 502.5 137.5C478.75 137.5 455 121.88 455 106.25C455 90.63 465 75 475 75').toBe(true);
+            expect(((diagram.connectors[15]).wrapper.children[0] as PathElement).data === 'M550 225C550 243.75 526.25 262.5 502.5 262.5C478.75 262.5 455 278.13 455 293.75C455 309.38 465 325 475 325').toBe(true);
+            expect(((diagram.connectors[16]).wrapper.children[0] as PathElement).data === 'M900 175C900 155 950 135 1000 135').toBe(true);
+            expect(((diagram.connectors[17]).wrapper.children[0] as PathElement).data === 'M900 225C900 245 950 265 1000 265').toBe(true);
+            expect(((diagram.connectors[18]).wrapper.children[0] as PathElement).data === 'M900 175C900 171.25 857.5 167.5 815 167.5C772.5 167.5 730 159.38 730 151.25C730 143.13 740 135 750 135').toBe(true);
+            expect(((diagram.connectors[19]).wrapper.children[0] as PathElement).data === 'M900 225C900 228.75 857.5 232.5 815 232.5C772.5 232.5 730 240.63 730 248.75C730 256.88 740 265 750 265').toBe(true);
+            expect(((diagram.connectors[20]).wrapper.children[0] as PathElement).data === 'M900 175C900 125 920 75 940 75').toBe(true);
+            expect(((diagram.connectors[21]).wrapper.children[0] as PathElement).data === 'M900 225C900 275 920 325 940 325').toBe(true);
+            expect(((diagram.connectors[22]).wrapper.children[0] as PathElement).data === 'M900 175C900 156.25 872.5 137.5 845 137.5C817.5 137.5 790 121.88 790 106.25C790 90.63 800 75 810 75').toBe(true);
+            expect(((diagram.connectors[23]).wrapper.children[0] as PathElement).data === 'M900 225C900 243.75 872.5 262.5 845 262.5C817.5 262.5 790 278.13 790 293.75C790 309.38 800 325 810 325').toBe(true);
+            expect(((diagram.connectors[24]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 150 1300 125 1350 125').toBe(true);
+            expect(((diagram.connectors[25]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 250 1300 275 1350 275').toBe(true);
+            expect(((diagram.connectors[26]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 168.75 1207.5 162.5 1165 162.5C1122.5 162.5 1080 153.13 1080 143.75C1080 134.38 1090 125 1100 125').toBe(true);
+            expect(((diagram.connectors[27]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 231.25 1207.5 237.5 1165 237.5C1122.5 237.5 1080 246.88 1080 256.25C1080 265.63 1090 275 1100 275').toBe(true);
+            expect(((diagram.connectors[28]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 125 1275 75 1300 75').toBe(true);
+            expect(((diagram.connectors[29]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 275 1275 325 1300 325').toBe(true);
+            expect(((diagram.connectors[30]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 156.25 1220 137.5 1190 137.5C1160 137.5 1130 121.88 1130 106.25C1130 90.63 1140 75 1150 75').toBe(true);
+            expect(((diagram.connectors[31]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 243.75 1220 262.5 1190 262.5C1160 262.5 1130 278.13 1130 293.75C1130 309.38 1140 325 1150 325').toBe(true);
+            expect(((diagram.connectors[32]).wrapper.children[0] as PathElement).data === 'M225 550C231 550 237 543.75 237 537.5C237 531.25 243.5 525 250 525').toBe(true);
+            expect(((diagram.connectors[33]).wrapper.children[0] as PathElement).data === 'M225 550C231 550 237 556.25 237 562.5C237 568.75 243.5 575 250 575').toBe(true);
+            expect(((diagram.connectors[34]).wrapper.children[0] as PathElement).data === 'M175 550C168.75 550 162.5 531.25 162.5 512.5C162.5 493.75 141.88 475 121.25 475C100.63 475 80 487.5 80 500C80 512.5 90 525 100 525').toBe(true);
+            expect(((diagram.connectors[35]).wrapper.children[0] as PathElement).data === 'M175 550C168.75 550 162.5 568.75 162.5 587.5C162.5 606.25 141.88 625 121.25 625C100.63 625 80 612.5 80 600C80 587.5 90 575 100 575').toBe(true);
+            expect(((diagram.connectors[36]).wrapper.children[0] as PathElement).data === 'M200 525C200 518.75 195 512.5 190 512.5C185 512.5 180 503.13 180 493.75C180 484.38 190 475 200 475').toBe(true);
+            expect(((diagram.connectors[37]).wrapper.children[0] as PathElement).data === 'M200 575C200 581.25 195 587.5 190 587.5C185 587.5 180 596.88 180 606.25C180 615.63 190 625 200 625').toBe(true);
+            expect(((diagram.connectors[38]).wrapper.children[0] as PathElement).data === 'M200 525C200 518.75 182.5 512.5 165 512.5C147.5 512.5 130 503.13 130 493.75C130 484.38 140 475 150 475').toBe(true);
+            expect(((diagram.connectors[39]).wrapper.children[0] as PathElement).data === 'M200 575C200 581.25 182.5 587.5 165 587.5C147.5 587.5 130 596.88 130 606.25C130 615.63 140 625 150 625').toBe(true);
+            expect(((diagram.connectors[40]).wrapper.children[0] as PathElement).data === 'M575 550C581 550 587 537.5 587 525C587 512.5 593.5 500 600 500').toBe(true);
+            expect(((diagram.connectors[41]).wrapper.children[0] as PathElement).data === 'M575 550C581 550 587 562.5 587 575C587 587.5 593.5 600 600 600').toBe(true);
+            expect(((diagram.connectors[42]).wrapper.children[0] as PathElement).data === 'M525 550C477.5 550 430 537.5 430 525C430 512.5 440 500 450 500').toBe(true);
+            expect(((diagram.connectors[43]).wrapper.children[0] as PathElement).data === 'M525 550C477.5 550 430 562.5 430 575C430 587.5 440 600 450 600').toBe(true);
+            expect(((diagram.connectors[44]).wrapper.children[0] as PathElement).data === 'M550 525C550 500 562.5 475 575 475').toBe(true);
+            expect(((diagram.connectors[45]).wrapper.children[0] as PathElement).data === 'M550 575C550 600 562.5 625 575 625').toBe(true);
+            expect(((diagram.connectors[46]).wrapper.children[0] as PathElement).data === 'M550 525C550 518.75 526.25 512.5 502.5 512.5C478.75 512.5 455 503.13 455 493.75C455 484.38 465 475 475 475').toBe(true);
+            expect(((diagram.connectors[47]).wrapper.children[0] as PathElement).data === 'M550 575C550 581.25 526.25 587.5 502.5 587.5C478.75 587.5 455 596.88 455 606.25C455 615.63 465 625 475 625').toBe(true);
+            expect(((diagram.connectors[48]).wrapper.children[0] as PathElement).data === 'M900 525C900 505 925 485 950 485').toBe(true);
+            expect(((diagram.connectors[49]).wrapper.children[0] as PathElement).data === 'M900 575C900 595 925 615 950 615').toBe(true);
+            expect(((diagram.connectors[50]).wrapper.children[0] as PathElement).data === 'M900 525C900 521.25 870 517.5 840 517.5C810 517.5 780 509.38 780 501.25C780 493.13 790 485 800 485').toBe(true);
+            expect(((diagram.connectors[51]).wrapper.children[0] as PathElement).data === 'M900 575C900 578.75 870 582.5 840 582.5C810 582.5 780 590.63 780 598.75C780 606.88 790 615 800 615').toBe(true);
+            expect(((diagram.connectors[52]).wrapper.children[0] as PathElement).data === 'M900 525C900 500 920 475 940 475').toBe(true);
+            expect(((diagram.connectors[53]).wrapper.children[0] as PathElement).data === 'M900 575C900 600 920 625 940 625').toBe(true);
+            expect(((diagram.connectors[54]).wrapper.children[0] as PathElement).data === 'M900 525C900 518.75 872.5 512.5 845 512.5C817.5 512.5 790 503.13 790 493.75C790 484.38 800 475 810 475').toBe(true);
+            expect(((diagram.connectors[55]).wrapper.children[0] as PathElement).data === 'M900 575C900 581.25 872.5 587.5 845 587.5C817.5 587.5 790 596.88 790 606.25C790 615.63 800 625 810 625').toBe(true);
+            expect(((diagram.connectors[56]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 500 1275 475 1300 475').toBe(true);
+            expect(((diagram.connectors[57]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 600 1275 625 1300 625').toBe(true);
+            expect(((diagram.connectors[58]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 518.75 1220 512.5 1190 512.5C1160 512.5 1130 503.13 1130 493.75C1130 484.38 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[59]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581.25 1220 587.5 1190 587.5C1160 587.5 1130 596.88 1130 606.25C1130 615.63 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[60]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 500 1275 475 1300 475').toBe(true);
+            expect(((diagram.connectors[61]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 600 1275 625 1300 625').toBe(true);
+            expect(((diagram.connectors[62]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 518.75 1220 512.5 1190 512.5C1160 512.5 1130 503.13 1130 493.75C1130 484.38 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[63]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581.25 1220 587.5 1190 587.5C1160 587.5 1130 596.88 1130 606.25C1130 615.63 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[64]).wrapper.children[0] as PathElement).data === 'M225 900C228.5 900 232 893.75 232 887.5C232 881.25 236 875 240 875').toBe(true);
+            expect(((diagram.connectors[65]).wrapper.children[0] as PathElement).data === 'M225 900C228.5 900 232 906.25 232 912.5C232 918.75 236 925 240 925').toBe(true);
+            expect(((diagram.connectors[66]).wrapper.children[0] as PathElement).data === 'M175 900C132.5 900 90 888.75 90 877.5C90 866.25 90 855 90 855C90 855 90 860 90 865C90 870 100 875 110 875').toBe(true);
+            expect(((diagram.connectors[67]).wrapper.children[0] as PathElement).data === 'M175 900C132.5 900 90 911.25 90 922.5C90 933.75 90 945 90 945C90 945 90 940 90 935C90 930 100 925 110 925').toBe(true);
+            expect(((diagram.connectors[68]).wrapper.children[0] as PathElement).data === 'M200 875C200 871.25 195 867.5 190 867.5C185 867.5 180 859.38 180 851.25C180 843.13 190 835 200 835').toBe(true);
+            expect(((diagram.connectors[69]).wrapper.children[0] as PathElement).data === 'M200 925C200 928.75 195 932.5 190 932.5C185 932.5 180 940.63 180 948.75C180 956.88 190 965 200 965').toBe(true);
+            expect(((diagram.connectors[70]).wrapper.children[0] as PathElement).data === 'M200 875C200 871.25 182.5 867.5 165 867.5C147.5 867.5 130 859.38 130 851.25C130 843.13 140 835 150 835').toBe(true);
+            expect(((diagram.connectors[71]).wrapper.children[0] as PathElement).data === 'M200 925C200 928.75 182.5 932.5 165 932.5C147.5 932.5 130 940.63 130 948.75C130 956.88 140 965 150 965').toBe(true);
+            expect(((diagram.connectors[72]).wrapper.children[0] as PathElement).data === 'M575 900C578.5 900 582 887.5 582 875C582 862.5 586 850 590 850').toBe(true);
+            expect(((diagram.connectors[73]).wrapper.children[0] as PathElement).data === 'M575 900C578.5 900 582 912.5 582 925C582 937.5 586 950 590 950').toBe(true);
+            expect(((diagram.connectors[74]).wrapper.children[0] as PathElement).data === 'M525 900C482.5 900 440 887.5 440 875C440 862.5 450 850 460 850').toBe(true);
+            expect(((diagram.connectors[75]).wrapper.children[0] as PathElement).data === 'M525 900C482.5 900 440 912.5 440 925C440 937.5 450 950 460 950').toBe(true);
+            expect(((diagram.connectors[76]).wrapper.children[0] as PathElement).data === 'M550 875C550 855 562.5 835 575 835').toBe(true);
+            expect(((diagram.connectors[77]).wrapper.children[0] as PathElement).data === 'M550 925C550 945 562.5 965 575 965').toBe(true);
+            expect(((diagram.connectors[78]).wrapper.children[0] as PathElement).data === 'M550 875C550 871.25 526.25 867.5 502.5 867.5C478.75 867.5 455 859.38 455 851.25C455 843.13 465 835 475 835').toBe(true);
+            expect(((diagram.connectors[79]).wrapper.children[0] as PathElement).data === 'M550 925C550 928.75 526.25 932.5 502.5 932.5C478.75 932.5 455 940.63 455 948.75C455 956.88 465 965 475 965').toBe(true);
+            expect(((diagram.connectors[80]).wrapper.children[0] as PathElement).data === 'M900 875C900 855 920 835 940 835').toBe(true);
+            expect(((diagram.connectors[81]).wrapper.children[0] as PathElement).data === 'M900 925C900 945 920 965 940 965').toBe(true);
+            expect(((diagram.connectors[82]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.25 872.5 867.5 845 867.5C817.5 867.5 790 859.38 790 851.25C790 843.13 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[83]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.75 872.5 932.5 845 932.5C817.5 932.5 790 940.63 790 948.75C790 956.88 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[84]).wrapper.children[0] as PathElement).data === 'M900 875C900 855 920 835 940 835').toBe(true);
+            expect(((diagram.connectors[85]).wrapper.children[0] as PathElement).data === 'M900 925C900 945 920 965 940 965').toBe(true);
+            expect(((diagram.connectors[86]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.25 872.5 867.5 845 867.5C817.5 867.5 790 859.38 790 851.25C790 843.13 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[87]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.75 872.5 932.5 845 932.5C817.5 932.5 790 940.63 790 948.75C790 956.88 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[88]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 850 1270 825 1290 825').toBe(true);
+            expect(((diagram.connectors[89]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 950 1270 975 1290 975').toBe(true);
+            expect(((diagram.connectors[90]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 868.75 1222.5 862.5 1195 862.5C1167.5 862.5 1140 853.13 1140 843.75C1140 834.38 1150 825 1160 825').toBe(true);
+            expect(((diagram.connectors[91]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 931.25 1222.5 937.5 1195 937.5C1167.5 937.5 1140 946.88 1140 956.25C1140 965.63 1150 975 1160 975').toBe(true);
+            expect(((diagram.connectors[92]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 855 1275 835 1300 835').toBe(true);
+            expect(((diagram.connectors[93]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 945 1275 965 1300 965').toBe(true);
+            expect(((diagram.connectors[94]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 871.25 1220 867.5 1190 867.5C1160 867.5 1130 859.38 1130 851.25C1130 843.13 1140 835 1150 835').toBe(true);
+            expect(((diagram.connectors[95]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 928.75 1220 932.5 1190 932.5C1160 932.5 1130 940.63 1130 948.75C1130 956.88 1140 965 1150 965').toBe(true);
+            expect(((diagram.connectors[96]).wrapper.children[0] as PathElement).data === 'M1625 200C1643.75 200 1662.5 182.5 1662.5 165C1662.5 147.5 1678.13 130 1693.75 130C1709.38 130 1725 140 1725 150').toBe(true);
+            expect(((diagram.connectors[97]).wrapper.children[0] as PathElement).data === 'M1625 200C1643.75 200 1662.5 195 1662.5 190C1662.5 185 1678.13 180 1693.75 180C1709.38 180 1725 190 1725 200').toBe(true);
+            expect(((diagram.connectors[98]).wrapper.children[0] as PathElement).data === 'M1575 200C1556.25 200 1537.5 182.5 1537.5 165C1537.5 147.5 1521.88 130 1506.25 130C1490.63 130 1475 140 1475 150').toBe(true);
+            expect(((diagram.connectors[99]).wrapper.children[0] as PathElement).data === 'M1575 200C1556.25 200 1537.5 195 1537.5 190C1537.5 185 1521.88 180 1506.25 180C1490.63 180 1475 190 1475 200').toBe(true);
+            expect(((diagram.connectors[100]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 156.25 1618.75 137.5 1637.5 137.5C1656.25 137.5 1675 110.63 1675 83.75C1675 56.88 1662.5 30 1650 30C1637.5 30 1625 40 1625 50').toBe(true);
+            expect(((diagram.connectors[101]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 243.5 1606.25 262 1612.5 262C1618.75 262 1625 281 1625 300').toBe(true);
+            expect(((diagram.connectors[102]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 156.25 1581.25 137.5 1562.5 137.5C1543.75 137.5 1525 110.63 1525 83.75C1525 56.88 1537.5 30 1550 30C1562.5 30 1575 40 1575 50').toBe(true);
+            expect(((diagram.connectors[103]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 243.5 1593.75 262 1587.5 262C1581.25 262 1575 281 1575 300').toBe(true);
+            expect(((diagram.connectors[104]).wrapper.children[0] as PathElement).data === 'M1975 200C1993.75 200 2012.5 176.25 2012.5 152.5C2012.5 128.75 2028.13 105 2043.75 105C2059.38 105 2075 115 2075 125').toBe(true);
+            expect(((diagram.connectors[105]).wrapper.children[0] as PathElement).data === 'M1975 200C2025 200 2075 212.5 2075 225').toBe(true);
+            expect(((diagram.connectors[106]).wrapper.children[0] as PathElement).data === 'M1925 200C1906.25 200 1887.5 176.25 1887.5 152.5C1887.5 128.75 1871.88 105 1856.25 105C1840.63 105 1825 115 1825 125').toBe(true);
+            expect(((diagram.connectors[107]).wrapper.children[0] as PathElement).data === 'M1925 200C1875 200 1825 212.5 1825 225').toBe(true);
+            expect(((diagram.connectors[108]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 156.25 1975 137.5 2000 137.5C2025 137.5 2050 110.63 2050 83.75C2050 56.88 2037.5 30 2025 30C2012.5 30 2000 40 2000 50').toBe(true);
+            expect(((diagram.connectors[109]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 243.5 1962.5 262 1975 262C1987.5 262 2000 281 2000 300').toBe(true);
+            expect(((diagram.connectors[110]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 156.25 1925 137.5 1900 137.5C1875 137.5 1850 110.63 1850 83.75C1850 56.88 1862.5 30 1875 30C1887.5 30 1900 40 1900 50').toBe(true);
+            expect(((diagram.connectors[111]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 243.5 1937.5 262 1925 262C1912.5 262 1900 281 1900 300').toBe(true);
+            expect(((diagram.connectors[112]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 132.5 2331.25 90 2362.5 90C2393.75 90 2425 100 2425 110').toBe(true);
+            expect(((diagram.connectors[113]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2315.63 245 2331.25 245C2346.88 245 2362.5 238.75 2362.5 232.5C2362.5 226.25 2378.13 220 2393.75 220C2409.38 220 2425 230 2425 240').toBe(true);
+            expect(((diagram.connectors[114]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 132.5 2268.75 90 2237.5 90C2206.25 90 2175 100 2175 110').toBe(true);
+            expect(((diagram.connectors[115]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2284.38 245 2268.75 245C2253.13 245 2237.5 238.75 2237.5 232.5C2237.5 226.25 2221.88 220 2206.25 220C2190.63 220 2175 230 2175 240').toBe(true);
+            expect(((diagram.connectors[116]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 102.5 2316.25 30 2332.5 30C2348.75 30 2365 40 2365 50').toBe(true);
+            expect(((diagram.connectors[117]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 243.5 2316.25 262 2332.5 262C2348.75 262 2365 281 2365 300').toBe(true);
+            expect(((diagram.connectors[118]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 102.5 2283.75 30 2267.5 30C2251.25 30 2235 40 2235 50').toBe(true);
+            expect(((diagram.connectors[119]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 243.5 2283.75 262 2267.5 262C2251.25 262 2235 281 2235 300').toBe(true);
+            expect(((diagram.connectors[120]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 127.5 2681.25 80 2712.5 80C2743.75 80 2775 90 2775 100').toBe(true);
+            expect(((diagram.connectors[121]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2665.63 245 2681.25 245C2696.88 245 2712.5 240 2712.5 235C2712.5 230 2728.13 225 2743.75 225C2759.38 225 2775 237.5 2775 250').toBe(true);
+            expect(((diagram.connectors[122]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 127.5 2618.75 80 2587.5 80C2556.25 80 2525 90 2525 100').toBe(true);
+            expect(((diagram.connectors[123]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2634.38 245 2618.75 245C2603.13 245 2587.5 240 2587.5 235C2587.5 230 2571.88 225 2556.25 225C2540.63 225 2525 237.5 2525 250').toBe(true);
+            expect(((diagram.connectors[124]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 102.5 2668.75 30 2687.5 30C2706.25 30 2725 40 2725 50').toBe(true);
+            expect(((diagram.connectors[125]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 243.5 2668.75 262 2687.5 262C2706.25 262 2725 281 2725 300').toBe(true);
+            expect(((diagram.connectors[126]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 102.5 2631.25 30 2612.5 30C2593.75 30 2575 40 2575 50').toBe(true);
+            expect(((diagram.connectors[127]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 243.5 2631.25 262 2612.5 262C2593.75 262 2575 281 2575 300').toBe(true);
+            expect(((diagram.connectors[128]).wrapper.children[0] as PathElement).data === 'M1625 550C1631.25 550 1637.5 532.5 1637.5 515C1637.5 497.5 1646.88 480 1656.25 480C1665.63 480 1675 490 1675 500').toBe(true);
+            expect(((diagram.connectors[129]).wrapper.children[0] as PathElement).data === 'M1625 550C1631.25 550 1637.5 545 1637.5 540C1637.5 535 1646.88 530 1656.25 530C1665.63 530 1675 540 1675 550').toBe(true);
+            expect(((diagram.connectors[130]).wrapper.children[0] as PathElement).data === 'M1575 550C1568.75 550 1562.5 532.5 1562.5 515C1562.5 497.5 1553.13 480 1543.75 480C1534.38 480 1525 490 1525 500').toBe(true);
+            expect(((diagram.connectors[131]).wrapper.children[0] as PathElement).data === 'M1575 550C1568.75 550 1562.5 545 1562.5 540C1562.5 535 1553.13 530 1543.75 530C1534.38 530 1525 540 1525 550').toBe(true);
+            expect(((diagram.connectors[132]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 518.75 1618.75 512.5 1637.5 512.5C1656.25 512.5 1675 491.88 1675 471.25C1675 450.63 1662.5 430 1650 430C1637.5 430 1625 440 1625 450').toBe(true);
+            expect(((diagram.connectors[133]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 581 1606.25 587 1612.5 587C1618.75 587 1625 593.5 1625 600').toBe(true);
+            expect(((diagram.connectors[134]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 518.75 1581.25 512.5 1562.5 512.5C1543.75 512.5 1525 491.88 1525 471.25C1525 450.63 1537.5 430 1550 430C1562.5 430 1575 440 1575 450').toBe(true);
+            expect(((diagram.connectors[135]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 581 1593.75 587 1587.5 587C1581.25 587 1575 593.5 1575 600').toBe(true);
+            expect(((diagram.connectors[136]).wrapper.children[0] as PathElement).data === 'M1975 550C1981.25 550 1987.5 526.25 1987.5 502.5C1987.5 478.75 1996.88 455 2006.25 455C2015.63 455 2025 465 2025 475').toBe(true);
+            expect(((diagram.connectors[137]).wrapper.children[0] as PathElement).data === 'M1975 550C2000 550 2025 562.5 2025 575').toBe(true);
+            expect(((diagram.connectors[138]).wrapper.children[0] as PathElement).data === 'M1925 550C1918.75 550 1912.5 526.25 1912.5 502.5C1912.5 478.75 1903.13 455 1893.75 455C1884.38 455 1875 465 1875 475').toBe(true);
+            expect(((diagram.connectors[139]).wrapper.children[0] as PathElement).data === 'M1925 550C1900 550 1875 562.5 1875 575').toBe(true);
+            expect(((diagram.connectors[140]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 518.75 1975 512.5 2000 512.5C2025 512.5 2050 491.88 2050 471.25C2050 450.63 2037.5 430 2025 430C2012.5 430 2000 440 2000 450').toBe(true);
+            expect(((diagram.connectors[141]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 581 1962.5 587 1975 587C1987.5 587 2000 593.5 2000 600').toBe(true);
+            expect(((diagram.connectors[142]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 518.75 1925 512.5 1900 512.5C1875 512.5 1850 491.88 1850 471.25C1850 450.63 1862.5 430 1875 430C1887.5 430 1900 440 1900 450').toBe(true);
+            expect(((diagram.connectors[143]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 581 1937.5 587 1925 587C1912.5 587 1900 593.5 1900 600').toBe(true);
+            expect(((diagram.connectors[144]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 482.5 2318.75 440 2337.5 440C2356.25 440 2375 450 2375 460').toBe(true);
+            expect(((diagram.connectors[145]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 578.5 2318.75 582 2337.5 582C2356.25 582 2375 586 2375 590').toBe(true);
+            expect(((diagram.connectors[146]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 482.5 2281.25 440 2262.5 440C2243.75 440 2225 450 2225 460').toBe(true);
+            expect(((diagram.connectors[147]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 578.5 2281.25 582 2262.5 582C2243.75 582 2225 586 2225 590').toBe(true);
+            expect(((diagram.connectors[148]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 477.5 2316.25 430 2332.5 430C2348.75 430 2365 440 2365 450').toBe(true);
+            expect(((diagram.connectors[149]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 581 2316.25 587 2332.5 587C2348.75 587 2365 593.5 2365 600').toBe(true);
+            expect(((diagram.connectors[150]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 477.5 2283.75 430 2267.5 430C2251.25 430 2235 440 2235 450').toBe(true);
+            expect(((diagram.connectors[151]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 581 2283.75 587 2267.5 587C2251.25 587 2235 593.5 2235 600').toBe(true);
+            expect(((diagram.connectors[152]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2668.75 430 2687.5 430C2706.25 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[153]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2668.75 587 2687.5 587C2706.25 587 2725 593.5 2725 600').toBe(true);
+            expect(((diagram.connectors[154]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2631.25 430 2612.5 430C2593.75 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[155]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2631.25 587 2612.5 587C2593.75 587 2575 593.5 2575 600').toBe(true);
+            expect(((diagram.connectors[156]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2668.75 430 2687.5 430C2706.25 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[157]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2668.75 587 2687.5 587C2706.25 587 2725 593.5 2725 600').toBe(true);
+            expect(((diagram.connectors[158]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2631.25 430 2612.5 430C2593.75 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[159]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2631.25 587 2612.5 587C2593.75 587 2575 593.5 2575 600').toBe(true);
+            expect(((diagram.connectors[160]).wrapper.children[0] as PathElement).data === 'M1625 900C1628.75 900 1632.5 882.5 1632.5 865C1632.5 847.5 1640.63 830 1648.75 830C1656.88 830 1665 840 1665 850').toBe(true);
+            expect(((diagram.connectors[161]).wrapper.children[0] as PathElement).data === 'M1625 900C1628.75 900 1632.5 895 1632.5 890C1632.5 885 1640.63 880 1648.75 880C1656.88 880 1665 890 1665 900').toBe(true);
+            expect(((diagram.connectors[162]).wrapper.children[0] as PathElement).data === 'M1575 900C1571.25 900 1567.5 882.5 1567.5 865C1567.5 847.5 1559.38 830 1551.25 830C1543.13 830 1535 840 1535 850').toBe(true);
+            expect(((diagram.connectors[163]).wrapper.children[0] as PathElement).data === 'M1575 900C1571.25 900 1567.5 895 1567.5 890C1567.5 885 1559.38 880 1551.25 880C1543.13 880 1535 890 1535 900').toBe(true);
+            expect(((diagram.connectors[164]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 832.5 1611.25 790 1622.5 790C1633.75 790 1645 790 1645 790C1645 790 1640 790 1635 790C1630 790 1625 800 1625 810').toBe(true);
+            expect(((diagram.connectors[165]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 928.5 1606.25 932 1612.5 932C1618.75 932 1625 936 1625 940').toBe(true);
+            expect(((diagram.connectors[166]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 832.5 1588.75 790 1577.5 790C1566.25 790 1555 790 1555 790C1555 790 1560 790 1565 790C1570 790 1575 800 1575 810').toBe(true);
+            expect(((diagram.connectors[167]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 928.5 1593.75 932 1587.5 932C1581.25 932 1575 936 1575 940').toBe(true);
+            expect(((diagram.connectors[168]).wrapper.children[0] as PathElement).data === 'M1975 900C1978.75 900 1982.5 876.25 1982.5 852.5C1982.5 828.75 1990.63 805 1998.75 805C2006.88 805 2015 815 2015 825').toBe(true);
+            expect(((diagram.connectors[169]).wrapper.children[0] as PathElement).data === 'M1975 900C1995 900 2015 912.5 2015 925').toBe(true);
+            expect(((diagram.connectors[170]).wrapper.children[0] as PathElement).data === 'M1925 900C1921.25 900 1917.5 876.25 1917.5 852.5C1917.5 828.75 1909.38 805 1901.25 805C1893.13 805 1885 815 1885 825').toBe(true);
+            expect(((diagram.connectors[171]).wrapper.children[0] as PathElement).data === 'M1925 900C1905 900 1885 912.5 1885 925').toBe(true);
+            expect(((diagram.connectors[172]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 832.5 1961.25 790 1972.5 790C1983.75 790 1995 785 1995 780C1995 775 1996.25 770 1997.5 770C1998.75 770 2000 790 2000 810').toBe(true);
+            expect(((diagram.connectors[173]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 928.5 1962.5 932 1975 932C1987.5 932 2000 936 2000 940').toBe(true);
+            expect(((diagram.connectors[174]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 832.5 1938.75 790 1927.5 790C1916.25 790 1905 785 1905 780C1905 775 1903.75 770 1902.5 770C1901.25 770 1900 790 1900 810').toBe(true);
+            expect(((diagram.connectors[175]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 928.5 1937.5 932 1925 932C1912.5 932 1900 936 1900 940').toBe(true);
+            expect(((diagram.connectors[176]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2316.25 790 2332.5 790C2348.75 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[177]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2316.25 932 2332.5 932C2348.75 932 2365 936 2365 940').toBe(true);
+            expect(((diagram.connectors[178]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2283.75 790 2267.5 790C2251.25 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[179]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2283.75 932 2267.5 932C2251.25 932 2235 936 2235 940').toBe(true);
+            expect(((diagram.connectors[180]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2316.25 790 2332.5 790C2348.75 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[181]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2316.25 932 2332.5 932C2348.75 932 2365 936 2365 940').toBe(true);
+            expect(((diagram.connectors[182]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2283.75 790 2267.5 790C2251.25 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[183]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2283.75 932 2267.5 932C2251.25 932 2235 936 2235 940').toBe(true);
+            expect(((diagram.connectors[184]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 827.5 2666.25 780 2682.5 780C2698.75 780 2715 790 2715 800').toBe(true);
+            expect(((diagram.connectors[185]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 931 2666.25 937 2682.5 937C2698.75 937 2715 943.5 2715 950').toBe(true);
+            expect(((diagram.connectors[186]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 827.5 2633.75 780 2617.5 780C2601.25 780 2585 790 2585 800').toBe(true);
+            expect(((diagram.connectors[187]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 931 2633.75 937 2617.5 937C2601.25 937 2585 943.5 2585 950').toBe(true);
+            expect(((diagram.connectors[188]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 832.5 2668.75 790 2687.5 790C2706.25 790 2725 800 2725 810').toBe(true);
+            expect(((diagram.connectors[189]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 928.5 2668.75 932 2687.5 932C2706.25 932 2725 936 2725 940').toBe(true);
+            expect(((diagram.connectors[190]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 832.5 2631.25 790 2612.5 790C2593.75 790 2575 800 2575 810').toBe(true);
+            expect(((diagram.connectors[191]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 928.5 2631.25 932 2612.5 932C2593.75 932 2575 936 2575 940').toBe(true);
+            expect(((diagram.connectors[192]).wrapper.children[0] as PathElement).data === 'M3025 200C3097.5 200 3170 193.75 3170 187.5C3170 181.25 3160 175 3150 175').toBe(true);
+            expect(((diagram.connectors[193]).wrapper.children[0] as PathElement).data === 'M3025 200C3097.5 200 3170 206.25 3170 212.5C3170 218.75 3160 225 3150 225').toBe(true);
+            expect(((diagram.connectors[194]).wrapper.children[0] as PathElement).data === 'M2975 200C2956.5 200 2938 193.75 2938 187.5C2938 181.25 2919 175 2900 175').toBe(true);
+            expect(((diagram.connectors[195]).wrapper.children[0] as PathElement).data === 'M2975 200C2956.5 200 2938 206.25 2938 212.5C2938 218.75 2919 225 2900 225').toBe(true);
+            expect(((diagram.connectors[196]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 156.25 3017.5 137.5 3035 137.5C3052.5 137.5 3070 121.88 3070 106.25C3070 90.63 3060 75 3050 75').toBe(true);
+            expect(((diagram.connectors[197]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 243.75 3017.5 262.5 3035 262.5C3052.5 262.5 3070 278.13 3070 293.75C3070 309.38 3060 325 3050 325').toBe(true);
+            expect(((diagram.connectors[198]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 156.25 3005 137.5 3010 137.5C3015 137.5 3020 121.88 3020 106.25C3020 90.63 3010 75 3000 75').toBe(true);
+            expect(((diagram.connectors[199]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 243.75 3005 262.5 3010 262.5C3015 262.5 3020 278.13 3020 293.75C3020 309.38 3010 325 3000 325').toBe(true);
+            expect(((diagram.connectors[200]).wrapper.children[0] as PathElement).data === 'M3375 200C3447.5 200 3520 187.5 3520 175C3520 162.5 3510 150 3500 150').toBe(true);
+            expect(((diagram.connectors[201]).wrapper.children[0] as PathElement).data === 'M3375 200C3447.5 200 3520 212.5 3520 225C3520 237.5 3510 250 3500 250').toBe(true);
+            expect(((diagram.connectors[202]).wrapper.children[0] as PathElement).data === 'M3325 200C3306.5 200 3288 187.5 3288 175C3288 162.5 3269 150 3250 150').toBe(true);
+            expect(((diagram.connectors[203]).wrapper.children[0] as PathElement).data === 'M3325 200C3306.5 200 3288 212.5 3288 225C3288 237.5 3269 250 3250 250').toBe(true);
+            expect(((diagram.connectors[204]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 156.25 3373.75 137.5 3397.5 137.5C3421.25 137.5 3445 121.88 3445 106.25C3445 90.63 3435 75 3425 75').toBe(true);
+            expect(((diagram.connectors[205]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 243.75 3373.75 262.5 3397.5 262.5C3421.25 262.5 3445 278.13 3445 293.75C3445 309.38 3435 325 3425 325').toBe(true);
+            expect(((diagram.connectors[206]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 125 3337.5 75 3325 75').toBe(true);
+            expect(((diagram.connectors[207]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 275 3337.5 325 3325 325').toBe(true);
+            expect(((diagram.connectors[208]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 171.25 3742.5 167.5 3785 167.5C3827.5 167.5 3870 159.38 3870 151.25C3870 143.13 3860 135 3850 135').toBe(true);
+            expect(((diagram.connectors[209]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 228.75 3742.5 232.5 3785 232.5C3827.5 232.5 3870 240.63 3870 248.75C3870 256.88 3860 265 3850 265').toBe(true);
+            expect(((diagram.connectors[210]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 155 3650 135 3600 135').toBe(true);
+            expect(((diagram.connectors[211]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 245 3650 265 3600 265').toBe(true);
+            expect(((diagram.connectors[212]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 156.25 3727.5 137.5 3755 137.5C3782.5 137.5 3810 121.88 3810 106.25C3810 90.63 3800 75 3790 75').toBe(true);
+            expect(((diagram.connectors[213]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 243.75 3727.5 262.5 3755 262.5C3782.5 262.5 3810 278.13 3810 293.75C3810 309.38 3800 325 3790 325').toBe(true);
+            expect(((diagram.connectors[214]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 125 3680 75 3660 75').toBe(true);
+            expect(((diagram.connectors[215]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 275 3680 325 3660 325').toBe(true);
+            expect(((diagram.connectors[216]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 168.75 4092.5 162.5 4135 162.5C4177.5 162.5 4220 153.13 4220 143.75C4220 134.38 4210 125 4200 125').toBe(true);
+            expect(((diagram.connectors[217]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 231.25 4092.5 237.5 4135 237.5C4177.5 237.5 4220 246.88 4220 256.25C4220 265.63 4210 275 4200 275').toBe(true);
+            expect(((diagram.connectors[218]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 150 4000 125 3950 125').toBe(true);
+            expect(((diagram.connectors[219]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 250 4000 275 3950 275').toBe(true);
+            expect(((diagram.connectors[220]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 156.25 4080 137.5 4110 137.5C4140 137.5 4170 121.88 4170 106.25C4170 90.63 4160 75 4150 75').toBe(true);
+            expect(((diagram.connectors[221]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 243.75 4080 262.5 4110 262.5C4140 262.5 4170 278.13 4170 293.75C4170 309.38 4160 325 4150 325').toBe(true);
+            expect(((diagram.connectors[222]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 125 4025 75 4000 75').toBe(true);
+            expect(((diagram.connectors[223]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 275 4025 325 4000 325').toBe(true);
+            expect(((diagram.connectors[224]).wrapper.children[0] as PathElement).data === 'M3025 550C3072.5 550 3120 543.75 3120 537.5C3120 531.25 3110 525 3100 525').toBe(true);
+            expect(((diagram.connectors[225]).wrapper.children[0] as PathElement).data === 'M3025 550C3072.5 550 3120 556.25 3120 562.5C3120 568.75 3110 575 3100 575').toBe(true);
+            expect(((diagram.connectors[226]).wrapper.children[0] as PathElement).data === 'M2975 550C2969 550 2963 543.75 2963 537.5C2963 531.25 2956.5 525 2950 525').toBe(true);
+            expect(((diagram.connectors[227]).wrapper.children[0] as PathElement).data === 'M2975 550C2969 550 2963 556.25 2963 562.5C2963 568.75 2956.5 575 2950 575').toBe(true);
+            expect(((diagram.connectors[228]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 518.75 3017.5 512.5 3035 512.5C3052.5 512.5 3070 503.13 3070 493.75C3070 484.38 3060 475 3050 475').toBe(true);
+            expect(((diagram.connectors[229]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 581.25 3017.5 587.5 3035 587.5C3052.5 587.5 3070 596.88 3070 606.25C3070 615.63 3060 625 3050 625').toBe(true);
+            expect(((diagram.connectors[230]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 518.75 3005 512.5 3010 512.5C3015 512.5 3020 503.13 3020 493.75C3020 484.38 3010 475 3000 475').toBe(true);
+            expect(((diagram.connectors[231]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 581.25 3005 587.5 3010 587.5C3015 587.5 3020 596.88 3020 606.25C3020 615.63 3010 625 3000 625').toBe(true);
+            expect(((diagram.connectors[232]).wrapper.children[0] as PathElement).data === 'M3375 550C3422.5 550 3470 537.5 3470 525C3470 512.5 3460 500 3450 500').toBe(true);
+            expect(((diagram.connectors[233]).wrapper.children[0] as PathElement).data === 'M3375 550C3422.5 550 3470 562.5 3470 575C3470 587.5 3460 600 3450 600').toBe(true);
+            expect(((diagram.connectors[234]).wrapper.children[0] as PathElement).data === 'M3325 550C3319 550 3313 537.5 3313 525C3313 512.5 3306.5 500 3300 500').toBe(true);
+            expect(((diagram.connectors[235]).wrapper.children[0] as PathElement).data === 'M3325 550C3319 550 3313 562.5 3313 575C3313 587.5 3306.5 600 3300 600').toBe(true);
+            expect(((diagram.connectors[236]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 518.75 3373.75 512.5 3397.5 512.5C3421.25 512.5 3445 503.13 3445 493.75C3445 484.38 3435 475 3425 475').toBe(true);
+            expect(((diagram.connectors[237]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 581.25 3373.75 587.5 3397.5 587.5C3421.25 587.5 3445 596.88 3445 606.25C3445 615.63 3435 625 3425 625').toBe(true);
+            expect(((diagram.connectors[238]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 500 3337.5 475 3325 475').toBe(true);
+            expect(((diagram.connectors[239]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 600 3337.5 625 3325 625').toBe(true);
+            expect(((diagram.connectors[240]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 521.25 3730 517.5 3760 517.5C3790 517.5 3820 509.38 3820 501.25C3820 493.13 3810 485 3800 485').toBe(true);
+            expect(((diagram.connectors[241]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 578.75 3730 582.5 3760 582.5C3790 582.5 3820 590.63 3820 598.75C3820 606.88 3810 615 3800 615').toBe(true);
+            expect(((diagram.connectors[242]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 505 3675 485 3650 485').toBe(true);
+            expect(((diagram.connectors[243]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 595 3675 615 3650 615').toBe(true);
+            expect(((diagram.connectors[244]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 518.75 3727.5 512.5 3755 512.5C3782.5 512.5 3810 503.13 3810 493.75C3810 484.38 3800 475 3790 475').toBe(true);
+            expect(((diagram.connectors[245]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 581.25 3727.5 587.5 3755 587.5C3782.5 587.5 3810 596.88 3810 606.25C3810 615.63 3800 625 3790 625').toBe(true);
+            expect(((diagram.connectors[246]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 500 3680 475 3660 475').toBe(true);
+            expect(((diagram.connectors[247]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 600 3680 625 3660 625').toBe(true);
+            expect(((diagram.connectors[248]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 518.75 4080 512.5 4110 512.5C4140 512.5 4170 503.13 4170 493.75C4170 484.38 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[249]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 581.25 4080 587.5 4110 587.5C4140 587.5 4170 596.88 4170 606.25C4170 615.63 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[250]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 500 4025 475 4000 475').toBe(true);
+            expect(((diagram.connectors[251]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 600 4025 625 4000 625').toBe(true);
+            expect(((diagram.connectors[252]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 518.75 4080 512.5 4110 512.5C4140 512.5 4170 503.13 4170 493.75C4170 484.38 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[253]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 581.25 4080 587.5 4110 587.5C4140 587.5 4170 596.88 4170 606.25C4170 615.63 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[254]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 500 4025 475 4000 475').toBe(true);
+            expect(((diagram.connectors[255]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 600 4025 625 4000 625').toBe(true);
+            expect(((diagram.connectors[256]).wrapper.children[0] as PathElement).data === 'M3025 900C3067.5 900 3110 893.75 3110 887.5C3110 881.25 3100 875 3090 875').toBe(true);
+            expect(((diagram.connectors[257]).wrapper.children[0] as PathElement).data === 'M3025 900C3067.5 900 3110 906.25 3110 912.5C3110 918.75 3100 925 3090 925').toBe(true);
+            expect(((diagram.connectors[258]).wrapper.children[0] as PathElement).data === 'M2975 900C2971.5 900 2968 893.75 2968 887.5C2968 881.25 2964 875 2960 875').toBe(true);
+            expect(((diagram.connectors[259]).wrapper.children[0] as PathElement).data === 'M2975 900C2971.5 900 2968 906.25 2968 912.5C2968 918.75 2964 925 2960 925').toBe(true);
+            expect(((diagram.connectors[260]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 871.25 3017.5 867.5 3035 867.5C3052.5 867.5 3070 859.38 3070 851.25C3070 843.13 3060 835 3050 835').toBe(true);
+            expect(((diagram.connectors[261]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 928.75 3017.5 932.5 3035 932.5C3052.5 932.5 3070 940.63 3070 948.75C3070 956.88 3060 965 3050 965').toBe(true);
+            expect(((diagram.connectors[262]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 871.25 3005 867.5 3010 867.5C3015 867.5 3020 859.38 3020 851.25C3020 843.13 3010 835 3000 835').toBe(true);
+            expect(((diagram.connectors[263]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 928.75 3005 932.5 3010 932.5C3015 932.5 3020 940.63 3020 948.75C3020 956.88 3010 965 3000 965').toBe(true);
+            expect(((diagram.connectors[264]).wrapper.children[0] as PathElement).data === 'M3375 900C3417.5 900 3460 887.5 3460 875C3460 862.5 3450 850 3440 850').toBe(true);
+            expect(((diagram.connectors[265]).wrapper.children[0] as PathElement).data === 'M3375 900C3417.5 900 3460 912.5 3460 925C3460 937.5 3450 950 3440 950').toBe(true);
+            expect(((diagram.connectors[266]).wrapper.children[0] as PathElement).data === 'M3325 900C3321.5 900 3318 887.5 3318 875C3318 862.5 3314 850 3310 850').toBe(true);
+            expect(((diagram.connectors[267]).wrapper.children[0] as PathElement).data === 'M3325 900C3321.5 900 3318 912.5 3318 925C3318 937.5 3314 950 3310 950').toBe(true);
+            expect(((diagram.connectors[268]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 871.25 3373.75 867.5 3397.5 867.5C3421.25 867.5 3445 859.38 3445 851.25C3445 843.13 3435 835 3425 835').toBe(true);
+            expect(((diagram.connectors[269]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 928.75 3373.75 932.5 3397.5 932.5C3421.25 932.5 3445 940.63 3445 948.75C3445 956.88 3435 965 3425 965').toBe(true);
+            expect(((diagram.connectors[270]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 855 3337.5 835 3325 835').toBe(true);
+            expect(((diagram.connectors[271]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 945 3337.5 965 3325 965').toBe(true);
+            expect(((diagram.connectors[272]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 871.25 3727.5 867.5 3755 867.5C3782.5 867.5 3810 859.38 3810 851.25C3810 843.13 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[273]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 928.75 3727.5 932.5 3755 932.5C3782.5 932.5 3810 940.63 3810 948.75C3810 956.88 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[274]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 855 3680 835 3660 835').toBe(true);
+            expect(((diagram.connectors[275]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 945 3680 965 3660 965').toBe(true);
+            expect(((diagram.connectors[276]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 871.25 3727.5 867.5 3755 867.5C3782.5 867.5 3810 859.38 3810 851.25C3810 843.13 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[277]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 928.75 3727.5 932.5 3755 932.5C3782.5 932.5 3810 940.63 3810 948.75C3810 956.88 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[278]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 855 3680 835 3660 835').toBe(true);
+            expect(((diagram.connectors[279]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 945 3680 965 3660 965').toBe(true);
+            expect(((diagram.connectors[280]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 868.75 4077.5 862.5 4105 862.5C4132.5 862.5 4160 853.13 4160 843.75C4160 834.38 4150 825 4140 825').toBe(true);
+            expect(((diagram.connectors[281]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 931.25 4077.5 937.5 4105 937.5C4132.5 937.5 4160 946.88 4160 956.25C4160 965.63 4150 975 4140 975').toBe(true);
+            expect(((diagram.connectors[282]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 850 4030 825 4010 825').toBe(true);
+            expect(((diagram.connectors[283]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 950 4030 975 4010 975').toBe(true);
+            expect(((diagram.connectors[284]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 871.25 4080 867.5 4110 867.5C4140 867.5 4170 859.38 4170 851.25C4170 843.13 4160 835 4150 835').toBe(true);
+            expect(((diagram.connectors[285]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 928.75 4080 932.5 4110 932.5C4140 932.5 4170 940.63 4170 948.75C4170 956.88 4160 965 4150 965').toBe(true);
+            expect(((diagram.connectors[286]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 855 4025 835 4000 835').toBe(true);
+            expect(((diagram.connectors[287]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 945 4025 965 4000 965').toBe(true);
+            expect(((diagram.connectors[288]).wrapper.children[0] as PathElement).data === 'M4425 200C4443.75 200 4462.5 205 4462.5 210C4462.5 215 4478.13 220 4493.75 220C4509.38 220 4525 210 4525 200').toBe(true);
+            expect(((diagram.connectors[289]).wrapper.children[0] as PathElement).data === 'M4425 200C4443.75 200 4462.5 217.5 4462.5 235C4462.5 252.5 4478.13 270 4493.75 270C4509.38 270 4525 260 4525 250').toBe(true);
+            expect(((diagram.connectors[290]).wrapper.children[0] as PathElement).data === 'M4375 200C4356.25 200 4337.5 205 4337.5 210C4337.5 215 4321.88 220 4306.25 220C4290.63 220 4275 210 4275 200').toBe(true);
+            expect(((diagram.connectors[291]).wrapper.children[0] as PathElement).data === 'M4375 200C4356.25 200 4337.5 217.5 4337.5 235C4337.5 252.5 4321.88 270 4306.25 270C4290.63 270 4275 260 4275 250').toBe(true);
+            expect(((diagram.connectors[292]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 156.5 4406.25 138 4412.5 138C4418.75 138 4425 119 4425 100').toBe(true);
+            expect(((diagram.connectors[293]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 243.75 4418.75 262.5 4437.5 262.5C4456.25 262.5 4475 289.38 4475 316.25C4475 343.13 4462.5 370 4450 370C4437.5 370 4425 360 4425 350').toBe(true);
+            expect(((diagram.connectors[294]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 156.5 4393.75 138 4387.5 138C4381.25 138 4375 119 4375 100').toBe(true);
+            expect(((diagram.connectors[295]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 243.75 4381.25 262.5 4362.5 262.5C4343.75 262.5 4325 289.38 4325 316.25C4325 343.13 4337.5 370 4350 370C4362.5 370 4375 360 4375 350').toBe(true);
+            expect(((diagram.connectors[296]).wrapper.children[0] as PathElement).data === 'M4775 200C4825 200 4875 187.5 4875 175').toBe(true);
+            expect(((diagram.connectors[297]).wrapper.children[0] as PathElement).data === 'M4775 200C4793.75 200 4812.5 223.75 4812.5 247.5C4812.5 271.25 4828.13 295 4843.75 295C4859.38 295 4875 285 4875 275').toBe(true);
+            expect(((diagram.connectors[298]).wrapper.children[0] as PathElement).data === 'M4725 200C4675 200 4625 187.5 4625 175').toBe(true);
+            expect(((diagram.connectors[299]).wrapper.children[0] as PathElement).data === 'M4725 200C4706.25 200 4687.5 223.75 4687.5 247.5C4687.5 271.25 4671.88 295 4656.25 295C4640.63 295 4625 285 4625 275').toBe(true);
+            expect(((diagram.connectors[300]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 156.5 4762.5 138 4775 138C4787.5 138 4800 119 4800 100').toBe(true);
+            expect(((diagram.connectors[301]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 297.5 4762.5 370 4775 370C4787.5 370 4800 360 4800 350').toBe(true);
+            expect(((diagram.connectors[302]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 156.5 4737.5 138 4725 138C4712.5 138 4700 119 4700 100').toBe(true);
+            expect(((diagram.connectors[303]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 297.5 4737.5 370 4725 370C4712.5 370 4700 360 4700 350').toBe(true);
+            expect(((diagram.connectors[304]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5115.63 155 5131.25 155C5146.88 155 5162.5 161.25 5162.5 167.5C5162.5 173.75 5178.13 180 5193.75 180C5209.38 180 5225 170 5225 160').toBe(true);
+            expect(((diagram.connectors[305]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 267.5 5131.25 310 5162.5 310C5193.75 310 5225 300 5225 290').toBe(true);
+            expect(((diagram.connectors[306]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5084.38 155 5068.75 155C5053.13 155 5037.5 161.25 5037.5 167.5C5037.5 173.75 5021.88 180 5006.25 180C4990.63 180 4975 170 4975 160').toBe(true);
+            expect(((diagram.connectors[307]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 267.5 5068.75 310 5037.5 310C5006.25 310 4975 300 4975 290').toBe(true);
+            expect(((diagram.connectors[308]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 156.5 5116.25 138 5132.5 138C5148.75 138 5165 119 5165 100').toBe(true);
+            expect(((diagram.connectors[309]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 297.5 5116.25 370 5132.5 370C5148.75 370 5165 360 5165 350').toBe(true);
+            expect(((diagram.connectors[310]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 156.5 5083.75 138 5067.5 138C5051.25 138 5035 119 5035 100').toBe(true);
+            expect(((diagram.connectors[311]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 297.5 5083.75 370 5067.5 370C5051.25 370 5035 360 5035 350').toBe(true);
+            expect(((diagram.connectors[312]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5465.63 155 5481.25 155C5496.88 155 5512.5 160 5512.5 165C5512.5 170 5528.13 175 5543.75 175C5559.38 175 5575 162.5 5575 150').toBe(true);
+            expect(((diagram.connectors[313]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 272.5 5481.25 320 5512.5 320C5543.75 320 5575 310 5575 300').toBe(true);
+            expect(((diagram.connectors[314]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5434.38 155 5418.75 155C5403.13 155 5387.5 160 5387.5 165C5387.5 170 5371.88 175 5356.25 175C5340.63 175 5325 162.5 5325 150').toBe(true);
+            expect(((diagram.connectors[315]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 272.5 5418.75 320 5387.5 320C5356.25 320 5325 310 5325 300').toBe(true);
+            expect(((diagram.connectors[316]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 156.5 5468.75 138 5487.5 138C5506.25 138 5525 119 5525 100').toBe(true);
+            expect(((diagram.connectors[317]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 297.5 5468.75 370 5487.5 370C5506.25 370 5525 360 5525 350').toBe(true);
+            expect(((diagram.connectors[318]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 156.5 5431.25 138 5412.5 138C5393.75 138 5375 119 5375 100').toBe(true);
+            expect(((diagram.connectors[319]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 297.5 5431.25 370 5412.5 370C5393.75 370 5375 360 5375 350').toBe(true);
+            expect(((diagram.connectors[320]).wrapper.children[0] as PathElement).data === 'M4425 550C4431.25 550 4437.5 555 4437.5 560C4437.5 565 4446.88 570 4456.25 570C4465.63 570 4475 560 4475 550').toBe(true);
+            expect(((diagram.connectors[321]).wrapper.children[0] as PathElement).data === 'M4425 550C4431.25 550 4437.5 567.5 4437.5 585C4437.5 602.5 4446.88 620 4456.25 620C4465.63 620 4475 610 4475 600').toBe(true);
+            expect(((diagram.connectors[322]).wrapper.children[0] as PathElement).data === 'M4375 550C4368.75 550 4362.5 555 4362.5 560C4362.5 565 4353.13 570 4343.75 570C4334.38 570 4325 560 4325 550').toBe(true);
+            expect(((diagram.connectors[323]).wrapper.children[0] as PathElement).data === 'M4375 550C4368.75 550 4362.5 567.5 4362.5 585C4362.5 602.5 4353.13 620 4343.75 620C4334.38 620 4325 610 4325 600').toBe(true);
+            expect(((diagram.connectors[324]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 519 4406.25 513 4412.5 513C4418.75 513 4425 506.5 4425 500').toBe(true);
+            expect(((diagram.connectors[325]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 581.25 4418.75 587.5 4437.5 587.5C4456.25 587.5 4475 608.13 4475 628.75C4475 649.38 4462.5 670 4450 670C4437.5 670 4425 660 4425 650').toBe(true);
+            expect(((diagram.connectors[326]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 519 4393.75 513 4387.5 513C4381.25 513 4375 506.5 4375 500').toBe(true);
+            expect(((diagram.connectors[327]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 581.25 4381.25 587.5 4362.5 587.5C4343.75 587.5 4325 608.13 4325 628.75C4325 649.38 4337.5 670 4350 670C4362.5 670 4375 660 4375 650').toBe(true);
+            expect(((diagram.connectors[328]).wrapper.children[0] as PathElement).data === 'M4775 550C4800 550 4825 537.5 4825 525').toBe(true);
+            expect(((diagram.connectors[329]).wrapper.children[0] as PathElement).data === 'M4775 550C4781.25 550 4787.5 573.75 4787.5 597.5C4787.5 621.25 4796.88 645 4806.25 645C4815.63 645 4825 635 4825 625').toBe(true);
+            expect(((diagram.connectors[330]).wrapper.children[0] as PathElement).data === 'M4725 550C4700 550 4675 537.5 4675 525').toBe(true);
+            expect(((diagram.connectors[331]).wrapper.children[0] as PathElement).data === 'M4725 550C4718.75 550 4712.5 573.75 4712.5 597.5C4712.5 621.25 4703.13 645 4693.75 645C4684.38 645 4675 635 4675 625').toBe(true);
+            expect(((diagram.connectors[332]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 519 4762.5 513 4775 513C4787.5 513 4800 506.5 4800 500').toBe(true);
+            expect(((diagram.connectors[333]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 622.5 4762.5 670 4775 670C4787.5 670 4800 660 4800 650').toBe(true);
+            expect(((diagram.connectors[334]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 519 4737.5 513 4725 513C4712.5 513 4700 506.5 4700 500').toBe(true);
+            expect(((diagram.connectors[335]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 622.5 4737.5 670 4725 670C4712.5 670 4700 660 4700 650').toBe(true);
+            expect(((diagram.connectors[336]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 521.5 5118.75 518 5137.5 518C5156.25 518 5175 514 5175 510').toBe(true);
+            expect(((diagram.connectors[337]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 617.5 5118.75 660 5137.5 660C5156.25 660 5175 650 5175 640').toBe(true);
+            expect(((diagram.connectors[338]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 521.5 5081.25 518 5062.5 518C5043.75 518 5025 514 5025 510').toBe(true);
+            expect(((diagram.connectors[339]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 617.5 5081.25 660 5062.5 660C5043.75 660 5025 650 5025 640').toBe(true);
+            expect(((diagram.connectors[340]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 519 5116.25 513 5132.5 513C5148.75 513 5165 506.5 5165 500').toBe(true);
+            expect(((diagram.connectors[341]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 622.5 5116.25 670 5132.5 670C5148.75 670 5165 660 5165 650').toBe(true);
+            expect(((diagram.connectors[342]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 519 5083.75 513 5067.5 513C5051.25 513 5035 506.5 5035 500').toBe(true);
+            expect(((diagram.connectors[343]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 622.5 5083.75 670 5067.5 670C5051.25 670 5035 660 5035 650').toBe(true);
+            expect(((diagram.connectors[344]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5468.75 513 5487.5 513C5506.25 513 5525 506.5 5525 500').toBe(true);
+            expect(((diagram.connectors[345]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5468.75 670 5487.5 670C5506.25 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[346]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5431.25 513 5412.5 513C5393.75 513 5375 506.5 5375 500').toBe(true);
+            expect(((diagram.connectors[347]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5431.25 670 5412.5 670C5393.75 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[348]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5468.75 513 5487.5 513C5506.25 513 5525 506.5 5525 500').toBe(true);
+            expect(((diagram.connectors[349]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5468.75 670 5487.5 670C5506.25 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[350]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5431.25 513 5412.5 513C5393.75 513 5375 506.5 5375 500').toBe(true);
+            expect(((diagram.connectors[351]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5431.25 670 5412.5 670C5393.75 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[352]).wrapper.children[0] as PathElement).data === 'M4425 900C4428.75 900 4432.5 905 4432.5 910C4432.5 915 4440.63 920 4448.75 920C4456.88 920 4465 910 4465 900').toBe(true);
+            expect(((diagram.connectors[353]).wrapper.children[0] as PathElement).data === 'M4425 900C4428.75 900 4432.5 917.5 4432.5 935C4432.5 952.5 4440.63 970 4448.75 970C4456.88 970 4465 960 4465 950').toBe(true);
+            expect(((diagram.connectors[354]).wrapper.children[0] as PathElement).data === 'M4375 900C4371.25 900 4367.5 905 4367.5 910C4367.5 915 4359.38 920 4351.25 920C4343.13 920 4335 910 4335 900').toBe(true);
+            expect(((diagram.connectors[355]).wrapper.children[0] as PathElement).data === 'M4375 900C4371.25 900 4367.5 917.5 4367.5 935C4367.5 952.5 4359.38 970 4351.25 970C4343.13 970 4335 960 4335 950').toBe(true);
+            expect(((diagram.connectors[356]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 871.5 4406.25 868 4412.5 868C4418.75 868 4425 864 4425 860').toBe(true);
+            expect(((diagram.connectors[357]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 967.5 4411.25 1010 4422.5 1010C4433.75 1010 4445 1010 4445 1010C4445 1010 4440 1010 4435 1010C4430 1010 4425 1000 4425 990').toBe(true);
+            expect(((diagram.connectors[358]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 871.5 4393.75 868 4387.5 868C4381.25 868 4375 864 4375 860').toBe(true);
+            expect(((diagram.connectors[359]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 967.5 4388.75 1010 4377.5 1010C4366.25 1010 4355 1010 4355 1010C4355 1010 4360 1010 4365 1010C4370 1010 4375 1000 4375 990').toBe(true);
+            expect(((diagram.connectors[360]).wrapper.children[0] as PathElement).data === 'M4775 900C4795 900 4815 887.5 4815 875').toBe(true);
+            expect(((diagram.connectors[361]).wrapper.children[0] as PathElement).data === 'M4775 900C4778.75 900 4782.5 923.75 4782.5 947.5C4782.5 971.25 4790.63 995 4798.75 995C4806.88 995 4815 985 4815 975').toBe(true);
+            expect(((diagram.connectors[362]).wrapper.children[0] as PathElement).data === 'M4725 900C4705 900 4685 887.5 4685 875').toBe(true);
+            expect(((diagram.connectors[363]).wrapper.children[0] as PathElement).data === 'M4725 900C4721.25 900 4717.5 923.75 4717.5 947.5C4717.5 971.25 4709.38 995 4701.25 995C4693.13 995 4685 985 4685 975').toBe(true);
+            expect(((diagram.connectors[364]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 871.5 4762.5 868 4775 868C4787.5 868 4800 864 4800 860').toBe(true);
+            expect(((diagram.connectors[365]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 967.5 4762.5 1010 4775 1010C4787.5 1010 4800 1000 4800 990').toBe(true);
+            expect(((diagram.connectors[366]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 871.5 4737.5 868 4725 868C4712.5 868 4700 864 4700 860').toBe(true);
+            expect(((diagram.connectors[367]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 967.5 4737.5 1010 4725 1010C4712.5 1010 4700 1000 4700 990').toBe(true);
+            expect(((diagram.connectors[368]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5116.25 868 5132.5 868C5148.75 868 5165 864 5165 860').toBe(true);
+            expect(((diagram.connectors[369]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5116.25 1010 5132.5 1010C5148.75 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[370]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5083.75 868 5067.5 868C5051.25 868 5035 864 5035 860').toBe(true);
+            expect(((diagram.connectors[371]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5083.75 1010 5067.5 1010C5051.25 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[372]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5116.25 868 5132.5 868C5148.75 868 5165 864 5165 860').toBe(true);
+            expect(((diagram.connectors[373]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5116.25 1010 5132.5 1010C5148.75 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[374]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5083.75 868 5067.5 868C5051.25 868 5035 864 5035 860').toBe(true);
+            expect(((diagram.connectors[375]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5083.75 1010 5067.5 1010C5051.25 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[376]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 869 5466.25 863 5482.5 863C5498.75 863 5515 856.5 5515 850').toBe(true);
+            expect(((diagram.connectors[377]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 972.5 5466.25 1020 5482.5 1020C5498.75 1020 5515 1010 5515 1000').toBe(true);
+            expect(((diagram.connectors[378]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 869 5433.75 863 5417.5 863C5401.25 863 5385 856.5 5385 850').toBe(true);
+            expect(((diagram.connectors[379]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 972.5 5433.75 1020 5417.5 1020C5401.25 1020 5385 1010 5385 1000').toBe(true);
+            expect(((diagram.connectors[380]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 871.5 5468.75 868 5487.5 868C5506.25 868 5525 864 5525 860').toBe(true);
+            expect(((diagram.connectors[381]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 967.5 5468.75 1010 5487.5 1010C5506.25 1010 5525 1000 5525 990').toBe(true);
+            expect(((diagram.connectors[382]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 871.5 5431.25 868 5412.5 868C5393.75 868 5375 864 5375 860').toBe(true);
+            expect(((diagram.connectors[383]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 967.5 5431.25 1010 5412.5 1010C5393.75 1010 5375 1000 5375 990').toBe(true);
+
+            done();
+        });
+    });
+
+    describe('Conectors with segments - Bezier Segment Rendering(Port To Node)', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramBezierSegmentPortToNodeRendering' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [];
+            let connectors: ConnectorModel[] = [];
+            let offsetY = 200; let offsetX = 200;
+            let extra1 = 25; let extra2 = 125;
+
+            for (var z = 1; z <= 4; z++) {
+                for (var x = 0; x < 3; x++) {
+                    for (var y = 0; y < 4; y++) {
+                        var rootnode = {
+                            id: 'rootNode' + z + x + y, offsetX: offsetX, offsetY: offsetY, width: 50, height: 50,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(rootnode);
+
+                        let node1: NodeModel = {
+                            id: 'node' + z + x + y + 1, offsetX: offsetX + extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node2: NodeModel = {
+                            id: 'node' + z + x + y + 2, offsetX: offsetX + extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node3: NodeModel = {
+                            id: 'node' + z + x + y + 3, offsetX: offsetX - extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node4: NodeModel = {
+                            id: 'node' + z + x + y + 4, offsetX: offsetX - extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node5: NodeModel = {
+                            id: 'node' + z + x + y + 5, offsetX: offsetX + extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node6: NodeModel = {
+                            id: 'node' + z + x + y + 6, offsetX: offsetX + extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node7: NodeModel = {
+                            id: 'node' + z + x + y + 7, offsetX: offsetX - extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node8: NodeModel = {
+                            id: 'node' + z + x + y + 8, offsetX: offsetX - extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(node1);
+                        nodes.push(node2);
+                        nodes.push(node3);
+                        nodes.push(node4);
+                        nodes.push(node5);
+                        nodes.push(node6);
+                        nodes.push(node7);
+                        nodes.push(node8);
+
+                        let connector1: ConnectorModel = { id: 'connector' + z + x + y + 1, type: 'Bezier', sourceID: rootnode.id, targetID: node1.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector2: ConnectorModel = { id: 'connector' + z + x + y + 2, type: 'Bezier', sourceID: rootnode.id, targetID: node2.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector3: ConnectorModel = { id: 'connector' + z + x + y + 3, type: 'Bezier', sourceID: rootnode.id, targetID: node3.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector4: ConnectorModel = { id: 'connector' + z + x + y + 4, type: 'Bezier', sourceID: rootnode.id, targetID: node4.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector5: ConnectorModel = { id: 'connector' + z + x + y + 5, type: 'Bezier', sourceID: rootnode.id, targetID: node5.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector6: ConnectorModel = { id: 'connector' + z + x + y + 6, type: 'Bezier', sourceID: rootnode.id, targetID: node6.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector7: ConnectorModel = { id: 'connector' + z + x + y + 7, type: 'Bezier', sourceID: rootnode.id, targetID: node7.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector8: ConnectorModel = { id: 'connector' + z + x + y + 8, type: 'Bezier', sourceID: rootnode.id, targetID: node8.id, sourcePortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        connectors.push(connector1);
+                        connectors.push(connector2);
+                        connectors.push(connector3);
+                        connectors.push(connector4);
+                        connectors.push(connector5);
+                        connectors.push(connector6);
+                        connectors.push(connector7);
+                        connectors.push(connector8);
+
+                        offsetX += 350;
+                        extra1 = y == 0 ? 50 : y == 1 ? 65 : 75;
+                    }
+
+                    offsetX = 200 + ((z - 1) * 350 * 4);
+                    offsetY += 350;
+                    extra1 = 25;
+                    extra2 = x == 0 ? 75 : 65;
+                }
+
+                offsetX = 200 + (z * 350 * 4);
+                offsetY = 200;
+                extra2 = 125;
+            }
+
+            diagram = new Diagram({
+                width: 6000, height: 1200, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramBezierSegmentPortToNodeRendering');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Bezier segment - Port to Node Rendering', (done: Function) => {
+            expect(((diagram.connectors[0]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 188.75 155 177.5C155 166.25 181.88 155 208.75 155C235.63 155 262.5 160 262.5 165C262.5 170 281.25 175 300 175').toBe(true);
+            expect(((diagram.connectors[1]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 211.25 155 222.5C155 233.75 181.88 245 208.75 245C235.63 245 262.5 240 262.5 235C262.5 230 281.25 225 300 225').toBe(true);
+            expect(((diagram.connectors[2]).wrapper.children[0] as PathElement).data === 'M175 200C156.5 200 138 193.75 138 187.5C138 181.25 119 175 100 175').toBe(true);
+            expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M175 200C156.5 200 138 206.25 138 212.5C138 218.75 119 225 100 225').toBe(true);
+            expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 184.38 155 168.75C155 153.13 172.5 137.5 190 137.5C207.5 137.5 225 118.75 225 100').toBe(true);
+            expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 215.63 155 231.25C155 246.88 172.5 262.5 190 262.5C207.5 262.5 225 281.25 225 300').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 184.38 155 168.75C155 153.13 160 137.5 165 137.5C170 137.5 175 118.75 175 100').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 215.63 155 231.25C155 246.88 160 262.5 165 262.5C170 262.5 175 281.25 175 300').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 187.5 505 175C505 162.5 577.5 150 650 150').toBe(true);
+            expect(((diagram.connectors[9]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 212.5 505 225C505 237.5 577.5 250 650 250').toBe(true);
+            expect(((diagram.connectors[10]).wrapper.children[0] as PathElement).data === 'M525 200C506.5 200 488 187.5 488 175C488 162.5 469 150 450 150').toBe(true);
+            expect(((diagram.connectors[11]).wrapper.children[0] as PathElement).data === 'M525 200C506.5 200 488 212.5 488 225C488 237.5 469 250 450 250').toBe(true);
+            expect(((diagram.connectors[12]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 184.38 505 168.75C505 153.13 528.75 137.5 552.5 137.5C576.25 137.5 600 118.75 600 100').toBe(true);
+            expect(((diagram.connectors[13]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 215.63 505 231.25C505 246.88 528.75 262.5 552.5 262.5C576.25 262.5 600 281.25 600 300').toBe(true);
+            expect(((diagram.connectors[14]).wrapper.children[0] as PathElement).data === 'M525 200C512.5 200 500 150 500 100').toBe(true);
+            expect(((diagram.connectors[15]).wrapper.children[0] as PathElement).data === 'M525 200C512.5 200 500 250 500 300').toBe(true);
+            expect(((diagram.connectors[16]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 211.25 855 222.5C855 233.75 897.5 245 940 245C982.5 245 1025 202.5 1025 160').toBe(true);
+            expect(((diagram.connectors[17]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 188.75 855 177.5C855 166.25 897.5 155 940 155C982.5 155 1025 197.5 1025 240').toBe(true);
+            expect(((diagram.connectors[18]).wrapper.children[0] as PathElement).data === 'M875 200C825 200 775 180 775 160').toBe(true);
+            expect(((diagram.connectors[19]).wrapper.children[0] as PathElement).data === 'M875 200C825 200 775 220 775 240').toBe(true);
+            expect(((diagram.connectors[20]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 184.38 855 168.75C855 153.13 882.5 137.5 910 137.5C937.5 137.5 965 118.75 965 100').toBe(true);
+            expect(((diagram.connectors[21]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 215.63 855 231.25C855 246.88 882.5 262.5 910 262.5C937.5 262.5 965 281.25 965 300').toBe(true);
+            expect(((diagram.connectors[22]).wrapper.children[0] as PathElement).data === 'M875 200C855 200 835 150 835 100').toBe(true);
+            expect(((diagram.connectors[23]).wrapper.children[0] as PathElement).data === 'M875 200C855 200 835 250 835 300').toBe(true);
+            expect(((diagram.connectors[24]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 211.25 1205 222.5C1205 233.75 1247.5 245 1290 245C1332.5 245 1375 197.5 1375 150').toBe(true);
+            expect(((diagram.connectors[25]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 188.75 1205 177.5C1205 166.25 1247.5 155 1290 155C1332.5 155 1375 202.5 1375 250').toBe(true);
+            expect(((diagram.connectors[26]).wrapper.children[0] as PathElement).data === 'M1225 200C1175 200 1125 175 1125 150').toBe(true);
+            expect(((diagram.connectors[27]).wrapper.children[0] as PathElement).data === 'M1225 200C1175 200 1125 225 1125 250').toBe(true);
+            expect(((diagram.connectors[28]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 184.38 1205 168.75C1205 153.13 1235 137.5 1265 137.5C1295 137.5 1325 118.75 1325 100').toBe(true);
+            expect(((diagram.connectors[29]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 215.63 1205 231.25C1205 246.88 1235 262.5 1265 262.5C1295 262.5 1325 281.25 1325 300').toBe(true);
+            expect(((diagram.connectors[30]).wrapper.children[0] as PathElement).data === 'M1225 200C1200 200 1175 150 1175 100').toBe(true);
+            expect(((diagram.connectors[31]).wrapper.children[0] as PathElement).data === 'M1225 200C1200 200 1175 250 1175 300').toBe(true);
+            expect(((diagram.connectors[32]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 538.75 155 527.5C155 516.25 175.63 505 196.25 505C216.88 505 237.5 510 237.5 515C237.5 520 243.75 525 250 525').toBe(true);
+            expect(((diagram.connectors[33]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 561.25 155 572.5C155 583.75 175.63 595 196.25 595C216.88 595 237.5 590 237.5 585C237.5 580 243.75 575 250 575').toBe(true);
+            expect(((diagram.connectors[34]).wrapper.children[0] as PathElement).data === 'M175 550C169 550 163 543.75 163 537.5C163 531.25 156.5 525 150 525').toBe(true);
+            expect(((diagram.connectors[35]).wrapper.children[0] as PathElement).data === 'M175 550C169 550 163 556.25 163 562.5C163 568.75 156.5 575 150 575').toBe(true);
+            expect(((diagram.connectors[36]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 540.63 155 531.25C155 521.88 172.5 512.5 190 512.5C207.5 512.5 225 506.25 225 500').toBe(true);
+            expect(((diagram.connectors[37]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 559.38 155 568.75C155 578.13 172.5 587.5 190 587.5C207.5 587.5 225 593.75 225 600').toBe(true);
+            expect(((diagram.connectors[38]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 540.63 155 531.25C155 521.88 160 512.5 165 512.5C170 512.5 175 506.25 175 500').toBe(true);
+            expect(((diagram.connectors[39]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 559.38 155 568.75C155 578.13 160 587.5 165 587.5C170 587.5 175 593.75 175 600').toBe(true);
+            expect(((diagram.connectors[40]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 537.5 505 525C505 512.5 552.5 500 600 500').toBe(true);
+            expect(((diagram.connectors[41]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 562.5 505 575C505 587.5 552.5 600 600 600').toBe(true);
+            expect(((diagram.connectors[42]).wrapper.children[0] as PathElement).data === 'M525 550C519 550 513 537.5 513 525C513 512.5 506.5 500 500 500').toBe(true);
+            expect(((diagram.connectors[43]).wrapper.children[0] as PathElement).data === 'M525 550C519 550 513 562.5 513 575C513 587.5 506.5 600 500 600').toBe(true);
+            expect(((diagram.connectors[44]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 561.25 505 572.5C505 583.75 528.75 595 552.5 595C576.25 595 600 547.5 600 500').toBe(true);
+            expect(((diagram.connectors[45]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 538.75 505 527.5C505 516.25 528.75 505 552.5 505C576.25 505 600 552.5 600 600').toBe(true);
+            expect(((diagram.connectors[46]).wrapper.children[0] as PathElement).data === 'M525 550C512.5 550 500 525 500 500').toBe(true);
+            expect(((diagram.connectors[47]).wrapper.children[0] as PathElement).data === 'M525 550C512.5 550 500 575 500 600').toBe(true);
+            expect(((diagram.connectors[48]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 561.25 855 572.5C855 583.75 885 595 915 595C945 595 975 552.5 975 510').toBe(true);
+            expect(((diagram.connectors[49]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 538.75 855 527.5C855 516.25 885 505 915 505C945 505 975 547.5 975 590').toBe(true);
+            expect(((diagram.connectors[50]).wrapper.children[0] as PathElement).data === 'M875 550C850 550 825 530 825 510').toBe(true);
+            expect(((diagram.connectors[51]).wrapper.children[0] as PathElement).data === 'M875 550C850 550 825 570 825 590').toBe(true);
+            expect(((diagram.connectors[52]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 561.25 855 572.5C855 583.75 882.5 595 910 595C937.5 595 965 547.5 965 500').toBe(true);
+            expect(((diagram.connectors[53]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 538.75 855 527.5C855 516.25 882.5 505 910 505C937.5 505 965 552.5 965 600').toBe(true);
+            expect(((diagram.connectors[54]).wrapper.children[0] as PathElement).data === 'M875 550C855 550 835 525 835 500').toBe(true);
+            expect(((diagram.connectors[55]).wrapper.children[0] as PathElement).data === 'M875 550C855 550 835 575 835 600').toBe(true);
+            expect(((diagram.connectors[56]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 561.25 1205 572.5C1205 583.75 1235 595 1265 595C1295 595 1325 547.5 1325 500').toBe(true);
+            expect(((diagram.connectors[57]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 538.75 1205 527.5C1205 516.25 1235 505 1265 505C1295 505 1325 552.5 1325 600').toBe(true);
+            expect(((diagram.connectors[58]).wrapper.children[0] as PathElement).data === 'M1225 550C1200 550 1175 525 1175 500').toBe(true);
+            expect(((diagram.connectors[59]).wrapper.children[0] as PathElement).data === 'M1225 550C1200 550 1175 575 1175 600').toBe(true);
+            expect(((diagram.connectors[60]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 561.25 1205 572.5C1205 583.75 1235 595 1265 595C1295 595 1325 547.5 1325 500').toBe(true);
+            expect(((diagram.connectors[61]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 538.75 1205 527.5C1205 516.25 1235 505 1265 505C1295 505 1325 552.5 1325 600').toBe(true);
+            expect(((diagram.connectors[62]).wrapper.children[0] as PathElement).data === 'M1225 550C1200 550 1175 525 1175 500').toBe(true);
+            expect(((diagram.connectors[63]).wrapper.children[0] as PathElement).data === 'M1225 550C1200 550 1175 575 1175 600').toBe(true);
+            expect(((diagram.connectors[64]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 888.75 155 877.5C155 866.25 174.38 855 193.75 855C213.13 855 232.5 860 232.5 865C232.5 870 236.25 875 240 875').toBe(true);
+            expect(((diagram.connectors[65]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 911.25 155 922.5C155 933.75 174.38 945 193.75 945C213.13 945 232.5 940 232.5 935C232.5 930 236.25 925 240 925').toBe(true);
+            expect(((diagram.connectors[66]).wrapper.children[0] as PathElement).data === 'M175 900C171.5 900 168 893.75 168 887.5C168 881.25 164 875 160 875').toBe(true);
+            expect(((diagram.connectors[67]).wrapper.children[0] as PathElement).data === 'M175 900C171.5 900 168 906.25 168 912.5C168 918.75 164 925 160 925').toBe(true);
+            expect(((diagram.connectors[68]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 891.88 155 883.75C155 875.63 172.5 867.5 190 867.5C207.5 867.5 225 863.75 225 860').toBe(true);
+            expect(((diagram.connectors[69]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 908.13 155 916.25C155 924.38 172.5 932.5 190 932.5C207.5 932.5 225 936.25 225 940').toBe(true);
+            expect(((diagram.connectors[70]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 891.88 155 883.75C155 875.63 160 867.5 165 867.5C170 867.5 175 863.75 175 860').toBe(true);
+            expect(((diagram.connectors[71]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 908.13 155 916.25C155 924.38 160 932.5 165 932.5C170 932.5 175 936.25 175 940').toBe(true);
+            expect(((diagram.connectors[72]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 887.5 505 875C505 862.5 547.5 850 590 850').toBe(true);
+            expect(((diagram.connectors[73]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 912.5 505 925C505 937.5 547.5 950 590 950').toBe(true);
+            expect(((diagram.connectors[74]).wrapper.children[0] as PathElement).data === 'M525 900C521.5 900 518 887.5 518 875C518 862.5 514 850 510 850').toBe(true);
+            expect(((diagram.connectors[75]).wrapper.children[0] as PathElement).data === 'M525 900C521.5 900 518 912.5 518 925C518 937.5 514 950 510 950').toBe(true);
+            expect(((diagram.connectors[76]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 911.25 505 922.5C505 933.75 528.75 945 552.5 945C576.25 945 600 902.5 600 860').toBe(true);
+            expect(((diagram.connectors[77]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 888.75 505 877.5C505 866.25 528.75 855 552.5 855C576.25 855 600 897.5 600 940').toBe(true);
+            expect(((diagram.connectors[78]).wrapper.children[0] as PathElement).data === 'M525 900C512.5 900 500 880 500 860').toBe(true);
+            expect(((diagram.connectors[79]).wrapper.children[0] as PathElement).data === 'M525 900C512.5 900 500 920 500 940').toBe(true);
+            expect(((diagram.connectors[80]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 911.25 855 922.5C855 933.75 882.5 945 910 945C937.5 945 965 902.5 965 860').toBe(true);
+            expect(((diagram.connectors[81]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 888.75 855 877.5C855 866.25 882.5 855 910 855C937.5 855 965 897.5 965 940').toBe(true);
+            expect(((diagram.connectors[82]).wrapper.children[0] as PathElement).data === 'M875 900C855 900 835 880 835 860').toBe(true);
+            expect(((diagram.connectors[83]).wrapper.children[0] as PathElement).data === 'M875 900C855 900 835 920 835 940').toBe(true);
+            expect(((diagram.connectors[84]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 911.25 855 922.5C855 933.75 882.5 945 910 945C937.5 945 965 902.5 965 860').toBe(true);
+            expect(((diagram.connectors[85]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 888.75 855 877.5C855 866.25 882.5 855 910 855C937.5 855 965 897.5 965 940').toBe(true);
+            expect(((diagram.connectors[86]).wrapper.children[0] as PathElement).data === 'M875 900C855 900 835 880 835 860').toBe(true);
+            expect(((diagram.connectors[87]).wrapper.children[0] as PathElement).data === 'M875 900C855 900 835 920 835 940').toBe(true);
+            expect(((diagram.connectors[88]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 911.25 1205 922.5C1205 933.75 1232.5 945 1260 945C1287.5 945 1315 897.5 1315 850').toBe(true);
+            expect(((diagram.connectors[89]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 888.75 1205 877.5C1205 866.25 1232.5 855 1260 855C1287.5 855 1315 902.5 1315 950').toBe(true);
+            expect(((diagram.connectors[90]).wrapper.children[0] as PathElement).data === 'M1225 900C1205 900 1185 875 1185 850').toBe(true);
+            expect(((diagram.connectors[91]).wrapper.children[0] as PathElement).data === 'M1225 900C1205 900 1185 925 1185 950').toBe(true);
+            expect(((diagram.connectors[92]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 911.25 1205 922.5C1205 933.75 1235 945 1265 945C1295 945 1325 902.5 1325 860').toBe(true);
+            expect(((diagram.connectors[93]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 888.75 1205 877.5C1205 866.25 1235 855 1265 855C1295 855 1325 897.5 1325 940').toBe(true);
+            expect(((diagram.connectors[94]).wrapper.children[0] as PathElement).data === 'M1225 900C1200 900 1175 880 1175 860').toBe(true);
+            expect(((diagram.connectors[95]).wrapper.children[0] as PathElement).data === 'M1225 900C1200 900 1175 920 1175 940').toBe(true);
+            expect(((diagram.connectors[96]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1615.63 155 1631.25 155C1646.88 155 1662.5 160 1662.5 165C1662.5 170 1681.25 175 1700 175').toBe(true);
+            expect(((diagram.connectors[97]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1615.63 155 1631.25 155C1646.88 155 1662.5 172.5 1662.5 190C1662.5 207.5 1681.25 225 1700 225').toBe(true);
+            expect(((diagram.connectors[98]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1584.38 155 1568.75 155C1553.13 155 1537.5 160 1537.5 165C1537.5 170 1518.75 175 1500 175').toBe(true);
+            expect(((diagram.connectors[99]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1584.38 155 1568.75 155C1553.13 155 1537.5 172.5 1537.5 190C1537.5 207.5 1518.75 225 1500 225').toBe(true);
+            expect(((diagram.connectors[100]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 156.5 1606.25 138 1612.5 138C1618.75 138 1625 119 1625 100').toBe(true);
+            expect(((diagram.connectors[101]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1606.25 155 1612.5 155C1618.75 155 1625 227.5 1625 300').toBe(true);
+            expect(((diagram.connectors[102]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 156.5 1593.75 138 1587.5 138C1581.25 138 1575 119 1575 100').toBe(true);
+            expect(((diagram.connectors[103]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1593.75 155 1587.5 155C1581.25 155 1575 227.5 1575 300').toBe(true);
+            expect(((diagram.connectors[104]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 162.5 2000 150 2050 150').toBe(true);
+            expect(((diagram.connectors[105]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1965.63 155 1981.25 155C1996.88 155 2012.5 178.75 2012.5 202.5C2012.5 226.25 2031.25 250 2050 250').toBe(true);
+            expect(((diagram.connectors[106]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 162.5 1900 150 1850 150').toBe(true);
+            expect(((diagram.connectors[107]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1934.38 155 1918.75 155C1903.13 155 1887.5 178.75 1887.5 202.5C1887.5 226.25 1868.75 250 1850 250').toBe(true);
+            expect(((diagram.connectors[108]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 156.5 1962.5 138 1975 138C1987.5 138 2000 119 2000 100').toBe(true);
+            expect(((diagram.connectors[109]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1962.5 155 1975 155C1987.5 155 2000 227.5 2000 300').toBe(true);
+            expect(((diagram.connectors[110]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 156.5 1937.5 138 1925 138C1912.5 138 1900 119 1900 100').toBe(true);
+            expect(((diagram.connectors[111]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1937.5 155 1925 155C1912.5 155 1900 227.5 1900 300').toBe(true);
+            expect(((diagram.connectors[112]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2315.63 155 2331.25 155C2346.88 155 2362.5 161.25 2362.5 167.5C2362.5 173.75 2378.13 180 2393.75 180C2409.38 180 2425 170 2425 160').toBe(true);
+            expect(((diagram.connectors[113]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2331.25 155 2362.5 155C2393.75 155 2425 197.5 2425 240').toBe(true);
+            expect(((diagram.connectors[114]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2284.38 155 2268.75 155C2253.13 155 2237.5 161.25 2237.5 167.5C2237.5 173.75 2221.88 180 2206.25 180C2190.63 180 2175 170 2175 160').toBe(true);
+            expect(((diagram.connectors[115]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2268.75 155 2237.5 155C2206.25 155 2175 197.5 2175 240').toBe(true);
+            expect(((diagram.connectors[116]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 156.5 2316.25 138 2332.5 138C2348.75 138 2365 119 2365 100').toBe(true);
+            expect(((diagram.connectors[117]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2316.25 155 2332.5 155C2348.75 155 2365 227.5 2365 300').toBe(true);
+            expect(((diagram.connectors[118]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 156.5 2283.75 138 2267.5 138C2251.25 138 2235 119 2235 100').toBe(true);
+            expect(((diagram.connectors[119]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2283.75 155 2267.5 155C2251.25 155 2235 227.5 2235 300').toBe(true);
+            expect(((diagram.connectors[120]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2665.63 155 2681.25 155C2696.88 155 2712.5 160 2712.5 165C2712.5 170 2728.13 175 2743.75 175C2759.38 175 2775 162.5 2775 150').toBe(true);
+            expect(((diagram.connectors[121]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2681.25 155 2712.5 155C2743.75 155 2775 202.5 2775 250').toBe(true);
+            expect(((diagram.connectors[122]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2634.38 155 2618.75 155C2603.13 155 2587.5 160 2587.5 165C2587.5 170 2571.88 175 2556.25 175C2540.63 175 2525 162.5 2525 150').toBe(true);
+            expect(((diagram.connectors[123]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2618.75 155 2587.5 155C2556.25 155 2525 202.5 2525 250').toBe(true);
+            expect(((diagram.connectors[124]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 156.5 2668.75 138 2687.5 138C2706.25 138 2725 119 2725 100').toBe(true);
+            expect(((diagram.connectors[125]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2668.75 155 2687.5 155C2706.25 155 2725 227.5 2725 300').toBe(true);
+            expect(((diagram.connectors[126]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 156.5 2631.25 138 2612.5 138C2593.75 138 2575 119 2575 100').toBe(true);
+            expect(((diagram.connectors[127]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2631.25 155 2612.5 155C2593.75 155 2575 227.5 2575 300').toBe(true);
+            expect(((diagram.connectors[128]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1609.38 505 1618.75 505C1628.13 505 1637.5 510 1637.5 515C1637.5 520 1643.75 525 1650 525').toBe(true);
+            expect(((diagram.connectors[129]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1609.38 505 1618.75 505C1628.13 505 1637.5 522.5 1637.5 540C1637.5 557.5 1643.75 575 1650 575').toBe(true);
+            expect(((diagram.connectors[130]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1590.63 505 1581.25 505C1571.88 505 1562.5 510 1562.5 515C1562.5 520 1556.25 525 1550 525').toBe(true);
+            expect(((diagram.connectors[131]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1590.63 505 1581.25 505C1571.88 505 1562.5 522.5 1562.5 540C1562.5 557.5 1556.25 575 1550 575').toBe(true);
+            expect(((diagram.connectors[132]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 519 1606.25 513 1612.5 513C1618.75 513 1625 506.5 1625 500').toBe(true);
+            expect(((diagram.connectors[133]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1606.25 505 1612.5 505C1618.75 505 1625 552.5 1625 600').toBe(true);
+            expect(((diagram.connectors[134]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 519 1593.75 513 1587.5 513C1581.25 513 1575 506.5 1575 500').toBe(true);
+            expect(((diagram.connectors[135]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1593.75 505 1587.5 505C1581.25 505 1575 552.5 1575 600').toBe(true);
+            expect(((diagram.connectors[136]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 512.5 1975 500 2000 500').toBe(true);
+            expect(((diagram.connectors[137]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1938.75 505 1927.5 505C1916.25 505 1905 528.75 1905 552.5C1905 576.25 1952.5 600 2000 600').toBe(true);
+            expect(((diagram.connectors[138]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 512.5 1925 500 1900 500').toBe(true);
+            expect(((diagram.connectors[139]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1961.25 505 1972.5 505C1983.75 505 1995 528.75 1995 552.5C1995 576.25 1947.5 600 1900 600').toBe(true);
+            expect(((diagram.connectors[140]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 519 1962.5 513 1975 513C1987.5 513 2000 506.5 2000 500').toBe(true);
+            expect(((diagram.connectors[141]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1962.5 505 1975 505C1987.5 505 2000 552.5 2000 600').toBe(true);
+            expect(((diagram.connectors[142]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 519 1937.5 513 1925 513C1912.5 513 1900 506.5 1900 500').toBe(true);
+            expect(((diagram.connectors[143]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1937.5 505 1925 505C1912.5 505 1900 552.5 1900 600').toBe(true);
+            expect(((diagram.connectors[144]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 521.5 2318.75 518 2337.5 518C2356.25 518 2375 514 2375 510').toBe(true);
+            expect(((diagram.connectors[145]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2318.75 505 2337.5 505C2356.25 505 2375 547.5 2375 590').toBe(true);
+            expect(((diagram.connectors[146]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 521.5 2281.25 518 2262.5 518C2243.75 518 2225 514 2225 510').toBe(true);
+            expect(((diagram.connectors[147]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2281.25 505 2262.5 505C2243.75 505 2225 547.5 2225 590').toBe(true);
+            expect(((diagram.connectors[148]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 519 2316.25 513 2332.5 513C2348.75 513 2365 506.5 2365 500').toBe(true);
+            expect(((diagram.connectors[149]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2316.25 505 2332.5 505C2348.75 505 2365 552.5 2365 600').toBe(true);
+            expect(((diagram.connectors[150]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 519 2283.75 513 2267.5 513C2251.25 513 2235 506.5 2235 500').toBe(true);
+            expect(((diagram.connectors[151]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2283.75 505 2267.5 505C2251.25 505 2235 552.5 2235 600').toBe(true);
+            expect(((diagram.connectors[152]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 519 2668.75 513 2687.5 513C2706.25 513 2725 506.5 2725 500').toBe(true);
+            expect(((diagram.connectors[153]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2668.75 505 2687.5 505C2706.25 505 2725 552.5 2725 600').toBe(true);
+            expect(((diagram.connectors[154]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 519 2631.25 513 2612.5 513C2593.75 513 2575 506.5 2575 500').toBe(true);
+            expect(((diagram.connectors[155]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2631.25 505 2612.5 505C2593.75 505 2575 552.5 2575 600').toBe(true);
+            expect(((diagram.connectors[156]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 519 2668.75 513 2687.5 513C2706.25 513 2725 506.5 2725 500').toBe(true);
+            expect(((diagram.connectors[157]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2668.75 505 2687.5 505C2706.25 505 2725 552.5 2725 600').toBe(true);
+            expect(((diagram.connectors[158]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 519 2631.25 513 2612.5 513C2593.75 513 2575 506.5 2575 500').toBe(true);
+            expect(((diagram.connectors[159]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2631.25 505 2612.5 505C2593.75 505 2575 552.5 2575 600').toBe(true);
+            expect(((diagram.connectors[160]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1608.13 855 1616.25 855C1624.38 855 1632.5 860 1632.5 865C1632.5 870 1636.25 875 1640 875').toBe(true);
+            expect(((diagram.connectors[161]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1608.13 855 1616.25 855C1624.38 855 1632.5 872.5 1632.5 890C1632.5 907.5 1636.25 925 1640 925').toBe(true);
+            expect(((diagram.connectors[162]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1591.88 855 1583.75 855C1575.63 855 1567.5 860 1567.5 865C1567.5 870 1563.75 875 1560 875').toBe(true);
+            expect(((diagram.connectors[163]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1591.88 855 1583.75 855C1575.63 855 1567.5 872.5 1567.5 890C1567.5 907.5 1563.75 925 1560 925').toBe(true);
+            expect(((diagram.connectors[164]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 871.5 1606.25 868 1612.5 868C1618.75 868 1625 864 1625 860').toBe(true);
+            expect(((diagram.connectors[165]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1606.25 855 1612.5 855C1618.75 855 1625 897.5 1625 940').toBe(true);
+            expect(((diagram.connectors[166]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 871.5 1593.75 868 1587.5 868C1581.25 868 1575 864 1575 860').toBe(true);
+            expect(((diagram.connectors[167]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1593.75 855 1587.5 855C1581.25 855 1575 897.5 1575 940').toBe(true);
+            expect(((diagram.connectors[168]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 862.5 1970 850 1990 850').toBe(true);
+            expect(((diagram.connectors[169]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1938.75 855 1927.5 855C1916.25 855 1905 878.75 1905 902.5C1905 926.25 1947.5 950 1990 950').toBe(true);
+            expect(((diagram.connectors[170]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 862.5 1930 850 1910 850').toBe(true);
+            expect(((diagram.connectors[171]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1961.25 855 1972.5 855C1983.75 855 1995 878.75 1995 902.5C1995 926.25 1952.5 950 1910 950').toBe(true);
+            expect(((diagram.connectors[172]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 871.5 1962.5 868 1975 868C1987.5 868 2000 864 2000 860').toBe(true);
+            expect(((diagram.connectors[173]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1962.5 855 1975 855C1987.5 855 2000 897.5 2000 940').toBe(true);
+            expect(((diagram.connectors[174]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 871.5 1937.5 868 1925 868C1912.5 868 1900 864 1900 860').toBe(true);
+            expect(((diagram.connectors[175]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1937.5 855 1925 855C1912.5 855 1900 897.5 1900 940').toBe(true);
+            expect(((diagram.connectors[176]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 871.5 2316.25 868 2332.5 868C2348.75 868 2365 864 2365 860').toBe(true);
+            expect(((diagram.connectors[177]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2316.25 855 2332.5 855C2348.75 855 2365 897.5 2365 940').toBe(true);
+            expect(((diagram.connectors[178]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 871.5 2283.75 868 2267.5 868C2251.25 868 2235 864 2235 860').toBe(true);
+            expect(((diagram.connectors[179]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2283.75 855 2267.5 855C2251.25 855 2235 897.5 2235 940').toBe(true);
+            expect(((diagram.connectors[180]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 871.5 2316.25 868 2332.5 868C2348.75 868 2365 864 2365 860').toBe(true);
+            expect(((diagram.connectors[181]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2316.25 855 2332.5 855C2348.75 855 2365 897.5 2365 940').toBe(true);
+            expect(((diagram.connectors[182]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 871.5 2283.75 868 2267.5 868C2251.25 868 2235 864 2235 860').toBe(true);
+            expect(((diagram.connectors[183]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2283.75 855 2267.5 855C2251.25 855 2235 897.5 2235 940').toBe(true);
+            expect(((diagram.connectors[184]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 869 2666.25 863 2682.5 863C2698.75 863 2715 856.5 2715 850').toBe(true);
+            expect(((diagram.connectors[185]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2666.25 855 2682.5 855C2698.75 855 2715 902.5 2715 950').toBe(true);
+            expect(((diagram.connectors[186]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 869 2633.75 863 2617.5 863C2601.25 863 2585 856.5 2585 850').toBe(true);
+            expect(((diagram.connectors[187]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2633.75 855 2617.5 855C2601.25 855 2585 902.5 2585 950').toBe(true);
+            expect(((diagram.connectors[188]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 871.5 2668.75 868 2687.5 868C2706.25 868 2725 864 2725 860').toBe(true);
+            expect(((diagram.connectors[189]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2668.75 855 2687.5 855C2706.25 855 2725 897.5 2725 940').toBe(true);
+            expect(((diagram.connectors[190]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 871.5 2631.25 868 2612.5 868C2593.75 868 2575 864 2575 860').toBe(true);
+            expect(((diagram.connectors[191]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2631.25 855 2612.5 855C2593.75 855 2575 897.5 2575 940').toBe(true);
+            expect(((diagram.connectors[192]).wrapper.children[0] as PathElement).data === 'M3025 200C3043.5 200 3062 193.75 3062 187.5C3062 181.25 3081 175 3100 175').toBe(true);
+            expect(((diagram.connectors[193]).wrapper.children[0] as PathElement).data === 'M3025 200C3043.5 200 3062 206.25 3062 212.5C3062 218.75 3081 225 3100 225').toBe(true);
+            expect(((diagram.connectors[194]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 188.75 3045 177.5C3045 166.25 3018.13 155 2991.25 155C2964.38 155 2937.5 160 2937.5 165C2937.5 170 2918.75 175 2900 175').toBe(true);
+            expect(((diagram.connectors[195]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 211.25 3045 222.5C3045 233.75 3018.13 245 2991.25 245C2964.38 245 2937.5 240 2937.5 235C2937.5 230 2918.75 225 2900 225').toBe(true);
+            expect(((diagram.connectors[196]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 184.38 3045 168.75C3045 153.13 3040 137.5 3035 137.5C3030 137.5 3025 118.75 3025 100').toBe(true);
+            expect(((diagram.connectors[197]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 215.63 3045 231.25C3045 246.88 3040 262.5 3035 262.5C3030 262.5 3025 281.25 3025 300').toBe(true);
+            expect(((diagram.connectors[198]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 184.38 3045 168.75C3045 153.13 3027.5 137.5 3010 137.5C2992.5 137.5 2975 118.75 2975 100').toBe(true);
+            expect(((diagram.connectors[199]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 215.63 3045 231.25C3045 246.88 3027.5 262.5 3010 262.5C2992.5 262.5 2975 281.25 2975 300').toBe(true);
+            expect(((diagram.connectors[200]).wrapper.children[0] as PathElement).data === 'M3375 200C3393.5 200 3412 187.5 3412 175C3412 162.5 3431 150 3450 150').toBe(true);
+            expect(((diagram.connectors[201]).wrapper.children[0] as PathElement).data === 'M3375 200C3393.5 200 3412 212.5 3412 225C3412 237.5 3431 250 3450 250').toBe(true);
+            expect(((diagram.connectors[202]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 187.5 3395 175C3395 162.5 3322.5 150 3250 150').toBe(true);
+            expect(((diagram.connectors[203]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 212.5 3395 225C3395 237.5 3322.5 250 3250 250').toBe(true);
+            expect(((diagram.connectors[204]).wrapper.children[0] as PathElement).data === 'M3375 200C3387.5 200 3400 150 3400 100').toBe(true);
+            expect(((diagram.connectors[205]).wrapper.children[0] as PathElement).data === 'M3375 200C3387.5 200 3400 250 3400 300').toBe(true);
+            expect(((diagram.connectors[206]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 184.38 3395 168.75C3395 153.13 3371.25 137.5 3347.5 137.5C3323.75 137.5 3300 118.75 3300 100').toBe(true);
+            expect(((diagram.connectors[207]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 215.63 3395 231.25C3395 246.88 3371.25 262.5 3347.5 262.5C3323.75 262.5 3300 281.25 3300 300').toBe(true);
+            expect(((diagram.connectors[208]).wrapper.children[0] as PathElement).data === 'M3725 200C3775 200 3825 180 3825 160').toBe(true);
+            expect(((diagram.connectors[209]).wrapper.children[0] as PathElement).data === 'M3725 200C3775 200 3825 220 3825 240').toBe(true);
+            expect(((diagram.connectors[210]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 211.25 3745 222.5C3745 233.75 3702.5 245 3660 245C3617.5 245 3575 202.5 3575 160').toBe(true);
+            expect(((diagram.connectors[211]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 188.75 3745 177.5C3745 166.25 3702.5 155 3660 155C3617.5 155 3575 197.5 3575 240').toBe(true);
+            expect(((diagram.connectors[212]).wrapper.children[0] as PathElement).data === 'M3725 200C3745 200 3765 150 3765 100').toBe(true);
+            expect(((diagram.connectors[213]).wrapper.children[0] as PathElement).data === 'M3725 200C3745 200 3765 250 3765 300').toBe(true);
+            expect(((diagram.connectors[214]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 184.38 3745 168.75C3745 153.13 3717.5 137.5 3690 137.5C3662.5 137.5 3635 118.75 3635 100').toBe(true);
+            expect(((diagram.connectors[215]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 215.63 3745 231.25C3745 246.88 3717.5 262.5 3690 262.5C3662.5 262.5 3635 281.25 3635 300').toBe(true);
+            expect(((diagram.connectors[216]).wrapper.children[0] as PathElement).data === 'M4075 200C4125 200 4175 175 4175 150').toBe(true);
+            expect(((diagram.connectors[217]).wrapper.children[0] as PathElement).data === 'M4075 200C4125 200 4175 225 4175 250').toBe(true);
+            expect(((diagram.connectors[218]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 211.25 4095 222.5C4095 233.75 4052.5 245 4010 245C3967.5 245 3925 197.5 3925 150').toBe(true);
+            expect(((diagram.connectors[219]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 188.75 4095 177.5C4095 166.25 4052.5 155 4010 155C3967.5 155 3925 202.5 3925 250').toBe(true);
+            expect(((diagram.connectors[220]).wrapper.children[0] as PathElement).data === 'M4075 200C4100 200 4125 150 4125 100').toBe(true);
+            expect(((diagram.connectors[221]).wrapper.children[0] as PathElement).data === 'M4075 200C4100 200 4125 250 4125 300').toBe(true);
+            expect(((diagram.connectors[222]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 184.38 4095 168.75C4095 153.13 4065 137.5 4035 137.5C4005 137.5 3975 118.75 3975 100').toBe(true);
+            expect(((diagram.connectors[223]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 215.63 4095 231.25C4095 246.88 4065 262.5 4035 262.5C4005 262.5 3975 281.25 3975 300').toBe(true);
+            expect(((diagram.connectors[224]).wrapper.children[0] as PathElement).data === 'M3025 550C3031 550 3037 543.75 3037 537.5C3037 531.25 3043.5 525 3050 525').toBe(true);
+            expect(((diagram.connectors[225]).wrapper.children[0] as PathElement).data === 'M3025 550C3031 550 3037 556.25 3037 562.5C3037 568.75 3043.5 575 3050 575').toBe(true);
+            expect(((diagram.connectors[226]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 538.75 3045 527.5C3045 516.25 3024.38 505 3003.75 505C2983.13 505 2962.5 510 2962.5 515C2962.5 520 2956.25 525 2950 525').toBe(true);
+            expect(((diagram.connectors[227]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 561.25 3045 572.5C3045 583.75 3024.38 595 3003.75 595C2983.13 595 2962.5 590 2962.5 585C2962.5 580 2956.25 575 2950 575').toBe(true);
+            expect(((diagram.connectors[228]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 540.63 3045 531.25C3045 521.88 3040 512.5 3035 512.5C3030 512.5 3025 506.25 3025 500').toBe(true);
+            expect(((diagram.connectors[229]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 559.38 3045 568.75C3045 578.13 3040 587.5 3035 587.5C3030 587.5 3025 593.75 3025 600').toBe(true);
+            expect(((diagram.connectors[230]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 540.63 3045 531.25C3045 521.88 3027.5 512.5 3010 512.5C2992.5 512.5 2975 506.25 2975 500').toBe(true);
+            expect(((diagram.connectors[231]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 559.38 3045 568.75C3045 578.13 3027.5 587.5 3010 587.5C2992.5 587.5 2975 593.75 2975 600').toBe(true);
+            expect(((diagram.connectors[232]).wrapper.children[0] as PathElement).data === 'M3375 550C3381 550 3387 537.5 3387 525C3387 512.5 3393.5 500 3400 500').toBe(true);
+            expect(((diagram.connectors[233]).wrapper.children[0] as PathElement).data === 'M3375 550C3381 550 3387 562.5 3387 575C3387 587.5 3393.5 600 3400 600').toBe(true);
+            expect(((diagram.connectors[234]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 537.5 3395 525C3395 512.5 3347.5 500 3300 500').toBe(true);
+            expect(((diagram.connectors[235]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 562.5 3395 575C3395 587.5 3347.5 600 3300 600').toBe(true);
+            expect(((diagram.connectors[236]).wrapper.children[0] as PathElement).data === 'M3375 550C3387.5 550 3400 525 3400 500').toBe(true);
+            expect(((diagram.connectors[237]).wrapper.children[0] as PathElement).data === 'M3375 550C3387.5 550 3400 575 3400 600').toBe(true);
+            expect(((diagram.connectors[238]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 561.25 3395 572.5C3395 583.75 3371.25 595 3347.5 595C3323.75 595 3300 547.5 3300 500').toBe(true);
+            expect(((diagram.connectors[239]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 538.75 3395 527.5C3395 516.25 3371.25 505 3347.5 505C3323.75 505 3300 552.5 3300 600').toBe(true);
+            expect(((diagram.connectors[240]).wrapper.children[0] as PathElement).data === 'M3725 550C3750 550 3775 530 3775 510').toBe(true);
+            expect(((diagram.connectors[241]).wrapper.children[0] as PathElement).data === 'M3725 550C3750 550 3775 570 3775 590').toBe(true);
+            expect(((diagram.connectors[242]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 561.25 3745 572.5C3745 583.75 3715 595 3685 595C3655 595 3625 552.5 3625 510').toBe(true);
+            expect(((diagram.connectors[243]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 538.75 3745 527.5C3745 516.25 3715 505 3685 505C3655 505 3625 547.5 3625 590').toBe(true);
+            expect(((diagram.connectors[244]).wrapper.children[0] as PathElement).data === 'M3725 550C3745 550 3765 525 3765 500').toBe(true);
+            expect(((diagram.connectors[245]).wrapper.children[0] as PathElement).data === 'M3725 550C3745 550 3765 575 3765 600').toBe(true);
+            expect(((diagram.connectors[246]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 561.25 3745 572.5C3745 583.75 3717.5 595 3690 595C3662.5 595 3635 547.5 3635 500').toBe(true);
+            expect(((diagram.connectors[247]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 538.75 3745 527.5C3745 516.25 3717.5 505 3690 505C3662.5 505 3635 552.5 3635 600').toBe(true);
+            expect(((diagram.connectors[248]).wrapper.children[0] as PathElement).data === 'M4075 550C4100 550 4125 525 4125 500').toBe(true);
+            expect(((diagram.connectors[249]).wrapper.children[0] as PathElement).data === 'M4075 550C4100 550 4125 575 4125 600').toBe(true);
+            expect(((diagram.connectors[250]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 561.25 4095 572.5C4095 583.75 4065 595 4035 595C4005 595 3975 547.5 3975 500').toBe(true);
+            expect(((diagram.connectors[251]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 538.75 4095 527.5C4095 516.25 4065 505 4035 505C4005 505 3975 552.5 3975 600').toBe(true);
+            expect(((diagram.connectors[252]).wrapper.children[0] as PathElement).data === 'M4075 550C4100 550 4125 525 4125 500').toBe(true);
+            expect(((diagram.connectors[253]).wrapper.children[0] as PathElement).data === 'M4075 550C4100 550 4125 575 4125 600').toBe(true);
+            expect(((diagram.connectors[254]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 561.25 4095 572.5C4095 583.75 4065 595 4035 595C4005 595 3975 547.5 3975 500').toBe(true);
+            expect(((diagram.connectors[255]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 538.75 4095 527.5C4095 516.25 4065 505 4035 505C4005 505 3975 552.5 3975 600').toBe(true);
+            expect(((diagram.connectors[256]).wrapper.children[0] as PathElement).data === 'M3025 900C3028.5 900 3032 893.75 3032 887.5C3032 881.25 3036 875 3040 875').toBe(true);
+            expect(((diagram.connectors[257]).wrapper.children[0] as PathElement).data === 'M3025 900C3028.5 900 3032 906.25 3032 912.5C3032 918.75 3036 925 3040 925').toBe(true);
+            expect(((diagram.connectors[258]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 888.75 3045 877.5C3045 866.25 3025.63 855 3006.25 855C2986.88 855 2967.5 860 2967.5 865C2967.5 870 2963.75 875 2960 875').toBe(true);
+            expect(((diagram.connectors[259]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 911.25 3045 922.5C3045 933.75 3025.63 945 3006.25 945C2986.88 945 2967.5 940 2967.5 935C2967.5 930 2963.75 925 2960 925').toBe(true);
+            expect(((diagram.connectors[260]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 891.88 3045 883.75C3045 875.63 3040 867.5 3035 867.5C3030 867.5 3025 863.75 3025 860').toBe(true);
+            expect(((diagram.connectors[261]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 908.13 3045 916.25C3045 924.38 3040 932.5 3035 932.5C3030 932.5 3025 936.25 3025 940').toBe(true);
+            expect(((diagram.connectors[262]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 891.88 3045 883.75C3045 875.63 3027.5 867.5 3010 867.5C2992.5 867.5 2975 863.75 2975 860').toBe(true);
+            expect(((diagram.connectors[263]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 908.13 3045 916.25C3045 924.38 3027.5 932.5 3010 932.5C2992.5 932.5 2975 936.25 2975 940').toBe(true);
+            expect(((diagram.connectors[264]).wrapper.children[0] as PathElement).data === 'M3375 900C3378.5 900 3382 887.5 3382 875C3382 862.5 3386 850 3390 850').toBe(true);
+            expect(((diagram.connectors[265]).wrapper.children[0] as PathElement).data === 'M3375 900C3378.5 900 3382 912.5 3382 925C3382 937.5 3386 950 3390 950').toBe(true);
+            expect(((diagram.connectors[266]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 887.5 3395 875C3395 862.5 3352.5 850 3310 850').toBe(true);
+            expect(((diagram.connectors[267]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 912.5 3395 925C3395 937.5 3352.5 950 3310 950').toBe(true);
+            expect(((diagram.connectors[268]).wrapper.children[0] as PathElement).data === 'M3375 900C3387.5 900 3400 880 3400 860').toBe(true);
+            expect(((diagram.connectors[269]).wrapper.children[0] as PathElement).data === 'M3375 900C3387.5 900 3400 920 3400 940').toBe(true);
+            expect(((diagram.connectors[270]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 911.25 3395 922.5C3395 933.75 3371.25 945 3347.5 945C3323.75 945 3300 902.5 3300 860').toBe(true);
+            expect(((diagram.connectors[271]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 888.75 3395 877.5C3395 866.25 3371.25 855 3347.5 855C3323.75 855 3300 897.5 3300 940').toBe(true);
+            expect(((diagram.connectors[272]).wrapper.children[0] as PathElement).data === 'M3725 900C3745 900 3765 880 3765 860').toBe(true);
+            expect(((diagram.connectors[273]).wrapper.children[0] as PathElement).data === 'M3725 900C3745 900 3765 920 3765 940').toBe(true);
+            expect(((diagram.connectors[274]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 911.25 3745 922.5C3745 933.75 3717.5 945 3690 945C3662.5 945 3635 902.5 3635 860').toBe(true);
+            expect(((diagram.connectors[275]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 888.75 3745 877.5C3745 866.25 3717.5 855 3690 855C3662.5 855 3635 897.5 3635 940').toBe(true);
+            expect(((diagram.connectors[276]).wrapper.children[0] as PathElement).data === 'M3725 900C3745 900 3765 880 3765 860').toBe(true);
+            expect(((diagram.connectors[277]).wrapper.children[0] as PathElement).data === 'M3725 900C3745 900 3765 920 3765 940').toBe(true);
+            expect(((diagram.connectors[278]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 911.25 3745 922.5C3745 933.75 3717.5 945 3690 945C3662.5 945 3635 902.5 3635 860').toBe(true);
+            expect(((diagram.connectors[279]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 888.75 3745 877.5C3745 866.25 3717.5 855 3690 855C3662.5 855 3635 897.5 3635 940').toBe(true);
+            expect(((diagram.connectors[280]).wrapper.children[0] as PathElement).data === 'M4075 900C4095 900 4115 875 4115 850').toBe(true);
+            expect(((diagram.connectors[281]).wrapper.children[0] as PathElement).data === 'M4075 900C4095 900 4115 925 4115 950').toBe(true);
+            expect(((diagram.connectors[282]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 911.25 4095 922.5C4095 933.75 4067.5 945 4040 945C4012.5 945 3985 897.5 3985 850').toBe(true);
+            expect(((diagram.connectors[283]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 888.75 4095 877.5C4095 866.25 4067.5 855 4040 855C4012.5 855 3985 902.5 3985 950').toBe(true);
+            expect(((diagram.connectors[284]).wrapper.children[0] as PathElement).data === 'M4075 900C4100 900 4125 880 4125 860').toBe(true);
+            expect(((diagram.connectors[285]).wrapper.children[0] as PathElement).data === 'M4075 900C4100 900 4125 920 4125 940').toBe(true);
+            expect(((diagram.connectors[286]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 911.25 4095 922.5C4095 933.75 4065 945 4035 945C4005 945 3975 902.5 3975 860').toBe(true);
+            expect(((diagram.connectors[287]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 888.75 4095 877.5C4095 866.25 4065 855 4035 855C4005 855 3975 897.5 3975 940').toBe(true);
+            expect(((diagram.connectors[288]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4415.63 245 4431.25 245C4446.88 245 4462.5 227.5 4462.5 210C4462.5 192.5 4481.25 175 4500 175').toBe(true);
+            expect(((diagram.connectors[289]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4415.63 245 4431.25 245C4446.88 245 4462.5 240 4462.5 235C4462.5 230 4481.25 225 4500 225').toBe(true);
+            expect(((diagram.connectors[290]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4384.38 245 4368.75 245C4353.13 245 4337.5 227.5 4337.5 210C4337.5 192.5 4318.75 175 4300 175').toBe(true);
+            expect(((diagram.connectors[291]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4384.38 245 4368.75 245C4353.13 245 4337.5 240 4337.5 235C4337.5 230 4318.75 225 4300 225').toBe(true);
+            expect(((diagram.connectors[292]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4406.25 245 4412.5 245C4418.75 245 4425 172.5 4425 100').toBe(true);
+            expect(((diagram.connectors[293]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 243.5 4406.25 262 4412.5 262C4418.75 262 4425 281 4425 300').toBe(true);
+            expect(((diagram.connectors[294]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4393.75 245 4387.5 245C4381.25 245 4375 172.5 4375 100').toBe(true);
+            expect(((diagram.connectors[295]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 243.5 4393.75 262 4387.5 262C4381.25 262 4375 281 4375 300').toBe(true);
+            expect(((diagram.connectors[296]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4765.63 245 4781.25 245C4796.88 245 4812.5 221.25 4812.5 197.5C4812.5 173.75 4831.25 150 4850 150').toBe(true);
+            expect(((diagram.connectors[297]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 237.5 4800 250 4850 250').toBe(true);
+            expect(((diagram.connectors[298]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4734.38 245 4718.75 245C4703.13 245 4687.5 221.25 4687.5 197.5C4687.5 173.75 4668.75 150 4650 150').toBe(true);
+            expect(((diagram.connectors[299]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 237.5 4700 250 4650 250').toBe(true);
+            expect(((diagram.connectors[300]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4762.5 245 4775 245C4787.5 245 4800 172.5 4800 100').toBe(true);
+            expect(((diagram.connectors[301]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 243.5 4762.5 262 4775 262C4787.5 262 4800 281 4800 300').toBe(true);
+            expect(((diagram.connectors[302]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4737.5 245 4725 245C4712.5 245 4700 172.5 4700 100').toBe(true);
+            expect(((diagram.connectors[303]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 243.5 4737.5 262 4725 262C4712.5 262 4700 281 4700 300').toBe(true);
+            expect(((diagram.connectors[304]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5131.25 245 5162.5 245C5193.75 245 5225 202.5 5225 160').toBe(true);
+            expect(((diagram.connectors[305]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5115.63 245 5131.25 245C5146.88 245 5162.5 238.75 5162.5 232.5C5162.5 226.25 5178.13 220 5193.75 220C5209.38 220 5225 230 5225 240').toBe(true);
+            expect(((diagram.connectors[306]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5068.75 245 5037.5 245C5006.25 245 4975 202.5 4975 160').toBe(true);
+            expect(((diagram.connectors[307]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5084.38 245 5068.75 245C5053.13 245 5037.5 238.75 5037.5 232.5C5037.5 226.25 5021.88 220 5006.25 220C4990.63 220 4975 230 4975 240').toBe(true);
+            expect(((diagram.connectors[308]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5116.25 245 5132.5 245C5148.75 245 5165 172.5 5165 100').toBe(true);
+            expect(((diagram.connectors[309]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 243.5 5116.25 262 5132.5 262C5148.75 262 5165 281 5165 300').toBe(true);
+            expect(((diagram.connectors[310]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5083.75 245 5067.5 245C5051.25 245 5035 172.5 5035 100').toBe(true);
+            expect(((diagram.connectors[311]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 243.5 5083.75 262 5067.5 262C5051.25 262 5035 281 5035 300').toBe(true);
+            expect(((diagram.connectors[312]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5481.25 245 5512.5 245C5543.75 245 5575 197.5 5575 150').toBe(true);
+            expect(((diagram.connectors[313]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5465.63 245 5481.25 245C5496.88 245 5512.5 240 5512.5 235C5512.5 230 5528.13 225 5543.75 225C5559.38 225 5575 237.5 5575 250').toBe(true);
+            expect(((diagram.connectors[314]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5418.75 245 5387.5 245C5356.25 245 5325 197.5 5325 150').toBe(true);
+            expect(((diagram.connectors[315]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5434.38 245 5418.75 245C5403.13 245 5387.5 240 5387.5 235C5387.5 230 5371.88 225 5356.25 225C5340.63 225 5325 237.5 5325 250').toBe(true);
+            expect(((diagram.connectors[316]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5468.75 245 5487.5 245C5506.25 245 5525 172.5 5525 100').toBe(true);
+            expect(((diagram.connectors[317]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 243.5 5468.75 262 5487.5 262C5506.25 262 5525 281 5525 300').toBe(true);
+            expect(((diagram.connectors[318]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5431.25 245 5412.5 245C5393.75 245 5375 172.5 5375 100').toBe(true);
+            expect(((diagram.connectors[319]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 243.5 5431.25 262 5412.5 262C5393.75 262 5375 281 5375 300').toBe(true);
+            expect(((diagram.connectors[320]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4409.38 595 4418.75 595C4428.13 595 4437.5 577.5 4437.5 560C4437.5 542.5 4443.75 525 4450 525').toBe(true);
+            expect(((diagram.connectors[321]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4409.38 595 4418.75 595C4428.13 595 4437.5 590 4437.5 585C4437.5 580 4443.75 575 4450 575').toBe(true);
+            expect(((diagram.connectors[322]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4390.63 595 4381.25 595C4371.88 595 4362.5 577.5 4362.5 560C4362.5 542.5 4356.25 525 4350 525').toBe(true);
+            expect(((diagram.connectors[323]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4390.63 595 4381.25 595C4371.88 595 4362.5 590 4362.5 585C4362.5 580 4356.25 575 4350 575').toBe(true);
+            expect(((diagram.connectors[324]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4406.25 595 4412.5 595C4418.75 595 4425 547.5 4425 500').toBe(true);
+            expect(((diagram.connectors[325]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 581 4406.25 587 4412.5 587C4418.75 587 4425 593.5 4425 600').toBe(true);
+            expect(((diagram.connectors[326]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4393.75 595 4387.5 595C4381.25 595 4375 547.5 4375 500').toBe(true);
+            expect(((diagram.connectors[327]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 581 4393.75 587 4387.5 587C4381.25 587 4375 593.5 4375 600').toBe(true);
+            expect(((diagram.connectors[328]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4738.75 595 4727.5 595C4716.25 595 4705 571.25 4705 547.5C4705 523.75 4752.5 500 4800 500').toBe(true);
+            expect(((diagram.connectors[329]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 587.5 4775 600 4800 600').toBe(true);
+            expect(((diagram.connectors[330]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4761.25 595 4772.5 595C4783.75 595 4795 571.25 4795 547.5C4795 523.75 4747.5 500 4700 500').toBe(true);
+            expect(((diagram.connectors[331]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 587.5 4725 600 4700 600').toBe(true);
+            expect(((diagram.connectors[332]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4762.5 595 4775 595C4787.5 595 4800 547.5 4800 500').toBe(true);
+            expect(((diagram.connectors[333]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 581 4762.5 587 4775 587C4787.5 587 4800 593.5 4800 600').toBe(true);
+            expect(((diagram.connectors[334]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4737.5 595 4725 595C4712.5 595 4700 547.5 4700 500').toBe(true);
+            expect(((diagram.connectors[335]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 581 4737.5 587 4725 587C4712.5 587 4700 593.5 4700 600').toBe(true);
+            expect(((diagram.connectors[336]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5118.75 595 5137.5 595C5156.25 595 5175 552.5 5175 510').toBe(true);
+            expect(((diagram.connectors[337]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 578.5 5118.75 582 5137.5 582C5156.25 582 5175 586 5175 590').toBe(true);
+            expect(((diagram.connectors[338]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5081.25 595 5062.5 595C5043.75 595 5025 552.5 5025 510').toBe(true);
+            expect(((diagram.connectors[339]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 578.5 5081.25 582 5062.5 582C5043.75 582 5025 586 5025 590').toBe(true);
+            expect(((diagram.connectors[340]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5116.25 595 5132.5 595C5148.75 595 5165 547.5 5165 500').toBe(true);
+            expect(((diagram.connectors[341]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 581 5116.25 587 5132.5 587C5148.75 587 5165 593.5 5165 600').toBe(true);
+            expect(((diagram.connectors[342]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5083.75 595 5067.5 595C5051.25 595 5035 547.5 5035 500').toBe(true);
+            expect(((diagram.connectors[343]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 581 5083.75 587 5067.5 587C5051.25 587 5035 593.5 5035 600').toBe(true);
+            expect(((diagram.connectors[344]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5468.75 595 5487.5 595C5506.25 595 5525 547.5 5525 500').toBe(true);
+            expect(((diagram.connectors[345]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 581 5468.75 587 5487.5 587C5506.25 587 5525 593.5 5525 600').toBe(true);
+            expect(((diagram.connectors[346]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5431.25 595 5412.5 595C5393.75 595 5375 547.5 5375 500').toBe(true);
+            expect(((diagram.connectors[347]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 581 5431.25 587 5412.5 587C5393.75 587 5375 593.5 5375 600').toBe(true);
+            expect(((diagram.connectors[348]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5468.75 595 5487.5 595C5506.25 595 5525 547.5 5525 500').toBe(true);
+            expect(((diagram.connectors[349]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 581 5468.75 587 5487.5 587C5506.25 587 5525 593.5 5525 600').toBe(true);
+            expect(((diagram.connectors[350]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5431.25 595 5412.5 595C5393.75 595 5375 547.5 5375 500').toBe(true);
+            expect(((diagram.connectors[351]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 581 5431.25 587 5412.5 587C5393.75 587 5375 593.5 5375 600').toBe(true);
+            expect(((diagram.connectors[352]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4408.13 945 4416.25 945C4424.38 945 4432.5 927.5 4432.5 910C4432.5 892.5 4436.25 875 4440 875').toBe(true);
+            expect(((diagram.connectors[353]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4408.13 945 4416.25 945C4424.38 945 4432.5 940 4432.5 935C4432.5 930 4436.25 925 4440 925').toBe(true);
+            expect(((diagram.connectors[354]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4391.88 945 4383.75 945C4375.63 945 4367.5 927.5 4367.5 910C4367.5 892.5 4363.75 875 4360 875').toBe(true);
+            expect(((diagram.connectors[355]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4391.88 945 4383.75 945C4375.63 945 4367.5 940 4367.5 935C4367.5 930 4363.75 925 4360 925').toBe(true);
+            expect(((diagram.connectors[356]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4406.25 945 4412.5 945C4418.75 945 4425 902.5 4425 860').toBe(true);
+            expect(((diagram.connectors[357]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 928.5 4406.25 932 4412.5 932C4418.75 932 4425 936 4425 940').toBe(true);
+            expect(((diagram.connectors[358]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4393.75 945 4387.5 945C4381.25 945 4375 902.5 4375 860').toBe(true);
+            expect(((diagram.connectors[359]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 928.5 4393.75 932 4387.5 932C4381.25 932 4375 936 4375 940').toBe(true);
+            expect(((diagram.connectors[360]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4738.75 945 4727.5 945C4716.25 945 4705 921.25 4705 897.5C4705 873.75 4747.5 850 4790 850').toBe(true);
+            expect(((diagram.connectors[361]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 937.5 4770 950 4790 950').toBe(true);
+            expect(((diagram.connectors[362]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4761.25 945 4772.5 945C4783.75 945 4795 921.25 4795 897.5C4795 873.75 4752.5 850 4710 850').toBe(true);
+            expect(((diagram.connectors[363]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 937.5 4730 950 4710 950').toBe(true);
+            expect(((diagram.connectors[364]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4762.5 945 4775 945C4787.5 945 4800 902.5 4800 860').toBe(true);
+            expect(((diagram.connectors[365]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 928.5 4762.5 932 4775 932C4787.5 932 4800 936 4800 940').toBe(true);
+            expect(((diagram.connectors[366]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4737.5 945 4725 945C4712.5 945 4700 902.5 4700 860').toBe(true);
+            expect(((diagram.connectors[367]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 928.5 4737.5 932 4725 932C4712.5 932 4700 936 4700 940').toBe(true);
+            expect(((diagram.connectors[368]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5116.25 945 5132.5 945C5148.75 945 5165 902.5 5165 860').toBe(true);
+            expect(((diagram.connectors[369]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 928.5 5116.25 932 5132.5 932C5148.75 932 5165 936 5165 940').toBe(true);
+            expect(((diagram.connectors[370]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5083.75 945 5067.5 945C5051.25 945 5035 902.5 5035 860').toBe(true);
+            expect(((diagram.connectors[371]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 928.5 5083.75 932 5067.5 932C5051.25 932 5035 936 5035 940').toBe(true);
+            expect(((diagram.connectors[372]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5116.25 945 5132.5 945C5148.75 945 5165 902.5 5165 860').toBe(true);
+            expect(((diagram.connectors[373]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 928.5 5116.25 932 5132.5 932C5148.75 932 5165 936 5165 940').toBe(true);
+            expect(((diagram.connectors[374]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5083.75 945 5067.5 945C5051.25 945 5035 902.5 5035 860').toBe(true);
+            expect(((diagram.connectors[375]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 928.5 5083.75 932 5067.5 932C5051.25 932 5035 936 5035 940').toBe(true);
+            expect(((diagram.connectors[376]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5466.25 945 5482.5 945C5498.75 945 5515 897.5 5515 850').toBe(true);
+            expect(((diagram.connectors[377]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 931 5466.25 937 5482.5 937C5498.75 937 5515 943.5 5515 950').toBe(true);
+            expect(((diagram.connectors[378]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5433.75 945 5417.5 945C5401.25 945 5385 897.5 5385 850').toBe(true);
+            expect(((diagram.connectors[379]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 931 5433.75 937 5417.5 937C5401.25 937 5385 943.5 5385 950').toBe(true);
+            expect(((diagram.connectors[380]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5468.75 945 5487.5 945C5506.25 945 5525 902.5 5525 860').toBe(true);
+            expect(((diagram.connectors[381]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 928.5 5468.75 932 5487.5 932C5506.25 932 5525 936 5525 940').toBe(true);
+            expect(((diagram.connectors[382]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5431.25 945 5412.5 945C5393.75 945 5375 902.5 5375 860').toBe(true);
+            expect(((diagram.connectors[383]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 928.5 5431.25 932 5412.5 932C5393.75 932 5375 936 5375 940').toBe(true);
+
+            done();
+        });
+    });
+
+    describe('Conectors with segments - Bezier Segment Rendering(LeftPort To Port)', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramBezierSegmentLeftPortToPortRendering' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [];
+            let connectors: ConnectorModel[] = [];
+            let offsetY = 200; let offsetX = 200;
+            let extra1 = 25; let extra2 = 125;
+
+            for (var z = 1; z <= 4; z++) {
+                for (var x = 0; x < 3; x++) {
+                    for (var y = 0; y < 4; y++) {
+                        var rootnode = {
+                            id: 'rootNode' + z + x + y, offsetX: offsetX, offsetY: offsetY, width: 50, height: 50,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(rootnode);
+
+                        let node1: NodeModel = {
+                            id: 'node' + z + x + y + 1, offsetX: offsetX + extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node2: NodeModel = {
+                            id: 'node' + z + x + y + 2, offsetX: offsetX + extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node3: NodeModel = {
+                            id: 'node' + z + x + y + 3, offsetX: offsetX - extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node4: NodeModel = {
+                            id: 'node' + z + x + y + 4, offsetX: offsetX - extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node5: NodeModel = {
+                            id: 'node' + z + x + y + 5, offsetX: offsetX + extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node6: NodeModel = {
+                            id: 'node' + z + x + y + 6, offsetX: offsetX + extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node7: NodeModel = {
+                            id: 'node' + z + x + y + 7, offsetX: offsetX - extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node8: NodeModel = {
+                            id: 'node' + z + x + y + 8, offsetX: offsetX - extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(node1);
+                        nodes.push(node2);
+                        nodes.push(node3);
+                        nodes.push(node4);
+                        nodes.push(node5);
+                        nodes.push(node6);
+                        nodes.push(node7);
+                        nodes.push(node8);
+
+                        let connector1: ConnectorModel = { id: 'connector' + z + x + y + 1, type: 'Bezier', sourceID: rootnode.id, targetID: node1.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector2: ConnectorModel = { id: 'connector' + z + x + y + 2, type: 'Bezier', sourceID: rootnode.id, targetID: node2.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector3: ConnectorModel = { id: 'connector' + z + x + y + 3, type: 'Bezier', sourceID: rootnode.id, targetID: node3.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector4: ConnectorModel = { id: 'connector' + z + x + y + 4, type: 'Bezier', sourceID: rootnode.id, targetID: node4.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector5: ConnectorModel = { id: 'connector' + z + x + y + 5, type: 'Bezier', sourceID: rootnode.id, targetID: node5.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector6: ConnectorModel = { id: 'connector' + z + x + y + 6, type: 'Bezier', sourceID: rootnode.id, targetID: node6.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector7: ConnectorModel = { id: 'connector' + z + x + y + 7, type: 'Bezier', sourceID: rootnode.id, targetID: node7.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector8: ConnectorModel = { id: 'connector' + z + x + y + 8, type: 'Bezier', sourceID: rootnode.id, targetID: node8.id, sourcePortID: 'port1', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        connectors.push(connector1);
+                        connectors.push(connector2);
+                        connectors.push(connector3);
+                        connectors.push(connector4);
+                        connectors.push(connector5);
+                        connectors.push(connector6);
+                        connectors.push(connector7);
+                        connectors.push(connector8);
+
+                        offsetX += 350;
+                        extra1 = y == 0 ? 50 : y == 1 ? 65 : 75;
+                    }
+
+                    offsetX = 200 + ((z - 1) * 350 * 4);
+                    offsetY += 350;
+                    extra1 = 25;
+                    extra2 = x == 0 ? 75 : 65;
+                }
+
+                offsetX = 200 + (z * 350 * 4);
+                offsetY = 200;
+                extra2 = 125;
+            }
+
+            diagram = new Diagram({
+                width: 6000, height: 1200, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramBezierSegmentLeftPortToPortRendering');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Bezier segment - LeftPort to Port Rendering', (done: Function) => {
+            expect(((diagram.connectors[0]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 188.75 155 177.5C155 166.25 181.88 155 208.75 155C235.63 155 262.5 160 262.5 165C262.5 170 281.25 175 300 175').toBe(true);
+            expect(((diagram.connectors[1]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 211.25 155 222.5C155 233.75 181.88 245 208.75 245C235.63 245 262.5 240 262.5 235C262.5 230 281.25 225 300 225').toBe(true);
+            expect(((diagram.connectors[2]).wrapper.children[0] as PathElement).data === 'M175 200C156.25 200 137.5 181.25 137.5 162.5C137.5 143.75 110.63 125 83.75 125C56.88 125 30 137.5 30 150C30 162.5 40 175 50 175').toBe(true);
+            expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M175 200C156.25 200 137.5 218.75 137.5 237.5C137.5 256.25 110.63 275 83.75 275C56.88 275 30 262.5 30 250C30 237.5 40 225 50 225').toBe(true);
+            expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 168.75 155 137.5C155 106.25 177.5 75 200 75').toBe(true);
+            expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M175 200C165 200 155 231.25 155 262.5C155 293.75 177.5 325 200 325').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M175 200C152.5 200 130 168.75 130 137.5C130 106.25 140 75 150 75').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M175 200C152.5 200 130 231.25 130 262.5C130 293.75 140 325 150 325').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 187.5 505 175C505 162.5 577.5 150 650 150').toBe(true);
+            expect(((diagram.connectors[9]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 212.5 505 225C505 237.5 577.5 250 650 250').toBe(true);
+            expect(((diagram.connectors[10]).wrapper.children[0] as PathElement).data === 'M525 200C452.5 200 380 187.5 380 175C380 162.5 390 150 400 150').toBe(true);
+            expect(((diagram.connectors[11]).wrapper.children[0] as PathElement).data === 'M525 200C452.5 200 380 212.5 380 225C380 237.5 390 250 400 250').toBe(true);
+            expect(((diagram.connectors[12]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 168.75 505 137.5C505 106.25 540 75 575 75').toBe(true);
+            expect(((diagram.connectors[13]).wrapper.children[0] as PathElement).data === 'M525 200C515 200 505 231.25 505 262.5C505 293.75 540 325 575 325').toBe(true);
+            expect(((diagram.connectors[14]).wrapper.children[0] as PathElement).data === 'M525 200C490 200 455 168.75 455 137.5C455 106.25 465 75 475 75').toBe(true);
+            expect(((diagram.connectors[15]).wrapper.children[0] as PathElement).data === 'M525 200C490 200 455 231.25 455 262.5C455 293.75 465 325 475 325').toBe(true);
+            expect(((diagram.connectors[16]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 183.75 855 167.5C855 151.25 927.5 135 1000 135').toBe(true);
+            expect(((diagram.connectors[17]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 216.25 855 232.5C855 248.75 927.5 265 1000 265').toBe(true);
+            expect(((diagram.connectors[18]).wrapper.children[0] as PathElement).data === 'M875 200C802.5 200 730 183.75 730 167.5C730 151.25 740 135 750 135').toBe(true);
+            expect(((diagram.connectors[19]).wrapper.children[0] as PathElement).data === 'M875 200C802.5 200 730 216.25 730 232.5C730 248.75 740 265 750 265').toBe(true);
+            expect(((diagram.connectors[20]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 168.75 855 137.5C855 106.25 897.5 75 940 75').toBe(true);
+            expect(((diagram.connectors[21]).wrapper.children[0] as PathElement).data === 'M875 200C865 200 855 231.25 855 262.5C855 293.75 897.5 325 940 325').toBe(true);
+            expect(((diagram.connectors[22]).wrapper.children[0] as PathElement).data === 'M875 200C832.5 200 790 168.75 790 137.5C790 106.25 800 75 810 75').toBe(true);
+            expect(((diagram.connectors[23]).wrapper.children[0] as PathElement).data === 'M875 200C832.5 200 790 231.25 790 262.5C790 293.75 800 325 810 325').toBe(true);
+            expect(((diagram.connectors[24]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 181.25 1205 162.5C1205 143.75 1277.5 125 1350 125').toBe(true);
+            expect(((diagram.connectors[25]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 218.75 1205 237.5C1205 256.25 1277.5 275 1350 275').toBe(true);
+            expect(((diagram.connectors[26]).wrapper.children[0] as PathElement).data === 'M1225 200C1152.5 200 1080 181.25 1080 162.5C1080 143.75 1090 125 1100 125').toBe(true);
+            expect(((diagram.connectors[27]).wrapper.children[0] as PathElement).data === 'M1225 200C1152.5 200 1080 218.75 1080 237.5C1080 256.25 1090 275 1100 275').toBe(true);
+            expect(((diagram.connectors[28]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 168.75 1205 137.5C1205 106.25 1252.5 75 1300 75').toBe(true);
+            expect(((diagram.connectors[29]).wrapper.children[0] as PathElement).data === 'M1225 200C1215 200 1205 231.25 1205 262.5C1205 293.75 1252.5 325 1300 325').toBe(true);
+            expect(((diagram.connectors[30]).wrapper.children[0] as PathElement).data === 'M1225 200C1177.5 200 1130 168.75 1130 137.5C1130 106.25 1140 75 1150 75').toBe(true);
+            expect(((diagram.connectors[31]).wrapper.children[0] as PathElement).data === 'M1225 200C1177.5 200 1130 231.25 1130 262.5C1130 293.75 1140 325 1150 325').toBe(true);
+            expect(((diagram.connectors[32]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 538.75 155 527.5C155 516.25 175.63 505 196.25 505C216.88 505 237.5 510 237.5 515C237.5 520 243.75 525 250 525').toBe(true);
+            expect(((diagram.connectors[33]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 561.25 155 572.5C155 583.75 175.63 595 196.25 595C216.88 595 237.5 590 237.5 585C237.5 580 243.75 575 250 575').toBe(true);
+            expect(((diagram.connectors[34]).wrapper.children[0] as PathElement).data === 'M175 550C168.75 550 162.5 531.25 162.5 512.5C162.5 493.75 141.88 475 121.25 475C100.63 475 80 487.5 80 500C80 512.5 90 525 100 525').toBe(true);
+            expect(((diagram.connectors[35]).wrapper.children[0] as PathElement).data === 'M175 550C168.75 550 162.5 568.75 162.5 587.5C162.5 606.25 141.88 625 121.25 625C100.63 625 80 612.5 80 600C80 587.5 90 575 100 575').toBe(true);
+            expect(((diagram.connectors[36]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 531.25 155 512.5C155 493.75 177.5 475 200 475').toBe(true);
+            expect(((diagram.connectors[37]).wrapper.children[0] as PathElement).data === 'M175 550C165 550 155 568.75 155 587.5C155 606.25 177.5 625 200 625').toBe(true);
+            expect(((diagram.connectors[38]).wrapper.children[0] as PathElement).data === 'M175 550C152.5 550 130 531.25 130 512.5C130 493.75 140 475 150 475').toBe(true);
+            expect(((diagram.connectors[39]).wrapper.children[0] as PathElement).data === 'M175 550C152.5 550 130 568.75 130 587.5C130 606.25 140 625 150 625').toBe(true);
+            expect(((diagram.connectors[40]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 537.5 505 525C505 512.5 552.5 500 600 500').toBe(true);
+            expect(((diagram.connectors[41]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 562.5 505 575C505 587.5 552.5 600 600 600').toBe(true);
+            expect(((diagram.connectors[42]).wrapper.children[0] as PathElement).data === 'M525 550C477.5 550 430 537.5 430 525C430 512.5 440 500 450 500').toBe(true);
+            expect(((diagram.connectors[43]).wrapper.children[0] as PathElement).data === 'M525 550C477.5 550 430 562.5 430 575C430 587.5 440 600 450 600').toBe(true);
+            expect(((diagram.connectors[44]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 531.25 505 512.5C505 493.75 540 475 575 475').toBe(true);
+            expect(((diagram.connectors[45]).wrapper.children[0] as PathElement).data === 'M525 550C515 550 505 568.75 505 587.5C505 606.25 540 625 575 625').toBe(true);
+            expect(((diagram.connectors[46]).wrapper.children[0] as PathElement).data === 'M525 550C490 550 455 531.25 455 512.5C455 493.75 465 475 475 475').toBe(true);
+            expect(((diagram.connectors[47]).wrapper.children[0] as PathElement).data === 'M525 550C490 550 455 568.75 455 587.5C455 606.25 465 625 475 625').toBe(true);
+            expect(((diagram.connectors[48]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 533.75 855 517.5C855 501.25 902.5 485 950 485').toBe(true);
+            expect(((diagram.connectors[49]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 566.25 855 582.5C855 598.75 902.5 615 950 615').toBe(true);
+            expect(((diagram.connectors[50]).wrapper.children[0] as PathElement).data === 'M875 550C827.5 550 780 533.75 780 517.5C780 501.25 790 485 800 485').toBe(true);
+            expect(((diagram.connectors[51]).wrapper.children[0] as PathElement).data === 'M875 550C827.5 550 780 566.25 780 582.5C780 598.75 790 615 800 615').toBe(true);
+            expect(((diagram.connectors[52]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 531.25 855 512.5C855 493.75 897.5 475 940 475').toBe(true);
+            expect(((diagram.connectors[53]).wrapper.children[0] as PathElement).data === 'M875 550C865 550 855 568.75 855 587.5C855 606.25 897.5 625 940 625').toBe(true);
+            expect(((diagram.connectors[54]).wrapper.children[0] as PathElement).data === 'M875 550C832.5 550 790 531.25 790 512.5C790 493.75 800 475 810 475').toBe(true);
+            expect(((diagram.connectors[55]).wrapper.children[0] as PathElement).data === 'M875 550C832.5 550 790 568.75 790 587.5C790 606.25 800 625 810 625').toBe(true);
+            expect(((diagram.connectors[56]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 531.25 1205 512.5C1205 493.75 1252.5 475 1300 475').toBe(true);
+            expect(((diagram.connectors[57]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 568.75 1205 587.5C1205 606.25 1252.5 625 1300 625').toBe(true);
+            expect(((diagram.connectors[58]).wrapper.children[0] as PathElement).data === 'M1225 550C1177.5 550 1130 531.25 1130 512.5C1130 493.75 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[59]).wrapper.children[0] as PathElement).data === 'M1225 550C1177.5 550 1130 568.75 1130 587.5C1130 606.25 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[60]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 531.25 1205 512.5C1205 493.75 1252.5 475 1300 475').toBe(true);
+            expect(((diagram.connectors[61]).wrapper.children[0] as PathElement).data === 'M1225 550C1215 550 1205 568.75 1205 587.5C1205 606.25 1252.5 625 1300 625').toBe(true);
+            expect(((diagram.connectors[62]).wrapper.children[0] as PathElement).data === 'M1225 550C1177.5 550 1130 531.25 1130 512.5C1130 493.75 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[63]).wrapper.children[0] as PathElement).data === 'M1225 550C1177.5 550 1130 568.75 1130 587.5C1130 606.25 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[64]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 888.75 155 877.5C155 866.25 174.38 855 193.75 855C213.13 855 232.5 860 232.5 865C232.5 870 236.25 875 240 875').toBe(true);
+            expect(((diagram.connectors[65]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 911.25 155 922.5C155 933.75 174.38 945 193.75 945C213.13 945 232.5 940 232.5 935C232.5 930 236.25 925 240 925').toBe(true);
+            expect(((diagram.connectors[66]).wrapper.children[0] as PathElement).data === 'M175 900C132.5 900 90 888.75 90 877.5C90 866.25 90 855 90 855C90 855 90 860 90 865C90 870 100 875 110 875').toBe(true);
+            expect(((diagram.connectors[67]).wrapper.children[0] as PathElement).data === 'M175 900C132.5 900 90 911.25 90 922.5C90 933.75 90 945 90 945C90 945 90 940 90 935C90 930 100 925 110 925').toBe(true);
+            expect(((diagram.connectors[68]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 883.75 155 867.5C155 851.25 177.5 835 200 835').toBe(true);
+            expect(((diagram.connectors[69]).wrapper.children[0] as PathElement).data === 'M175 900C165 900 155 916.25 155 932.5C155 948.75 177.5 965 200 965').toBe(true);
+            expect(((diagram.connectors[70]).wrapper.children[0] as PathElement).data === 'M175 900C152.5 900 130 883.75 130 867.5C130 851.25 140 835 150 835').toBe(true);
+            expect(((diagram.connectors[71]).wrapper.children[0] as PathElement).data === 'M175 900C152.5 900 130 916.25 130 932.5C130 948.75 140 965 150 965').toBe(true);
+            expect(((diagram.connectors[72]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 887.5 505 875C505 862.5 547.5 850 590 850').toBe(true);
+            expect(((diagram.connectors[73]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 912.5 505 925C505 937.5 547.5 950 590 950').toBe(true);
+            expect(((diagram.connectors[74]).wrapper.children[0] as PathElement).data === 'M525 900C482.5 900 440 887.5 440 875C440 862.5 450 850 460 850').toBe(true);
+            expect(((diagram.connectors[75]).wrapper.children[0] as PathElement).data === 'M525 900C482.5 900 440 912.5 440 925C440 937.5 450 950 460 950').toBe(true);
+            expect(((diagram.connectors[76]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 883.75 505 867.5C505 851.25 540 835 575 835').toBe(true);
+            expect(((diagram.connectors[77]).wrapper.children[0] as PathElement).data === 'M525 900C515 900 505 916.25 505 932.5C505 948.75 540 965 575 965').toBe(true);
+            expect(((diagram.connectors[78]).wrapper.children[0] as PathElement).data === 'M525 900C490 900 455 883.75 455 867.5C455 851.25 465 835 475 835').toBe(true);
+            expect(((diagram.connectors[79]).wrapper.children[0] as PathElement).data === 'M525 900C490 900 455 916.25 455 932.5C455 948.75 465 965 475 965').toBe(true);
+            expect(((diagram.connectors[80]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 883.75 855 867.5C855 851.25 897.5 835 940 835').toBe(true);
+            expect(((diagram.connectors[81]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 916.25 855 932.5C855 948.75 897.5 965 940 965').toBe(true);
+            expect(((diagram.connectors[82]).wrapper.children[0] as PathElement).data === 'M875 900C832.5 900 790 883.75 790 867.5C790 851.25 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[83]).wrapper.children[0] as PathElement).data === 'M875 900C832.5 900 790 916.25 790 932.5C790 948.75 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[84]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 883.75 855 867.5C855 851.25 897.5 835 940 835').toBe(true);
+            expect(((diagram.connectors[85]).wrapper.children[0] as PathElement).data === 'M875 900C865 900 855 916.25 855 932.5C855 948.75 897.5 965 940 965').toBe(true);
+            expect(((diagram.connectors[86]).wrapper.children[0] as PathElement).data === 'M875 900C832.5 900 790 883.75 790 867.5C790 851.25 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[87]).wrapper.children[0] as PathElement).data === 'M875 900C832.5 900 790 916.25 790 932.5C790 948.75 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[88]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 881.25 1205 862.5C1205 843.75 1247.5 825 1290 825').toBe(true);
+            expect(((diagram.connectors[89]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 918.75 1205 937.5C1205 956.25 1247.5 975 1290 975').toBe(true);
+            expect(((diagram.connectors[90]).wrapper.children[0] as PathElement).data === 'M1225 900C1182.5 900 1140 881.25 1140 862.5C1140 843.75 1150 825 1160 825').toBe(true);
+            expect(((diagram.connectors[91]).wrapper.children[0] as PathElement).data === 'M1225 900C1182.5 900 1140 918.75 1140 937.5C1140 956.25 1150 975 1160 975').toBe(true);
+            expect(((diagram.connectors[92]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 883.75 1205 867.5C1205 851.25 1252.5 835 1300 835').toBe(true);
+            expect(((diagram.connectors[93]).wrapper.children[0] as PathElement).data === 'M1225 900C1215 900 1205 916.25 1205 932.5C1205 948.75 1252.5 965 1300 965').toBe(true);
+            expect(((diagram.connectors[94]).wrapper.children[0] as PathElement).data === 'M1225 900C1177.5 900 1130 883.75 1130 867.5C1130 851.25 1140 835 1150 835').toBe(true);
+            expect(((diagram.connectors[95]).wrapper.children[0] as PathElement).data === 'M1225 900C1177.5 900 1130 916.25 1130 932.5C1130 948.75 1140 965 1150 965').toBe(true);
+            expect(((diagram.connectors[96]).wrapper.children[0] as PathElement).data === 'M1575 200C1565 200 1555 182.5 1555 165C1555 147.5 1597.5 130 1640 130C1682.5 130 1725 140 1725 150').toBe(true);
+            expect(((diagram.connectors[97]).wrapper.children[0] as PathElement).data === 'M1575 200C1565 200 1555 188.75 1555 177.5C1555 166.25 1597.5 155 1640 155C1682.5 155 1725 177.5 1725 200').toBe(true);
+            expect(((diagram.connectors[98]).wrapper.children[0] as PathElement).data === 'M1575 200C1556.25 200 1537.5 182.5 1537.5 165C1537.5 147.5 1521.88 130 1506.25 130C1490.63 130 1475 140 1475 150').toBe(true);
+            expect(((diagram.connectors[99]).wrapper.children[0] as PathElement).data === 'M1575 200C1556.25 200 1537.5 195 1537.5 190C1537.5 185 1521.88 180 1506.25 180C1490.63 180 1475 190 1475 200').toBe(true);
+            expect(((diagram.connectors[100]).wrapper.children[0] as PathElement).data === 'M1575 200C1565 200 1555 157.5 1555 115C1555 72.5 1572.5 30 1590 30C1607.5 30 1625 40 1625 50').toBe(true);
+            expect(((diagram.connectors[101]).wrapper.children[0] as PathElement).data === 'M1575 200C1565 200 1555 215.63 1555 231.25C1555 246.88 1572.5 262.5 1590 262.5C1607.5 262.5 1625 281.25 1625 300').toBe(true);
+            expect(((diagram.connectors[102]).wrapper.children[0] as PathElement).data === 'M1575 200C1552.5 200 1530 157.5 1530 115C1530 72.5 1541.25 30 1552.5 30C1563.75 30 1575 40 1575 50').toBe(true);
+            expect(((diagram.connectors[103]).wrapper.children[0] as PathElement).data === 'M1575 200C1565 200 1555 215.63 1555 231.25C1555 246.88 1560 262.5 1565 262.5C1570 262.5 1575 281.25 1575 300').toBe(true);
+            expect(((diagram.connectors[104]).wrapper.children[0] as PathElement).data === 'M1925 200C1915 200 1905 176.25 1905 152.5C1905 128.75 1947.5 105 1990 105C2032.5 105 2075 115 2075 125').toBe(true);
+            expect(((diagram.connectors[105]).wrapper.children[0] as PathElement).data === 'M1925 200C1915 200 1905 188.75 1905 177.5C1905 166.25 1947.5 155 1990 155C2032.5 155 2075 190 2075 225').toBe(true);
+            expect(((diagram.connectors[106]).wrapper.children[0] as PathElement).data === 'M1925 200C1906.25 200 1887.5 176.25 1887.5 152.5C1887.5 128.75 1871.88 105 1856.25 105C1840.63 105 1825 115 1825 125').toBe(true);
+            expect(((diagram.connectors[107]).wrapper.children[0] as PathElement).data === 'M1925 200C1875 200 1825 212.5 1825 225').toBe(true);
+            expect(((diagram.connectors[108]).wrapper.children[0] as PathElement).data === 'M1925 200C1915 200 1905 157.5 1905 115C1905 72.5 1928.75 30 1952.5 30C1976.25 30 2000 40 2000 50').toBe(true);
+            expect(((diagram.connectors[109]).wrapper.children[0] as PathElement).data === 'M1925 200C1915 200 1905 215.63 1905 231.25C1905 246.88 1928.75 262.5 1952.5 262.5C1976.25 262.5 2000 281.25 2000 300').toBe(true);
+            expect(((diagram.connectors[110]).wrapper.children[0] as PathElement).data === 'M1925 200C1890 200 1855 157.5 1855 115C1855 72.5 1866.25 30 1877.5 30C1888.75 30 1900 40 1900 50').toBe(true);
+            expect(((diagram.connectors[111]).wrapper.children[0] as PathElement).data === 'M1925 200C1912.5 200 1900 250 1900 300').toBe(true);
+            expect(((diagram.connectors[112]).wrapper.children[0] as PathElement).data === 'M2275 200C2265 200 2255 172.5 2255 145C2255 117.5 2297.5 90 2340 90C2382.5 90 2425 100 2425 110').toBe(true);
+            expect(((diagram.connectors[113]).wrapper.children[0] as PathElement).data === 'M2275 200C2265 200 2255 188.75 2255 177.5C2255 166.25 2297.5 155 2340 155C2382.5 155 2425 197.5 2425 240').toBe(true);
+            expect(((diagram.connectors[114]).wrapper.children[0] as PathElement).data === 'M2275 200C2256.25 200 2237.5 172.5 2237.5 145C2237.5 117.5 2221.88 90 2206.25 90C2190.63 90 2175 100 2175 110').toBe(true);
+            expect(((diagram.connectors[115]).wrapper.children[0] as PathElement).data === 'M2275 200C2225 200 2175 220 2175 240').toBe(true);
+            expect(((diagram.connectors[116]).wrapper.children[0] as PathElement).data === 'M2275 200C2265 200 2255 157.5 2255 115C2255 72.5 2282.5 30 2310 30C2337.5 30 2365 40 2365 50').toBe(true);
+            expect(((diagram.connectors[117]).wrapper.children[0] as PathElement).data === 'M2275 200C2265 200 2255 215.63 2255 231.25C2255 246.88 2282.5 262.5 2310 262.5C2337.5 262.5 2365 281.25 2365 300').toBe(true);
+            expect(((diagram.connectors[118]).wrapper.children[0] as PathElement).data === 'M2275 200C2271.25 200 2267.5 157.5 2267.5 115C2267.5 72.5 2259.38 30 2251.25 30C2243.13 30 2235 40 2235 50').toBe(true);
+            expect(((diagram.connectors[119]).wrapper.children[0] as PathElement).data === 'M2275 200C2255 200 2235 250 2235 300').toBe(true);
+            expect(((diagram.connectors[120]).wrapper.children[0] as PathElement).data === 'M2625 200C2615 200 2605 170 2605 140C2605 110 2647.5 80 2690 80C2732.5 80 2775 90 2775 100').toBe(true);
+            expect(((diagram.connectors[121]).wrapper.children[0] as PathElement).data === 'M2625 200C2615 200 2605 188.75 2605 177.5C2605 166.25 2647.5 155 2690 155C2732.5 155 2775 202.5 2775 250').toBe(true);
+            expect(((diagram.connectors[122]).wrapper.children[0] as PathElement).data === 'M2625 200C2606.25 200 2587.5 170 2587.5 140C2587.5 110 2571.88 80 2556.25 80C2540.63 80 2525 90 2525 100').toBe(true);
+            expect(((diagram.connectors[123]).wrapper.children[0] as PathElement).data === 'M2625 200C2575 200 2525 225 2525 250').toBe(true);
+            expect(((diagram.connectors[124]).wrapper.children[0] as PathElement).data === 'M2625 200C2615 200 2605 157.5 2605 115C2605 72.5 2635 30 2665 30C2695 30 2725 40 2725 50').toBe(true);
+            expect(((diagram.connectors[125]).wrapper.children[0] as PathElement).data === 'M2625 200C2615 200 2605 215.63 2605 231.25C2605 246.88 2635 262.5 2665 262.5C2695 262.5 2725 281.25 2725 300').toBe(true);
+            expect(((diagram.connectors[126]).wrapper.children[0] as PathElement).data === 'M2625 200C2618.75 200 2612.5 157.5 2612.5 115C2612.5 72.5 2603.13 30 2593.75 30C2584.38 30 2575 40 2575 50').toBe(true);
+            expect(((diagram.connectors[127]).wrapper.children[0] as PathElement).data === 'M2625 200C2600 200 2575 250 2575 300').toBe(true);
+            expect(((diagram.connectors[128]).wrapper.children[0] as PathElement).data === 'M1575 550C1565 550 1555 532.5 1555 515C1555 497.5 1585 480 1615 480C1645 480 1675 490 1675 500').toBe(true);
+            expect(((diagram.connectors[129]).wrapper.children[0] as PathElement).data === 'M1575 550C1565 550 1555 538.75 1555 527.5C1555 516.25 1585 505 1615 505C1645 505 1675 527.5 1675 550').toBe(true);
+            expect(((diagram.connectors[130]).wrapper.children[0] as PathElement).data === 'M1575 550C1568.75 550 1562.5 532.5 1562.5 515C1562.5 497.5 1553.13 480 1543.75 480C1534.38 480 1525 490 1525 500').toBe(true);
+            expect(((diagram.connectors[131]).wrapper.children[0] as PathElement).data === 'M1575 550C1550 550 1525 550 1525 550').toBe(true);
+            expect(((diagram.connectors[132]).wrapper.children[0] as PathElement).data === 'M1575 550C1565 550 1555 520 1555 490C1555 460 1572.5 430 1590 430C1607.5 430 1625 440 1625 450').toBe(true);
+            expect(((diagram.connectors[133]).wrapper.children[0] as PathElement).data === 'M1575 550C1565 550 1555 559.38 1555 568.75C1555 578.13 1572.5 587.5 1590 587.5C1607.5 587.5 1625 593.75 1625 600').toBe(true);
+            expect(((diagram.connectors[134]).wrapper.children[0] as PathElement).data === 'M1575 550C1552.5 550 1530 520 1530 490C1530 460 1541.25 430 1552.5 430C1563.75 430 1575 440 1575 450').toBe(true);
+            expect(((diagram.connectors[135]).wrapper.children[0] as PathElement).data === 'M1575 550C1565 550 1555 559.38 1555 568.75C1555 578.13 1560 587.5 1565 587.5C1570 587.5 1575 593.75 1575 600').toBe(true);
+            expect(((diagram.connectors[136]).wrapper.children[0] as PathElement).data === 'M1925 550C1915 550 1905 526.25 1905 502.5C1905 478.75 1935 455 1965 455C1995 455 2025 465 2025 475').toBe(true);
+            expect(((diagram.connectors[137]).wrapper.children[0] as PathElement).data === 'M1925 550C1915 550 1905 538.75 1905 527.5C1905 516.25 1935 505 1965 505C1995 505 2025 540 2025 575').toBe(true);
+            expect(((diagram.connectors[138]).wrapper.children[0] as PathElement).data === 'M1925 550C1918.75 550 1912.5 526.25 1912.5 502.5C1912.5 478.75 1903.13 455 1893.75 455C1884.38 455 1875 465 1875 475').toBe(true);
+            expect(((diagram.connectors[139]).wrapper.children[0] as PathElement).data === 'M1925 550C1900 550 1875 562.5 1875 575').toBe(true);
+            expect(((diagram.connectors[140]).wrapper.children[0] as PathElement).data === 'M1925 550C1915 550 1905 520 1905 490C1905 460 1928.75 430 1952.5 430C1976.25 430 2000 440 2000 450').toBe(true);
+            expect(((diagram.connectors[141]).wrapper.children[0] as PathElement).data === 'M1925 550C1915 550 1905 538.75 1905 527.5C1905 516.25 1928.75 505 1952.5 505C1976.25 505 2000 552.5 2000 600').toBe(true);
+            expect(((diagram.connectors[142]).wrapper.children[0] as PathElement).data === 'M1925 550C1890 550 1855 520 1855 490C1855 460 1866.25 430 1877.5 430C1888.75 430 1900 440 1900 450').toBe(true);
+            expect(((diagram.connectors[143]).wrapper.children[0] as PathElement).data === 'M1925 550C1912.5 550 1900 575 1900 600').toBe(true);
+            expect(((diagram.connectors[144]).wrapper.children[0] as PathElement).data === 'M2275 550C2265 550 2255 522.5 2255 495C2255 467.5 2285 440 2315 440C2345 440 2375 450 2375 460').toBe(true);
+            expect(((diagram.connectors[145]).wrapper.children[0] as PathElement).data === 'M2275 550C2265 550 2255 538.75 2255 527.5C2255 516.25 2285 505 2315 505C2345 505 2375 547.5 2375 590').toBe(true);
+            expect(((diagram.connectors[146]).wrapper.children[0] as PathElement).data === 'M2275 550C2268.75 550 2262.5 522.5 2262.5 495C2262.5 467.5 2253.13 440 2243.75 440C2234.38 440 2225 450 2225 460').toBe(true);
+            expect(((diagram.connectors[147]).wrapper.children[0] as PathElement).data === 'M2275 550C2250 550 2225 570 2225 590').toBe(true);
+            expect(((diagram.connectors[148]).wrapper.children[0] as PathElement).data === 'M2275 550C2265 550 2255 520 2255 490C2255 460 2282.5 430 2310 430C2337.5 430 2365 440 2365 450').toBe(true);
+            expect(((diagram.connectors[149]).wrapper.children[0] as PathElement).data === 'M2275 550C2265 550 2255 538.75 2255 527.5C2255 516.25 2282.5 505 2310 505C2337.5 505 2365 552.5 2365 600').toBe(true);
+            expect(((diagram.connectors[150]).wrapper.children[0] as PathElement).data === 'M2275 550C2271.25 550 2267.5 520 2267.5 490C2267.5 460 2259.38 430 2251.25 430C2243.13 430 2235 440 2235 450').toBe(true);
+            expect(((diagram.connectors[151]).wrapper.children[0] as PathElement).data === 'M2275 550C2255 550 2235 575 2235 600').toBe(true);
+            expect(((diagram.connectors[152]).wrapper.children[0] as PathElement).data === 'M2625 550C2615 550 2605 520 2605 490C2605 460 2635 430 2665 430C2695 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[153]).wrapper.children[0] as PathElement).data === 'M2625 550C2615 550 2605 538.75 2605 527.5C2605 516.25 2635 505 2665 505C2695 505 2725 552.5 2725 600').toBe(true);
+            expect(((diagram.connectors[154]).wrapper.children[0] as PathElement).data === 'M2625 550C2618.75 550 2612.5 520 2612.5 490C2612.5 460 2603.13 430 2593.75 430C2584.38 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[155]).wrapper.children[0] as PathElement).data === 'M2625 550C2600 550 2575 575 2575 600').toBe(true);
+            expect(((diagram.connectors[156]).wrapper.children[0] as PathElement).data === 'M2625 550C2615 550 2605 520 2605 490C2605 460 2635 430 2665 430C2695 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[157]).wrapper.children[0] as PathElement).data === 'M2625 550C2615 550 2605 538.75 2605 527.5C2605 516.25 2635 505 2665 505C2695 505 2725 552.5 2725 600').toBe(true);
+            expect(((diagram.connectors[158]).wrapper.children[0] as PathElement).data === 'M2625 550C2618.75 550 2612.5 520 2612.5 490C2612.5 460 2603.13 430 2593.75 430C2584.38 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[159]).wrapper.children[0] as PathElement).data === 'M2625 550C2600 550 2575 575 2575 600').toBe(true);
+            expect(((diagram.connectors[160]).wrapper.children[0] as PathElement).data === 'M1575 900C1565 900 1555 882.5 1555 865C1555 847.5 1582.5 830 1610 830C1637.5 830 1665 840 1665 850').toBe(true);
+            expect(((diagram.connectors[161]).wrapper.children[0] as PathElement).data === 'M1575 900C1565 900 1555 888.75 1555 877.5C1555 866.25 1582.5 855 1610 855C1637.5 855 1665 877.5 1665 900').toBe(true);
+            expect(((diagram.connectors[162]).wrapper.children[0] as PathElement).data === 'M1575 900C1571.25 900 1567.5 882.5 1567.5 865C1567.5 847.5 1559.38 830 1551.25 830C1543.13 830 1535 840 1535 850').toBe(true);
+            expect(((diagram.connectors[163]).wrapper.children[0] as PathElement).data === 'M1575 900C1555 900 1535 900 1535 900').toBe(true);
+            expect(((diagram.connectors[164]).wrapper.children[0] as PathElement).data === 'M1575 900C1565 900 1555 872.5 1555 845C1555 817.5 1572.5 790 1590 790C1607.5 790 1625 800 1625 810').toBe(true);
+            expect(((diagram.connectors[165]).wrapper.children[0] as PathElement).data === 'M1575 900C1565 900 1555 908.13 1555 916.25C1555 924.38 1572.5 932.5 1590 932.5C1607.5 932.5 1625 936.25 1625 940').toBe(true);
+            expect(((diagram.connectors[166]).wrapper.children[0] as PathElement).data === 'M1575 900C1552.5 900 1530 872.5 1530 845C1530 817.5 1541.25 790 1552.5 790C1563.75 790 1575 800 1575 810').toBe(true);
+            expect(((diagram.connectors[167]).wrapper.children[0] as PathElement).data === 'M1575 900C1565 900 1555 908.13 1555 916.25C1555 924.38 1560 932.5 1565 932.5C1570 932.5 1575 936.25 1575 940').toBe(true);
+            expect(((diagram.connectors[168]).wrapper.children[0] as PathElement).data === 'M1925 900C1915 900 1905 876.25 1905 852.5C1905 828.75 1932.5 805 1960 805C1987.5 805 2015 815 2015 825').toBe(true);
+            expect(((diagram.connectors[169]).wrapper.children[0] as PathElement).data === 'M1925 900C1915 900 1905 888.75 1905 877.5C1905 866.25 1932.5 855 1960 855C1987.5 855 2015 890 2015 925').toBe(true);
+            expect(((diagram.connectors[170]).wrapper.children[0] as PathElement).data === 'M1925 900C1921.25 900 1917.5 876.25 1917.5 852.5C1917.5 828.75 1909.38 805 1901.25 805C1893.13 805 1885 815 1885 825').toBe(true);
+            expect(((diagram.connectors[171]).wrapper.children[0] as PathElement).data === 'M1925 900C1905 900 1885 912.5 1885 925').toBe(true);
+            expect(((diagram.connectors[172]).wrapper.children[0] as PathElement).data === 'M1925 900C1915 900 1905 872.5 1905 845C1905 817.5 1928.75 790 1952.5 790C1976.25 790 2000 800 2000 810').toBe(true);
+            expect(((diagram.connectors[173]).wrapper.children[0] as PathElement).data === 'M1925 900C1915 900 1905 888.75 1905 877.5C1905 866.25 1928.75 855 1952.5 855C1976.25 855 2000 897.5 2000 940').toBe(true);
+            expect(((diagram.connectors[174]).wrapper.children[0] as PathElement).data === 'M1925 900C1890 900 1855 872.5 1855 845C1855 817.5 1866.25 790 1877.5 790C1888.75 790 1900 800 1900 810').toBe(true);
+            expect(((diagram.connectors[175]).wrapper.children[0] as PathElement).data === 'M1925 900C1912.5 900 1900 920 1900 940').toBe(true);
+            expect(((diagram.connectors[176]).wrapper.children[0] as PathElement).data === 'M2275 900C2265 900 2255 872.5 2255 845C2255 817.5 2282.5 790 2310 790C2337.5 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[177]).wrapper.children[0] as PathElement).data === 'M2275 900C2265 900 2255 888.75 2255 877.5C2255 866.25 2282.5 855 2310 855C2337.5 855 2365 897.5 2365 940').toBe(true);
+            expect(((diagram.connectors[178]).wrapper.children[0] as PathElement).data === 'M2275 900C2271.25 900 2267.5 872.5 2267.5 845C2267.5 817.5 2259.38 790 2251.25 790C2243.13 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[179]).wrapper.children[0] as PathElement).data === 'M2275 900C2255 900 2235 920 2235 940').toBe(true);
+            expect(((diagram.connectors[180]).wrapper.children[0] as PathElement).data === 'M2275 900C2265 900 2255 872.5 2255 845C2255 817.5 2282.5 790 2310 790C2337.5 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[181]).wrapper.children[0] as PathElement).data === 'M2275 900C2265 900 2255 888.75 2255 877.5C2255 866.25 2282.5 855 2310 855C2337.5 855 2365 897.5 2365 940').toBe(true);
+            expect(((diagram.connectors[182]).wrapper.children[0] as PathElement).data === 'M2275 900C2271.25 900 2267.5 872.5 2267.5 845C2267.5 817.5 2259.38 790 2251.25 790C2243.13 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[183]).wrapper.children[0] as PathElement).data === 'M2275 900C2255 900 2235 920 2235 940').toBe(true);
+            expect(((diagram.connectors[184]).wrapper.children[0] as PathElement).data === 'M2625 900C2615 900 2605 870 2605 840C2605 810 2632.5 780 2660 780C2687.5 780 2715 790 2715 800').toBe(true);
+            expect(((diagram.connectors[185]).wrapper.children[0] as PathElement).data === 'M2625 900C2615 900 2605 888.75 2605 877.5C2605 866.25 2632.5 855 2660 855C2687.5 855 2715 902.5 2715 950').toBe(true);
+            expect(((diagram.connectors[186]).wrapper.children[0] as PathElement).data === 'M2625 900C2621.25 900 2617.5 870 2617.5 840C2617.5 810 2609.38 780 2601.25 780C2593.13 780 2585 790 2585 800').toBe(true);
+            expect(((diagram.connectors[187]).wrapper.children[0] as PathElement).data === 'M2625 900C2605 900 2585 925 2585 950').toBe(true);
+            expect(((diagram.connectors[188]).wrapper.children[0] as PathElement).data === 'M2625 900C2615 900 2605 872.5 2605 845C2605 817.5 2635 790 2665 790C2695 790 2725 800 2725 810').toBe(true);
+            expect(((diagram.connectors[189]).wrapper.children[0] as PathElement).data === 'M2625 900C2615 900 2605 888.75 2605 877.5C2605 866.25 2635 855 2665 855C2695 855 2725 897.5 2725 940').toBe(true);
+            expect(((diagram.connectors[190]).wrapper.children[0] as PathElement).data === 'M2625 900C2618.75 900 2612.5 872.5 2612.5 845C2612.5 817.5 2603.13 790 2593.75 790C2584.38 790 2575 800 2575 810').toBe(true);
+            expect(((diagram.connectors[191]).wrapper.children[0] as PathElement).data === 'M2625 900C2600 900 2575 920 2575 940').toBe(true);
+            expect(((diagram.connectors[192]).wrapper.children[0] as PathElement).data === 'M2975 200C2965 200 2955 181.25 2955 162.5C2955 143.75 3008.75 125 3062.5 125C3116.25 125 3170 137.5 3170 150C3170 162.5 3160 175 3150 175').toBe(true);
+            expect(((diagram.connectors[193]).wrapper.children[0] as PathElement).data === 'M2975 200C2965 200 2955 218.75 2955 237.5C2955 256.25 3008.75 275 3062.5 275C3116.25 275 3170 262.5 3170 250C3170 237.5 3160 225 3150 225').toBe(true);
+            expect(((diagram.connectors[194]).wrapper.children[0] as PathElement).data === 'M2975 200C2956.5 200 2938 193.75 2938 187.5C2938 181.25 2919 175 2900 175').toBe(true);
+            expect(((diagram.connectors[195]).wrapper.children[0] as PathElement).data === 'M2975 200C2956.5 200 2938 206.25 2938 212.5C2938 218.75 2919 225 2900 225').toBe(true);
+            expect(((diagram.connectors[196]).wrapper.children[0] as PathElement).data === 'M2975 200C2965 200 2955 184.38 2955 168.75C2955 153.13 2983.75 137.5 3012.5 137.5C3041.25 137.5 3070 121.88 3070 106.25C3070 90.63 3060 75 3050 75').toBe(true);
+            expect(((diagram.connectors[197]).wrapper.children[0] as PathElement).data === 'M2975 200C2965 200 2955 215.63 2955 231.25C2955 246.88 2983.75 262.5 3012.5 262.5C3041.25 262.5 3070 278.13 3070 293.75C3070 309.38 3060 325 3050 325').toBe(true);
+            expect(((diagram.connectors[198]).wrapper.children[0] as PathElement).data === 'M2975 200C2965 200 2955 184.38 2955 168.75C2955 153.13 2971.25 137.5 2987.5 137.5C3003.75 137.5 3020 121.88 3020 106.25C3020 90.63 3010 75 3000 75').toBe(true);
+            expect(((diagram.connectors[199]).wrapper.children[0] as PathElement).data === 'M2975 200C2965 200 2955 215.63 2955 231.25C2955 246.88 2971.25 262.5 2987.5 262.5C3003.75 262.5 3020 278.13 3020 293.75C3020 309.38 3010 325 3000 325').toBe(true);
+            expect(((diagram.connectors[200]).wrapper.children[0] as PathElement).data === 'M3325 200C3315 200 3305 175 3305 150C3305 125 3358.75 100 3412.5 100C3466.25 100 3520 112.5 3520 125C3520 137.5 3510 150 3500 150').toBe(true);
+            expect(((diagram.connectors[201]).wrapper.children[0] as PathElement).data === 'M3325 200C3315 200 3305 225 3305 250C3305 275 3358.75 300 3412.5 300C3466.25 300 3520 287.5 3520 275C3520 262.5 3510 250 3500 250').toBe(true);
+            expect(((diagram.connectors[202]).wrapper.children[0] as PathElement).data === 'M3325 200C3306.5 200 3288 187.5 3288 175C3288 162.5 3269 150 3250 150').toBe(true);
+            expect(((diagram.connectors[203]).wrapper.children[0] as PathElement).data === 'M3325 200C3306.5 200 3288 212.5 3288 225C3288 237.5 3269 250 3250 250').toBe(true);
+            expect(((diagram.connectors[204]).wrapper.children[0] as PathElement).data === 'M3325 200C3315 200 3305 184.38 3305 168.75C3305 153.13 3340 137.5 3375 137.5C3410 137.5 3445 121.88 3445 106.25C3445 90.63 3435 75 3425 75').toBe(true);
+            expect(((diagram.connectors[205]).wrapper.children[0] as PathElement).data === 'M3325 200C3315 200 3305 215.63 3305 231.25C3305 246.88 3340 262.5 3375 262.5C3410 262.5 3445 278.13 3445 293.75C3445 309.38 3435 325 3425 325').toBe(true);
+            expect(((diagram.connectors[206]).wrapper.children[0] as PathElement).data === 'M3325 200C3315 200 3305 184.38 3305 168.75C3305 153.13 3315 137.5 3325 137.5C3335 137.5 3345 121.88 3345 106.25C3345 90.63 3335 75 3325 75').toBe(true);
+            expect(((diagram.connectors[207]).wrapper.children[0] as PathElement).data === 'M3325 200C3315 200 3305 215.63 3305 231.25C3305 246.88 3315 262.5 3325 262.5C3335 262.5 3345 278.13 3345 293.75C3345 309.38 3335 325 3325 325').toBe(true);
+            expect(((diagram.connectors[208]).wrapper.children[0] as PathElement).data === 'M3675 200C3665 200 3655 171.25 3655 142.5C3655 113.75 3708.75 85 3762.5 85C3816.25 85 3870 97.5 3870 110C3870 122.5 3860 135 3850 135').toBe(true);
+            expect(((diagram.connectors[209]).wrapper.children[0] as PathElement).data === 'M3675 200C3665 200 3655 228.75 3655 257.5C3655 286.25 3708.75 315 3762.5 315C3816.25 315 3870 302.5 3870 290C3870 277.5 3860 265 3850 265').toBe(true);
+            expect(((diagram.connectors[210]).wrapper.children[0] as PathElement).data === 'M3675 200C3656.5 200 3638 183.75 3638 167.5C3638 151.25 3619 135 3600 135').toBe(true);
+            expect(((diagram.connectors[211]).wrapper.children[0] as PathElement).data === 'M3675 200C3656.5 200 3638 216.25 3638 232.5C3638 248.75 3619 265 3600 265').toBe(true);
+            expect(((diagram.connectors[212]).wrapper.children[0] as PathElement).data === 'M3675 200C3665 200 3655 184.38 3655 168.75C3655 153.13 3693.75 137.5 3732.5 137.5C3771.25 137.5 3810 121.88 3810 106.25C3810 90.63 3800 75 3790 75').toBe(true);
+            expect(((diagram.connectors[213]).wrapper.children[0] as PathElement).data === 'M3675 200C3665 200 3655 215.63 3655 231.25C3655 246.88 3693.75 262.5 3732.5 262.5C3771.25 262.5 3810 278.13 3810 293.75C3810 309.38 3800 325 3790 325').toBe(true);
+            expect(((diagram.connectors[214]).wrapper.children[0] as PathElement).data === 'M3675 200C3665 200 3655 184.38 3655 168.75C3655 153.13 3661.25 137.5 3667.5 137.5C3673.75 137.5 3680 121.88 3680 106.25C3680 90.63 3670 75 3660 75').toBe(true);
+            expect(((diagram.connectors[215]).wrapper.children[0] as PathElement).data === 'M3675 200C3665 200 3655 215.63 3655 231.25C3655 246.88 3661.25 262.5 3667.5 262.5C3673.75 262.5 3680 278.13 3680 293.75C3680 309.38 3670 325 3660 325').toBe(true);
+            expect(((diagram.connectors[216]).wrapper.children[0] as PathElement).data === 'M4025 200C4015 200 4005 190.63 4005 181.25C4005 171.88 4058.75 162.5 4112.5 162.5C4166.25 162.5 4220 153.13 4220 143.75C4220 134.38 4210 125 4200 125').toBe(true);
+            expect(((diagram.connectors[217]).wrapper.children[0] as PathElement).data === 'M4025 200C4015 200 4005 209.38 4005 218.75C4005 228.13 4058.75 237.5 4112.5 237.5C4166.25 237.5 4220 246.88 4220 256.25C4220 265.63 4210 275 4200 275').toBe(true);
+            expect(((diagram.connectors[218]).wrapper.children[0] as PathElement).data === 'M4025 200C4006.5 200 3988 181.25 3988 162.5C3988 143.75 3969 125 3950 125').toBe(true);
+            expect(((diagram.connectors[219]).wrapper.children[0] as PathElement).data === 'M4025 200C4006.5 200 3988 218.75 3988 237.5C3988 256.25 3969 275 3950 275').toBe(true);
+            expect(((diagram.connectors[220]).wrapper.children[0] as PathElement).data === 'M4025 200C4015 200 4005 184.38 4005 168.75C4005 153.13 4046.25 137.5 4087.5 137.5C4128.75 137.5 4170 121.88 4170 106.25C4170 90.63 4160 75 4150 75').toBe(true);
+            expect(((diagram.connectors[221]).wrapper.children[0] as PathElement).data === 'M4025 200C4015 200 4005 215.63 4005 231.25C4005 246.88 4046.25 262.5 4087.5 262.5C4128.75 262.5 4170 278.13 4170 293.75C4170 309.38 4160 325 4150 325').toBe(true);
+            expect(((diagram.connectors[222]).wrapper.children[0] as PathElement).data === 'M4025 200C4015 200 4005 184.38 4005 168.75C4005 153.13 4010 137.5 4015 137.5C4020 137.5 4025 121.88 4025 106.25C4025 90.63 4012.5 75 4000 75').toBe(true);
+            expect(((diagram.connectors[223]).wrapper.children[0] as PathElement).data === 'M4025 200C4015 200 4005 215.63 4005 231.25C4005 246.88 4010 262.5 4015 262.5C4020 262.5 4025 278.13 4025 293.75C4025 309.38 4012.5 325 4000 325').toBe(true);
+            expect(((diagram.connectors[224]).wrapper.children[0] as PathElement).data === 'M2975 550C2965 550 2955 531.25 2955 512.5C2955 493.75 2996.25 475 3037.5 475C3078.75 475 3120 487.5 3120 500C3120 512.5 3110 525 3100 525').toBe(true);
+            expect(((diagram.connectors[225]).wrapper.children[0] as PathElement).data === 'M2975 550C2965 550 2955 568.75 2955 587.5C2955 606.25 2996.25 625 3037.5 625C3078.75 625 3120 612.5 3120 600C3120 587.5 3110 575 3100 575').toBe(true);
+            expect(((diagram.connectors[226]).wrapper.children[0] as PathElement).data === 'M2975 550C2969 550 2963 543.75 2963 537.5C2963 531.25 2956.5 525 2950 525').toBe(true);
+            expect(((diagram.connectors[227]).wrapper.children[0] as PathElement).data === 'M2975 550C2969 550 2963 556.25 2963 562.5C2963 568.75 2956.5 575 2950 575').toBe(true);
+            expect(((diagram.connectors[228]).wrapper.children[0] as PathElement).data === 'M2975 550C2965 550 2955 540.63 2955 531.25C2955 521.88 2983.75 512.5 3012.5 512.5C3041.25 512.5 3070 503.13 3070 493.75C3070 484.38 3060 475 3050 475').toBe(true);
+            expect(((diagram.connectors[229]).wrapper.children[0] as PathElement).data === 'M2975 550C2965 550 2955 559.38 2955 568.75C2955 578.13 2983.75 587.5 3012.5 587.5C3041.25 587.5 3070 596.88 3070 606.25C3070 615.63 3060 625 3050 625').toBe(true);
+            expect(((diagram.connectors[230]).wrapper.children[0] as PathElement).data === 'M2975 550C2952.5 550 2930 540.63 2930 531.25C2930 521.88 2952.5 512.5 2975 512.5C2997.5 512.5 3020 503.13 3020 493.75C3020 484.38 3010 475 3000 475').toBe(true);
+            expect(((diagram.connectors[231]).wrapper.children[0] as PathElement).data === 'M2975 550C2952.5 550 2930 559.38 2930 568.75C2930 578.13 2952.5 587.5 2975 587.5C2997.5 587.5 3020 596.88 3020 606.25C3020 615.63 3010 625 3000 625').toBe(true);
+            expect(((diagram.connectors[232]).wrapper.children[0] as PathElement).data === 'M3325 550C3315 550 3305 525 3305 500C3305 475 3346.25 450 3387.5 450C3428.75 450 3470 462.5 3470 475C3470 487.5 3460 500 3450 500').toBe(true);
+            expect(((diagram.connectors[233]).wrapper.children[0] as PathElement).data === 'M3325 550C3315 550 3305 575 3305 600C3305 625 3346.25 650 3387.5 650C3428.75 650 3470 637.5 3470 625C3470 612.5 3460 600 3450 600').toBe(true);
+            expect(((diagram.connectors[234]).wrapper.children[0] as PathElement).data === 'M3325 550C3319 550 3313 537.5 3313 525C3313 512.5 3306.5 500 3300 500').toBe(true);
+            expect(((diagram.connectors[235]).wrapper.children[0] as PathElement).data === 'M3325 550C3319 550 3313 562.5 3313 575C3313 587.5 3306.5 600 3300 600').toBe(true);
+            expect(((diagram.connectors[236]).wrapper.children[0] as PathElement).data === 'M3325 550C3315 550 3305 540.63 3305 531.25C3305 521.88 3340 512.5 3375 512.5C3410 512.5 3445 503.13 3445 493.75C3445 484.38 3435 475 3425 475').toBe(true);
+            expect(((diagram.connectors[237]).wrapper.children[0] as PathElement).data === 'M3325 550C3315 550 3305 559.38 3305 568.75C3305 578.13 3340 587.5 3375 587.5C3410 587.5 3445 596.88 3445 606.25C3445 615.63 3435 625 3425 625').toBe(true);
+            expect(((diagram.connectors[238]).wrapper.children[0] as PathElement).data === 'M3325 550C3290 550 3255 540.63 3255 531.25C3255 521.88 3277.5 512.5 3300 512.5C3322.5 512.5 3345 503.13 3345 493.75C3345 484.38 3335 475 3325 475').toBe(true);
+            expect(((diagram.connectors[239]).wrapper.children[0] as PathElement).data === 'M3325 550C3290 550 3255 559.38 3255 568.75C3255 578.13 3277.5 587.5 3300 587.5C3322.5 587.5 3345 596.88 3345 606.25C3345 615.63 3335 625 3325 625').toBe(true);
+            expect(((diagram.connectors[240]).wrapper.children[0] as PathElement).data === 'M3675 550C3665 550 3655 521.25 3655 492.5C3655 463.75 3696.25 435 3737.5 435C3778.75 435 3820 447.5 3820 460C3820 472.5 3810 485 3800 485').toBe(true);
+            expect(((diagram.connectors[241]).wrapper.children[0] as PathElement).data === 'M3675 550C3665 550 3655 578.75 3655 607.5C3655 636.25 3696.25 665 3737.5 665C3778.75 665 3820 652.5 3820 640C3820 627.5 3810 615 3800 615').toBe(true);
+            expect(((diagram.connectors[242]).wrapper.children[0] as PathElement).data === 'M3675 550C3669 550 3663 533.75 3663 517.5C3663 501.25 3656.5 485 3650 485').toBe(true);
+            expect(((diagram.connectors[243]).wrapper.children[0] as PathElement).data === 'M3675 550C3669 550 3663 566.25 3663 582.5C3663 598.75 3656.5 615 3650 615').toBe(true);
+            expect(((diagram.connectors[244]).wrapper.children[0] as PathElement).data === 'M3675 550C3665 550 3655 540.63 3655 531.25C3655 521.88 3693.75 512.5 3732.5 512.5C3771.25 512.5 3810 503.13 3810 493.75C3810 484.38 3800 475 3790 475').toBe(true);
+            expect(((diagram.connectors[245]).wrapper.children[0] as PathElement).data === 'M3675 550C3665 550 3655 559.38 3655 568.75C3655 578.13 3693.75 587.5 3732.5 587.5C3771.25 587.5 3810 596.88 3810 606.25C3810 615.63 3800 625 3790 625').toBe(true);
+            expect(((diagram.connectors[246]).wrapper.children[0] as PathElement).data === 'M3675 550C3671.5 550 3668 531.25 3668 512.5C3668 493.75 3664 475 3660 475').toBe(true);
+            expect(((diagram.connectors[247]).wrapper.children[0] as PathElement).data === 'M3675 550C3671.5 550 3668 568.75 3668 587.5C3668 606.25 3664 625 3660 625').toBe(true);
+            expect(((diagram.connectors[248]).wrapper.children[0] as PathElement).data === 'M4025 550C4015 550 4005 540.63 4005 531.25C4005 521.88 4046.25 512.5 4087.5 512.5C4128.75 512.5 4170 503.13 4170 493.75C4170 484.38 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[249]).wrapper.children[0] as PathElement).data === 'M4025 550C4015 550 4005 559.38 4005 568.75C4005 578.13 4046.25 587.5 4087.5 587.5C4128.75 587.5 4170 596.88 4170 606.25C4170 615.63 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[250]).wrapper.children[0] as PathElement).data === 'M4025 550C4019 550 4013 531.25 4013 512.5C4013 493.75 4006.5 475 4000 475').toBe(true);
+            expect(((diagram.connectors[251]).wrapper.children[0] as PathElement).data === 'M4025 550C4019 550 4013 568.75 4013 587.5C4013 606.25 4006.5 625 4000 625').toBe(true);
+            expect(((diagram.connectors[252]).wrapper.children[0] as PathElement).data === 'M4025 550C4015 550 4005 540.63 4005 531.25C4005 521.88 4046.25 512.5 4087.5 512.5C4128.75 512.5 4170 503.13 4170 493.75C4170 484.38 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[253]).wrapper.children[0] as PathElement).data === 'M4025 550C4015 550 4005 559.38 4005 568.75C4005 578.13 4046.25 587.5 4087.5 587.5C4128.75 587.5 4170 596.88 4170 606.25C4170 615.63 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[254]).wrapper.children[0] as PathElement).data === 'M4025 550C4019 550 4013 531.25 4013 512.5C4013 493.75 4006.5 475 4000 475').toBe(true);
+            expect(((diagram.connectors[255]).wrapper.children[0] as PathElement).data === 'M4025 550C4019 550 4013 568.75 4013 587.5C4013 606.25 4006.5 625 4000 625').toBe(true);
+            expect(((diagram.connectors[256]).wrapper.children[0] as PathElement).data === 'M2975 900C2965 900 2955 881.25 2955 862.5C2955 843.75 2993.75 825 3032.5 825C3071.25 825 3110 837.5 3110 850C3110 862.5 3100 875 3090 875').toBe(true);
+            expect(((diagram.connectors[257]).wrapper.children[0] as PathElement).data === 'M2975 900C2965 900 2955 918.75 2955 937.5C2955 956.25 2993.75 975 3032.5 975C3071.25 975 3110 962.5 3110 950C3110 937.5 3100 925 3090 925').toBe(true);
+            expect(((diagram.connectors[258]).wrapper.children[0] as PathElement).data === 'M2975 900C2971.5 900 2968 893.75 2968 887.5C2968 881.25 2964 875 2960 875').toBe(true);
+            expect(((diagram.connectors[259]).wrapper.children[0] as PathElement).data === 'M2975 900C2971.5 900 2968 906.25 2968 912.5C2968 918.75 2964 925 2960 925').toBe(true);
+            expect(((diagram.connectors[260]).wrapper.children[0] as PathElement).data === 'M2975 900C2965 900 2955 871.25 2955 842.5C2955 813.75 2983.75 785 3012.5 785C3041.25 785 3070 797.5 3070 810C3070 822.5 3060 835 3050 835').toBe(true);
+            expect(((diagram.connectors[261]).wrapper.children[0] as PathElement).data === 'M2975 900C2965 900 2955 928.75 2955 957.5C2955 986.25 2983.75 1015 3012.5 1015C3041.25 1015 3070 1002.5 3070 990C3070 977.5 3060 965 3050 965').toBe(true);
+            expect(((diagram.connectors[262]).wrapper.children[0] as PathElement).data === 'M2975 900C2952.5 900 2930 871.25 2930 842.5C2930 813.75 2952.5 785 2975 785C2997.5 785 3020 797.5 3020 810C3020 822.5 3010 835 3000 835').toBe(true);
+            expect(((diagram.connectors[263]).wrapper.children[0] as PathElement).data === 'M2975 900C2952.5 900 2930 928.75 2930 957.5C2930 986.25 2952.5 1015 2975 1015C2997.5 1015 3020 1002.5 3020 990C3020 977.5 3010 965 3000 965').toBe(true);
+            expect(((diagram.connectors[264]).wrapper.children[0] as PathElement).data === 'M3325 900C3315 900 3305 875 3305 850C3305 825 3343.75 800 3382.5 800C3421.25 800 3460 812.5 3460 825C3460 837.5 3450 850 3440 850').toBe(true);
+            expect(((diagram.connectors[265]).wrapper.children[0] as PathElement).data === 'M3325 900C3315 900 3305 925 3305 950C3305 975 3343.75 1000 3382.5 1000C3421.25 1000 3460 987.5 3460 975C3460 962.5 3450 950 3440 950').toBe(true);
+            expect(((diagram.connectors[266]).wrapper.children[0] as PathElement).data === 'M3325 900C3321.5 900 3318 887.5 3318 875C3318 862.5 3314 850 3310 850').toBe(true);
+            expect(((diagram.connectors[267]).wrapper.children[0] as PathElement).data === 'M3325 900C3321.5 900 3318 912.5 3318 925C3318 937.5 3314 950 3310 950').toBe(true);
+            expect(((diagram.connectors[268]).wrapper.children[0] as PathElement).data === 'M3325 900C3315 900 3305 871.25 3305 842.5C3305 813.75 3340 785 3375 785C3410 785 3445 797.5 3445 810C3445 822.5 3435 835 3425 835').toBe(true);
+            expect(((diagram.connectors[269]).wrapper.children[0] as PathElement).data === 'M3325 900C3315 900 3305 928.75 3305 957.5C3305 986.25 3340 1015 3375 1015C3410 1015 3445 1002.5 3445 990C3445 977.5 3435 965 3425 965').toBe(true);
+            expect(((diagram.connectors[270]).wrapper.children[0] as PathElement).data === 'M3325 900C3290 900 3255 871.25 3255 842.5C3255 813.75 3277.5 785 3300 785C3322.5 785 3345 797.5 3345 810C3345 822.5 3335 835 3325 835').toBe(true);
+            expect(((diagram.connectors[271]).wrapper.children[0] as PathElement).data === 'M3325 900C3290 900 3255 928.75 3255 957.5C3255 986.25 3277.5 1015 3300 1015C3322.5 1015 3345 1002.5 3345 990C3345 977.5 3335 965 3325 965').toBe(true);
+            expect(((diagram.connectors[272]).wrapper.children[0] as PathElement).data === 'M3675 900C3665 900 3655 871.25 3655 842.5C3655 813.75 3693.75 785 3732.5 785C3771.25 785 3810 797.5 3810 810C3810 822.5 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[273]).wrapper.children[0] as PathElement).data === 'M3675 900C3665 900 3655 928.75 3655 957.5C3655 986.25 3693.75 1015 3732.5 1015C3771.25 1015 3810 1002.5 3810 990C3810 977.5 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[274]).wrapper.children[0] as PathElement).data === 'M3675 900C3671.5 900 3668 883.75 3668 867.5C3668 851.25 3664 835 3660 835').toBe(true);
+            expect(((diagram.connectors[275]).wrapper.children[0] as PathElement).data === 'M3675 900C3671.5 900 3668 916.25 3668 932.5C3668 948.75 3664 965 3660 965').toBe(true);
+            expect(((diagram.connectors[276]).wrapper.children[0] as PathElement).data === 'M3675 900C3665 900 3655 871.25 3655 842.5C3655 813.75 3693.75 785 3732.5 785C3771.25 785 3810 797.5 3810 810C3810 822.5 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[277]).wrapper.children[0] as PathElement).data === 'M3675 900C3665 900 3655 928.75 3655 957.5C3655 986.25 3693.75 1015 3732.5 1015C3771.25 1015 3810 1002.5 3810 990C3810 977.5 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[278]).wrapper.children[0] as PathElement).data === 'M3675 900C3671.5 900 3668 883.75 3668 867.5C3668 851.25 3664 835 3660 835').toBe(true);
+            expect(((diagram.connectors[279]).wrapper.children[0] as PathElement).data === 'M3675 900C3671.5 900 3668 916.25 3668 932.5C3668 948.75 3664 965 3660 965').toBe(true);
+            expect(((diagram.connectors[280]).wrapper.children[0] as PathElement).data === 'M4025 900C4015 900 4005 890.63 4005 881.25C4005 871.88 4043.75 862.5 4082.5 862.5C4121.25 862.5 4160 853.13 4160 843.75C4160 834.38 4150 825 4140 825').toBe(true);
+            expect(((diagram.connectors[281]).wrapper.children[0] as PathElement).data === 'M4025 900C4015 900 4005 909.38 4005 918.75C4005 928.13 4043.75 937.5 4082.5 937.5C4121.25 937.5 4160 946.88 4160 956.25C4160 965.63 4150 975 4140 975').toBe(true);
+            expect(((diagram.connectors[282]).wrapper.children[0] as PathElement).data === 'M4025 900C4021.5 900 4018 881.25 4018 862.5C4018 843.75 4014 825 4010 825').toBe(true);
+            expect(((diagram.connectors[283]).wrapper.children[0] as PathElement).data === 'M4025 900C4021.5 900 4018 918.75 4018 937.5C4018 956.25 4014 975 4010 975').toBe(true);
+            expect(((diagram.connectors[284]).wrapper.children[0] as PathElement).data === 'M4025 900C4015 900 4005 871.25 4005 842.5C4005 813.75 4046.25 785 4087.5 785C4128.75 785 4170 797.5 4170 810C4170 822.5 4160 835 4150 835').toBe(true);
+            expect(((diagram.connectors[285]).wrapper.children[0] as PathElement).data === 'M4025 900C4015 900 4005 928.75 4005 957.5C4005 986.25 4046.25 1015 4087.5 1015C4128.75 1015 4170 1002.5 4170 990C4170 977.5 4160 965 4150 965').toBe(true);
+            expect(((diagram.connectors[286]).wrapper.children[0] as PathElement).data === 'M4025 900C4019 900 4013 883.75 4013 867.5C4013 851.25 4006.5 835 4000 835').toBe(true);
+            expect(((diagram.connectors[287]).wrapper.children[0] as PathElement).data === 'M4025 900C4019 900 4013 916.25 4013 932.5C4013 948.75 4006.5 965 4000 965').toBe(true);
+            expect(((diagram.connectors[288]).wrapper.children[0] as PathElement).data === 'M4375 200C4365 200 4355 211.25 4355 222.5C4355 233.75 4397.5 245 4440 245C4482.5 245 4525 222.5 4525 200').toBe(true);
+            expect(((diagram.connectors[289]).wrapper.children[0] as PathElement).data === 'M4375 200C4365 200 4355 217.5 4355 235C4355 252.5 4397.5 270 4440 270C4482.5 270 4525 260 4525 250').toBe(true);
+            expect(((diagram.connectors[290]).wrapper.children[0] as PathElement).data === 'M4375 200C4356.25 200 4337.5 205 4337.5 210C4337.5 215 4321.88 220 4306.25 220C4290.63 220 4275 210 4275 200').toBe(true);
+            expect(((diagram.connectors[291]).wrapper.children[0] as PathElement).data === 'M4375 200C4356.25 200 4337.5 217.5 4337.5 235C4337.5 252.5 4321.88 270 4306.25 270C4290.63 270 4275 260 4275 250').toBe(true);
+            expect(((diagram.connectors[292]).wrapper.children[0] as PathElement).data === 'M4375 200C4365 200 4355 184.38 4355 168.75C4355 153.13 4372.5 137.5 4390 137.5C4407.5 137.5 4425 118.75 4425 100').toBe(true);
+            expect(((diagram.connectors[293]).wrapper.children[0] as PathElement).data === 'M4375 200C4365 200 4355 242.5 4355 285C4355 327.5 4372.5 370 4390 370C4407.5 370 4425 360 4425 350').toBe(true);
+            expect(((diagram.connectors[294]).wrapper.children[0] as PathElement).data === 'M4375 200C4365 200 4355 184.38 4355 168.75C4355 153.13 4360 137.5 4365 137.5C4370 137.5 4375 118.75 4375 100').toBe(true);
+            expect(((diagram.connectors[295]).wrapper.children[0] as PathElement).data === 'M4375 200C4352.5 200 4330 242.5 4330 285C4330 327.5 4341.25 370 4352.5 370C4363.75 370 4375 360 4375 350').toBe(true);
+            expect(((diagram.connectors[296]).wrapper.children[0] as PathElement).data === 'M4725 200C4715 200 4705 211.25 4705 222.5C4705 233.75 4747.5 245 4790 245C4832.5 245 4875 210 4875 175').toBe(true);
+            expect(((diagram.connectors[297]).wrapper.children[0] as PathElement).data === 'M4725 200C4715 200 4705 223.75 4705 247.5C4705 271.25 4747.5 295 4790 295C4832.5 295 4875 285 4875 275').toBe(true);
+            expect(((diagram.connectors[298]).wrapper.children[0] as PathElement).data === 'M4725 200C4675 200 4625 187.5 4625 175').toBe(true);
+            expect(((diagram.connectors[299]).wrapper.children[0] as PathElement).data === 'M4725 200C4706.25 200 4687.5 223.75 4687.5 247.5C4687.5 271.25 4671.88 295 4656.25 295C4640.63 295 4625 285 4625 275').toBe(true);
+            expect(((diagram.connectors[300]).wrapper.children[0] as PathElement).data === 'M4725 200C4715 200 4705 184.38 4705 168.75C4705 153.13 4728.75 137.5 4752.5 137.5C4776.25 137.5 4800 118.75 4800 100').toBe(true);
+            expect(((diagram.connectors[301]).wrapper.children[0] as PathElement).data === 'M4725 200C4715 200 4705 242.5 4705 285C4705 327.5 4728.75 370 4752.5 370C4776.25 370 4800 360 4800 350').toBe(true);
+            expect(((diagram.connectors[302]).wrapper.children[0] as PathElement).data === 'M4725 200C4712.5 200 4700 150 4700 100').toBe(true);
+            expect(((diagram.connectors[303]).wrapper.children[0] as PathElement).data === 'M4725 200C4690 200 4655 242.5 4655 285C4655 327.5 4666.25 370 4677.5 370C4688.75 370 4700 360 4700 350').toBe(true);
+            expect(((diagram.connectors[304]).wrapper.children[0] as PathElement).data === 'M5075 200C5065 200 5055 211.25 5055 222.5C5055 233.75 5097.5 245 5140 245C5182.5 245 5225 202.5 5225 160').toBe(true);
+            expect(((diagram.connectors[305]).wrapper.children[0] as PathElement).data === 'M5075 200C5065 200 5055 227.5 5055 255C5055 282.5 5097.5 310 5140 310C5182.5 310 5225 300 5225 290').toBe(true);
+            expect(((diagram.connectors[306]).wrapper.children[0] as PathElement).data === 'M5075 200C5025 200 4975 180 4975 160').toBe(true);
+            expect(((diagram.connectors[307]).wrapper.children[0] as PathElement).data === 'M5075 200C5056.25 200 5037.5 227.5 5037.5 255C5037.5 282.5 5021.88 310 5006.25 310C4990.63 310 4975 300 4975 290').toBe(true);
+            expect(((diagram.connectors[308]).wrapper.children[0] as PathElement).data === 'M5075 200C5065 200 5055 184.38 5055 168.75C5055 153.13 5082.5 137.5 5110 137.5C5137.5 137.5 5165 118.75 5165 100').toBe(true);
+            expect(((diagram.connectors[309]).wrapper.children[0] as PathElement).data === 'M5075 200C5065 200 5055 242.5 5055 285C5055 327.5 5082.5 370 5110 370C5137.5 370 5165 360 5165 350').toBe(true);
+            expect(((diagram.connectors[310]).wrapper.children[0] as PathElement).data === 'M5075 200C5055 200 5035 150 5035 100').toBe(true);
+            expect(((diagram.connectors[311]).wrapper.children[0] as PathElement).data === 'M5075 200C5071.25 200 5067.5 242.5 5067.5 285C5067.5 327.5 5059.38 370 5051.25 370C5043.13 370 5035 360 5035 350').toBe(true);
+            expect(((diagram.connectors[312]).wrapper.children[0] as PathElement).data === 'M5425 200C5415 200 5405 211.25 5405 222.5C5405 233.75 5447.5 245 5490 245C5532.5 245 5575 197.5 5575 150').toBe(true);
+            expect(((diagram.connectors[313]).wrapper.children[0] as PathElement).data === 'M5425 200C5415 200 5405 230 5405 260C5405 290 5447.5 320 5490 320C5532.5 320 5575 310 5575 300').toBe(true);
+            expect(((diagram.connectors[314]).wrapper.children[0] as PathElement).data === 'M5425 200C5375 200 5325 175 5325 150').toBe(true);
+            expect(((diagram.connectors[315]).wrapper.children[0] as PathElement).data === 'M5425 200C5406.25 200 5387.5 230 5387.5 260C5387.5 290 5371.88 320 5356.25 320C5340.63 320 5325 310 5325 300').toBe(true);
+            expect(((diagram.connectors[316]).wrapper.children[0] as PathElement).data === 'M5425 200C5415 200 5405 184.38 5405 168.75C5405 153.13 5435 137.5 5465 137.5C5495 137.5 5525 118.75 5525 100').toBe(true);
+            expect(((diagram.connectors[317]).wrapper.children[0] as PathElement).data === 'M5425 200C5415 200 5405 242.5 5405 285C5405 327.5 5435 370 5465 370C5495 370 5525 360 5525 350').toBe(true);
+            expect(((diagram.connectors[318]).wrapper.children[0] as PathElement).data === 'M5425 200C5400 200 5375 150 5375 100').toBe(true);
+            expect(((diagram.connectors[319]).wrapper.children[0] as PathElement).data === 'M5425 200C5418.75 200 5412.5 242.5 5412.5 285C5412.5 327.5 5403.13 370 5393.75 370C5384.38 370 5375 360 5375 350').toBe(true);
+            expect(((diagram.connectors[320]).wrapper.children[0] as PathElement).data === 'M4375 550C4365 550 4355 561.25 4355 572.5C4355 583.75 4385 595 4415 595C4445 595 4475 572.5 4475 550').toBe(true);
+            expect(((diagram.connectors[321]).wrapper.children[0] as PathElement).data === 'M4375 550C4365 550 4355 567.5 4355 585C4355 602.5 4385 620 4415 620C4445 620 4475 610 4475 600').toBe(true);
+            expect(((diagram.connectors[322]).wrapper.children[0] as PathElement).data === 'M4375 550C4368.75 550 4362.5 555 4362.5 560C4362.5 565 4353.13 570 4343.75 570C4334.38 570 4325 560 4325 550').toBe(true);
+            expect(((diagram.connectors[323]).wrapper.children[0] as PathElement).data === 'M4375 550C4368.75 550 4362.5 567.5 4362.5 585C4362.5 602.5 4353.13 620 4343.75 620C4334.38 620 4325 610 4325 600').toBe(true);
+            expect(((diagram.connectors[324]).wrapper.children[0] as PathElement).data === 'M4375 550C4365 550 4355 540.63 4355 531.25C4355 521.88 4372.5 512.5 4390 512.5C4407.5 512.5 4425 506.25 4425 500').toBe(true);
+            expect(((diagram.connectors[325]).wrapper.children[0] as PathElement).data === 'M4375 550C4365 550 4355 580 4355 610C4355 640 4372.5 670 4390 670C4407.5 670 4425 660 4425 650').toBe(true);
+            expect(((diagram.connectors[326]).wrapper.children[0] as PathElement).data === 'M4375 550C4365 550 4355 540.63 4355 531.25C4355 521.88 4360 512.5 4365 512.5C4370 512.5 4375 506.25 4375 500').toBe(true);
+            expect(((diagram.connectors[327]).wrapper.children[0] as PathElement).data === 'M4375 550C4352.5 550 4330 580 4330 610C4330 640 4341.25 670 4352.5 670C4363.75 670 4375 660 4375 650').toBe(true);
+            expect(((diagram.connectors[328]).wrapper.children[0] as PathElement).data === 'M4725 550C4715 550 4705 561.25 4705 572.5C4705 583.75 4735 595 4765 595C4795 595 4825 560 4825 525').toBe(true);
+            expect(((diagram.connectors[329]).wrapper.children[0] as PathElement).data === 'M4725 550C4715 550 4705 573.75 4705 597.5C4705 621.25 4735 645 4765 645C4795 645 4825 635 4825 625').toBe(true);
+            expect(((diagram.connectors[330]).wrapper.children[0] as PathElement).data === 'M4725 550C4700 550 4675 537.5 4675 525').toBe(true);
+            expect(((diagram.connectors[331]).wrapper.children[0] as PathElement).data === 'M4725 550C4718.75 550 4712.5 573.75 4712.5 597.5C4712.5 621.25 4703.13 645 4693.75 645C4684.38 645 4675 635 4675 625').toBe(true);
+            expect(((diagram.connectors[332]).wrapper.children[0] as PathElement).data === 'M4725 550C4715 550 4705 561.25 4705 572.5C4705 583.75 4728.75 595 4752.5 595C4776.25 595 4800 547.5 4800 500').toBe(true);
+            expect(((diagram.connectors[333]).wrapper.children[0] as PathElement).data === 'M4725 550C4715 550 4705 580 4705 610C4705 640 4728.75 670 4752.5 670C4776.25 670 4800 660 4800 650').toBe(true);
+            expect(((diagram.connectors[334]).wrapper.children[0] as PathElement).data === 'M4725 550C4712.5 550 4700 525 4700 500').toBe(true);
+            expect(((diagram.connectors[335]).wrapper.children[0] as PathElement).data === 'M4725 550C4690 550 4655 580 4655 610C4655 640 4666.25 670 4677.5 670C4688.75 670 4700 660 4700 650').toBe(true);
+            expect(((diagram.connectors[336]).wrapper.children[0] as PathElement).data === 'M5075 550C5065 550 5055 561.25 5055 572.5C5055 583.75 5085 595 5115 595C5145 595 5175 552.5 5175 510').toBe(true);
+            expect(((diagram.connectors[337]).wrapper.children[0] as PathElement).data === 'M5075 550C5065 550 5055 577.5 5055 605C5055 632.5 5085 660 5115 660C5145 660 5175 650 5175 640').toBe(true);
+            expect(((diagram.connectors[338]).wrapper.children[0] as PathElement).data === 'M5075 550C5050 550 5025 530 5025 510').toBe(true);
+            expect(((diagram.connectors[339]).wrapper.children[0] as PathElement).data === 'M5075 550C5068.75 550 5062.5 577.5 5062.5 605C5062.5 632.5 5053.13 660 5043.75 660C5034.38 660 5025 650 5025 640').toBe(true);
+            expect(((diagram.connectors[340]).wrapper.children[0] as PathElement).data === 'M5075 550C5065 550 5055 561.25 5055 572.5C5055 583.75 5082.5 595 5110 595C5137.5 595 5165 547.5 5165 500').toBe(true);
+            expect(((diagram.connectors[341]).wrapper.children[0] as PathElement).data === 'M5075 550C5065 550 5055 580 5055 610C5055 640 5082.5 670 5110 670C5137.5 670 5165 660 5165 650').toBe(true);
+            expect(((diagram.connectors[342]).wrapper.children[0] as PathElement).data === 'M5075 550C5055 550 5035 525 5035 500').toBe(true);
+            expect(((diagram.connectors[343]).wrapper.children[0] as PathElement).data === 'M5075 550C5071.25 550 5067.5 580 5067.5 610C5067.5 640 5059.38 670 5051.25 670C5043.13 670 5035 660 5035 650').toBe(true);
+            expect(((diagram.connectors[344]).wrapper.children[0] as PathElement).data === 'M5425 550C5415 550 5405 561.25 5405 572.5C5405 583.75 5435 595 5465 595C5495 595 5525 547.5 5525 500').toBe(true);
+            expect(((diagram.connectors[345]).wrapper.children[0] as PathElement).data === 'M5425 550C5415 550 5405 580 5405 610C5405 640 5435 670 5465 670C5495 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[346]).wrapper.children[0] as PathElement).data === 'M5425 550C5400 550 5375 525 5375 500').toBe(true);
+            expect(((diagram.connectors[347]).wrapper.children[0] as PathElement).data === 'M5425 550C5418.75 550 5412.5 580 5412.5 610C5412.5 640 5403.13 670 5393.75 670C5384.38 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[348]).wrapper.children[0] as PathElement).data === 'M5425 550C5415 550 5405 561.25 5405 572.5C5405 583.75 5435 595 5465 595C5495 595 5525 547.5 5525 500').toBe(true);
+            expect(((diagram.connectors[349]).wrapper.children[0] as PathElement).data === 'M5425 550C5415 550 5405 580 5405 610C5405 640 5435 670 5465 670C5495 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[350]).wrapper.children[0] as PathElement).data === 'M5425 550C5400 550 5375 525 5375 500').toBe(true);
+            expect(((diagram.connectors[351]).wrapper.children[0] as PathElement).data === 'M5425 550C5418.75 550 5412.5 580 5412.5 610C5412.5 640 5403.13 670 5393.75 670C5384.38 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[352]).wrapper.children[0] as PathElement).data === 'M4375 900C4365 900 4355 911.25 4355 922.5C4355 933.75 4382.5 945 4410 945C4437.5 945 4465 922.5 4465 900').toBe(true);
+            expect(((diagram.connectors[353]).wrapper.children[0] as PathElement).data === 'M4375 900C4365 900 4355 917.5 4355 935C4355 952.5 4382.5 970 4410 970C4437.5 970 4465 960 4465 950').toBe(true);
+            expect(((diagram.connectors[354]).wrapper.children[0] as PathElement).data === 'M4375 900C4371.25 900 4367.5 905 4367.5 910C4367.5 915 4359.38 920 4351.25 920C4343.13 920 4335 910 4335 900').toBe(true);
+            expect(((diagram.connectors[355]).wrapper.children[0] as PathElement).data === 'M4375 900C4371.25 900 4367.5 917.5 4367.5 935C4367.5 952.5 4359.38 970 4351.25 970C4343.13 970 4335 960 4335 950').toBe(true);
+            expect(((diagram.connectors[356]).wrapper.children[0] as PathElement).data === 'M4375 900C4365 900 4355 891.88 4355 883.75C4355 875.63 4372.5 867.5 4390 867.5C4407.5 867.5 4425 863.75 4425 860').toBe(true);
+            expect(((diagram.connectors[357]).wrapper.children[0] as PathElement).data === 'M4375 900C4365 900 4355 927.5 4355 955C4355 982.5 4372.5 1010 4390 1010C4407.5 1010 4425 1000 4425 990').toBe(true);
+            expect(((diagram.connectors[358]).wrapper.children[0] as PathElement).data === 'M4375 900C4365 900 4355 891.88 4355 883.75C4355 875.63 4360 867.5 4365 867.5C4370 867.5 4375 863.75 4375 860').toBe(true);
+            expect(((diagram.connectors[359]).wrapper.children[0] as PathElement).data === 'M4375 900C4352.5 900 4330 927.5 4330 955C4330 982.5 4341.25 1010 4352.5 1010C4363.75 1010 4375 1000 4375 990').toBe(true);
+            expect(((diagram.connectors[360]).wrapper.children[0] as PathElement).data === 'M4725 900C4715 900 4705 911.25 4705 922.5C4705 933.75 4732.5 945 4760 945C4787.5 945 4815 910 4815 875').toBe(true);
+            expect(((diagram.connectors[361]).wrapper.children[0] as PathElement).data === 'M4725 900C4715 900 4705 923.75 4705 947.5C4705 971.25 4732.5 995 4760 995C4787.5 995 4815 985 4815 975').toBe(true);
+            expect(((diagram.connectors[362]).wrapper.children[0] as PathElement).data === 'M4725 900C4705 900 4685 887.5 4685 875').toBe(true);
+            expect(((diagram.connectors[363]).wrapper.children[0] as PathElement).data === 'M4725 900C4721.25 900 4717.5 923.75 4717.5 947.5C4717.5 971.25 4709.38 995 4701.25 995C4693.13 995 4685 985 4685 975').toBe(true);
+            expect(((diagram.connectors[364]).wrapper.children[0] as PathElement).data === 'M4725 900C4715 900 4705 911.25 4705 922.5C4705 933.75 4728.75 945 4752.5 945C4776.25 945 4800 902.5 4800 860').toBe(true);
+            expect(((diagram.connectors[365]).wrapper.children[0] as PathElement).data === 'M4725 900C4715 900 4705 927.5 4705 955C4705 982.5 4728.75 1010 4752.5 1010C4776.25 1010 4800 1000 4800 990').toBe(true);
+            expect(((diagram.connectors[366]).wrapper.children[0] as PathElement).data === 'M4725 900C4712.5 900 4700 880 4700 860').toBe(true);
+            expect(((diagram.connectors[367]).wrapper.children[0] as PathElement).data === 'M4725 900C4690 900 4655 927.5 4655 955C4655 982.5 4666.25 1010 4677.5 1010C4688.75 1010 4700 1000 4700 990').toBe(true);
+            expect(((diagram.connectors[368]).wrapper.children[0] as PathElement).data === 'M5075 900C5065 900 5055 911.25 5055 922.5C5055 933.75 5082.5 945 5110 945C5137.5 945 5165 902.5 5165 860').toBe(true);
+            expect(((diagram.connectors[369]).wrapper.children[0] as PathElement).data === 'M5075 900C5065 900 5055 927.5 5055 955C5055 982.5 5082.5 1010 5110 1010C5137.5 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[370]).wrapper.children[0] as PathElement).data === 'M5075 900C5055 900 5035 880 5035 860').toBe(true);
+            expect(((diagram.connectors[371]).wrapper.children[0] as PathElement).data === 'M5075 900C5071.25 900 5067.5 927.5 5067.5 955C5067.5 982.5 5059.38 1010 5051.25 1010C5043.13 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[372]).wrapper.children[0] as PathElement).data === 'M5075 900C5065 900 5055 911.25 5055 922.5C5055 933.75 5082.5 945 5110 945C5137.5 945 5165 902.5 5165 860').toBe(true);
+            expect(((diagram.connectors[373]).wrapper.children[0] as PathElement).data === 'M5075 900C5065 900 5055 927.5 5055 955C5055 982.5 5082.5 1010 5110 1010C5137.5 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[374]).wrapper.children[0] as PathElement).data === 'M5075 900C5055 900 5035 880 5035 860').toBe(true);
+            expect(((diagram.connectors[375]).wrapper.children[0] as PathElement).data === 'M5075 900C5071.25 900 5067.5 927.5 5067.5 955C5067.5 982.5 5059.38 1010 5051.25 1010C5043.13 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[376]).wrapper.children[0] as PathElement).data === 'M5425 900C5415 900 5405 911.25 5405 922.5C5405 933.75 5432.5 945 5460 945C5487.5 945 5515 897.5 5515 850').toBe(true);
+            expect(((diagram.connectors[377]).wrapper.children[0] as PathElement).data === 'M5425 900C5415 900 5405 930 5405 960C5405 990 5432.5 1020 5460 1020C5487.5 1020 5515 1010 5515 1000').toBe(true);
+            expect(((diagram.connectors[378]).wrapper.children[0] as PathElement).data === 'M5425 900C5405 900 5385 875 5385 850').toBe(true);
+            expect(((diagram.connectors[379]).wrapper.children[0] as PathElement).data === 'M5425 900C5421.25 900 5417.5 930 5417.5 960C5417.5 990 5409.38 1020 5401.25 1020C5393.13 1020 5385 1010 5385 1000').toBe(true);
+            expect(((diagram.connectors[380]).wrapper.children[0] as PathElement).data === 'M5425 900C5415 900 5405 911.25 5405 922.5C5405 933.75 5435 945 5465 945C5495 945 5525 902.5 5525 860').toBe(true);
+            expect(((diagram.connectors[381]).wrapper.children[0] as PathElement).data === 'M5425 900C5415 900 5405 927.5 5405 955C5405 982.5 5435 1010 5465 1010C5495 1010 5525 1000 5525 990').toBe(true);
+            expect(((diagram.connectors[382]).wrapper.children[0] as PathElement).data === 'M5425 900C5400 900 5375 880 5375 860').toBe(true);
+            expect(((diagram.connectors[383]).wrapper.children[0] as PathElement).data === 'M5425 900C5418.75 900 5412.5 927.5 5412.5 955C5412.5 982.5 5403.13 1010 5393.75 1010C5384.38 1010 5375 1000 5375 990').toBe(true);
+
+            done();
+        });
+    });
+
+    describe('Conectors with segments - Bezier Segment Rendering(TopPort To Port)', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramBezierSegmentTopPortToPortRendering' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [];
+            let connectors: ConnectorModel[] = [];
+            let offsetY = 200; let offsetX = 200;
+            let extra1 = 25; let extra2 = 125;
+
+            for (var z = 1; z <= 4; z++) {
+                for (var x = 0; x < 3; x++) {
+                    for (var y = 0; y < 4; y++) {
+                        var rootnode = {
+                            id: 'rootNode' + z + x + y, offsetX: offsetX, offsetY: offsetY, width: 50, height: 50,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(rootnode);
+
+                        let node1: NodeModel = {
+                            id: 'node' + z + x + y + 1, offsetX: offsetX + extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node2: NodeModel = {
+                            id: 'node' + z + x + y + 2, offsetX: offsetX + extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node3: NodeModel = {
+                            id: 'node' + z + x + y + 3, offsetX: offsetX - extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node4: NodeModel = {
+                            id: 'node' + z + x + y + 4, offsetX: offsetX - extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node5: NodeModel = {
+                            id: 'node' + z + x + y + 5, offsetX: offsetX + extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node6: NodeModel = {
+                            id: 'node' + z + x + y + 6, offsetX: offsetX + extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node7: NodeModel = {
+                            id: 'node' + z + x + y + 7, offsetX: offsetX - extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node8: NodeModel = {
+                            id: 'node' + z + x + y + 8, offsetX: offsetX - extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(node1);
+                        nodes.push(node2);
+                        nodes.push(node3);
+                        nodes.push(node4);
+                        nodes.push(node5);
+                        nodes.push(node6);
+                        nodes.push(node7);
+                        nodes.push(node8);
+
+                        let connector1: ConnectorModel = { id: 'connector' + z + x + y + 1, type: 'Bezier', sourceID: rootnode.id, targetID: node1.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector2: ConnectorModel = { id: 'connector' + z + x + y + 2, type: 'Bezier', sourceID: rootnode.id, targetID: node2.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector3: ConnectorModel = { id: 'connector' + z + x + y + 3, type: 'Bezier', sourceID: rootnode.id, targetID: node3.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector4: ConnectorModel = { id: 'connector' + z + x + y + 4, type: 'Bezier', sourceID: rootnode.id, targetID: node4.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector5: ConnectorModel = { id: 'connector' + z + x + y + 5, type: 'Bezier', sourceID: rootnode.id, targetID: node5.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector6: ConnectorModel = { id: 'connector' + z + x + y + 6, type: 'Bezier', sourceID: rootnode.id, targetID: node6.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector7: ConnectorModel = { id: 'connector' + z + x + y + 7, type: 'Bezier', sourceID: rootnode.id, targetID: node7.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector8: ConnectorModel = { id: 'connector' + z + x + y + 8, type: 'Bezier', sourceID: rootnode.id, targetID: node8.id, sourcePortID: 'port2', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        connectors.push(connector1);
+                        connectors.push(connector2);
+                        connectors.push(connector3);
+                        connectors.push(connector4);
+                        connectors.push(connector5);
+                        connectors.push(connector6);
+                        connectors.push(connector7);
+                        connectors.push(connector8);
+
+                        offsetX += 350;
+                        extra1 = y == 0 ? 50 : y == 1 ? 65 : 75;
+                    }
+
+                    offsetX = 200 + ((z - 1) * 350 * 4);
+                    offsetY += 350;
+                    extra1 = 25;
+                    extra2 = x == 0 ? 75 : 65;
+                }
+
+                offsetX = 200 + (z * 350 * 4);
+                offsetY = 200;
+                extra2 = 125;
+            }
+
+            diagram = new Diagram({
+                width: 6000, height: 1200, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramBezierSegmentTopPortToPortRendering');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Bezier segment - TopPort to Port Rendering', (done: Function) => {
+            expect(((diagram.connectors[0]).wrapper.children[0] as PathElement).data === 'M200 175C200 165 215.63 155 231.25 155C246.88 155 262.5 160 262.5 165C262.5 170 281.25 175 300 175').toBe(true);
+            expect(((diagram.connectors[1]).wrapper.children[0] as PathElement).data === 'M200 175C200 165 215.63 155 231.25 155C246.88 155 262.5 172.5 262.5 190C262.5 207.5 281.25 225 300 225').toBe(true);
+            expect(((diagram.connectors[2]).wrapper.children[0] as PathElement).data === 'M200 175C200 152.5 157.5 130 115 130C72.5 130 30 141.25 30 152.5C30 163.75 40 175 50 175').toBe(true);
+            expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M200 175C200 165 157.5 155 115 155C72.5 155 30 172.5 30 190C30 207.5 40 225 50 225').toBe(true);
+            expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M200 175C200 156.25 195 137.5 190 137.5C185 137.5 180 121.88 180 106.25C180 90.63 190 75 200 75').toBe(true);
+            expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M200 175C200 165 188.75 155 177.5 155C166.25 155 155 197.5 155 240C155 282.5 177.5 325 200 325').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M200 175C200 156.25 182.5 137.5 165 137.5C147.5 137.5 130 121.88 130 106.25C130 90.63 140 75 150 75').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M200 175C200 165 182.5 155 165 155C147.5 155 130 197.5 130 240C130 282.5 140 325 150 325').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M550 175C550 162.5 600 150 650 150').toBe(true);
+            expect(((diagram.connectors[9]).wrapper.children[0] as PathElement).data === 'M550 175C550 165 565.63 155 581.25 155C596.88 155 612.5 178.75 612.5 202.5C612.5 226.25 631.25 250 650 250').toBe(true);
+            expect(((diagram.connectors[10]).wrapper.children[0] as PathElement).data === 'M550 175C550 140 507.5 105 465 105C422.5 105 380 116.25 380 127.5C380 138.75 390 150 400 150').toBe(true);
+            expect(((diagram.connectors[11]).wrapper.children[0] as PathElement).data === 'M550 175C550 165 507.5 155 465 155C422.5 155 380 178.75 380 202.5C380 226.25 390 250 400 250').toBe(true);
+            expect(((diagram.connectors[12]).wrapper.children[0] as PathElement).data === 'M550 175C550 125 562.5 75 575 75').toBe(true);
+            expect(((diagram.connectors[13]).wrapper.children[0] as PathElement).data === 'M550 175C550 165 538.75 155 527.5 155C516.25 155 505 197.5 505 240C505 282.5 540 325 575 325').toBe(true);
+            expect(((diagram.connectors[14]).wrapper.children[0] as PathElement).data === 'M550 175C550 156.25 526.25 137.5 502.5 137.5C478.75 137.5 455 121.88 455 106.25C455 90.63 465 75 475 75').toBe(true);
+            expect(((diagram.connectors[15]).wrapper.children[0] as PathElement).data === 'M550 175C550 165 526.25 155 502.5 155C478.75 155 455 197.5 455 240C455 282.5 465 325 475 325').toBe(true);
+            expect(((diagram.connectors[16]).wrapper.children[0] as PathElement).data === 'M900 175C900 155 950 135 1000 135').toBe(true);
+            expect(((diagram.connectors[17]).wrapper.children[0] as PathElement).data === 'M900 175C900 165 915.63 155 931.25 155C946.88 155 962.5 182.5 962.5 210C962.5 237.5 981.25 265 1000 265').toBe(true);
+            expect(((diagram.connectors[18]).wrapper.children[0] as PathElement).data === 'M900 175C900 171.25 857.5 167.5 815 167.5C772.5 167.5 730 159.38 730 151.25C730 143.13 740 135 750 135').toBe(true);
+            expect(((diagram.connectors[19]).wrapper.children[0] as PathElement).data === 'M900 175C900 165 857.5 155 815 155C772.5 155 730 182.5 730 210C730 237.5 740 265 750 265').toBe(true);
+            expect(((diagram.connectors[20]).wrapper.children[0] as PathElement).data === 'M900 175C900 125 920 75 940 75').toBe(true);
+            expect(((diagram.connectors[21]).wrapper.children[0] as PathElement).data === 'M900 175C900 165 888.75 155 877.5 155C866.25 155 855 197.5 855 240C855 282.5 897.5 325 940 325').toBe(true);
+            expect(((diagram.connectors[22]).wrapper.children[0] as PathElement).data === 'M900 175C900 156.25 872.5 137.5 845 137.5C817.5 137.5 790 121.88 790 106.25C790 90.63 800 75 810 75').toBe(true);
+            expect(((diagram.connectors[23]).wrapper.children[0] as PathElement).data === 'M900 175C900 165 872.5 155 845 155C817.5 155 790 197.5 790 240C790 282.5 800 325 810 325').toBe(true);
+            expect(((diagram.connectors[24]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 150 1300 125 1350 125').toBe(true);
+            expect(((diagram.connectors[25]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 165 1265.63 155 1281.25 155C1296.88 155 1312.5 185 1312.5 215C1312.5 245 1331.25 275 1350 275').toBe(true);
+            expect(((diagram.connectors[26]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 168.75 1207.5 162.5 1165 162.5C1122.5 162.5 1080 153.13 1080 143.75C1080 134.38 1090 125 1100 125').toBe(true);
+            expect(((diagram.connectors[27]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 165 1207.5 155 1165 155C1122.5 155 1080 185 1080 215C1080 245 1090 275 1100 275').toBe(true);
+            expect(((diagram.connectors[28]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 125 1275 75 1300 75').toBe(true);
+            expect(((diagram.connectors[29]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 165 1238.75 155 1227.5 155C1216.25 155 1205 197.5 1205 240C1205 282.5 1252.5 325 1300 325').toBe(true);
+            expect(((diagram.connectors[30]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 156.25 1220 137.5 1190 137.5C1160 137.5 1130 121.88 1130 106.25C1130 90.63 1140 75 1150 75').toBe(true);
+            expect(((diagram.connectors[31]).wrapper.children[0] as PathElement).data === 'M1250 175C1250 165 1220 155 1190 155C1160 155 1130 197.5 1130 240C1130 282.5 1140 325 1150 325').toBe(true);
+            expect(((diagram.connectors[32]).wrapper.children[0] as PathElement).data === 'M200 525C225 525 227.5 525 250 525').toBe(true);
+            expect(((diagram.connectors[33]).wrapper.children[0] as PathElement).data === 'M200 525C200 515 209.38 505 218.75 505C228.13 505 237.5 522.5 237.5 540C237.5 557.5 243.75 575 250 575').toBe(true);
+            expect(((diagram.connectors[34]).wrapper.children[0] as PathElement).data === 'M200 525C200 502.5 170 480 140 480C110 480 80 491.25 80 502.5C80 513.75 90 525 100 525').toBe(true);
+            expect(((diagram.connectors[35]).wrapper.children[0] as PathElement).data === 'M200 525C200 515 170 505 140 505C110 505 80 522.5 80 540C80 557.5 90 575 100 575').toBe(true);
+            expect(((diagram.connectors[36]).wrapper.children[0] as PathElement).data === 'M200 525C200 518.75 195 512.5 190 512.5C185 512.5 180 503.13 180 493.75C180 484.38 190 475 200 475').toBe(true);
+            expect(((diagram.connectors[37]).wrapper.children[0] as PathElement).data === 'M200 525C200 515 188.75 505 177.5 505C166.25 505 155 535 155 565C155 595 177.5 625 200 625').toBe(true);
+            expect(((diagram.connectors[38]).wrapper.children[0] as PathElement).data === 'M200 525C200 518.75 182.5 512.5 165 512.5C147.5 512.5 130 503.13 130 493.75C130 484.38 140 475 150 475').toBe(true);
+            expect(((diagram.connectors[39]).wrapper.children[0] as PathElement).data === 'M200 525C200 515 182.5 505 165 505C147.5 505 130 535 130 565C130 595 140 625 150 625').toBe(true);
+            expect(((diagram.connectors[40]).wrapper.children[0] as PathElement).data === 'M550 525C550 512.5 575 500 600 500').toBe(true);
+            expect(((diagram.connectors[41]).wrapper.children[0] as PathElement).data === 'M550 525C550 515 538.75 505 527.5 505C516.25 505 505 528.75 505 552.5C505 576.25 552.5 600 600 600').toBe(true);
+            expect(((diagram.connectors[42]).wrapper.children[0] as PathElement).data === 'M550 525C550 490 520 455 490 455C460 455 430 466.25 430 477.5C430 488.75 440 500 450 500').toBe(true);
+            expect(((diagram.connectors[43]).wrapper.children[0] as PathElement).data === 'M550 525C550 515 520 505 490 505C460 505 430 528.75 430 552.5C430 576.25 440 600 450 600').toBe(true);
+            expect(((diagram.connectors[44]).wrapper.children[0] as PathElement).data === 'M550 525C550 500 562.5 475 575 475').toBe(true);
+            expect(((diagram.connectors[45]).wrapper.children[0] as PathElement).data === 'M550 525C550 515 538.75 505 527.5 505C516.25 505 505 535 505 565C505 595 540 625 575 625').toBe(true);
+            expect(((diagram.connectors[46]).wrapper.children[0] as PathElement).data === 'M550 525C550 518.75 526.25 512.5 502.5 512.5C478.75 512.5 455 503.13 455 493.75C455 484.38 465 475 475 475').toBe(true);
+            expect(((diagram.connectors[47]).wrapper.children[0] as PathElement).data === 'M550 525C550 515 526.25 505 502.5 505C478.75 505 455 535 455 565C455 595 465 625 475 625').toBe(true);
+            expect(((diagram.connectors[48]).wrapper.children[0] as PathElement).data === 'M900 525C900 505 925 485 950 485').toBe(true);
+            expect(((diagram.connectors[49]).wrapper.children[0] as PathElement).data === 'M900 525C900 515 888.75 505 877.5 505C866.25 505 855 532.5 855 560C855 587.5 902.5 615 950 615').toBe(true);
+            expect(((diagram.connectors[50]).wrapper.children[0] as PathElement).data === 'M900 525C900 521.25 870 517.5 840 517.5C810 517.5 780 509.38 780 501.25C780 493.13 790 485 800 485').toBe(true);
+            expect(((diagram.connectors[51]).wrapper.children[0] as PathElement).data === 'M900 525C900 515 870 505 840 505C810 505 780 532.5 780 560C780 587.5 790 615 800 615').toBe(true);
+            expect(((diagram.connectors[52]).wrapper.children[0] as PathElement).data === 'M900 525C900 500 920 475 940 475').toBe(true);
+            expect(((diagram.connectors[53]).wrapper.children[0] as PathElement).data === 'M900 525C900 515 888.75 505 877.5 505C866.25 505 855 535 855 565C855 595 897.5 625 940 625').toBe(true);
+            expect(((diagram.connectors[54]).wrapper.children[0] as PathElement).data === 'M900 525C900 518.75 872.5 512.5 845 512.5C817.5 512.5 790 503.13 790 493.75C790 484.38 800 475 810 475').toBe(true);
+            expect(((diagram.connectors[55]).wrapper.children[0] as PathElement).data === 'M900 525C900 515 872.5 505 845 505C817.5 505 790 535 790 565C790 595 800 625 810 625').toBe(true);
+            expect(((diagram.connectors[56]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 500 1275 475 1300 475').toBe(true);
+            expect(((diagram.connectors[57]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 515 1238.75 505 1227.5 505C1216.25 505 1205 535 1205 565C1205 595 1252.5 625 1300 625').toBe(true);
+            expect(((diagram.connectors[58]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 518.75 1220 512.5 1190 512.5C1160 512.5 1130 503.13 1130 493.75C1130 484.38 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[59]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 515 1220 505 1190 505C1160 505 1130 535 1130 565C1130 595 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[60]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 500 1275 475 1300 475').toBe(true);
+            expect(((diagram.connectors[61]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 515 1238.75 505 1227.5 505C1216.25 505 1205 535 1205 565C1205 595 1252.5 625 1300 625').toBe(true);
+            expect(((diagram.connectors[62]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 518.75 1220 512.5 1190 512.5C1160 512.5 1130 503.13 1130 493.75C1130 484.38 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[63]).wrapper.children[0] as PathElement).data === 'M1250 525C1250 515 1220 505 1190 505C1160 505 1130 535 1130 565C1130 595 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[64]).wrapper.children[0] as PathElement).data === 'M200 875C220 875 222 875 240 875').toBe(true);
+            expect(((diagram.connectors[65]).wrapper.children[0] as PathElement).data === 'M200 875C200 865 208.13 855 216.25 855C224.38 855 232.5 872.5 232.5 890C232.5 907.5 236.25 925 240 925').toBe(true);
+            expect(((diagram.connectors[66]).wrapper.children[0] as PathElement).data === 'M200 875C200 852.5 172.5 830 145 830C117.5 830 90 841.25 90 852.5C90 863.75 100 875 110 875').toBe(true);
+            expect(((diagram.connectors[67]).wrapper.children[0] as PathElement).data === 'M200 875C200 865 172.5 855 145 855C117.5 855 90 872.5 90 890C90 907.5 100 925 110 925').toBe(true);
+            expect(((diagram.connectors[68]).wrapper.children[0] as PathElement).data === 'M200 875C200 871.25 195 867.5 190 867.5C185 867.5 180 859.38 180 851.25C180 843.13 190 835 200 835').toBe(true);
+            expect(((diagram.connectors[69]).wrapper.children[0] as PathElement).data === 'M200 875C200 865 188.75 855 177.5 855C166.25 855 155 882.5 155 910C155 937.5 177.5 965 200 965').toBe(true);
+            expect(((diagram.connectors[70]).wrapper.children[0] as PathElement).data === 'M200 875C200 871.25 182.5 867.5 165 867.5C147.5 867.5 130 859.38 130 851.25C130 843.13 140 835 150 835').toBe(true);
+            expect(((diagram.connectors[71]).wrapper.children[0] as PathElement).data === 'M200 875C200 865 182.5 855 165 855C147.5 855 130 882.5 130 910C130 937.5 140 965 150 965').toBe(true);
+            expect(((diagram.connectors[72]).wrapper.children[0] as PathElement).data === 'M550 875C550 862.5 570 850 590 850').toBe(true);
+            expect(((diagram.connectors[73]).wrapper.children[0] as PathElement).data === 'M550 875C550 865 538.75 855 527.5 855C516.25 855 505 878.75 505 902.5C505 926.25 547.5 950 590 950').toBe(true);
+            expect(((diagram.connectors[74]).wrapper.children[0] as PathElement).data === 'M550 875C550 840 522.5 805 495 805C467.5 805 440 816.25 440 827.5C440 838.75 450 850 460 850').toBe(true);
+            expect(((diagram.connectors[75]).wrapper.children[0] as PathElement).data === 'M550 875C550 865 522.5 855 495 855C467.5 855 440 878.75 440 902.5C440 926.25 450 950 460 950').toBe(true);
+            expect(((diagram.connectors[76]).wrapper.children[0] as PathElement).data === 'M550 875C550 855 562.5 835 575 835').toBe(true);
+            expect(((diagram.connectors[77]).wrapper.children[0] as PathElement).data === 'M550 875C550 865 538.75 855 527.5 855C516.25 855 505 882.5 505 910C505 937.5 540 965 575 965').toBe(true);
+            expect(((diagram.connectors[78]).wrapper.children[0] as PathElement).data === 'M550 875C550 871.25 526.25 867.5 502.5 867.5C478.75 867.5 455 859.38 455 851.25C455 843.13 465 835 475 835').toBe(true);
+            expect(((diagram.connectors[79]).wrapper.children[0] as PathElement).data === 'M550 875C550 865 526.25 855 502.5 855C478.75 855 455 882.5 455 910C455 937.5 465 965 475 965').toBe(true);
+            expect(((diagram.connectors[80]).wrapper.children[0] as PathElement).data === 'M900 875C900 855 920 835 940 835').toBe(true);
+            expect(((diagram.connectors[81]).wrapper.children[0] as PathElement).data === 'M900 875C900 865 888.75 855 877.5 855C866.25 855 855 882.5 855 910C855 937.5 897.5 965 940 965').toBe(true);
+            expect(((diagram.connectors[82]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.25 872.5 867.5 845 867.5C817.5 867.5 790 859.38 790 851.25C790 843.13 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[83]).wrapper.children[0] as PathElement).data === 'M900 875C900 865 872.5 855 845 855C817.5 855 790 882.5 790 910C790 937.5 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[84]).wrapper.children[0] as PathElement).data === 'M900 875C900 855 920 835 940 835').toBe(true);
+            expect(((diagram.connectors[85]).wrapper.children[0] as PathElement).data === 'M900 875C900 865 888.75 855 877.5 855C866.25 855 855 882.5 855 910C855 937.5 897.5 965 940 965').toBe(true);
+            expect(((diagram.connectors[86]).wrapper.children[0] as PathElement).data === 'M900 875C900 871.25 872.5 867.5 845 867.5C817.5 867.5 790 859.38 790 851.25C790 843.13 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[87]).wrapper.children[0] as PathElement).data === 'M900 875C900 865 872.5 855 845 855C817.5 855 790 882.5 790 910C790 937.5 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[88]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 850 1270 825 1290 825').toBe(true);
+            expect(((diagram.connectors[89]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 865 1238.75 855 1227.5 855C1216.25 855 1205 885 1205 915C1205 945 1247.5 975 1290 975').toBe(true);
+            expect(((diagram.connectors[90]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 868.75 1222.5 862.5 1195 862.5C1167.5 862.5 1140 853.13 1140 843.75C1140 834.38 1150 825 1160 825').toBe(true);
+            expect(((diagram.connectors[91]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 865 1222.5 855 1195 855C1167.5 855 1140 885 1140 915C1140 945 1150 975 1160 975').toBe(true);
+            expect(((diagram.connectors[92]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 855 1275 835 1300 835').toBe(true);
+            expect(((diagram.connectors[93]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 865 1238.75 855 1227.5 855C1216.25 855 1205 882.5 1205 910C1205 937.5 1252.5 965 1300 965').toBe(true);
+            expect(((diagram.connectors[94]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 871.25 1220 867.5 1190 867.5C1160 867.5 1130 859.38 1130 851.25C1130 843.13 1140 835 1150 835').toBe(true);
+            expect(((diagram.connectors[95]).wrapper.children[0] as PathElement).data === 'M1250 875C1250 865 1220 855 1190 855C1160 855 1130 882.5 1130 910C1130 937.5 1140 965 1150 965').toBe(true);
+            expect(((diagram.connectors[96]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 152.5 1631.25 130 1662.5 130C1693.75 130 1725 140 1725 150').toBe(true);
+            expect(((diagram.connectors[97]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1631.25 155 1662.5 155C1693.75 155 1725 177.5 1725 200').toBe(true);
+            expect(((diagram.connectors[98]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 152.5 1568.75 130 1537.5 130C1506.25 130 1475 140 1475 150').toBe(true);
+            expect(((diagram.connectors[99]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1568.75 155 1537.5 155C1506.25 155 1475 177.5 1475 200').toBe(true);
+            expect(((diagram.connectors[100]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 156.25 1618.75 137.5 1637.5 137.5C1656.25 137.5 1675 110.63 1675 83.75C1675 56.88 1662.5 30 1650 30C1637.5 30 1625 40 1625 50').toBe(true);
+            expect(((diagram.connectors[101]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1611.25 155 1622.5 155C1633.75 155 1645 181.88 1645 208.75C1645 235.63 1640 262.5 1635 262.5C1630 262.5 1625 281.25 1625 300').toBe(true);
+            expect(((diagram.connectors[102]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 156.25 1581.25 137.5 1562.5 137.5C1543.75 137.5 1525 110.63 1525 83.75C1525 56.88 1537.5 30 1550 30C1562.5 30 1575 40 1575 50').toBe(true);
+            expect(((diagram.connectors[103]).wrapper.children[0] as PathElement).data === 'M1600 175C1600 165 1588.75 155 1577.5 155C1566.25 155 1555 181.88 1555 208.75C1555 235.63 1560 262.5 1565 262.5C1570 262.5 1575 281.25 1575 300').toBe(true);
+            expect(((diagram.connectors[104]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 140 1981.25 105 2012.5 105C2043.75 105 2075 115 2075 125').toBe(true);
+            expect(((diagram.connectors[105]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1981.25 155 2012.5 155C2043.75 155 2075 190 2075 225').toBe(true);
+            expect(((diagram.connectors[106]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 140 1918.75 105 1887.5 105C1856.25 105 1825 115 1825 125').toBe(true);
+            expect(((diagram.connectors[107]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1918.75 155 1887.5 155C1856.25 155 1825 190 1825 225').toBe(true);
+            expect(((diagram.connectors[108]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 102.5 1962.5 30 1975 30C1987.5 30 2000 40 2000 50').toBe(true);
+            expect(((diagram.connectors[109]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1962.5 155 1975 155C1987.5 155 2000 227.5 2000 300').toBe(true);
+            expect(((diagram.connectors[110]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 102.5 1937.5 30 1925 30C1912.5 30 1900 40 1900 50').toBe(true);
+            expect(((diagram.connectors[111]).wrapper.children[0] as PathElement).data === 'M1950 175C1950 165 1937.5 155 1925 155C1912.5 155 1900 227.5 1900 300').toBe(true);
+            expect(((diagram.connectors[112]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 132.5 2331.25 90 2362.5 90C2393.75 90 2425 100 2425 110').toBe(true);
+            expect(((diagram.connectors[113]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2331.25 155 2362.5 155C2393.75 155 2425 197.5 2425 240').toBe(true);
+            expect(((diagram.connectors[114]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 132.5 2268.75 90 2237.5 90C2206.25 90 2175 100 2175 110').toBe(true);
+            expect(((diagram.connectors[115]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2268.75 155 2237.5 155C2206.25 155 2175 197.5 2175 240').toBe(true);
+            expect(((diagram.connectors[116]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 102.5 2316.25 30 2332.5 30C2348.75 30 2365 40 2365 50').toBe(true);
+            expect(((diagram.connectors[117]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2316.25 155 2332.5 155C2348.75 155 2365 227.5 2365 300').toBe(true);
+            expect(((diagram.connectors[118]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 102.5 2283.75 30 2267.5 30C2251.25 30 2235 40 2235 50').toBe(true);
+            expect(((diagram.connectors[119]).wrapper.children[0] as PathElement).data === 'M2300 175C2300 165 2283.75 155 2267.5 155C2251.25 155 2235 227.5 2235 300').toBe(true);
+            expect(((diagram.connectors[120]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 127.5 2681.25 80 2712.5 80C2743.75 80 2775 90 2775 100').toBe(true);
+            expect(((diagram.connectors[121]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2681.25 155 2712.5 155C2743.75 155 2775 202.5 2775 250').toBe(true);
+            expect(((diagram.connectors[122]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 127.5 2618.75 80 2587.5 80C2556.25 80 2525 90 2525 100').toBe(true);
+            expect(((diagram.connectors[123]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2618.75 155 2587.5 155C2556.25 155 2525 202.5 2525 250').toBe(true);
+            expect(((diagram.connectors[124]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 102.5 2668.75 30 2687.5 30C2706.25 30 2725 40 2725 50').toBe(true);
+            expect(((diagram.connectors[125]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2668.75 155 2687.5 155C2706.25 155 2725 227.5 2725 300').toBe(true);
+            expect(((diagram.connectors[126]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 102.5 2631.25 30 2612.5 30C2593.75 30 2575 40 2575 50').toBe(true);
+            expect(((diagram.connectors[127]).wrapper.children[0] as PathElement).data === 'M2650 175C2650 165 2631.25 155 2612.5 155C2593.75 155 2575 227.5 2575 300').toBe(true);
+            expect(((diagram.connectors[128]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 502.5 1618.75 480 1637.5 480C1656.25 480 1675 490 1675 500').toBe(true);
+            expect(((diagram.connectors[129]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1618.75 505 1637.5 505C1656.25 505 1675 527.5 1675 550').toBe(true);
+            expect(((diagram.connectors[130]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 502.5 1581.25 480 1562.5 480C1543.75 480 1525 490 1525 500').toBe(true);
+            expect(((diagram.connectors[131]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1581.25 505 1562.5 505C1543.75 505 1525 527.5 1525 550').toBe(true);
+            expect(((diagram.connectors[132]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 518.75 1618.75 512.5 1637.5 512.5C1656.25 512.5 1675 491.88 1675 471.25C1675 450.63 1662.5 430 1650 430C1637.5 430 1625 440 1625 450').toBe(true);
+            expect(((diagram.connectors[133]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1611.25 505 1622.5 505C1633.75 505 1645 525.63 1645 546.25C1645 566.88 1640 587.5 1635 587.5C1630 587.5 1625 593.75 1625 600').toBe(true);
+            expect(((diagram.connectors[134]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 518.75 1581.25 512.5 1562.5 512.5C1543.75 512.5 1525 491.88 1525 471.25C1525 450.63 1537.5 430 1550 430C1562.5 430 1575 440 1575 450').toBe(true);
+            expect(((diagram.connectors[135]).wrapper.children[0] as PathElement).data === 'M1600 525C1600 515 1588.75 505 1577.5 505C1566.25 505 1555 525.63 1555 546.25C1555 566.88 1560 587.5 1565 587.5C1570 587.5 1575 593.75 1575 600').toBe(true);
+            expect(((diagram.connectors[136]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 490 1968.75 455 1987.5 455C2006.25 455 2025 465 2025 475').toBe(true);
+            expect(((diagram.connectors[137]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1968.75 505 1987.5 505C2006.25 505 2025 540 2025 575').toBe(true);
+            expect(((diagram.connectors[138]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 490 1931.25 455 1912.5 455C1893.75 455 1875 465 1875 475').toBe(true);
+            expect(((diagram.connectors[139]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1931.25 505 1912.5 505C1893.75 505 1875 540 1875 575').toBe(true);
+            expect(((diagram.connectors[140]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 477.5 1962.5 430 1975 430C1987.5 430 2000 440 2000 450').toBe(true);
+            expect(((diagram.connectors[141]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1962.5 505 1975 505C1987.5 505 2000 552.5 2000 600').toBe(true);
+            expect(((diagram.connectors[142]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 477.5 1937.5 430 1925 430C1912.5 430 1900 440 1900 450').toBe(true);
+            expect(((diagram.connectors[143]).wrapper.children[0] as PathElement).data === 'M1950 525C1950 515 1937.5 505 1925 505C1912.5 505 1900 552.5 1900 600').toBe(true);
+            expect(((diagram.connectors[144]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 482.5 2318.75 440 2337.5 440C2356.25 440 2375 450 2375 460').toBe(true);
+            expect(((diagram.connectors[145]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2318.75 505 2337.5 505C2356.25 505 2375 547.5 2375 590').toBe(true);
+            expect(((diagram.connectors[146]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 482.5 2281.25 440 2262.5 440C2243.75 440 2225 450 2225 460').toBe(true);
+            expect(((diagram.connectors[147]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2281.25 505 2262.5 505C2243.75 505 2225 547.5 2225 590').toBe(true);
+            expect(((diagram.connectors[148]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 477.5 2316.25 430 2332.5 430C2348.75 430 2365 440 2365 450').toBe(true);
+            expect(((diagram.connectors[149]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2316.25 505 2332.5 505C2348.75 505 2365 552.5 2365 600').toBe(true);
+            expect(((diagram.connectors[150]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 477.5 2283.75 430 2267.5 430C2251.25 430 2235 440 2235 450').toBe(true);
+            expect(((diagram.connectors[151]).wrapper.children[0] as PathElement).data === 'M2300 525C2300 515 2283.75 505 2267.5 505C2251.25 505 2235 552.5 2235 600').toBe(true);
+            expect(((diagram.connectors[152]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2668.75 430 2687.5 430C2706.25 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[153]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2668.75 505 2687.5 505C2706.25 505 2725 552.5 2725 600').toBe(true);
+            expect(((diagram.connectors[154]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2631.25 430 2612.5 430C2593.75 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[155]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2631.25 505 2612.5 505C2593.75 505 2575 552.5 2575 600').toBe(true);
+            expect(((diagram.connectors[156]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2668.75 430 2687.5 430C2706.25 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[157]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2668.75 505 2687.5 505C2706.25 505 2725 552.5 2725 600').toBe(true);
+            expect(((diagram.connectors[158]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 477.5 2631.25 430 2612.5 430C2593.75 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[159]).wrapper.children[0] as PathElement).data === 'M2650 525C2650 515 2631.25 505 2612.5 505C2593.75 505 2575 552.5 2575 600').toBe(true);
+            expect(((diagram.connectors[160]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 852.5 1616.25 830 1632.5 830C1648.75 830 1665 840 1665 850').toBe(true);
+            expect(((diagram.connectors[161]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1616.25 855 1632.5 855C1648.75 855 1665 877.5 1665 900').toBe(true);
+            expect(((diagram.connectors[162]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 852.5 1583.75 830 1567.5 830C1551.25 830 1535 840 1535 850').toBe(true);
+            expect(((diagram.connectors[163]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1583.75 855 1567.5 855C1551.25 855 1535 877.5 1535 900').toBe(true);
+            expect(((diagram.connectors[164]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 832.5 1611.25 790 1622.5 790C1633.75 790 1645 790 1645 790C1645 790 1640 790 1635 790C1630 790 1625 800 1625 810').toBe(true);
+            expect(((diagram.connectors[165]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1611.25 855 1622.5 855C1633.75 855 1645 874.38 1645 893.75C1645 913.13 1640 932.5 1635 932.5C1630 932.5 1625 936.25 1625 940').toBe(true);
+            expect(((diagram.connectors[166]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 832.5 1588.75 790 1577.5 790C1566.25 790 1555 790 1555 790C1555 790 1560 790 1565 790C1570 790 1575 800 1575 810').toBe(true);
+            expect(((diagram.connectors[167]).wrapper.children[0] as PathElement).data === 'M1600 875C1600 865 1588.75 855 1577.5 855C1566.25 855 1555 874.38 1555 893.75C1555 913.13 1560 932.5 1565 932.5C1570 932.5 1575 936.25 1575 940').toBe(true);
+            expect(((diagram.connectors[168]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 840 1966.25 805 1982.5 805C1998.75 805 2015 815 2015 825').toBe(true);
+            expect(((diagram.connectors[169]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1966.25 855 1982.5 855C1998.75 855 2015 890 2015 925').toBe(true);
+            expect(((diagram.connectors[170]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 840 1933.75 805 1917.5 805C1901.25 805 1885 815 1885 825').toBe(true);
+            expect(((diagram.connectors[171]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1933.75 855 1917.5 855C1901.25 855 1885 890 1885 925').toBe(true);
+            expect(((diagram.connectors[172]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 832.5 1962.5 790 1975 790C1987.5 790 2000 800 2000 810').toBe(true);
+            expect(((diagram.connectors[173]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1962.5 855 1975 855C1987.5 855 2000 897.5 2000 940').toBe(true);
+            expect(((diagram.connectors[174]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 832.5 1937.5 790 1925 790C1912.5 790 1900 800 1900 810').toBe(true);
+            expect(((diagram.connectors[175]).wrapper.children[0] as PathElement).data === 'M1950 875C1950 865 1937.5 855 1925 855C1912.5 855 1900 897.5 1900 940').toBe(true);
+            expect(((diagram.connectors[176]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2316.25 790 2332.5 790C2348.75 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[177]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2316.25 855 2332.5 855C2348.75 855 2365 897.5 2365 940').toBe(true);
+            expect(((diagram.connectors[178]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2283.75 790 2267.5 790C2251.25 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[179]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2283.75 855 2267.5 855C2251.25 855 2235 897.5 2235 940').toBe(true);
+            expect(((diagram.connectors[180]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2316.25 790 2332.5 790C2348.75 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[181]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2316.25 855 2332.5 855C2348.75 855 2365 897.5 2365 940').toBe(true);
+            expect(((diagram.connectors[182]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 832.5 2283.75 790 2267.5 790C2251.25 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[183]).wrapper.children[0] as PathElement).data === 'M2300 875C2300 865 2283.75 855 2267.5 855C2251.25 855 2235 897.5 2235 940').toBe(true);
+            expect(((diagram.connectors[184]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 827.5 2666.25 780 2682.5 780C2698.75 780 2715 790 2715 800').toBe(true);
+            expect(((diagram.connectors[185]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2666.25 855 2682.5 855C2698.75 855 2715 902.5 2715 950').toBe(true);
+            expect(((diagram.connectors[186]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 827.5 2633.75 780 2617.5 780C2601.25 780 2585 790 2585 800').toBe(true);
+            expect(((diagram.connectors[187]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2633.75 855 2617.5 855C2601.25 855 2585 902.5 2585 950').toBe(true);
+            expect(((diagram.connectors[188]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 832.5 2668.75 790 2687.5 790C2706.25 790 2725 800 2725 810').toBe(true);
+            expect(((diagram.connectors[189]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2668.75 855 2687.5 855C2706.25 855 2725 897.5 2725 940').toBe(true);
+            expect(((diagram.connectors[190]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 832.5 2631.25 790 2612.5 790C2593.75 790 2575 800 2575 810').toBe(true);
+            expect(((diagram.connectors[191]).wrapper.children[0] as PathElement).data === 'M2650 875C2650 865 2631.25 855 2612.5 855C2593.75 855 2575 897.5 2575 940').toBe(true);
+            expect(((diagram.connectors[192]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 152.5 3042.5 130 3085 130C3127.5 130 3170 141.25 3170 152.5C3170 163.75 3160 175 3150 175').toBe(true);
+            expect(((diagram.connectors[193]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 165 3042.5 155 3085 155C3127.5 155 3170 172.5 3170 190C3170 207.5 3160 225 3150 225').toBe(true);
+            expect(((diagram.connectors[194]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 165 2984.38 155 2968.75 155C2953.13 155 2937.5 160 2937.5 165C2937.5 170 2918.75 175 2900 175').toBe(true);
+            expect(((diagram.connectors[195]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 165 2984.38 155 2968.75 155C2953.13 155 2937.5 172.5 2937.5 190C2937.5 207.5 2918.75 225 2900 225').toBe(true);
+            expect(((diagram.connectors[196]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 156.25 3017.5 137.5 3035 137.5C3052.5 137.5 3070 121.88 3070 106.25C3070 90.63 3060 75 3050 75').toBe(true);
+            expect(((diagram.connectors[197]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 165 3017.5 155 3035 155C3052.5 155 3070 197.5 3070 240C3070 282.5 3060 325 3050 325').toBe(true);
+            expect(((diagram.connectors[198]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 156.25 3005 137.5 3010 137.5C3015 137.5 3020 121.88 3020 106.25C3020 90.63 3010 75 3000 75').toBe(true);
+            expect(((diagram.connectors[199]).wrapper.children[0] as PathElement).data === 'M3000 175C3000 165 3011.25 155 3022.5 155C3033.75 155 3045 197.5 3045 240C3045 282.5 3022.5 325 3000 325').toBe(true);
+            expect(((diagram.connectors[200]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 140 3392.5 105 3435 105C3477.5 105 3520 116.25 3520 127.5C3520 138.75 3510 150 3500 150').toBe(true);
+            expect(((diagram.connectors[201]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 165 3392.5 155 3435 155C3477.5 155 3520 178.75 3520 202.5C3520 226.25 3510 250 3500 250').toBe(true);
+            expect(((diagram.connectors[202]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 162.5 3300 150 3250 150').toBe(true);
+            expect(((diagram.connectors[203]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 165 3334.38 155 3318.75 155C3303.13 155 3287.5 178.75 3287.5 202.5C3287.5 226.25 3268.75 250 3250 250').toBe(true);
+            expect(((diagram.connectors[204]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 156.25 3373.75 137.5 3397.5 137.5C3421.25 137.5 3445 121.88 3445 106.25C3445 90.63 3435 75 3425 75').toBe(true);
+            expect(((diagram.connectors[205]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 165 3373.75 155 3397.5 155C3421.25 155 3445 197.5 3445 240C3445 282.5 3435 325 3425 325').toBe(true);
+            expect(((diagram.connectors[206]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 125 3337.5 75 3325 75').toBe(true);
+            expect(((diagram.connectors[207]).wrapper.children[0] as PathElement).data === 'M3350 175C3350 165 3361.25 155 3372.5 155C3383.75 155 3395 197.5 3395 240C3395 282.5 3360 325 3325 325').toBe(true);
+            expect(((diagram.connectors[208]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 171.25 3742.5 167.5 3785 167.5C3827.5 167.5 3870 159.38 3870 151.25C3870 143.13 3860 135 3850 135').toBe(true);
+            expect(((diagram.connectors[209]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 165 3742.5 155 3785 155C3827.5 155 3870 182.5 3870 210C3870 237.5 3860 265 3850 265').toBe(true);
+            expect(((diagram.connectors[210]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 155 3650 135 3600 135').toBe(true);
+            expect(((diagram.connectors[211]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 165 3684.38 155 3668.75 155C3653.13 155 3637.5 182.5 3637.5 210C3637.5 237.5 3618.75 265 3600 265').toBe(true);
+            expect(((diagram.connectors[212]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 156.25 3727.5 137.5 3755 137.5C3782.5 137.5 3810 121.88 3810 106.25C3810 90.63 3800 75 3790 75').toBe(true);
+            expect(((diagram.connectors[213]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 165 3727.5 155 3755 155C3782.5 155 3810 197.5 3810 240C3810 282.5 3800 325 3790 325').toBe(true);
+            expect(((diagram.connectors[214]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 125 3680 75 3660 75').toBe(true);
+            expect(((diagram.connectors[215]).wrapper.children[0] as PathElement).data === 'M3700 175C3700 165 3711.25 155 3722.5 155C3733.75 155 3745 197.5 3745 240C3745 282.5 3702.5 325 3660 325').toBe(true);
+            expect(((diagram.connectors[216]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 168.75 4092.5 162.5 4135 162.5C4177.5 162.5 4220 153.13 4220 143.75C4220 134.38 4210 125 4200 125').toBe(true);
+            expect(((diagram.connectors[217]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 165 4092.5 155 4135 155C4177.5 155 4220 185 4220 215C4220 245 4210 275 4200 275').toBe(true);
+            expect(((diagram.connectors[218]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 150 4000 125 3950 125').toBe(true);
+            expect(((diagram.connectors[219]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 165 4034.38 155 4018.75 155C4003.13 155 3987.5 185 3987.5 215C3987.5 245 3968.75 275 3950 275').toBe(true);
+            expect(((diagram.connectors[220]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 156.25 4080 137.5 4110 137.5C4140 137.5 4170 121.88 4170 106.25C4170 90.63 4160 75 4150 75').toBe(true);
+            expect(((diagram.connectors[221]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 165 4080 155 4110 155C4140 155 4170 197.5 4170 240C4170 282.5 4160 325 4150 325').toBe(true);
+            expect(((diagram.connectors[222]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 125 4025 75 4000 75').toBe(true);
+            expect(((diagram.connectors[223]).wrapper.children[0] as PathElement).data === 'M4050 175C4050 165 4061.25 155 4072.5 155C4083.75 155 4095 197.5 4095 240C4095 282.5 4047.5 325 4000 325').toBe(true);
+            expect(((diagram.connectors[224]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 502.5 3030 480 3060 480C3090 480 3120 491.25 3120 502.5C3120 513.75 3110 525 3100 525').toBe(true);
+            expect(((diagram.connectors[225]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 515 3030 505 3060 505C3090 505 3120 522.5 3120 540C3120 557.5 3110 575 3100 575').toBe(true);
+            expect(((diagram.connectors[226]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 515 2990.63 505 2981.25 505C2971.88 505 2962.5 510 2962.5 515C2962.5 520 2956.25 525 2950 525').toBe(true);
+            expect(((diagram.connectors[227]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 515 2990.63 505 2981.25 505C2971.88 505 2962.5 522.5 2962.5 540C2962.5 557.5 2956.25 575 2950 575').toBe(true);
+            expect(((diagram.connectors[228]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 518.75 3017.5 512.5 3035 512.5C3052.5 512.5 3070 503.13 3070 493.75C3070 484.38 3060 475 3050 475').toBe(true);
+            expect(((diagram.connectors[229]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 515 3017.5 505 3035 505C3052.5 505 3070 535 3070 565C3070 595 3060 625 3050 625').toBe(true);
+            expect(((diagram.connectors[230]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 518.75 3005 512.5 3010 512.5C3015 512.5 3020 503.13 3020 493.75C3020 484.38 3010 475 3000 475').toBe(true);
+            expect(((diagram.connectors[231]).wrapper.children[0] as PathElement).data === 'M3000 525C3000 515 3011.25 505 3022.5 505C3033.75 505 3045 535 3045 565C3045 595 3022.5 625 3000 625').toBe(true);
+            expect(((diagram.connectors[232]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 490 3380 455 3410 455C3440 455 3470 466.25 3470 477.5C3470 488.75 3460 500 3450 500').toBe(true);
+            expect(((diagram.connectors[233]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 515 3380 505 3410 505C3440 505 3470 528.75 3470 552.5C3470 576.25 3460 600 3450 600').toBe(true);
+            expect(((diagram.connectors[234]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 512.5 3325 500 3300 500').toBe(true);
+            expect(((diagram.connectors[235]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 515 3361.25 505 3372.5 505C3383.75 505 3395 528.75 3395 552.5C3395 576.25 3347.5 600 3300 600').toBe(true);
+            expect(((diagram.connectors[236]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 518.75 3373.75 512.5 3397.5 512.5C3421.25 512.5 3445 503.13 3445 493.75C3445 484.38 3435 475 3425 475').toBe(true);
+            expect(((diagram.connectors[237]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 515 3373.75 505 3397.5 505C3421.25 505 3445 535 3445 565C3445 595 3435 625 3425 625').toBe(true);
+            expect(((diagram.connectors[238]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 500 3337.5 475 3325 475').toBe(true);
+            expect(((diagram.connectors[239]).wrapper.children[0] as PathElement).data === 'M3350 525C3350 515 3361.25 505 3372.5 505C3383.75 505 3395 535 3395 565C3395 595 3360 625 3325 625').toBe(true);
+            expect(((diagram.connectors[240]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 521.25 3730 517.5 3760 517.5C3790 517.5 3820 509.38 3820 501.25C3820 493.13 3810 485 3800 485').toBe(true);
+            expect(((diagram.connectors[241]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 515 3730 505 3760 505C3790 505 3820 532.5 3820 560C3820 587.5 3810 615 3800 615').toBe(true);
+            expect(((diagram.connectors[242]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 505 3675 485 3650 485').toBe(true);
+            expect(((diagram.connectors[243]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 515 3711.25 505 3722.5 505C3733.75 505 3745 532.5 3745 560C3745 587.5 3697.5 615 3650 615').toBe(true);
+            expect(((diagram.connectors[244]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 518.75 3727.5 512.5 3755 512.5C3782.5 512.5 3810 503.13 3810 493.75C3810 484.38 3800 475 3790 475').toBe(true);
+            expect(((diagram.connectors[245]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 515 3727.5 505 3755 505C3782.5 505 3810 535 3810 565C3810 595 3800 625 3790 625').toBe(true);
+            expect(((diagram.connectors[246]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 500 3680 475 3660 475').toBe(true);
+            expect(((diagram.connectors[247]).wrapper.children[0] as PathElement).data === 'M3700 525C3700 515 3711.25 505 3722.5 505C3733.75 505 3745 535 3745 565C3745 595 3702.5 625 3660 625').toBe(true);
+            expect(((diagram.connectors[248]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 518.75 4080 512.5 4110 512.5C4140 512.5 4170 503.13 4170 493.75C4170 484.38 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[249]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 515 4080 505 4110 505C4140 505 4170 535 4170 565C4170 595 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[250]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 500 4025 475 4000 475').toBe(true);
+            expect(((diagram.connectors[251]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 515 4061.25 505 4072.5 505C4083.75 505 4095 535 4095 565C4095 595 4047.5 625 4000 625').toBe(true);
+            expect(((diagram.connectors[252]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 518.75 4080 512.5 4110 512.5C4140 512.5 4170 503.13 4170 493.75C4170 484.38 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[253]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 515 4080 505 4110 505C4140 505 4170 535 4170 565C4170 595 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[254]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 500 4025 475 4000 475').toBe(true);
+            expect(((diagram.connectors[255]).wrapper.children[0] as PathElement).data === 'M4050 525C4050 515 4061.25 505 4072.5 505C4083.75 505 4095 535 4095 565C4095 595 4047.5 625 4000 625').toBe(true);
+            expect(((diagram.connectors[256]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 852.5 3027.5 830 3055 830C3082.5 830 3110 841.25 3110 852.5C3110 863.75 3100 875 3090 875').toBe(true);
+            expect(((diagram.connectors[257]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 865 3027.5 855 3055 855C3082.5 855 3110 872.5 3110 890C3110 907.5 3100 925 3090 925').toBe(true);
+            expect(((diagram.connectors[258]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 865 2991.88 855 2983.75 855C2975.63 855 2967.5 860 2967.5 865C2967.5 870 2963.75 875 2960 875').toBe(true);
+            expect(((diagram.connectors[259]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 865 2991.88 855 2983.75 855C2975.63 855 2967.5 872.5 2967.5 890C2967.5 907.5 2963.75 925 2960 925').toBe(true);
+            expect(((diagram.connectors[260]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 871.25 3017.5 867.5 3035 867.5C3052.5 867.5 3070 859.38 3070 851.25C3070 843.13 3060 835 3050 835').toBe(true);
+            expect(((diagram.connectors[261]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 865 3017.5 855 3035 855C3052.5 855 3070 882.5 3070 910C3070 937.5 3060 965 3050 965').toBe(true);
+            expect(((diagram.connectors[262]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 871.25 3005 867.5 3010 867.5C3015 867.5 3020 859.38 3020 851.25C3020 843.13 3010 835 3000 835').toBe(true);
+            expect(((diagram.connectors[263]).wrapper.children[0] as PathElement).data === 'M3000 875C3000 865 3011.25 855 3022.5 855C3033.75 855 3045 882.5 3045 910C3045 937.5 3022.5 965 3000 965').toBe(true);
+            expect(((diagram.connectors[264]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 840 3377.5 805 3405 805C3432.5 805 3460 816.25 3460 827.5C3460 838.75 3450 850 3440 850').toBe(true);
+            expect(((diagram.connectors[265]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 865 3377.5 855 3405 855C3432.5 855 3460 878.75 3460 902.5C3460 926.25 3450 950 3440 950').toBe(true);
+            expect(((diagram.connectors[266]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 862.5 3330 850 3310 850').toBe(true);
+            expect(((diagram.connectors[267]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 865 3361.25 855 3372.5 855C3383.75 855 3395 878.75 3395 902.5C3395 926.25 3352.5 950 3310 950').toBe(true);
+            expect(((diagram.connectors[268]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 871.25 3373.75 867.5 3397.5 867.5C3421.25 867.5 3445 859.38 3445 851.25C3445 843.13 3435 835 3425 835').toBe(true);
+            expect(((diagram.connectors[269]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 865 3373.75 855 3397.5 855C3421.25 855 3445 882.5 3445 910C3445 937.5 3435 965 3425 965').toBe(true);
+            expect(((diagram.connectors[270]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 855 3337.5 835 3325 835').toBe(true);
+            expect(((diagram.connectors[271]).wrapper.children[0] as PathElement).data === 'M3350 875C3350 865 3361.25 855 3372.5 855C3383.75 855 3395 882.5 3395 910C3395 937.5 3360 965 3325 965').toBe(true);
+            expect(((diagram.connectors[272]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 871.25 3727.5 867.5 3755 867.5C3782.5 867.5 3810 859.38 3810 851.25C3810 843.13 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[273]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 865 3727.5 855 3755 855C3782.5 855 3810 882.5 3810 910C3810 937.5 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[274]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 855 3680 835 3660 835').toBe(true);
+            expect(((diagram.connectors[275]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 865 3711.25 855 3722.5 855C3733.75 855 3745 882.5 3745 910C3745 937.5 3702.5 965 3660 965').toBe(true);
+            expect(((diagram.connectors[276]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 871.25 3727.5 867.5 3755 867.5C3782.5 867.5 3810 859.38 3810 851.25C3810 843.13 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[277]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 865 3727.5 855 3755 855C3782.5 855 3810 882.5 3810 910C3810 937.5 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[278]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 855 3680 835 3660 835').toBe(true);
+            expect(((diagram.connectors[279]).wrapper.children[0] as PathElement).data === 'M3700 875C3700 865 3711.25 855 3722.5 855C3733.75 855 3745 882.5 3745 910C3745 937.5 3702.5 965 3660 965').toBe(true);
+            expect(((diagram.connectors[280]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 868.75 4077.5 862.5 4105 862.5C4132.5 862.5 4160 853.13 4160 843.75C4160 834.38 4150 825 4140 825').toBe(true);
+            expect(((diagram.connectors[281]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 865 4077.5 855 4105 855C4132.5 855 4160 885 4160 915C4160 945 4150 975 4140 975').toBe(true);
+            expect(((diagram.connectors[282]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 850 4030 825 4010 825').toBe(true);
+            expect(((diagram.connectors[283]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 865 4061.25 855 4072.5 855C4083.75 855 4095 885 4095 915C4095 945 4052.5 975 4010 975').toBe(true);
+            expect(((diagram.connectors[284]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 871.25 4080 867.5 4110 867.5C4140 867.5 4170 859.38 4170 851.25C4170 843.13 4160 835 4150 835').toBe(true);
+            expect(((diagram.connectors[285]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 865 4080 855 4110 855C4140 855 4170 882.5 4170 910C4170 937.5 4160 965 4150 965').toBe(true);
+            expect(((diagram.connectors[286]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 855 4025 835 4000 835').toBe(true);
+            expect(((diagram.connectors[287]).wrapper.children[0] as PathElement).data === 'M4050 875C4050 865 4061.25 855 4072.5 855C4083.75 855 4095 882.5 4095 910C4095 937.5 4047.5 965 4000 965').toBe(true);
+            expect(((diagram.connectors[288]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 165 4415.63 155 4431.25 155C4446.88 155 4462.5 171.25 4462.5 187.5C4462.5 203.75 4478.13 220 4493.75 220C4509.38 220 4525 210 4525 200').toBe(true);
+            expect(((diagram.connectors[289]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 165 4415.63 155 4431.25 155C4446.88 155 4462.5 183.75 4462.5 212.5C4462.5 241.25 4478.13 270 4493.75 270C4509.38 270 4525 260 4525 250').toBe(true);
+            expect(((diagram.connectors[290]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 165 4384.38 155 4368.75 155C4353.13 155 4337.5 171.25 4337.5 187.5C4337.5 203.75 4321.88 220 4306.25 220C4290.63 220 4275 210 4275 200').toBe(true);
+            expect(((diagram.connectors[291]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 165 4384.38 155 4368.75 155C4353.13 155 4337.5 183.75 4337.5 212.5C4337.5 241.25 4321.88 270 4306.25 270C4290.63 270 4275 260 4275 250').toBe(true);
+            expect(((diagram.connectors[292]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 156.5 4406.25 138 4412.5 138C4418.75 138 4425 119 4425 100').toBe(true);
+            expect(((diagram.connectors[293]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 165 4418.75 155 4437.5 155C4456.25 155 4475 208.75 4475 262.5C4475 316.25 4462.5 370 4450 370C4437.5 370 4425 360 4425 350').toBe(true);
+            expect(((diagram.connectors[294]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 156.5 4393.75 138 4387.5 138C4381.25 138 4375 119 4375 100').toBe(true);
+            expect(((diagram.connectors[295]).wrapper.children[0] as PathElement).data === 'M4400 175C4400 165 4381.25 155 4362.5 155C4343.75 155 4325 208.75 4325 262.5C4325 316.25 4337.5 370 4350 370C4362.5 370 4375 360 4375 350').toBe(true);
+            expect(((diagram.connectors[296]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 165 4765.63 155 4781.25 155C4796.88 155 4812.5 165 4812.5 175C4812.5 185 4828.13 195 4843.75 195C4859.38 195 4875 185 4875 175').toBe(true);
+            expect(((diagram.connectors[297]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 165 4765.63 155 4781.25 155C4796.88 155 4812.5 190 4812.5 225C4812.5 260 4828.13 295 4843.75 295C4859.38 295 4875 285 4875 275').toBe(true);
+            expect(((diagram.connectors[298]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 165 4734.38 155 4718.75 155C4703.13 155 4687.5 165 4687.5 175C4687.5 185 4671.88 195 4656.25 195C4640.63 195 4625 185 4625 175').toBe(true);
+            expect(((diagram.connectors[299]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 165 4734.38 155 4718.75 155C4703.13 155 4687.5 190 4687.5 225C4687.5 260 4671.88 295 4656.25 295C4640.63 295 4625 285 4625 275').toBe(true);
+            expect(((diagram.connectors[300]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 156.5 4762.5 138 4775 138C4787.5 138 4800 119 4800 100').toBe(true);
+            expect(((diagram.connectors[301]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 165 4775 155 4800 155C4825 155 4850 208.75 4850 262.5C4850 316.25 4837.5 370 4825 370C4812.5 370 4800 360 4800 350').toBe(true);
+            expect(((diagram.connectors[302]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 156.5 4737.5 138 4725 138C4712.5 138 4700 119 4700 100').toBe(true);
+            expect(((diagram.connectors[303]).wrapper.children[0] as PathElement).data === 'M4750 175C4750 165 4725 155 4700 155C4675 155 4650 208.75 4650 262.5C4650 316.25 4662.5 370 4675 370C4687.5 370 4700 360 4700 350').toBe(true);
+            expect(((diagram.connectors[304]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5115.63 155 5131.25 155C5146.88 155 5162.5 161.25 5162.5 167.5C5162.5 173.75 5178.13 180 5193.75 180C5209.38 180 5225 170 5225 160').toBe(true);
+            expect(((diagram.connectors[305]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5115.63 155 5131.25 155C5146.88 155 5162.5 193.75 5162.5 232.5C5162.5 271.25 5178.13 310 5193.75 310C5209.38 310 5225 300 5225 290').toBe(true);
+            expect(((diagram.connectors[306]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5084.38 155 5068.75 155C5053.13 155 5037.5 161.25 5037.5 167.5C5037.5 173.75 5021.88 180 5006.25 180C4990.63 180 4975 170 4975 160').toBe(true);
+            expect(((diagram.connectors[307]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5084.38 155 5068.75 155C5053.13 155 5037.5 193.75 5037.5 232.5C5037.5 271.25 5021.88 310 5006.25 310C4990.63 310 4975 300 4975 290').toBe(true);
+            expect(((diagram.connectors[308]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 156.5 5116.25 138 5132.5 138C5148.75 138 5165 119 5165 100').toBe(true);
+            expect(((diagram.connectors[309]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5128.75 155 5157.5 155C5186.25 155 5215 208.75 5215 262.5C5215 316.25 5202.5 370 5190 370C5177.5 370 5165 360 5165 350').toBe(true);
+            expect(((diagram.connectors[310]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 156.5 5083.75 138 5067.5 138C5051.25 138 5035 119 5035 100').toBe(true);
+            expect(((diagram.connectors[311]).wrapper.children[0] as PathElement).data === 'M5100 175C5100 165 5071.25 155 5042.5 155C5013.75 155 4985 208.75 4985 262.5C4985 316.25 4997.5 370 5010 370C5022.5 370 5035 360 5035 350').toBe(true);
+            expect(((diagram.connectors[312]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5465.63 155 5481.25 155C5496.88 155 5512.5 160 5512.5 165C5512.5 170 5528.13 175 5543.75 175C5559.38 175 5575 162.5 5575 150').toBe(true);
+            expect(((diagram.connectors[313]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5465.63 155 5481.25 155C5496.88 155 5512.5 196.25 5512.5 237.5C5512.5 278.75 5528.13 320 5543.75 320C5559.38 320 5575 310 5575 300').toBe(true);
+            expect(((diagram.connectors[314]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5434.38 155 5418.75 155C5403.13 155 5387.5 160 5387.5 165C5387.5 170 5371.88 175 5356.25 175C5340.63 175 5325 162.5 5325 150').toBe(true);
+            expect(((diagram.connectors[315]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5434.38 155 5418.75 155C5403.13 155 5387.5 196.25 5387.5 237.5C5387.5 278.75 5371.88 320 5356.25 320C5340.63 320 5325 310 5325 300').toBe(true);
+            expect(((diagram.connectors[316]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 156.5 5468.75 138 5487.5 138C5506.25 138 5525 119 5525 100').toBe(true);
+            expect(((diagram.connectors[317]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5459.38 155 5468.75 155C5478.13 155 5487.5 208.75 5487.5 262.5C5487.5 316.25 5496.88 370 5506.25 370C5515.63 370 5525 360 5525 350').toBe(true);
+            expect(((diagram.connectors[318]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 156.5 5431.25 138 5412.5 138C5393.75 138 5375 119 5375 100').toBe(true);
+            expect(((diagram.connectors[319]).wrapper.children[0] as PathElement).data === 'M5450 175C5450 165 5440.63 155 5431.25 155C5421.88 155 5412.5 208.75 5412.5 262.5C5412.5 316.25 5403.13 370 5393.75 370C5384.38 370 5375 360 5375 350').toBe(true);
+            expect(((diagram.connectors[320]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 502.5 4409.38 480 4418.75 480C4428.13 480 4437.5 502.5 4437.5 525C4437.5 547.5 4446.88 570 4456.25 570C4465.63 570 4475 560 4475 550').toBe(true);
+            expect(((diagram.connectors[321]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 515 4409.38 505 4418.75 505C4428.13 505 4437.5 533.75 4437.5 562.5C4437.5 591.25 4446.88 620 4456.25 620C4465.63 620 4475 610 4475 600').toBe(true);
+            expect(((diagram.connectors[322]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 502.5 4390.63 480 4381.25 480C4371.88 480 4362.5 502.5 4362.5 525C4362.5 547.5 4353.13 570 4343.75 570C4334.38 570 4325 560 4325 550').toBe(true);
+            expect(((diagram.connectors[323]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 515 4390.63 505 4381.25 505C4371.88 505 4362.5 533.75 4362.5 562.5C4362.5 591.25 4353.13 620 4343.75 620C4334.38 620 4325 610 4325 600').toBe(true);
+            expect(((diagram.connectors[324]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 519 4406.25 513 4412.5 513C4418.75 513 4425 506.5 4425 500').toBe(true);
+            expect(((diagram.connectors[325]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 515 4418.75 505 4437.5 505C4456.25 505 4475 546.25 4475 587.5C4475 628.75 4462.5 670 4450 670C4437.5 670 4425 660 4425 650').toBe(true);
+            expect(((diagram.connectors[326]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 519 4393.75 513 4387.5 513C4381.25 513 4375 506.5 4375 500').toBe(true);
+            expect(((diagram.connectors[327]).wrapper.children[0] as PathElement).data === 'M4400 525C4400 515 4381.25 505 4362.5 505C4343.75 505 4325 546.25 4325 587.5C4325 628.75 4337.5 670 4350 670C4362.5 670 4375 660 4375 650').toBe(true);
+            expect(((diagram.connectors[328]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 490 4759.38 455 4768.75 455C4778.13 455 4787.5 477.5 4787.5 500C4787.5 522.5 4796.88 545 4806.25 545C4815.63 545 4825 535 4825 525').toBe(true);
+            expect(((diagram.connectors[329]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 515 4759.38 505 4768.75 505C4778.13 505 4787.5 540 4787.5 575C4787.5 610 4796.88 645 4806.25 645C4815.63 645 4825 635 4825 625').toBe(true);
+            expect(((diagram.connectors[330]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 490 4740.63 455 4731.25 455C4721.88 455 4712.5 477.5 4712.5 500C4712.5 522.5 4703.13 545 4693.75 545C4684.38 545 4675 535 4675 525').toBe(true);
+            expect(((diagram.connectors[331]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 515 4740.63 505 4731.25 505C4721.88 505 4712.5 540 4712.5 575C4712.5 610 4703.13 645 4693.75 645C4684.38 645 4675 635 4675 625').toBe(true);
+            expect(((diagram.connectors[332]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 519 4762.5 513 4775 513C4787.5 513 4800 506.5 4800 500').toBe(true);
+            expect(((diagram.connectors[333]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 515 4775 505 4800 505C4825 505 4850 546.25 4850 587.5C4850 628.75 4837.5 670 4825 670C4812.5 670 4800 660 4800 650').toBe(true);
+            expect(((diagram.connectors[334]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 519 4737.5 513 4725 513C4712.5 513 4700 506.5 4700 500').toBe(true);
+            expect(((diagram.connectors[335]).wrapper.children[0] as PathElement).data === 'M4750 525C4750 515 4725 505 4700 505C4675 505 4650 546.25 4650 587.5C4650 628.75 4662.5 670 4675 670C4687.5 670 4700 660 4700 650').toBe(true);
+            expect(((diagram.connectors[336]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 521.5 5118.75 518 5137.5 518C5156.25 518 5175 514 5175 510').toBe(true);
+            expect(((diagram.connectors[337]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 515 5109.38 505 5118.75 505C5128.13 505 5137.5 543.75 5137.5 582.5C5137.5 621.25 5146.88 660 5156.25 660C5165.63 660 5175 650 5175 640').toBe(true);
+            expect(((diagram.connectors[338]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 521.5 5081.25 518 5062.5 518C5043.75 518 5025 514 5025 510').toBe(true);
+            expect(((diagram.connectors[339]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 515 5090.63 505 5081.25 505C5071.88 505 5062.5 543.75 5062.5 582.5C5062.5 621.25 5053.13 660 5043.75 660C5034.38 660 5025 650 5025 640').toBe(true);
+            expect(((diagram.connectors[340]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 519 5116.25 513 5132.5 513C5148.75 513 5165 506.5 5165 500').toBe(true);
+            expect(((diagram.connectors[341]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 515 5128.75 505 5157.5 505C5186.25 505 5215 546.25 5215 587.5C5215 628.75 5202.5 670 5190 670C5177.5 670 5165 660 5165 650').toBe(true);
+            expect(((diagram.connectors[342]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 519 5083.75 513 5067.5 513C5051.25 513 5035 506.5 5035 500').toBe(true);
+            expect(((diagram.connectors[343]).wrapper.children[0] as PathElement).data === 'M5100 525C5100 515 5071.25 505 5042.5 505C5013.75 505 4985 546.25 4985 587.5C4985 628.75 4997.5 670 5010 670C5022.5 670 5035 660 5035 650').toBe(true);
+            expect(((diagram.connectors[344]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5468.75 513 5487.5 513C5506.25 513 5525 506.5 5525 500').toBe(true);
+            expect(((diagram.connectors[345]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 515 5459.38 505 5468.75 505C5478.13 505 5487.5 546.25 5487.5 587.5C5487.5 628.75 5496.88 670 5506.25 670C5515.63 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[346]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5431.25 513 5412.5 513C5393.75 513 5375 506.5 5375 500').toBe(true);
+            expect(((diagram.connectors[347]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 515 5440.63 505 5431.25 505C5421.88 505 5412.5 546.25 5412.5 587.5C5412.5 628.75 5403.13 670 5393.75 670C5384.38 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[348]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5468.75 513 5487.5 513C5506.25 513 5525 506.5 5525 500').toBe(true);
+            expect(((diagram.connectors[349]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 515 5459.38 505 5468.75 505C5478.13 505 5487.5 546.25 5487.5 587.5C5487.5 628.75 5496.88 670 5506.25 670C5515.63 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[350]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 519 5431.25 513 5412.5 513C5393.75 513 5375 506.5 5375 500').toBe(true);
+            expect(((diagram.connectors[351]).wrapper.children[0] as PathElement).data === 'M5450 525C5450 515 5440.63 505 5431.25 505C5421.88 505 5412.5 546.25 5412.5 587.5C5412.5 628.75 5403.13 670 5393.75 670C5384.38 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[352]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 852.5 4428.75 830 4457.5 830C4486.25 830 4515 852.5 4515 875C4515 897.5 4502.5 920 4490 920C4477.5 920 4465 910 4465 900').toBe(true);
+            expect(((diagram.connectors[353]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 865 4428.75 855 4457.5 855C4486.25 855 4515 883.75 4515 912.5C4515 941.25 4502.5 970 4490 970C4477.5 970 4465 960 4465 950').toBe(true);
+            expect(((diagram.connectors[354]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 852.5 4371.25 830 4342.5 830C4313.75 830 4285 852.5 4285 875C4285 897.5 4297.5 920 4310 920C4322.5 920 4335 910 4335 900').toBe(true);
+            expect(((diagram.connectors[355]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 865 4371.25 855 4342.5 855C4313.75 855 4285 883.75 4285 912.5C4285 941.25 4297.5 970 4310 970C4322.5 970 4335 960 4335 950').toBe(true);
+            expect(((diagram.connectors[356]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 871.5 4406.25 868 4412.5 868C4418.75 868 4425 864 4425 860').toBe(true);
+            expect(((diagram.connectors[357]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 865 4418.75 855 4437.5 855C4456.25 855 4475 893.75 4475 932.5C4475 971.25 4462.5 1010 4450 1010C4437.5 1010 4425 1000 4425 990').toBe(true);
+            expect(((diagram.connectors[358]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 871.5 4393.75 868 4387.5 868C4381.25 868 4375 864 4375 860').toBe(true);
+            expect(((diagram.connectors[359]).wrapper.children[0] as PathElement).data === 'M4400 875C4400 865 4381.25 855 4362.5 855C4343.75 855 4325 893.75 4325 932.5C4325 971.25 4337.5 1010 4350 1010C4362.5 1010 4375 1000 4375 990').toBe(true);
+            expect(((diagram.connectors[360]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 840 4778.75 805 4807.5 805C4836.25 805 4865 827.5 4865 850C4865 872.5 4852.5 895 4840 895C4827.5 895 4815 885 4815 875').toBe(true);
+            expect(((diagram.connectors[361]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 865 4778.75 855 4807.5 855C4836.25 855 4865 890 4865 925C4865 960 4852.5 995 4840 995C4827.5 995 4815 985 4815 975').toBe(true);
+            expect(((diagram.connectors[362]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 840 4721.25 805 4692.5 805C4663.75 805 4635 827.5 4635 850C4635 872.5 4647.5 895 4660 895C4672.5 895 4685 885 4685 875').toBe(true);
+            expect(((diagram.connectors[363]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 865 4721.25 855 4692.5 855C4663.75 855 4635 890 4635 925C4635 960 4647.5 995 4660 995C4672.5 995 4685 985 4685 975').toBe(true);
+            expect(((diagram.connectors[364]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 871.5 4762.5 868 4775 868C4787.5 868 4800 864 4800 860').toBe(true);
+            expect(((diagram.connectors[365]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 865 4775 855 4800 855C4825 855 4850 893.75 4850 932.5C4850 971.25 4837.5 1010 4825 1010C4812.5 1010 4800 1000 4800 990').toBe(true);
+            expect(((diagram.connectors[366]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 871.5 4737.5 868 4725 868C4712.5 868 4700 864 4700 860').toBe(true);
+            expect(((diagram.connectors[367]).wrapper.children[0] as PathElement).data === 'M4750 875C4750 865 4725 855 4700 855C4675 855 4650 893.75 4650 932.5C4650 971.25 4662.5 1010 4675 1010C4687.5 1010 4700 1000 4700 990').toBe(true);
+            expect(((diagram.connectors[368]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5116.25 868 5132.5 868C5148.75 868 5165 864 5165 860').toBe(true);
+            expect(((diagram.connectors[369]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 865 5128.75 855 5157.5 855C5186.25 855 5215 893.75 5215 932.5C5215 971.25 5202.5 1010 5190 1010C5177.5 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[370]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5083.75 868 5067.5 868C5051.25 868 5035 864 5035 860').toBe(true);
+            expect(((diagram.connectors[371]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 865 5071.25 855 5042.5 855C5013.75 855 4985 893.75 4985 932.5C4985 971.25 4997.5 1010 5010 1010C5022.5 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[372]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5116.25 868 5132.5 868C5148.75 868 5165 864 5165 860').toBe(true);
+            expect(((diagram.connectors[373]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 865 5128.75 855 5157.5 855C5186.25 855 5215 893.75 5215 932.5C5215 971.25 5202.5 1010 5190 1010C5177.5 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[374]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 871.5 5083.75 868 5067.5 868C5051.25 868 5035 864 5035 860').toBe(true);
+            expect(((diagram.connectors[375]).wrapper.children[0] as PathElement).data === 'M5100 875C5100 865 5071.25 855 5042.5 855C5013.75 855 4985 893.75 4985 932.5C4985 971.25 4997.5 1010 5010 1010C5022.5 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[376]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 869 5466.25 863 5482.5 863C5498.75 863 5515 856.5 5515 850').toBe(true);
+            expect(((diagram.connectors[377]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 865 5478.75 855 5507.5 855C5536.25 855 5565 896.25 5565 937.5C5565 978.75 5552.5 1020 5540 1020C5527.5 1020 5515 1010 5515 1000').toBe(true);
+            expect(((diagram.connectors[378]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 869 5433.75 863 5417.5 863C5401.25 863 5385 856.5 5385 850').toBe(true);
+            expect(((diagram.connectors[379]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 865 5421.25 855 5392.5 855C5363.75 855 5335 896.25 5335 937.5C5335 978.75 5347.5 1020 5360 1020C5372.5 1020 5385 1010 5385 1000').toBe(true);
+            expect(((diagram.connectors[380]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 871.5 5468.75 868 5487.5 868C5506.25 868 5525 864 5525 860').toBe(true);
+            expect(((diagram.connectors[381]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 865 5459.38 855 5468.75 855C5478.13 855 5487.5 893.75 5487.5 932.5C5487.5 971.25 5496.88 1010 5506.25 1010C5515.63 1010 5525 1000 5525 990').toBe(true);
+            expect(((diagram.connectors[382]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 871.5 5431.25 868 5412.5 868C5393.75 868 5375 864 5375 860').toBe(true);
+            expect(((diagram.connectors[383]).wrapper.children[0] as PathElement).data === 'M5450 875C5450 865 5440.63 855 5431.25 855C5421.88 855 5412.5 893.75 5412.5 932.5C5412.5 971.25 5403.13 1010 5393.75 1010C5384.38 1010 5375 1000 5375 990').toBe(true);
+
+            done();
+        });
+    });
+
+    describe('Conectors with segments - Bezier Segment Rendering(RightPort To Port)', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramBezierSegmentRightPortToPortRendering' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [];
+            let connectors: ConnectorModel[] = [];
+            let offsetY = 200; let offsetX = 200;
+            let extra1 = 25; let extra2 = 125;
+
+            for (var z = 1; z <= 4; z++) {
+                for (var x = 0; x < 3; x++) {
+                    for (var y = 0; y < 4; y++) {
+                        var rootnode = {
+                            id: 'rootNode' + z + x + y, offsetX: offsetX, offsetY: offsetY, width: 50, height: 50,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(rootnode);
+
+                        let node1: NodeModel = {
+                            id: 'node' + z + x + y + 1, offsetX: offsetX + extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node2: NodeModel = {
+                            id: 'node' + z + x + y + 2, offsetX: offsetX + extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node3: NodeModel = {
+                            id: 'node' + z + x + y + 3, offsetX: offsetX - extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node4: NodeModel = {
+                            id: 'node' + z + x + y + 4, offsetX: offsetX - extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node5: NodeModel = {
+                            id: 'node' + z + x + y + 5, offsetX: offsetX + extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node6: NodeModel = {
+                            id: 'node' + z + x + y + 6, offsetX: offsetX + extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node7: NodeModel = {
+                            id: 'node' + z + x + y + 7, offsetX: offsetX - extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node8: NodeModel = {
+                            id: 'node' + z + x + y + 8, offsetX: offsetX - extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(node1);
+                        nodes.push(node2);
+                        nodes.push(node3);
+                        nodes.push(node4);
+                        nodes.push(node5);
+                        nodes.push(node6);
+                        nodes.push(node7);
+                        nodes.push(node8);
+
+                        let connector1: ConnectorModel = { id: 'connector' + z + x + y + 1, type: 'Bezier', sourceID: rootnode.id, targetID: node1.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector2: ConnectorModel = { id: 'connector' + z + x + y + 2, type: 'Bezier', sourceID: rootnode.id, targetID: node2.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector3: ConnectorModel = { id: 'connector' + z + x + y + 3, type: 'Bezier', sourceID: rootnode.id, targetID: node3.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector4: ConnectorModel = { id: 'connector' + z + x + y + 4, type: 'Bezier', sourceID: rootnode.id, targetID: node4.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector5: ConnectorModel = { id: 'connector' + z + x + y + 5, type: 'Bezier', sourceID: rootnode.id, targetID: node5.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector6: ConnectorModel = { id: 'connector' + z + x + y + 6, type: 'Bezier', sourceID: rootnode.id, targetID: node6.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector7: ConnectorModel = { id: 'connector' + z + x + y + 7, type: 'Bezier', sourceID: rootnode.id, targetID: node7.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector8: ConnectorModel = { id: 'connector' + z + x + y + 8, type: 'Bezier', sourceID: rootnode.id, targetID: node8.id, sourcePortID: 'port3', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        connectors.push(connector1);
+                        connectors.push(connector2);
+                        connectors.push(connector3);
+                        connectors.push(connector4);
+                        connectors.push(connector5);
+                        connectors.push(connector6);
+                        connectors.push(connector7);
+                        connectors.push(connector8);
+
+                        offsetX += 350;
+                        extra1 = y == 0 ? 50 : y == 1 ? 65 : 75;
+                    }
+
+                    offsetX = 200 + ((z - 1) * 350 * 4);
+                    offsetY += 350;
+                    extra1 = 25;
+                    extra2 = x == 0 ? 75 : 65;
+                }
+
+                offsetX = 200 + (z * 350 * 4);
+                offsetY = 200;
+                extra2 = 125;
+            }
+
+            diagram = new Diagram({
+                width: 6000, height: 1200, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramBezierSegmentRightPortToPortRendering');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Bezier segment - RightPort to Port Rendering', (done: Function) => {
+            expect(((diagram.connectors[0]).wrapper.children[0] as PathElement).data === 'M225 200C243.5 200 262 193.75 262 187.5C262 181.25 281 175 300 175').toBe(true);
+            expect(((diagram.connectors[1]).wrapper.children[0] as PathElement).data === 'M225 200C243.5 200 262 206.25 262 212.5C262 218.75 281 225 300 225').toBe(true);
+            expect(((diagram.connectors[2]).wrapper.children[0] as PathElement).data === 'M225 200C235 200 245 181.25 245 162.5C245 143.75 191.25 125 137.5 125C83.75 125 30 137.5 30 150C30 162.5 40 175 50 175').toBe(true);
+            expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M225 200C235 200 245 218.75 245 237.5C245 256.25 191.25 275 137.5 275C83.75 275 30 262.5 30 250C30 237.5 40 225 50 225').toBe(true);
+            expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M225 200C235 200 245 184.38 245 168.75C245 153.13 228.75 137.5 212.5 137.5C196.25 137.5 180 121.88 180 106.25C180 90.63 190 75 200 75').toBe(true);
+            expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M225 200C235 200 245 215.63 245 231.25C245 246.88 228.75 262.5 212.5 262.5C196.25 262.5 180 278.13 180 293.75C180 309.38 190 325 200 325').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M225 200C235 200 245 184.38 245 168.75C245 153.13 216.25 137.5 187.5 137.5C158.75 137.5 130 121.88 130 106.25C130 90.63 140 75 150 75').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M225 200C235 200 245 215.63 245 231.25C245 246.88 216.25 262.5 187.5 262.5C158.75 262.5 130 278.13 130 293.75C130 309.38 140 325 150 325').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M575 200C593.5 200 612 187.5 612 175C612 162.5 631 150 650 150').toBe(true);
+            expect(((diagram.connectors[9]).wrapper.children[0] as PathElement).data === 'M575 200C593.5 200 612 212.5 612 225C612 237.5 631 250 650 250').toBe(true);
+            expect(((diagram.connectors[10]).wrapper.children[0] as PathElement).data === 'M575 200C585 200 595 175 595 150C595 125 541.25 100 487.5 100C433.75 100 380 112.5 380 125C380 137.5 390 150 400 150').toBe(true);
+            expect(((diagram.connectors[11]).wrapper.children[0] as PathElement).data === 'M575 200C585 200 595 225 595 250C595 275 541.25 300 487.5 300C433.75 300 380 287.5 380 275C380 262.5 390 250 400 250').toBe(true);
+            expect(((diagram.connectors[12]).wrapper.children[0] as PathElement).data === 'M575 200C585 200 595 184.38 595 168.75C595 153.13 585 137.5 575 137.5C565 137.5 555 121.88 555 106.25C555 90.63 565 75 575 75').toBe(true);
+            expect(((diagram.connectors[13]).wrapper.children[0] as PathElement).data === 'M575 200C585 200 595 215.63 595 231.25C595 246.88 585 262.5 575 262.5C565 262.5 555 278.13 555 293.75C555 309.38 565 325 575 325').toBe(true);
+            expect(((diagram.connectors[14]).wrapper.children[0] as PathElement).data === 'M575 200C585 200 595 184.38 595 168.75C595 153.13 560 137.5 525 137.5C490 137.5 455 121.88 455 106.25C455 90.63 465 75 475 75').toBe(true);
+            expect(((diagram.connectors[15]).wrapper.children[0] as PathElement).data === 'M575 200C585 200 595 215.63 595 231.25C595 246.88 560 262.5 525 262.5C490 262.5 455 278.13 455 293.75C455 309.38 465 325 475 325').toBe(true);
+            expect(((diagram.connectors[16]).wrapper.children[0] as PathElement).data === 'M925 200C943.5 200 962 183.75 962 167.5C962 151.25 981 135 1000 135').toBe(true);
+            expect(((diagram.connectors[17]).wrapper.children[0] as PathElement).data === 'M925 200C943.5 200 962 216.25 962 232.5C962 248.75 981 265 1000 265').toBe(true);
+            expect(((diagram.connectors[18]).wrapper.children[0] as PathElement).data === 'M925 200C935 200 945 171.25 945 142.5C945 113.75 891.25 85 837.5 85C783.75 85 730 97.5 730 110C730 122.5 740 135 750 135').toBe(true);
+            expect(((diagram.connectors[19]).wrapper.children[0] as PathElement).data === 'M925 200C935 200 945 228.75 945 257.5C945 286.25 891.25 315 837.5 315C783.75 315 730 302.5 730 290C730 277.5 740 265 750 265').toBe(true);
+            expect(((diagram.connectors[20]).wrapper.children[0] as PathElement).data === 'M925 200C935 200 945 184.38 945 168.75C945 153.13 938.75 137.5 932.5 137.5C926.25 137.5 920 121.88 920 106.25C920 90.63 930 75 940 75').toBe(true);
+            expect(((diagram.connectors[21]).wrapper.children[0] as PathElement).data === 'M925 200C935 200 945 215.63 945 231.25C945 246.88 938.75 262.5 932.5 262.5C926.25 262.5 920 278.13 920 293.75C920 309.38 930 325 940 325').toBe(true);
+            expect(((diagram.connectors[22]).wrapper.children[0] as PathElement).data === 'M925 200C935 200 945 184.38 945 168.75C945 153.13 906.25 137.5 867.5 137.5C828.75 137.5 790 121.88 790 106.25C790 90.63 800 75 810 75').toBe(true);
+            expect(((diagram.connectors[23]).wrapper.children[0] as PathElement).data === 'M925 200C935 200 945 215.63 945 231.25C945 246.88 906.25 262.5 867.5 262.5C828.75 262.5 790 278.13 790 293.75C790 309.38 800 325 810 325').toBe(true);
+            expect(((diagram.connectors[24]).wrapper.children[0] as PathElement).data === 'M1275 200C1293.5 200 1312 181.25 1312 162.5C1312 143.75 1331 125 1350 125').toBe(true);
+            expect(((diagram.connectors[25]).wrapper.children[0] as PathElement).data === 'M1275 200C1293.5 200 1312 218.75 1312 237.5C1312 256.25 1331 275 1350 275').toBe(true);
+            expect(((diagram.connectors[26]).wrapper.children[0] as PathElement).data === 'M1275 200C1285 200 1295 190.63 1295 181.25C1295 171.88 1241.25 162.5 1187.5 162.5C1133.75 162.5 1080 153.13 1080 143.75C1080 134.38 1090 125 1100 125').toBe(true);
+            expect(((diagram.connectors[27]).wrapper.children[0] as PathElement).data === 'M1275 200C1285 200 1295 209.38 1295 218.75C1295 228.13 1241.25 237.5 1187.5 237.5C1133.75 237.5 1080 246.88 1080 256.25C1080 265.63 1090 275 1100 275').toBe(true);
+            expect(((diagram.connectors[28]).wrapper.children[0] as PathElement).data === 'M1275 200C1285 200 1295 184.38 1295 168.75C1295 153.13 1290 137.5 1285 137.5C1280 137.5 1275 121.88 1275 106.25C1275 90.63 1287.5 75 1300 75').toBe(true);
+            expect(((diagram.connectors[29]).wrapper.children[0] as PathElement).data === 'M1275 200C1285 200 1295 215.63 1295 231.25C1295 246.88 1290 262.5 1285 262.5C1280 262.5 1275 278.13 1275 293.75C1275 309.38 1287.5 325 1300 325').toBe(true);
+            expect(((diagram.connectors[30]).wrapper.children[0] as PathElement).data === 'M1275 200C1285 200 1295 184.38 1295 168.75C1295 153.13 1253.75 137.5 1212.5 137.5C1171.25 137.5 1130 121.88 1130 106.25C1130 90.63 1140 75 1150 75').toBe(true);
+            expect(((diagram.connectors[31]).wrapper.children[0] as PathElement).data === 'M1275 200C1285 200 1295 215.63 1295 231.25C1295 246.88 1253.75 262.5 1212.5 262.5C1171.25 262.5 1130 278.13 1130 293.75C1130 309.38 1140 325 1150 325').toBe(true);
+            expect(((diagram.connectors[32]).wrapper.children[0] as PathElement).data === 'M225 550C231 550 237 543.75 237 537.5C237 531.25 243.5 525 250 525').toBe(true);
+            expect(((diagram.connectors[33]).wrapper.children[0] as PathElement).data === 'M225 550C231 550 237 556.25 237 562.5C237 568.75 243.5 575 250 575').toBe(true);
+            expect(((diagram.connectors[34]).wrapper.children[0] as PathElement).data === 'M225 550C235 550 245 531.25 245 512.5C245 493.75 203.75 475 162.5 475C121.25 475 80 487.5 80 500C80 512.5 90 525 100 525').toBe(true);
+            expect(((diagram.connectors[35]).wrapper.children[0] as PathElement).data === 'M225 550C235 550 245 568.75 245 587.5C245 606.25 203.75 625 162.5 625C121.25 625 80 612.5 80 600C80 587.5 90 575 100 575').toBe(true);
+            expect(((diagram.connectors[36]).wrapper.children[0] as PathElement).data === 'M225 550C247.5 550 270 540.63 270 531.25C270 521.88 247.5 512.5 225 512.5C202.5 512.5 180 503.13 180 493.75C180 484.38 190 475 200 475').toBe(true);
+            expect(((diagram.connectors[37]).wrapper.children[0] as PathElement).data === 'M225 550C247.5 550 270 559.38 270 568.75C270 578.13 247.5 587.5 225 587.5C202.5 587.5 180 596.88 180 606.25C180 615.63 190 625 200 625').toBe(true);
+            expect(((diagram.connectors[38]).wrapper.children[0] as PathElement).data === 'M225 550C235 550 245 540.63 245 531.25C245 521.88 216.25 512.5 187.5 512.5C158.75 512.5 130 503.13 130 493.75C130 484.38 140 475 150 475').toBe(true);
+            expect(((diagram.connectors[39]).wrapper.children[0] as PathElement).data === 'M225 550C235 550 245 559.38 245 568.75C245 578.13 216.25 587.5 187.5 587.5C158.75 587.5 130 596.88 130 606.25C130 615.63 140 625 150 625').toBe(true);
+            expect(((diagram.connectors[40]).wrapper.children[0] as PathElement).data === 'M575 550C581 550 587 537.5 587 525C587 512.5 593.5 500 600 500').toBe(true);
+            expect(((diagram.connectors[41]).wrapper.children[0] as PathElement).data === 'M575 550C581 550 587 562.5 587 575C587 587.5 593.5 600 600 600').toBe(true);
+            expect(((diagram.connectors[42]).wrapper.children[0] as PathElement).data === 'M575 550C585 550 595 525 595 500C595 475 553.75 450 512.5 450C471.25 450 430 462.5 430 475C430 487.5 440 500 450 500').toBe(true);
+            expect(((diagram.connectors[43]).wrapper.children[0] as PathElement).data === 'M575 550C585 550 595 575 595 600C595 625 553.75 650 512.5 650C471.25 650 430 637.5 430 625C430 612.5 440 600 450 600').toBe(true);
+            expect(((diagram.connectors[44]).wrapper.children[0] as PathElement).data === 'M575 550C610 550 645 540.63 645 531.25C645 521.88 622.5 512.5 600 512.5C577.5 512.5 555 503.13 555 493.75C555 484.38 565 475 575 475').toBe(true);
+            expect(((diagram.connectors[45]).wrapper.children[0] as PathElement).data === 'M575 550C610 550 645 559.38 645 568.75C645 578.13 622.5 587.5 600 587.5C577.5 587.5 555 596.88 555 606.25C555 615.63 565 625 575 625').toBe(true);
+            expect(((diagram.connectors[46]).wrapper.children[0] as PathElement).data === 'M575 550C585 550 595 540.63 595 531.25C595 521.88 560 512.5 525 512.5C490 512.5 455 503.13 455 493.75C455 484.38 465 475 475 475').toBe(true);
+            expect(((diagram.connectors[47]).wrapper.children[0] as PathElement).data === 'M575 550C585 550 595 559.38 595 568.75C595 578.13 560 587.5 525 587.5C490 587.5 455 596.88 455 606.25C455 615.63 465 625 475 625').toBe(true);
+            expect(((diagram.connectors[48]).wrapper.children[0] as PathElement).data === 'M925 550C931 550 937 533.75 937 517.5C937 501.25 943.5 485 950 485').toBe(true);
+            expect(((diagram.connectors[49]).wrapper.children[0] as PathElement).data === 'M925 550C931 550 937 566.25 937 582.5C937 598.75 943.5 615 950 615').toBe(true);
+            expect(((diagram.connectors[50]).wrapper.children[0] as PathElement).data === 'M925 550C935 550 945 521.25 945 492.5C945 463.75 903.75 435 862.5 435C821.25 435 780 447.5 780 460C780 472.5 790 485 800 485').toBe(true);
+            expect(((diagram.connectors[51]).wrapper.children[0] as PathElement).data === 'M925 550C935 550 945 578.75 945 607.5C945 636.25 903.75 665 862.5 665C821.25 665 780 652.5 780 640C780 627.5 790 615 800 615').toBe(true);
+            expect(((diagram.connectors[52]).wrapper.children[0] as PathElement).data === 'M925 550C928.5 550 932 531.25 932 512.5C932 493.75 936 475 940 475').toBe(true);
+            expect(((diagram.connectors[53]).wrapper.children[0] as PathElement).data === 'M925 550C928.5 550 932 568.75 932 587.5C932 606.25 936 625 940 625').toBe(true);
+            expect(((diagram.connectors[54]).wrapper.children[0] as PathElement).data === 'M925 550C935 550 945 540.63 945 531.25C945 521.88 906.25 512.5 867.5 512.5C828.75 512.5 790 503.13 790 493.75C790 484.38 800 475 810 475').toBe(true);
+            expect(((diagram.connectors[55]).wrapper.children[0] as PathElement).data === 'M925 550C935 550 945 559.38 945 568.75C945 578.13 906.25 587.5 867.5 587.5C828.75 587.5 790 596.88 790 606.25C790 615.63 800 625 810 625').toBe(true);
+            expect(((diagram.connectors[56]).wrapper.children[0] as PathElement).data === 'M1275 550C1281 550 1287 531.25 1287 512.5C1287 493.75 1293.5 475 1300 475').toBe(true);
+            expect(((diagram.connectors[57]).wrapper.children[0] as PathElement).data === 'M1275 550C1281 550 1287 568.75 1287 587.5C1287 606.25 1293.5 625 1300 625').toBe(true);
+            expect(((diagram.connectors[58]).wrapper.children[0] as PathElement).data === 'M1275 550C1285 550 1295 540.63 1295 531.25C1295 521.88 1253.75 512.5 1212.5 512.5C1171.25 512.5 1130 503.13 1130 493.75C1130 484.38 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[59]).wrapper.children[0] as PathElement).data === 'M1275 550C1285 550 1295 559.38 1295 568.75C1295 578.13 1253.75 587.5 1212.5 587.5C1171.25 587.5 1130 596.88 1130 606.25C1130 615.63 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[60]).wrapper.children[0] as PathElement).data === 'M1275 550C1281 550 1287 531.25 1287 512.5C1287 493.75 1293.5 475 1300 475').toBe(true);
+            expect(((diagram.connectors[61]).wrapper.children[0] as PathElement).data === 'M1275 550C1281 550 1287 568.75 1287 587.5C1287 606.25 1293.5 625 1300 625').toBe(true);
+            expect(((diagram.connectors[62]).wrapper.children[0] as PathElement).data === 'M1275 550C1285 550 1295 540.63 1295 531.25C1295 521.88 1253.75 512.5 1212.5 512.5C1171.25 512.5 1130 503.13 1130 493.75C1130 484.38 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[63]).wrapper.children[0] as PathElement).data === 'M1275 550C1285 550 1295 559.38 1295 568.75C1295 578.13 1253.75 587.5 1212.5 587.5C1171.25 587.5 1130 596.88 1130 606.25C1130 615.63 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[64]).wrapper.children[0] as PathElement).data === 'M225 900C228.5 900 232 893.75 232 887.5C232 881.25 236 875 240 875').toBe(true);
+            expect(((diagram.connectors[65]).wrapper.children[0] as PathElement).data === 'M225 900C228.5 900 232 906.25 232 912.5C232 918.75 236 925 240 925').toBe(true);
+            expect(((diagram.connectors[66]).wrapper.children[0] as PathElement).data === 'M225 900C235 900 245 881.25 245 862.5C245 843.75 206.25 825 167.5 825C128.75 825 90 837.5 90 850C90 862.5 100 875 110 875').toBe(true);
+            expect(((diagram.connectors[67]).wrapper.children[0] as PathElement).data === 'M225 900C235 900 245 918.75 245 937.5C245 956.25 206.25 975 167.5 975C128.75 975 90 962.5 90 950C90 937.5 100 925 110 925').toBe(true);
+            expect(((diagram.connectors[68]).wrapper.children[0] as PathElement).data === 'M225 900C247.5 900 270 871.25 270 842.5C270 813.75 247.5 785 225 785C202.5 785 180 797.5 180 810C180 822.5 190 835 200 835').toBe(true);
+            expect(((diagram.connectors[69]).wrapper.children[0] as PathElement).data === 'M225 900C247.5 900 270 928.75 270 957.5C270 986.25 247.5 1015 225 1015C202.5 1015 180 1002.5 180 990C180 977.5 190 965 200 965').toBe(true);
+            expect(((diagram.connectors[70]).wrapper.children[0] as PathElement).data === 'M225 900C235 900 245 871.25 245 842.5C245 813.75 216.25 785 187.5 785C158.75 785 130 797.5 130 810C130 822.5 140 835 150 835').toBe(true);
+            expect(((diagram.connectors[71]).wrapper.children[0] as PathElement).data === 'M225 900C235 900 245 928.75 245 957.5C245 986.25 216.25 1015 187.5 1015C158.75 1015 130 1002.5 130 990C130 977.5 140 965 150 965').toBe(true);
+            expect(((diagram.connectors[72]).wrapper.children[0] as PathElement).data === 'M575 900C578.5 900 582 887.5 582 875C582 862.5 586 850 590 850').toBe(true);
+            expect(((diagram.connectors[73]).wrapper.children[0] as PathElement).data === 'M575 900C578.5 900 582 912.5 582 925C582 937.5 586 950 590 950').toBe(true);
+            expect(((diagram.connectors[74]).wrapper.children[0] as PathElement).data === 'M575 900C585 900 595 875 595 850C595 825 556.25 800 517.5 800C478.75 800 440 812.5 440 825C440 837.5 450 850 460 850').toBe(true);
+            expect(((diagram.connectors[75]).wrapper.children[0] as PathElement).data === 'M575 900C585 900 595 925 595 950C595 975 556.25 1000 517.5 1000C478.75 1000 440 987.5 440 975C440 962.5 450 950 460 950').toBe(true);
+            expect(((diagram.connectors[76]).wrapper.children[0] as PathElement).data === 'M575 900C610 900 645 871.25 645 842.5C645 813.75 622.5 785 600 785C577.5 785 555 797.5 555 810C555 822.5 565 835 575 835').toBe(true);
+            expect(((diagram.connectors[77]).wrapper.children[0] as PathElement).data === 'M575 900C610 900 645 928.75 645 957.5C645 986.25 622.5 1015 600 1015C577.5 1015 555 1002.5 555 990C555 977.5 565 965 575 965').toBe(true);
+            expect(((diagram.connectors[78]).wrapper.children[0] as PathElement).data === 'M575 900C585 900 595 871.25 595 842.5C595 813.75 560 785 525 785C490 785 455 797.5 455 810C455 822.5 465 835 475 835').toBe(true);
+            expect(((diagram.connectors[79]).wrapper.children[0] as PathElement).data === 'M575 900C585 900 595 928.75 595 957.5C595 986.25 560 1015 525 1015C490 1015 455 1002.5 455 990C455 977.5 465 965 475 965').toBe(true);
+            expect(((diagram.connectors[80]).wrapper.children[0] as PathElement).data === 'M925 900C928.5 900 932 883.75 932 867.5C932 851.25 936 835 940 835').toBe(true);
+            expect(((diagram.connectors[81]).wrapper.children[0] as PathElement).data === 'M925 900C928.5 900 932 916.25 932 932.5C932 948.75 936 965 940 965').toBe(true);
+            expect(((diagram.connectors[82]).wrapper.children[0] as PathElement).data === 'M925 900C935 900 945 871.25 945 842.5C945 813.75 906.25 785 867.5 785C828.75 785 790 797.5 790 810C790 822.5 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[83]).wrapper.children[0] as PathElement).data === 'M925 900C935 900 945 928.75 945 957.5C945 986.25 906.25 1015 867.5 1015C828.75 1015 790 1002.5 790 990C790 977.5 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[84]).wrapper.children[0] as PathElement).data === 'M925 900C928.5 900 932 883.75 932 867.5C932 851.25 936 835 940 835').toBe(true);
+            expect(((diagram.connectors[85]).wrapper.children[0] as PathElement).data === 'M925 900C928.5 900 932 916.25 932 932.5C932 948.75 936 965 940 965').toBe(true);
+            expect(((diagram.connectors[86]).wrapper.children[0] as PathElement).data === 'M925 900C935 900 945 871.25 945 842.5C945 813.75 906.25 785 867.5 785C828.75 785 790 797.5 790 810C790 822.5 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[87]).wrapper.children[0] as PathElement).data === 'M925 900C935 900 945 928.75 945 957.5C945 986.25 906.25 1015 867.5 1015C828.75 1015 790 1002.5 790 990C790 977.5 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[88]).wrapper.children[0] as PathElement).data === 'M1275 900C1278.5 900 1282 881.25 1282 862.5C1282 843.75 1286 825 1290 825').toBe(true);
+            expect(((diagram.connectors[89]).wrapper.children[0] as PathElement).data === 'M1275 900C1278.5 900 1282 918.75 1282 937.5C1282 956.25 1286 975 1290 975').toBe(true);
+            expect(((diagram.connectors[90]).wrapper.children[0] as PathElement).data === 'M1275 900C1285 900 1295 890.63 1295 881.25C1295 871.88 1256.25 862.5 1217.5 862.5C1178.75 862.5 1140 853.13 1140 843.75C1140 834.38 1150 825 1160 825').toBe(true);
+            expect(((diagram.connectors[91]).wrapper.children[0] as PathElement).data === 'M1275 900C1285 900 1295 909.38 1295 918.75C1295 928.13 1256.25 937.5 1217.5 937.5C1178.75 937.5 1140 946.88 1140 956.25C1140 965.63 1150 975 1160 975').toBe(true);
+            expect(((diagram.connectors[92]).wrapper.children[0] as PathElement).data === 'M1275 900C1281 900 1287 883.75 1287 867.5C1287 851.25 1293.5 835 1300 835').toBe(true);
+            expect(((diagram.connectors[93]).wrapper.children[0] as PathElement).data === 'M1275 900C1281 900 1287 916.25 1287 932.5C1287 948.75 1293.5 965 1300 965').toBe(true);
+            expect(((diagram.connectors[94]).wrapper.children[0] as PathElement).data === 'M1275 900C1285 900 1295 871.25 1295 842.5C1295 813.75 1253.75 785 1212.5 785C1171.25 785 1130 797.5 1130 810C1130 822.5 1140 835 1150 835').toBe(true);
+            expect(((diagram.connectors[95]).wrapper.children[0] as PathElement).data === 'M1275 900C1285 900 1295 928.75 1295 957.5C1295 986.25 1253.75 1015 1212.5 1015C1171.25 1015 1130 1002.5 1130 990C1130 977.5 1140 965 1150 965').toBe(true);
+            expect(((diagram.connectors[96]).wrapper.children[0] as PathElement).data === 'M1625 200C1643.75 200 1662.5 182.5 1662.5 165C1662.5 147.5 1678.13 130 1693.75 130C1709.38 130 1725 140 1725 150').toBe(true);
+            expect(((diagram.connectors[97]).wrapper.children[0] as PathElement).data === 'M1625 200C1643.75 200 1662.5 195 1662.5 190C1662.5 185 1678.13 180 1693.75 180C1709.38 180 1725 190 1725 200').toBe(true);
+            expect(((diagram.connectors[98]).wrapper.children[0] as PathElement).data === 'M1625 200C1635 200 1645 182.5 1645 165C1645 147.5 1602.5 130 1560 130C1517.5 130 1475 140 1475 150').toBe(true);
+            expect(((diagram.connectors[99]).wrapper.children[0] as PathElement).data === 'M1625 200C1635 200 1645 188.75 1645 177.5C1645 166.25 1602.5 155 1560 155C1517.5 155 1475 177.5 1475 200').toBe(true);
+            expect(((diagram.connectors[100]).wrapper.children[0] as PathElement).data === 'M1625 200C1647.5 200 1670 157.5 1670 115C1670 72.5 1658.75 30 1647.5 30C1636.25 30 1625 40 1625 50').toBe(true);
+            expect(((diagram.connectors[101]).wrapper.children[0] as PathElement).data === 'M1625 200C1635 200 1645 215.63 1645 231.25C1645 246.88 1640 262.5 1635 262.5C1630 262.5 1625 281.25 1625 300').toBe(true);
+            expect(((diagram.connectors[102]).wrapper.children[0] as PathElement).data === 'M1625 200C1635 200 1645 157.5 1645 115C1645 72.5 1627.5 30 1610 30C1592.5 30 1575 40 1575 50').toBe(true);
+            expect(((diagram.connectors[103]).wrapper.children[0] as PathElement).data === 'M1625 200C1635 200 1645 215.63 1645 231.25C1645 246.88 1627.5 262.5 1610 262.5C1592.5 262.5 1575 281.25 1575 300').toBe(true);
+            expect(((diagram.connectors[104]).wrapper.children[0] as PathElement).data === 'M1975 200C1993.75 200 2012.5 176.25 2012.5 152.5C2012.5 128.75 2028.13 105 2043.75 105C2059.38 105 2075 115 2075 125').toBe(true);
+            expect(((diagram.connectors[105]).wrapper.children[0] as PathElement).data === 'M1975 200C2025 200 2075 212.5 2075 225').toBe(true);
+            expect(((diagram.connectors[106]).wrapper.children[0] as PathElement).data === 'M1975 200C1985 200 1995 176.25 1995 152.5C1995 128.75 1952.5 105 1910 105C1867.5 105 1825 115 1825 125').toBe(true);
+            expect(((diagram.connectors[107]).wrapper.children[0] as PathElement).data === 'M1975 200C1985 200 1995 188.75 1995 177.5C1995 166.25 1952.5 155 1910 155C1867.5 155 1825 190 1825 225').toBe(true);
+            expect(((diagram.connectors[108]).wrapper.children[0] as PathElement).data === 'M1975 200C2010 200 2045 157.5 2045 115C2045 72.5 2033.75 30 2022.5 30C2011.25 30 2000 40 2000 50').toBe(true);
+            expect(((diagram.connectors[109]).wrapper.children[0] as PathElement).data === 'M1975 200C1987.5 200 2000 250 2000 300').toBe(true);
+            expect(((diagram.connectors[110]).wrapper.children[0] as PathElement).data === 'M1975 200C1985 200 1995 157.5 1995 115C1995 72.5 1971.25 30 1947.5 30C1923.75 30 1900 40 1900 50').toBe(true);
+            expect(((diagram.connectors[111]).wrapper.children[0] as PathElement).data === 'M1975 200C1985 200 1995 215.63 1995 231.25C1995 246.88 1971.25 262.5 1947.5 262.5C1923.75 262.5 1900 281.25 1900 300').toBe(true);
+            expect(((diagram.connectors[112]).wrapper.children[0] as PathElement).data === 'M2325 200C2343.75 200 2362.5 172.5 2362.5 145C2362.5 117.5 2378.13 90 2393.75 90C2409.38 90 2425 100 2425 110').toBe(true);
+            expect(((diagram.connectors[113]).wrapper.children[0] as PathElement).data === 'M2325 200C2375 200 2425 220 2425 240').toBe(true);
+            expect(((diagram.connectors[114]).wrapper.children[0] as PathElement).data === 'M2325 200C2335 200 2345 172.5 2345 145C2345 117.5 2302.5 90 2260 90C2217.5 90 2175 100 2175 110').toBe(true);
+            expect(((diagram.connectors[115]).wrapper.children[0] as PathElement).data === 'M2325 200C2335 200 2345 188.75 2345 177.5C2345 166.25 2302.5 155 2260 155C2217.5 155 2175 197.5 2175 240').toBe(true);
+            expect(((diagram.connectors[116]).wrapper.children[0] as PathElement).data === 'M2325 200C2328.75 200 2332.5 157.5 2332.5 115C2332.5 72.5 2340.63 30 2348.75 30C2356.88 30 2365 40 2365 50').toBe(true);
+            expect(((diagram.connectors[117]).wrapper.children[0] as PathElement).data === 'M2325 200C2345 200 2365 250 2365 300').toBe(true);
+            expect(((diagram.connectors[118]).wrapper.children[0] as PathElement).data === 'M2325 200C2335 200 2345 157.5 2345 115C2345 72.5 2317.5 30 2290 30C2262.5 30 2235 40 2235 50').toBe(true);
+            expect(((diagram.connectors[119]).wrapper.children[0] as PathElement).data === 'M2325 200C2335 200 2345 215.63 2345 231.25C2345 246.88 2317.5 262.5 2290 262.5C2262.5 262.5 2235 281.25 2235 300').toBe(true);
+            expect(((diagram.connectors[120]).wrapper.children[0] as PathElement).data === 'M2675 200C2693.75 200 2712.5 170 2712.5 140C2712.5 110 2728.13 80 2743.75 80C2759.38 80 2775 90 2775 100').toBe(true);
+            expect(((diagram.connectors[121]).wrapper.children[0] as PathElement).data === 'M2675 200C2725 200 2775 225 2775 250').toBe(true);
+            expect(((diagram.connectors[122]).wrapper.children[0] as PathElement).data === 'M2675 200C2685 200 2695 170 2695 140C2695 110 2652.5 80 2610 80C2567.5 80 2525 90 2525 100').toBe(true);
+            expect(((diagram.connectors[123]).wrapper.children[0] as PathElement).data === 'M2675 200C2685 200 2695 188.75 2695 177.5C2695 166.25 2652.5 155 2610 155C2567.5 155 2525 202.5 2525 250').toBe(true);
+            expect(((diagram.connectors[124]).wrapper.children[0] as PathElement).data === 'M2675 200C2681.25 200 2687.5 157.5 2687.5 115C2687.5 72.5 2696.88 30 2706.25 30C2715.63 30 2725 40 2725 50').toBe(true);
+            expect(((diagram.connectors[125]).wrapper.children[0] as PathElement).data === 'M2675 200C2700 200 2725 250 2725 300').toBe(true);
+            expect(((diagram.connectors[126]).wrapper.children[0] as PathElement).data === 'M2675 200C2685 200 2695 157.5 2695 115C2695 72.5 2665 30 2635 30C2605 30 2575 40 2575 50').toBe(true);
+            expect(((diagram.connectors[127]).wrapper.children[0] as PathElement).data === 'M2675 200C2685 200 2695 215.63 2695 231.25C2695 246.88 2665 262.5 2635 262.5C2605 262.5 2575 281.25 2575 300').toBe(true);
+            expect(((diagram.connectors[128]).wrapper.children[0] as PathElement).data === 'M1625 550C1631.25 550 1637.5 532.5 1637.5 515C1637.5 497.5 1646.88 480 1656.25 480C1665.63 480 1675 490 1675 500').toBe(true);
+            expect(((diagram.connectors[129]).wrapper.children[0] as PathElement).data === 'M1625 550C1631.25 550 1637.5 545 1637.5 540C1637.5 535 1646.88 530 1656.25 530C1665.63 530 1675 540 1675 550').toBe(true);
+            expect(((diagram.connectors[130]).wrapper.children[0] as PathElement).data === 'M1625 550C1635 550 1645 532.5 1645 515C1645 497.5 1615 480 1585 480C1555 480 1525 490 1525 500').toBe(true);
+            expect(((diagram.connectors[131]).wrapper.children[0] as PathElement).data === 'M1625 550C1635 550 1645 538.75 1645 527.5C1645 516.25 1615 505 1585 505C1555 505 1525 527.5 1525 550').toBe(true);
+            expect(((diagram.connectors[132]).wrapper.children[0] as PathElement).data === 'M1625 550C1647.5 550 1670 520 1670 490C1670 460 1658.75 430 1647.5 430C1636.25 430 1625 440 1625 450').toBe(true);
+            expect(((diagram.connectors[133]).wrapper.children[0] as PathElement).data === 'M1625 550C1635 550 1645 559.38 1645 568.75C1645 578.13 1640 587.5 1635 587.5C1630 587.5 1625 593.75 1625 600').toBe(true);
+            expect(((diagram.connectors[134]).wrapper.children[0] as PathElement).data === 'M1625 550C1635 550 1645 520 1645 490C1645 460 1627.5 430 1610 430C1592.5 430 1575 440 1575 450').toBe(true);
+            expect(((diagram.connectors[135]).wrapper.children[0] as PathElement).data === 'M1625 550C1635 550 1645 559.38 1645 568.75C1645 578.13 1627.5 587.5 1610 587.5C1592.5 587.5 1575 593.75 1575 600').toBe(true);
+            expect(((diagram.connectors[136]).wrapper.children[0] as PathElement).data === 'M1975 550C1981.25 550 1987.5 526.25 1987.5 502.5C1987.5 478.75 1996.88 455 2006.25 455C2015.63 455 2025 465 2025 475').toBe(true);
+            expect(((diagram.connectors[137]).wrapper.children[0] as PathElement).data === 'M1975 550C2000 550 2025 562.5 2025 575').toBe(true);
+            expect(((diagram.connectors[138]).wrapper.children[0] as PathElement).data === 'M1975 550C1985 550 1995 526.25 1995 502.5C1995 478.75 1965 455 1935 455C1905 455 1875 465 1875 475').toBe(true);
+            expect(((diagram.connectors[139]).wrapper.children[0] as PathElement).data === 'M1975 550C1985 550 1995 538.75 1995 527.5C1995 516.25 1965 505 1935 505C1905 505 1875 540 1875 575').toBe(true);
+            expect(((diagram.connectors[140]).wrapper.children[0] as PathElement).data === 'M1975 550C2010 550 2045 520 2045 490C2045 460 2033.75 430 2022.5 430C2011.25 430 2000 440 2000 450').toBe(true);
+            expect(((diagram.connectors[141]).wrapper.children[0] as PathElement).data === 'M1975 550C1987.5 550 2000 575 2000 600').toBe(true);
+            expect(((diagram.connectors[142]).wrapper.children[0] as PathElement).data === 'M1975 550C1985 550 1995 520 1995 490C1995 460 1971.25 430 1947.5 430C1923.75 430 1900 440 1900 450').toBe(true);
+            expect(((diagram.connectors[143]).wrapper.children[0] as PathElement).data === 'M1975 550C1985 550 1995 538.75 1995 527.5C1995 516.25 1971.25 505 1947.5 505C1923.75 505 1900 552.5 1900 600').toBe(true);
+            expect(((diagram.connectors[144]).wrapper.children[0] as PathElement).data === 'M2325 550C2331.25 550 2337.5 522.5 2337.5 495C2337.5 467.5 2346.88 440 2356.25 440C2365.63 440 2375 450 2375 460').toBe(true);
+            expect(((diagram.connectors[145]).wrapper.children[0] as PathElement).data === 'M2325 550C2350 550 2375 570 2375 590').toBe(true);
+            expect(((diagram.connectors[146]).wrapper.children[0] as PathElement).data === 'M2325 550C2335 550 2345 522.5 2345 495C2345 467.5 2315 440 2285 440C2255 440 2225 450 2225 460').toBe(true);
+            expect(((diagram.connectors[147]).wrapper.children[0] as PathElement).data === 'M2325 550C2335 550 2345 538.75 2345 527.5C2345 516.25 2315 505 2285 505C2255 505 2225 547.5 2225 590').toBe(true);
+            expect(((diagram.connectors[148]).wrapper.children[0] as PathElement).data === 'M2325 550C2328.75 550 2332.5 520 2332.5 490C2332.5 460 2340.63 430 2348.75 430C2356.88 430 2365 440 2365 450').toBe(true);
+            expect(((diagram.connectors[149]).wrapper.children[0] as PathElement).data === 'M2325 550C2345 550 2365 575 2365 600').toBe(true);
+            expect(((diagram.connectors[150]).wrapper.children[0] as PathElement).data === 'M2325 550C2335 550 2345 520 2345 490C2345 460 2317.5 430 2290 430C2262.5 430 2235 440 2235 450').toBe(true);
+            expect(((diagram.connectors[151]).wrapper.children[0] as PathElement).data === 'M2325 550C2335 550 2345 538.75 2345 527.5C2345 516.25 2317.5 505 2290 505C2262.5 505 2235 552.5 2235 600').toBe(true);
+            expect(((diagram.connectors[152]).wrapper.children[0] as PathElement).data === 'M2675 550C2681.25 550 2687.5 520 2687.5 490C2687.5 460 2696.88 430 2706.25 430C2715.63 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[153]).wrapper.children[0] as PathElement).data === 'M2675 550C2700 550 2725 575 2725 600').toBe(true);
+            expect(((diagram.connectors[154]).wrapper.children[0] as PathElement).data === 'M2675 550C2685 550 2695 520 2695 490C2695 460 2665 430 2635 430C2605 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[155]).wrapper.children[0] as PathElement).data === 'M2675 550C2685 550 2695 538.75 2695 527.5C2695 516.25 2665 505 2635 505C2605 505 2575 552.5 2575 600').toBe(true);
+            expect(((diagram.connectors[156]).wrapper.children[0] as PathElement).data === 'M2675 550C2681.25 550 2687.5 520 2687.5 490C2687.5 460 2696.88 430 2706.25 430C2715.63 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[157]).wrapper.children[0] as PathElement).data === 'M2675 550C2700 550 2725 575 2725 600').toBe(true);
+            expect(((diagram.connectors[158]).wrapper.children[0] as PathElement).data === 'M2675 550C2685 550 2695 520 2695 490C2695 460 2665 430 2635 430C2605 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[159]).wrapper.children[0] as PathElement).data === 'M2675 550C2685 550 2695 538.75 2695 527.5C2695 516.25 2665 505 2635 505C2605 505 2575 552.5 2575 600').toBe(true);
+            expect(((diagram.connectors[160]).wrapper.children[0] as PathElement).data === 'M1625 900C1628.75 900 1632.5 882.5 1632.5 865C1632.5 847.5 1640.63 830 1648.75 830C1656.88 830 1665 840 1665 850').toBe(true);
+            expect(((diagram.connectors[161]).wrapper.children[0] as PathElement).data === 'M1625 900C1628.75 900 1632.5 895 1632.5 890C1632.5 885 1640.63 880 1648.75 880C1656.88 880 1665 890 1665 900').toBe(true);
+            expect(((diagram.connectors[162]).wrapper.children[0] as PathElement).data === 'M1625 900C1635 900 1645 882.5 1645 865C1645 847.5 1617.5 830 1590 830C1562.5 830 1535 840 1535 850').toBe(true);
+            expect(((diagram.connectors[163]).wrapper.children[0] as PathElement).data === 'M1625 900C1635 900 1645 888.75 1645 877.5C1645 866.25 1617.5 855 1590 855C1562.5 855 1535 877.5 1535 900').toBe(true);
+            expect(((diagram.connectors[164]).wrapper.children[0] as PathElement).data === 'M1625 900C1647.5 900 1670 872.5 1670 845C1670 817.5 1658.75 790 1647.5 790C1636.25 790 1625 800 1625 810').toBe(true);
+            expect(((diagram.connectors[165]).wrapper.children[0] as PathElement).data === 'M1625 900C1635 900 1645 908.13 1645 916.25C1645 924.38 1640 932.5 1635 932.5C1630 932.5 1625 936.25 1625 940').toBe(true);
+            expect(((diagram.connectors[166]).wrapper.children[0] as PathElement).data === 'M1625 900C1635 900 1645 872.5 1645 845C1645 817.5 1627.5 790 1610 790C1592.5 790 1575 800 1575 810').toBe(true);
+            expect(((diagram.connectors[167]).wrapper.children[0] as PathElement).data === 'M1625 900C1635 900 1645 908.13 1645 916.25C1645 924.38 1627.5 932.5 1610 932.5C1592.5 932.5 1575 936.25 1575 940').toBe(true);
+            expect(((diagram.connectors[168]).wrapper.children[0] as PathElement).data === 'M1975 900C1978.75 900 1982.5 876.25 1982.5 852.5C1982.5 828.75 1990.63 805 1998.75 805C2006.88 805 2015 815 2015 825').toBe(true);
+            expect(((diagram.connectors[169]).wrapper.children[0] as PathElement).data === 'M1975 900C1995 900 2015 912.5 2015 925').toBe(true);
+            expect(((diagram.connectors[170]).wrapper.children[0] as PathElement).data === 'M1975 900C1985 900 1995 876.25 1995 852.5C1995 828.75 1967.5 805 1940 805C1912.5 805 1885 815 1885 825').toBe(true);
+            expect(((diagram.connectors[171]).wrapper.children[0] as PathElement).data === 'M1975 900C1985 900 1995 888.75 1995 877.5C1995 866.25 1967.5 855 1940 855C1912.5 855 1885 890 1885 925').toBe(true);
+            expect(((diagram.connectors[172]).wrapper.children[0] as PathElement).data === 'M1975 900C2010 900 2045 872.5 2045 845C2045 817.5 2033.75 790 2022.5 790C2011.25 790 2000 800 2000 810').toBe(true);
+            expect(((diagram.connectors[173]).wrapper.children[0] as PathElement).data === 'M1975 900C1987.5 900 2000 920 2000 940').toBe(true);
+            expect(((diagram.connectors[174]).wrapper.children[0] as PathElement).data === 'M1975 900C1985 900 1995 872.5 1995 845C1995 817.5 1971.25 790 1947.5 790C1923.75 790 1900 800 1900 810').toBe(true);
+            expect(((diagram.connectors[175]).wrapper.children[0] as PathElement).data === 'M1975 900C1985 900 1995 888.75 1995 877.5C1995 866.25 1971.25 855 1947.5 855C1923.75 855 1900 897.5 1900 940').toBe(true);
+            expect(((diagram.connectors[176]).wrapper.children[0] as PathElement).data === 'M2325 900C2328.75 900 2332.5 872.5 2332.5 845C2332.5 817.5 2340.63 790 2348.75 790C2356.88 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[177]).wrapper.children[0] as PathElement).data === 'M2325 900C2345 900 2365 920 2365 940').toBe(true);
+            expect(((diagram.connectors[178]).wrapper.children[0] as PathElement).data === 'M2325 900C2335 900 2345 872.5 2345 845C2345 817.5 2317.5 790 2290 790C2262.5 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[179]).wrapper.children[0] as PathElement).data === 'M2325 900C2335 900 2345 888.75 2345 877.5C2345 866.25 2317.5 855 2290 855C2262.5 855 2235 897.5 2235 940').toBe(true);
+            expect(((diagram.connectors[180]).wrapper.children[0] as PathElement).data === 'M2325 900C2328.75 900 2332.5 872.5 2332.5 845C2332.5 817.5 2340.63 790 2348.75 790C2356.88 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[181]).wrapper.children[0] as PathElement).data === 'M2325 900C2345 900 2365 920 2365 940').toBe(true);
+            expect(((diagram.connectors[182]).wrapper.children[0] as PathElement).data === 'M2325 900C2335 900 2345 872.5 2345 845C2345 817.5 2317.5 790 2290 790C2262.5 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[183]).wrapper.children[0] as PathElement).data === 'M2325 900C2335 900 2345 888.75 2345 877.5C2345 866.25 2317.5 855 2290 855C2262.5 855 2235 897.5 2235 940').toBe(true);
+            expect(((diagram.connectors[184]).wrapper.children[0] as PathElement).data === 'M2675 900C2678.75 900 2682.5 870 2682.5 840C2682.5 810 2690.63 780 2698.75 780C2706.88 780 2715 790 2715 800').toBe(true);
+            expect(((diagram.connectors[185]).wrapper.children[0] as PathElement).data === 'M2675 900C2695 900 2715 925 2715 950').toBe(true);
+            expect(((diagram.connectors[186]).wrapper.children[0] as PathElement).data === 'M2675 900C2685 900 2695 870 2695 840C2695 810 2667.5 780 2640 780C2612.5 780 2585 790 2585 800').toBe(true);
+            expect(((diagram.connectors[187]).wrapper.children[0] as PathElement).data === 'M2675 900C2685 900 2695 888.75 2695 877.5C2695 866.25 2667.5 855 2640 855C2612.5 855 2585 902.5 2585 950').toBe(true);
+            expect(((diagram.connectors[188]).wrapper.children[0] as PathElement).data === 'M2675 900C2681.25 900 2687.5 872.5 2687.5 845C2687.5 817.5 2696.88 790 2706.25 790C2715.63 790 2725 800 2725 810').toBe(true);
+            expect(((diagram.connectors[189]).wrapper.children[0] as PathElement).data === 'M2675 900C2700 900 2725 920 2725 940').toBe(true);
+            expect(((diagram.connectors[190]).wrapper.children[0] as PathElement).data === 'M2675 900C2685 900 2695 872.5 2695 845C2695 817.5 2665 790 2635 790C2605 790 2575 800 2575 810').toBe(true);
+            expect(((diagram.connectors[191]).wrapper.children[0] as PathElement).data === 'M2675 900C2685 900 2695 888.75 2695 877.5C2695 866.25 2665 855 2635 855C2605 855 2575 897.5 2575 940').toBe(true);
+            expect(((diagram.connectors[192]).wrapper.children[0] as PathElement).data === 'M3025 200C3043.75 200 3062.5 181.25 3062.5 162.5C3062.5 143.75 3089.38 125 3116.25 125C3143.13 125 3170 137.5 3170 150C3170 162.5 3160 175 3150 175').toBe(true);
+            expect(((diagram.connectors[193]).wrapper.children[0] as PathElement).data === 'M3025 200C3043.75 200 3062.5 218.75 3062.5 237.5C3062.5 256.25 3089.38 275 3116.25 275C3143.13 275 3170 262.5 3170 250C3170 237.5 3160 225 3150 225').toBe(true);
+            expect(((diagram.connectors[194]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 188.75 3045 177.5C3045 166.25 3018.13 155 2991.25 155C2964.38 155 2937.5 160 2937.5 165C2937.5 170 2918.75 175 2900 175').toBe(true);
+            expect(((diagram.connectors[195]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 211.25 3045 222.5C3045 233.75 3018.13 245 2991.25 245C2964.38 245 2937.5 240 2937.5 235C2937.5 230 2918.75 225 2900 225').toBe(true);
+            expect(((diagram.connectors[196]).wrapper.children[0] as PathElement).data === 'M3025 200C3047.5 200 3070 168.75 3070 137.5C3070 106.25 3060 75 3050 75').toBe(true);
+            expect(((diagram.connectors[197]).wrapper.children[0] as PathElement).data === 'M3025 200C3047.5 200 3070 231.25 3070 262.5C3070 293.75 3060 325 3050 325').toBe(true);
+            expect(((diagram.connectors[198]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 168.75 3045 137.5C3045 106.25 3022.5 75 3000 75').toBe(true);
+            expect(((diagram.connectors[199]).wrapper.children[0] as PathElement).data === 'M3025 200C3035 200 3045 231.25 3045 262.5C3045 293.75 3022.5 325 3000 325').toBe(true);
+            expect(((diagram.connectors[200]).wrapper.children[0] as PathElement).data === 'M3375 200C3447.5 200 3520 187.5 3520 175C3520 162.5 3510 150 3500 150').toBe(true);
+            expect(((diagram.connectors[201]).wrapper.children[0] as PathElement).data === 'M3375 200C3447.5 200 3520 212.5 3520 225C3520 237.5 3510 250 3500 250').toBe(true);
+            expect(((diagram.connectors[202]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 187.5 3395 175C3395 162.5 3322.5 150 3250 150').toBe(true);
+            expect(((diagram.connectors[203]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 212.5 3395 225C3395 237.5 3322.5 250 3250 250').toBe(true);
+            expect(((diagram.connectors[204]).wrapper.children[0] as PathElement).data === 'M3375 200C3410 200 3445 168.75 3445 137.5C3445 106.25 3435 75 3425 75').toBe(true);
+            expect(((diagram.connectors[205]).wrapper.children[0] as PathElement).data === 'M3375 200C3410 200 3445 231.25 3445 262.5C3445 293.75 3435 325 3425 325').toBe(true);
+            expect(((diagram.connectors[206]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 168.75 3395 137.5C3395 106.25 3360 75 3325 75').toBe(true);
+            expect(((diagram.connectors[207]).wrapper.children[0] as PathElement).data === 'M3375 200C3385 200 3395 231.25 3395 262.5C3395 293.75 3360 325 3325 325').toBe(true);
+            expect(((diagram.connectors[208]).wrapper.children[0] as PathElement).data === 'M3725 200C3797.5 200 3870 183.75 3870 167.5C3870 151.25 3860 135 3850 135').toBe(true);
+            expect(((diagram.connectors[209]).wrapper.children[0] as PathElement).data === 'M3725 200C3797.5 200 3870 216.25 3870 232.5C3870 248.75 3860 265 3850 265').toBe(true);
+            expect(((diagram.connectors[210]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 183.75 3745 167.5C3745 151.25 3672.5 135 3600 135').toBe(true);
+            expect(((diagram.connectors[211]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 216.25 3745 232.5C3745 248.75 3672.5 265 3600 265').toBe(true);
+            expect(((diagram.connectors[212]).wrapper.children[0] as PathElement).data === 'M3725 200C3767.5 200 3810 168.75 3810 137.5C3810 106.25 3800 75 3790 75').toBe(true);
+            expect(((diagram.connectors[213]).wrapper.children[0] as PathElement).data === 'M3725 200C3767.5 200 3810 231.25 3810 262.5C3810 293.75 3800 325 3790 325').toBe(true);
+            expect(((diagram.connectors[214]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 168.75 3745 137.5C3745 106.25 3702.5 75 3660 75').toBe(true);
+            expect(((diagram.connectors[215]).wrapper.children[0] as PathElement).data === 'M3725 200C3735 200 3745 231.25 3745 262.5C3745 293.75 3702.5 325 3660 325').toBe(true);
+            expect(((diagram.connectors[216]).wrapper.children[0] as PathElement).data === 'M4075 200C4147.5 200 4220 181.25 4220 162.5C4220 143.75 4210 125 4200 125').toBe(true);
+            expect(((diagram.connectors[217]).wrapper.children[0] as PathElement).data === 'M4075 200C4147.5 200 4220 218.75 4220 237.5C4220 256.25 4210 275 4200 275').toBe(true);
+            expect(((diagram.connectors[218]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 181.25 4095 162.5C4095 143.75 4022.5 125 3950 125').toBe(true);
+            expect(((diagram.connectors[219]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 218.75 4095 237.5C4095 256.25 4022.5 275 3950 275').toBe(true);
+            expect(((diagram.connectors[220]).wrapper.children[0] as PathElement).data === 'M4075 200C4122.5 200 4170 168.75 4170 137.5C4170 106.25 4160 75 4150 75').toBe(true);
+            expect(((diagram.connectors[221]).wrapper.children[0] as PathElement).data === 'M4075 200C4122.5 200 4170 231.25 4170 262.5C4170 293.75 4160 325 4150 325').toBe(true);
+            expect(((diagram.connectors[222]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 168.75 4095 137.5C4095 106.25 4047.5 75 4000 75').toBe(true);
+            expect(((diagram.connectors[223]).wrapper.children[0] as PathElement).data === 'M4075 200C4085 200 4095 231.25 4095 262.5C4095 293.75 4047.5 325 4000 325').toBe(true);
+            expect(((diagram.connectors[224]).wrapper.children[0] as PathElement).data === 'M3025 550C3031.25 550 3037.5 531.25 3037.5 512.5C3037.5 493.75 3058.13 475 3078.75 475C3099.38 475 3120 487.5 3120 500C3120 512.5 3110 525 3100 525').toBe(true);
+            expect(((diagram.connectors[225]).wrapper.children[0] as PathElement).data === 'M3025 550C3031.25 550 3037.5 568.75 3037.5 587.5C3037.5 606.25 3058.13 625 3078.75 625C3099.38 625 3120 612.5 3120 600C3120 587.5 3110 575 3100 575').toBe(true);
+            expect(((diagram.connectors[226]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 538.75 3045 527.5C3045 516.25 3024.38 505 3003.75 505C2983.13 505 2962.5 510 2962.5 515C2962.5 520 2956.25 525 2950 525').toBe(true);
+            expect(((diagram.connectors[227]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 561.25 3045 572.5C3045 583.75 3024.38 595 3003.75 595C2983.13 595 2962.5 590 2962.5 585C2962.5 580 2956.25 575 2950 575').toBe(true);
+            expect(((diagram.connectors[228]).wrapper.children[0] as PathElement).data === 'M3025 550C3047.5 550 3070 531.25 3070 512.5C3070 493.75 3060 475 3050 475').toBe(true);
+            expect(((diagram.connectors[229]).wrapper.children[0] as PathElement).data === 'M3025 550C3047.5 550 3070 568.75 3070 587.5C3070 606.25 3060 625 3050 625').toBe(true);
+            expect(((diagram.connectors[230]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 531.25 3045 512.5C3045 493.75 3022.5 475 3000 475').toBe(true);
+            expect(((diagram.connectors[231]).wrapper.children[0] as PathElement).data === 'M3025 550C3035 550 3045 568.75 3045 587.5C3045 606.25 3022.5 625 3000 625').toBe(true);
+            expect(((diagram.connectors[232]).wrapper.children[0] as PathElement).data === 'M3375 550C3422.5 550 3470 537.5 3470 525C3470 512.5 3460 500 3450 500').toBe(true);
+            expect(((diagram.connectors[233]).wrapper.children[0] as PathElement).data === 'M3375 550C3422.5 550 3470 562.5 3470 575C3470 587.5 3460 600 3450 600').toBe(true);
+            expect(((diagram.connectors[234]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 537.5 3395 525C3395 512.5 3347.5 500 3300 500').toBe(true);
+            expect(((diagram.connectors[235]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 562.5 3395 575C3395 587.5 3347.5 600 3300 600').toBe(true);
+            expect(((diagram.connectors[236]).wrapper.children[0] as PathElement).data === 'M3375 550C3410 550 3445 531.25 3445 512.5C3445 493.75 3435 475 3425 475').toBe(true);
+            expect(((diagram.connectors[237]).wrapper.children[0] as PathElement).data === 'M3375 550C3410 550 3445 568.75 3445 587.5C3445 606.25 3435 625 3425 625').toBe(true);
+            expect(((diagram.connectors[238]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 531.25 3395 512.5C3395 493.75 3360 475 3325 475').toBe(true);
+            expect(((diagram.connectors[239]).wrapper.children[0] as PathElement).data === 'M3375 550C3385 550 3395 568.75 3395 587.5C3395 606.25 3360 625 3325 625').toBe(true);
+            expect(((diagram.connectors[240]).wrapper.children[0] as PathElement).data === 'M3725 550C3772.5 550 3820 533.75 3820 517.5C3820 501.25 3810 485 3800 485').toBe(true);
+            expect(((diagram.connectors[241]).wrapper.children[0] as PathElement).data === 'M3725 550C3772.5 550 3820 566.25 3820 582.5C3820 598.75 3810 615 3800 615').toBe(true);
+            expect(((diagram.connectors[242]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 533.75 3745 517.5C3745 501.25 3697.5 485 3650 485').toBe(true);
+            expect(((diagram.connectors[243]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 566.25 3745 582.5C3745 598.75 3697.5 615 3650 615').toBe(true);
+            expect(((diagram.connectors[244]).wrapper.children[0] as PathElement).data === 'M3725 550C3767.5 550 3810 531.25 3810 512.5C3810 493.75 3800 475 3790 475').toBe(true);
+            expect(((diagram.connectors[245]).wrapper.children[0] as PathElement).data === 'M3725 550C3767.5 550 3810 568.75 3810 587.5C3810 606.25 3800 625 3790 625').toBe(true);
+            expect(((diagram.connectors[246]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 531.25 3745 512.5C3745 493.75 3702.5 475 3660 475').toBe(true);
+            expect(((diagram.connectors[247]).wrapper.children[0] as PathElement).data === 'M3725 550C3735 550 3745 568.75 3745 587.5C3745 606.25 3702.5 625 3660 625').toBe(true);
+            expect(((diagram.connectors[248]).wrapper.children[0] as PathElement).data === 'M4075 550C4122.5 550 4170 531.25 4170 512.5C4170 493.75 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[249]).wrapper.children[0] as PathElement).data === 'M4075 550C4122.5 550 4170 568.75 4170 587.5C4170 606.25 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[250]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 531.25 4095 512.5C4095 493.75 4047.5 475 4000 475').toBe(true);
+            expect(((diagram.connectors[251]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 568.75 4095 587.5C4095 606.25 4047.5 625 4000 625').toBe(true);
+            expect(((diagram.connectors[252]).wrapper.children[0] as PathElement).data === 'M4075 550C4122.5 550 4170 531.25 4170 512.5C4170 493.75 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[253]).wrapper.children[0] as PathElement).data === 'M4075 550C4122.5 550 4170 568.75 4170 587.5C4170 606.25 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[254]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 531.25 4095 512.5C4095 493.75 4047.5 475 4000 475').toBe(true);
+            expect(((diagram.connectors[255]).wrapper.children[0] as PathElement).data === 'M4075 550C4085 550 4095 568.75 4095 587.5C4095 606.25 4047.5 625 4000 625').toBe(true);
+            expect(((diagram.connectors[256]).wrapper.children[0] as PathElement).data === 'M3025 900C3067.5 900 3110 893.75 3110 887.5C3110 881.25 3100 875 3090 875').toBe(true);
+            expect(((diagram.connectors[257]).wrapper.children[0] as PathElement).data === 'M3025 900C3067.5 900 3110 906.25 3110 912.5C3110 918.75 3100 925 3090 925').toBe(true);
+            expect(((diagram.connectors[258]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 888.75 3045 877.5C3045 866.25 3025.63 855 3006.25 855C2986.88 855 2967.5 860 2967.5 865C2967.5 870 2963.75 875 2960 875').toBe(true);
+            expect(((diagram.connectors[259]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 911.25 3045 922.5C3045 933.75 3025.63 945 3006.25 945C2986.88 945 2967.5 940 2967.5 935C2967.5 930 2963.75 925 2960 925').toBe(true);
+            expect(((diagram.connectors[260]).wrapper.children[0] as PathElement).data === 'M3025 900C3047.5 900 3070 883.75 3070 867.5C3070 851.25 3060 835 3050 835').toBe(true);
+            expect(((diagram.connectors[261]).wrapper.children[0] as PathElement).data === 'M3025 900C3047.5 900 3070 916.25 3070 932.5C3070 948.75 3060 965 3050 965').toBe(true);
+            expect(((diagram.connectors[262]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 883.75 3045 867.5C3045 851.25 3022.5 835 3000 835').toBe(true);
+            expect(((diagram.connectors[263]).wrapper.children[0] as PathElement).data === 'M3025 900C3035 900 3045 916.25 3045 932.5C3045 948.75 3022.5 965 3000 965').toBe(true);
+            expect(((diagram.connectors[264]).wrapper.children[0] as PathElement).data === 'M3375 900C3417.5 900 3460 887.5 3460 875C3460 862.5 3450 850 3440 850').toBe(true);
+            expect(((diagram.connectors[265]).wrapper.children[0] as PathElement).data === 'M3375 900C3417.5 900 3460 912.5 3460 925C3460 937.5 3450 950 3440 950').toBe(true);
+            expect(((diagram.connectors[266]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 887.5 3395 875C3395 862.5 3352.5 850 3310 850').toBe(true);
+            expect(((diagram.connectors[267]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 912.5 3395 925C3395 937.5 3352.5 950 3310 950').toBe(true);
+            expect(((diagram.connectors[268]).wrapper.children[0] as PathElement).data === 'M3375 900C3410 900 3445 883.75 3445 867.5C3445 851.25 3435 835 3425 835').toBe(true);
+            expect(((diagram.connectors[269]).wrapper.children[0] as PathElement).data === 'M3375 900C3410 900 3445 916.25 3445 932.5C3445 948.75 3435 965 3425 965').toBe(true);
+            expect(((diagram.connectors[270]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 883.75 3395 867.5C3395 851.25 3360 835 3325 835').toBe(true);
+            expect(((diagram.connectors[271]).wrapper.children[0] as PathElement).data === 'M3375 900C3385 900 3395 916.25 3395 932.5C3395 948.75 3360 965 3325 965').toBe(true);
+            expect(((diagram.connectors[272]).wrapper.children[0] as PathElement).data === 'M3725 900C3767.5 900 3810 883.75 3810 867.5C3810 851.25 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[273]).wrapper.children[0] as PathElement).data === 'M3725 900C3767.5 900 3810 916.25 3810 932.5C3810 948.75 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[274]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 883.75 3745 867.5C3745 851.25 3702.5 835 3660 835').toBe(true);
+            expect(((diagram.connectors[275]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 916.25 3745 932.5C3745 948.75 3702.5 965 3660 965').toBe(true);
+            expect(((diagram.connectors[276]).wrapper.children[0] as PathElement).data === 'M3725 900C3767.5 900 3810 883.75 3810 867.5C3810 851.25 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[277]).wrapper.children[0] as PathElement).data === 'M3725 900C3767.5 900 3810 916.25 3810 932.5C3810 948.75 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[278]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 883.75 3745 867.5C3745 851.25 3702.5 835 3660 835').toBe(true);
+            expect(((diagram.connectors[279]).wrapper.children[0] as PathElement).data === 'M3725 900C3735 900 3745 916.25 3745 932.5C3745 948.75 3702.5 965 3660 965').toBe(true);
+            expect(((diagram.connectors[280]).wrapper.children[0] as PathElement).data === 'M4075 900C4117.5 900 4160 881.25 4160 862.5C4160 843.75 4150 825 4140 825').toBe(true);
+            expect(((diagram.connectors[281]).wrapper.children[0] as PathElement).data === 'M4075 900C4117.5 900 4160 918.75 4160 937.5C4160 956.25 4150 975 4140 975').toBe(true);
+            expect(((diagram.connectors[282]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 881.25 4095 862.5C4095 843.75 4052.5 825 4010 825').toBe(true);
+            expect(((diagram.connectors[283]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 918.75 4095 937.5C4095 956.25 4052.5 975 4010 975').toBe(true);
+            expect(((diagram.connectors[284]).wrapper.children[0] as PathElement).data === 'M4075 900C4122.5 900 4170 883.75 4170 867.5C4170 851.25 4160 835 4150 835').toBe(true);
+            expect(((diagram.connectors[285]).wrapper.children[0] as PathElement).data === 'M4075 900C4122.5 900 4170 916.25 4170 932.5C4170 948.75 4160 965 4150 965').toBe(true);
+            expect(((diagram.connectors[286]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 883.75 4095 867.5C4095 851.25 4047.5 835 4000 835').toBe(true);
+            expect(((diagram.connectors[287]).wrapper.children[0] as PathElement).data === 'M4075 900C4085 900 4095 916.25 4095 932.5C4095 948.75 4047.5 965 4000 965').toBe(true);
+            expect(((diagram.connectors[288]).wrapper.children[0] as PathElement).data === 'M4425 200C4443.75 200 4462.5 205 4462.5 210C4462.5 215 4478.13 220 4493.75 220C4509.38 220 4525 210 4525 200').toBe(true);
+            expect(((diagram.connectors[289]).wrapper.children[0] as PathElement).data === 'M4425 200C4443.75 200 4462.5 217.5 4462.5 235C4462.5 252.5 4478.13 270 4493.75 270C4509.38 270 4525 260 4525 250').toBe(true);
+            expect(((diagram.connectors[290]).wrapper.children[0] as PathElement).data === 'M4425 200C4435 200 4445 211.25 4445 222.5C4445 233.75 4402.5 245 4360 245C4317.5 245 4275 222.5 4275 200').toBe(true);
+            expect(((diagram.connectors[291]).wrapper.children[0] as PathElement).data === 'M4425 200C4435 200 4445 217.5 4445 235C4445 252.5 4402.5 270 4360 270C4317.5 270 4275 260 4275 250').toBe(true);
+            expect(((diagram.connectors[292]).wrapper.children[0] as PathElement).data === 'M4425 200C4435 200 4445 184.38 4445 168.75C4445 153.13 4440 137.5 4435 137.5C4430 137.5 4425 118.75 4425 100').toBe(true);
+            expect(((diagram.connectors[293]).wrapper.children[0] as PathElement).data === 'M4425 200C4447.5 200 4470 242.5 4470 285C4470 327.5 4458.75 370 4447.5 370C4436.25 370 4425 360 4425 350').toBe(true);
+            expect(((diagram.connectors[294]).wrapper.children[0] as PathElement).data === 'M4425 200C4435 200 4445 184.38 4445 168.75C4445 153.13 4427.5 137.5 4410 137.5C4392.5 137.5 4375 118.75 4375 100').toBe(true);
+            expect(((diagram.connectors[295]).wrapper.children[0] as PathElement).data === 'M4425 200C4435 200 4445 242.5 4445 285C4445 327.5 4427.5 370 4410 370C4392.5 370 4375 360 4375 350').toBe(true);
+            expect(((diagram.connectors[296]).wrapper.children[0] as PathElement).data === 'M4775 200C4825 200 4875 187.5 4875 175').toBe(true);
+            expect(((diagram.connectors[297]).wrapper.children[0] as PathElement).data === 'M4775 200C4793.75 200 4812.5 223.75 4812.5 247.5C4812.5 271.25 4828.13 295 4843.75 295C4859.38 295 4875 285 4875 275').toBe(true);
+            expect(((diagram.connectors[298]).wrapper.children[0] as PathElement).data === 'M4775 200C4785 200 4795 211.25 4795 222.5C4795 233.75 4752.5 245 4710 245C4667.5 245 4625 210 4625 175').toBe(true);
+            expect(((diagram.connectors[299]).wrapper.children[0] as PathElement).data === 'M4775 200C4785 200 4795 223.75 4795 247.5C4795 271.25 4752.5 295 4710 295C4667.5 295 4625 285 4625 275').toBe(true);
+            expect(((diagram.connectors[300]).wrapper.children[0] as PathElement).data === 'M4775 200C4787.5 200 4800 150 4800 100').toBe(true);
+            expect(((diagram.connectors[301]).wrapper.children[0] as PathElement).data === 'M4775 200C4810 200 4845 242.5 4845 285C4845 327.5 4833.75 370 4822.5 370C4811.25 370 4800 360 4800 350').toBe(true);
+            expect(((diagram.connectors[302]).wrapper.children[0] as PathElement).data === 'M4775 200C4785 200 4795 184.38 4795 168.75C4795 153.13 4771.25 137.5 4747.5 137.5C4723.75 137.5 4700 118.75 4700 100').toBe(true);
+            expect(((diagram.connectors[303]).wrapper.children[0] as PathElement).data === 'M4775 200C4785 200 4795 242.5 4795 285C4795 327.5 4771.25 370 4747.5 370C4723.75 370 4700 360 4700 350').toBe(true);
+            expect(((diagram.connectors[304]).wrapper.children[0] as PathElement).data === 'M5125 200C5175 200 5225 180 5225 160').toBe(true);
+            expect(((diagram.connectors[305]).wrapper.children[0] as PathElement).data === 'M5125 200C5143.75 200 5162.5 227.5 5162.5 255C5162.5 282.5 5178.13 310 5193.75 310C5209.38 310 5225 300 5225 290').toBe(true);
+            expect(((diagram.connectors[306]).wrapper.children[0] as PathElement).data === 'M5125 200C5135 200 5145 211.25 5145 222.5C5145 233.75 5102.5 245 5060 245C5017.5 245 4975 202.5 4975 160').toBe(true);
+            expect(((diagram.connectors[307]).wrapper.children[0] as PathElement).data === 'M5125 200C5135 200 5145 227.5 5145 255C5145 282.5 5102.5 310 5060 310C5017.5 310 4975 300 4975 290').toBe(true);
+            expect(((diagram.connectors[308]).wrapper.children[0] as PathElement).data === 'M5125 200C5145 200 5165 150 5165 100').toBe(true);
+            expect(((diagram.connectors[309]).wrapper.children[0] as PathElement).data === 'M5125 200C5128.75 200 5132.5 242.5 5132.5 285C5132.5 327.5 5140.63 370 5148.75 370C5156.88 370 5165 360 5165 350').toBe(true);
+            expect(((diagram.connectors[310]).wrapper.children[0] as PathElement).data === 'M5125 200C5135 200 5145 184.38 5145 168.75C5145 153.13 5117.5 137.5 5090 137.5C5062.5 137.5 5035 118.75 5035 100').toBe(true);
+            expect(((diagram.connectors[311]).wrapper.children[0] as PathElement).data === 'M5125 200C5135 200 5145 242.5 5145 285C5145 327.5 5117.5 370 5090 370C5062.5 370 5035 360 5035 350').toBe(true);
+            expect(((diagram.connectors[312]).wrapper.children[0] as PathElement).data === 'M5475 200C5525 200 5575 175 5575 150').toBe(true);
+            expect(((diagram.connectors[313]).wrapper.children[0] as PathElement).data === 'M5475 200C5493.75 200 5512.5 230 5512.5 260C5512.5 290 5528.13 320 5543.75 320C5559.38 320 5575 310 5575 300').toBe(true);
+            expect(((diagram.connectors[314]).wrapper.children[0] as PathElement).data === 'M5475 200C5485 200 5495 211.25 5495 222.5C5495 233.75 5452.5 245 5410 245C5367.5 245 5325 197.5 5325 150').toBe(true);
+            expect(((diagram.connectors[315]).wrapper.children[0] as PathElement).data === 'M5475 200C5485 200 5495 230 5495 260C5495 290 5452.5 320 5410 320C5367.5 320 5325 310 5325 300').toBe(true);
+            expect(((diagram.connectors[316]).wrapper.children[0] as PathElement).data === 'M5475 200C5500 200 5525 150 5525 100').toBe(true);
+            expect(((diagram.connectors[317]).wrapper.children[0] as PathElement).data === 'M5475 200C5481.25 200 5487.5 242.5 5487.5 285C5487.5 327.5 5496.88 370 5506.25 370C5515.63 370 5525 360 5525 350').toBe(true);
+            expect(((diagram.connectors[318]).wrapper.children[0] as PathElement).data === 'M5475 200C5485 200 5495 184.38 5495 168.75C5495 153.13 5465 137.5 5435 137.5C5405 137.5 5375 118.75 5375 100').toBe(true);
+            expect(((diagram.connectors[319]).wrapper.children[0] as PathElement).data === 'M5475 200C5485 200 5495 242.5 5495 285C5495 327.5 5465 370 5435 370C5405 370 5375 360 5375 350').toBe(true);
+            expect(((diagram.connectors[320]).wrapper.children[0] as PathElement).data === 'M4425 550C4450 550 4475 550 4475 550').toBe(true);
+            expect(((diagram.connectors[321]).wrapper.children[0] as PathElement).data === 'M4425 550C4431.25 550 4437.5 567.5 4437.5 585C4437.5 602.5 4446.88 620 4456.25 620C4465.63 620 4475 610 4475 600').toBe(true);
+            expect(((diagram.connectors[322]).wrapper.children[0] as PathElement).data === 'M4425 550C4435 550 4445 561.25 4445 572.5C4445 583.75 4415 595 4385 595C4355 595 4325 572.5 4325 550').toBe(true);
+            expect(((diagram.connectors[323]).wrapper.children[0] as PathElement).data === 'M4425 550C4435 550 4445 567.5 4445 585C4445 602.5 4415 620 4385 620C4355 620 4325 610 4325 600').toBe(true);
+            expect(((diagram.connectors[324]).wrapper.children[0] as PathElement).data === 'M4425 550C4435 550 4445 540.63 4445 531.25C4445 521.88 4440 512.5 4435 512.5C4430 512.5 4425 506.25 4425 500').toBe(true);
+            expect(((diagram.connectors[325]).wrapper.children[0] as PathElement).data === 'M4425 550C4447.5 550 4470 580 4470 610C4470 640 4458.75 670 4447.5 670C4436.25 670 4425 660 4425 650').toBe(true);
+            expect(((diagram.connectors[326]).wrapper.children[0] as PathElement).data === 'M4425 550C4435 550 4445 540.63 4445 531.25C4445 521.88 4427.5 512.5 4410 512.5C4392.5 512.5 4375 506.25 4375 500').toBe(true);
+            expect(((diagram.connectors[327]).wrapper.children[0] as PathElement).data === 'M4425 550C4435 550 4445 580 4445 610C4445 640 4427.5 670 4410 670C4392.5 670 4375 660 4375 650').toBe(true);
+            expect(((diagram.connectors[328]).wrapper.children[0] as PathElement).data === 'M4775 550C4800 550 4825 537.5 4825 525').toBe(true);
+            expect(((diagram.connectors[329]).wrapper.children[0] as PathElement).data === 'M4775 550C4781.25 550 4787.5 573.75 4787.5 597.5C4787.5 621.25 4796.88 645 4806.25 645C4815.63 645 4825 635 4825 625').toBe(true);
+            expect(((diagram.connectors[330]).wrapper.children[0] as PathElement).data === 'M4775 550C4785 550 4795 561.25 4795 572.5C4795 583.75 4765 595 4735 595C4705 595 4675 560 4675 525').toBe(true);
+            expect(((diagram.connectors[331]).wrapper.children[0] as PathElement).data === 'M4775 550C4785 550 4795 573.75 4795 597.5C4795 621.25 4765 645 4735 645C4705 645 4675 635 4675 625').toBe(true);
+            expect(((diagram.connectors[332]).wrapper.children[0] as PathElement).data === 'M4775 550C4787.5 550 4800 525 4800 500').toBe(true);
+            expect(((diagram.connectors[333]).wrapper.children[0] as PathElement).data === 'M4775 550C4810 550 4845 580 4845 610C4845 640 4833.75 670 4822.5 670C4811.25 670 4800 660 4800 650').toBe(true);
+            expect(((diagram.connectors[334]).wrapper.children[0] as PathElement).data === 'M4775 550C4785 550 4795 561.25 4795 572.5C4795 583.75 4771.25 595 4747.5 595C4723.75 595 4700 547.5 4700 500').toBe(true);
+            expect(((diagram.connectors[335]).wrapper.children[0] as PathElement).data === 'M4775 550C4785 550 4795 580 4795 610C4795 640 4771.25 670 4747.5 670C4723.75 670 4700 660 4700 650').toBe(true);
+            expect(((diagram.connectors[336]).wrapper.children[0] as PathElement).data === 'M5125 550C5150 550 5175 530 5175 510').toBe(true);
+            expect(((diagram.connectors[337]).wrapper.children[0] as PathElement).data === 'M5125 550C5131.25 550 5137.5 577.5 5137.5 605C5137.5 632.5 5146.88 660 5156.25 660C5165.63 660 5175 650 5175 640').toBe(true);
+            expect(((diagram.connectors[338]).wrapper.children[0] as PathElement).data === 'M5125 550C5135 550 5145 561.25 5145 572.5C5145 583.75 5115 595 5085 595C5055 595 5025 552.5 5025 510').toBe(true);
+            expect(((diagram.connectors[339]).wrapper.children[0] as PathElement).data === 'M5125 550C5135 550 5145 577.5 5145 605C5145 632.5 5115 660 5085 660C5055 660 5025 650 5025 640').toBe(true);
+            expect(((diagram.connectors[340]).wrapper.children[0] as PathElement).data === 'M5125 550C5145 550 5165 525 5165 500').toBe(true);
+            expect(((diagram.connectors[341]).wrapper.children[0] as PathElement).data === 'M5125 550C5128.75 550 5132.5 580 5132.5 610C5132.5 640 5140.63 670 5148.75 670C5156.88 670 5165 660 5165 650').toBe(true);
+            expect(((diagram.connectors[342]).wrapper.children[0] as PathElement).data === 'M5125 550C5135 550 5145 561.25 5145 572.5C5145 583.75 5117.5 595 5090 595C5062.5 595 5035 547.5 5035 500').toBe(true);
+            expect(((diagram.connectors[343]).wrapper.children[0] as PathElement).data === 'M5125 550C5135 550 5145 580 5145 610C5145 640 5117.5 670 5090 670C5062.5 670 5035 660 5035 650').toBe(true);
+            expect(((diagram.connectors[344]).wrapper.children[0] as PathElement).data === 'M5475 550C5500 550 5525 525 5525 500').toBe(true);
+            expect(((diagram.connectors[345]).wrapper.children[0] as PathElement).data === 'M5475 550C5481.25 550 5487.5 580 5487.5 610C5487.5 640 5496.88 670 5506.25 670C5515.63 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[346]).wrapper.children[0] as PathElement).data === 'M5475 550C5485 550 5495 561.25 5495 572.5C5495 583.75 5465 595 5435 595C5405 595 5375 547.5 5375 500').toBe(true);
+            expect(((diagram.connectors[347]).wrapper.children[0] as PathElement).data === 'M5475 550C5485 550 5495 580 5495 610C5495 640 5465 670 5435 670C5405 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[348]).wrapper.children[0] as PathElement).data === 'M5475 550C5500 550 5525 525 5525 500').toBe(true);
+            expect(((diagram.connectors[349]).wrapper.children[0] as PathElement).data === 'M5475 550C5481.25 550 5487.5 580 5487.5 610C5487.5 640 5496.88 670 5506.25 670C5515.63 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[350]).wrapper.children[0] as PathElement).data === 'M5475 550C5485 550 5495 561.25 5495 572.5C5495 583.75 5465 595 5435 595C5405 595 5375 547.5 5375 500').toBe(true);
+            expect(((diagram.connectors[351]).wrapper.children[0] as PathElement).data === 'M5475 550C5485 550 5495 580 5495 610C5495 640 5465 670 5435 670C5405 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[352]).wrapper.children[0] as PathElement).data === 'M4425 900C4445 900 4465 900 4465 900').toBe(true);
+            expect(((diagram.connectors[353]).wrapper.children[0] as PathElement).data === 'M4425 900C4428.75 900 4432.5 917.5 4432.5 935C4432.5 952.5 4440.63 970 4448.75 970C4456.88 970 4465 960 4465 950').toBe(true);
+            expect(((diagram.connectors[354]).wrapper.children[0] as PathElement).data === 'M4425 900C4435 900 4445 911.25 4445 922.5C4445 933.75 4417.5 945 4390 945C4362.5 945 4335 922.5 4335 900').toBe(true);
+            expect(((diagram.connectors[355]).wrapper.children[0] as PathElement).data === 'M4425 900C4435 900 4445 917.5 4445 935C4445 952.5 4417.5 970 4390 970C4362.5 970 4335 960 4335 950').toBe(true);
+            expect(((diagram.connectors[356]).wrapper.children[0] as PathElement).data === 'M4425 900C4435 900 4445 891.88 4445 883.75C4445 875.63 4440 867.5 4435 867.5C4430 867.5 4425 863.75 4425 860').toBe(true);
+            expect(((diagram.connectors[357]).wrapper.children[0] as PathElement).data === 'M4425 900C4447.5 900 4470 927.5 4470 955C4470 982.5 4458.75 1010 4447.5 1010C4436.25 1010 4425 1000 4425 990').toBe(true);
+            expect(((diagram.connectors[358]).wrapper.children[0] as PathElement).data === 'M4425 900C4435 900 4445 891.88 4445 883.75C4445 875.63 4427.5 867.5 4410 867.5C4392.5 867.5 4375 863.75 4375 860').toBe(true);
+            expect(((diagram.connectors[359]).wrapper.children[0] as PathElement).data === 'M4425 900C4435 900 4445 927.5 4445 955C4445 982.5 4427.5 1010 4410 1010C4392.5 1010 4375 1000 4375 990').toBe(true);
+            expect(((diagram.connectors[360]).wrapper.children[0] as PathElement).data === 'M4775 900C4795 900 4815 887.5 4815 875').toBe(true);
+            expect(((diagram.connectors[361]).wrapper.children[0] as PathElement).data === 'M4775 900C4778.75 900 4782.5 923.75 4782.5 947.5C4782.5 971.25 4790.63 995 4798.75 995C4806.88 995 4815 985 4815 975').toBe(true);
+            expect(((diagram.connectors[362]).wrapper.children[0] as PathElement).data === 'M4775 900C4785 900 4795 911.25 4795 922.5C4795 933.75 4767.5 945 4740 945C4712.5 945 4685 910 4685 875').toBe(true);
+            expect(((diagram.connectors[363]).wrapper.children[0] as PathElement).data === 'M4775 900C4785 900 4795 923.75 4795 947.5C4795 971.25 4767.5 995 4740 995C4712.5 995 4685 985 4685 975').toBe(true);
+            expect(((diagram.connectors[364]).wrapper.children[0] as PathElement).data === 'M4775 900C4787.5 900 4800 880 4800 860').toBe(true);
+            expect(((diagram.connectors[365]).wrapper.children[0] as PathElement).data === 'M4775 900C4810 900 4845 927.5 4845 955C4845 982.5 4833.75 1010 4822.5 1010C4811.25 1010 4800 1000 4800 990').toBe(true);
+            expect(((diagram.connectors[366]).wrapper.children[0] as PathElement).data === 'M4775 900C4785 900 4795 911.25 4795 922.5C4795 933.75 4771.25 945 4747.5 945C4723.75 945 4700 902.5 4700 860').toBe(true);
+            expect(((diagram.connectors[367]).wrapper.children[0] as PathElement).data === 'M4775 900C4785 900 4795 927.5 4795 955C4795 982.5 4771.25 1010 4747.5 1010C4723.75 1010 4700 1000 4700 990').toBe(true);
+            expect(((diagram.connectors[368]).wrapper.children[0] as PathElement).data === 'M5125 900C5145 900 5165 880 5165 860').toBe(true);
+            expect(((diagram.connectors[369]).wrapper.children[0] as PathElement).data === 'M5125 900C5128.75 900 5132.5 927.5 5132.5 955C5132.5 982.5 5140.63 1010 5148.75 1010C5156.88 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[370]).wrapper.children[0] as PathElement).data === 'M5125 900C5135 900 5145 911.25 5145 922.5C5145 933.75 5117.5 945 5090 945C5062.5 945 5035 902.5 5035 860').toBe(true);
+            expect(((diagram.connectors[371]).wrapper.children[0] as PathElement).data === 'M5125 900C5135 900 5145 927.5 5145 955C5145 982.5 5117.5 1010 5090 1010C5062.5 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[372]).wrapper.children[0] as PathElement).data === 'M5125 900C5145 900 5165 880 5165 860').toBe(true);
+            expect(((diagram.connectors[373]).wrapper.children[0] as PathElement).data === 'M5125 900C5128.75 900 5132.5 927.5 5132.5 955C5132.5 982.5 5140.63 1010 5148.75 1010C5156.88 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[374]).wrapper.children[0] as PathElement).data === 'M5125 900C5135 900 5145 911.25 5145 922.5C5145 933.75 5117.5 945 5090 945C5062.5 945 5035 902.5 5035 860').toBe(true);
+            expect(((diagram.connectors[375]).wrapper.children[0] as PathElement).data === 'M5125 900C5135 900 5145 927.5 5145 955C5145 982.5 5117.5 1010 5090 1010C5062.5 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[376]).wrapper.children[0] as PathElement).data === 'M5475 900C5495 900 5515 875 5515 850').toBe(true);
+            expect(((diagram.connectors[377]).wrapper.children[0] as PathElement).data === 'M5475 900C5478.75 900 5482.5 930 5482.5 960C5482.5 990 5490.63 1020 5498.75 1020C5506.88 1020 5515 1010 5515 1000').toBe(true);
+            expect(((diagram.connectors[378]).wrapper.children[0] as PathElement).data === 'M5475 900C5485 900 5495 911.25 5495 922.5C5495 933.75 5467.5 945 5440 945C5412.5 945 5385 897.5 5385 850').toBe(true);
+            expect(((diagram.connectors[379]).wrapper.children[0] as PathElement).data === 'M5475 900C5485 900 5495 930 5495 960C5495 990 5467.5 1020 5440 1020C5412.5 1020 5385 1010 5385 1000').toBe(true);
+            expect(((diagram.connectors[380]).wrapper.children[0] as PathElement).data === 'M5475 900C5500 900 5525 880 5525 860').toBe(true);
+            expect(((diagram.connectors[381]).wrapper.children[0] as PathElement).data === 'M5475 900C5481.25 900 5487.5 927.5 5487.5 955C5487.5 982.5 5496.88 1010 5506.25 1010C5515.63 1010 5525 1000 5525 990').toBe(true);
+            expect(((diagram.connectors[382]).wrapper.children[0] as PathElement).data === 'M5475 900C5485 900 5495 911.25 5495 922.5C5495 933.75 5465 945 5435 945C5405 945 5375 902.5 5375 860').toBe(true);
+            expect(((diagram.connectors[383]).wrapper.children[0] as PathElement).data === 'M5475 900C5485 900 5495 927.5 5495 955C5495 982.5 5465 1010 5435 1010C5405 1010 5375 1000 5375 990').toBe(true);
+
+            done();
+        });
+    });
+
+    describe('Conectors with segments - Bezier Segment Rendering(BottomPort To Port)', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramBezierSegmentBottomPortToPortRendering' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [];
+            let connectors: ConnectorModel[] = [];
+            let offsetY = 200; let offsetX = 200;
+            let extra1 = 25; let extra2 = 125;
+
+            for (var z = 1; z <= 4; z++) {
+                for (var x = 0; x < 3; x++) {
+                    for (var y = 0; y < 4; y++) {
+                        var rootnode = {
+                            id: 'rootNode' + z + x + y, offsetX: offsetX, offsetY: offsetY, width: 50, height: 50,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(rootnode);
+
+                        let node1: NodeModel = {
+                            id: 'node' + z + x + y + 1, offsetX: offsetX + extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node2: NodeModel = {
+                            id: 'node' + z + x + y + 2, offsetX: offsetX + extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node3: NodeModel = {
+                            id: 'node' + z + x + y + 3, offsetX: offsetX - extra2, offsetY: offsetY - extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node4: NodeModel = {
+                            id: 'node' + z + x + y + 4, offsetX: offsetX - extra2, offsetY: offsetY + extra1,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node5: NodeModel = {
+                            id: 'node' + z + x + y + 5, offsetX: offsetX + extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node6: NodeModel = {
+                            id: 'node' + z + x + y + 6, offsetX: offsetX + extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node7: NodeModel = {
+                            id: 'node' + z + x + y + 7, offsetX: offsetX - extra1, offsetY: offsetY - extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        let node8: NodeModel = {
+                            id: 'node' + z + x + y + 8, offsetX: offsetX - extra1, offsetY: offsetY + extra2,
+                            ports: [{ id: 'port1', offset: { x: 0, y: 0.5 } },
+                            { id: 'port2', offset: { x: 0.5, y: 0 } },
+                            { id: 'port3', offset: { x: 1, y: 0.5 } },
+                            { id: 'port4', offset: { x: 0.5, y: 1 } }]
+                        };
+                        nodes.push(node1);
+                        nodes.push(node2);
+                        nodes.push(node3);
+                        nodes.push(node4);
+                        nodes.push(node5);
+                        nodes.push(node6);
+                        nodes.push(node7);
+                        nodes.push(node8);
+
+                        let connector1: ConnectorModel = { id: 'connector' + z + x + y + 1, type: 'Bezier', sourceID: rootnode.id, targetID: node1.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector2: ConnectorModel = { id: 'connector' + z + x + y + 2, type: 'Bezier', sourceID: rootnode.id, targetID: node2.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector3: ConnectorModel = { id: 'connector' + z + x + y + 3, type: 'Bezier', sourceID: rootnode.id, targetID: node3.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector4: ConnectorModel = { id: 'connector' + z + x + y + 4, type: 'Bezier', sourceID: rootnode.id, targetID: node4.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector5: ConnectorModel = { id: 'connector' + z + x + y + 5, type: 'Bezier', sourceID: rootnode.id, targetID: node5.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector6: ConnectorModel = { id: 'connector' + z + x + y + 6, type: 'Bezier', sourceID: rootnode.id, targetID: node6.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector7: ConnectorModel = { id: 'connector' + z + x + y + 7, type: 'Bezier', sourceID: rootnode.id, targetID: node7.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        let connector8: ConnectorModel = { id: 'connector' + z + x + y + 8, type: 'Bezier', sourceID: rootnode.id, targetID: node8.id, sourcePortID: 'port4', targetPortID: 'port' + z, targetDecorator: { shape: 'None' } };
+                        connectors.push(connector1);
+                        connectors.push(connector2);
+                        connectors.push(connector3);
+                        connectors.push(connector4);
+                        connectors.push(connector5);
+                        connectors.push(connector6);
+                        connectors.push(connector7);
+                        connectors.push(connector8);
+
+                        offsetX += 350;
+                        extra1 = y == 0 ? 50 : y == 1 ? 65 : 75;
+                    }
+
+                    offsetX = 200 + ((z - 1) * 350 * 4);
+                    offsetY += 350;
+                    extra1 = 25;
+                    extra2 = x == 0 ? 75 : 65;
+                }
+
+                offsetX = 200 + (z * 350 * 4);
+                offsetY = 200;
+                extra2 = 125;
+            }
+
+            diagram = new Diagram({
+                width: 6000, height: 1200, nodes: nodes,
+                connectors: connectors,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramBezierSegmentBottomPortToPortRendering');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Bezier segment - BottomPort to Port Rendering', (done: Function) => {
+            expect(((diagram.connectors[0]).wrapper.children[0] as PathElement).data === 'M200 225C200 235 215.63 245 231.25 245C246.88 245 262.5 227.5 262.5 210C262.5 192.5 281.25 175 300 175').toBe(true);
+            expect(((diagram.connectors[1]).wrapper.children[0] as PathElement).data === 'M200 225C200 235 215.63 245 231.25 245C246.88 245 262.5 240 262.5 235C262.5 230 281.25 225 300 225').toBe(true);
+            expect(((diagram.connectors[2]).wrapper.children[0] as PathElement).data === 'M200 225C200 235 157.5 245 115 245C72.5 245 30 227.5 30 210C30 192.5 40 175 50 175').toBe(true);
+            expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M200 225C200 247.5 157.5 270 115 270C72.5 270 30 258.75 30 247.5C30 236.25 40 225 50 225').toBe(true);
+            expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M200 225C200 235 188.75 245 177.5 245C166.25 245 155 202.5 155 160C155 117.5 177.5 75 200 75').toBe(true);
+            expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M200 225C200 243.75 195 262.5 190 262.5C185 262.5 180 278.13 180 293.75C180 309.38 190 325 200 325').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M200 225C200 235 182.5 245 165 245C147.5 245 130 202.5 130 160C130 117.5 140 75 150 75').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M200 225C200 243.75 182.5 262.5 165 262.5C147.5 262.5 130 278.13 130 293.75C130 309.38 140 325 150 325').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M550 225C550 235 565.63 245 581.25 245C596.88 245 612.5 221.25 612.5 197.5C612.5 173.75 631.25 150 650 150').toBe(true);
+            expect(((diagram.connectors[9]).wrapper.children[0] as PathElement).data === 'M550 225C550 237.5 600 250 650 250').toBe(true);
+            expect(((diagram.connectors[10]).wrapper.children[0] as PathElement).data === 'M550 225C550 235 507.5 245 465 245C422.5 245 380 221.25 380 197.5C380 173.75 390 150 400 150').toBe(true);
+            expect(((diagram.connectors[11]).wrapper.children[0] as PathElement).data === 'M550 225C550 260 507.5 295 465 295C422.5 295 380 283.75 380 272.5C380 261.25 390 250 400 250').toBe(true);
+            expect(((diagram.connectors[12]).wrapper.children[0] as PathElement).data === 'M550 225C550 235 538.75 245 527.5 245C516.25 245 505 202.5 505 160C505 117.5 540 75 575 75').toBe(true);
+            expect(((diagram.connectors[13]).wrapper.children[0] as PathElement).data === 'M550 225C550 275 562.5 325 575 325').toBe(true);
+            expect(((diagram.connectors[14]).wrapper.children[0] as PathElement).data === 'M550 225C550 235 526.25 245 502.5 245C478.75 245 455 202.5 455 160C455 117.5 465 75 475 75').toBe(true);
+            expect(((diagram.connectors[15]).wrapper.children[0] as PathElement).data === 'M550 225C550 243.75 526.25 262.5 502.5 262.5C478.75 262.5 455 278.13 455 293.75C455 309.38 465 325 475 325').toBe(true);
+            expect(((diagram.connectors[16]).wrapper.children[0] as PathElement).data === 'M900 225C900 235 915.63 245 931.25 245C946.88 245 962.5 217.5 962.5 190C962.5 162.5 981.25 135 1000 135').toBe(true);
+            expect(((diagram.connectors[17]).wrapper.children[0] as PathElement).data === 'M900 225C900 245 950 265 1000 265').toBe(true);
+            expect(((diagram.connectors[18]).wrapper.children[0] as PathElement).data === 'M900 225C900 235 857.5 245 815 245C772.5 245 730 217.5 730 190C730 162.5 740 135 750 135').toBe(true);
+            expect(((diagram.connectors[19]).wrapper.children[0] as PathElement).data === 'M900 225C900 228.75 857.5 232.5 815 232.5C772.5 232.5 730 240.63 730 248.75C730 256.88 740 265 750 265').toBe(true);
+            expect(((diagram.connectors[20]).wrapper.children[0] as PathElement).data === 'M900 225C900 235 888.75 245 877.5 245C866.25 245 855 202.5 855 160C855 117.5 897.5 75 940 75').toBe(true);
+            expect(((diagram.connectors[21]).wrapper.children[0] as PathElement).data === 'M900 225C900 275 920 325 940 325').toBe(true);
+            expect(((diagram.connectors[22]).wrapper.children[0] as PathElement).data === 'M900 225C900 235 872.5 245 845 245C817.5 245 790 202.5 790 160C790 117.5 800 75 810 75').toBe(true);
+            expect(((diagram.connectors[23]).wrapper.children[0] as PathElement).data === 'M900 225C900 243.75 872.5 262.5 845 262.5C817.5 262.5 790 278.13 790 293.75C790 309.38 800 325 810 325').toBe(true);
+            expect(((diagram.connectors[24]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 235 1265.63 245 1281.25 245C1296.88 245 1312.5 215 1312.5 185C1312.5 155 1331.25 125 1350 125').toBe(true);
+            expect(((diagram.connectors[25]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 250 1300 275 1350 275').toBe(true);
+            expect(((diagram.connectors[26]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 235 1207.5 245 1165 245C1122.5 245 1080 215 1080 185C1080 155 1090 125 1100 125').toBe(true);
+            expect(((diagram.connectors[27]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 231.25 1207.5 237.5 1165 237.5C1122.5 237.5 1080 246.88 1080 256.25C1080 265.63 1090 275 1100 275').toBe(true);
+            expect(((diagram.connectors[28]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 235 1238.75 245 1227.5 245C1216.25 245 1205 202.5 1205 160C1205 117.5 1252.5 75 1300 75').toBe(true);
+            expect(((diagram.connectors[29]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 275 1275 325 1300 325').toBe(true);
+            expect(((diagram.connectors[30]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 235 1220 245 1190 245C1160 245 1130 202.5 1130 160C1130 117.5 1140 75 1150 75').toBe(true);
+            expect(((diagram.connectors[31]).wrapper.children[0] as PathElement).data === 'M1250 225C1250 243.75 1220 262.5 1190 262.5C1160 262.5 1130 278.13 1130 293.75C1130 309.38 1140 325 1150 325').toBe(true);
+            expect(((diagram.connectors[32]).wrapper.children[0] as PathElement).data === 'M200 575C200 585 209.38 595 218.75 595C228.13 595 237.5 577.5 237.5 560C237.5 542.5 243.75 525 250 525').toBe(true);
+            expect(((diagram.connectors[33]).wrapper.children[0] as PathElement).data === 'M200 575C200 585 209.38 595 218.75 595C228.13 595 237.5 590 237.5 585C237.5 580 243.75 575 250 575').toBe(true);
+            expect(((diagram.connectors[34]).wrapper.children[0] as PathElement).data === 'M200 575C200 585 170 595 140 595C110 595 80 577.5 80 560C80 542.5 90 525 100 525').toBe(true);
+            expect(((diagram.connectors[35]).wrapper.children[0] as PathElement).data === 'M200 575C200 597.5 170 620 140 620C110 620 80 608.75 80 597.5C80 586.25 90 575 100 575').toBe(true);
+            expect(((diagram.connectors[36]).wrapper.children[0] as PathElement).data === 'M200 575C200 585 188.75 595 177.5 595C166.25 595 155 565 155 535C155 505 177.5 475 200 475').toBe(true);
+            expect(((diagram.connectors[37]).wrapper.children[0] as PathElement).data === 'M200 575C200 581.25 195 587.5 190 587.5C185 587.5 180 596.88 180 606.25C180 615.63 190 625 200 625').toBe(true);
+            expect(((diagram.connectors[38]).wrapper.children[0] as PathElement).data === 'M200 575C200 585 182.5 595 165 595C147.5 595 130 565 130 535C130 505 140 475 150 475').toBe(true);
+            expect(((diagram.connectors[39]).wrapper.children[0] as PathElement).data === 'M200 575C200 581.25 182.5 587.5 165 587.5C147.5 587.5 130 596.88 130 606.25C130 615.63 140 625 150 625').toBe(true);
+            expect(((diagram.connectors[40]).wrapper.children[0] as PathElement).data === 'M550 575C550 585 538.75 595 527.5 595C516.25 595 505 571.25 505 547.5C505 523.75 552.5 500 600 500').toBe(true);
+            expect(((diagram.connectors[41]).wrapper.children[0] as PathElement).data === 'M550 575C550 587.5 575 600 600 600').toBe(true);
+            expect(((diagram.connectors[42]).wrapper.children[0] as PathElement).data === 'M550 575C550 585 520 595 490 595C460 595 430 571.25 430 547.5C430 523.75 440 500 450 500').toBe(true);
+            expect(((diagram.connectors[43]).wrapper.children[0] as PathElement).data === 'M550 575C550 610 520 645 490 645C460 645 430 633.75 430 622.5C430 611.25 440 600 450 600').toBe(true);
+            expect(((diagram.connectors[44]).wrapper.children[0] as PathElement).data === 'M550 575C550 585 538.75 595 527.5 595C516.25 595 505 565 505 535C505 505 540 475 575 475').toBe(true);
+            expect(((diagram.connectors[45]).wrapper.children[0] as PathElement).data === 'M550 575C550 600 562.5 625 575 625').toBe(true);
+            expect(((diagram.connectors[46]).wrapper.children[0] as PathElement).data === 'M550 575C550 585 526.25 595 502.5 595C478.75 595 455 565 455 535C455 505 465 475 475 475').toBe(true);
+            expect(((diagram.connectors[47]).wrapper.children[0] as PathElement).data === 'M550 575C550 581.25 526.25 587.5 502.5 587.5C478.75 587.5 455 596.88 455 606.25C455 615.63 465 625 475 625').toBe(true);
+            expect(((diagram.connectors[48]).wrapper.children[0] as PathElement).data === 'M900 575C900 585 888.75 595 877.5 595C866.25 595 855 567.5 855 540C855 512.5 902.5 485 950 485').toBe(true);
+            expect(((diagram.connectors[49]).wrapper.children[0] as PathElement).data === 'M900 575C900 595 925 615 950 615').toBe(true);
+            expect(((diagram.connectors[50]).wrapper.children[0] as PathElement).data === 'M900 575C900 585 870 595 840 595C810 595 780 567.5 780 540C780 512.5 790 485 800 485').toBe(true);
+            expect(((diagram.connectors[51]).wrapper.children[0] as PathElement).data === 'M900 575C900 578.75 870 582.5 840 582.5C810 582.5 780 590.63 780 598.75C780 606.88 790 615 800 615').toBe(true);
+            expect(((diagram.connectors[52]).wrapper.children[0] as PathElement).data === 'M900 575C900 585 888.75 595 877.5 595C866.25 595 855 565 855 535C855 505 897.5 475 940 475').toBe(true);
+            expect(((diagram.connectors[53]).wrapper.children[0] as PathElement).data === 'M900 575C900 600 920 625 940 625').toBe(true);
+            expect(((diagram.connectors[54]).wrapper.children[0] as PathElement).data === 'M900 575C900 585 872.5 595 845 595C817.5 595 790 565 790 535C790 505 800 475 810 475').toBe(true);
+            expect(((diagram.connectors[55]).wrapper.children[0] as PathElement).data === 'M900 575C900 581.25 872.5 587.5 845 587.5C817.5 587.5 790 596.88 790 606.25C790 615.63 800 625 810 625').toBe(true);
+            expect(((diagram.connectors[56]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 585 1238.75 595 1227.5 595C1216.25 595 1205 565 1205 535C1205 505 1252.5 475 1300 475').toBe(true);
+            expect(((diagram.connectors[57]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 600 1275 625 1300 625').toBe(true);
+            expect(((diagram.connectors[58]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 585 1220 595 1190 595C1160 595 1130 565 1130 535C1130 505 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[59]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581.25 1220 587.5 1190 587.5C1160 587.5 1130 596.88 1130 606.25C1130 615.63 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[60]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 585 1238.75 595 1227.5 595C1216.25 595 1205 565 1205 535C1205 505 1252.5 475 1300 475').toBe(true);
+            expect(((diagram.connectors[61]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 600 1275 625 1300 625').toBe(true);
+            expect(((diagram.connectors[62]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 585 1220 595 1190 595C1160 595 1130 565 1130 535C1130 505 1140 475 1150 475').toBe(true);
+            expect(((diagram.connectors[63]).wrapper.children[0] as PathElement).data === 'M1250 575C1250 581.25 1220 587.5 1190 587.5C1160 587.5 1130 596.88 1130 606.25C1130 615.63 1140 625 1150 625').toBe(true);
+            expect(((diagram.connectors[64]).wrapper.children[0] as PathElement).data === 'M200 925C200 935 208.13 945 216.25 945C224.38 945 232.5 927.5 232.5 910C232.5 892.5 236.25 875 240 875').toBe(true);
+            expect(((diagram.connectors[65]).wrapper.children[0] as PathElement).data === 'M200 925C200 935 208.13 945 216.25 945C224.38 945 232.5 940 232.5 935C232.5 930 236.25 925 240 925').toBe(true);
+            expect(((diagram.connectors[66]).wrapper.children[0] as PathElement).data === 'M200 925C200 935 172.5 945 145 945C117.5 945 90 927.5 90 910C90 892.5 100 875 110 875').toBe(true);
+            expect(((diagram.connectors[67]).wrapper.children[0] as PathElement).data === 'M200 925C200 947.5 172.5 970 145 970C117.5 970 90 958.75 90 947.5C90 936.25 100 925 110 925').toBe(true);
+            expect(((diagram.connectors[68]).wrapper.children[0] as PathElement).data === 'M200 925C200 935 188.75 945 177.5 945C166.25 945 155 917.5 155 890C155 862.5 177.5 835 200 835').toBe(true);
+            expect(((diagram.connectors[69]).wrapper.children[0] as PathElement).data === 'M200 925C200 928.75 195 932.5 190 932.5C185 932.5 180 940.63 180 948.75C180 956.88 190 965 200 965').toBe(true);
+            expect(((diagram.connectors[70]).wrapper.children[0] as PathElement).data === 'M200 925C200 935 182.5 945 165 945C147.5 945 130 917.5 130 890C130 862.5 140 835 150 835').toBe(true);
+            expect(((diagram.connectors[71]).wrapper.children[0] as PathElement).data === 'M200 925C200 928.75 182.5 932.5 165 932.5C147.5 932.5 130 940.63 130 948.75C130 956.88 140 965 150 965').toBe(true);
+            expect(((diagram.connectors[72]).wrapper.children[0] as PathElement).data === 'M550 925C550 935 538.75 945 527.5 945C516.25 945 505 921.25 505 897.5C505 873.75 547.5 850 590 850').toBe(true);
+            expect(((diagram.connectors[73]).wrapper.children[0] as PathElement).data === 'M550 925C550 937.5 570 950 590 950').toBe(true);
+            expect(((diagram.connectors[74]).wrapper.children[0] as PathElement).data === 'M550 925C550 935 522.5 945 495 945C467.5 945 440 921.25 440 897.5C440 873.75 450 850 460 850').toBe(true);
+            expect(((diagram.connectors[75]).wrapper.children[0] as PathElement).data === 'M550 925C550 960 522.5 995 495 995C467.5 995 440 983.75 440 972.5C440 961.25 450 950 460 950').toBe(true);
+            expect(((diagram.connectors[76]).wrapper.children[0] as PathElement).data === 'M550 925C550 935 538.75 945 527.5 945C516.25 945 505 917.5 505 890C505 862.5 540 835 575 835').toBe(true);
+            expect(((diagram.connectors[77]).wrapper.children[0] as PathElement).data === 'M550 925C550 945 562.5 965 575 965').toBe(true);
+            expect(((diagram.connectors[78]).wrapper.children[0] as PathElement).data === 'M550 925C550 935 526.25 945 502.5 945C478.75 945 455 917.5 455 890C455 862.5 465 835 475 835').toBe(true);
+            expect(((diagram.connectors[79]).wrapper.children[0] as PathElement).data === 'M550 925C550 928.75 526.25 932.5 502.5 932.5C478.75 932.5 455 940.63 455 948.75C455 956.88 465 965 475 965').toBe(true);
+            expect(((diagram.connectors[80]).wrapper.children[0] as PathElement).data === 'M900 925C900 935 888.75 945 877.5 945C866.25 945 855 917.5 855 890C855 862.5 897.5 835 940 835').toBe(true);
+            expect(((diagram.connectors[81]).wrapper.children[0] as PathElement).data === 'M900 925C900 945 920 965 940 965').toBe(true);
+            expect(((diagram.connectors[82]).wrapper.children[0] as PathElement).data === 'M900 925C900 935 872.5 945 845 945C817.5 945 790 917.5 790 890C790 862.5 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[83]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.75 872.5 932.5 845 932.5C817.5 932.5 790 940.63 790 948.75C790 956.88 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[84]).wrapper.children[0] as PathElement).data === 'M900 925C900 935 888.75 945 877.5 945C866.25 945 855 917.5 855 890C855 862.5 897.5 835 940 835').toBe(true);
+            expect(((diagram.connectors[85]).wrapper.children[0] as PathElement).data === 'M900 925C900 945 920 965 940 965').toBe(true);
+            expect(((diagram.connectors[86]).wrapper.children[0] as PathElement).data === 'M900 925C900 935 872.5 945 845 945C817.5 945 790 917.5 790 890C790 862.5 800 835 810 835').toBe(true);
+            expect(((diagram.connectors[87]).wrapper.children[0] as PathElement).data === 'M900 925C900 928.75 872.5 932.5 845 932.5C817.5 932.5 790 940.63 790 948.75C790 956.88 800 965 810 965').toBe(true);
+            expect(((diagram.connectors[88]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 935 1238.75 945 1227.5 945C1216.25 945 1205 915 1205 885C1205 855 1247.5 825 1290 825').toBe(true);
+            expect(((diagram.connectors[89]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 950 1270 975 1290 975').toBe(true);
+            expect(((diagram.connectors[90]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 935 1222.5 945 1195 945C1167.5 945 1140 915 1140 885C1140 855 1150 825 1160 825').toBe(true);
+            expect(((diagram.connectors[91]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 931.25 1222.5 937.5 1195 937.5C1167.5 937.5 1140 946.88 1140 956.25C1140 965.63 1150 975 1160 975').toBe(true);
+            expect(((diagram.connectors[92]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 935 1238.75 945 1227.5 945C1216.25 945 1205 917.5 1205 890C1205 862.5 1252.5 835 1300 835').toBe(true);
+            expect(((diagram.connectors[93]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 945 1275 965 1300 965').toBe(true);
+            expect(((diagram.connectors[94]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 935 1220 945 1190 945C1160 945 1130 917.5 1130 890C1130 862.5 1140 835 1150 835').toBe(true);
+            expect(((diagram.connectors[95]).wrapper.children[0] as PathElement).data === 'M1250 925C1250 928.75 1220 932.5 1190 932.5C1160 932.5 1130 940.63 1130 948.75C1130 956.88 1140 965 1150 965').toBe(true);
+            expect(((diagram.connectors[96]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 235 1615.63 245 1631.25 245C1646.88 245 1662.5 216.25 1662.5 187.5C1662.5 158.75 1678.13 130 1693.75 130C1709.38 130 1725 140 1725 150').toBe(true);
+            expect(((diagram.connectors[97]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 235 1615.63 245 1631.25 245C1646.88 245 1662.5 228.75 1662.5 212.5C1662.5 196.25 1678.13 180 1693.75 180C1709.38 180 1725 190 1725 200').toBe(true);
+            expect(((diagram.connectors[98]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 235 1584.38 245 1568.75 245C1553.13 245 1537.5 216.25 1537.5 187.5C1537.5 158.75 1521.88 130 1506.25 130C1490.63 130 1475 140 1475 150').toBe(true);
+            expect(((diagram.connectors[99]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 235 1584.38 245 1568.75 245C1553.13 245 1537.5 228.75 1537.5 212.5C1537.5 196.25 1521.88 180 1506.25 180C1490.63 180 1475 190 1475 200').toBe(true);
+            expect(((diagram.connectors[100]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 235 1618.75 245 1637.5 245C1656.25 245 1675 191.25 1675 137.5C1675 83.75 1662.5 30 1650 30C1637.5 30 1625 40 1625 50').toBe(true);
+            expect(((diagram.connectors[101]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 243.5 1606.25 262 1612.5 262C1618.75 262 1625 281 1625 300').toBe(true);
+            expect(((diagram.connectors[102]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 235 1581.25 245 1562.5 245C1543.75 245 1525 191.25 1525 137.5C1525 83.75 1537.5 30 1550 30C1562.5 30 1575 40 1575 50').toBe(true);
+            expect(((diagram.connectors[103]).wrapper.children[0] as PathElement).data === 'M1600 225C1600 243.5 1593.75 262 1587.5 262C1581.25 262 1575 281 1575 300').toBe(true);
+            expect(((diagram.connectors[104]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 235 1965.63 245 1981.25 245C1996.88 245 2012.5 210 2012.5 175C2012.5 140 2028.13 105 2043.75 105C2059.38 105 2075 115 2075 125').toBe(true);
+            expect(((diagram.connectors[105]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 235 1965.63 245 1981.25 245C1996.88 245 2012.5 235 2012.5 225C2012.5 215 2028.13 205 2043.75 205C2059.38 205 2075 215 2075 225').toBe(true);
+            expect(((diagram.connectors[106]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 235 1934.38 245 1918.75 245C1903.13 245 1887.5 210 1887.5 175C1887.5 140 1871.88 105 1856.25 105C1840.63 105 1825 115 1825 125').toBe(true);
+            expect(((diagram.connectors[107]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 235 1934.38 245 1918.75 245C1903.13 245 1887.5 235 1887.5 225C1887.5 215 1871.88 205 1856.25 205C1840.63 205 1825 215 1825 225').toBe(true);
+            expect(((diagram.connectors[108]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 235 1975 245 2000 245C2025 245 2050 191.25 2050 137.5C2050 83.75 2037.5 30 2025 30C2012.5 30 2000 40 2000 50').toBe(true);
+            expect(((diagram.connectors[109]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 243.5 1962.5 262 1975 262C1987.5 262 2000 281 2000 300').toBe(true);
+            expect(((diagram.connectors[110]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 235 1925 245 1900 245C1875 245 1850 191.25 1850 137.5C1850 83.75 1862.5 30 1875 30C1887.5 30 1900 40 1900 50').toBe(true);
+            expect(((diagram.connectors[111]).wrapper.children[0] as PathElement).data === 'M1950 225C1950 243.5 1937.5 262 1925 262C1912.5 262 1900 281 1900 300').toBe(true);
+            expect(((diagram.connectors[112]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2315.63 245 2331.25 245C2346.88 245 2362.5 206.25 2362.5 167.5C2362.5 128.75 2378.13 90 2393.75 90C2409.38 90 2425 100 2425 110').toBe(true);
+            expect(((diagram.connectors[113]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2315.63 245 2331.25 245C2346.88 245 2362.5 238.75 2362.5 232.5C2362.5 226.25 2378.13 220 2393.75 220C2409.38 220 2425 230 2425 240').toBe(true);
+            expect(((diagram.connectors[114]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2284.38 245 2268.75 245C2253.13 245 2237.5 206.25 2237.5 167.5C2237.5 128.75 2221.88 90 2206.25 90C2190.63 90 2175 100 2175 110').toBe(true);
+            expect(((diagram.connectors[115]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2284.38 245 2268.75 245C2253.13 245 2237.5 238.75 2237.5 232.5C2237.5 226.25 2221.88 220 2206.25 220C2190.63 220 2175 230 2175 240').toBe(true);
+            expect(((diagram.connectors[116]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2328.75 245 2357.5 245C2386.25 245 2415 191.25 2415 137.5C2415 83.75 2402.5 30 2390 30C2377.5 30 2365 40 2365 50').toBe(true);
+            expect(((diagram.connectors[117]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 243.5 2316.25 262 2332.5 262C2348.75 262 2365 281 2365 300').toBe(true);
+            expect(((diagram.connectors[118]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 235 2271.25 245 2242.5 245C2213.75 245 2185 191.25 2185 137.5C2185 83.75 2197.5 30 2210 30C2222.5 30 2235 40 2235 50').toBe(true);
+            expect(((diagram.connectors[119]).wrapper.children[0] as PathElement).data === 'M2300 225C2300 243.5 2283.75 262 2267.5 262C2251.25 262 2235 281 2235 300').toBe(true);
+            expect(((diagram.connectors[120]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2665.63 245 2681.25 245C2696.88 245 2712.5 203.75 2712.5 162.5C2712.5 121.25 2728.13 80 2743.75 80C2759.38 80 2775 90 2775 100').toBe(true);
+            expect(((diagram.connectors[121]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2665.63 245 2681.25 245C2696.88 245 2712.5 240 2712.5 235C2712.5 230 2728.13 225 2743.75 225C2759.38 225 2775 237.5 2775 250').toBe(true);
+            expect(((diagram.connectors[122]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2634.38 245 2618.75 245C2603.13 245 2587.5 203.75 2587.5 162.5C2587.5 121.25 2571.88 80 2556.25 80C2540.63 80 2525 90 2525 100').toBe(true);
+            expect(((diagram.connectors[123]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2634.38 245 2618.75 245C2603.13 245 2587.5 240 2587.5 235C2587.5 230 2571.88 225 2556.25 225C2540.63 225 2525 237.5 2525 250').toBe(true);
+            expect(((diagram.connectors[124]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2659.38 245 2668.75 245C2678.13 245 2687.5 191.25 2687.5 137.5C2687.5 83.75 2696.88 30 2706.25 30C2715.63 30 2725 40 2725 50').toBe(true);
+            expect(((diagram.connectors[125]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 243.5 2668.75 262 2687.5 262C2706.25 262 2725 281 2725 300').toBe(true);
+            expect(((diagram.connectors[126]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 235 2640.63 245 2631.25 245C2621.88 245 2612.5 191.25 2612.5 137.5C2612.5 83.75 2603.13 30 2593.75 30C2584.38 30 2575 40 2575 50').toBe(true);
+            expect(((diagram.connectors[127]).wrapper.children[0] as PathElement).data === 'M2650 225C2650 243.5 2631.25 262 2612.5 262C2593.75 262 2575 281 2575 300').toBe(true);
+            expect(((diagram.connectors[128]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 585 1609.38 595 1618.75 595C1628.13 595 1637.5 566.25 1637.5 537.5C1637.5 508.75 1646.88 480 1656.25 480C1665.63 480 1675 490 1675 500').toBe(true);
+            expect(((diagram.connectors[129]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 597.5 1609.38 620 1618.75 620C1628.13 620 1637.5 597.5 1637.5 575C1637.5 552.5 1646.88 530 1656.25 530C1665.63 530 1675 540 1675 550').toBe(true);
+            expect(((diagram.connectors[130]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 585 1590.63 595 1581.25 595C1571.88 595 1562.5 566.25 1562.5 537.5C1562.5 508.75 1553.13 480 1543.75 480C1534.38 480 1525 490 1525 500').toBe(true);
+            expect(((diagram.connectors[131]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 597.5 1590.63 620 1581.25 620C1571.88 620 1562.5 597.5 1562.5 575C1562.5 552.5 1553.13 530 1543.75 530C1534.38 530 1525 540 1525 550').toBe(true);
+            expect(((diagram.connectors[132]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 585 1618.75 595 1637.5 595C1656.25 595 1675 553.75 1675 512.5C1675 471.25 1662.5 430 1650 430C1637.5 430 1625 440 1625 450').toBe(true);
+            expect(((diagram.connectors[133]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 581 1606.25 587 1612.5 587C1618.75 587 1625 593.5 1625 600').toBe(true);
+            expect(((diagram.connectors[134]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 585 1581.25 595 1562.5 595C1543.75 595 1525 553.75 1525 512.5C1525 471.25 1537.5 430 1550 430C1562.5 430 1575 440 1575 450').toBe(true);
+            expect(((diagram.connectors[135]).wrapper.children[0] as PathElement).data === 'M1600 575C1600 581 1593.75 587 1587.5 587C1581.25 587 1575 593.5 1575 600').toBe(true);
+            expect(((diagram.connectors[136]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 585 1959.38 595 1968.75 595C1978.13 595 1987.5 560 1987.5 525C1987.5 490 1996.88 455 2006.25 455C2015.63 455 2025 465 2025 475').toBe(true);
+            expect(((diagram.connectors[137]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 610 1959.38 645 1968.75 645C1978.13 645 1987.5 622.5 1987.5 600C1987.5 577.5 1996.88 555 2006.25 555C2015.63 555 2025 565 2025 575').toBe(true);
+            expect(((diagram.connectors[138]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 585 1940.63 595 1931.25 595C1921.88 595 1912.5 560 1912.5 525C1912.5 490 1903.13 455 1893.75 455C1884.38 455 1875 465 1875 475').toBe(true);
+            expect(((diagram.connectors[139]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 610 1940.63 645 1931.25 645C1921.88 645 1912.5 622.5 1912.5 600C1912.5 577.5 1903.13 555 1893.75 555C1884.38 555 1875 565 1875 575').toBe(true);
+            expect(((diagram.connectors[140]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 585 1975 595 2000 595C2025 595 2050 553.75 2050 512.5C2050 471.25 2037.5 430 2025 430C2012.5 430 2000 440 2000 450').toBe(true);
+            expect(((diagram.connectors[141]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 581 1962.5 587 1975 587C1987.5 587 2000 593.5 2000 600').toBe(true);
+            expect(((diagram.connectors[142]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 585 1925 595 1900 595C1875 595 1850 553.75 1850 512.5C1850 471.25 1862.5 430 1875 430C1887.5 430 1900 440 1900 450').toBe(true);
+            expect(((diagram.connectors[143]).wrapper.children[0] as PathElement).data === 'M1950 575C1950 581 1937.5 587 1925 587C1912.5 587 1900 593.5 1900 600').toBe(true);
+            expect(((diagram.connectors[144]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 585 2309.38 595 2318.75 595C2328.13 595 2337.5 556.25 2337.5 517.5C2337.5 478.75 2346.88 440 2356.25 440C2365.63 440 2375 450 2375 460').toBe(true);
+            expect(((diagram.connectors[145]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 578.5 2318.75 582 2337.5 582C2356.25 582 2375 586 2375 590').toBe(true);
+            expect(((diagram.connectors[146]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 585 2290.63 595 2281.25 595C2271.88 595 2262.5 556.25 2262.5 517.5C2262.5 478.75 2253.13 440 2243.75 440C2234.38 440 2225 450 2225 460').toBe(true);
+            expect(((diagram.connectors[147]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 578.5 2281.25 582 2262.5 582C2243.75 582 2225 586 2225 590').toBe(true);
+            expect(((diagram.connectors[148]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 585 2328.75 595 2357.5 595C2386.25 595 2415 553.75 2415 512.5C2415 471.25 2402.5 430 2390 430C2377.5 430 2365 440 2365 450').toBe(true);
+            expect(((diagram.connectors[149]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 581 2316.25 587 2332.5 587C2348.75 587 2365 593.5 2365 600').toBe(true);
+            expect(((diagram.connectors[150]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 585 2271.25 595 2242.5 595C2213.75 595 2185 553.75 2185 512.5C2185 471.25 2197.5 430 2210 430C2222.5 430 2235 440 2235 450').toBe(true);
+            expect(((diagram.connectors[151]).wrapper.children[0] as PathElement).data === 'M2300 575C2300 581 2283.75 587 2267.5 587C2251.25 587 2235 593.5 2235 600').toBe(true);
+            expect(((diagram.connectors[152]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 585 2659.38 595 2668.75 595C2678.13 595 2687.5 553.75 2687.5 512.5C2687.5 471.25 2696.88 430 2706.25 430C2715.63 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[153]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2668.75 587 2687.5 587C2706.25 587 2725 593.5 2725 600').toBe(true);
+            expect(((diagram.connectors[154]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 585 2640.63 595 2631.25 595C2621.88 595 2612.5 553.75 2612.5 512.5C2612.5 471.25 2603.13 430 2593.75 430C2584.38 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[155]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2631.25 587 2612.5 587C2593.75 587 2575 593.5 2575 600').toBe(true);
+            expect(((diagram.connectors[156]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 585 2659.38 595 2668.75 595C2678.13 595 2687.5 553.75 2687.5 512.5C2687.5 471.25 2696.88 430 2706.25 430C2715.63 430 2725 440 2725 450').toBe(true);
+            expect(((diagram.connectors[157]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2668.75 587 2687.5 587C2706.25 587 2725 593.5 2725 600').toBe(true);
+            expect(((diagram.connectors[158]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 585 2640.63 595 2631.25 595C2621.88 595 2612.5 553.75 2612.5 512.5C2612.5 471.25 2603.13 430 2593.75 430C2584.38 430 2575 440 2575 450').toBe(true);
+            expect(((diagram.connectors[159]).wrapper.children[0] as PathElement).data === 'M2650 575C2650 581 2631.25 587 2612.5 587C2593.75 587 2575 593.5 2575 600').toBe(true);
+            expect(((diagram.connectors[160]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 935 1628.75 945 1657.5 945C1686.25 945 1715 916.25 1715 887.5C1715 858.75 1702.5 830 1690 830C1677.5 830 1665 840 1665 850').toBe(true);
+            expect(((diagram.connectors[161]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 947.5 1628.75 970 1657.5 970C1686.25 970 1715 947.5 1715 925C1715 902.5 1702.5 880 1690 880C1677.5 880 1665 890 1665 900').toBe(true);
+            expect(((diagram.connectors[162]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 935 1571.25 945 1542.5 945C1513.75 945 1485 916.25 1485 887.5C1485 858.75 1497.5 830 1510 830C1522.5 830 1535 840 1535 850').toBe(true);
+            expect(((diagram.connectors[163]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 947.5 1571.25 970 1542.5 970C1513.75 970 1485 947.5 1485 925C1485 902.5 1497.5 880 1510 880C1522.5 880 1535 890 1535 900').toBe(true);
+            expect(((diagram.connectors[164]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 935 1618.75 945 1637.5 945C1656.25 945 1675 906.25 1675 867.5C1675 828.75 1662.5 790 1650 790C1637.5 790 1625 800 1625 810').toBe(true);
+            expect(((diagram.connectors[165]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 928.5 1606.25 932 1612.5 932C1618.75 932 1625 936 1625 940').toBe(true);
+            expect(((diagram.connectors[166]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 935 1581.25 945 1562.5 945C1543.75 945 1525 906.25 1525 867.5C1525 828.75 1537.5 790 1550 790C1562.5 790 1575 800 1575 810').toBe(true);
+            expect(((diagram.connectors[167]).wrapper.children[0] as PathElement).data === 'M1600 925C1600 928.5 1593.75 932 1587.5 932C1581.25 932 1575 936 1575 940').toBe(true);
+            expect(((diagram.connectors[168]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 935 1978.75 945 2007.5 945C2036.25 945 2065 910 2065 875C2065 840 2052.5 805 2040 805C2027.5 805 2015 815 2015 825').toBe(true);
+            expect(((diagram.connectors[169]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 960 1978.75 995 2007.5 995C2036.25 995 2065 972.5 2065 950C2065 927.5 2052.5 905 2040 905C2027.5 905 2015 915 2015 925').toBe(true);
+            expect(((diagram.connectors[170]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 935 1921.25 945 1892.5 945C1863.75 945 1835 910 1835 875C1835 840 1847.5 805 1860 805C1872.5 805 1885 815 1885 825').toBe(true);
+            expect(((diagram.connectors[171]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 960 1921.25 995 1892.5 995C1863.75 995 1835 972.5 1835 950C1835 927.5 1847.5 905 1860 905C1872.5 905 1885 915 1885 925').toBe(true);
+            expect(((diagram.connectors[172]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 935 1975 945 2000 945C2025 945 2050 906.25 2050 867.5C2050 828.75 2037.5 790 2025 790C2012.5 790 2000 800 2000 810').toBe(true);
+            expect(((diagram.connectors[173]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 928.5 1962.5 932 1975 932C1987.5 932 2000 936 2000 940').toBe(true);
+            expect(((diagram.connectors[174]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 935 1925 945 1900 945C1875 945 1850 906.25 1850 867.5C1850 828.75 1862.5 790 1875 790C1887.5 790 1900 800 1900 810').toBe(true);
+            expect(((diagram.connectors[175]).wrapper.children[0] as PathElement).data === 'M1950 925C1950 928.5 1937.5 932 1925 932C1912.5 932 1900 936 1900 940').toBe(true);
+            expect(((diagram.connectors[176]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 935 2328.75 945 2357.5 945C2386.25 945 2415 906.25 2415 867.5C2415 828.75 2402.5 790 2390 790C2377.5 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[177]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2316.25 932 2332.5 932C2348.75 932 2365 936 2365 940').toBe(true);
+            expect(((diagram.connectors[178]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 935 2271.25 945 2242.5 945C2213.75 945 2185 906.25 2185 867.5C2185 828.75 2197.5 790 2210 790C2222.5 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[179]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2283.75 932 2267.5 932C2251.25 932 2235 936 2235 940').toBe(true);
+            expect(((diagram.connectors[180]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 935 2328.75 945 2357.5 945C2386.25 945 2415 906.25 2415 867.5C2415 828.75 2402.5 790 2390 790C2377.5 790 2365 800 2365 810').toBe(true);
+            expect(((diagram.connectors[181]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2316.25 932 2332.5 932C2348.75 932 2365 936 2365 940').toBe(true);
+            expect(((diagram.connectors[182]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 935 2271.25 945 2242.5 945C2213.75 945 2185 906.25 2185 867.5C2185 828.75 2197.5 790 2210 790C2222.5 790 2235 800 2235 810').toBe(true);
+            expect(((diagram.connectors[183]).wrapper.children[0] as PathElement).data === 'M2300 925C2300 928.5 2283.75 932 2267.5 932C2251.25 932 2235 936 2235 940').toBe(true);
+            expect(((diagram.connectors[184]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 935 2678.75 945 2707.5 945C2736.25 945 2765 903.75 2765 862.5C2765 821.25 2752.5 780 2740 780C2727.5 780 2715 790 2715 800').toBe(true);
+            expect(((diagram.connectors[185]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 931 2666.25 937 2682.5 937C2698.75 937 2715 943.5 2715 950').toBe(true);
+            expect(((diagram.connectors[186]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 935 2621.25 945 2592.5 945C2563.75 945 2535 903.75 2535 862.5C2535 821.25 2547.5 780 2560 780C2572.5 780 2585 790 2585 800').toBe(true);
+            expect(((diagram.connectors[187]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 931 2633.75 937 2617.5 937C2601.25 937 2585 943.5 2585 950').toBe(true);
+            expect(((diagram.connectors[188]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 935 2659.38 945 2668.75 945C2678.13 945 2687.5 906.25 2687.5 867.5C2687.5 828.75 2696.88 790 2706.25 790C2715.63 790 2725 800 2725 810').toBe(true);
+            expect(((diagram.connectors[189]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 928.5 2668.75 932 2687.5 932C2706.25 932 2725 936 2725 940').toBe(true);
+            expect(((diagram.connectors[190]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 935 2640.63 945 2631.25 945C2621.88 945 2612.5 906.25 2612.5 867.5C2612.5 828.75 2603.13 790 2593.75 790C2584.38 790 2575 800 2575 810').toBe(true);
+            expect(((diagram.connectors[191]).wrapper.children[0] as PathElement).data === 'M2650 925C2650 928.5 2631.25 932 2612.5 932C2593.75 932 2575 936 2575 940').toBe(true);
+            expect(((diagram.connectors[192]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 235 3042.5 245 3085 245C3127.5 245 3170 227.5 3170 210C3170 192.5 3160 175 3150 175').toBe(true);
+            expect(((diagram.connectors[193]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 247.5 3042.5 270 3085 270C3127.5 270 3170 258.75 3170 247.5C3170 236.25 3160 225 3150 225').toBe(true);
+            expect(((diagram.connectors[194]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 235 2984.38 245 2968.75 245C2953.13 245 2937.5 227.5 2937.5 210C2937.5 192.5 2918.75 175 2900 175').toBe(true);
+            expect(((diagram.connectors[195]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 235 2984.38 245 2968.75 245C2953.13 245 2937.5 240 2937.5 235C2937.5 230 2918.75 225 2900 225').toBe(true);
+            expect(((diagram.connectors[196]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 235 3017.5 245 3035 245C3052.5 245 3070 202.5 3070 160C3070 117.5 3060 75 3050 75').toBe(true);
+            expect(((diagram.connectors[197]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 243.75 3017.5 262.5 3035 262.5C3052.5 262.5 3070 278.13 3070 293.75C3070 309.38 3060 325 3050 325').toBe(true);
+            expect(((diagram.connectors[198]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 235 3011.25 245 3022.5 245C3033.75 245 3045 202.5 3045 160C3045 117.5 3022.5 75 3000 75').toBe(true);
+            expect(((diagram.connectors[199]).wrapper.children[0] as PathElement).data === 'M3000 225C3000 243.75 3005 262.5 3010 262.5C3015 262.5 3020 278.13 3020 293.75C3020 309.38 3010 325 3000 325').toBe(true);
+            expect(((diagram.connectors[200]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 235 3392.5 245 3435 245C3477.5 245 3520 221.25 3520 197.5C3520 173.75 3510 150 3500 150').toBe(true);
+            expect(((diagram.connectors[201]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 260 3392.5 295 3435 295C3477.5 295 3520 283.75 3520 272.5C3520 261.25 3510 250 3500 250').toBe(true);
+            expect(((diagram.connectors[202]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 235 3334.38 245 3318.75 245C3303.13 245 3287.5 221.25 3287.5 197.5C3287.5 173.75 3268.75 150 3250 150').toBe(true);
+            expect(((diagram.connectors[203]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 237.5 3300 250 3250 250').toBe(true);
+            expect(((diagram.connectors[204]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 235 3373.75 245 3397.5 245C3421.25 245 3445 202.5 3445 160C3445 117.5 3435 75 3425 75').toBe(true);
+            expect(((diagram.connectors[205]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 243.75 3373.75 262.5 3397.5 262.5C3421.25 262.5 3445 278.13 3445 293.75C3445 309.38 3435 325 3425 325').toBe(true);
+            expect(((diagram.connectors[206]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 235 3361.25 245 3372.5 245C3383.75 245 3395 202.5 3395 160C3395 117.5 3360 75 3325 75').toBe(true);
+            expect(((diagram.connectors[207]).wrapper.children[0] as PathElement).data === 'M3350 225C3350 275 3337.5 325 3325 325').toBe(true);
+            expect(((diagram.connectors[208]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 235 3742.5 245 3785 245C3827.5 245 3870 217.5 3870 190C3870 162.5 3860 135 3850 135').toBe(true);
+            expect(((diagram.connectors[209]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 228.75 3742.5 232.5 3785 232.5C3827.5 232.5 3870 240.63 3870 248.75C3870 256.88 3860 265 3850 265').toBe(true);
+            expect(((diagram.connectors[210]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 235 3684.38 245 3668.75 245C3653.13 245 3637.5 217.5 3637.5 190C3637.5 162.5 3618.75 135 3600 135').toBe(true);
+            expect(((diagram.connectors[211]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 245 3650 265 3600 265').toBe(true);
+            expect(((diagram.connectors[212]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 235 3727.5 245 3755 245C3782.5 245 3810 202.5 3810 160C3810 117.5 3800 75 3790 75').toBe(true);
+            expect(((diagram.connectors[213]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 243.75 3727.5 262.5 3755 262.5C3782.5 262.5 3810 278.13 3810 293.75C3810 309.38 3800 325 3790 325').toBe(true);
+            expect(((diagram.connectors[214]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 235 3711.25 245 3722.5 245C3733.75 245 3745 202.5 3745 160C3745 117.5 3702.5 75 3660 75').toBe(true);
+            expect(((diagram.connectors[215]).wrapper.children[0] as PathElement).data === 'M3700 225C3700 275 3680 325 3660 325').toBe(true);
+            expect(((diagram.connectors[216]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 235 4092.5 245 4135 245C4177.5 245 4220 215 4220 185C4220 155 4210 125 4200 125').toBe(true);
+            expect(((diagram.connectors[217]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 231.25 4092.5 237.5 4135 237.5C4177.5 237.5 4220 246.88 4220 256.25C4220 265.63 4210 275 4200 275').toBe(true);
+            expect(((diagram.connectors[218]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 235 4034.38 245 4018.75 245C4003.13 245 3987.5 215 3987.5 185C3987.5 155 3968.75 125 3950 125').toBe(true);
+            expect(((diagram.connectors[219]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 250 4000 275 3950 275').toBe(true);
+            expect(((diagram.connectors[220]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 235 4080 245 4110 245C4140 245 4170 202.5 4170 160C4170 117.5 4160 75 4150 75').toBe(true);
+            expect(((diagram.connectors[221]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 243.75 4080 262.5 4110 262.5C4140 262.5 4170 278.13 4170 293.75C4170 309.38 4160 325 4150 325').toBe(true);
+            expect(((diagram.connectors[222]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 235 4061.25 245 4072.5 245C4083.75 245 4095 202.5 4095 160C4095 117.5 4047.5 75 4000 75').toBe(true);
+            expect(((diagram.connectors[223]).wrapper.children[0] as PathElement).data === 'M4050 225C4050 275 4025 325 4000 325').toBe(true);
+            expect(((diagram.connectors[224]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 585 3030 595 3060 595C3090 595 3120 577.5 3120 560C3120 542.5 3110 525 3100 525').toBe(true);
+            expect(((diagram.connectors[225]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 597.5 3030 620 3060 620C3090 620 3120 608.75 3120 597.5C3120 586.25 3110 575 3100 575').toBe(true);
+            expect(((diagram.connectors[226]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 585 2990.63 595 2981.25 595C2971.88 595 2962.5 577.5 2962.5 560C2962.5 542.5 2956.25 525 2950 525').toBe(true);
+            expect(((diagram.connectors[227]).wrapper.children[0] as PathElement).data === 'M3000 575C2975 575 2972.5 575 2950 575').toBe(true);
+            expect(((diagram.connectors[228]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 585 3017.5 595 3035 595C3052.5 595 3070 565 3070 535C3070 505 3060 475 3050 475').toBe(true);
+            expect(((diagram.connectors[229]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 581.25 3017.5 587.5 3035 587.5C3052.5 587.5 3070 596.88 3070 606.25C3070 615.63 3060 625 3050 625').toBe(true);
+            expect(((diagram.connectors[230]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 585 3011.25 595 3022.5 595C3033.75 595 3045 565 3045 535C3045 505 3022.5 475 3000 475').toBe(true);
+            expect(((diagram.connectors[231]).wrapper.children[0] as PathElement).data === 'M3000 575C3000 581.25 3005 587.5 3010 587.5C3015 587.5 3020 596.88 3020 606.25C3020 615.63 3010 625 3000 625').toBe(true);
+            expect(((diagram.connectors[232]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 585 3380 595 3410 595C3440 595 3470 571.25 3470 547.5C3470 523.75 3460 500 3450 500').toBe(true);
+            expect(((diagram.connectors[233]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 610 3380 645 3410 645C3440 645 3470 633.75 3470 622.5C3470 611.25 3460 600 3450 600').toBe(true);
+            expect(((diagram.connectors[234]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 585 3361.25 595 3372.5 595C3383.75 595 3395 571.25 3395 547.5C3395 523.75 3347.5 500 3300 500').toBe(true);
+            expect(((diagram.connectors[235]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 587.5 3325 600 3300 600').toBe(true);
+            expect(((diagram.connectors[236]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 585 3373.75 595 3397.5 595C3421.25 595 3445 565 3445 535C3445 505 3435 475 3425 475').toBe(true);
+            expect(((diagram.connectors[237]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 581.25 3373.75 587.5 3397.5 587.5C3421.25 587.5 3445 596.88 3445 606.25C3445 615.63 3435 625 3425 625').toBe(true);
+            expect(((diagram.connectors[238]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 585 3361.25 595 3372.5 595C3383.75 595 3395 565 3395 535C3395 505 3360 475 3325 475').toBe(true);
+            expect(((diagram.connectors[239]).wrapper.children[0] as PathElement).data === 'M3350 575C3350 600 3337.5 625 3325 625').toBe(true);
+            expect(((diagram.connectors[240]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 585 3730 595 3760 595C3790 595 3820 567.5 3820 540C3820 512.5 3810 485 3800 485').toBe(true);
+            expect(((diagram.connectors[241]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 578.75 3730 582.5 3760 582.5C3790 582.5 3820 590.63 3820 598.75C3820 606.88 3810 615 3800 615').toBe(true);
+            expect(((diagram.connectors[242]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 585 3711.25 595 3722.5 595C3733.75 595 3745 567.5 3745 540C3745 512.5 3697.5 485 3650 485').toBe(true);
+            expect(((diagram.connectors[243]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 595 3675 615 3650 615').toBe(true);
+            expect(((diagram.connectors[244]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 585 3727.5 595 3755 595C3782.5 595 3810 565 3810 535C3810 505 3800 475 3790 475').toBe(true);
+            expect(((diagram.connectors[245]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 581.25 3727.5 587.5 3755 587.5C3782.5 587.5 3810 596.88 3810 606.25C3810 615.63 3800 625 3790 625').toBe(true);
+            expect(((diagram.connectors[246]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 585 3711.25 595 3722.5 595C3733.75 595 3745 565 3745 535C3745 505 3702.5 475 3660 475').toBe(true);
+            expect(((diagram.connectors[247]).wrapper.children[0] as PathElement).data === 'M3700 575C3700 600 3680 625 3660 625').toBe(true);
+            expect(((diagram.connectors[248]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 585 4080 595 4110 595C4140 595 4170 565 4170 535C4170 505 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[249]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 581.25 4080 587.5 4110 587.5C4140 587.5 4170 596.88 4170 606.25C4170 615.63 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[250]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 585 4061.25 595 4072.5 595C4083.75 595 4095 565 4095 535C4095 505 4047.5 475 4000 475').toBe(true);
+            expect(((diagram.connectors[251]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 600 4025 625 4000 625').toBe(true);
+            expect(((diagram.connectors[252]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 585 4080 595 4110 595C4140 595 4170 565 4170 535C4170 505 4160 475 4150 475').toBe(true);
+            expect(((diagram.connectors[253]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 581.25 4080 587.5 4110 587.5C4140 587.5 4170 596.88 4170 606.25C4170 615.63 4160 625 4150 625').toBe(true);
+            expect(((diagram.connectors[254]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 585 4061.25 595 4072.5 595C4083.75 595 4095 565 4095 535C4095 505 4047.5 475 4000 475').toBe(true);
+            expect(((diagram.connectors[255]).wrapper.children[0] as PathElement).data === 'M4050 575C4050 600 4025 625 4000 625').toBe(true);
+            expect(((diagram.connectors[256]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 935 3027.5 945 3055 945C3082.5 945 3110 927.5 3110 910C3110 892.5 3100 875 3090 875').toBe(true);
+            expect(((diagram.connectors[257]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 947.5 3027.5 970 3055 970C3082.5 970 3110 958.75 3110 947.5C3110 936.25 3100 925 3090 925').toBe(true);
+            expect(((diagram.connectors[258]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 935 2991.88 945 2983.75 945C2975.63 945 2967.5 927.5 2967.5 910C2967.5 892.5 2963.75 875 2960 875').toBe(true);
+            expect(((diagram.connectors[259]).wrapper.children[0] as PathElement).data === 'M3000 925C2980 925 2978 925 2960 925').toBe(true);
+            expect(((diagram.connectors[260]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 935 3017.5 945 3035 945C3052.5 945 3070 917.5 3070 890C3070 862.5 3060 835 3050 835').toBe(true);
+            expect(((diagram.connectors[261]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 928.75 3017.5 932.5 3035 932.5C3052.5 932.5 3070 940.63 3070 948.75C3070 956.88 3060 965 3050 965').toBe(true);
+            expect(((diagram.connectors[262]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 935 3011.25 945 3022.5 945C3033.75 945 3045 917.5 3045 890C3045 862.5 3022.5 835 3000 835').toBe(true);
+            expect(((diagram.connectors[263]).wrapper.children[0] as PathElement).data === 'M3000 925C3000 928.75 3005 932.5 3010 932.5C3015 932.5 3020 940.63 3020 948.75C3020 956.88 3010 965 3000 965').toBe(true);
+            expect(((diagram.connectors[264]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 935 3377.5 945 3405 945C3432.5 945 3460 921.25 3460 897.5C3460 873.75 3450 850 3440 850').toBe(true);
+            expect(((diagram.connectors[265]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 960 3377.5 995 3405 995C3432.5 995 3460 983.75 3460 972.5C3460 961.25 3450 950 3440 950').toBe(true);
+            expect(((diagram.connectors[266]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 935 3361.25 945 3372.5 945C3383.75 945 3395 921.25 3395 897.5C3395 873.75 3352.5 850 3310 850').toBe(true);
+            expect(((diagram.connectors[267]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 937.5 3330 950 3310 950').toBe(true);
+            expect(((diagram.connectors[268]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 935 3373.75 945 3397.5 945C3421.25 945 3445 917.5 3445 890C3445 862.5 3435 835 3425 835').toBe(true);
+            expect(((diagram.connectors[269]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 928.75 3373.75 932.5 3397.5 932.5C3421.25 932.5 3445 940.63 3445 948.75C3445 956.88 3435 965 3425 965').toBe(true);
+            expect(((diagram.connectors[270]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 935 3361.25 945 3372.5 945C3383.75 945 3395 917.5 3395 890C3395 862.5 3360 835 3325 835').toBe(true);
+            expect(((diagram.connectors[271]).wrapper.children[0] as PathElement).data === 'M3350 925C3350 945 3337.5 965 3325 965').toBe(true);
+            expect(((diagram.connectors[272]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 935 3727.5 945 3755 945C3782.5 945 3810 917.5 3810 890C3810 862.5 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[273]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 928.75 3727.5 932.5 3755 932.5C3782.5 932.5 3810 940.63 3810 948.75C3810 956.88 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[274]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 935 3711.25 945 3722.5 945C3733.75 945 3745 917.5 3745 890C3745 862.5 3702.5 835 3660 835').toBe(true);
+            expect(((diagram.connectors[275]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 945 3680 965 3660 965').toBe(true);
+            expect(((diagram.connectors[276]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 935 3727.5 945 3755 945C3782.5 945 3810 917.5 3810 890C3810 862.5 3800 835 3790 835').toBe(true);
+            expect(((diagram.connectors[277]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 928.75 3727.5 932.5 3755 932.5C3782.5 932.5 3810 940.63 3810 948.75C3810 956.88 3800 965 3790 965').toBe(true);
+            expect(((diagram.connectors[278]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 935 3711.25 945 3722.5 945C3733.75 945 3745 917.5 3745 890C3745 862.5 3702.5 835 3660 835').toBe(true);
+            expect(((diagram.connectors[279]).wrapper.children[0] as PathElement).data === 'M3700 925C3700 945 3680 965 3660 965').toBe(true);
+            expect(((diagram.connectors[280]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 935 4077.5 945 4105 945C4132.5 945 4160 915 4160 885C4160 855 4150 825 4140 825').toBe(true);
+            expect(((diagram.connectors[281]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 931.25 4077.5 937.5 4105 937.5C4132.5 937.5 4160 946.88 4160 956.25C4160 965.63 4150 975 4140 975').toBe(true);
+            expect(((diagram.connectors[282]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 935 4061.25 945 4072.5 945C4083.75 945 4095 915 4095 885C4095 855 4052.5 825 4010 825').toBe(true);
+            expect(((diagram.connectors[283]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 950 4030 975 4010 975').toBe(true);
+            expect(((diagram.connectors[284]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 935 4080 945 4110 945C4140 945 4170 917.5 4170 890C4170 862.5 4160 835 4150 835').toBe(true);
+            expect(((diagram.connectors[285]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 928.75 4080 932.5 4110 932.5C4140 932.5 4170 940.63 4170 948.75C4170 956.88 4160 965 4150 965').toBe(true);
+            expect(((diagram.connectors[286]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 935 4061.25 945 4072.5 945C4083.75 945 4095 917.5 4095 890C4095 862.5 4047.5 835 4000 835').toBe(true);
+            expect(((diagram.connectors[287]).wrapper.children[0] as PathElement).data === 'M4050 925C4050 945 4025 965 4000 965').toBe(true);
+            expect(((diagram.connectors[288]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4431.25 245 4462.5 245C4493.75 245 4525 222.5 4525 200').toBe(true);
+            expect(((diagram.connectors[289]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 247.5 4431.25 270 4462.5 270C4493.75 270 4525 260 4525 250').toBe(true);
+            expect(((diagram.connectors[290]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4368.75 245 4337.5 245C4306.25 245 4275 222.5 4275 200').toBe(true);
+            expect(((diagram.connectors[291]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 247.5 4368.75 270 4337.5 270C4306.25 270 4275 260 4275 250').toBe(true);
+            expect(((diagram.connectors[292]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4411.25 245 4422.5 245C4433.75 245 4445 218.13 4445 191.25C4445 164.38 4440 137.5 4435 137.5C4430 137.5 4425 118.75 4425 100').toBe(true);
+            expect(((diagram.connectors[293]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 243.75 4418.75 262.5 4437.5 262.5C4456.25 262.5 4475 289.38 4475 316.25C4475 343.13 4462.5 370 4450 370C4437.5 370 4425 360 4425 350').toBe(true);
+            expect(((diagram.connectors[294]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 235 4388.75 245 4377.5 245C4366.25 245 4355 218.13 4355 191.25C4355 164.38 4360 137.5 4365 137.5C4370 137.5 4375 118.75 4375 100').toBe(true);
+            expect(((diagram.connectors[295]).wrapper.children[0] as PathElement).data === 'M4400 225C4400 243.75 4381.25 262.5 4362.5 262.5C4343.75 262.5 4325 289.38 4325 316.25C4325 343.13 4337.5 370 4350 370C4362.5 370 4375 360 4375 350').toBe(true);
+            expect(((diagram.connectors[296]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4781.25 245 4812.5 245C4843.75 245 4875 210 4875 175').toBe(true);
+            expect(((diagram.connectors[297]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 260 4781.25 295 4812.5 295C4843.75 295 4875 285 4875 275').toBe(true);
+            expect(((diagram.connectors[298]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4718.75 245 4687.5 245C4656.25 245 4625 210 4625 175').toBe(true);
+            expect(((diagram.connectors[299]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 260 4718.75 295 4687.5 295C4656.25 295 4625 285 4625 275').toBe(true);
+            expect(((diagram.connectors[300]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4762.5 245 4775 245C4787.5 245 4800 172.5 4800 100').toBe(true);
+            expect(((diagram.connectors[301]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 297.5 4762.5 370 4775 370C4787.5 370 4800 360 4800 350').toBe(true);
+            expect(((diagram.connectors[302]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 235 4737.5 245 4725 245C4712.5 245 4700 172.5 4700 100').toBe(true);
+            expect(((diagram.connectors[303]).wrapper.children[0] as PathElement).data === 'M4750 225C4750 297.5 4737.5 370 4725 370C4712.5 370 4700 360 4700 350').toBe(true);
+            expect(((diagram.connectors[304]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5131.25 245 5162.5 245C5193.75 245 5225 202.5 5225 160').toBe(true);
+            expect(((diagram.connectors[305]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 267.5 5131.25 310 5162.5 310C5193.75 310 5225 300 5225 290').toBe(true);
+            expect(((diagram.connectors[306]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5068.75 245 5037.5 245C5006.25 245 4975 202.5 4975 160').toBe(true);
+            expect(((diagram.connectors[307]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 267.5 5068.75 310 5037.5 310C5006.25 310 4975 300 4975 290').toBe(true);
+            expect(((diagram.connectors[308]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5116.25 245 5132.5 245C5148.75 245 5165 172.5 5165 100').toBe(true);
+            expect(((diagram.connectors[309]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 297.5 5116.25 370 5132.5 370C5148.75 370 5165 360 5165 350').toBe(true);
+            expect(((diagram.connectors[310]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 235 5083.75 245 5067.5 245C5051.25 245 5035 172.5 5035 100').toBe(true);
+            expect(((diagram.connectors[311]).wrapper.children[0] as PathElement).data === 'M5100 225C5100 297.5 5083.75 370 5067.5 370C5051.25 370 5035 360 5035 350').toBe(true);
+            expect(((diagram.connectors[312]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5481.25 245 5512.5 245C5543.75 245 5575 197.5 5575 150').toBe(true);
+            expect(((diagram.connectors[313]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 272.5 5481.25 320 5512.5 320C5543.75 320 5575 310 5575 300').toBe(true);
+            expect(((diagram.connectors[314]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5418.75 245 5387.5 245C5356.25 245 5325 197.5 5325 150').toBe(true);
+            expect(((diagram.connectors[315]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 272.5 5418.75 320 5387.5 320C5356.25 320 5325 310 5325 300').toBe(true);
+            expect(((diagram.connectors[316]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5468.75 245 5487.5 245C5506.25 245 5525 172.5 5525 100').toBe(true);
+            expect(((diagram.connectors[317]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 297.5 5468.75 370 5487.5 370C5506.25 370 5525 360 5525 350').toBe(true);
+            expect(((diagram.connectors[318]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 235 5431.25 245 5412.5 245C5393.75 245 5375 172.5 5375 100').toBe(true);
+            expect(((diagram.connectors[319]).wrapper.children[0] as PathElement).data === 'M5450 225C5450 297.5 5431.25 370 5412.5 370C5393.75 370 5375 360 5375 350').toBe(true);
+            expect(((diagram.connectors[320]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4418.75 595 4437.5 595C4456.25 595 4475 572.5 4475 550').toBe(true);
+            expect(((diagram.connectors[321]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 597.5 4418.75 620 4437.5 620C4456.25 620 4475 610 4475 600').toBe(true);
+            expect(((diagram.connectors[322]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4381.25 595 4362.5 595C4343.75 595 4325 572.5 4325 550').toBe(true);
+            expect(((diagram.connectors[323]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 597.5 4381.25 620 4362.5 620C4343.75 620 4325 610 4325 600').toBe(true);
+            expect(((diagram.connectors[324]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4411.25 595 4422.5 595C4433.75 595 4445 574.38 4445 553.75C4445 533.13 4440 512.5 4435 512.5C4430 512.5 4425 506.25 4425 500').toBe(true);
+            expect(((diagram.connectors[325]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 581.25 4418.75 587.5 4437.5 587.5C4456.25 587.5 4475 608.13 4475 628.75C4475 649.38 4462.5 670 4450 670C4437.5 670 4425 660 4425 650').toBe(true);
+            expect(((diagram.connectors[326]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 585 4388.75 595 4377.5 595C4366.25 595 4355 574.38 4355 553.75C4355 533.13 4360 512.5 4365 512.5C4370 512.5 4375 506.25 4375 500').toBe(true);
+            expect(((diagram.connectors[327]).wrapper.children[0] as PathElement).data === 'M4400 575C4400 581.25 4381.25 587.5 4362.5 587.5C4343.75 587.5 4325 608.13 4325 628.75C4325 649.38 4337.5 670 4350 670C4362.5 670 4375 660 4375 650').toBe(true);
+            expect(((diagram.connectors[328]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4768.75 595 4787.5 595C4806.25 595 4825 560 4825 525').toBe(true);
+            expect(((diagram.connectors[329]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 610 4768.75 645 4787.5 645C4806.25 645 4825 635 4825 625').toBe(true);
+            expect(((diagram.connectors[330]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4731.25 595 4712.5 595C4693.75 595 4675 560 4675 525').toBe(true);
+            expect(((diagram.connectors[331]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 610 4731.25 645 4712.5 645C4693.75 645 4675 635 4675 625').toBe(true);
+            expect(((diagram.connectors[332]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4762.5 595 4775 595C4787.5 595 4800 547.5 4800 500').toBe(true);
+            expect(((diagram.connectors[333]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 622.5 4762.5 670 4775 670C4787.5 670 4800 660 4800 650').toBe(true);
+            expect(((diagram.connectors[334]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 585 4737.5 595 4725 595C4712.5 595 4700 547.5 4700 500').toBe(true);
+            expect(((diagram.connectors[335]).wrapper.children[0] as PathElement).data === 'M4750 575C4750 622.5 4737.5 670 4725 670C4712.5 670 4700 660 4700 650').toBe(true);
+            expect(((diagram.connectors[336]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5118.75 595 5137.5 595C5156.25 595 5175 552.5 5175 510').toBe(true);
+            expect(((diagram.connectors[337]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 617.5 5118.75 660 5137.5 660C5156.25 660 5175 650 5175 640').toBe(true);
+            expect(((diagram.connectors[338]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5081.25 595 5062.5 595C5043.75 595 5025 552.5 5025 510').toBe(true);
+            expect(((diagram.connectors[339]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 617.5 5081.25 660 5062.5 660C5043.75 660 5025 650 5025 640').toBe(true);
+            expect(((diagram.connectors[340]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5116.25 595 5132.5 595C5148.75 595 5165 547.5 5165 500').toBe(true);
+            expect(((diagram.connectors[341]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 622.5 5116.25 670 5132.5 670C5148.75 670 5165 660 5165 650').toBe(true);
+            expect(((diagram.connectors[342]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 585 5083.75 595 5067.5 595C5051.25 595 5035 547.5 5035 500').toBe(true);
+            expect(((diagram.connectors[343]).wrapper.children[0] as PathElement).data === 'M5100 575C5100 622.5 5083.75 670 5067.5 670C5051.25 670 5035 660 5035 650').toBe(true);
+            expect(((diagram.connectors[344]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5468.75 595 5487.5 595C5506.25 595 5525 547.5 5525 500').toBe(true);
+            expect(((diagram.connectors[345]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5468.75 670 5487.5 670C5506.25 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[346]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5431.25 595 5412.5 595C5393.75 595 5375 547.5 5375 500').toBe(true);
+            expect(((diagram.connectors[347]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5431.25 670 5412.5 670C5393.75 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[348]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5468.75 595 5487.5 595C5506.25 595 5525 547.5 5525 500').toBe(true);
+            expect(((diagram.connectors[349]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5468.75 670 5487.5 670C5506.25 670 5525 660 5525 650').toBe(true);
+            expect(((diagram.connectors[350]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 585 5431.25 595 5412.5 595C5393.75 595 5375 547.5 5375 500').toBe(true);
+            expect(((diagram.connectors[351]).wrapper.children[0] as PathElement).data === 'M5450 575C5450 622.5 5431.25 670 5412.5 670C5393.75 670 5375 660 5375 650').toBe(true);
+            expect(((diagram.connectors[352]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4416.25 945 4432.5 945C4448.75 945 4465 922.5 4465 900').toBe(true);
+            expect(((diagram.connectors[353]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 947.5 4416.25 970 4432.5 970C4448.75 970 4465 960 4465 950').toBe(true);
+            expect(((diagram.connectors[354]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4383.75 945 4367.5 945C4351.25 945 4335 922.5 4335 900').toBe(true);
+            expect(((diagram.connectors[355]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 947.5 4383.75 970 4367.5 970C4351.25 970 4335 960 4335 950').toBe(true);
+            expect(((diagram.connectors[356]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4411.25 945 4422.5 945C4433.75 945 4445 925.63 4445 906.25C4445 886.88 4440 867.5 4435 867.5C4430 867.5 4425 863.75 4425 860').toBe(true);
+            expect(((diagram.connectors[357]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 967.5 4411.25 1010 4422.5 1010C4433.75 1010 4445 1010 4445 1010C4445 1010 4440 1010 4435 1010C4430 1010 4425 1000 4425 990').toBe(true);
+            expect(((diagram.connectors[358]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 935 4388.75 945 4377.5 945C4366.25 945 4355 925.63 4355 906.25C4355 886.88 4360 867.5 4365 867.5C4370 867.5 4375 863.75 4375 860').toBe(true);
+            expect(((diagram.connectors[359]).wrapper.children[0] as PathElement).data === 'M4400 925C4400 967.5 4388.75 1010 4377.5 1010C4366.25 1010 4355 1010 4355 1010C4355 1010 4360 1010 4365 1010C4370 1010 4375 1000 4375 990').toBe(true);
+            expect(((diagram.connectors[360]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4766.25 945 4782.5 945C4798.75 945 4815 910 4815 875').toBe(true);
+            expect(((diagram.connectors[361]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 960 4766.25 995 4782.5 995C4798.75 995 4815 985 4815 975').toBe(true);
+            expect(((diagram.connectors[362]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4733.75 945 4717.5 945C4701.25 945 4685 910 4685 875').toBe(true);
+            expect(((diagram.connectors[363]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 960 4733.75 995 4717.5 995C4701.25 995 4685 985 4685 975').toBe(true);
+            expect(((diagram.connectors[364]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4762.5 945 4775 945C4787.5 945 4800 902.5 4800 860').toBe(true);
+            expect(((diagram.connectors[365]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 967.5 4762.5 1010 4775 1010C4787.5 1010 4800 1000 4800 990').toBe(true);
+            expect(((diagram.connectors[366]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 935 4737.5 945 4725 945C4712.5 945 4700 902.5 4700 860').toBe(true);
+            expect(((diagram.connectors[367]).wrapper.children[0] as PathElement).data === 'M4750 925C4750 967.5 4737.5 1010 4725 1010C4712.5 1010 4700 1000 4700 990').toBe(true);
+            expect(((diagram.connectors[368]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5116.25 945 5132.5 945C5148.75 945 5165 902.5 5165 860').toBe(true);
+            expect(((diagram.connectors[369]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5116.25 1010 5132.5 1010C5148.75 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[370]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5083.75 945 5067.5 945C5051.25 945 5035 902.5 5035 860').toBe(true);
+            expect(((diagram.connectors[371]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5083.75 1010 5067.5 1010C5051.25 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[372]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5116.25 945 5132.5 945C5148.75 945 5165 902.5 5165 860').toBe(true);
+            expect(((diagram.connectors[373]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5116.25 1010 5132.5 1010C5148.75 1010 5165 1000 5165 990').toBe(true);
+            expect(((diagram.connectors[374]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 935 5083.75 945 5067.5 945C5051.25 945 5035 902.5 5035 860').toBe(true);
+            expect(((diagram.connectors[375]).wrapper.children[0] as PathElement).data === 'M5100 925C5100 967.5 5083.75 1010 5067.5 1010C5051.25 1010 5035 1000 5035 990').toBe(true);
+            expect(((diagram.connectors[376]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5466.25 945 5482.5 945C5498.75 945 5515 897.5 5515 850').toBe(true);
+            expect(((diagram.connectors[377]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 972.5 5466.25 1020 5482.5 1020C5498.75 1020 5515 1010 5515 1000').toBe(true);
+            expect(((diagram.connectors[378]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5433.75 945 5417.5 945C5401.25 945 5385 897.5 5385 850').toBe(true);
+            expect(((diagram.connectors[379]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 972.5 5433.75 1020 5417.5 1020C5401.25 1020 5385 1010 5385 1000').toBe(true);
+            expect(((diagram.connectors[380]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5468.75 945 5487.5 945C5506.25 945 5525 902.5 5525 860').toBe(true);
+            expect(((diagram.connectors[381]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 967.5 5468.75 1010 5487.5 1010C5506.25 1010 5525 1000 5525 990').toBe(true);
+            expect(((diagram.connectors[382]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 935 5431.25 945 5412.5 945C5393.75 945 5375 902.5 5375 860').toBe(true);
+            expect(((diagram.connectors[383]).wrapper.children[0] as PathElement).data === 'M5450 925C5450 967.5 5431.25 1010 5412.5 1010C5393.75 1010 5375 1000 5375 990').toBe(true);
+
+            done();
+        });
+    });
+
+    /*Straight Testcases*/
+
     describe('Conectors with segments - Straight Segment', () => {
         let ele: HTMLElement;
         let diagram: Diagram;
@@ -2144,9 +5557,9 @@ describe('Diagram Control', () => {
             expect(((diagram.connectors[3]).wrapper.children[0] as PathElement).data === 'M800 200C818 200 822 230 840 230C840 261.5 900 268.5 900 300C927 300 933 340 960 340C960 299.7205 979.89 290.7695 980 250.5').toBe(true);
             expect(((diagram.connectors[4]).wrapper.children[0] as PathElement).data === 'M800 100C870.48 125.65 970.48 185.65 900 160C970.48 185.65 1070.48 245.65 1000 220C1070.48 245.65 1170.48 305.65 1100 280C1100 311.3155 1149.71 318.2745 1150 349.5').toBe(true);
             expect(((diagram.connectors[5]).wrapper.children[0] as PathElement).data === 'M0 100C25 75 75 75 100 100C125 75 175 75 200 100C225 75 275 75 300 100C344.7975 100 354.7525 149.78 399.5 150').toBe(true);
-            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M125 550C125 527.5 138.75 500 150 500C150 473 188.5 560 220 560C278.2795 560 291.2305 588.89 349.5 589').toBe(true);
-            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M400 650C400 725 280 765 280 690C280 765 180 725 180 650C166.689 650 163.731 631.27 150.5 631.01').toBe(true);
-            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M450 550C420 475 470 475 500 500C520 575 570 575 550 550C594.7885 550 604.7415 582.84 649.5 583').toBe(true);
+            expect(((diagram.connectors[6]).wrapper.children[0] as PathElement).data === 'M150 600C150 600 150 500 150 500C150 473 188.5 560 220 560C240 560 329.52 599.85 349.5 600').toBe(true);
+            expect(((diagram.connectors[7]).wrapper.children[0] as PathElement).data === 'M350 600C350 675 280 765 280 690C280 765 180 725 180 650C160 650 170.26 600.43 150.5 600.01').toBe(true);
+            expect(((diagram.connectors[8]).wrapper.children[0] as PathElement).data === 'M450 600C420 475 470 475 500 500C520 575 570 575 550 550C570 550 629.55 599.78 649.5 599.99').toBe(true);
             done();
         });
     });

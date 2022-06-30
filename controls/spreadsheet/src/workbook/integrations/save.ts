@@ -123,7 +123,7 @@ export class WorkbookSave extends SaveWorker {
      * @returns {void} - Process sheets properties.
      */
     private processSheets(): void {
-        const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader'];
+        const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader', 'result'];
         // eslint-disable-next-line
         if ((this.parent as any).isAngular) {
             skipProps.push('template');

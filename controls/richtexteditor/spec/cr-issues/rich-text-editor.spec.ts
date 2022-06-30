@@ -1331,36 +1331,6 @@ describe('RTE CR issues', () => {
             expect(rteObj.getText()==="").toBe(true);
         });
     });
-    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
-        let rteObj: RichTextEditor;
-        beforeAll(() => {
-            rteObj = renderRTE({ value: '<div><p></p></div>'});
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
-        it('check content div element', () => {
-            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
-        });
-    });
-    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
-        let rteObj: RichTextEditor;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                value: '<div><p></p></div>',
-                iframeSettings: {
-                    enable: true
-                }
-            });
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
-        it('check content div element', () => {
-            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
-        });
-
-    });
     describe('EJ2-60381 - Image resize icon not shown properly when enabled iframe', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -1392,30 +1362,34 @@ describe('RTE CR issues', () => {
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
         });
     });
-    describe('EJ2-60406 - Image alignment not maintained with iframe mode when focus out the component', () => {
+
+    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
         let rteObj: RichTextEditor;
-        const innerHTML: string = '<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png">';
+        beforeAll(() => {
+            rteObj = renderRTE({ value: '<div><p></p></div>'});
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check content div element', () => {
+            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
+        });
+    });
+    describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
+        let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({
-                height: 400,
+                value: '<div><p></p></div>',
                 iframeSettings: {
                     enable: true
-                },
-                toolbarSettings: {
-                    items: ['Image']
-                },
-                value: innerHTML
+                }
             });
         });
         afterAll(() => {
             destroy(rteObj);
         });
-        it('apply the align items in iframe image while check the added new class applied or not ', () => {
-            const className: HTMLStyleElement = document.querySelector('iframe').contentWindow.document.head.querySelector('style');
-            expect(className.innerHTML.indexOf('.e-rte-image.e-imginline') > 0).toBe(true);
-            expect(className.innerHTML.indexOf('.e-rte-image.e-imgcenter') > 0).toBe(true);
-            expect(className.innerHTML.indexOf('.e-rte-image.e-imgleft') > 0).toBe(true);
-            expect(className.innerHTML.indexOf('.e-rte-image.e-imgright') > 0).toBe(true);
+        it('check content div element', () => {
+            expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
         });
     });
 });

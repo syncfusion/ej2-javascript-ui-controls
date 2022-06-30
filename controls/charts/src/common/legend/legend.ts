@@ -19,7 +19,7 @@ import { AccumulationLegend } from '../../accumulation-chart/renderer/legend';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { BulletChartLegend } from '../../bullet-chart/legend/legend';
 import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow} from '../utils/enum';
-import { StockChart, Series } from '../../stock-chart';
+import { StockChart } from '../../stock-chart';
 import { StockLegend } from '../../stock-chart/legend/legend';
 /**
  * Configures the location for the legend.
@@ -771,7 +771,9 @@ export class BaseLegend {
             } else {
                 requireLegendBounds = legendBounds;
             }
-            for (const legendOption of this.legendCollections) {
+            let legendOption : LegendOptions;
+            for (let i: number = 0; i < this.legendCollections.length; i++) {
+                legendOption = this.legendCollections[i];
                 legendIndex = !this.isReverse ? count : (this.legendCollections.length - 1) -  count;
                 if (this.chart.getModuleName() === 'accumulationchart') {
                     // eslint-disable-next-line max-len
@@ -786,7 +788,7 @@ export class BaseLegend {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', legendIndex)});
                     if  (legendSeriesGroup) {
-                        legendSeriesGroup.setAttribute('tabindex', legend.tabIndex.toString());
+                        legendSeriesGroup.setAttribute("tabindex", i === 0 ? "0" : "");
                         legendSeriesGroup.setAttribute('aria-label', legend.description ||
                         this.accessbilityText);
                     }
@@ -798,7 +800,7 @@ export class BaseLegend {
 
                     if (legendSeriesGroup) {
                         (legendSeriesGroup as HTMLElement).style.cssText =
-                            'outline: none; cursor: ' + ((!legend.toggleVisibility && ((chart as Chart).selectionMode === 'None' ||
+                            'cursor: ' + ((!legend.toggleVisibility && ((chart as Chart).selectionMode === 'None' ||
                                 (chart as Chart).highlightMode === 'None' ||
                                 (chart as AccumulationChart).selectionMode === 'None') || this.isBulletChartControl) ? 'auto' : 'pointer')
                         ;
@@ -1074,7 +1076,7 @@ export class BaseLegend {
         if (!isCanvas) {
             legendItemsGroup.appendChild(this.legendTranslateGroup);
         }
-        options.y += padding + (this.isTop ? this.legendTitleSize.height : 0);
+        options.y += (this.isTop ? this.legendTitleSize.height : 0);
         options.id += '_clipPath_rect';
         options.width = (
             (!this.isChartControl && chart.getModuleName() !== 'bulletChart' && !this.isStockChartControl
@@ -1535,9 +1537,8 @@ export class BaseLegend {
                         removeElement(this.chart.element.id + '_EJ2_Legend_Tooltip');
                     }
                     if (this.isChartControl) {
-                        let name: string = (this.chart.legendSettings as LegendSettingsModel).mode == "Point" ? ((<Chart>this.chart).visibleSeries[0] as Series).points[index].x.toString() : (<Chart>this.chart).series[index].name;
                         showTooltip(
-                            name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
+                            (<Chart>this.chart).series[index].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip',
                             getElement(this.chart.element.id + '_Secondary_Element')
                         );
                     } else {

@@ -256,6 +256,9 @@ export class ColumnMenu implements IAction {
             if (this.parent.enableRtl) {
                 check.classList.add('e-rtl');
             }
+            if (this.parent.cssClass) {
+                check.classList.add(this.parent.cssClass);
+            }
             args.element.innerHTML = '';
             args.element.appendChild(check);
         } else if (args.item.id && this.getKeyFromId(args.item.id) === 'Filter') {

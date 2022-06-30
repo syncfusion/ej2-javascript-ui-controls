@@ -170,7 +170,7 @@ describe('Schedule Timeline Month view', () => {
             expect(deleteIcon.children[0].classList).toContain('e-delete-icon');
             (eventPopup.querySelector('.e-close-icon') as HTMLElement).click();
             expect(event.classList).toContain('e-appointment-border');
-            expect(event.getAttribute('aria-selected')).toEqual('true');
+            expect(event.getAttribute('aria-pressed')).toEqual('true');
         });
         it('event double click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
@@ -1482,7 +1482,7 @@ describe('Schedule Timeline Month view', () => {
             expect(deleteIcon.children[0].classList).toContain('e-delete-icon');
             (eventPopup.querySelector('.e-close-icon') as HTMLElement).click();
             expect(event.classList).toContain('e-appointment-border');
-            expect(event.getAttribute('aria-selected')).toEqual('true');
+            expect(event.getAttribute('aria-pressed')).toEqual('true');
         });
         it('event double click', () => {
             const event: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement;

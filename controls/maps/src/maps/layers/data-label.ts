@@ -127,7 +127,7 @@ export class DataLabel {
             layer.dataSource as any[], layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
         if (!isNullOrUndefined(shapes['property'])) {
             shapePoint = [[]];
-            if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point') {
+            if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point' && layerData[index]['type'] !== 'MultiPoint') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 shapePoint.push(this.getPoint(layerData[index] as any[], []));
                 currentLength = shapePoint[shapePoint.length - 1].length;
@@ -135,21 +135,9 @@ export class DataLabel {
                     pointsLength = currentLength;
                     midIndex = shapePoint.length - 1;
                 }
-            } else {
+            } else if (layerData[index]['type'] !== 'Point' && layerData[index]['type'] !== 'MultiPoint') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const layer: any[] = <any[]>layerData[index];
-                if (layer['type'] === 'Point') {
-                    isPoint = true;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const layerPoints: any[] = [];
-                    layerPoints.push(this.getPoint(layerData, []));
-                    shapePoint = <[MapLocation[]]>layerPoints;
-                    currentLength = shapePoint[shapePoint.length - 1].length;
-                    if (pointsLength < currentLength) {
-                        pointsLength = currentLength;
-                        midIndex = shapePoint.length - 1;
-                    }
-                }
+                const layer: any[] = <any[]>layerData[index];                
                 for (let j: number = 0; j < layer.length; j++) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     shapePoint.push(this.getPoint(layer[j] as any[], []));
@@ -393,10 +381,20 @@ export class DataLabel {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getPoint(shapes: any[], points: MapLocation[]): MapLocation[] {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        shapes.map((current: any, index: number) => {
-            points.push(new Point(current['point']['x'], current['point']['y']));
-        });
+        if (shapes['type'] === 'MultiLineString') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            shapes.map((current: any) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                current.map((shape: any) => {
+                    points.push(new Point(shape['point']['x'], shape['point']['y']));
+                });
+            });
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            shapes.map((current: any, index: number) => {
+                points.push(new Point(current['point']['x'], current['point']['y']));
+            });
+        }
         return points;
     }
     /**

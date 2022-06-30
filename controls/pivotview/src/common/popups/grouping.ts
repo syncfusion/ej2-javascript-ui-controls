@@ -280,13 +280,13 @@ export class Grouping implements IAction {
             buttons: [
                 {
                     click: this.updateGroupSettings.bind(this),
-                    buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
+                    buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
                     click: () => {
                         this.groupDialog.hide();
                     },
-                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
             overlayClick: () => {
@@ -354,7 +354,8 @@ export class Grouping implements IAction {
                         placeholder: this.parent.localeObj.getConstant('captionName'),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
-                        value: caption, width: '100%'
+                        value: caption, width: '100%',
+                        cssClass: this.parent.cssClass
                     });
                     captionInputObj1.isStringTemplate = true;
                     captionInputObj1.appendTo(captionInputField1);
@@ -362,7 +363,8 @@ export class Grouping implements IAction {
                         placeholder: this.parent.localeObj.getConstant('groupName'),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
-                        width: '100%'
+                        width: '100%',
+                        cssClass: this.parent.cssClass
                     });
                     inputObj1.isStringTemplate = true;
                     inputObj1.appendTo(inputField1);
@@ -507,7 +509,8 @@ export class Grouping implements IAction {
                             format: '###',
                             value: startAt === undefined ? undefined : parseInt(startAt, 10),
                             enabled: !(startAt === undefined),
-                            width: '100%'
+                            width: '100%',
+                            cssClass: this.parent.cssClass
                         });
                         startAtInputObj.isStringTemplate = true;
                         startAtInputObj.appendTo(startAtInputField1);
@@ -519,7 +522,8 @@ export class Grouping implements IAction {
                             format: '###',
                             value: endAt === undefined ? undefined : parseInt(endAt, 10),
                             enabled: !(endAt === undefined),
-                            width: '100%'
+                            width: '100%',
+                            cssClass: this.parent.cssClass
                         });
                         endAtInputObj.isStringTemplate = true;
                         endAtInputObj.appendTo(endAtInputField1);
@@ -531,7 +535,8 @@ export class Grouping implements IAction {
                             format: '###',
                             min: 1,
                             value: selectedInterval,
-                            width: '100%'
+                            width: '100%',
+                            cssClass: this.parent.cssClass
                         });
                         intervalObj.isStringTemplate = true;
                         intervalObj.appendTo(intervalInputField1);
@@ -541,6 +546,7 @@ export class Grouping implements IAction {
                         checked: !(startAt === undefined),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
+                        cssClass: this.parent.cssClass,
                         change: (args: ChangeEventArgs) => {
                             let startAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
                                 getInstance(select('#' + this.parentElement.id + 'group_start_input'), DateTimePicker) as DateTimePicker :
@@ -556,6 +562,7 @@ export class Grouping implements IAction {
                         checked: !(endAt === undefined),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
+                        cssClass: this.parent.cssClass,
                         change: (args: ChangeEventArgs) => {
                             let endAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
                                 getInstance(select('#' + this.parentElement.id + 'group_end_input'), DateTimePicker) as DateTimePicker :

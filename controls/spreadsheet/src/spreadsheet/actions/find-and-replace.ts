@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { findDlg, locale, dialog, gotoDlg, findHandler, focus } from '../common/index';
+import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf } from '../common/index';
 import { DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -97,18 +97,19 @@ export class FindAndReplace {
                     }
                 }],
                 open: (): void => {
-                    const findInput: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
-                    if (findInput) {
+                    const findInput: HTMLInputElement = this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement;
+                    if (findInput.value) {
                         const prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
                         const prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
                         prevButtonObj.disabled = false;
                         (getComponent(
                             this.parent.element.querySelector('.e-btn-findNext') as HTMLElement, 'btn') as Button).disabled = false;
                     }
+                    getUpdateUsingRaf((): void => {
+                        focus(findInput);
+                    });
                 },
-                close: (): void => {
-                    dialogInst.hide();
-                }
+                close: (): void => dialogInst.hide()
             };
             dialogInst.show(dlg);
         } else {

@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor } from '@syncfusion/ej2-base';import { ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints } from '../enum/enum';import { Direction, LayoutOrientation, Status, PortConstraints } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { getAnnotationPosition, alignLabelOnSegments, updateConnector } from '../utility/diagram-util';import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { flipConnector } from './../utility/diagram-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';import { DiagramHtmlElement } from '../core/elements/html-element';import { getTemplateContent } from '../utility/dom-util';import { SymbolSizeModel } from './preview-model';import { SymbolSize } from './preview';import { ConnectorFixedUserHandle } from './fixed-user-handle';import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';import { ResizeTool } from '../interaction/tool';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor } from '@syncfusion/ej2-base';import { ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation } from '../enum/enum';import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { getAnnotationPosition, alignLabelOnSegments, updateConnector } from '../utility/diagram-util';import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { flipConnector } from './../utility/diagram-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';import { DiagramHtmlElement } from '../core/elements/html-element';import { getTemplateContent } from '../utility/dom-util';import { SymbolSizeModel } from './preview-model';import { SymbolSize } from './preview';import { ConnectorFixedUserHandle } from './fixed-user-handle';import { ConnectorFixedUserHandleModel } from './fixed-user-handle-model';import { ResizeTool } from '../interaction/tool';
 import {NodeBaseModel} from "./node-base-model";
 
 /**
@@ -85,6 +85,34 @@ export interface VectorModel {
      * @default 0
      */
     distance?: number;
+
+}
+
+/**
+ * Interface for a class BezierSettings
+ */
+export interface BezierSettingsModel {
+
+    /**
+    * Defines the visibility of the control points in the Bezier connector
+    *
+    * @default 'All'
+    */
+    controlPointsVisibility?: ControlPointsVisibility;
+
+    /**
+    * Defines the editing mode of intermediate point of two bezier curve
+    *
+    * @default 'FreeForm'
+    */
+    segmentEditOrientation?: BezierSegmentEditOrientation;
+
+    /**
+    * Defines the value to maintain the smoothness between the neighboring bezier curves.
+    *
+    * @default 'Default'
+    */
+    smoothness?: BezierSmoothness;
 
 }
 
@@ -237,6 +265,13 @@ export interface StraightSegmentModel extends ConnectorSegmentModel{
  * Interface for a class BezierSegment
  */
 export interface BezierSegmentModel extends StraightSegmentModel{
+
+    /**
+     * Sets the orientation of endpoint dragging
+     *
+     * @private
+     */
+    orientation?: Orientation;
 
     /**
      * Sets the first control point of the connector
@@ -836,11 +871,32 @@ export interface ConnectorModel extends NodeBaseModel{
     targetPadding?: number;
 
     /**
+     * Sets the distance between source node and connector
+     *
+     * @default 13
+     */
+    connectorSpacing?: number;
+
+    /**
      * Defines the appearance of the connection path
      *
      * @default ''
      */
     style?: StrokeStyleModel;
+
+    /**
+     * Sets the maximum segment thumb for the connector
+     *
+     * @default null
+     */
+    maxSegmentThumb?: number;
+
+    /**
+     * Sets the bezier settings of editing the segments.
+     *
+     * @default null
+     */
+    bezierSettings?: BezierSettingsModel;
 
     /**
      * Defines the UI of the connector

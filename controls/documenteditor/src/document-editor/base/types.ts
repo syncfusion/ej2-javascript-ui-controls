@@ -1206,7 +1206,13 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
 'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
 'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase'| 'PasteColumn'|
-'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline' | 'ResolveComment';
+'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline' | 'ResolveComment'
+|"TopBorder"
+|'LeftBorder'
+|'RightBorder'
+|'BottomBorder'
+|'HorizontalBorder'
+|'VerticalBorder';
 /**
  * Enum for direction
  */
@@ -1260,9 +1266,14 @@ export type ProtectionType =
      */
     'FormFieldsOnly' |
     /**
-     * Allow comments only.
+     * Allow only comments to be added to the document.
      */
-    'CommentsOnly';
+    'CommentsOnly' |
+    /**
+     * Allow only revisions to be made to existing content. All the changes will be tracked.
+     */
+    'RevisionsOnly';
+
 /**
  * Specifies the paste options
  */

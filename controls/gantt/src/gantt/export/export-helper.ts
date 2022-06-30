@@ -173,6 +173,12 @@ export class ExportHelper {
                 predecessor.milestoneParent = data.milestoneParent;
                 predecessor.milestoneChild = data.milestoneChild;
                 predecessor.lineWidth = this.parent.connectorLineWidth > 5 ? pixelToPoint(5) : pixelToPoint(this.parent.connectorLineWidth);
+                if (data.isCritical) {
+                    predecessor.connectorLineColor = this.ganttStyle.criticalConnectorLineColor;
+                }
+                else {
+                    predecessor.connectorLineColor = this.ganttStyle.connectorLineColor;
+                }
                 predecessor.connectorLineColor = this.ganttStyle.connectorLineColor;
                 this.gantt.predecessorCollection.push(predecessor);
             });
@@ -273,7 +279,7 @@ export class ExportHelper {
             if (data[this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
             }
-             if (data[this.parent.labelSettings.taskLabel]) {
+            if (data[this.parent.labelSettings.taskLabel]) {
                 taskbar.taskLabel = data[this.parent.labelSettings.taskLabel].toString();
             }
             const reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
@@ -287,9 +293,16 @@ export class ExportHelper {
                 taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.parentTaskBorderColor);
                 taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.parentProgressColor);
             } else {
-                taskbar.taskColor = new PdfColor(this.ganttStyle.taskbar.taskColor);
-                taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.taskBorderColor);
-                taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.progressColor);
+                if(data.isCritical) {
+                    taskbar.taskColor = new PdfColor(this.ganttStyle.taskbar.criticalTaskColor);
+                    taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.criticalProgressColor);
+                    taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.criticalTaskBorderColor);
+                }
+                else {
+                    taskbar.taskColor = new PdfColor(this.ganttStyle.taskbar.taskColor);
+                    taskbar.progressColor = new PdfColor(this.ganttStyle.taskbar.progressColor);
+                    taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.taskBorderColor);
+                }
             }
             taskbar.gridLineColor = new PdfColor(this.ganttStyle.chartGridLineColor);
             this.gantt.taskbarCollection.push(taskbar);

@@ -651,7 +651,7 @@ export function getValueYByPoint(value: number, size: number, axis: Axis): numbe
 /** @private */
 export function findClipRect(series: Series, isCanvas: boolean = false): void {
     const rect: Rect = series.clipRect;
-    if (isCanvas && (series.chart.chartAreaType === 'PolarRadar'))
+    if (isCanvas && (series.type === 'Polar' || series.type === 'Radar'))
     {
         if (series.drawType === "Scatter") {
             rect.x = series.xAxis.rect.x;

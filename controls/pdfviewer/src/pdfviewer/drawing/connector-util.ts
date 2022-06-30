@@ -437,30 +437,32 @@ export function initLeader(
  */
 export function isPointOverConnector(connector: PdfAnnotationBaseModel, reference: PointModel): boolean {
     const vertexPoints: PointModel[] = connector.vertexPoints;
-    for (let i: number = 0; i < vertexPoints.length - 1; i++) {
-        const start: PointModel = vertexPoints[i];
-        const end: PointModel = vertexPoints[i + 1];
-        const rect: Rect = Rect.toBounds([start, end]);
-        rect.Inflate(10);
-        if (rect.containsPoint(reference)) {
-            const intersectinPt: PointModel = findNearestPoint(reference, start, end);
-            const segment1: Segment = { x1: start.x, x2: end.x, y1: start.y, y2: end.y };
-            const segment2: Segment = { x1: reference.x, x2: intersectinPt.x, y1: reference.y, y2: intersectinPt.y };
-            const intersectDetails: Intersection = intersect3(segment1, segment2);
-            if (intersectDetails.enabled) {
-                const distance: number = Point.findLength(reference, intersectDetails.intersectPt);
-                if (Math.abs(distance) < 10) {
+    if (!isNullOrUndefined(vertexPoints)) {
+        for (let i: number = 0; i < vertexPoints.length - 1; i++) {
+            const start: PointModel = vertexPoints[i];
+            const end: PointModel = vertexPoints[i + 1];
+            const rect: Rect = Rect.toBounds([start, end]);
+            rect.Inflate(10);
+            if (rect.containsPoint(reference)) {
+                const intersectinPt: PointModel = findNearestPoint(reference, start, end);
+                const segment1: Segment = { x1: start.x, x2: end.x, y1: start.y, y2: end.y };
+                const segment2: Segment = { x1: reference.x, x2: intersectinPt.x, y1: reference.y, y2: intersectinPt.y };
+                const intersectDetails: Intersection = intersect3(segment1, segment2);
+                if (intersectDetails.enabled) {
+                    const distance: number = Point.findLength(reference, intersectDetails.intersectPt);
+                    if (Math.abs(distance) < 10) {
+                        return true;
+                    }
+                } else {
+                    const rect: Rect = Rect.toBounds([reference, reference]);
+                    rect.Inflate(3);
+                    if (rect.containsPoint(start) || rect.containsPoint(end)) {
+                        return true;
+                    }
+                }
+                if (Point.equals(reference, intersectinPt)) {
                     return true;
                 }
-            } else {
-                const rect: Rect = Rect.toBounds([reference, reference]);
-                rect.Inflate(3);
-                if (rect.containsPoint(start) || rect.containsPoint(end)) {
-                    return true;
-                }
-            }
-            if (Point.equals(reference, intersectinPt)) {
-                return true;
             }
         }
     }

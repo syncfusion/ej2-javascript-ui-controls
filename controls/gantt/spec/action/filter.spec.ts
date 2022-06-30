@@ -337,7 +337,6 @@ describe('Gantt filter child mode', () => {
             ganttObj.search('ap');
         });
     });
-
     describe('Gantt filter action', () => {
         Gantt.Inject(Filter, Toolbar, ColumnMenu);
         let ganttObj: Gantt;

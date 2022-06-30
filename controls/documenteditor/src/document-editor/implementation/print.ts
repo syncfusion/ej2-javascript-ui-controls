@@ -48,7 +48,6 @@ export class Print {
         if (width > height) {
             pageSize = 'landscape';
         }
-
         if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Firefox')) !== -1) {
             // Chrome and Firefox
             printWindow.document.write('<!DOCTYPE html>');
@@ -61,7 +60,6 @@ export class Print {
         printElement = undefined;
         printWindow.document.close();
         printWindow.focus();
-
         const interval: number = setInterval(
             () => {
                 // eslint-disable-next-line

@@ -61,7 +61,9 @@ export type ToolbarItem =
     /** To indent a selected record */
     'Indent' |
     /** To outdent a selected record */
-    'Outdent';
+    'Outdent' |
+    /** To enable critical path */
+    'CriticalPath';
 
 /**
  * Defines the schedule header mode. They are

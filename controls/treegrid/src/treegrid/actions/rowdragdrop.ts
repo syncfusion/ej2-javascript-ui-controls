@@ -107,7 +107,8 @@ export class RowDD {
             this.parent[dropPosition] = this.dropPosition;
             const data: ITreeData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
-                data[i] = this.parent.getCurrentViewRecords()[fromIndexes[i]];
+                const index: number = (this.parent.getRowByIndex(fromIndexes[i]) as any).rowIndex;
+                data[i] = this.parent.getCurrentViewRecords()[index];
             }
             const isByMethod: boolean = true;
             const args: RowDropEventArgs = {
@@ -198,8 +199,12 @@ export class RowDD {
                             dropIndex = i;
                         }
                     }
-                } else {
+                }
+                else {
                     dropIndex = this.selectedRow.rowIndex - 1;
+                }
+                if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop && this.selectedRecord) {
+                    dropIndex = parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10) - 1;
                 }
                 tObj[action] = 'indenting'; tObj[droppedIndex] = dropIndex;
                 this.eventTrigger('indenting', dropIndex);
@@ -213,6 +218,9 @@ export class RowDD {
                     if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === parentItem.taskData) {
                         dropIndex = i;
                     }
+                }
+                if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop && this.selectedRecord) {
+                    dropIndex = parseInt(this.parent.getRows()[dropIndex].getAttribute('aria-rowindex'), 10)
                 }
                 tObj[action] = 'outdenting'; tObj[droppedIndex] = dropIndex;
                 this.eventTrigger('outdenting', dropIndex);
@@ -230,9 +238,19 @@ export class RowDD {
         this.parent.trigger(events.actionBegin, actionArgs, (actionArgs: TreeActionEventArgs) => {
             if (!actionArgs.cancel) {
                 if (actionArgs.action === 'indenting'){
-                    this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'child');
+                    if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop) {
+                        this.reorderRows([parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10)], dropIndex, 'child');
+                    }
+                    else {
+                        this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'child');
+                    }
                 } else if (actionArgs.action === 'outdenting') {
-                    this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'below');
+                    if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop) {
+                        this.reorderRows([parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10)], dropIndex, 'below');
+                    }
+                    else {
+                        this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'below');
+                    }
                 }
             }
         });
@@ -428,9 +446,17 @@ export class RowDD {
     private removeLastrowBorder(element: HTMLTableRowElement): void {
         const isEmptyRow: boolean = element && (element.classList.contains('e-emptyrow') || element.classList.contains('e-columnheader')
             || element.classList.contains('e-detailrow'));
-        const islastRowIndex: boolean = element && !isEmptyRow &&
-        this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
-            element.getAttribute('data-uid');
+        let islastRowIndex: boolean;
+        if (this.parent.enableVirtualization) {
+            islastRowIndex = element && !isEmptyRow &&
+            this.parent.getRows()[this.parent.getCurrentViewRecords().length - 1].getAttribute('data-uid') !==
+                element.getAttribute('data-uid');
+        }
+        else {
+            islastRowIndex = element && !isEmptyRow &&
+            this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
+                element.getAttribute('data-uid');
+        }
         const canremove: boolean = islastRowIndex || this.dropPosition === 'topSegment';
         if (this.parent.element.getElementsByClassName('e-lastrow-border').length > 0 && element && (islastRowIndex || canremove)) {
             this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
@@ -438,7 +464,7 @@ export class RowDD {
     }
 
     private updateIcon(row: Element[], index: number, args: RowDragEventArgs): string {
-        const rowEle: Element = args.target ? closest(args.target, 'tr') : null;
+        let rowEle: Element = args.target ? closest(args.target, 'tr') : null;
         this.dropPosition = undefined;
         let rowPositionHeight: number = 0;
         this.removeFirstrowBorder(rowEle as HTMLTableRowElement);
@@ -465,7 +491,12 @@ export class RowDD {
             rowPositionHeight = (rowEle as HTMLElement).offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        rowTop = rowPositionHeight + contentHeight + roundOff;
+        if (this.parent.enableVirtualization) {
+            rowTop = rowEle.getBoundingClientRect().top;
+        }
+        else {
+            rowTop = rowPositionHeight + contentHeight + roundOff;
+        }
         const rowBottom: number = rowTop + (row[0] as HTMLElement).offsetHeight;
         const difference: number = rowBottom - rowTop;
         const divide: number = difference / 3;
@@ -548,7 +579,7 @@ export class RowDD {
     private addLastRowborder(trElement: HTMLTableRowElement): void {
         const isEmptyRow: boolean = trElement && (trElement.classList.contains('e-emptyrow') ||
         trElement.classList.contains('e-columnheader') || trElement.classList.contains('e-detailrow'));
-        if (trElement && !isEmptyRow && this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
+        if (trElement && !isEmptyRow && this.parent.getRows()[this.parent.getCurrentViewRecords().length - 1].getAttribute('data-uid') ===
             trElement.getAttribute('data-uid')) {
             const bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-border' });
             const gridcontentEle: Element = this.parent.getContent();
@@ -891,7 +922,13 @@ export class RowDD {
                 this.getParentData(record, args.data);
             } else {
                 args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
-                this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
+                if (this.parent.enableVirtualization) {
+                    const index: number = (this.parent.getRowByIndex(args.dropIndex) as any).rowIndex;
+                    this.droppedRecord = tObj.getCurrentViewRecords()[index];
+                }
+                else {
+                    this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
+                }
             }
             let dragRecords: ITreeData[] = [];
             droppedRecord = this.droppedRecord;
@@ -965,6 +1002,7 @@ export class RowDD {
                             childRecords.splice(droppedRecordIndex, 0, draggedRecord);
                             draggedRecord.parentItem = droppedRecord.parentItem;
                             draggedRecord.parentUniqueID = droppedRecord.parentUniqueID;
+                            draggedRecord.level = droppedRecord.level;
                             if (this.parent.parentIdMapping) {
                                 draggedRecord[this.parent.parentIdMapping] = droppedRecord[this.parent.parentIdMapping];
                                 draggedRecord.parentItem = droppedRecord.parentItem;

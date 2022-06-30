@@ -155,10 +155,25 @@ export class VerticalView extends ViewBase implements IRenderer {
 
     public scrollToHour(hour: string, scrollDate?: Date): void {
         const date: Date = this.parent.getStartEndTime(hour);
-        if (isNullOrUndefined(date) || !isNullOrUndefined(scrollDate)) {
+        if (!isNullOrUndefined(scrollDate)) {
+            const headerElement: HTMLElement = this.element.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="' + new Date(util.resetTime(scrollDate)).getTime() + '"]');
+            if (headerElement) {
+                if (this.parent.enableRtl) {
+                    const conWrap: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
+                    this.getScrollableElement().scrollLeft = -(conWrap.offsetWidth - headerElement.offsetLeft - headerElement.offsetWidth);
+                } else {
+                    this.getScrollableElement().scrollLeft = headerElement.offsetLeft;
+                }
+            }
+        }
+        if (isNullOrUndefined(date)) {
             return;
         }
         this.getScrollableElement().scrollTop = this.getTopFromDateTime(date);
+    }
+
+    public scrollToDate(scrollDate: Date): void {
+        this.scrollToHour(null, scrollDate);
     }
 
     public generateColumnLevels(): TdData[][] {
@@ -498,12 +513,11 @@ export class VerticalView extends ViewBase implements IRenderer {
         const wrap: Element = createElement('div', { className: cls.DATE_HEADER_WRAP_CLASS });
         container.appendChild(wrap);
         const tbl: Element = this.createTableLayout();
-        const trEle: Element = createElement('tr');
+        const trEle: Element = createElement('tr', { className: cls.HEADER_ROW_CLASS });
         const rowCount: number = this.colLevels.length;
         const lastLevel: TdData[] = this.colLevels[rowCount - 1];
         for (let i: number = 0; i < rowCount; i++) {
             const ntr: Element = trEle.cloneNode() as Element;
-            addClass([ntr], cls.HEADER_ROW_CLASS);
             const level: TdData[] = this.colLevels[i];
             for (let j: number = 0; j < level.length; j++) {
                 ntr.appendChild(this.createTd(level[j]));
@@ -517,13 +531,13 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public createAllDayRow(table: Element, tdData: TdData[]): void {
-        const ntr: Element = createElement('tr');
-        addClass([ntr], cls.ALLDAY_ROW_CLASS);
+        const ntr: Element = createElement('tr', { className: cls.ALLDAY_ROW_CLASS });
         for (let j: number = 0; j < tdData.length; j++) {
             const td: TdData = <TdData>extend({}, tdData[j]);
             td.className = [cls.ALLDAY_CELLS_CLASS];
             td.type = 'alldayCells';
             const ntd: Element = this.createTd(td);
+            ntd.setAttribute('role', 'gridcell');
             ntd.setAttribute('data-date', td.date.getTime().toString());
             if (!isNullOrUndefined(td.groupIndex)) {
                 ntd.setAttribute('data-group-index', '' + td.groupIndex);
@@ -556,6 +570,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
         if (td.type === 'dateHeader' && td.className.indexOf(cls.HEADER_CELLS_CLASS) >= 0) {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
+            tdEle.setAttribute('role', 'gridcell');
             if (!isNullOrUndefined(td.groupIndex)) {
                 tdEle.setAttribute('data-group-index', '' + td.groupIndex);
             }
@@ -764,6 +779,24 @@ export class VerticalView extends ViewBase implements IRenderer {
             rows.push(row);
         }
         return rows;
+    }
+
+    public getAdjustedDate(startTime: Date): Date {
+        if (!this.parent.activeViewOptions.timeScale.enable) {
+            return new Date(startTime.setHours(0, 0, 0, 0));
+        } else {
+            const timeSlots: TimeSlotData[] = this.getTimeSlotRows();
+            const startDate: Date = new Date(new Date(timeSlots[0].date.getTime()).
+                setHours(startTime.getHours(), startTime.getMinutes(), startTime.getMilliseconds()));
+            for (let i: number = 0; i < timeSlots.length; i++) {
+                if (timeSlots[i].date.getTime() > startDate.getTime()) {
+                    startTime.setHours(
+                        timeSlots[i - 1].date.getHours(), timeSlots[i - 1].date.getMinutes(), timeSlots[i - 1].date.getMilliseconds());
+                    return new Date(startTime);
+                }
+            }
+        }
+        return null;
     }
 
     public destroy(): void {

@@ -8,7 +8,17 @@
 
 ## [Unreleased]
 
-## 20.1.60 (2022-06-14)
+## 20.2.36 (2022-06-30)
+
+### Maps
+
+#### New Features
+
+- GeoJSON data with geometry types like "MultiLineString," "MultiPoint," and "GeometryCollection" can now be displayed in Maps.
+- `#F170451` - `urlTemplate` has been extended to accept tile server URLs from online map providers like ESRI, TomTom, and Mapbox.
+- `#I326902` - Support for legend is provided when markers or sublayers are rendered in the online map providers.
+
+## 20.1.59 (2022-06-07)
 
 ### Maps
 
@@ -35,59 +45,6 @@
 #### Bug Fixes
 
 - `#F173348` - When the Maps control is printed, the position of the markers will now be proper.
-
-## 19.4.56 (2022-03-15)
-
-### Maps
-
-#### Bug Fixes
-
-- `#F173348` - When the Maps control is printed, the position of the markers will now be proper.
-- `#I369134` - When the `initialMarkerSelection` property is set, script errors are no longer thrown.
-
-## 19.4.55 (2022-03-08)
-
-### Maps
-
-#### Bug Fixes
-
-- `#I368368` - Drilldown of the Maps will now work properly in the mobile devices.
-
-## 19.4.53 (2022-02-22)
-
-### Maps
-
-#### Bug Fixes
-
-- `#I367115` - `markerClick` event will be triggered properly in the Maps control.
-
-## 19.4.48 (2022-01-31)
-
-### Maps
-
-#### Bug Fixes
-
-- `#I363761` - Script error will no longer be thrown when the display CSS property for the div element of the Maps control is set to "none".
-
-## 19.4.47 (2022-01-25)
-
-### Maps
-
-#### Bug Fixes
-
-- `#SF-360297` - The position of the zoom toolbar will now be proper when the float CSS style is set as "right" in the parent element of the Maps control.
-
-## 19.4.42 (2022-01-11)
-
-### Maps
-
-#### New Features
-
-- When the `type` property of `legendSettings` property is set to "Markers", the `useMarkerShapes` property is exposed in the `legendSettings` to render the legend item shapes the same as the marker shapes.
-
-#### Bug Fixes
-
-- `#SF-360297` - The position of the marker template will now be proper when the float CSS style is set as "right" in the parent element of the Maps control.
 
 ## 19.4.38 (2021-12-17)
 

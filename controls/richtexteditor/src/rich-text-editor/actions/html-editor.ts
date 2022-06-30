@@ -282,7 +282,7 @@ export class HtmlEditor {
                     }
                 }
             } else if (this.rangeElement === this.parent.inputElement || this.rangeElement.tagName === 'TABLE' ||
-            (!isNullOrUndefined(this.rangeElement.previousElementSibling) && this.rangeElement.previousElementSibling.tagName === 'TABLE')) {
+              (!isNullOrUndefined(this.rangeElement.previousElementSibling) && this.rangeElement.previousElementSibling.tagName === 'TABLE')) {
                 return;
             } else {
                 this.oldRangeElement = (this.rangeElement.previousElementSibling as HTMLElement);

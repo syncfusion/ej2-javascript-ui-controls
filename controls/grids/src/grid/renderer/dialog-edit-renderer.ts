@@ -107,7 +107,7 @@ export class DialogEditRender {
                         isPrimary: true }
                 },
                 { click: this.btnClick.bind(this),
-                    buttonModel: { 
+                    buttonModel: {
                         cssClass: this.parent.cssClass ? 'e-flat' + ' ' + this.parent.cssClass : 'e-flat',
                         content: this.l10n.getConstant('CancelButton') } }]
             },

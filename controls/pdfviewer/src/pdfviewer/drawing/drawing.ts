@@ -129,7 +129,7 @@ export class Drawing {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.pdfViewer.nameTable as any)[(obj as PdfAnnotationBaseModel | PdfFormFieldBaseModel).id] = obj;
         if (obj.formFieldAnnotationType) {
-            this.nodePropertyChange(obj as PdfFormFieldBaseModel, { bounds: {width: obj.bounds.width, height: obj.bounds.height } });
+            this.nodePropertyChange(obj as PdfFormFieldBaseModel, { bounds: { width: obj.bounds.width, height: obj.bounds.height } });
         }
         //Add some methodologies to add the children of group to name table
         return obj;
@@ -171,12 +171,12 @@ export class Drawing {
         let basicElement: DrawingElement;
         const isStamp: boolean = false;
         // eslint-disable-next-line
-        let annotationSettings: any = this.pdfViewer.annotationModule ? this.pdfViewer.annotationModule.findAnnotationSettings(obj): {};
+        let annotationSettings: any = this.pdfViewer.annotationModule ? this.pdfViewer.annotationModule.findAnnotationSettings(obj) : {};
         let annotationMaxHeight: number = 0;
-        let annotationMaxWidth: number  = 0;
+        let annotationMaxWidth: number = 0;
         let annotationMinHeight: number = 0;
         let annotationMinWidth: number = 0;
-        if (annotationSettings.minWidth ||  annotationSettings.maxWidth || annotationSettings.minHeight || annotationSettings.maxHeight) {
+        if (annotationSettings.minWidth || annotationSettings.maxWidth || annotationSettings.minHeight || annotationSettings.maxHeight) {
             annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
             annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
             annotationMinHeight = annotationSettings.minHeight ? annotationSettings.minHeight : 0;
@@ -190,7 +190,7 @@ export class Drawing {
             content = this.initFormFields(obj, content, canvas);
         } else {
             // eslint-disable-next-line max-len
-            content = this.initAnnotationObject(obj, pathContent, content, canvas, isStamp, basicElement, isAnnotationSet, annotationMaxHeight, annotationMaxWidth, annotationMinWidth, annotationMinHeight );
+            content = this.initAnnotationObject(obj, pathContent, content, canvas, isStamp, basicElement, isAnnotationSet, annotationMaxHeight, annotationMaxWidth, annotationMinWidth, annotationMinHeight);
         }
         content.id = obj.id + '_content'; content.relativeMode = 'Object';
         if ((obj as PdfAnnotationBaseModel).shapeAnnotationType !== 'Stamp') {
@@ -233,20 +233,20 @@ export class Drawing {
 
     private initFormFields(obj: PdfFormFieldBaseModel, content: DrawingElement, canvas: Container): DrawingElement {
         switch (obj.formFieldAnnotationType) {
-        case 'Textbox':
-        case 'PasswordField':
-        case 'Checkbox':
-        case 'RadioButton':
-        case 'DropdownList':
-        case 'ListBox':
-        case 'SignatureField':
-        case 'InitialField':
-            // eslint-disable-next-line
-            const htmlContent: DiagramHtmlElement = new DiagramHtmlElement();
-            content = (htmlContent as DrawingElement);
-            content.id = obj.id + '_content';
-            canvas.children.push(content);
-            break;
+            case 'Textbox':
+            case 'PasswordField':
+            case 'Checkbox':
+            case 'RadioButton':
+            case 'DropdownList':
+            case 'ListBox':
+            case 'SignatureField':
+            case 'InitialField':
+                // eslint-disable-next-line
+                const htmlContent: DiagramHtmlElement = new DiagramHtmlElement();
+                content = (htmlContent as DrawingElement);
+                content.id = obj.id + '_content';
+                canvas.children.push(content);
+                break;
         }
         return content;
     }
@@ -254,303 +254,303 @@ export class Drawing {
     // eslint-disable-next-line
     private initAnnotationObject(obj: PdfAnnotationBaseModel, pathContent: PathElement, content: DrawingElement, canvas: Container, isStamp: boolean, basicElement: DrawingElement, isAnnotationSet: boolean, annotationMaxHeight: number, annotationMaxWidth: number, annotationMinWidth: number, annotationMinHeight: number): DrawingElement {
         switch (obj.shapeAnnotationType) {
-        case 'Ellipse':
-            pathContent = new PathElement();
-            pathContent.data = 'M80.5,12.5 C80.5,19.127417 62.59139,24.5 40.5,24.5 C18.40861,24.5 0.5,19.127417 0.5,12.5' +
-                'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z';
-            content = pathContent;
-            canvas.children.push(content);
-            if (obj.enableShapeLabel) {
-                const textLabel: TextElement = this.textElement(obj);
-                textLabel.content = obj.labelContent;
-                textLabel.style.color = obj.fontColor;
-                textLabel.style.strokeColor = obj.labelBorderColor;
-                textLabel.style.fill = obj.labelFillColor;
-                textLabel.style.fontSize = obj.fontSize;
-                textLabel.style.fontFamily = obj.fontFamily;
-                textLabel.style.opacity = obj.labelOpacity;
-                canvas.children.push(textLabel);
-            }
-            break;
-        case 'Path':
-            pathContent = new PathElement();
-            pathContent.data = obj.data;
-            content = pathContent;
-            canvas.children.push(content);
-            break;
-        case 'HandWrittenSignature':
-        case 'Ink':
-            pathContent = new PathElement();
-            pathContent.data = obj.data;
-            pathContent.style.strokeColor = obj.strokeColor;
-            pathContent.style.strokeWidth = obj.thickness;
-            pathContent.style.opacity = obj.opacity;
-            content = pathContent;
-            canvas.children.push(content);
-            break;
-        case 'Polygon':
-            pathContent = new PathElement();
-            pathContent.data = getPolygonPath(obj.vertexPoints);
-            content = pathContent;
-            canvas.children.push(content);
-            break;
-        case 'Stamp':
-            isStamp = true;
-            this.isDynamicStamps = true;
-            if (obj && obj.annotationAddMode && (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation')) {
-                obj.bounds.width = obj.bounds.width - 20;
-                obj.bounds.height = obj.bounds.height - 20;
-            }
-            if (obj.isDynamicStamp) {
-                canvas.horizontalAlignment = 'Left';
+            case 'Ellipse':
+                pathContent = new PathElement();
+                pathContent.data = 'M80.5,12.5 C80.5,19.127417 62.59139,24.5 40.5,24.5 C18.40861,24.5 0.5,19.127417 0.5,12.5' +
+                    'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z';
+                content = pathContent;
+                canvas.children.push(content);
+                if (obj.enableShapeLabel) {
+                    const textLabel: TextElement = this.textElement(obj);
+                    textLabel.content = obj.labelContent;
+                    textLabel.style.color = obj.fontColor;
+                    textLabel.style.strokeColor = obj.labelBorderColor;
+                    textLabel.style.fill = obj.labelFillColor;
+                    textLabel.style.fontSize = obj.fontSize;
+                    textLabel.style.fontFamily = obj.fontFamily;
+                    textLabel.style.opacity = obj.labelOpacity;
+                    canvas.children.push(textLabel);
+                }
+                break;
+            case 'Path':
+                pathContent = new PathElement();
+                pathContent.data = obj.data;
+                content = pathContent;
+                canvas.children.push(content);
+                break;
+            case 'HandWrittenSignature':
+            case 'Ink':
+                pathContent = new PathElement();
+                pathContent.data = obj.data;
+                pathContent.style.strokeColor = obj.strokeColor;
+                pathContent.style.strokeWidth = obj.thickness;
+                pathContent.style.opacity = obj.opacity;
+                content = pathContent;
+                canvas.children.push(content);
+                break;
+            case 'Polygon':
+                pathContent = new PathElement();
+                pathContent.data = getPolygonPath(obj.vertexPoints);
+                content = pathContent;
+                canvas.children.push(content);
+                break;
+            case 'Stamp':
+                isStamp = true;
+                this.isDynamicStamps = true;
+                if (obj && obj.annotationAddMode && (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation')) {
+                    obj.bounds.width = obj.bounds.width - 20;
+                    obj.bounds.height = obj.bounds.height - 20;
+                }
+                if (obj.isDynamicStamp) {
+                    canvas.horizontalAlignment = 'Left';
+                    basicElement = new DrawingElement();
+                    content = basicElement;
+                    content.cornerRadius = 10;
+                    content.style.fill = obj.stampFillColor;
+                    content.style.strokeColor = obj.stampStrokeColor;
+                    canvas.children.push(content);
+                    let textele: TextElement = this.textElement(obj);
+                    textele = new TextElement();
+                    textele.style.fontFamily = 'Helvetica';
+                    textele.style.fontSize = 14;
+                    textele.style.italic = true;
+                    textele.style.bold = true;
+                    textele.style.color = obj.fillColor;
+                    textele.rotateValue = undefined;
+                    textele.content = obj.dynamicText;
+                    textele.relativeMode = 'Point';
+                    textele.margin.left = 10;
+                    textele.margin.bottom = -7;
+                    textele.setOffsetWithRespectToBounds(0, 0.57, null);
+                    textele.relativeMode = 'Point';
+                    canvas.children.push(textele);
+                    // eslint-disable-next-line
+                    let pathContent1: any = new PathElement();
+                    pathContent1.id = randomId() + '_stamp';
+                    pathContent1.data = obj.data;
+                    pathContent1.width = obj.bounds.width;
+                    if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
+                        pathContent1.width = annotationMaxWidth;
+                        obj.bounds.width = annotationMaxWidth;
+                    }
+                    pathContent1.height = obj.bounds.height / 2;
+                    if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
+                        pathContent1.height = annotationMaxHeight / 2;
+                        obj.bounds.height = annotationMaxHeight / 2;
+                    }
+                    pathContent1.rotateValue = undefined;
+                    pathContent1.margin.left = 10;
+                    pathContent1.margin.bottom = -5;
+                    pathContent1.relativeMode = 'Point';
+                    pathContent1.setOffsetWithRespectToBounds(0, 0.1, null);
+                    // eslint-disable-next-line
+                    let content1: any = pathContent1;
+                    pathContent1.style.fill = obj.fillColor;
+                    pathContent1.style.strokeColor = obj.strokeColor;
+                    pathContent1.style.opacity = obj.opacity;
+                    content.width = obj.bounds.width + 20;
+                    content.height = obj.bounds.height + 20;
+                    content.style.opacity = obj.opacity;
+                    canvas.children.push(content1);
+                } else {
+                    canvas.horizontalAlignment = 'Left';
+                    basicElement = new DrawingElement();
+                    content = basicElement;
+                    content.cornerRadius = 10;
+                    content.style.fill = obj.stampFillColor;
+                    content.style.strokeColor = obj.stampStrokeColor;
+                    canvas.children.push(content);
+                    // eslint-disable-next-line
+                    let pathContent1: any = new PathElement();
+                    pathContent1.id = randomId() + '_stamp';
+                    pathContent1.data = obj.data;
+                    pathContent1.width = obj.bounds.width;
+                    if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
+                        pathContent1.width = annotationMaxWidth;
+                        obj.bounds.width = annotationMaxWidth;
+                    }
+                    pathContent1.height = obj.bounds.height;
+                    if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
+                        pathContent1.height = annotationMaxHeight;
+                        obj.bounds.height = annotationMaxHeight;
+                    }
+                    pathContent1.minWidth = pathContent1.width / 2;
+                    pathContent1.minHeight = pathContent1.height / 2;
+                    // eslint-disable-next-line
+                    let content1: any = pathContent1;
+                    pathContent1.style.fill = obj.fillColor;
+                    pathContent1.style.strokeColor = obj.strokeColor;
+                    pathContent1.style.opacity = obj.opacity;
+                    content.width = obj.bounds.width + 20;
+                    content.height = obj.bounds.height + 20;
+                    content.minWidth = pathContent1.width / 2;
+                    content.minHeight = pathContent1.height / 2;
+                    content.style.opacity = obj.opacity;
+                    canvas.children.push(content1);
+                    canvas.minHeight = content.minHeight + 20;
+                    canvas.minWidth = content.minWidth + 20;
+                }
+                break;
+            case 'Image':
+            case 'SignatureImage':
+                // eslint-disable-next-line
+                let pathContent11: any = new ImageElement();
+                pathContent11.source = obj.data;
+                content = pathContent11;
+                content.style.strokeWidth = 0;
+                canvas.children.push(content);
+                break;
+            case 'Rectangle':
                 basicElement = new DrawingElement();
                 content = basicElement;
-                content.cornerRadius = 10;
-                content.style.fill = obj.stampFillColor;
-                content.style.strokeColor = obj.stampStrokeColor;
                 canvas.children.push(content);
+                if (obj.enableShapeLabel) {
+                    const textLabel: TextElement = this.textElement(obj);
+                    textLabel.content = obj.labelContent;
+                    textLabel.style.color = obj.fontColor;
+                    textLabel.style.strokeColor = obj.labelBorderColor;
+                    textLabel.style.fill = obj.labelFillColor;
+                    textLabel.style.fontSize = obj.fontSize;
+                    textLabel.style.fontFamily = obj.fontFamily;
+                    textLabel.style.opacity = obj.labelOpacity;
+                    canvas.children.push(textLabel);
+                }
+                break;
+            case 'Perimeter':
+                pathContent = new PathElement();
+                pathContent.data = 'M80.5,12.5 C80.5,19.127417 62.59139,24.5 40.5,24.5 C18.40861,24.5 0.5,19.127417 0.5,12.5' +
+                    'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z';
+                content = pathContent;
+                setElementStype(obj, pathContent);
+                canvas.children.push(content);
+                basicElement = new DrawingElement();
+                basicElement.id = 'perimeter_' + randomId();
+                basicElement.height = .2;
+                basicElement.width = .2;
+                basicElement.transform = RotateTransform.Self;
+                basicElement.horizontalAlignment = 'Stretch';
+                this.setNodePosition(basicElement, obj);
+                basicElement.rotateAngle = obj.rotateAngle;
+                setElementStype(obj, basicElement);
+                canvas.children.push(basicElement);
+                // eslint-disable-next-line
                 let textele: TextElement = this.textElement(obj);
                 textele = new TextElement();
-                textele.style.fontFamily = 'Helvetica';
-                textele.style.fontSize = 14;
-                textele.style.italic = true;
-                textele.style.bold = true;
-                textele.style.color = obj.fillColor;
-                textele.rotateValue = undefined;
-                textele.content = obj.dynamicText;
-                textele.relativeMode = 'Point';
-                textele.margin.left = 10;
-                textele.margin.bottom = -7;
-                textele.setOffsetWithRespectToBounds(0, 0.57, null);
-                textele.relativeMode = 'Point';
+                textele.content = textele.content = findPointsLength([
+                    { x: obj.bounds.x, y: obj.bounds.y },
+                    { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]).toString();
+                textele.rotateValue = { y: -10, angle: obj.rotateAngle };
                 canvas.children.push(textele);
-                // eslint-disable-next-line
-                let pathContent1: any = new PathElement();
-                pathContent1.id = randomId() + '_stamp';
-                pathContent1.data = obj.data;
-                pathContent1.width = obj.bounds.width;
-                if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
-                    pathContent1.width = annotationMaxWidth;
-                    obj.bounds.width = annotationMaxWidth;
-                }
-                pathContent1.height = obj.bounds.height / 2;
-                if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
-                    pathContent1.height = annotationMaxHeight / 2;
-                    obj.bounds.height = annotationMaxHeight / 2;
-                }
-                pathContent1.rotateValue = undefined;
-                pathContent1.margin.left = 10;
-                pathContent1.margin.bottom = -5;
-                pathContent1.relativeMode = 'Point';
-                pathContent1.setOffsetWithRespectToBounds(0, 0.1, null);
-                // eslint-disable-next-line
-                let content1: any = pathContent1;
-                pathContent1.style.fill = obj.fillColor;
-                pathContent1.style.strokeColor = obj.strokeColor;
-                pathContent1.style.opacity = obj.opacity;
-                content.width = obj.bounds.width + 20;
-                content.height = obj.bounds.height + 20;
-                content.style.opacity = obj.opacity;
-                canvas.children.push(content1);
-            } else {
-                canvas.horizontalAlignment = 'Left';
+                break;
+            case 'Radius':
+                pathContent = new PathElement();
+                pathContent.data = 'M80.5,12.5 C80.5,19.127417 62.59139,24.5 40.5,24.5 C18.40861,24.5 0.5,19.127417 0.5,12.5' +
+                    'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z';
+                content = pathContent;
+                setElementStype(obj, pathContent);
+                canvas.children.push(content);
                 basicElement = new DrawingElement();
-                content = basicElement;
-                content.cornerRadius = 10;
-                content.style.fill = obj.stampFillColor;
-                content.style.strokeColor = obj.stampStrokeColor;
+                basicElement.id = 'radius_' + randomId();
+                basicElement.height = .2;
+                basicElement.width = obj.bounds.width / 2;
+                basicElement.transform = RotateTransform.Self;
+                this.setNodePosition(basicElement, obj);
+                basicElement.rotateAngle = obj.rotateAngle;
+                setElementStype(obj, basicElement);
+                canvas.children.push(basicElement);
+                // eslint-disable-next-line
+                const radiusTextEle: any = this.textElement(obj);
+                if (obj.enableShapeLabel) {
+                    radiusTextEle.style.color = obj.fontColor;
+                    radiusTextEle.style.strokeColor = obj.labelBorderColor;
+                    radiusTextEle.style.fill = obj.labelFillColor;
+                    radiusTextEle.style.fontSize = obj.fontSize;
+                    radiusTextEle.style.fontFamily = obj.fontFamily;
+                    radiusTextEle.style.opacity = obj.labelOpacity;
+                }
+                // eslint-disable-next-line
+                const length: number = findPointsLength([
+                    { x: obj.bounds.x, y: obj.bounds.y },
+                    { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]);
+                if (!this.pdfViewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
+                    radiusTextEle.content = obj.notes;
+                } else {
+                    // eslint-disable-next-line max-len
+                    radiusTextEle.content = this.pdfViewer.annotation.measureAnnotationModule.setConversion((obj.bounds.width / 2) * this.pdfViewer.annotation.measureAnnotationModule.pixelToPointFactor, obj);
+                }
+                radiusTextEle.rotateValue = { y: -10, x: obj.bounds.width / 4, angle: obj.rotateAngle };
+                canvas.children.push(radiusTextEle);
+                break;
+            case 'StickyNotes':
+                // eslint-disable-next-line
+                let pathContent2: any = new ImageElement();
+                pathContent2.source = obj.data;
+                pathContent2.width = obj.bounds.width;
+                pathContent2.height = obj.bounds.height;
+                pathContent2.style.strokeColor = obj.strokeColor;
+                pathContent2.style.strokeWidth = 0;
+                content = pathContent2;
+                canvas.children.push(content);
+                break;
+            case 'SignatureText':
+                //eslint-disable-next-line
+                let rectElements: any = new DrawingElement();
+                rectElements.style.strokeWidth = 0;
+                content = rectElements;
+                content.style.strokeWidth = 0;
+                canvas.style.strokeWidth = 0;
                 canvas.children.push(content);
                 // eslint-disable-next-line
-                let pathContent1: any = new PathElement();
-                pathContent1.id = randomId() + '_stamp';
-                pathContent1.data = obj.data;
-                pathContent1.width = obj.bounds.width;
-                if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
-                    pathContent1.width = annotationMaxWidth;
-                    obj.bounds.width = annotationMaxWidth;
-                }
-                pathContent1.height = obj.bounds.height;
-                if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
-                    pathContent1.height = annotationMaxHeight;
-                    obj.bounds.height = annotationMaxHeight;
-                }
-                pathContent1.minWidth = pathContent1.width / 2;
-                pathContent1.minHeight = pathContent1.height / 2;
+                let signatureText: any = this.textElement(obj);
+                signatureText.style.fontFamily = obj.fontFamily;
+                signatureText.style.fontSize = obj.fontSize;
+                signatureText.style.textAlign = 'Left';
+                signatureText.rotateValue = undefined;
+                signatureText.content = obj.data;
+                signatureText.style.strokeWidth = 0;
+                canvas.children.push(signatureText);
+                break;
+            case 'FreeText':
                 // eslint-disable-next-line
-                let content1: any = pathContent1;
-                pathContent1.style.fill = obj.fillColor;
-                pathContent1.style.strokeColor = obj.strokeColor;
-                pathContent1.style.opacity = obj.opacity;
-                content.width = obj.bounds.width + 20;
-                content.height = obj.bounds.height + 20;
-                content.minWidth = pathContent1.width / 2;
-                content.minHeight = pathContent1.height / 2;
-                content.style.opacity = obj.opacity;
-                canvas.children.push(content1);
-                canvas.minHeight = content.minHeight + 20;
-                canvas.minWidth = content.minWidth + 20;
-            }
-            break;
-        case 'Image':
-        case 'SignatureImage':
-            // eslint-disable-next-line
-            let pathContent11: any = new ImageElement();
-            pathContent11.source = obj.data;
-            content = pathContent11;
-            content.style.strokeWidth = 0;
-            canvas.children.push(content);
-            break;
-        case 'Rectangle':
-            basicElement = new DrawingElement();
-            content = basicElement;
-            canvas.children.push(content);
-            if (obj.enableShapeLabel) {
-                const textLabel: TextElement = this.textElement(obj);
-                textLabel.content = obj.labelContent;
-                textLabel.style.color = obj.fontColor;
-                textLabel.style.strokeColor = obj.labelBorderColor;
-                textLabel.style.fill = obj.labelFillColor;
-                textLabel.style.fontSize = obj.fontSize;
-                textLabel.style.fontFamily = obj.fontFamily;
-                textLabel.style.opacity = obj.labelOpacity;
-                canvas.children.push(textLabel);
-            }
-            break;
-        case 'Perimeter':
-            pathContent = new PathElement();
-            pathContent.data = 'M80.5,12.5 C80.5,19.127417 62.59139,24.5 40.5,24.5 C18.40861,24.5 0.5,19.127417 0.5,12.5' +
-                'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z';
-            content = pathContent;
-            setElementStype(obj, pathContent);
-            canvas.children.push(content);
-            basicElement = new DrawingElement();
-            basicElement.id = 'perimeter_' + randomId();
-            basicElement.height = .2;
-            basicElement.width = .2;
-            basicElement.transform = RotateTransform.Self;
-            basicElement.horizontalAlignment = 'Stretch';
-            this.setNodePosition(basicElement, obj);
-            basicElement.rotateAngle = obj.rotateAngle;
-            setElementStype(obj, basicElement);
-            canvas.children.push(basicElement);
-            // eslint-disable-next-line
-            let textele: TextElement = this.textElement(obj);
-            textele = new TextElement();
-            textele.content = textele.content = findPointsLength([
-                { x: obj.bounds.x, y: obj.bounds.y },
-                { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]).toString();
-            textele.rotateValue = { y: -10, angle: obj.rotateAngle };
-            canvas.children.push(textele);
-            break;
-        case 'Radius':
-            pathContent = new PathElement();
-            pathContent.data = 'M80.5,12.5 C80.5,19.127417 62.59139,24.5 40.5,24.5 C18.40861,24.5 0.5,19.127417 0.5,12.5' +
-                'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z';
-            content = pathContent;
-            setElementStype(obj, pathContent);
-            canvas.children.push(content);
-            basicElement = new DrawingElement();
-            basicElement.id = 'radius_' + randomId();
-            basicElement.height = .2;
-            basicElement.width = obj.bounds.width / 2;
-            basicElement.transform = RotateTransform.Self;
-            this.setNodePosition(basicElement, obj);
-            basicElement.rotateAngle = obj.rotateAngle;
-            setElementStype(obj, basicElement);
-            canvas.children.push(basicElement);
-            // eslint-disable-next-line
-            const radiusTextEle: any = this.textElement(obj);
-            if (obj.enableShapeLabel) {
-                radiusTextEle.style.color = obj.fontColor;
-                radiusTextEle.style.strokeColor = obj.labelBorderColor;
-                radiusTextEle.style.fill = obj.labelFillColor;
-                radiusTextEle.style.fontSize = obj.fontSize;
-                radiusTextEle.style.fontFamily = obj.fontFamily;
-                radiusTextEle.style.opacity = obj.labelOpacity;
-            }
-            // eslint-disable-next-line
-            const length: number = findPointsLength([
-                { x: obj.bounds.x, y: obj.bounds.y },
-                { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]);
-            if (!this.pdfViewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
-                radiusTextEle.content = obj.notes;
-            } else {
-                // eslint-disable-next-line max-len
-                radiusTextEle.content = this.pdfViewer.annotation.measureAnnotationModule.setConversion((obj.bounds.width / 2) * this.pdfViewer.annotation.measureAnnotationModule.pixelToPointFactor, obj);
-            }
-            radiusTextEle.rotateValue = { y: -10, x: obj.bounds.width / 4, angle: obj.rotateAngle };
-            canvas.children.push(radiusTextEle);
-            break;
-        case 'StickyNotes':
-            // eslint-disable-next-line
-            let pathContent2: any = new ImageElement();
-            pathContent2.source = obj.data;
-            pathContent2.width = obj.bounds.width;
-            pathContent2.height = obj.bounds.height;
-            pathContent2.style.strokeColor = obj.strokeColor;
-            pathContent2.style.strokeWidth = 0;
-            content = pathContent2;
-            canvas.children.push(content);
-            break;
-        case 'SignatureText':
-            //eslint-disable-next-line
-            let rectElements: any = new DrawingElement();
-            rectElements.style.strokeWidth = 0;
-            content = rectElements;
-            content.style.strokeWidth = 0;
-            canvas.style.strokeWidth = 0;
-            canvas.children.push(content);
-            // eslint-disable-next-line
-            let signatureText: any = this.textElement(obj);
-            signatureText.style.fontFamily = obj.fontFamily;
-            signatureText.style.fontSize = obj.fontSize;
-            signatureText.style.textAlign = 'Left';
-            signatureText.rotateValue = undefined;
-            signatureText.content = obj.data;
-            signatureText.style.strokeWidth = 0;
-            canvas.children.push(signatureText);   
-            break;
-        case 'FreeText':
-            // eslint-disable-next-line
-            let rectElement: any = new DrawingElement();
-            content = rectElement;
-            canvas.children.push(content);
-            // eslint-disable-next-line
-            let freeTextEle: TextElement = this.textElement(obj);
-            freeTextEle = new TextElement();
-            freeTextEle.style.fontFamily = obj.fontFamily;
-            freeTextEle.style.fontSize = obj.fontSize;
-            freeTextEle.style.textAlign = 'Left';
-            if (obj.textAlign.toLowerCase() === 'center') {
-                freeTextEle.style.textAlign = 'Center';
-            } else if (obj.textAlign.toLowerCase() === 'right') {
-                freeTextEle.style.textAlign = 'Right';
-            } else if (obj.textAlign.toLowerCase() === 'justify') {
-                freeTextEle.style.textAlign = 'Justify';
-            }
-            freeTextEle.style.color = obj.fontColor;
-            freeTextEle.style.bold = obj.font.isBold;
-            freeTextEle.style.italic = obj.font.isItalic;
-            if (obj.font.isUnderline === true) {
-                freeTextEle.style.textDecoration = 'Underline';
-            } else if (obj.font.isStrikeout === true) {
-                freeTextEle.style.textDecoration = 'LineThrough';
-            }
-            freeTextEle.rotateValue = undefined;
-            freeTextEle.content = obj.dynamicText;
-            freeTextEle.style.opacity = obj.opacity;
-            freeTextEle.margin.left = 4;
-            freeTextEle.margin.top = 5 * (obj.fontSize/16);
-            if (this.pdfViewer.freeTextSettings.enableAutoFit) {
-                freeTextEle.style.textWrapping = 'Wrap';
-            } else {
-                freeTextEle.style.textWrapping = 'WrapWithOverflow';
-            }
-            freeTextEle.relativeMode = 'Point';
-            freeTextEle.setOffsetWithRespectToBounds(0, 0, null);
-            freeTextEle.relativeMode = 'Point';
-            canvas.children.push(freeTextEle);
-            break;
+                let rectElement: any = new DrawingElement();
+                content = rectElement;
+                canvas.children.push(content);
+                // eslint-disable-next-line
+                let freeTextEle: TextElement = this.textElement(obj);
+                freeTextEle = new TextElement();
+                freeTextEle.style.fontFamily = obj.fontFamily;
+                freeTextEle.style.fontSize = obj.fontSize;
+                freeTextEle.style.textAlign = 'Left';
+                if (obj.textAlign.toLowerCase() === 'center') {
+                    freeTextEle.style.textAlign = 'Center';
+                } else if (obj.textAlign.toLowerCase() === 'right') {
+                    freeTextEle.style.textAlign = 'Right';
+                } else if (obj.textAlign.toLowerCase() === 'justify') {
+                    freeTextEle.style.textAlign = 'Justify';
+                }
+                freeTextEle.style.color = obj.fontColor;
+                freeTextEle.style.bold = obj.font.isBold;
+                freeTextEle.style.italic = obj.font.isItalic;
+                if (obj.font.isUnderline === true) {
+                    freeTextEle.style.textDecoration = 'Underline';
+                } else if (obj.font.isStrikeout === true) {
+                    freeTextEle.style.textDecoration = 'LineThrough';
+                }
+                freeTextEle.rotateValue = undefined;
+                freeTextEle.content = obj.dynamicText;
+                freeTextEle.style.opacity = obj.opacity;
+                freeTextEle.margin.left = 4;
+                freeTextEle.margin.top = 5 * (obj.fontSize / 16);
+                if (this.pdfViewer.freeTextSettings.enableAutoFit) {
+                    freeTextEle.style.textWrapping = 'Wrap';
+                } else {
+                    freeTextEle.style.textWrapping = 'WrapWithOverflow';
+                }
+                freeTextEle.relativeMode = 'Point';
+                freeTextEle.setOffsetWithRespectToBounds(0, 0, null);
+                freeTextEle.relativeMode = 'Point';
+                canvas.children.push(freeTextEle);
+                break;
         }
         content.id = obj.id + '_content'; content.relativeMode = 'Object';
         if (!isStamp) {
@@ -786,7 +786,7 @@ export class Drawing {
                         }
                     }
                 }
-               // need to add code snippet to remove from z index table   
+                // need to add code snippet to remove from z index table   
             }
         }
 
@@ -797,7 +797,7 @@ export class Drawing {
                 if (this.pdfViewer.formDesignerModule && obj.formFieldAnnotationType) {
                     this.pdfViewer.formFieldCollection.splice(i, 1);
                 }
-                const objects : (PdfFormFieldBaseModel)[] = this.getPageObjects(obj.pageIndex);
+                const objects: (PdfFormFieldBaseModel)[] = this.getPageObjects(obj.pageIndex);
                 for (let j: number = 0; j < objects.length; j++) {
                     if (objects[j].id === obj.id) {
                         objects.splice(j, 1);
@@ -864,7 +864,7 @@ export class Drawing {
         if (diagramLayer) {
             const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
             const width: number = diagramLayer.width / zoom;
-            const height: number = diagramLayer.height / zoom;  
+            const height: number = diagramLayer.height / zoom;
             const ctx: CanvasRenderingContext2D = diagramLayer.getContext('2d');
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
@@ -892,7 +892,7 @@ export class Drawing {
                             refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
                         }
                     }
-                } else{
+                } else {
                     // eslint-disable-next-line
                     renderElement = (this.pdfViewer.nameTable as any)[objects[i].id].wrapper;
                     refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
@@ -1173,7 +1173,7 @@ export class Drawing {
      * @returns {void}
      */
     // eslint-disable-next-line
-    public renderBorder(selector: DrawingElement, canvas: HTMLCanvasElement | SVGElement, currentSelector?: any, transform?: Transforms, enableNode?: number, isBorderTickness?: boolean, isSwimlane?: boolean, isSticky?: boolean) : void {
+    public renderBorder(selector: DrawingElement, canvas: HTMLCanvasElement | SVGElement, currentSelector?: any, transform?: Transforms, enableNode?: number, isBorderTickness?: boolean, isSwimlane?: boolean, isSticky?: boolean): void {
         const wrapper: DrawingElement = selector;
         const options: BaseAttributes = getBaseShapeAttributes(wrapper, transform);
         transform = transform || { scale: 1, tx: 0, ty: 0 };
@@ -1184,7 +1184,7 @@ export class Drawing {
             options.height *= transform.scale;
             options.fill = 'transparent';
             // eslint-disable-next-line max-len
-            const shapeType : PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
+            const shapeType: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
             if (currentSelector && (typeof (currentSelector) !== 'object') && currentSelector !== '') {
                 // eslint-disable-next-line
                 let annotationSelector: any = JSON.parse(currentSelector);
@@ -1236,7 +1236,7 @@ export class Drawing {
             options.width *= transform.scale;
             options.height *= transform.scale;
             // eslint-disable-next-line max-len
-            const shapeType: PdfAnnotationBaseModel  | PdfFormFieldBaseModel  = this.pdfViewer.selectedItems.annotations.length > 0 ? this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel
+            const shapeType: PdfAnnotationBaseModel | PdfFormFieldBaseModel = this.pdfViewer.selectedItems.annotations.length > 0 ? this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel
                 : this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType as PdfFormFieldBaseModel;
             if (currentSelector && (typeof (currentSelector) !== 'object') && currentSelector !== '') {
                 const annotationSelector: AnnotationSelectorSettingsModel = JSON.parse(currentSelector);
@@ -1290,7 +1290,7 @@ export class Drawing {
             }
             options.dashArray = lineDash.toString();
         } else {
-            const annotationSelector:  AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
+            const annotationSelector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
             const borderColor: string = annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
             options.stroke = borderColor;
             options.strokeWidth = annotationSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
@@ -1308,8 +1308,8 @@ export class Drawing {
      * @param {BaseAttributes} options - Specified the base attributes.
      * @returns {void}
      */
-    public getBorderSelector(type : PdfAnnotationBaseModel, options : BaseAttributes) : void {
-        const annotationSelector:  AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
+    public getBorderSelector(type: PdfAnnotationBaseModel, options: BaseAttributes): void {
+        const annotationSelector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         const borderColor: string = isNullOrUndefined(annotationSelector.selectionBorderColor) || annotationSelector.selectionBorderColor === '' ? 'black' : annotationSelector.selectionBorderColor;
         options.stroke = borderColor;
         // eslint-disable-next-line max-len
@@ -1442,11 +1442,11 @@ export class Drawing {
         }
 
         const options: CircleAttributes = getBaseShapeAttributes(wrapper) as CircleAttributes;
-        let shapeType : PdfAnnotationBaseModel;
+        let shapeType: PdfAnnotationBaseModel;
         if (this.pdfViewer.selectedItems.annotations.length > 0 && this.pdfViewer.selectedItems.annotations[0].measureType) {
             shapeType = this.pdfViewer.selectedItems.annotations[0].measureType as PdfAnnotationBaseModel;
-        } else if (this.pdfViewer.selectedItems.formFields.length > 0){
-            shapeType =  this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType as PdfFormFieldBaseModel;
+        } else if (this.pdfViewer.selectedItems.formFields.length > 0) {
+            shapeType = this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType as PdfFormFieldBaseModel;
         } else {
             shapeType = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
         }
@@ -1577,7 +1577,7 @@ export class Drawing {
                 options.width = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
                 // eslint-disable-next-line max-len
                 options.height = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
-            }   else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
+            } else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
                 // eslint-disable-next-line max-len
                 options.radius = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) / 2;
                 // eslint-disable-next-line max-len
@@ -1647,11 +1647,11 @@ export class Drawing {
                     shapeType = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape;
                 } else if ((type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') && this.pdfViewer.handWrittenSignatureSettings && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
                     shapeType = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape;
-                } else if (type === 'Perimeter' &&  this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
+                } else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
                     shapeType = isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape;
-                } else if (type === 'Area' &&  this.pdfViewer.areaSettings.annotationSelectorSettings) {
+                } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
                     shapeType = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape;
-                } else if (type === 'Volume' &&  this.pdfViewer.volumeSettings.annotationSelectorSettings) {
+                } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
                     shapeType = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
                     shapeType = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape;
@@ -1816,7 +1816,7 @@ export class Drawing {
             // eslint-disable-next-line
             let allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             const isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
-            if ((isLock || annotation.annotationSettings.isLock) &&  this.getAllowedInteractions(allowedInteraction)) {
+            if ((isLock || annotation.annotationSettings.isLock) && this.getAllowedInteractions(allowedInteraction)) {
                 allowPermission = true;
             }
         }
@@ -1829,7 +1829,7 @@ export class Drawing {
             isNodeShape = true;
         }
         if (!this.pdfViewer.viewerBase.checkSignatureFormField(element.id) && !nodeConstraints && !isSticky && !isPath && !allowPermission) {
-            if ( isStamp || (isNodeShape && (nodeWidth >= 40 && nodeHeight >= 40) && (resizerLocation === 1 || resizerLocation === 3))) {
+            if (isStamp || (isNodeShape && (nodeWidth >= 40 && nodeHeight >= 40) && (resizerLocation === 1 || resizerLocation === 3))) {
                 //Hide corners when the size is less than 40
                 this.renderCircularHandle(
                     'resizeNorthWest', element, left, top, canvas, true,
@@ -1859,7 +1859,7 @@ export class Drawing {
 
             }
             // eslint-disable-next-line max-len
-            if ( (!isStamp && !isNodeShape) || (isNodeShape && (resizerLocation === 2 || resizerLocation === 3 || (!(nodeWidth >= 40 && nodeHeight >= 40) && resizerLocation === 1)))) {
+            if ((!isStamp && !isNodeShape) || (isNodeShape && (resizerLocation === 2 || resizerLocation === 3 || (!(nodeWidth >= 40 && nodeHeight >= 40) && resizerLocation === 1)))) {
                 this.renderCircularHandle(
                     'resizeNorth', element, left + width / 2, top, canvas,
                     true, constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
@@ -1886,7 +1886,7 @@ export class Drawing {
             }
         }
         if ((shapeType === 'Textbox' || shapeType === 'Checkbox' || shapeType === 'RadioButton' || shapeType === 'SignatureField' || shapeType === 'InitialField' || shapeType === 'DropdownList' ||
-        shapeType === 'ListBox' || shapeType === 'PasswordField')) {
+            shapeType === 'ListBox' || shapeType === 'PasswordField')) {
             this.renderCircularHandle(
                 'resizeNorth', element, left + width / 2, top, canvas,
                 true, constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
@@ -1914,7 +1914,7 @@ export class Drawing {
     }
 
     // eslint-disable-next-line
-    private getAllowedInteractions (allowedInteraction: any): boolean {
+    private getAllowedInteractions(allowedInteraction: any): boolean {
         if (allowedInteraction && allowedInteraction.length > 0) {
             for (let i: number = 0; i < allowedInteraction.length; i++) {
                 if (allowedInteraction[0] !== 'None' && allowedInteraction[i] === 'Resize') {
@@ -1932,11 +1932,11 @@ export class Drawing {
      * @returns {AnnotationResizerLocation} - Returns the annotation resizer location value.
      */
     // eslint-disable-next-line
-    public getResizerLocation(type: PdfAnnotationBaseModel, currentSelector?: any) : AnnotationResizerLocation {
+    public getResizerLocation(type: PdfAnnotationBaseModel, currentSelector?: any): AnnotationResizerLocation {
         // eslint-disable-next-line
-        let resizerLocation : any;
+        let resizerLocation: any;
         {
-            if (currentSelector && typeof(currentSelector) !== 'object' && currentSelector !== '') {
+            if (currentSelector && typeof (currentSelector) !== 'object' && currentSelector !== '') {
                 // eslint-disable-next-line
                 let annotationSelector: any = JSON.parse(currentSelector);
                 // eslint-disable-next-line max-len
@@ -2099,9 +2099,9 @@ export class Drawing {
                 selectorModel.wrapper.children.push(obj.wrapper);
                 this.renderSelector(obj.pageIndex, currentSelector, obj, true);
             } else if (obj && !obj.formFieldAnnotationType) {
-                if (!(obj instanceof Selector) && obj.wrapper.visible && this.pdfViewer.annotationModule){
+                if (!(obj instanceof Selector) && obj.wrapper.visible && this.pdfViewer.annotationModule) {
                     // eslint-disable-next-line
-                    let annotationSettings : any;
+                    let annotationSettings: any;
                     if (obj.annotationSettings) {
                         annotationSettings = obj.annotationSettings;
                         annotationSettings.isLock = JSON.parse(annotationSettings.isLock);
@@ -2137,7 +2137,7 @@ export class Drawing {
      * @returns {void}
      */
     // eslint-disable-next-line
-    public dragSelectedObjects(tx: number, ty: number, pageIndex: number, currentSelector: any,helper: PdfAnnotationBaseModel): boolean {
+    public dragSelectedObjects(tx: number, ty: number, pageIndex: number, currentSelector: any, helper: PdfAnnotationBaseModel): boolean {
         const obj: SelectorModel | PdfAnnotationBaseModel = this.pdfViewer.selectedItems;
         this.drag(obj, tx, ty, currentSelector, helper);
         return true;
@@ -2468,7 +2468,7 @@ export class Drawing {
                 if (actualObject.shapeAnnotationType === 'SignatureText') {
                     actualObject.wrapper.children[1].bounds.width = actualObject.bounds.width;
                     actualObject.wrapper.children[1].desiredSize.width = actualObject.bounds.width;
-                    actualObject.wrapper.children[1].actualSize.width = actualObject.bounds.width; 
+                    actualObject.wrapper.children[1].actualSize.width = actualObject.bounds.width;
                     children[1].horizontalAlignment = 'Center';
                     children[1].verticalAlignment = 'Center';
                     children[1].setOffsetWithRespectToBounds(0, 0, 'Absolute');
@@ -2627,7 +2627,7 @@ export class Drawing {
                     setElementStype(actualObject, actualObject.wrapper.children[i]);
                 }
                 if (actualObject.enableShapeLabel === true) {
-                    if ( actualObject.wrapper.children[i] instanceof TextElement) {
+                    if (actualObject.wrapper.children[i] instanceof TextElement) {
                         actualObject.wrapper.children[i].style.fill = actualObject.labelFillColor;
                     }
                     if ((actualObject.wrapper.children[i] instanceof PathElement && actualObject.measureType === 'Perimeter')) {
@@ -2653,7 +2653,7 @@ export class Drawing {
                             } else {
                                 children[i].content = actualObject.dynamicText;
                             }
-                            children[i].width = actualObject.bounds.width - 8;
+                            children[i].width = actualObject.bounds.width;
                         } else if (actualObject.enableShapeLabel === true && actualObject.measureType) {
                             if (node.labelContent) {
                                 children[i].content = node.labelContent;
@@ -2682,7 +2682,7 @@ export class Drawing {
         if (actualObject && actualObject.formFieldAnnotationType) {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 // eslint-disable-next-line
-                let children: any = actualObject.wrapper.children[0]; 
+                let children: any = actualObject.wrapper.children[0];
                 children.actualSize.width = actualObject.wrapper.desiredSize.width;
                 children.actualSize.height = actualObject.wrapper.desiredSize.height;
             }
@@ -2729,7 +2729,7 @@ export class Drawing {
                         }
                     }
                     /** set text node width less than the parent */
-                    children[i].width = actualObject.bounds.width - 8;
+                    children[i].width = actualObject.bounds.width;
                 }
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
@@ -2752,16 +2752,16 @@ export class Drawing {
     }
 
     private fontSizeCalculation(actualObject: any, element: any, boundsWidth: number): number {
-        var canvas =  <HTMLCanvasElement>document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + actualObject.pageIndex);
+        var canvas = <HTMLCanvasElement>document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + actualObject.pageIndex);
         const context = canvas.getContext("2d");
         var textwidth = 0;
         var newsize = 0;
         var fontStyle = '';
         if (element.style.italic && element.style.bold) {
             fontStyle = 'bold italic ';
-        } else if(element.style.bold) {
+        } else if (element.style.bold) {
             fontStyle = 'bold ';
-        } else if(element.style.italic) {
+        } else if (element.style.italic) {
             fontStyle = 'italic ';
         }
         while (boundsWidth > textwidth) {
@@ -3016,45 +3016,45 @@ export class Drawing {
         const transformMatrix: Matrix = identityMatrix();
         rotateMatrix(transformMatrix, angle, offsetX, offsetY);
         switch (cornerPoint.x) {
-        case 1:
-            switch (cornerPoint.y) {
             case 1:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w, y: y + h }));
+                switch (cornerPoint.y) {
+                    case 1:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w, y: y + h }));
+                        break;
+                    case 0:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w, y: y }));
+                        break;
+                    case 0.5:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w, y: y + h / 2 }));
+                        break;
+                }
                 break;
             case 0:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w, y: y }));
+                switch (cornerPoint.y) {
+                    case 0.5:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x, y: y + h / 2 }));
+                        break;
+                    case 1:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x, y: y + h }));
+                        break;
+                    case 0:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x, y: y }));
+                        break;
+                }
                 break;
             case 0.5:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w, y: y + h / 2 }));
+                switch (cornerPoint.y) {
+                    case 0:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w / 2, y: y }));
+                        break;
+                    case 0.5:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w / 2, y: y + h / 2 }));
+                        break;
+                    case 1:
+                        pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w / 2, y: y + h }));
+                        break;
+                }
                 break;
-            }
-            break;
-        case 0:
-            switch (cornerPoint.y) {
-            case 0.5:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x, y: y + h / 2 }));
-                break;
-            case 1:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x, y: y + h }));
-                break;
-            case 0:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x, y: y }));
-                break;
-            }
-            break;
-        case 0.5:
-            switch (cornerPoint.y) {
-            case 0:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w / 2, y: y }));
-                break;
-            case 0.5:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w / 2, y: y + h / 2 }));
-                break;
-            case 1:
-                pivotPoint = transformPointByMatrix(transformMatrix, ({ x: x + w / 2, y: y + h }));
-                break;
-            }
-            break;
         }
         return { x: pivotPoint.x, y: pivotPoint.y };
     }
@@ -3248,11 +3248,11 @@ export class Drawing {
             for (const item of selectedItems) {
                 // eslint-disable-next-line
                 if ((this.pdfViewer.nameTable as any)[item.id]) {
-                    if(!item.formFieldAnnotationType) { 
-                        if((item as PdfAnnotationBaseModel).annotName)
+                    if (!item.formFieldAnnotationType) {
+                        if ((item as PdfAnnotationBaseModel).annotName)
                             this.pdfViewer.annotationModule.deleteAnnotationById((item as PdfAnnotationBaseModel).annotName);
                         else
-                           this.pdfViewer.annotationModule.deleteAnnotation();
+                            this.pdfViewer.annotationModule.deleteAnnotation();
                     } else {
                         this.pdfViewer.clearSelection(item.pageIndex);
                         this.pdfViewer.formDesignerModule.deleteFormField((item as PdfFormFieldBaseModel).id);
@@ -3293,6 +3293,15 @@ export class Drawing {
                     this.pdfViewer.clearSelection(index);
                 }
                 for (const copy of copiedItems) {
+                    copy.id += randomId();
+                    let fieldName = this.splitFormFieldName(copy);
+                    let maxNumber = 0;// this.pdfViewer.formFieldCollection.length;
+                    if (this.pdfViewer.formDesigner) {
+                        this.pdfViewer.formDesigner.setFormFieldIndex();
+                        maxNumber = this.pdfViewer.formDesigner.formFieldIndex;
+                        (copy as any).name = fieldName + maxNumber;
+
+                    }
                     // eslint-disable-next-line
                     (objectTable as any)[copy.id] = copy;
                 }
@@ -3356,7 +3365,11 @@ export class Drawing {
                             // eslint-disable-next-line max-len
                             alignment: (addedAnnot as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (addedAnnot as PdfFormFieldBaseModel).visibility, maxLength: (addedAnnot as PdfFormFieldBaseModel).maxLength, isRequired: (addedAnnot as PdfFormFieldBaseModel).isRequired,
                             // eslint-disable-next-line max-len
-                            isPrint: addedAnnot.isPrint, isSelected: (addedAnnot as PdfFormFieldBaseModel).isSelected, isChecked: (addedAnnot as PdfFormFieldBaseModel).isChecked, tooltip:  (addedAnnot as PdfFormFieldBaseModel).tooltip, bounds: addedAnnot.bounds as IFormFieldBound, thickness: addedAnnot.thickness, borderColor: (addedAnnot as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (addedAnnot as PdfFormFieldBaseModel).signatureIndicatorSettings };
+                            isPrint: addedAnnot.isPrint, isSelected: (addedAnnot as PdfFormFieldBaseModel).isSelected, isChecked: (addedAnnot as PdfFormFieldBaseModel).isChecked, tooltip: (addedAnnot as PdfFormFieldBaseModel).tooltip, bounds: addedAnnot.bounds as IFormFieldBound, thickness: addedAnnot.thickness, borderColor: (addedAnnot as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (addedAnnot as PdfFormFieldBaseModel).signatureIndicatorSettings
+                        };
+                        if ((addedAnnot as PdfFormFieldBaseModel).options && (addedAnnot as PdfFormFieldBaseModel).options.length > 0) {
+                            formField.options = (addedAnnot as PdfFormFieldBaseModel).options;
+                        }
                         this.pdfViewer.formFieldCollections.push(formField);
                         // eslint-disable-next-line max-len
                         this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageIndex, this.pdfViewer);
@@ -3372,6 +3385,41 @@ export class Drawing {
         }
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
     }
+
+    private splitFormFieldName(obj: any) {
+        // eslint-disable-next-line
+        let field = null;
+        if (obj) {
+            switch (obj.formFieldAnnotationType) {
+                case 'Textbox':
+                    field = "Textbox";
+                    break;
+                case 'PasswordField':
+                    field = "Password";
+                    break;
+                case 'Checkbox':
+                    field = "Check Box";
+                    break;
+                case 'RadioButton':
+                    field = "Radio Button";
+                    break;
+                case 'DropdownList':
+                    field = "Dropdown";
+                    break;
+                case 'ListBox':
+                    field = "List Box";
+                    break;
+                case 'SignatureField':
+                    field = "Signature";
+                    break;
+                case 'InitialField':
+                    field = "Initial";
+                    break;
+            }
+        }
+        return field;
+    }
+
     private calculateCopyPosition(copy: PdfAnnotationBaseModel, pageDiv: HTMLElement, events: MouseEvent): void {
         let zoomfactor: number = this.pdfViewer.viewerBase.getZoomFactor();
         let x1: number;
@@ -3385,7 +3433,7 @@ export class Drawing {
                     x1 = copy.vertexPoints[i].x;
                     y1 = copy.vertexPoints[i].y;
                     copy.vertexPoints[i].x = (events.clientX - pageCurrentRect.left) / zoomfactor;
-                    copy.vertexPoints[i].y = (events.clientY - pageCurrentRect.top)  / zoomfactor;
+                    copy.vertexPoints[i].y = (events.clientY - pageCurrentRect.top) / zoomfactor;
                     x2 = copy.vertexPoints[i].x;
                     y2 = copy.vertexPoints[i].y;
                 } else {

@@ -72,11 +72,8 @@ export class Bubble {
             isNaN(shapeData[layer.shapeDataPath]) ? shapeData[layer.shapeDataPath].toLowerCase() : shapeData[layer.shapeDataPath];
             const shapePathValue : string =  !isNullOrUndefined(shape[shapePath]) && isNaN(shape[shapePath])
                 ? shape[shapePath].toLowerCase() : shape[shapePath];
-            if (shapeDataLayerPathValue === shapePathValue && layerData[i].type !== 'LineString') {
-                if (layerData[i]['type'] === 'Point') {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    shapePoints.push(this.getPoints(<any[]>layerData[i], []));
-                } else if (!layerData[i]['_isMultiPolygon']) {
+            if (shapeDataLayerPathValue === shapePathValue && (layerData[i].type !== 'LineString' && layerData[i].type !== 'MultiLineString' && layerData[i]['type'] !== 'Point' && layerData[i]['type'] !== 'MultiPoint')) {
+                if (!layerData[i]['_isMultiPolygon']) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     shapePoints.push(this.getPoints(layerData[i] as any[], []));
                     currentLength = shapePoints[shapePoints.length - 1].length;

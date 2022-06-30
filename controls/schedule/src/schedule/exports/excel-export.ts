@@ -3,7 +3,7 @@ import { Workbook, Worksheet, Worksheets, Column } from '@syncfusion/ej2-excel-e
 import { Schedule } from '../base/schedule';
 import { ExcelFormat } from '../base/type';
 import { ExportFieldInfo, ExportOptions } from '../base/interface';
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Excel Export Module
@@ -21,6 +21,10 @@ export class ExcelExport {
         const exportName: string = excelExportOptions.fileName || 'Schedule';
         const exportType: ExcelFormat = excelExportOptions.exportType || 'xlsx';
         const isIncludeOccurrences: boolean = excelExportOptions.includeOccurrences || false;
+        let separator: string;
+        if (!isNullOrUndefined(excelExportOptions.separator) && excelExportOptions.separator !== ',') {
+            separator = excelExportOptions.separator;
+        }
         let eventCollection: Record<string, any>[];
         if (excelExportOptions.customData) {
             eventCollection = !isIncludeOccurrences ? excelExportOptions.customData :
@@ -28,10 +32,10 @@ export class ExcelExport {
         } else {
             eventCollection = !isIncludeOccurrences ? this.parent.eventsData : this.parent.eventsProcessed;
         }
-        this.processWorkbook(exportColumns, exportName, exportType, eventCollection);
+        this.processWorkbook(exportColumns, exportName, exportType, eventCollection, separator);
     }
 
-    private processWorkbook(fields: ExportFieldInfo[], name: string, type: ExcelFormat, eventCollection: Record<string, any>[]): void {
+    private processWorkbook(fields: ExportFieldInfo[], name: string, type: ExcelFormat, eventCollection: Record<string, any>[], separator: string): void {
         const columns: Column[] = [];
         const rows: Record<string, any>[] = [];
         const columnHeader: Record<string, any>[] = [];
@@ -52,7 +56,7 @@ export class ExcelExport {
             rows.push({ index: i + 2, cells: columnData });
         });
         const workSheet: Worksheets = [{ columns: columns, rows: rows } as Worksheet];
-        const book: Workbook = new Workbook({ worksheets: workSheet }, type, this.parent.locale);
+        const book: Workbook = new Workbook({ worksheets: workSheet }, type, this.parent.locale, undefined, separator);
         book.save(name + '.' + type);
     }
 

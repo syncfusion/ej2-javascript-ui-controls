@@ -2,7 +2,7 @@
 import { RevisionType } from '../../base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget } from '../viewer/page';
+import { ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
@@ -51,7 +51,6 @@ export class Revision {
      */
     private canSkipTableItems: boolean = false;
     private skipUnLinkElement: boolean = false;
-
     public constructor(documentHelper: DocumentEditor, author: string, date: string) {
         this.author = author;
         this.date = date;
@@ -124,20 +123,49 @@ export class Revision {
             this.owner.editor.updateHeaderFooterWidget();
         }
     }
-
+    private handleGroupAcceptReject(isAccept?: boolean): void {
+        if (this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
+            this.owner.editor.initComplexHistory(isAccept? 'Accept All': 'Reject All');
+            let groupingAcceptReject: Revision[] = this.owner.trackChangesPane.tableRevisions.get(this);
+            for (let i: number = 0; i < groupingAcceptReject.length; i++) {
+                if (isAccept) {
+                    groupingAcceptReject[i].handleAcceptReject(true);
+                } else {
+                    groupingAcceptReject[i].handleAcceptReject(false);
+                }
+            }
+            if (this.owner.editorHistory) {
+                this.owner.editorHistory.updateComplexHistory();
+            }
+        }
+    }
     /**
      * Method which accepts the selected revision, revision marks will be removed and changes will be included in the viewer.
      *
      * @returns {void}
      */
     public accept(): void {
-        this.handleAcceptReject(true);
+        if (!this.owner.documentHelper.isTrackedOnlyMode) {
+            if (!this.owner.revisions.skipGroupAcceptReject && this.range[0] instanceof WRowFormat
+                && this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
+                this.handleGroupAcceptReject(true);
+            } else {
+                this.handleAcceptReject(true);
+            }
+        }
     }
     /**
      * Method which rejects the selected revision, revision marks will be removed leaving the original content.
      */
     public reject(): void {
-        this.handleAcceptReject(false);
+        if (!this.owner.documentHelper.isTrackedOnlyMode) {
+            if (!this.owner.revisions.skipGroupAcceptReject && this.range[0] instanceof WRowFormat
+                && this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
+                this.handleGroupAcceptReject(false);
+            } else {
+                this.handleAcceptReject(false);
+            }
+        }
     }
     /**
      * Unlinks revision and its assosiated range 
@@ -326,10 +354,6 @@ export class Revision {
         this.owner.editor.unLinkFieldCharacter(element);
         let elementIndex: number = element.line.children.indexOf(element);
         element.line.children.splice(elementIndex, 1);
-        let paraFloatingElementIndex: number = element.line.paragraph.floatingElements.indexOf(element as ShapeBase);
-        element.line.paragraph.floatingElements.splice(paraFloatingElementIndex, 1);
-        let blockFloatingElementIndex: number = element.line.paragraph.bodyWidget.floatingElements.indexOf(element as ShapeBase);
-        element.line.paragraph.bodyWidget.floatingElements.splice(blockFloatingElementIndex, 1);
         this.owner.editor.removeEmptyLine(paraWidget);
     }
 
@@ -382,6 +406,10 @@ export class RevisionCollection {
      */
     public changes: Revision[] = [];
     private owner: DocumentEditor;
+    /**
+     * @private
+     */
+    public skipGroupAcceptReject: boolean = false;
 
     /**
      * @private
@@ -414,7 +442,7 @@ export class RevisionCollection {
      * @returns {void}
      */
     public acceptAll(): void {
-        if (!this.owner.isReadOnly) {
+        if (!this.owner.isReadOnly && !this.owner.documentHelper.isTrackedOnlyMode) {
             this.handleRevisionCollection(true);
         }
     }
@@ -424,7 +452,7 @@ export class RevisionCollection {
      * @returns {void}
      */
     public rejectAll(): void {
-        if (!this.owner.isReadOnly) {
+        if (!this.owner.isReadOnly && !this.owner.documentHelper.isTrackedOnlyMode) {
             this.handleRevisionCollection(false);
         }
     }
@@ -436,6 +464,7 @@ export class RevisionCollection {
      * @returns {void}
      */
     public handleRevisionCollection(isfromAcceptAll: boolean, changes?: Revision[]): void {
+        this.skipGroupAcceptReject = true;
         let selection: Selection = this.owner.selection;
         let startPos: TextPosition = selection.start;
         let endPos: TextPosition = selection.end;
@@ -470,6 +499,7 @@ export class RevisionCollection {
             this.owner.editorHistory.updateComplexHistory();
         }
         this.owner.editor.reLayout(this.owner.selection, false);
+        this.skipGroupAcceptReject = false;
     }
 
     public destroy(): void {

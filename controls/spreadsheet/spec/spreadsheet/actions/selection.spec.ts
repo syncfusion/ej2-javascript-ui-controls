@@ -1,5 +1,6 @@
 import { Spreadsheet, setCellFormat } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
+import { filterData } from '../util/datasource.spec';
 
 export function checkPosition(ele: HTMLElement, pos: string[], isRtl?: boolean) {
     expect(ele.style.top).toBe(pos[0]);
@@ -178,9 +179,14 @@ describe('Selection ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I316931, I31444, EJ2-60472, EJ2-60423 ->', () => {
+        describe('I316931, I31444, EJ2-60472, EJ2-60868 ->', () => {
+            let selectedRange: string;
             beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 2, cells: [{ value: 'Welcome to Spreadsheet!!!', wrap: true }] }], selectedRange: 'D4' }] }, done);
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 2, cells: [{ value: 'Welcome to Spreadsheet!!!', wrap: true }, { formula: '=SUM(A1:A2)' }] }], selectedRange: 'D4' }],
+                    select: (args) => {
+                        selectedRange = args.range;
+                    }
+                }, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
@@ -236,28 +242,13 @@ describe('Selection ->', () => {
                     });
                 });
             });
-            it('Unfrozen columns getting scrolled while selecting the frozen column cells', (done: Function) => {
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.freezePanes(0,3);
+            it('Select event not triggered after clicking the formula applied cells', (done: Function) => {
+                helper.invoke('selectRange', ['B2']);
+                helper.invoke('selectRange', ['A1']);
                 setTimeout(() => {
-                    helper.invoke('goTo', ['Z1']);
-                    setTimeout(() => {
-                        helper.invoke('selectRange', ['C1']);
-                        var startCell = helper.invoke('getCell', [0, 2]);
-                        var endCell = helper.invoke('getCell', [5, 2]);
-                        var startOffset = startCell.getBoundingClientRect() as DOMRect;
-                        var endOffset = endCell.getBoundingClientRect() as DOMRect;
-                        let sheetContentLeft: number = spreadsheet.getMainContent().scrollLeft;
-                        helper.triggerMouseAction('mousedown', { x: startOffset.left + 1, y: startOffset.top + 1 }, null, startCell);
-                        helper.getInstance().selectionModule.mouseMoveHandler({ target: startCell, clientX: startOffset.left + 1, clientY: startOffset.top + 1 });
-                        helper.getInstance().selectionModule.mouseMoveHandler({ target: endCell, clientX: endOffset.left + 1, clientY: endOffset.top + 1 });
-                        helper.triggerMouseAction('mouseup', { x: endOffset.left + 1, y: endOffset.top + 1 }, document, endCell);
-                        setTimeout((): void => {
-                            expect(spreadsheet.getMainContent().scrollLeft).toBe(sheetContentLeft);
-                            expect(spreadsheet.sheets[0].selectedRange).toBe('C1:C6');
-                            done();
-                        });
-                    });
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                    expect(selectedRange).toBe('A1:A1');
+                    done();
                 });
             });
         });
@@ -480,6 +471,55 @@ describe('Selection ->', () => {
                 helper.invoke('goTo', ['F5']); // While double click in formula bar, the goTo method will invoked in source.
                 expect(helper.getElement('#' + helper.id + ' .e-scroller').scrollLeft).toBe(0);
                 done();
+            });
+        });
+        describe('EJ2-52984->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ value: 'Romona Heaslip\nHi\noy\nhello' }] }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it(' setRowHeight is not working properly for data with \n->', (done: Function) => {
+                helper.invoke('setRowHeight', [20]);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
+                    expect(helper.getElement().querySelector('.e-active-cell').style.height).toBe('20px');
+                    done();
+                });
+            });
+        });
+        describe('EJ2-51718->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ value: 'OrderID' }, { value: 'RequiredStartDate' }, { value: 'RequiredStartTime' }, { value: 'RequiredFinishDate' }, { value: 'RequiredFinishTime' },{ value: 'planningNotes' }] },
+                    { cells: [{ value: '10250' }, { value: '15/02/1998' }, { value: '2/20/2020' }, { value: '25/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] },
+                    { cells: [{ value: '10251' }, { value: '16/02/1998' }, { value: '10/10/2010' }, { value: '30/02/1998' }, { value: '1:10:00 PM' },{ value: '' }] },
+                    { cells: [{ value: '10252' }, { value: '17/02/1998' }, { value: '10/10/2010' }, { value: '20/02/1998' }, { value: '1:10:00 PM' },{ value: '' }] },
+                    { cells: [{ value: '10253' }, { value: '18/02/1998' }, { value: '10/10/2010' }, { value: '23/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] },
+                    { cells: [{ value: '10254' }, { value: '19/02/1998' }, { value: '10/10/2010' }, { value: '24/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix row header misalignment issue and row height issue during scrolling->', (done: Function) => {
+                helper.invoke('applyFilter', [[{ field: 'A', predicate: 'or', operator: 'equal', value: '10250' }], 'A1:E1']);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['A100']);
+                    setTimeout(() => {
+                        helper.invoke('goTo', ['A1']);
+                        setTimeout(() => {
+                            let cellEle: HTMLElement = helper.getElements('.e-active-cell')[0];
+                            let selectionEle: HTMLElement = helper.getElements('.e-selection')[0];
+                            expect(cellEle.style.height).toEqual(selectionEle.style.height);
+                            done();
+                        });
+                    });
+                });
             });
         });
     });

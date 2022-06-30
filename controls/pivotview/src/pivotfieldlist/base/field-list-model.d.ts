@@ -87,6 +87,11 @@ export interface PivotFieldListModel extends ComponentModel{
     allowCalculatedField?: boolean;
 
     /**
+     * It enables the search option in the field list UI, which can be used to search specific fields at runtime.
+     */
+    enableFieldSearching?: boolean;
+
+    /**
      * Allows you to create a pivot button with "Values" as a caption used to display in the field list UI. 
      * It helps you to plot the value fields to either column or row axis during runtime.
      * > The showValuesButton property is enabled by default for the OLAP data source. 

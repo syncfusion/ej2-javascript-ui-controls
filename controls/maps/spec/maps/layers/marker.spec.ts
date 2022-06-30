@@ -901,15 +901,10 @@ describe('Map marker properties tesing', () => {
         });
         it('Marker checking with Bing map', () => {
             map.loaded = (args: ILoadedEventArgs) => {
+                setTimeout(() => {
                 let element: Element = document.getElementById(map.element.id + '_Markers_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
-            };
-            map.load = (args: ILoadEventArgs) => {
-                let bing: BingMap = new BingMap(map);
-                bing.imageUrl = imageUrl;
-                bing.maxZoom = zoomMax;
-                bing.subDomains = subDomains;
-                map.mapLayerPanel["bing"] = bing;
+                }, 1000);
             };
             map.layers[0].markerSettings = [{
                 visible: true,
@@ -920,10 +915,10 @@ describe('Map marker properties tesing', () => {
                 { Name: "India", latitude: 21.0000, longitude: 78.0000 },
                 { Name: "China", latitude: 35.0000, longitude: 103.0000 },
                 { Name: "Indonesia", latitude: -6.1750, longitude: 106.8283 }]
-            }]
+            }];
+            map.layers[0].urlTemplate = 'https://{subdomain}.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/{quadkey}?mkt=en-US&it=G,L&shading=hill&og=1885&n=z';
             map.refresh();
         });
-
         it('Marker template checking with OSM map', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
@@ -1338,9 +1333,9 @@ describe('Map marker properties tesing', () => {
                     pageX: element.getBoundingClientRect().left,
                     pageY: element.getBoundingClientRect().top
                 };
-                expect(map.scale === 1).toBe(true);
+                expect(map.scale === 1.03).toBe(true);
                 map.zoomModule.click(<PointerEvent>eventObj);
-                expect(map.scale === 2).toBe(true);
+                expect(map.scale === 2.0300000000000002).toBe(true);
             };
             map.zoomSettings.zoomOnClick = true;
             map.layers[0].layerType = 'Geometry';

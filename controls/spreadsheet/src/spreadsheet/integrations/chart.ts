@@ -671,10 +671,12 @@ export class SpreadsheetChart {
             this.parent.createElement('div', {
                 id: chart.id, className: chart.id
             });
+        const theme: ChartTheme = chart.theme || 'Material';
         if (chart.type !== 'Pie' && chart.type !== 'Doughnut') {
             this.chart = new Chart({
                 primaryXAxis: primaryXAxis,
                 primaryYAxis: primaryYAxis,
+                background: this.getThemeBgColor(theme),
                 chartArea: {
                     border: {
                         width: 0
@@ -682,7 +684,7 @@ export class SpreadsheetChart {
                 },
                 title: chart.title,
                 legendSettings: legendSettings,
-                theme: chart.theme,
+                theme: theme,
                 series: chartOptions.series as SeriesModel[],
                 tooltip: {
                     enable: true
@@ -690,9 +692,7 @@ export class SpreadsheetChart {
                 width: element.style.width,
                 height: element.style.height,
                 load: (args: ILoadedEventArgs) => {
-                    let selectedTheme: string = chart.theme;
-                    selectedTheme = selectedTheme ? selectedTheme : 'Material';
-                    args.chart.theme = selectedTheme as ChartTheme;
+                    args.chart.theme = chart.theme || 'Material';
                 },
                 beforeResize: (args: IBeforeResizeEventArgs) => {
                     args.cancelResizedEvent = true; // This is for cancel the resized event.
@@ -703,7 +703,8 @@ export class SpreadsheetChart {
             this.chart = new AccumulationChart({
                 title: chart.title,
                 legendSettings: legendSettings,
-                theme: chart.theme,
+                theme: theme,
+                background: this.getThemeBgColor(theme),
                 series: chartOptions.series as AccumulationSeriesModel[],
                 width: element.style.width,
                 height: element.style.height,
@@ -711,9 +712,7 @@ export class SpreadsheetChart {
                 enableSmartLabels: true,
                 enableAnimation: true,
                 load: (args: IAccLoadedEventArgs) => {
-                    let selectedTheme: string = chart.theme;
-                    selectedTheme = selectedTheme ? selectedTheme : 'Material';
-                    args.chart.theme = selectedTheme as ChartTheme;
+                    args.chart.theme = chart.theme || 'Material';
                 },
                 beforeResize: (args: IBeforeResizeEventArgs) => {
                     args.cancelResizedEvent = true; // This is for cancel the resized event.
@@ -1102,7 +1101,8 @@ export class SpreadsheetChart {
     }
 
     private chartDesignTabHandler(
-        args: { switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string, id?:string, title?:string, triggerEvent?: boolean }): void {
+        args: { switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string, id?:string, title?:string,
+            triggerEvent?: boolean }): void {
         let isAccumulationChart: boolean = false;
         const sheet: SheetModel = this.parent.sheets[this.parent.activeSheetIndex];
         const switchRowColumn: boolean = args.switchRowColumn;
@@ -1194,15 +1194,47 @@ export class SpreadsheetChart {
         chartComp.series = chartSeries;
     }
 
-    private switchChartTheme(chartCollId: number, chartId: string, theme: ChartTheme, chartComp: Chart | AccumulationChart, cell: CellModel): void {
+    private switchChartTheme(
+        chartCollId: number, chartId: string, theme: ChartTheme, chartComp: Chart | AccumulationChart, cell: CellModel): void {
         this.parent.chartColl[chartCollId].theme = theme;
         for (let idx: number = 0, chartCount: number = cell.chart.length; idx < chartCount; idx++) {
             if (cell.chart[idx].id === chartId) {
                 cell.chart[idx].theme = theme;
             }
         }
-        chartComp.theme = theme;
+        chartComp.setProperties({ theme: theme, background: this.getThemeBgColor(theme) }, true);
         chartComp.refresh();
+    }
+
+    private getThemeBgColor(theme: ChartTheme): string {
+        let bg: string;
+        if (theme.includes('Dark')) {
+            switch (theme) {
+                case 'MaterialDark':
+                    bg = '#383838';
+                    break;
+                case 'FabricDark':
+                    bg = '#242424';
+                    break;
+                case 'BootstrapDark':
+                    bg = '#1b1b1b';
+                    break;
+                case 'Bootstrap5Dark':
+                    bg = '#212529';
+                    break;
+                case 'TailwindDark':
+                    bg = '#1f2937';
+                    break;
+                case 'FluentDark':
+                    bg = '#1b1a19';
+                    break;
+            }
+        } else if (theme.includes('HighContrast')) {
+            bg = '#000000';
+        } else {
+            bg = '#FFFFFF';
+        }
+        return bg;
     }
 
     private switchChartType(chartCollId: number, chartId: string, chartType: ChartType, chartComp: Chart | AccumulationChart, cell: CellModel): void {

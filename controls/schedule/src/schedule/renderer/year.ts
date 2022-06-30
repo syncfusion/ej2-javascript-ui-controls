@@ -332,7 +332,8 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public endDate(): Date {
-        return this.parent.currentView === 'Year' ? util.addDays(util.getWeekLastDate(this.getEndDate(), this.parent.firstDayOfWeek), 1) : this.getEndDate();
+        return this.parent.currentView === 'Year' ? util.addDays(util.getWeekLastDate(this.getEndDate(), this.parent.firstDayOfWeek), 1) :
+            util.addDays(this.getEndDate(), 1);
     }
 
     public getEndDateFromStartDate(start: Date): Date {

@@ -366,3 +366,150 @@ describe('Testing Object Sorting - 3', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
+
+
+describe('Connector Allow Drop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'Allow_drop' });
+        document.body.appendChild(ele);
+        
+        let port1={id:"port1",shape:"square",offset:{x:0,y:0.5} }
+        let port2={id:"port2",shape:"square",offset:{x:1,y:0.5}}   
+let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150,annotations: [{ content: 'node1' } ], };
+let node2: NodeModel = {
+    id: 'node2', width: 100, height: 100, offsetX: 650, offsetY: 150,annotations: [{ content: 'node2' } ],
+    constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+};
+ let node3 = {
+    id: 'node3', width: 100, height: 100, offsetX: 490, offsetY: 290,annotations: [{ content: 'node3' } ],
+    constraints: NodeConstraints.Default |NodeConstraints.AllowDrop
+};
+let node4 = {
+    id: 'node4', width: 100, height: 100, offsetX: 150, offsetY: 450, annotations: [{ content: 'node4' }],
+}
+let node5 = {
+    id: 'node5', width: 100, height: 100, offsetX: 150, offsetY: 650, annotations: [{ content: 'node5' }],
+}
+let node6 = {
+    id: 'node6', width: 100, height: 100, offsetX: 290, offsetY: 290, annotations: [{ content: 'node6' }],
+};
+let node7 = {
+    id: 'node7', width: 100, height: 100, offsetX: 90, offsetY: 290, annotations: [{ content: 'node7' }],
+};
+let node8 = {
+    id: 'node8', width: 100, height: 100, offsetX: 790, offsetY: 290, annotations: [{ content: 'node8' }],
+};
+let node9 = {
+    id: 'node9', width: 100, height: 100, offsetX: 150, offsetY: 850,ports:[port1,port2], annotations: [{ content: 'node9' }],
+};
+let node10 = {
+    id: 'node10', width: 100, height: 100, offsetX: 550, offsetY: 850,ports:[port1], annotations: [{ content: 'node10' }],
+};
+var node11 = {
+    id: 'node11', width: 100, height: 100, offsetX: 990, offsetY: 290, annotations: [{ content: 'node11' }],
+};
+let connector1: ConnectorModel = {
+    id: 'connector1',sourceID:"node1",targetID:"node2",
+    constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+};
+let connector2 = {
+    id: 'connector2', sourceID: "node4",   targetPoint: { x: 500, y: 450 },
+    constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+};
+let connector3 = {
+    id: 'connector3', sourcePoint: { x: 500, y: 650 }, targetID: "node5",
+    constraints: ConnectorConstraints.Default |ConnectorConstraints.AllowDrop
+};
+let connector4={
+    id: 'connector4', sourcePoint: { x: 600, y: 550 },   targetPoint: { x: 800, y: 550 },
+    constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+}
+var connector5 = {
+    id: 'connector5',sourceID: "node9", targetID: "node10",targetPortID: 'port1', sourcePortID: 'port2',
+    constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+};
+    diagram = new Diagram({
+        enableConnectorSplit:true,
+        width: 700, height: 600,  nodes: [node1, node2, node3,node4,node5,node6,node7,node8,node9,node10,node11],
+        connectors: [connector1,connector2,connector3,connector4,connector5]
+    });
+    diagram.appendTo('#Allow_drop');
+  
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    
+    it('Dropping node on Connector', (done: Function) => {
+ 
+        let highlighter:HTMLElement = null;
+        let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');     
+        mouseEvents.mouseDownEvent(diagramCanvas, 490,290);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 150);  
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas,400, 150);
+        expect(diagram.connectors[0].targetID===diagram.nodes[2].id).toBe(true);
+        diagram.undo();
+        expect(diagram.nodes[2].offsetX===490 && diagram.nodes[2].offsetY===290).toBe(true);
+        diagram.redo();
+        expect(diagram.connectors.length===6).toBe(true);
+        done();
+       
+    });
+    it("drop node on connector with source id",(done: Function)=>{
+        let highlighter:HTMLElement = null;
+        let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');     
+        mouseEvents.mouseDownEvent(diagramCanvas, 290, 290);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 290, 450);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas,290, 450);
+        expect(diagram.connectors[1].targetID===diagram.nodes[5].id).toBe(true);
+        done();
+    });
+    it("drop node on connector with target id",(done: Function)=>{
+        let highlighter:HTMLElement = null;
+        let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');     
+        mouseEvents.mouseDownEvent(diagramCanvas, 90,290);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 290, 650);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas,290, 650);    
+        expect(diagram.connectors[2].sourceID===diagram.nodes[6].id).toBe(true);
+        done();
+    });
+    it("drop node on empty connector ", function (done) {
+        var highlighter:HTMLElement = null;
+        var diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 790, 290);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 710, 550);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 710, 550);
+        expect(diagram.connectors[3].sourceID === diagram.nodes[7].id).toBe(true);
+        done();
+    });
+    it("drop node on connector ports ", function (done) {
+        var highlighter:HTMLElement = null;
+        var diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 990,290);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 850);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 350, 850);
+        expect(diagram.connectors[4].targetID === diagram.nodes[10].id).toBe(true);
+        done();
+    });
+});
+

@@ -216,6 +216,12 @@
       }
     }
 
+    @if $skin-name == 'bootstrap5' {
+      & .e-tab .e-content .e-toolbar .e-toolbar-items {
+        height: 46px;
+      }
+    }
+
     & .e-drop-icon {
       font-size: 12px;
       margin: $bigger-drop-icon-margin;

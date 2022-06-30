@@ -414,7 +414,7 @@ export class DataBind {
                     'dataSourceChanged',
                     { data: args.changedData, action: 'dataSourceChanged', rangeIndex: Number(args.rangeIdx), sheetIndex:
                     Number(args.sheetIdx) });
-                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true, checkCf: true });
+                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true, checkCF: true });
             });
         }
     }

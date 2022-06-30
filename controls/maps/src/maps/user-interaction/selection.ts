@@ -62,8 +62,12 @@ export class Selection {
             const layerIndex: number = parseInt(targetElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
             if (targetElement.id.indexOf('shapeIndex') > -1) {
                 shapeIndex = parseInt(targetElement.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                shapeData = this.maps.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
-                    this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+                shapeData = !isNullOrUndefined(this.maps.layers[layerIndex].shapeData['features'])
+                            && this.maps.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+                            this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] :
+                            !isNullOrUndefined(this.maps.layers[layerIndex].shapeData['geometries'])
+                            && this.maps.layers[layerIndex].shapeData['geometries']['length'] > shapeIndex ?
+                            this.maps.layers[layerIndex].shapeData['geometries'][shapeIndex]['properties'] : null ;
                 dataIndex = parseInt(targetElement.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].selectionSettings;
@@ -144,15 +148,17 @@ export class Selection {
         let parentElement: Element;
         let children: HTMLCollection;
         let selectionClass: Element;
+        const isLineStringShape: boolean = targetElement.parentElement.id.indexOf('LineString') > -1;
         const selectionsettings: SelectionSettingsModel = this.selectionsettings;
         const border: BorderModel = {
-            color: (targetElement.parentElement.id.indexOf('LineString') === -1) ? this.selectionsettings.border.color : (this.selectionsettings.border.color || this.selectionsettings.fill),
-            width: (targetElement.parentElement.id.indexOf('LineString') === -1) ? (this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)) : (this.selectionsettings.border.width / this.maps.scale),
+            color: isLineStringShape ? (this.selectionsettings.fill || this.selectionsettings.border.color) : this.selectionsettings.border.color,
+            width: isLineStringShape ? (this.selectionsettings.border.width / this.maps.scale) :
+            (this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)),
             opacity: this.selectionsettings.border.opacity
         };
         const eventArgs: ISelectionEventArgs = {
             opacity: this.selectionsettings.opacity,
-            fill: (targetElement.parentElement.id.indexOf('LineString') === -1) ? (this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none') : 'transparent',
+            fill: isLineStringShape ? 'transparent' : (this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none'),
             border: border,
             name: itemSelection,
             target: targetElement.id,
@@ -164,7 +170,8 @@ export class Selection {
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
             eventArgs.border.opacity = isNullOrUndefined(this.selectionsettings.border.opacity) ? this.selectionsettings.opacity : this.selectionsettings.border.opacity;
             if (!eventArgs.cancel) {
-                if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
+                if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle'
+                    || targetElement.getAttribute('class') === 'LineselectionMapStyle') {
                     removeClass(targetElement);
                     this.removedSelectionList(targetElement);
                     for (let m: number = 0; m < this.maps.shapeSelectionItem.length; m++) {
@@ -184,13 +191,22 @@ export class Selection {
                 } else {
                     const layetElement: Element = getElementByID(this.maps.element.id + '_Layer_Collections');
                     if (!this.selectionsettings.enableMultiSelect &&
-                        layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
-                        const eleCount : number = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length;
+                        (layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0 ||
+                        layetElement.getElementsByClassName('LineselectionMapStyle').length > 0)) {
+                        let eleCount : number = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length;
                         let ele : Element;
                         for (let k : number = 0 ; k < eleCount; k++) {
                             ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
                             removeClass(ele);
                             this.removedSelectionList(ele);
+                        }
+                        if (layetElement.getElementsByClassName('LineselectionMapStyle').length > 0) {
+                            eleCount = layetElement.getElementsByClassName('LineselectionMapStyle').length;
+                            for (let k : number = 0 ; k < eleCount; k++) {
+                                ele = layetElement.getElementsByClassName('LineselectionMapStyle')[0];
+                                removeClass(ele);
+                                this.removedSelectionList(ele);
+                            }
                         }
                         if (this.selectionType === 'Shape') {
                             this.maps.shapeSelectionItem = [];
@@ -209,13 +225,22 @@ export class Selection {
                             ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                         }
                     }
-                    if (!getElement(this.selectionType + 'selectionMap')) {
-                        document.body.appendChild(createStyle(this.selectionType + 'selectionMap',
-                                                              this.selectionType + 'selectionMapStyle', eventArgs));
+                    if (!isLineStringShape) {
+                        if (!getElement(this.selectionType + 'selectionMap')) {
+                            document.body.appendChild(createStyle(this.selectionType + 'selectionMap',
+                                this.selectionType + 'selectionMapStyle', eventArgs));
+                        } else {
+                            customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
+                        }
+                        targetElement.setAttribute('class', this.selectionType + 'selectionMapStyle');
                     } else {
-                        customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
+                        if (!getElement('LineselectionMap')) {
+                            document.body.appendChild(createStyle('LineselectionMap', 'LineselectionMapStyle', eventArgs));
+                        } else {
+                            customizeStyle('LineselectionMap', 'LineselectionMapStyle', eventArgs);
+                        }
+                        targetElement.setAttribute('class', 'LineselectionMapStyle');
                     }
-                    targetElement.setAttribute('class', this.selectionType + 'selectionMapStyle');
                     if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
                         this.maps.shapeSelectionClass = getElement(this.selectionType + 'selectionMap');
                         this.maps.selectedElementId.push(targetElement.getAttribute('id'));

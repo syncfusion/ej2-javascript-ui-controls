@@ -62,7 +62,7 @@ export class Legend extends BaseLegend {
                 for (const id of legendItemsId) {
                     if (targetId.indexOf(id) > -1) {
                         index = parseInt(targetId.split(id)[1], 10);
-                        (<Chart>this.chart).highlightModule.legendSelection((<Chart>this.chart), index, e);
+                        (<Chart>this.chart).highlightModule.legendSelection((<Chart>this.chart), index, e.target as Element, e.type);
                         break;
                     }
                 }
@@ -360,9 +360,9 @@ export class Legend extends BaseLegend {
                     (series.visible);
                 this.refreshLegendToggle(chart, series);
             } else if (chart.highlightModule) {
-                chart.highlightModule.legendSelection(chart, index, event);
+                chart.highlightModule.legendSelection(chart, index, event.target as Element, event.type);
             } else if (chart.selectionModule) {
-                chart.selectionModule.legendSelection(chart, index, event);
+                chart.selectionModule.legendSelection(chart, index, event.target as Element, event.type);
             }
             series.chart[changeDetection] = false;
         } else if (chart.legendSettings.mode === 'Point') {
@@ -485,9 +485,10 @@ export class Legend extends BaseLegend {
         const pageX: number = this.chart.mouseX;
         const pageY: number = this.chart.mouseY;
         let legendRegion: ILegendRegions[] = [];
-        const targetId: string = (<HTMLElement>event.target).id;
+        const targetId: string = (<HTMLElement>event.target).id.indexOf("_chart_legend_g_") > -1 ?
+            (event.target as HTMLElement).firstChild['id'] : (<HTMLElement>event.target).id;
         const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
-            this.legendID + '_shape_'];
+        this.legendID + '_shape_'];
         let seriesIndex: number;
         for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {

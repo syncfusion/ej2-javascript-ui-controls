@@ -96,26 +96,37 @@ export class OptionsPane {
         this.localeValue = localeValue;
         this.optionsPane = createElement('div', { className: 'e-de-op', styles: 'display:none;' });
         this.optionsPane.addEventListener('keydown', this.onKeyDownOnOptionPane);
+        //parent
+        this.findTab = createElement('div', { id: this.documentHelper.owner.containerId + '_findTabDiv', className: 'e-de-op-tab' });
+        this.optionsPane.appendChild(this.findTab);
+        //head
         this.searchDiv = createElement('div', {
-            className: this.documentHelper.owner.containerId + '_searchDiv e-de-op-header',
+            className: 'e-de-op-header',
             innerHTML: localeValue.getConstant(this.searchText)
         });
-        this.optionsPane.appendChild(this.searchDiv);
+        this.findTab.appendChild(this.searchDiv);
         this.closeButton = createElement('button', {
             className: 'e-de-op-close-button e-de-close-icon e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         });
-        this.optionsPane.appendChild(this.closeButton);
+        this.findTab.appendChild(this.closeButton);
         let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.focusedElement.push(this.closeButton);
-        //Find tab header
-        this.findTab = createElement('div', { id: this.documentHelper.owner.containerId + '_findTabDiv', className: 'e-de-op-tab' });
-        this.optionsPane.appendChild(this.findTab);
+        // tab
+        let tabDiv: HTMLDivElement =createElement('div') as HTMLDivElement;  
+        this.findTab.appendChild(tabDiv);      
         this.findTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.findPaneText) });
         this.replaceTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.replacePaneText) });
-        let findTabContent: HTMLElement = createElement('div');
+        let items: TabItemModel[] = [
+            { header: { text: this.findTabButton }},
+            { header: { text: this.replaceTabButton }}] as TabItemModel[];
+        this.tabInstance = new Tab({ items: items, enableRtl: isRtl, selected: this.selectedTabItem.bind(this) });
+        this.tabInstance.isStringTemplate = true;
+        this.tabInstance.appendTo(tabDiv);
+        //search
         this.findTabContentDiv = createElement('div', { className: 'e-de-search-tab-content' });
+        this.findTab.appendChild(this.findTabContentDiv);
         this.searchTextBoxContainer = createElement('div', { className: 'e-input-group e-de-op-input-group' });
         this.findTabContentDiv.appendChild(this.searchTextBoxContainer);
         this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.documentHelper.owner.containerId + '_option_search_text_box', attrs: { placeholder: localeValue.getConstant('Search for') } }) as HTMLInputElement;
@@ -135,6 +146,7 @@ export class OptionsPane {
         this.navigateToNextResult.tabIndex = 0;
         this.searchTextBoxContainer.appendChild(this.navigateToNextResult);
         this.focusedElement.push(this.navigateToNextResult);
+        //match
         let div: HTMLElement = createElement('div', { className: 'e-de-op-more-less' });
         this.matchInput = createElement('input', {
             attrs: { type: 'checkbox' },
@@ -160,27 +172,23 @@ export class OptionsPane {
         this.wholeWord.appendTo(this.wholeInput);
         this.focusedElement.push(this.wholeInput);
         this.wholeInput.tabIndex = 0;
-        this.findTabContentDiv.appendChild(div);
+        this.findTab.appendChild(div);
         //Replace tab
-        let replaceTabContent: HTMLElement = createElement('div');
         this.replaceTabContentDiv = createElement('div', { className: 'e-de-op-replacetabcontentdiv', styles: 'display:none;' });
-        this.findTabContentDiv.appendChild(this.replaceTabContentDiv);
+        this.findTab.appendChild(this.replaceTabContentDiv);
         this.createReplacePane(isRtl);
-        this.findDiv = createElement('div', { className: 'findDiv', styles: 'display:block;' });
-        findTabContent.appendChild(this.findTabContentDiv);
+        //container
         this.resultContainer = createElement('div', { styles: 'width:85%;display:block;', className: 'e-de-op-result-container' });
-        this.findDiv.appendChild(this.resultContainer);
+        this.findTab.appendChild(this.resultContainer);
         this.messageDiv = createElement('div', { className: this.documentHelper.owner.containerId + '_messageDiv e-de-op-msg', innerHTML: this.localeValue.getConstant(this.messageDivText), id: this.documentHelper.owner.containerId + '_search_status' });
         this.resultContainer.appendChild(this.messageDiv);
+        //resultblock-finding
+        let resultDiv: HTMLDivElement =createElement('div', { id: this.documentHelper.owner.containerId + '_resultDiv' }) as HTMLDivElement;  
+        this.optionsPane.appendChild(resultDiv);
+        this.findDiv = createElement('div', { className: 'findDiv', styles: 'display:block;' });
+        resultDiv.appendChild(this.findDiv);
         this.resultsListBlock = createElement('div', { id: this.documentHelper.owner.containerId + '_list_box_container', styles: 'display:none;width:270px;list-style:none;padding-right:5px;overflow:auto;', className: 'e-de-result-list-block' });
         this.findDiv.appendChild(this.resultsListBlock);
-        this.findTabContentDiv.appendChild(this.findDiv);
-        let items: TabItemModel[] = [
-            { header: { text: this.findTabButton }, content: findTabContent },
-            { header: { text: this.replaceTabButton }, content: replaceTabContent }] as TabItemModel[];
-        this.tabInstance = new Tab({ items: items, enableRtl: isRtl, selected: this.selectedTabItem.bind(this) });
-        this.tabInstance.isStringTemplate = true;
-        this.tabInstance.appendTo(this.findTab);
         this.onWireEvents();
         if (isRtl) {
             this.optionsPane.classList.add('e-de-rtl');
@@ -395,7 +403,6 @@ export class OptionsPane {
             this.searchIcon.classList.remove('e-de-op-search-icon');
         }
         let height: number = this.isOptionsPane ? 215 : 292;
-        let resultsContainerHeight: number = this.documentHelper.owner.getDocumentEditorElement().offsetHeight - height;
         this.clearSearchResultItems();
         this.documentHelper.owner.searchModule.clearSearchHighlight();
         let pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex(text, this.findOption);
@@ -417,9 +424,10 @@ export class OptionsPane {
             this.documentHelper.owner.searchModule.highlight(results);
             this.documentHelper.owner.searchModule.addFindResultView(results);
             // if (this.isOptionsPane) {
+            this.resultContainer.style.display = 'block';  
             this.resultsListBlock.style.display = 'block';
+            let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
             this.resultsListBlock.style.height = resultsContainerHeight + 'px';
-            this.resultContainer.style.display = 'block';
             let list: string[] = this.documentHelper.owner.findResultsList;
             let text: string = '';
             this.clearFocusElement();
@@ -469,7 +477,7 @@ export class OptionsPane {
             this.messageDiv.innerHTML = this.localeValue.getConstant('No matches');
         }
         let height: number = this.isOptionsPane ? 215 : 292;
-        let resultsContainerHeight: number = this.documentHelper.owner.getDocumentEditorElement().offsetHeight - height;
+        let resultsContainerHeight: number = this.optionsPane.offsetHeight - (this.findTab.offsetHeight-this.replaceTabContentDiv.offsetHeight);
         this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.replaceTabContentDiv.style.display = 'none';
         this.findDiv.style.display = 'block';
@@ -512,7 +520,7 @@ export class OptionsPane {
         this.replaceDiv.style.display = 'block';
         this.replaceTabContentDiv.style.display = 'block';
         let height: number = this.isOptionsPane ? 215 : 292;
-        let resultsContainerHeight: number = this.documentHelper.owner.getDocumentEditorElement().offsetHeight - height;
+        let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
         this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.isOptionsPane = false;
         if (this.searchInput.value.length !== 0) {
@@ -748,7 +756,7 @@ export class OptionsPane {
             this.navigateSearchResult(false);
             this.getMessageDivHeight();
             let height: number = this.isOptionsPane ? 215 : 292;
-            let resultsContainerHeight: number = this.documentHelper.owner.getDocumentEditorElement().offsetHeight - height;
+            let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
             this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         } else {
             this.messageDiv.innerHTML = this.localeValue.getConstant('No matches');

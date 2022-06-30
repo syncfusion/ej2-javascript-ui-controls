@@ -17,7 +17,7 @@ import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { MultiSelect, CheckBoxSelection, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ConnectorLineEdit } from './connector-line-edit';
 import { ITreeData } from '@syncfusion/ej2-treegrid';
-
+import { CriticalPath } from '..';
 
 
 
@@ -500,6 +500,9 @@ export class Edit {
                 }
                 if ((key === tasks.baselineStartDate || key === tasks.baselineEndDate) &&
                     (ganttData.ganttProperties.baselineStartDate && ganttData.ganttProperties.baselineEndDate)) {
+                    ganttObj.setRecordValue('baselineStartDate', ganttObj.dataOperation.checkBaselineStartDate(ganttData.ganttProperties.baselineStartDate),ganttData.ganttProperties, true);
+                    ganttObj.dataOperation.setTime(this.parent.defaultEndTime, ganttData.ganttProperties.baselineEndDate);
+                    ganttObj.setRecordValue('baselineEndDate', ganttObj.dataOperation.checkBaselineEndDate(ganttData.ganttProperties.baselineEndDate),ganttData.ganttProperties, true);
                     ganttObj.setRecordValue(
                         'baselineLeft', ganttObj.dataOperation.calculateBaselineLeft(
                             ganttData.ganttProperties),
@@ -1284,6 +1287,11 @@ export class Edit {
                 eventArgs.taskBarEditAction = args.taskBarEditAction;
             }
             this.endEditAction(args);
+            if (this.parent.enableCriticalPath) {
+                let criticalModule: CriticalPath = this.parent.criticalPathModule;
+                criticalModule.showCriticalPath(true);
+                criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
+            }
             this.parent.trigger('actionComplete', eventArgs);
         } else {
             this.taskbarEditModule.dependencyCancel = false;
@@ -1618,6 +1626,8 @@ export class Edit {
                 this.confirmDialog.show();
             } else {
                 this.deleteSelectedItems();
+                const focusingElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
+                focusingElement.focus();
             }
         }
     }
@@ -2483,7 +2493,16 @@ export class Edit {
         }
     }
 
-    private refreshRecordInImmutableMode(): void {
+    private refreshRecordInImmutableMode(data? : object, dragged? : boolean): void {
+        if (!dragged && !isNullOrUndefined(data)) {
+            for (let i: number = data[0].index + 1; i < this.parent.currentViewData.length; i++) {
+                if (data[0].level < this.parent.currentViewData[i].level) {
+                   this.parent.modifiedRecords.push(this.parent.currentViewData[i]);
+                } else {
+                    break;
+                }
+            }
+        }
         for (let i: number = 0; i < this.parent.modifiedRecords.length; i++) {
             const originalData: IGanttData = this.parent.modifiedRecords[i];
             let treeIndex: number = this.parent.allowRowDragAndDrop ? 1 : 0;
@@ -2647,7 +2666,13 @@ export class Edit {
                             const insertCrud: Promise<Object> = data.insert(updatedData[addedRecords], null, query) as Promise<Object>;
                             insertCrud.then((e: ReturnType) => {
                                 const changedRecords: string = 'changedRecords';
-                                const addedRecords: Object = e[0];
+                                let addedRecords: Object;
+                                if (!isNullOrUndefined(e[0])) {
+                                    addedRecords = e[0];
+                                }
+                                else {
+                                    addedRecords = updatedData['addedRecords'][0];
+                                }
                                 /* tslint:disable-next-line */
                                 const updateCrud: Promise<Object> =
                                     data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
@@ -3180,7 +3205,7 @@ export class Edit {
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
-            this.refreshRecordInImmutableMode();
+            this.refreshRecordInImmutableMode(args.data, isDrag);
         }
         if (isDrag) {
             args.requestType = 'rowDropped';

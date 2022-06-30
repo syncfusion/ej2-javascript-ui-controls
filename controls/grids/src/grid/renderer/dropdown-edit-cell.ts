@@ -1,7 +1,7 @@
-import { extend, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, select, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
-import { DropDownList, DropDownListModel, FilteringEventArgs } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, DropDownListModel, FilteringEventArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Query, DataManager, DataUtil, Predicate } from '@syncfusion/ej2-data';
 import { isEditable, getComplexFieldID, getObject } from '../base/util';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -55,7 +55,8 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
                 placeholder: isInline ? '' : args.column.headerText, popupHeight: '200px',
                 floatLabelType: isInline ? 'Never' : 'Always',
                 sortOrder: 'Ascending',
-                cssClass: this.parent.cssClass ? this.parent.cssClass : null
+                cssClass: this.parent.cssClass ? this.parent.cssClass : null,
+                close: this.dropDownClose.bind(this)
             },
             params));
         if (this.parent.enableVirtualization) {
@@ -66,6 +67,12 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
         this.obj.appendTo(args.element as HTMLElement);
         /* tslint:disable-next-line:no-any */
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
+    }
+
+    private dropDownClose(args: PopupEventArgs): void {
+        if (args.event && (args.event as KeyboardEventArgs).action === 'escape') {
+            (this as DropDownEditCell).parent.editModule.editCellDialogClose = true;
+        }
     }
 
     private addEventListener(): void {

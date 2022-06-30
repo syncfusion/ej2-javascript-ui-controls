@@ -4,6 +4,7 @@ import { WBorders } from './borders';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Color, LineWidget } from '../';
 
 /**
  * @private
@@ -495,6 +496,11 @@ export class WBorder {
         }
         return value;
     }
+
+    public hasValues(): boolean {
+        return this.hasValue('color') || this.hasValue('lineStyle') || this.hasValue('lineWidth') || this.hasValue('shadow') || this.hasValue('space') || this.hasValue('hasNoneStyle');
+    }
+
     public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueBorderFormat)) {
             const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueBorderFormat.uniqueFormatType, property);
@@ -516,6 +522,19 @@ export class WBorder {
             WBorder.uniqueBorderFormats.remove(this.uniqueBorderFormat);
         }
         this.uniqueBorderFormat = undefined;
+    }
+    /**
+     * @private
+     */
+    public isEqualFormat(border: WBorder, includeSpace?: boolean): boolean {
+        let value: boolean = false;
+        if (this.color === border.color && this.lineStyle === border.lineStyle && this.lineWidth === border.lineWidth && this.shadow == border.shadow) {
+            value = true;
+        }
+        if (includeSpace) {
+            value = (this.space == border.space);
+        }
+        return value;
     }
     public copyFormat(border: WBorder): void {
         if (!isNullOrUndefined(border) && !isNullOrUndefined(border.uniqueBorderFormat)) {

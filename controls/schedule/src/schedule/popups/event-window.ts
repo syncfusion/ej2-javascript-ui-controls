@@ -454,6 +454,7 @@ export class EventWindow {
             resourceData.colorField + '}"></div><div class="e-resource-text">${' + resourceData.textField + '}</div></div>';
         if (resourceData.allowMultiple) {
             const listObj: MultiSelect = new MultiSelect({
+                enableRtl: this.parent.enableRtl,
                 cssClass: this.parent.cssClass || '',
                 dataSource: resourceData.dataSource as Record<string, any>[],
                 change: this.onMultiselectResourceChange.bind(this),
@@ -511,7 +512,7 @@ export class EventWindow {
                 query = (e.text !== '') ? query.where('Text', 'contains', e.text, true) : query;
                 e.updateData(this.parent.timezoneDataSource as any[], query);
             },
-            htmlAttributes: { 'title': this.getFieldLabel(value), 'name': fieldName },
+            htmlAttributes: { 'title': this.getFieldLabel(value), 'name': fieldName, role: 'option' },
             floatLabelType: 'Always',
             placeholder: this.getFieldLabel(value),
             popupHeight: '230px'

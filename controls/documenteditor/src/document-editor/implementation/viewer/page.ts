@@ -189,11 +189,7 @@ export abstract class Widget implements IWidget {
         let widget: Widget = this;
         let index: number = this.indexInOwner;
         if (widget instanceof BodyWidget) {
-            if (widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote') {
-                widget = index > 0 ? widget.page.endnoteWidget.bodyWidgets[index - 1] : undefined;
-            } else {
-                widget = index > 0 ? widget.page.bodyWidgets[index - 1] : undefined;
-            }
+            widget = index > 0 ? widget.page.bodyWidgets[index - 1] : undefined;
         } else {
             widget = index > 0 ? widget.containerWidget.childWidgets[index - 1] as Widget : undefined;
         }
@@ -206,13 +202,8 @@ export abstract class Widget implements IWidget {
             return undefined;
         }
         if (widget instanceof BodyWidget) {
-            if (widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote') {
-                widget = index < widget.page.endnoteWidget.bodyWidgets.length - 1 ?
-                    widget.page.endnoteWidget.bodyWidgets[index + 1] : undefined;
-            } else {
-                widget = index < widget.page.bodyWidgets.length - 1 ?
-                    widget.page.bodyWidgets[index + 1] : undefined;
-            }
+            widget = index < widget.page.bodyWidgets.length - 1 ?
+                widget.page.bodyWidgets[index + 1] : undefined;
         } else {
             widget = index < widget.containerWidget.childWidgets.length - 1 ?
                 widget.containerWidget.childWidgets[index + 1] as Widget : undefined;
@@ -235,13 +226,7 @@ export abstract class Widget implements IWidget {
                 widget = widget.containerWidget.bodyWidgets[index - 1];
             } else {
                 let page: Page = widget.page.previousPage;
-                if (widget.containerWidget instanceof FootNoteWidget) {
-                    if (widget.containerWidget.footNoteType === 'Endnote') {
-                        widget = page && page.endnoteWidget && page.endnoteWidget.bodyWidgets.length > 0 ? page.endnoteWidget.bodyWidgets[page.endnoteWidget.bodyWidgets.length - 1] : undefined;
-                    }
-                } else {
-                    widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[page.bodyWidgets.length - 1] : undefined;
-                }
+                widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[page.bodyWidgets.length - 1] : undefined;
             }
         } else if (widget instanceof FootNoteWidget) {
             let page: Page = widget.page;
@@ -288,17 +273,14 @@ export abstract class Widget implements IWidget {
         if (widget instanceof BodyWidget) {
             if (index < widget.page.bodyWidgets.length - 1 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index + 1];
-            } else if (widget.containerWidget instanceof FootNoteWidget && index < widget.containerWidget.bodyWidgets.length - 1) {
+            } else if (widget.containerWidget instanceof FootNoteWidget) {
+                if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editor.removeEditRange) {
+                    return undefined;
+                }
                 widget = widget.containerWidget.bodyWidgets[index + 1];
             } else if (widget.page.allowNextPageRendering) {
                 let page: Page = widget.page.nextPage;
-                if (widget.containerWidget instanceof FootNoteWidget) {
-                    if (widget.containerWidget.footNoteType === 'Endnote') {
-                        widget = page && page.endnoteWidget && page.endnoteWidget.bodyWidgets.length > 0 ? page.endnoteWidget.bodyWidgets[0] : undefined;
-                    }
-                } else {
-                    widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
-                }
+                widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
             } else {
                 widget = undefined;
             }
@@ -1256,6 +1238,9 @@ export class ParagraphWidget extends BlockWidget {
                                 lineWidget.children.splice(i + j, 0, clonedTextElement);
                                 clonedTextElement.line = lineWidget;
                                 iIncrementer++;
+                                if (textElement.revisions.length > 0) {
+                                    this.updateTextElementInRevisionRange(textElement, clonedTextElement);
+                                }
                             } else {
                                 ////Replace the source span with splitted text.
                                 textElement.text = text;
@@ -1272,6 +1257,15 @@ export class ParagraphWidget extends BlockWidget {
 
     }
 
+    private updateTextElementInRevisionRange(inline: TextElementBox, splittedElementBox: TextElementBox): void {
+        for (let i: number = 0; i < inline.revisions.length; i++) {
+            let revision: Revision = inline.revisions[i];
+            let inlineIndex: number = revision.range.indexOf(inline);
+            revision.range.splice(inlineIndex + 1, 0, splittedElementBox);
+            splittedElementBox.revisions.push(revision);
+            splittedElementBox.removedIds = [];
+        }
+    }
     /**
      * Combine the spans by consecutive LTR and RTL texts.
      * @private
@@ -3676,6 +3670,10 @@ export class LineWidget implements IWidget {
     }
 
     /**
+    * @private
+    */
+    public margin: Margin;
+    /**
      * @private
      */
     get indexInOwner(): number {
@@ -3776,19 +3774,16 @@ export class LineWidget implements IWidget {
         }
         let textIndex: number = index;
         let line: LineWidget = inline.line as LineWidget;
-        let lineIndex: number = inline.line.paragraph.childWidgets.indexOf(inline.line);
-        let bidi: boolean = line.paragraph.bidi;
-        let isContainsRtl: boolean = this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
-            for (let i: number = 0; i < line.children.length; i++) {
-                let inlineElement: ElementBox = line.children[i] as ElementBox;
-                if (inline === inlineElement) {
-                    break;
-                }
-                if (inlineElement instanceof ListTextElementBox) {
-                    continue;
-                }
-                textIndex += inlineElement.length;
+        for (let i: number = 0; i < line.children.length; i++) {
+            let inlineElement: ElementBox = line.children[i] as ElementBox;
+            if (inline === inlineElement) {
+                break;
             }
+            if (inlineElement instanceof ListTextElementBox) {
+                continue;
+            }
+            textIndex += inlineElement.length;
+        }
         return textIndex;
     }
     /**
@@ -3797,240 +3792,26 @@ export class LineWidget implements IWidget {
     public getEndOffset(): number {
         let startOffset: number = 0;
         let count: number = 0;
-        // let line: LineWidget = this.line as LineWidget;
-        // let lineIndex: number = thtis.line.paragraph.childWidgets.indexOf(inline.line);
-        //let bidi: boolean = this.paragraph.bidi || this.paragraph.bodyWidget.page.documentHelper.layout.isContainsRtl(this);
-        //if (!bidi) {
-            for (let i: number = 0; i < this.children.length; i++) {
-                let inlineElement: ElementBox = this.children[i] as ElementBox;
-                if (inlineElement.length === 0) {
-                    continue;
-                }
-                if (inlineElement instanceof ListTextElementBox) {
-                    continue;
-                }
-                if (inlineElement instanceof TextElementBox || inlineElement instanceof CommentCharacterElementBox
-                    || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof ImageElementBox
-                    || inlineElement instanceof EditRangeEndElementBox || inlineElement instanceof BookmarkElementBox
-                    || inlineElement instanceof ContentControl || (inlineElement instanceof FieldElementBox
-                        && HelperMethods.isLinkedFieldCharacter((inlineElement as FieldElementBox)))) {
-                    startOffset = count + inlineElement.length;
-                }
-                count += inlineElement.length;
+        for (let i: number = 0; i < this.children.length; i++) {
+            let inlineElement: ElementBox = this.children[i] as ElementBox;
+            if (inlineElement.length === 0) {
+                continue;
             }
-        //} 
-        // else {
-        //     let elementInfo: ElementInfo = this.getInlineForOffset(startOffset, false, this.children[0], true);
-        //     startOffset = elementInfo.index;
-        // }
+            if (inlineElement instanceof ListTextElementBox) {
+                continue;
+            }
+            if (inlineElement instanceof TextElementBox || inlineElement instanceof CommentCharacterElementBox
+                || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof ImageElementBox
+                || inlineElement instanceof EditRangeEndElementBox || inlineElement instanceof BookmarkElementBox
+                || inlineElement instanceof ContentControl || (inlineElement instanceof FieldElementBox
+                    && HelperMethods.isLinkedFieldCharacter((inlineElement as FieldElementBox)))) {
+                startOffset = count + inlineElement.length;
+            }
+            count += inlineElement.length;
+        }
         return startOffset;
     }
 
-    /**
-     * @private
-     * @param offset 
-     * @param isOffset 
-     * @param inline 
-     * @param isEndOffset 
-     */
-    public getInlineForOffset(offset: number, isOffset?: boolean, inline?: ElementBox, isEndOffset?: boolean, isPrevOffset?: boolean, isNxtOffset?: boolean): ElementInfo {
-        let startElement: ElementBox = this.children[this.children.length - 1] as ElementBox;
-        let endElement: ElementBox;
-        let element: ElementBox = startElement;
-        let documentHelper: DocumentHelper = this.paragraph.bodyWidget.page.documentHelper;
-        let textHelper: TextHelper = documentHelper.textHelper;
-        let isApplied: boolean = false;
-        let count: number = 0;
-        let lineLength: number = documentHelper.selection.getLineLength(this);
-        let validOffset: number = 0;
-        while (element) {
-            if (!endElement && !(element instanceof TabElementBox && element.text === '\t') &&
-                (element instanceof TextElementBox && !textHelper.isRTLText(element.text)
-                    && !((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)
-                    || !(element instanceof TextElementBox))) {
-                while ((inline !== element) && element.previousElement && (element.previousElement instanceof TextElementBox
-                    && !textHelper.isRTLText(element.previousElement.text) && !((textHelper.containsSpecialCharAlone(element.previousElement.text)
-                        || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi)
-                    || element.previousElement instanceof FieldElementBox
-                    || element.previousElement instanceof BookmarkElementBox
-                    || element.previousElement instanceof CommentCharacterElementBox
-                    && !isNullOrUndefined(element.previousElement.previousElement) &&
-                    !(element.previousElement.previousElement instanceof BookmarkElementBox)
-                    || element.previousElement instanceof BookmarkElementBox
-                    || element.previousElement instanceof CommentCharacterElementBox
-                    && element.previousElement.previousElement instanceof BookmarkElementBox
-                    && !isNullOrUndefined(element.previousElement.previousElement.previousElement)
-                    || element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
-                    && !isNullOrUndefined(element.previousElement.previousElement)
-                    || element.previousElement instanceof ListTextElementBox
-                    || element.previousElement instanceof EditRangeEndElementBox
-                    || element.previousElement instanceof EditRangeStartElementBox
-                    || element.previousElement instanceof CommentCharacterElementBox
-                    || element.previousElement instanceof ImageElementBox)) {
-                    isApplied = true;
-                    element = element.previousElement;
-                    continue;
-                }
-                if (element.previousElement && (isApplied
-                    || (element.previousElement instanceof TextElementBox && (textHelper.isRTLText(element.previousElement.text) ||
-                        ((textHelper.containsSpecialCharAlone(element.previousElement.text) || /^[0-9]+$/.test(element.previousElement.text)) && element.previousElement.characterFormat.bidi))))) {
-                    endElement = element.previousElement;
-                } else if (!element.previousElement) {
-                    if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox || element instanceof BookmarkElementBox) {
-                        break;
-                    }
-                    endElement = element;
-                }
-                if (element instanceof ListTextElementBox && endElement) {
-                    element = endElement;
-                    endElement = undefined;
-                }
-            }
-            if (isOffset && !isNullOrUndefined(inline)) {
-                if (inline === element) {
-                    return { 'element': element, 'index': offset };
-                }
-                offset += element.length;
-            } else if (isEndOffset) {
-                offset += element.length;
-                if (offset === lineLength) {
-                    return { 'element': element, 'index': offset };
-                } else if (offset > lineLength) {
-                    return { 'element': element, 'index': lineLength };
-                }
-            } else if (isNxtOffset) {
-                if (offset < count + element.length) {
-                    if (element instanceof TextElementBox || element instanceof ImageElementBox
-                        || (element instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((element as FieldElementBox)))) {
-                        return { 'element': element, 'index': (offset > count ? offset : count) + 1 };
-                    }
-                }
-                count += element.length;
-            }
-            else {
-                if (offset <= count + element.length) {
-                    return {
-                        'element': element, 'index': isPrevOffset ? (offset - 1 === count ? validOffset : offset - 1) : offset - count
-                    };
-                }
-                if (isPrevOffset && (element instanceof TextElementBox || element instanceof ImageElementBox
-                    || (element instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((element as FieldElementBox))))) {
-                    validOffset = count + element.length;
-                }
-                count += element.length;
-            }
-            if (element.previousElement && (element instanceof TextElementBox && ((textHelper.isRTLText(element.text) || textHelper.containsCombinationText(element)) ||
-                ((textHelper.containsSpecialCharAlone(element.text) || /^[0-9]+$/.test(element.text)) && element.characterFormat.bidi)) ||
-                (element instanceof TabElementBox && element.text === '\t' || (element instanceof BookmarkElementBox
-                    && (element instanceof BookmarkElementBox && element.previousElement instanceof BookmarkElementBox
-                        && !element.previousElement.previousElement
-                        || element.bookmarkType === 1 && !element.previousElement))))) {
-                if ((offset === count + 1 || offset > count + 1) && count === lineLength && !element.previousElement) {
-                    break;
-                }
-                element = element.previousElement;
-            }
-            else {
-                if (endElement && (!element.nextElement || element === startElement || element.nextElement instanceof TextElementBox
-                    && (textHelper.isRTLText(element.nextElement.text) ||
-                        ((textHelper.containsSpecialCharAlone(element.nextElement.text) || /^[0-9]+$/.test(element.nextElement.text)) && element.nextElement.characterFormat.bidi))
-                    || element.nextElement instanceof ListTextElementBox)) {
-                    if (offset === count + 1 && count === lineLength) {
-                        break;
-                    }
-                    element = endElement;
-                    endElement = undefined;
-                    isApplied = false;
-                } else {
-                    if ((endElement === element || offset === count + 1) && !element.previousElement && count === lineLength) {
-                        break;
-                    }
-                    element = element.nextElement;
-
-                }
-            }
-        }
-        if (isNxtOffset) {
-            return { 'element': element, 'index': offset };
-        } else if (isPrevOffset) {
-            return { 'element': element, 'index': -1 };
-        } else {
-            return { 'element': element, 'index': isEndOffset ? offset : 0 };
-        }
-    }
-    public getInlineForRtlLine(offset: number, isOffset?: boolean, inline?: ElementBox): ElementInfo {
-        let startElement: ElementBox = this.children[0] as ElementBox;
-        let endElement: ElementBox;
-        let element: ElementBox = startElement;
-        let documentHelper: DocumentHelper = this.paragraph.bodyWidget.page.documentHelper;
-        let textHelper: TextHelper = documentHelper.textHelper;
-        let isUpdated: boolean = false;
-        let count: number = 0;
-        let lineLength: number = documentHelper.selection.getLineLength(this);
-        let validOffset: number = 0;
-        let lastRtlIndex: number = -1;
-        let indexInInline: number = -1;
-        let isStarted: boolean = false;
-        while (element) {
-            if (element instanceof ListTextElementBox) {
-                element = element.nextElement;
-                continue;
-            }
-            if (!isStarted && (element instanceof TextElementBox || element instanceof ImageElementBox
-                || element instanceof BookmarkElementBox || element instanceof EditRangeEndElementBox
-                || element instanceof EditRangeStartElementBox
-                || element instanceof FieldElementBox
-                && HelperMethods.isLinkedFieldCharacter(element as FieldElementBox))) {
-                isStarted = true;
-            }
-            if (!endElement) {
-                while (element && element instanceof TextElementBox && (textHelper.isRTLText(element.text) ||
-                    textHelper.containsSpecialCharAlone(element.text))) {
-                    if (!endElement) {
-                        endElement = element;
-                    }
-                    lastRtlIndex = this.children.indexOf(element);
-                    element = element.nextElement;
-                    isUpdated = true;
-                }
-            }
-            if (lastRtlIndex !== -1 && isUpdated) {
-                element = this.children[lastRtlIndex];
-            }
-            if (isOffset && !isNullOrUndefined(inline)) {
-                if (inline === element) {
-                    return { 'element': element, 'index': offset };
-                }
-                offset += element.length;
-            } else {
-                if (isStarted && offset <= count + element.length) {
-
-                    indexInInline = (offset - count);
-                    return { 'element': element, 'index': indexInInline };
-                }
-                count += element.length;
-            }
-            if (endElement === element) {
-                endElement = undefined;
-                if (lastRtlIndex !== -1) {
-                    element = this.children[lastRtlIndex] as ElementBox;
-                }
-                lastRtlIndex = -1;
-            }
-            if (endElement && element.previousElement) {
-                element = element.previousElement;
-            } else if (element.nextElement) {
-                element = element.nextElement;
-            } else {
-                if (offset > count) {
-                    indexInInline = isNullOrUndefined(element) ? offset : element.length;
-                }
-                return { 'element': element, 'index': indexInInline };
-            }
-            isUpdated = false;
-        }
-        return { 'element': element, 'index': indexInInline };
-    }
     /**
      * @private
      */
@@ -4049,41 +3830,41 @@ export class LineWidget implements IWidget {
                 }
             }
         }
-            for (let i: number = 0; i < this.children.length; i++) {
-                inlineElement = this.children[i] as ElementBox;
-                if (inlineElement instanceof ListTextElementBox) {
-                    continue;
-                }
-                if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                    || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl
-                    || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
-                    || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof CommentCharacterElementBox
-                    || inlineElement instanceof FieldElementBox
-                    && HelperMethods.isLinkedFieldCharacter(inlineElement as FieldElementBox))) {
-                    isStarted = true;
-                }
-                if (isStarted && offset <= count + inlineElement.length) {
-                    //if (inlineElement instanceof BookmarkElementBox) {
-                    //    offset += inlineElement.length;
-                    //    count += inlineElement.length;
-                    //    continue;
-                    //}
-                    if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
-                        let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
-                        inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
-                        indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
-                        return { 'element': inlineElement, 'index': indexInInline };
-                    } else if (offset === count + inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox) {
-                        return { 'element': this.children[i + 1], 'index': indexInInline };
-                    } else {
-                        indexInInline = (offset - count);
-                    }
-                    return { 'element': inlineElement, 'index': indexInInline };
-                }
-                count += inlineElement.length;
+        for (let i: number = 0; i < this.children.length; i++) {
+            inlineElement = this.children[i] as ElementBox;
+            if (inlineElement instanceof ListTextElementBox) {
+                continue;
             }
-            if (offset > count) {
-                indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
+            if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+                || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl
+                || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
+                || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof CommentCharacterElementBox
+                || inlineElement instanceof FieldElementBox
+                && HelperMethods.isLinkedFieldCharacter(inlineElement as FieldElementBox))) {
+                isStarted = true;
+            }
+            if (isStarted && offset <= count + inlineElement.length) {
+                //if (inlineElement instanceof BookmarkElementBox) {
+                //    offset += inlineElement.length;
+                //    count += inlineElement.length;
+                //    continue;
+                //}
+                if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
+                    let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
+                    inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
+                    indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+                    return { 'element': inlineElement, 'index': indexInInline };
+                } else if (offset === count + inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox) {
+                    return { 'element': this.children[i + 1], 'index': indexInInline };
+                } else {
+                    indexInInline = (offset - count);
+                }
+                return { 'element': inlineElement, 'index': indexInInline };
+            }
+            count += inlineElement.length;
+        }
+        if (offset > count) {
+            indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
         }
         return { 'element': inlineElement, 'index': indexInInline };
     }
@@ -4574,8 +4355,8 @@ export class FieldElementBox extends ElementBox {
      */
     public formFieldData: FormField;
     /**
-     * @private
-     */
+    * @private
+    */
     public fieldBeginInternal: FieldElementBox = undefined;
     private fieldSeparatorInternal: FieldElementBox = undefined;
     private fieldEndInternal: FieldElementBox = undefined;
@@ -5863,20 +5644,6 @@ export class ShapeElementBox extends ShapeBase {
         }
         if (this.margin) {
             shape.margin = this.margin.clone();
-        }
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    shape.revisions.push(revision.clone());
-                }
-            }
-        } else {
-            if (this.revisions.length > 0) {
-                shape.removedIds = Revision.cloneRevisions(this.revisions);
-            } else {
-                shape.removedIds = this.removedIds.slice();
-            }
         }
         return shape;
     }

@@ -49,6 +49,8 @@ export class Table {
     private moveEle: HTMLElement = null;
     private helper: HTMLElement;
     private dialogRenderObj: DialogRenderer;
+    private currentColumnResize: string = '';
+    private currentMarginLeft: number = 0;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -224,6 +226,7 @@ export class Table {
                     proxy.removeTable(selection, event as KeyboardEventArgs, true);
                 } else if (ele && ele.querySelectorAll('table').length > 0) {
                     this.removeResizeElement();
+                    this.hideTableQuickToolbar();
                 }
             }
             if (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') {
@@ -608,7 +611,7 @@ export class Table {
 
     private tableResizeEleCreation(table: HTMLTableElement, e: MouseEvent): void {
         this.parent.preventDefaultResize(e);
-        const columns: NodeListOf<Element> = Array.prototype.slice.call(table.rows[this.calMaxCol(table)].cells, 1);
+        const columns: HTMLCollectionOf<Element> = table.rows[this.calMaxCol(table)].cells;
         const rows: Element[] = [];
         for (let i: number = 0; i < table.rows.length; i++) {
             rows.push(Array.prototype.slice.call(table.rows[i].cells, 0, 1)[0]);
@@ -616,15 +619,20 @@ export class Table {
         const height: number = parseInt(getComputedStyle(table).height, 10);
         const width: number = parseInt(getComputedStyle(table).width, 10);
         const pos: OffsetPosition = this.calcPos(table);
-        for (let i: number = 0; columns.length > i; i++) {
+        for (let i: number = 0; columns.length >= i; i++) {
             const colReEle: HTMLElement = this.parent.createElement('span', {
                 attrs: {
-                    'data-col': (i + 1).toString(), 'unselectable': 'on', 'contenteditable': 'false'
+                    'data-col': (i).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
             });
             colReEle.classList.add(classes.CLS_RTE_TABLE_RESIZE, classes.CLS_TB_COL_RES);
-            colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
+            if (columns.length === i) {
+                colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
+                'px; left:' + (pos.left + this.calcPos(columns[i - 1] as HTMLElement).left + (columns[i - 1] as HTMLElement).offsetWidth) + 'px;';
+            } else {
+                colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
                 'px; left:' + (pos.left + this.calcPos(columns[i] as HTMLElement).left) + 'px;';
+            }
             this.contentModule.getEditPanel().appendChild(colReEle);
         }
         for (let i: number = 0; rows.length > i; i++) {
@@ -642,7 +650,7 @@ export class Table {
             this.contentModule.getEditPanel().appendChild(rowReEle);
         }
         const tableReBox: HTMLElement = this.parent.createElement('span', {
-            className: classes.CLS_TB_BOX_RES, attrs: {
+            className: classes.CLS_TB_BOX_RES + ' ' + this.parent.cssClass, attrs: {
                 'data-col': columns.length.toString(), 'unselectable': 'on', 'contenteditable': 'false'
             }
         });
@@ -741,7 +749,17 @@ export class Table {
             this.hideTableQuickToolbar();
             if (target.classList.contains(classes.CLS_TB_COL_RES)) {
                 this.resizeBtnStat.column = true;
-                this.columnEle = this.curTable.rows[this.calMaxCol(this.curTable)].cells[parseInt(target.getAttribute('data-col'), 10)] as HTMLTableDataCellElement;
+                if (parseInt(target.getAttribute('data-col'), 10) === this.curTable.rows[this.calMaxCol(this.curTable)].cells.length) {
+                    this.currentColumnResize = 'last';
+                    this.columnEle = this.curTable.rows[this.calMaxCol(this.curTable)].cells[parseInt(target.getAttribute('data-col'), 10) - 1] as HTMLTableDataCellElement;
+                } else {
+                    if (parseInt(target.getAttribute('data-col'), 10) === 0) {
+                        this.currentColumnResize = 'first';
+                    } else {
+                        this.currentColumnResize = 'middle';
+                    }
+                    this.columnEle = this.curTable.rows[this.calMaxCol(this.curTable)].cells[parseInt(target.getAttribute('data-col'), 10)] as HTMLTableDataCellElement;
+                }
                 this.colIndex = this.columnEle.cellIndex;
                 this.moveEle = e.target as HTMLElement;
                 this.appendHelper();
@@ -785,7 +803,7 @@ export class Table {
     }
     private appendHelper(): void {
         this.helper = this.parent.createElement('div', {
-            className: 'e-table-rhelper'
+            className: 'e-table-rhelper' + ' ' + this.parent.cssClass
         });
         if (Browser.isDevice) {
             this.helper.classList.add('e-reicon');
@@ -799,7 +817,8 @@ export class Table {
         if (this.resizeBtnStat.column) {
             this.helper.classList.add('e-column-helper');
             (this.helper as HTMLElement).style.cssText = 'height: ' + getComputedStyle(this.curTable).height + '; top: ' +
-                pos.top + 'px; left:' + (pos.left + this.calcPos(this.columnEle).left - 1) + 'px;';
+                pos.top + 'px; left:' +((pos.left + this.calcPos(this.columnEle).left) +
+                (this.currentColumnResize === 'last' ? this.columnEle.offsetWidth + 2 : 0) - 1) + 'px;';
         } else {
             this.helper.classList.add('e-row-helper');
             (this.helper as HTMLElement).style.cssText = 'width: ' + getComputedStyle(this.curTable).width + '; top: ' +
@@ -811,7 +830,8 @@ export class Table {
     private updateHelper(): void {
         const pos: OffsetPosition = this.calcPos(this.curTable);
         if (this.resizeBtnStat.column) {
-            const left: number = pos.left + this.calcPos(this.columnEle as HTMLElement).left - 1;
+            const left: number = (pos.left + this.calcPos(this.columnEle as HTMLElement).left) +
+            (this.currentColumnResize === 'last' ? this.columnEle.offsetWidth + 2 : 0) - 1;
             this.helper.style.left = left + 'px';
         } else {
             const top: number = this.calcPos(this.rowEle).top + pos.top + (this.rowEle as HTMLElement).offsetHeight;
@@ -834,7 +854,7 @@ export class Table {
     private resizing(e: PointerEvent | TouchEvent): void {
         const pageX: number = this.getPointX(e);
         const pageY: number = this.getPointY(e);
-        const mouseX: number = (this.parent.enableRtl) ? -(pageX - this.pageX) : (pageX - this.pageX);
+        let mouseX: number = (this.parent.enableRtl) ? -(pageX - this.pageX) : (pageX - this.pageX);
         const mouseY: number = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
@@ -849,23 +869,63 @@ export class Table {
                 const paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
                 const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - ((this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
                       (this.contentModule.getEditPanel() as HTMLElement).clientWidth) - paddingSize * 2;
+                let widthCompare: number;
+                if (!isNOU(this.curTable.parentElement.closest('table'))) {
+                    const currentTd: HTMLElement = this.curTable.closest('td');
+                    const currentTDPad: number = +getComputedStyle(currentTd).paddingRight.match(/\d/g).join('');
+                    // Padding of the current table with the parent element multiply with 2.
+                    widthCompare = currentTd.offsetWidth - (currentTd.offsetWidth - currentTd.clientWidth) - currentTDPad * 2;
+                } else {
+                    widthCompare = rteWidth;
+                }
                 if (this.resizeBtnStat.column) {
-                    const cellColl: HTMLCollectionOf<Element> = this.curTable.rows[this.calMaxCol(this.curTable)].cells;
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
-                    const actualwid: number = width - mouseX;
-                    const totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
-                            parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toString());
-                    for (let i: number = 0; i < this.curTable.rows.length; i++) {
-                        if ((totalwid - actualwid) > 20 && actualwid > 20) {
-                            const leftColumnWidth: number = totalwid - actualwid;
-                            const rightColWidth: number = actualwid;
-                            if (!isNOU(this.curTable.rows[i].cells[this.colIndex - 1])) {
-                                (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
-                                this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
+                    let cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
+                    let currentTableWidth: number =  parseFloat(this.curTable.style.width.split('%')[0]);
+                    let currentColumnCellWidth: number = parseFloat((this.curTable.rows[cellRow].cells[this.colIndex] as HTMLElement).style.width.split('%')[0]);
+                    if (this.currentColumnResize === 'first') {
+                        mouseX = mouseX - 0.75; //This was done for to make the gripper and the table first/last column will be close.
+                        this.removeResizeElement();
+                        // Below the value '100' is the 100% width of the parent element.
+                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX < 0) && currentTableWidth <= 100 && this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) <= 100) {
+                            const firstColumnsCell: HTMLElement[] =  this.findFirstLastColCells(this.curTable, true);
+                            this.curTable.style.width = this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) > 100 ? (100 + '%') : (this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) + '%');
+                            let differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(tableWidth - mouseX, widthCompare);
+                            this.currentMarginLeft = this.currentMarginLeft + differenceWidth;
+                            this.curTable.style.marginLeft = 'calc(' + (this.curTable.style.width === '100%' ? 0 : this.currentMarginLeft) + '%)';
+                            for (let i: number = 0; i < firstColumnsCell.length; i++) {
+                                (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
                             }
-                            if (!isNOU(this.curTable.rows[i].cells[this.colIndex])) {
-                                (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
-                                this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
+                        }
+                    } else if (this.currentColumnResize === 'last') {
+                        mouseX = mouseX + 0.75; //This was done for to make the gripper and the table first/last column will be close.
+                        this.removeResizeElement();
+                        // Below the value '100' is the 100% width of the parent element.
+                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX > 0) && currentTableWidth <= 100 && this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) <= 100) {
+                            const lastColumnsCell: HTMLElement[] = this.findFirstLastColCells(this.curTable, false);
+                            this.curTable.style.width = this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) > 100 ? (100 + '%') : (this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) + '%');
+                            let differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(tableWidth + mouseX, widthCompare);
+                            for (let i: number = 0; i < lastColumnsCell.length; i++) {
+                                (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
+                            }
+                        }
+                    } else {
+                        const cellColl: HTMLCollectionOf<Element> = this.curTable.rows[this.calMaxCol(this.curTable)].cells;
+                        const actualwid: number = width - mouseX;
+                        const totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
+                            parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toString());
+                        for (let i: number = 0; i < this.curTable.rows.length; i++) {
+                            if ((totalwid - actualwid) > 20 && actualwid > 20) {
+                                const leftColumnWidth: number = totalwid - actualwid;
+                                const rightColWidth: number = actualwid;
+                                if (!isNOU(this.curTable.rows[i].cells[this.colIndex - 1])) {
+                                    (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
+                                    this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
+                                }
+                                if (!isNOU(this.curTable.rows[i].cells[this.colIndex])) {
+                                    (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
+                                    this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
+                                }
                             }
                         }
                     }
@@ -887,7 +947,7 @@ export class Table {
                         EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
                     }
                     const widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
-                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
+                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) + '%'
                         : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
                     tableReBox.classList.add('e-rbox-select');
@@ -896,6 +956,18 @@ export class Table {
                 }
             }
         });
+    }
+
+    private findFirstLastColCells(table: HTMLElement, isFirst: boolean): HTMLElement[] {
+        let resultColumns: HTMLElement[] = [];
+        const rows: NodeListOf<HTMLElement> = table.querySelectorAll('tr');
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].closest('table') === table) {
+                const columns: NodeListOf<Element> = rows[i].querySelectorAll('th, td');
+                resultColumns.push(isFirst ? (columns[0] as HTMLElement) : (columns[columns.length - 1] as HTMLElement));
+            }
+        }
+        return resultColumns;
     }
 
     private convertPixelToPercentage(value: number, offsetValue: number): number {
@@ -917,13 +989,13 @@ export class Table {
                 EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
             }
             this.removeResizeElement();
-            if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
-                detach(this.helper); this.helper = null;
-            }
-            this.pageX = null;
-            this.pageY = null;
-            this.moveEle = null;
         }
+        if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
+            detach(this.helper); this.helper = null;
+        }
+        this.pageX = null;
+        this.pageY = null;
+        this.moveEle = null;
         const args: ResizeArgs = { event: e, requestType: 'table' };
         this.parent.trigger(events.resizeStop, args);
         this.parent.formatter.saveData();
@@ -982,16 +1054,16 @@ export class Table {
         this.hideTableQuickToolbar();
         const header: string = '1X1';
         const insertbtn: string = this.l10n.getConstant('inserttablebtn');
-        this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup', id: this.rteID + '_table' });
-        this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' });
+        this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup' + ' ' + this.parent.cssClass, id: this.rteID + '_table' });
+        this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' + ' ' + this.parent.cssClass });
         this.tblHeader.innerHTML = header;
         this.dlgDiv.appendChild(this.tblHeader);
-        const tableDiv: HTMLElement = this.parent.createElement('div', { className: 'e-rte-table-span' });
+        const tableDiv: HTMLElement = this.parent.createElement('div', { className: 'e-rte-table-span' + ' ' + this.parent.cssClass });
         this.drawTable(tableDiv, args);
         this.dlgDiv.appendChild(tableDiv);
-        this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' }));
+        this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' + ' ' + this.parent.cssClass }));
         const btnEle: HTMLElement = this.parent.createElement('button', {
-            className: 'e-insert-table-btn', id: this.rteID + '_insertTable',
+            className: 'e-insert-table-btn' + ' ' + this.parent.cssClass, id: this.rteID + '_insertTable',
             attrs: { type: 'button', tabindex: '0' }
         });
         if (!isNOU(this.parent.getToolbarElement().querySelector('.e-expended-nav') as HTMLElement)) {
@@ -1053,7 +1125,7 @@ export class Table {
             !target.offsetParent.classList.contains('e-quick-dropdown') &&
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')
             && !closest(target, '.e-rte-elements')) {
-            removeClass(this.parent.element.querySelectorAll('table td'), classes.CLS_TABLE_SEL);
+            removeClass(this.parent.inputElement.querySelectorAll('table td'), classes.CLS_TABLE_SEL);
             if (!Browser.isIE) {
                 this.hideTableQuickToolbar();
             }
@@ -1069,10 +1141,10 @@ export class Table {
         let rowDiv: HTMLElement;
         let tableCell: HTMLElement;
         for (let row: number = 0; row < 3; row++) {
-            rowDiv = this.parent.createElement('div', { className: 'e-rte-table-row', attrs: { 'data-column': '' + row } });
+            rowDiv = this.parent.createElement('div', { className: 'e-rte-table-row' + ' ' + this.parent.cssClass, attrs: { 'data-column': '' + row } });
             for (let col: number = 0; col < 10; col++) {
                 const display: string = (row > 2) ? 'none' : 'inline-block';
-                tableCell = this.parent.createElement('div', { className: 'e-rte-tablecell e-default', attrs: { 'data-cell': '' + col } });
+                tableCell = this.parent.createElement('div', { className: 'e-rte-tablecell e-default' + ' ' + this.parent.cssClass, attrs: { 'data-cell': '' + col } });
                 rowDiv.appendChild(tableCell);
                 tableCell.style.display = display;
                 if (col === 0 && row === 0) {
@@ -1095,13 +1167,13 @@ export class Table {
             height: 'initial', width: '290px', content: editContent, header: editHeader,
             buttons: [{
                 click: this.applyProperties.bind(this, args),
-                buttonModel: { content: update, cssClass: 'e-flat e-size-update', isPrimary: true }
+                buttonModel: { content: update, cssClass: 'e-flat e-size-update' + ' ' + this.parent.cssClass, isPrimary: true }
             },
             {
                 click: (e: MouseEvent) => {
                     this.cancelDialog(e);
                 },
-                buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
+                buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + this.parent.cssClass, content: cancel }
             }],
             cssClass: this.parent.cssClass
         });
@@ -1124,13 +1196,13 @@ export class Table {
             height: 'initial', width: '290px', content: dlgContent,
             buttons: [{
                 click: proxy.customTable.bind(this, args),
-                buttonModel: { content: insert, cssClass: 'e-flat e-insert-table', isPrimary: true }
+                buttonModel: { content: insert, cssClass: 'e-flat e-insert-table' + ' ' + proxy.parent.cssClass, isPrimary: true }
             },
             {
                 click: (e: MouseEvent) => {
                     proxy.cancelDialog(e);
                 },
-                buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
+                buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + proxy.parent.cssClass, content: cancel }
             }]
         });
         if (!isNOU(proxy.parent.cssClass)) {
@@ -1143,10 +1215,10 @@ export class Table {
     private tableCellDlgContent(): HTMLElement {
         const tableColumn: string = this.l10n.getConstant('columns');
         const tableRow: string = this.l10n.getConstant('rows');
-        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-cell-wrap' });
-        const content: string = '<div class="e-rte-field"><input type="text" '
-            + ' data-role ="none" id="tableColumn" class="e-table-column"/></div>'
-            + '<div class="e-rte-field"><input type="text" data-role ="none" id="tableRow" class="e-table-row" /></div>';
+        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-cell-wrap' + ' ' + this.parent.cssClass });
+        const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" '
+            + ' data-role ="none" id="tableColumn" class="e-table-column' + ' ' + this.parent.cssClass + '"/></div>'
+            + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="tableRow" class="e-table-row' + ' ' + this.parent.cssClass + '" /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         this.columnTextBox = new NumericTextBox({
@@ -1190,7 +1262,7 @@ export class Table {
             return;
         }
         const tableDialog: HTMLElement = this.parent.createElement('div', {
-            className: 'e-rte-edit-table', id: this.rteID + '_tabledialog' });
+            className: 'e-rte-edit-table' + ' ' + this.parent.cssClass, id: this.rteID + '_tabledialog' });
         this.parent.element.appendChild(tableDialog);
         const insert: string = this.l10n.getConstant('dialogInsert');
         const cancel: string = this.l10n.getConstant('dialogCancel');
@@ -1204,13 +1276,13 @@ export class Table {
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
-                buttonModel: { content: insert, cssClass: 'e-flat e-insert-table', isPrimary: true }
+                buttonModel: { content: insert, cssClass: 'e-flat e-insert-table' + ' ' + this.parent.cssClass, isPrimary: true }
             },
             {
                 click: (e: MouseEvent) => {
                     this.cancelDialog(e);
                 },
-                buttonModel: { cssClass: 'e-flat e-cancel', content: cancel }
+                buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + this.parent.cssClass, content: cancel }
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
@@ -1279,13 +1351,13 @@ export class Table {
         const tableWidth: string = this.l10n.getConstant('tableWidth');
         const cellPadding: string = this.l10n.getConstant('cellpadding');
         const cellSpacing: string = this.l10n.getConstant('cellspacing');
-        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' });
+        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' + ' ' + this.parent.cssClass });
         const widthVal: string | number = closest(selectNode, 'table').getClientRects()[0].width;
         const padVal: string | number = (closest(selectNode, 'td') as HTMLElement).style.padding;
         const brdSpcVal: string | number = (closest(selectNode, 'table') as HTMLElement).getAttribute('cellspacing');
-        const content: string = '<div class="e-rte-field"><input type="text" data-role ="none" id="tableWidth" class="e-table-width" '
-            + ' /></div>' + '<div class="e-rte-field"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding" />'
-            + ' </div><div class="e-rte-field"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing" /></div>';
+        const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="tableWidth" class="e-table-width' + ' ' + this.parent.cssClass + '" '
+            + ' /></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding' + ' ' + this.parent.cssClass + '" />'
+            + ' </div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing' + ' ' + this.parent.cssClass + '" /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         this.tableWidthNum = new NumericTextBox({

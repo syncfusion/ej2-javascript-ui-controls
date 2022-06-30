@@ -1,5 +1,5 @@
-import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell, getSheet } from '../base/index';
-import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count, getRangeIndexes } from '../common/index';
+import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell, getSheet, getSheetIndex } from '../base/index';
+import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count, getRangeIndexes, getSheetIndexFromAddress } from '../common/index';
 import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
@@ -665,8 +665,9 @@ export class WorkbookFindAndReplace {
                 requestAnimationFrame(() => {
                     if (!eventArgs.cancel && eventArgs.addressCollection[index]) {
                         const indexes: number[] = getCellIndexes(eventArgs.addressCollection[index].split('!')[1]);
+                        const sheetIndex = getSheetIndexFromAddress(this.parent, eventArgs.addressCollection[index]);
                         updateCell(
-                            this.parent, sheet, { cell: { value: cellValue }, rowIdx: indexes[0], colIdx: indexes[1], uiRefresh: true,
+                            this.parent, this.parent.sheets[sheetIndex], { cell: { value: cellValue }, rowIdx: indexes[0], colIdx: indexes[1], uiRefresh: true,
                             valChange: true });
                         if (index === eventArgs.addressCollection.length - 1 && triggerEvent) {
                             this.parent.notify('actionComplete', { action: 'replaceAll', eventArgs: eventArgs });

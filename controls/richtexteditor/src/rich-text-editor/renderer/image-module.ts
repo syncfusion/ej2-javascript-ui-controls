@@ -298,18 +298,18 @@ export class Image {
         this.resizeBtnInit();
         this.imgEle = e;
         addClass([this.imgEle], 'e-resize');
-        this.imgResizeDiv = this.parent.createElement('span', { className: 'e-img-resize', id: this.rteID + '_imgResize' });
+        this.imgResizeDiv = this.parent.createElement('span', { className: 'e-img-resize' + ' ' + this.parent.cssClass, id: this.rteID + '_imgResize' });
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-topLeft', styles: 'cursor: nwse-resize'
+            className: 'e-rte-imageboxmark e-rte-topLeft' + ' ' + this.parent.cssClass, styles: 'cursor: nwse-resize'
         }));
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-topRight', styles: 'cursor: nesw-resize'
+            className: 'e-rte-imageboxmark e-rte-topRight' + ' ' + this.parent.cssClass, styles: 'cursor: nesw-resize'
         }));
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-botLeft', styles: 'cursor: nesw-resize'
+            className: 'e-rte-imageboxmark e-rte-botLeft' + ' ' + this.parent.cssClass, styles: 'cursor: nesw-resize'
         }));
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-botRight', styles: 'cursor: nwse-resize'
+            className: 'e-rte-imageboxmark e-rte-botRight' + ' ' + this.parent.cssClass, styles: 'cursor: nwse-resize'
         }));
         if (Browser.isDevice) {
             addClass([this.imgResizeDiv], 'e-mob-rte');
@@ -959,12 +959,12 @@ export class Image {
         }
         this.imagDialog(e);
         if (!isNullOrUndefined(this.dialogObj)) {
-            const linkWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-linkwrap' });
+            const linkWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-linkwrap' + ' ' + this.parent.cssClass });
             const linkUrl: string = this.i10n.getConstant('linkurl');
-            const content: string = '<div class="e-rte-field">' +
-                '<input type="text" data-role ="none" class="e-input e-img-link" spellcheck="false" placeholder="' + linkUrl + '"/></div>' +
+            const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
+                '<input type="text" data-role ="none" class="e-input e-img-link' + ' ' + this.parent.cssClass + '" spellcheck="false" placeholder="' + linkUrl + '"/></div>' +
                 '<div class="e-rte-label"></div>' + '<div class="e-rte-field">' +
-                '<input type="checkbox" class="e-rte-linkTarget"  data-role ="none"></div>';
+                '<input type="checkbox" class="e-rte-linkTarget' + ' ' + this.parent.cssClass + '"  data-role ="none"></div>';
             const contentElem: DocumentFragment = parseHtml(content);
             linkWrap.appendChild(contentElem);
             const linkTarget: HTMLInputElement = linkWrap.querySelector('.e-rte-linkTarget') as HTMLInputElement;
@@ -1002,7 +1002,7 @@ export class Image {
                         this.insertlink(linkargs);
                     },
                     buttonModel: {
-                        content: linkUpdate, cssClass: 'e-flat e-update-link', isPrimary: true
+                        content: linkUpdate, cssClass: 'e-flat e-update-link' + ' ' + this.parent.cssClass, isPrimary: true
                     }
                 }]
             });
@@ -1027,13 +1027,13 @@ export class Image {
         this.imagDialog(e);
         const altText: string = this.i10n.getConstant('altText');
         if (!isNullOrUndefined(this.dialogObj)) {
-            const altWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-altwrap' });
+            const altWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-altwrap' + ' ' + this.parent.cssClass });
             const altHeader: string = this.i10n.getConstant('alternateHeader');
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const getAlt: string = ((e.selectNode[0] as HTMLElement).getAttribute('alt') === null) ? '' :
                 (e.selectNode[0] as HTMLElement).getAttribute('alt');
-            const content: string = '<div class="e-rte-field">' +
-                '<input type="text" spellcheck="false" value="' + getAlt + '" class="e-input e-img-alt" placeholder="' + altText + '"/>' +
+            const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
+                '<input type="text" spellcheck="false" value="' + getAlt + '" class="e-input e-img-alt' + ' ' + this.parent.cssClass + '" placeholder="' + altText + '"/>' +
                 '</div>';
             const contentElem: DocumentFragment = parseHtml(content);
             altWrap.appendChild(contentElem);
@@ -1050,7 +1050,7 @@ export class Image {
                         this.insertAlt(altArgs);
                     },
                     buttonModel: {
-                        content: linkUpdate, cssClass: 'e-flat e-update-alt', isPrimary: true
+                        content: linkUpdate, cssClass: 'e-flat e-update-alt' + ' ' + this.parent.cssClass, isPrimary: true
                     }
                 }]
             });
@@ -1217,11 +1217,11 @@ export class Image {
             }
         } else {
             this.captionEle = this.parent.createElement('span', {
-                className: classes.CLS_CAPTION + ' ' + classes.CLS_RTE_CAPTION,
+                className: classes.CLS_CAPTION + ' ' + classes.CLS_RTE_CAPTION + ' ' + this.parent.cssClass,
                 attrs: { contenteditable: 'false', draggable: 'false', style: 'width:' + this.parent.insertImageSettings.width }
             });
-            const imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' });
-            const imgInner: HTMLElement = this.parent.createElement('span', { className: 'e-img-inner',
+            const imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' + ' ' + this.parent.cssClass });
+            const imgInner: HTMLElement = this.parent.createElement('span', { className: 'e-img-inner' + ' ' + this.parent.cssClass,
                 attrs: { contenteditable: 'true' } });
             const parent: HTMLElement = e.selectNode[0].parentElement;
             if (parent.tagName === 'A') {
@@ -1276,7 +1276,7 @@ export class Image {
                         this.insertSize(selectObj);
                     },
                     buttonModel: {
-                        content: linkUpdate, cssClass: 'e-flat e-update-size', isPrimary: true
+                        content: linkUpdate, cssClass: 'e-flat e-update-size' + ' ' + this.parent.cssClass, isPrimary: true
                     }
                 }]
             });
@@ -1320,7 +1320,7 @@ export class Image {
             this.dialogObj.hide({ returnValue: true } as Event);
             return;
         }
-        const imgDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-img-dialog', id: this.rteID + '_image' });
+        const imgDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-img-dialog' + ' ' + this.parent.cssClass, id: this.rteID + '_image' });
         this.parent.element.appendChild(imgDialog);
         const imgInsert: string = this.i10n.getConstant('dialogInsert');
         const imglinkCancel: string = this.i10n.getConstant('dialogCancel');
@@ -1329,7 +1329,7 @@ export class Image {
         const selectObj: IImageNotifyArgs = { selfImage: this, selection: e.selection, args: e.args, selectParent: e.selectParent };
         const dialogModel: DialogModel = {
             header: imgHeader,
-            cssClass: classes.CLS_RTE_ELEMENTS,
+            cssClass: classes.CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'inherit',
@@ -1337,13 +1337,13 @@ export class Image {
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertImageUrl.bind(selectObj),
-                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage', isPrimary: true, disabled: true }
+                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage' + ' ' + this.parent.cssClass, isPrimary: true, disabled: true }
             },
             {
                 click: (e: MouseEvent) => {
                     this.cancelDialog(e);
                 },
-                buttonModel: { cssClass: 'e-flat e-cancel', content: imglinkCancel }
+                buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + this.parent.cssClass, content: imglinkCancel }
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
@@ -1366,12 +1366,12 @@ export class Image {
                 this.dialogObj = null;
             }
         };
-        const dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-img-content' });
+        const dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-img-content' + ' ' + this.parent.cssClass });
         if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
             || this.parent.editorMode === 'HTML') {
             dialogContent.appendChild(this.imgUpload(e));
         }
-        const linkHeader: HTMLElement = this.parent.createElement('div', { className: 'e-linkheader' });
+        const linkHeader: HTMLElement = this.parent.createElement('div', { className: 'e-linkheader' + ' ' + this.parent.cssClass });
         const linkHeaderText: string = this.i10n.getConstant('imageLinkHeader');
         if (this.parent.editorMode === 'HTML') {
             linkHeader.innerHTML = linkHeaderText;
@@ -1441,7 +1441,8 @@ export class Image {
             }
             /* eslint-enable */
         }
-        if (!(this.parent.iframeSettings.enable && this.parent.currentTarget.nodeName === 'IMG') && (e.target as HTMLElement).tagName !== 'IMG' && this.imgResizeDiv && !(this.quickToolObj &&
+        if (!(this.parent.iframeSettings.enable && !isNOU(this.parent.currentTarget) && this.parent.currentTarget.nodeName === 'IMG') &&
+            (e.target as HTMLElement).tagName !== 'IMG' && this.imgResizeDiv && !(this.quickToolObj &&
             this.quickToolObj.imageQTBar && this.quickToolObj.imageQTBar.element.contains(e.target as HTMLElement)) &&
             this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
             this.cancelResizeAction();
@@ -1470,10 +1471,10 @@ export class Image {
 
     // eslint-disable-next-line
     private imageUrlPopup(e: IImageNotifyArgs): HTMLElement {
-        const imgUrl: HTMLElement = this.parent.createElement('div', { className: 'imgUrl' });
+        const imgUrl: HTMLElement = this.parent.createElement('div', { className: 'imgUrl' + ' ' + this.parent.cssClass });
         const placeUrl: string = this.i10n.getConstant('imageUrl');
         this.inputUrl = this.parent.createElement('input', {
-            className: 'e-input e-img-url',
+            className: 'e-input e-img-url' + ' ' + this.parent.cssClass,
             attrs: { placeholder: placeUrl, spellcheck: 'false' }
         });
         this.inputUrl.addEventListener('input', () => {
@@ -1544,7 +1545,7 @@ export class Image {
         const selectNode: HTMLImageElement = (e as IImageNotifyArgs).selectNode[0] as HTMLImageElement;
         const imgHeight: string = this.i10n.getConstant('imageHeight');
         const imgWidth: string = this.i10n.getConstant('imageWidth');
-        const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' });
+        const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' + ' ' + this.parent.cssClass });
         const widthVal: string = isNullOrUndefined(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
             selectNode.style.width !== '') ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
             this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString(), 10)).toString();
@@ -1553,12 +1554,12 @@ export class Image {
             this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
         this.changedWidthValue = null;
         this.changedHeightValue = null;
-        const content: string = '<div class="e-rte-label"><label>' + imgWidth +
-            '</label></div><div class="e-rte-field"><input type="text" id="imgwidth" class="e-img-width" value=' +
+        const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + imgWidth +
+            '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" id="imgwidth" class="e-img-width' + ' ' + this.parent.cssClass + '" value=' +
             widthVal
             + ' /></div>' +
-            '<div class="e-rte-label">' + '<label>' + imgHeight + '</label></div><div class="e-rte-field"> ' +
-            '<input type="text" id="imgheight" class="e-img-height" value=' +
+            '<div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + '<label>' + imgHeight + '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"> ' +
+            '<input type="text" id="imgheight" class="e-img-height' + ' ' + this.parent.cssClass + '" value=' +
             heightVal
             + ' /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
@@ -1652,16 +1653,16 @@ export class Image {
         } else {
             save = e.selection; selectParent = e.selectParent;
         }
-        const uploadParentEle: HTMLElement = this.parent.createElement('div', { className: 'e-img-uploadwrap e-droparea' });
+        const uploadParentEle: HTMLElement = this.parent.createElement('div', { className: 'e-img-uploadwrap e-droparea' + ' ' + this.parent.cssClass });
         const deviceImgUpMsg: string = this.i10n.getConstant('imageDeviceUploadMessage');
         const imgUpMsg: string = this.i10n.getConstant('imageUploadMessage');
-        const span: HTMLElement = this.parent.createElement('span', { className: 'e-droptext' });
+        const span: HTMLElement = this.parent.createElement('span', { className: 'e-droptext' + ' ' + this.parent.cssClass });
         const spanMsg: HTMLElement = this.parent.createElement('span', {
-            className: 'e-rte-upload-text', innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
+            className: 'e-rte-upload-text' + ' ' + this.parent.cssClass, innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
         });
         span.appendChild(spanMsg);
         const btnEle: HTMLElement = this.parent.createElement('button', {
-            className: 'e-browsebtn', id: this.rteID + '_insertImage', attrs: { autofocus: 'true', type: 'button' }
+            className: 'e-browsebtn' + ' ' + this.parent.cssClass, id: this.rteID + '_insertImage', attrs: { autofocus: 'true', type: 'button' }
         });
         span.appendChild(btnEle); uploadParentEle.appendChild(span);
         const browserMsg: string = this.i10n.getConstant('browse');
@@ -1671,7 +1672,7 @@ export class Image {
         const btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
         EventHandler.add(btnClick, 'click', this.fileSelect, this);
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
-            id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+            id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }, className: this.parent.cssClass
         });
         uploadParentEle.appendChild(uploadEle);
         let altText: string;

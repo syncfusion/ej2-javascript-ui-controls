@@ -3,7 +3,7 @@
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../src/diagram/diagram';
-import { Path, Node } from '../../src/diagram/objects/node';
+import { Path, Node, BpmnShape } from '../../src/diagram/objects/node';
 
 import { BpmnDiagrams } from '../../src/diagram/objects/bpmn';
 import { Connector } from '../../src/diagram/objects/connector';
@@ -1244,7 +1244,82 @@ describe('Symbol Palette', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
-
+    describe('Testing Bpmn shape color after changing the event in runtime',()=>{
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolpaletteBpmnIssue', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramBpmnIssue', styles: 'width:50%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '70%', height: 500
+            });
+            diagram.appendTo('#diagramBpmnIssue');
+            var BpmnShape : NodeModel[] =[{
+                    id: 'BPMNnode1', style: { strokeWidth: 2 }, shape: { type: 'Bpmn', shape: 'Event', event: { event: 'Start', trigger: 'None' } },
+                },
+            ]
+            var palettes = [
+                {
+                    id: 'BpmnShapes', expanded: true, symbols: BpmnShape
+                    , title: 'Bpmn'
+                }
+            ];
+            palette = new SymbolPalette({
+                width: '25%', height: '500px',
+                palettes: palettes,
+                symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { height: 100, width: 100 },
+                enableSearch: true,
+                symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+                getSymbolInfo: (symbol: NodeModel): SymbolInfo => {
+                    return { fit: true };
+                }
+            });
+            palette.appendTo('#symbolpaletteBpmnIssue');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+        it('Check Bpmn event shape fill color ', (done: Function) => {
+            setTimeout(function () {
+                palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                    let clonedElement: HTMLElement; let diagramElement: any;
+                    let position: PointModel = palette['getMousePosition'](e.sender);
+                    let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                    let symbols: IElement = palette.symbolTable[target['id']];
+                    palette['selectedSymbols'] = symbols;
+                    if (symbols !== undefined) {
+                        clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                        clonedElement.setAttribute('paletteId', palette.element.id);
+                    }
+                    return clonedElement;
+                };
+                palette.getPersistData();
+                let events = new MouseEvents();
+                let element = (document.getElementById('BPMNnode1_container').getBoundingClientRect());;
+                events.mouseDownEvent(palette.element, element.left + palette.element.offsetLeft, element.top + palette.element.offsetTop, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 40 + palette.element.offsetLeft, element.top + palette.element.offsetLeft, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 60, element.top, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 100, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 100 - diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 100 - 5 - diagram.element.offsetTop, false, false);
+                events.mouseUpEvent(diagram.element, 600, 100 - 10 - diagram.element.offsetTop, false, false);
+                events.clickEvent(diagram.element, 600, 100 - 10 - diagram.element.offsetTop, false, false);
+                diagram.nodes[0].style.fill = 'blue';
+                (diagram.nodes[0].shape as BpmnShape).event.event = 'Intermediate';
+                diagram.dataBind();
+                expect(diagram.nodes.length === 1 && diagram.nodes[0].style.fill === 'blue'
+                && (diagram.nodes[0].shape as BpmnShape).event.event === 'Intermediate').toBe(true);
+                done();
+            }, 1000);
+        });
+    });
     describe('Testing symbol palette with connector source and target point as same', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;

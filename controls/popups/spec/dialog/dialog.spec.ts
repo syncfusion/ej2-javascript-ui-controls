@@ -648,6 +648,14 @@ describe('Dialog Control', () => {
             dialog.dataBind();
             expect((dialog.element as HTMLElement).style.left).toBe('100px');
         });
+        
+        it('dynamic change on minHeight value testing', () => {
+            dialog = new Dialog({ header: "Dialog", minHeight: '200px' }, '#dialog');
+            expect((dialog.element as HTMLElement).style.minHeight).toBe('200px');
+            dialog.minHeight = '400px';
+            dialog.dataBind();
+            expect((dialog.element as HTMLElement).style.minHeight).toBe('400px');
+        });
 
         it('dialog header given as Template testing', () => {
             let headerTemplateContent = "<div>Template content</div>";

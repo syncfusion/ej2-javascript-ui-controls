@@ -554,8 +554,8 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         const height: number[] = [];
         const width: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) {
-            if (isModeChg && ((!this.parent.rowHeight && tBody.className === 'e-hide') || (wrapMode === 'Header' && isContReset) || 
-                ((wrapMode === 'Content' && tHead.contains(fRows[i])) || (wrapMode === 'Header' && tBody.contains(fRows[i])))) || 
+            if (isModeChg && ((!this.parent.rowHeight && tBody.className === 'e-hide') || (wrapMode === 'Header' && isContReset) ||
+                ((wrapMode === 'Content' && tHead.contains(fRows[i])) || (wrapMode === 'Header' && tBody.contains(fRows[i])))) ||
                 isStackedHdr) {
                 fRows[i].style.height = null;
                 mRows[i].style.height = null;

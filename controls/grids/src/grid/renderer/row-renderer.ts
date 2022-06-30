@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, addClass, removeClass } from '@syncfusion/ej2-base';
 import { attributes as addAttributes } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
@@ -158,8 +158,42 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         const args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
-            this.parent.trigger(rowDataBound, extend(rowArgs, args));
-            if (this.parent.childGrid || this.parent.isRowDragable() || this.parent.detailTemplate) {
+            const eventArg: RowDataBoundEventArgs = extend(rowArgs, args); eventArg.isSelectable = true;
+            this.parent.trigger(rowDataBound, eventArg);
+            row.isSelectable = eventArg.isSelectable;
+            const isDraggable: boolean = this.parent.isRowDragable();
+            if (this.parent.allowPaging && this.parent.selectionSettings.persistSelection) {
+                const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
+                const pKey: string = row.data ? row.data[primaryKey] : null;
+                const SelectedRecords: Object[] = eventArg.isSelectable ? this.parent.partialSelectedRecords :
+                    this.parent.disableSelectedRecords;
+                if (!SelectedRecords.some((data: Object) => data[primaryKey] === pKey)) {
+                    SelectedRecords.push(row.data);
+                }
+            }
+            if (!eventArg.isSelectable) {
+                this.parent.selectionModule.isPartialSelection = true; row.isSelected = false;
+                const chkBox: NodeList = args.row.querySelectorAll('.e-rowcell.e-gridchkbox');
+                const isDrag: Element = eventArg.row.querySelector('.e-rowdragdrop');
+                const cellIdx: number = this.parent.groupSettings.columns.length + (isDrag || this.parent.isDetail() ? 1 : 0);
+                for (let i: number = 0; i < chkBox.length; i++) {
+                    (chkBox[i] as HTMLElement).firstElementChild.classList.add('e-checkbox-disabled');
+                    (chkBox[i] as HTMLElement).querySelector('.e-frame').classList.remove('e-check');
+                }
+                if (row.cells.length) {
+                    for (let i: number = cellIdx; i < row.cells.length; i++) {
+                        const cell: Element = eventArg.row.querySelector('.e-rowcell[aria-colindex="' + row.cells[i].index + '"]');
+                        if (cell) {
+                            removeClass([cell], ['e-selectionbackground', 'e-active']);
+                        }
+                    }
+                }
+                if (isDrag) {
+                    removeClass([isDrag], ['e-selectionbackground', 'e-active']);
+                }
+            }
+            if (this.parent.childGrid || isDraggable || this.parent.detailTemplate) {
+
                 const td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
                 if (td) {
                     td.classList.add('e-detailrowvisible');

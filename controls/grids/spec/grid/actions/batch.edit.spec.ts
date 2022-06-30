@@ -1744,9 +1744,9 @@ describe('Batch Editing module', () => {
         it('tab key', () => {
             gridObj.editModule.editCell(1, 'ShipCountry');
             gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cell } as any);
-            let td = gridObj.element.querySelector('.e-editedbatchcell') as HTMLTableCellElement;
-            expect(td.getAttribute('aria-label').toString().indexOf('ShipCountry')).toBeGreaterThan(0);
-            expect(gridObj.getRows()[1].querySelectorAll('.e-editedbatchcell').length).toBeGreaterThan(0);
+            let td = gridObj.element.querySelector('.e-focused') as HTMLTableCellElement;
+            expect(td.getAttribute('aria-label').toString().indexOf('OrderID')).toBeGreaterThan(0);
+            expect(gridObj.getRows()[2].querySelectorAll('.e-focused').length).toBeGreaterThan(0);
             gridObj.editModule.editCell(3, 'CustomerID');
         });
 
@@ -2683,19 +2683,19 @@ expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
         gridObj.editSettings.allowNextRowEdit = false;
         (gridObj.editModule as any).editModule.editCell(2, 'OrderDate');
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        expect(gridObj.isEdit).toBeFalsy();
-        expect(gridObj.selectedRowIndex).toBe(2);
-        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(0);
-        expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+        expect(gridObj.isEdit).toBeTruthy();
+        expect(gridObj.selectedRowIndex).toBe(3);
+        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(1);
+        expect(gridObj.element.querySelectorAll('form').length).toBe(1);
     });
 
     it('shiftTab key - allowNextRowEdit as false,', () => {
         (gridObj.editModule as any).editModule.editCell(2, 'CustomerID');
         gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        expect(gridObj.isEdit).toBeFalsy();
-        expect(gridObj.selectedRowIndex).toBe(2);
-        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(0);
-        expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+        expect(gridObj.isEdit).toBeTruthy();
+        expect(gridObj.selectedRowIndex).toBe(1);
+        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(1);
+        expect(gridObj.element.querySelectorAll('form').length).toBe(1);
     });
 
     it('tab key & shifttab key - check editing', function () {
@@ -2726,9 +2726,9 @@ expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
     it('tab key - add new row with lastpreviousRow, edit state', () => {
         (gridObj.editModule as any).editModule.editCell(9, 'OrderDate');
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        expect(gridObj.isEdit).toBeFalsy();
-        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(0);
-        expect(gridObj.element.querySelectorAll('form').length).toBe(0);
+        expect(gridObj.isEdit).toBeTruthy();
+        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(1);
+        expect(gridObj.element.querySelectorAll('form').length).toBe(1);
         expect(gridObj.getContent().querySelectorAll('tr').length).toBe(11);
     });
 

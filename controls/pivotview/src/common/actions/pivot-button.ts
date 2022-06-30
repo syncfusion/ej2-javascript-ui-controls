@@ -206,7 +206,7 @@ export class PivotButton implements IAction {
                                 buttonWrapper.appendChild(buttonElement);
                             }
                             element.appendChild(buttonWrapper);
-                            let pivotButton: Button = new Button({ enableRtl: this.parent.enableRtl, locale: this.parent.locale });
+                            let pivotButton: Button = new Button({ enableRtl: this.parent.enableRtl, locale: this.parent.locale, cssClass: this.parent.cssClass });
                             pivotButton.isStringTemplate = true;
                             pivotButton.appendTo(buttonElement);
                             this.unWireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
@@ -973,7 +973,7 @@ export class PivotButton implements IAction {
         return [
             {
                 buttonModel: {
-                    cssClass: 'e-clear-filter-button' + (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE),
+                    cssClass: 'e-clear-filter-button' + (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE) + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                     iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
                     content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.parent.pivotCommon.filterDialog.filterObject ? false : true)
                 },
@@ -981,13 +981,13 @@ export class PivotButton implements IAction {
             },
             {
                 buttonModel: {
-                    cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                    cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true
                 },
                 click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
             },
             {
                 click: this.parent.pivotCommon.filterDialog.closeFilterDialog.bind(this.parent.pivotCommon.filterDialog),
-                buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
             }];
     }
     private tabSelect(e: SelectEventArgs): void {

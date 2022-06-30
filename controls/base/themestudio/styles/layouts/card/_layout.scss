@@ -84,6 +84,12 @@
         height: $card-header-image-bigger-height;
         width: $card-header-image-bigger-width;
       }
+
+      @if $skin-name == 'FluentUI' {
+        + .e-card-header {
+          padding: $card-header-bigger-whole-padding;
+        }
+      }
     }
 
     .e-card-image {
@@ -139,8 +145,14 @@
       + .e-card-actions.e-card-vertical {
         margin-top: 0;
         padding-top: 0;
+      }
+
+      @if $skin-name == 'FluentUI' {
+        + .e-card-header {
+          padding: $card-header-bigger-whole-padding;
         }
       }
+    }
   }
 
 
@@ -354,6 +366,11 @@
         border-radius: $card-img-brdr-radious;
       }
 
+      @if $skin-name == 'FluentUI' {
+        + .e-card-header {
+          padding: $card-header-whole-padding;
+        }
+      }
     }
 
     .e-card-image {
@@ -487,6 +504,11 @@
       + .e-card-actions.e-card-vertical {
         margin-top: 0;
         padding-top: 0;
+      }
+      @if $skin-name == 'FluentUI' {
+        + .e-card-header {
+          padding: $card-header-whole-padding;
+        }
       }
     }
 

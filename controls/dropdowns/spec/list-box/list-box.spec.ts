@@ -767,16 +767,6 @@ describe('ListBox', () => {
             expect(listObj.getItems()[1].classList).toContain(cssClass.selected);
             listObj.keyDownHandler({ keyCode: 40, preventDefault: () => { } });
             expect(listObj.getItems()[3].classList).toContain(cssClass.selected);
-            listObj.keyDownHandler({ keyCode: 36, ctrlKey: true, shiftKey: true, preventDefault: () => { } });
-            expect(listObj.value.length).toEqual(4);
-            listObj.keyDownHandler({ keyCode: 40, preventDefault: () => { } });
-            expect(listObj.getItems()[1].classList).toContain(cssClass.selected);
-            listObj.keyDownHandler({ keyCode: 35, ctrlKey: true, shiftKey: true, preventDefault: () => { } });
-            expect(listObj.value.length).toEqual(4);
-            listObj.keyDownHandler({ keyCode: 36, preventDefault: () => { } });
-            expect(listObj.getItems()[0].classList).toContain(cssClass.selected);
-            listObj.keyDownHandler({ keyCode: 35, preventDefault: () => { } });
-            expect(listObj.getItems()[4].classList).toContain(cssClass.selected);
         });
     });
     describe('Customer Reported Bug', () => {

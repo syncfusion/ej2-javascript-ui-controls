@@ -1,0 +1,11 @@
+@include export-module('dropdowntree-fusionnew-icons') {
+  .e-ddt {
+    .e-ddt-icon::before {
+      content: '\e734';
+    }
+
+    .e-chips-close::before {
+      content: '\e7e7';
+    }
+  }
+}

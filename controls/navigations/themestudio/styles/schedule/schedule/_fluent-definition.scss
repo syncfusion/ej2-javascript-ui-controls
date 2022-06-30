@@ -105,7 +105,7 @@ $schedule-recurrence-font-size: 11px !default;
 
 $schedule-tbar-bgr-color: $secondary-bg-color-focus !default;
 $schedule-tbar-bgr-min-height: 54px !default;
-$schedule-tbar-border-bottom-size: 0 !default;
+$schedule-tbar-border-bottom-size: 1px solid $border-light !default;
 $schedule-tbar-box-shadow: 0 1px 2px rgba($black, .15) !default;
 $schedule-tbar-box-shadow-bottom-margin: 3px !default;
 $schedule-tbar-min-height: 38px !default;

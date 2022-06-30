@@ -95,7 +95,7 @@ export class ConnectorLine {
                 (Math.floor(this.parent.chartRowsModule.milestoneHeight)) : childGanttRecord.width;
             connectorObj.parentIndex = parentIndex;
             connectorObj.childIndex = childIndex;
-            const rowHeight: number = !isNullOrUndefined(this.parent.ganttChartModule.getChartRows()) &&  this.parent.ganttChartModule.getChartRows()[0] &&
+            const rowHeight: number = !isNullOrUndefined(this.parent.ganttChartModule.getChartRows()) && this.parent.ganttChartModule.getChartRows()[0] &&
                 this.parent.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
             connectorObj.rowHeight = rowHeight && !isNaN(rowHeight) ? rowHeight : this.parent.rowHeight;
             connectorObj.type = predecessor.type;

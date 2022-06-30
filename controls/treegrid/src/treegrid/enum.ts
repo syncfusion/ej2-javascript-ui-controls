@@ -121,6 +121,7 @@ export type ContextMenuItem =
     /** `Outdent` - Outdent the record to one level of hierarchy */
     'Outdent';
 
+
 /**
  * Defines predefined contextmenu items.
  *

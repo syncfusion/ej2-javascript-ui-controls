@@ -4,6 +4,10 @@
       content: '\e805';
     }
 
+    .e-critical-path::before {
+      content: '\e88c';
+    }
+
     .e-edit::before {
       content: '\e730';
     }

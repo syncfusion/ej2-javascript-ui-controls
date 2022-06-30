@@ -16,4 +16,5 @@ export type MarkdownExecCommand =
     'table' |
     'Links' |
     'Images' |
-    'Clear';
+    'Clear' |
+    'Inserttext';

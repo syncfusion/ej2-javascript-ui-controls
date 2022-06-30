@@ -102,7 +102,8 @@ $pivotgrid-border-color: #545b62;
 $pivotgrid-active-border-color: #4e555b;
 $pivotgrid-box-shadow-color: rgba(108, 117, 125, .5);
 $pivot-toolbar-icon-hover-color: $pivotgrid-icon-hover-color !default;
-
+$pivotgrid-value-sort-icon-padding: 3px 0 4px 0 !default;
+$pivotgrid-value-sort-icon-font-size: 12px !default;
 
 /*! component's common definitions and variables */
 $pivotgrid-grouping-height: 30px !default;

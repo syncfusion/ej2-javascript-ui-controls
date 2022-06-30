@@ -348,6 +348,7 @@ export interface IThemeStyle {
     selectionRectFill: string;
     selectionRectStroke: string;
     selectionCircleStroke: string;
+    tabColor: string;
 }
 export interface IRangeSelectorRenderEventArgs extends IChartEventArgs {
     /** Defines selector collections */

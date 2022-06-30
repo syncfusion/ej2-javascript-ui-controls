@@ -3,13 +3,14 @@ import { Internationalization, extend, getValue, isObjectArray, isObject, setVal
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
-import { RowDragEventArgs } from '@syncfusion/ej2-grids';
+import { RowDragEventArgs, GridColumn } from '@syncfusion/ej2-grids';
 import { GanttModel } from './gantt-model';
 import { TaskProcessor } from './task-processor';
 import { GanttChart } from './gantt-chart';
 import { Timeline } from '../renderer/timeline';
 import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
+import { CriticalPath } from '../actions/critical-path';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';
@@ -250,6 +251,10 @@ export class Gantt extends Component<HTMLElement>
      * The `dayMarkersModule` is used to manipulate event markers operation in Gantt.
      */
     public dayMarkersModule: DayMarkers;
+    /**
+     * The `criticalPathModule` is used to determine the critical path  in Gantt.
+     */
+    public criticalPathModule: CriticalPath;
     /** @hidden */
     public isConnectorLineUpdate: boolean = false;
     /** @hidden */
@@ -834,6 +839,14 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public enableContextMenu: boolean;
+
+    /**
+     * It highlights the critical tasks in the Gantt Chart that affect the project’s end date.
+     *
+     * @default false
+     */
+     @Property(false)
+     public enableCriticalPath: boolean;
     /**
      * `contextMenuItems` defines both built-in and custom context menu items.
      * {% codeBlock src='gantt/contextMenuItems/index.md' %}{% endcodeBlock %}
@@ -1354,8 +1367,9 @@ export class Gantt extends Component<HTMLElement>
 
     constructor(options?: GanttModel, element?: string | HTMLElement) {
         super(options, element);
+        setValue('mergePersistData', this.mergePersistGanttData, this);
     }
-
+    
     /**
      * This event will be triggered when click on taskbar element.
      *
@@ -1499,8 +1513,10 @@ export class Gantt extends Component<HTMLElement>
         this.dataOperation.getNonWorkingDayIndex();
         this.columnMapping = {};
         this.controlId = this.element.id;
-        this.cloneProjectStartDate = null;
-        this.cloneProjectEndDate = null;
+        this.cloneProjectStartDate = this.enablePersistence && this.cloneProjectStartDate ?
+         this.cloneProjectStartDate : null;
+        this.cloneProjectEndDate = this.enablePersistence && this.cloneProjectEndDate ?
+         this.cloneProjectEndDate : null;
         this.totalHolidayDates = this.dataOperation.getHolidayDates();
         this.ganttChartModule = new GanttChart(this);
         this.timelineModule = new Timeline(this);
@@ -1765,6 +1781,10 @@ export class Gantt extends Component<HTMLElement>
             if (this.predecessorModule && this.taskFields.dependency) {
                 this.updateRowHeightInConnectorLine(this.updatedConnectorLineCollection);
                 this.connectorLineModule.renderConnectorLines(this.updatedConnectorLineCollection);
+            }
+            if (this.enableCriticalPath) {
+                let criticalModule: CriticalPath = this.criticalPathModule;
+                this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true,criticalModule.predecessorCollectionTaskIds);
             }
         }
     }
@@ -2088,6 +2108,38 @@ export class Gantt extends Component<HTMLElement>
         const value: string = this.dateValidationModule.getWorkString(work, workUnit);
         return value;
     }
+    private updateTreeColumns(): void {
+        let temp: string;
+        var field: string;
+        let gridColumns: GridColumn[] = this.treeGrid.grid.getColumns();
+        if (this.treeColumnIndex !== -1 && this.columns[this.treeColumnIndex] &&
+            !isNullOrUndefined(this.columns[this.treeColumnIndex]['template'])) {
+            temp = this.columns[this.treeColumnIndex]['template'];
+            field = this.columns[this.treeColumnIndex]['field'];
+        }
+        let gridColumn: ColumnModel;
+        for (let i: number = 0; i < gridColumns.length; i++) {
+            gridColumn = {};
+            for (let j = 0; j < this.columns.length; j++) {
+                if (this.columns[j]['field'] == gridColumns[i].field) {
+                    for (const prop of Object.keys(this.columns[j])) {
+                        if (!isUndefined(this.columns[j][prop])) {
+                            gridColumn[prop] = gridColumns[i][prop];
+                        }
+                        gridColumn.visible = gridColumns[i].visible;
+                        gridColumn.width = gridColumns[i].width;
+                    }
+                    this.columns[j] = (gridColumn);
+                    if (this.columns[j]['type'] !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
+                        this.columns[j]['template'] = temp;
+                    }
+                }
+            }
+        }
+        if (this.columns.length > 0) {
+            this.treeGrid.setProperties({ columns: this.columns }, true);
+        }
+    }  
     /**
      *
      * @param {object} args .
@@ -2107,6 +2159,9 @@ export class Gantt extends Component<HTMLElement>
             this.splitterElement.style.height = '100%';
         }
         if (this.isLoad) {
+            if (this.enablePersistence) {
+                this.updateTreeColumns();
+            }
             this.updateCurrentViewData();
             if (!this.enableVirtualization) {
                 this.updateContentHeight();
@@ -2134,7 +2189,14 @@ export class Gantt extends Component<HTMLElement>
         } else {
             this.getCurrentRecords(args);
         }
+        if (this.enableCriticalPath && this.criticalPathModule) {
+            this.criticalPathModule.showCriticalPath(this.enableCriticalPath);
+        }
         this.notify('recordsUpdated', {});
+        if (this.enableCriticalPath && this.criticalPathModule) {
+            let criticalModule: CriticalPath = this.criticalPathModule;
+            this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true, criticalModule.predecessorCollectionTaskIds);
+        }
         this.initialChartRowElements = this.ganttChartModule.getChartRows();
         this.isLoad = false;
         this.trigger('dataBound', args);
@@ -2223,6 +2285,7 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'timezone':
+            case 'enableCriticalPath':        
                 this.dataOperation.checkDataBinding(true);
                 break;
             case 'filterSettings':
@@ -2390,14 +2453,42 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Get the properties to be maintained in the persisted state.
+     * Returns the properties to be maintained in persisted state.
      *
      * @returns {string} .
      * @private
      */
     public getPersistData(): string {
-        const keyEntity: string[] = ['allowSelection'];
+        const keyEntity: string[] = ['sortSettings',
+            'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'treeColumnIndex', 'currentZoomingLevel', 'cloneProjectStartDate', 'cloneProjectEndDate'];
+        const ignoreOnPersist: { [x: string]: string[] } = {
+            filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent', 'hierarchyMode'],
+            searchSettings: ['fields', 'operator', 'ignoreCase'],
+            sortSettings: [], columns: [], selectedRowIndex: []
+        };
+        const ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
+            'commandTemplate', 'commands', 'dataSource'];
+        for (let i: number = 0; i < keyEntity.length; i++) {
+            const currentObject: Object = this[keyEntity[i]];
+            for (let k: number = 0, val: string[] = ignoreOnPersist[keyEntity[i]]; (!isNullOrUndefined(val) && k < val.length); k++) {
+                const objVal: string = val[k];
+                delete currentObject[objVal];
+            }
+        }
+        this.ignoreInArrays(ignoreOnColumn, <Column[]>this.columns);
         return this.addOnPersist(keyEntity);
+    }
+    private ignoreInArrays(ignoreOnColumn: string[], columns: Column[]): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            this.ignoreInColumn(ignoreOnColumn, columns[i]);
+        }
+    }
+
+    private ignoreInColumn(ignoreOnColumn: string[], column: Column): void {
+        for (let i: number = 0; i < ignoreOnColumn.length; i++) {
+            delete column[ignoreOnColumn[i]];
+            column.filter = {};
+        }
     }
     /**
      * @returns {void} .
@@ -2481,6 +2572,12 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
+        if (this.enableCriticalPath) {
+            modules.push({
+                member: 'criticalPath',
+                args: [this]
+            });
+        }
         if (this.allowResizing) {
             modules.push({
                 member: 'resize',
@@ -2559,6 +2656,18 @@ export class Gantt extends Component<HTMLElement>
         }
     }
 
+    private mergePersistGanttData(): void {
+        if(!this.treeGrid) {
+            this.treeGrid = new TreeGrid();
+        }
+        const persist1: string = 'mergePersistGridData';
+        this.treeGrid.grid[persist1].apply(this);
+    }
+
+    private mergeColumns(storedColumn: Column[], columns: Column[]): void {
+        const persist2: string = 'mergeColumns';
+        this.treeGrid.grid[persist2].apply(this, [storedColumn, columns]);
+    }
     /**
      * Clears all the sorted columns of the Gantt.
      *
@@ -2634,7 +2743,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public updateGridLineContainerHeight(): void {
         if (this.chartVerticalLineContainer) {
-            this.chartVerticalLineContainer.style.height = formatUnit(this.contentHeight);
+            this.chartVerticalLineContainer.style.height = formatUnit(this.getContentHeight());
         }
     }
 
@@ -2743,6 +2852,7 @@ export class Gantt extends Component<HTMLElement>
             progress: 'Progress',
             dependency: 'Dependency',
             notes: 'Notes',
+            criticalPath: 'Critical Path',
             baselineStartDate: 'Baseline Start Date',
             baselineEndDate: 'Baseline End Date',
             taskMode: 'Task Mode',
@@ -3446,6 +3556,34 @@ export class Gantt extends Component<HTMLElement>
     public outdent(): void {
         if (this.editModule && this.editSettings.allowEditing) {
             this.editModule.outdent();
+        }
+    }
+    /**
+     * To render the critical path tasks in Gantt.
+     *
+     * @returns {void} .
+     * @param {boolean} isCritical- whether to render critical path or not .
+     * @public
+     */
+     private showCriticalPath(isCritical: boolean): void {
+        if (this.criticalPathModule) {
+            this.criticalPathModule.showCriticalPath(isCritical);
+            let criticalModule : CriticalPath = this.criticalPathModule;
+            this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true,criticalModule.predecessorCollectionTaskIds);
+        }
+    }
+    /**
+     * To get all the critical tasks in Gantt.
+     *
+     * @returns {IGanttData[]} .
+     * @public
+     */
+     public getCriticalTasks(): IGanttData[] {
+        if (!isNullOrUndefined(this.criticalPathModule) && this.enableCriticalPath) {
+            return this.criticalPathModule.getCriticalTasks();
+        }
+        else {
+            return null
         }
     }
     /**

@@ -162,7 +162,6 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
 // tslint:disable-next-line:max-func-body-length
 export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyle {
     let style: IThemeStyle;
-    const darkBackground: string = theme === 'MaterialDark' ? '#383838' : (theme === 'FabricDark' ? '#242424' : '#1b1b1b');
     switch (theme as string) {
     case 'HighContrastLight':
     case 'Highcontrast':
@@ -177,7 +176,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             minorTickLine: '#969696',
             chartTitle: '#ffffff',
             legendLabel: '#ffffff',
-            background: '#000000',
+            background: 'transparent',
             areaBorder: '#ffffff',
             errorBar: '#ffffff',
             crosshairLine: '#ffffff',
@@ -190,7 +189,8 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             markerShadow: '#BFBFBF',
             selectionRectFill: 'rgba(255, 217, 57, 0.3)',
             selectionRectStroke: '#ffffff',
-            selectionCircleStroke: '#FFD939'
+            selectionCircleStroke: '#FFD939',
+            tabColor: '#969696'
         };
         break;
     case 'MaterialDark':
@@ -205,7 +205,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             minorTickLine: ' #4A4848',
             chartTitle: '#ffffff',
             legendLabel: '#DADADA',
-            background: darkBackground,
+            background: 'transparent',
             areaBorder: ' #9A9A9A',
             errorBar: '#ffffff',
             crosshairLine: '#F4F4F4',
@@ -218,17 +218,18 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             markerShadow: null,
             selectionRectFill: 'rgba(56,169,255, 0.1)',
             selectionRectStroke: '#38A9FF',
-            selectionCircleStroke: '#282727'
+            selectionCircleStroke: '#282727',
+            tabColor: 'rgb(102, 175, 233)'
         };
         break;
     case 'Bootstrap4':
         style = {
             axisLabel: '#212529', axisTitle: '#212529', axisLine: '#CED4DA', majorGridLine: '#CED4DA',
             minorGridLine: '#DEE2E6', majorTickLine: '#ADB5BD', minorTickLine: '#CED4DA', chartTitle: '#212529', legendLabel: '#212529',
-            background: '#FFFFFF', areaBorder: '#DEE2E6', errorBar: '#000000', crosshairLine: '#6C757D', crosshairFill: '#495057',
+            background: 'transparent', areaBorder: '#DEE2E6', errorBar: '#000000', crosshairLine: '#6C757D', crosshairFill: '#495057',
             crosshairLabel: '#FFFFFF', tooltipFill: '#020202', tooltipBoldLabel: 'rgba(255,255,255)',
             tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: null,
-            selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057'
+            selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057', tabColor: 'rgb(102, 175, 233)'
         };
         break;
     case 'Tailwind':
@@ -241,7 +242,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
         minorTickLine: ' #D1D5DB',
         chartTitle: '#374151',
         legendLabel: '#374151',
-        background: 'rgba(255,255,255, 0.0)',
+        background: 'transparent',
         areaBorder: ' #E5E7EB',
         errorBar: '#374151',
         crosshairLine: '#1F2937',
@@ -254,7 +255,8 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
         markerShadow: null,
         selectionRectFill: 'rgba(79,70,229, 0.1)',
         selectionRectStroke: '#4F46E5',
-        selectionCircleStroke: '#6B7280'
+        selectionCircleStroke: '#6B7280',
+        tabColor: 'rgb(79, 70, 229)'
     };
     break;
 case 'TailwindDark':
@@ -267,7 +269,7 @@ case 'TailwindDark':
         minorTickLine: ' #4B5563',
         chartTitle: '#D1D5DB',
         legendLabel: '#D1D5DB',
-        background: '#1f2937',
+        background: 'transparent',
         areaBorder: ' #374151',
         errorBar: '#ffffff',
         crosshairLine: '#9CA3AF',
@@ -280,7 +282,8 @@ case 'TailwindDark':
         markerShadow: null,
         selectionRectFill: 'rgba(34,211,238, 0.1)',
         selectionRectStroke: '#22D3EE',
-        selectionCircleStroke: '#282727'
+        selectionCircleStroke: '#282727',
+        tabColor: 'rgb(34, 211, 238)'
     };
     break;
     case 'Bootstrap5':
@@ -294,7 +297,7 @@ case 'TailwindDark':
             minorTickLine: ' #D1D5DB',
             chartTitle: '#343A40',
             legendLabel: '#343A40',
-            background: '#FFFFFF',
+            background: 'transparent',
             areaBorder: ' #DEE2E6',
             errorBar: '#1F2937',
             crosshairLine: '#1F2937',
@@ -307,7 +310,8 @@ case 'TailwindDark':
             markerShadow: null,
             selectionRectFill: 'rgba(79,70,229, 0.1)',
             selectionRectStroke: '#4F46E5',
-            selectionCircleStroke: '#6B7280'
+            selectionCircleStroke: '#6B7280',
+            tabColor: '#0d6efd'
         };
         break;
     case 'Bootstrap5Dark':
@@ -321,7 +325,7 @@ case 'TailwindDark':
             minorTickLine: ' #495057',
             chartTitle: '#E9ECEF',
             legendLabel: '#E9ECEF',
-            background: '#212529',
+            background: 'transparent',
             areaBorder: ' #444C54',
             errorBar: '#ADB5BD',
             crosshairLine: '#ADB5BD',
@@ -334,7 +338,8 @@ case 'TailwindDark':
             markerShadow: null,
             selectionRectFill: 'rgba(79,70,229, 0.1)',
             selectionRectStroke: '#4F46E5',
-            selectionCircleStroke: '#6B7280'
+            selectionCircleStroke: '#6B7280',
+            tabColor: 'rgb(13, 110, 253)'
         };
         break;
     case 'Fluent':
@@ -361,7 +366,8 @@ case 'TailwindDark':
             markerShadow: null,
             selectionRectFill: 'rgba(79,70,229, 0.1)',
             selectionRectStroke: '#4F46E5',
-            selectionCircleStroke: '#6B7280'
+            selectionCircleStroke: '#6B7280',
+            tabColor: '#0078d4'
         };
         break;
     case 'FluentDark':
@@ -388,7 +394,8 @@ case 'TailwindDark':
             markerShadow: null,
             selectionRectFill: 'rgba(79,70,229, 0.1)',
             selectionRectStroke: '#4F46E5',
-            selectionCircleStroke: '#6B7280'
+            selectionCircleStroke: '#6B7280',
+            tabColor: '#0078d4'
         };
         break;
     default:
@@ -402,7 +409,7 @@ case 'TailwindDark':
             minorTickLine: '#d6d6d6',
             chartTitle: '#424242',
             legendLabel: '#353535',
-            background: '#FFFFFF',
+            background: 'transparent',
             areaBorder: 'Gray',
             errorBar: '#000000',
             crosshairLine: '#4f4f4f',
@@ -415,7 +422,8 @@ case 'TailwindDark':
             markerShadow: null,
             selectionRectFill: 'rgba(41, 171, 226, 0.1)',
             selectionRectStroke: '#29abe2',
-            selectionCircleStroke: '#29abe2'
+            selectionCircleStroke: '#29abe2',
+            tabColor: 'rgb(158, 158, 158)'
         };
         break;
     }

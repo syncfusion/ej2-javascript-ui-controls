@@ -255,7 +255,7 @@ describe('Carousel Testing', () => {
         });
         it('test cases for autoPlay as true', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, autoPlay: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, autoPlay: true }, carouselElement);
             const index: number = carousel.selectedIndex;
             expect(carousel.selectedIndex).toEqual(0);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[index].classList.contains('e-active')).toBe(true);
@@ -264,7 +264,7 @@ describe('Carousel Testing', () => {
         });
         it('test cases for autoPlay as false', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, autoPlay: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, autoPlay: false }, carouselElement);
             const index: number = carousel.selectedIndex;
             expect(carouselElement.querySelectorAll('.e-carousel-item')[index].classList.contains('e-active')).toBe(true);
             jasmine.clock().tick(carousel.interval + 1500);
@@ -277,14 +277,14 @@ describe('Carousel Testing', () => {
         });
         it('test cases for autoPlay and infinite as false', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, autoPlay: false, loop: false, selectedIndex: 3 }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, autoPlay: false, loop: false, selectedIndex: 3 }, carouselElement);
             expect(carousel.selectedIndex).toEqual(3);
             carousel.next();
             expect(carousel.selectedIndex).toEqual(4);
         });
         it('test cases for interval', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, interval: 2000 }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, interval: 2000 }, carouselElement);
             const index: number = carousel.selectedIndex;
             expect(carouselElement.querySelectorAll('.e-carousel-item')[index].classList.contains('e-active')).toBe(true);
             jasmine.clock().tick(carousel.interval + 1500);
@@ -293,7 +293,7 @@ describe('Carousel Testing', () => {
         });
         it('test cases for infinite as true', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, selectedIndex: 4, loop: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, selectedIndex: 4, loop: true }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[4].classList.contains('e-active')).toBe(true);
             jasmine.clock().tick(carousel.interval + 1500);
             expect(carousel.selectedIndex).toBe(0);
@@ -301,7 +301,7 @@ describe('Carousel Testing', () => {
         });
         it('test cases for infinite as false', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, loop: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, loop: false }, carouselElement);
             jasmine.clock().tick(carousel.interval + 1500);
             carousel.selectedIndex = 4;
             carousel.dataBind();
@@ -339,7 +339,7 @@ describe('Carousel Testing', () => {
         });
         it('enableTouchSwipe - swiping left', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -356,7 +356,7 @@ describe('Carousel Testing', () => {
         });
         it('enableTouchSwipe - swiping right', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -425,7 +425,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for previous arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -444,14 +444,14 @@ describe('Carousel Testing', () => {
         });
         it('test case for disabled previous arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, loop: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, loop: false }, carouselElement);
             expect(carouselElement.querySelector('.e-previous-button').getAttribute('disabled')).toEqual('');
             (carouselElement.querySelector('.e-previous-icon') as HTMLElement).click();
             expect(carousel.selectedIndex).toEqual(0);
         });
         it('test case for next arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -468,14 +468,14 @@ describe('Carousel Testing', () => {
         });
         it('test case for disabled next arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, loop: false, selectedIndex: 4 }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, loop: false, selectedIndex: 4 }, carouselElement);
             expect(carouselElement.querySelector('.e-next-button').getAttribute('disabled')).toEqual('');
             (carouselElement.querySelector('.e-next-icon') as HTMLElement).click();
             expect(carousel.selectedIndex).toEqual(4);
         });
         it('test case for play and pause button', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: true }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -492,7 +492,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for play and pause button when infinite false', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ items: items, showPlayButton: true, loop: false, selectedIndex: 3, animation: { effect: 'None' } }, carouselElement);
+            carousel = new Carousel({ items: items, showPlayButton: true, loop: false, selectedIndex: 3, animationEffect: 'None' }, carouselElement);
             expect(carousel.autoPlay).toEqual(true);
             (carouselElement.querySelector('.e-next-icon') as HTMLElement).click();
             jasmine.clock().tick(2000);
@@ -507,7 +507,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for play button when autoPlay is false ', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: true, autoPlay: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: true, autoPlay: false }, carouselElement);
             expect(carouselElement.querySelector('.e-play-icon') !== null).toBe(true);
             (carouselElement.querySelector('.e-play-icon') as HTMLElement).click();
             expect(carouselElement.querySelector('.e-pause-icon') !== null).toBe(true);
@@ -515,7 +515,7 @@ describe('Carousel Testing', () => {
         it('test case for play button when autoPlay and infinite is false ', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
             carousel = new Carousel({
-                animation: { effect: 'None' }, items: items, showPlayButton: true, selectedIndex: 4, autoPlay: false, loop: false
+                animationEffect: 'None', items: items, showPlayButton: true, selectedIndex: 4, autoPlay: false, loop: false
             }, carouselElement);
             expect(carouselElement.querySelector('.e-play-icon') !== null).toBe(true);
             (carouselElement.querySelector('.e-play-icon') as HTMLElement).click();
@@ -538,7 +538,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for clicking active indicator', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-indicator-bar')[0].classList.contains('e-active')).toBe(true);
             expect(carousel.selectedIndex).toEqual(0);
@@ -549,7 +549,7 @@ describe('Carousel Testing', () => {
         });
         it('test case clicking last slide through indicators', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[4].classList.contains('e-active')).toBe(false);
             expect(carouselElement.querySelectorAll('.e-indicator-bar')[0].classList.contains('e-active')).toBe(true);
@@ -582,7 +582,7 @@ describe('Carousel Testing', () => {
         });
         it('when entering mouse inside carousel', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: true, buttonsVisibility: 'VisibleOnHover' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: true, buttonsVisibility: 'VisibleOnHover' }, carouselElement);
             triggerMouseEvent(carouselElement, 'mouseenter');
             expect(carouselElement.querySelector('.e-carousel-navigators') !== null).toBe(true);
             expect(carouselElement.querySelector('.e-previous').classList.contains('e-hover-arrows')).toBe(false);
@@ -609,7 +609,7 @@ describe('Carousel Testing', () => {
         });
         it('when entering mouse inside carousel', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.classList.contains('e-carousel-hover')).toBe(false);
             triggerMouseEvent(carouselElement, 'mouseenter');
             jasmine.clock().tick(5100);
@@ -618,7 +618,7 @@ describe('Carousel Testing', () => {
         });
         it('when mouse leave the carousel', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             triggerMouseEvent(carouselElement, 'mouseleave');
             expect(carouselElement.classList.contains('e-carousel-hover')).toBe(false);
             jasmine.clock().tick(5100);
@@ -640,7 +640,7 @@ describe('Carousel Testing', () => {
         });
         it('when focusin carousel', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.classList.contains('e-carousel-hover')).toBe(false);
             triggerMouseEvent(carouselElement, 'focusin');
             jasmine.clock().tick(5100);
@@ -649,7 +649,7 @@ describe('Carousel Testing', () => {
         });
         it('when focusout carousel', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             triggerMouseEvent(carouselElement, 'focusin');
             expect(carouselElement.classList.contains('e-carousel-hover')).toBe(true);
             triggerMouseEvent(carouselElement, 'focusout');
@@ -673,19 +673,18 @@ describe('Carousel Testing', () => {
         });
         it('checking slide animation', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ items: items, showPlayButton: true, animation: { effect: 'Slide' } }, carouselElement);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-slide-animation')).toBe(true);
+            carousel = new Carousel({ items: items, showPlayButton: true, animationEffect: 'Slide' }, carouselElement);
+            expect(carouselElement.classList.contains('e-carousel-slide-animation')).toBe(true);
         });
         it('checking fade animation', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ items: items, showPlayButton: true, animation: { effect: 'Fade' } }, carouselElement);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-fade-animation')).toBe(true);
+            carousel = new Carousel({ items: items, showPlayButton: true, animationEffect: 'Fade' }, carouselElement);
+            expect(carouselElement.classList.contains('e-carousel-fade-animation')).toBe(true);
         });
         it('checking no animation', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ items: items, showPlayButton: true, animation: { effect: 'None' } }, carouselElement);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-slide-animation')).toBe(false);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-fade-animation')).toBe(false);
+            carousel = new Carousel({ items: items, showPlayButton: true, animationEffect: 'None' }, carouselElement);
+            expect(carouselElement.classList.contains('e-carousel-animation-none')).toBe(true);
             expect(carousel.selectedIndex).toBe(0);
             jasmine.clock().tick(6500);
             expect(carousel.selectedIndex).toBe(1);
@@ -704,17 +703,20 @@ describe('Carousel Testing', () => {
         });
         it('checking custom animation', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ items: items, showPlayButton: true, animation: { customEffect: 'bounce' } }, carouselElement);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('bounce')).toBe(true);
+            carousel = new Carousel({ items: items, showPlayButton: true, animationEffect: 'Custom', cssClass: 'bounce' }, carouselElement);
+            expect(carouselElement.classList.contains('e-carousel-custom-animation')).toBe(true);
+            expect(carouselElement.classList.contains('bounce')).toBe(true);
         });
         it('property change of custom animation', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ items: items, showPlayButton: true, animation: { customEffect: 'bounce' } }, carouselElement);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('bounce')).toBe(true);
-            carousel.animation.customEffect = 'zoom';
+            carousel = new Carousel({ items: items, showPlayButton: true, animationEffect: 'Custom', cssClass: 'bounce' }, carouselElement);
+            expect(carouselElement.classList.contains('e-carousel-custom-animation')).toBe(true);
+            expect(carouselElement.classList.contains('bounce')).toBe(true);
+            carousel.cssClass = 'zoom';
             carousel.dataBind();
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('bounce')).toBe(false);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('zoom')).toBe(true);
+            expect(carouselElement.classList.contains('e-carousel-custom-animation')).toBe(true);
+            expect(carouselElement.classList.contains('bounce')).toBe(false);
+            expect(carouselElement.classList.contains('zoom')).toBe(true);
         });
     });
     describe('test case for preventing slide transition', () => {
@@ -732,7 +734,7 @@ describe('Carousel Testing', () => {
         });
         it('check slide transition not occurs on clicking pause icon', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: true }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carousel.selectedIndex).toEqual(0);
             expect(carouselElement.querySelector('.e-play-icon') !== null).toBe(false);
@@ -744,7 +746,7 @@ describe('Carousel Testing', () => {
         it('check slide transition not occurs when setting true to cancel in slideChanging event', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
             carousel = new Carousel({
-                animation: { effect: 'None' },
+                animationEffect: 'None',
                 items: items,
                 slideChanging: (args: SlideChangingEventArgs) => {
                     args.cancel = true;
@@ -769,7 +771,7 @@ describe('Carousel Testing', () => {
         });
         it('with no items or dataSource', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' } }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None' }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item').length).toBe(0);
         });
     });
@@ -788,7 +790,7 @@ describe('Carousel Testing', () => {
         });
         it('check slide transition when no active element', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             removeClass(carouselElement.querySelectorAll('.e-carousel-item'), 'e-active');
             removeClass(carouselElement.querySelectorAll('.e-indicator-bar'), 'e-active');
             (carousel as any).autoSlideChange();
@@ -798,7 +800,7 @@ describe('Carousel Testing', () => {
         });
         it('check slide transition when no active element for items(this case may happen when we move to next slide continuously)', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             removeClass(carouselElement.querySelectorAll('.e-carousel-item'), 'e-active');
             (carousel as any).autoSlideChange();
             expect(carousel.selectedIndex).toBe(0);
@@ -807,7 +809,7 @@ describe('Carousel Testing', () => {
         });
         it('check slide transition when no active element for items(this case may happen when we move to next slide continuously)', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showIndicators: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showIndicators: false }, carouselElement);
             removeClass(carouselElement.querySelectorAll('.e-carousel-item'), 'e-active');
             expect(carousel.selectedIndex).toBe(0);
             carousel.next();
@@ -828,7 +830,7 @@ describe('Carousel Testing', () => {
         });
         it('checking indicators template availability', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, indicatorsTemplate: '#indicatorTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, indicatorsTemplate: '#indicatorTemplate' }, carouselElement);
             const indicatorsEle: HTMLElement = carouselElement.querySelector('.e-indicator-bars');
             expect(indicatorsEle.querySelectorAll('.e-template').length).toBe(5);
             expect(indicatorsEle.querySelectorAll('.indicator').length).toBe(5);
@@ -852,13 +854,13 @@ describe('Carousel Testing', () => {
         });
         it('checking play button template availability', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: true, playButtonTemplate: '#playButtonTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: true, playButtonTemplate: '#playButtonTemplate' }, carouselElement);
             const navigatorsEle: HTMLElement = carouselElement.querySelector('.e-carousel-navigators');
             expect(navigatorsEle.querySelector('.playTemp').classList.contains('playTemp')).toBe(true);
         });
         it('checking play button click action', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: true, playButtonTemplate: '#playButtonTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: true, playButtonTemplate: '#playButtonTemplate' }, carouselElement);
             const navigatorsEle: HTMLElement = carouselElement.querySelector('.e-carousel-navigators');
             (navigatorsEle.querySelector('.e-play-pause') as HTMLElement).click();
             jasmine.clock().tick(6500);
@@ -882,13 +884,13 @@ describe('Carousel Testing', () => {
         });
         it('checking templates', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, previousButtonTemplate: '#arrowTemplate', nextButtonTemplate: '#arrowTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, previousButtonTemplate: '#arrowTemplate', nextButtonTemplate: '#arrowTemplate' }, carouselElement);
             const navigatorsEle: HTMLElement = carouselElement.querySelector('.e-carousel-navigators');
             expect(navigatorsEle.querySelector('.arrowTemp').classList.contains('arrowTemp')).toBe(true);
         });
         it('checking prev arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, previousButtonTemplate: '#arrowTemplate', nextButtonTemplate: '#arrowTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, previousButtonTemplate: '#arrowTemplate', nextButtonTemplate: '#arrowTemplate' }, carouselElement);
             const navigatorsEle: HTMLElement = carouselElement.querySelector('.e-carousel-navigators');
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
@@ -901,7 +903,7 @@ describe('Carousel Testing', () => {
         });
         it('checking next arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, previousButtonTemplate: '#arrowTemplate', nextButtonTemplate: '#arrowTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, previousButtonTemplate: '#arrowTemplate', nextButtonTemplate: '#arrowTemplate' }, carouselElement);
             const navigatorsEle: HTMLElement = carouselElement.querySelector('.e-carousel-navigators');
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
@@ -930,13 +932,13 @@ describe('Carousel Testing', () => {
         });
         it('test case for cssClass of items property', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: carouselItems }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: carouselItems }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('item-test')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('item-test')).toBe(false);
         });
         it('test case for interval of items property', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: carouselItems }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: carouselItems }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -951,7 +953,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for htmlAttributes of items property', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: carouselItems }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: carouselItems }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].getAttribute('data-custom')).toEqual('test');
         });
     });
@@ -971,13 +973,13 @@ describe('Carousel Testing', () => {
         });
         it('test case for carousel item count', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ dataSource: carouselDataSource, itemTemplate: '#itemTemplate', animation: { effect: 'Fade' } }, carouselElement);
+            carousel = new Carousel({ dataSource: carouselDataSource, itemTemplate: '#itemTemplate', animationEffect: 'Fade' }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item').length).toEqual(5);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
         });
         it('test case for itemTemplate', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
             const carouselItem: Element = carouselElement.querySelectorAll('.e-carousel-item')[0];
             expect(carouselItem.querySelectorAll('.title').length).toEqual(1);
             const templateElement: HTMLElement = carouselItem.querySelector('.title') as HTMLElement;
@@ -985,7 +987,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for slide change', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -996,7 +998,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for next arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -1008,7 +1010,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for previous arrow', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', dataSource: carouselDataSource, itemTemplate: '#itemTemplate' }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
             expect(carousel.selectedIndex).toEqual(0);
@@ -1035,7 +1037,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for prev method', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ items: items, animation: { effect: 'Fade' } }, carouselElement);
+            carousel = new Carousel({ items: items, animationEffect: 'Fade' }, carouselElement);
             expect(carousel.selectedIndex).toEqual(0);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             carousel.prev();
@@ -1049,7 +1051,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for next method', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carousel.selectedIndex).toEqual(0);
             carousel.next();
@@ -1063,7 +1065,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for prev & next method when infinite false', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, loop: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, loop: false }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
             expect(carousel.selectedIndex).toEqual(0);
             carousel.prev();
@@ -1077,7 +1079,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for pause and play method', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             carousel.pause();
             jasmine.clock().tick(carousel.interval + 1500);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
@@ -1089,7 +1091,7 @@ describe('Carousel Testing', () => {
         });
         it('test case for pause and play method with showPlayButton', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: true }, carouselElement);
             expect(carouselElement.querySelector('.e-pause-icon') !== null).toBe(true);
             carousel.pause();
             expect(carouselElement.querySelector('.e-pause-icon') !== null).toBe(false);
@@ -1122,7 +1124,7 @@ describe('Carousel Testing', () => {
         });
         it('showIndicators', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showIndicators: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showIndicators: true }, carouselElement);
             carousel.showIndicators = false;
             carousel.dataBind();
             expect(carouselElement.querySelector('.e-carousel-indicators') === null).toBe(true);
@@ -1132,7 +1134,7 @@ describe('Carousel Testing', () => {
         });
         it('showPlayButton', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showPlayButton: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showPlayButton: false }, carouselElement);
             carousel.showPlayButton = true;
             carousel.dataBind();
             expect(carouselElement.querySelector('.e-play-pause') !== null).toBe(true);
@@ -1142,7 +1144,7 @@ describe('Carousel Testing', () => {
         });
         it('buttonsVisibility', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, buttonsVisibility: 'Visible', showPlayButton: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, buttonsVisibility: 'Visible', showPlayButton: true }, carouselElement);
             carousel.buttonsVisibility = 'Hidden';
             carousel.dataBind();
             expect(carouselElement.querySelector('.e-carousel-navigators') === null).toBe(true);
@@ -1167,7 +1169,7 @@ describe('Carousel Testing', () => {
         });
         it('selectedIndex', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, selectedIndex: 0 }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, selectedIndex: 0 }, carouselElement);
             carousel.selectedIndex = 2;
             carousel.dataBind();
             expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(true);
@@ -1179,7 +1181,7 @@ describe('Carousel Testing', () => {
         });
         it('items', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, selectedIndex: 0 }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, selectedIndex: 0 }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('test-class')).toBe(false);
             carousel.items[2].cssClass = 'test-class';
             carousel.dataBind();
@@ -1187,7 +1189,7 @@ describe('Carousel Testing', () => {
         });
         it('dataSource', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ dataSource: carouselDataSource, itemTemplate: '#itemTemplate', animation: { effect: 'Fade' } }, carouselElement);
+            carousel = new Carousel({ dataSource: carouselDataSource, itemTemplate: '#itemTemplate', animationEffect: 'Fade' }, carouselElement);
             expect(carouselElement.querySelectorAll('.e-carousel-item').length).toEqual(5);
             carousel.dataSource = carouselData;
             carousel.dataBind();
@@ -1195,7 +1197,7 @@ describe('Carousel Testing', () => {
         });
         it('autoPlay', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, autoPlay: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, autoPlay: true }, carouselElement);
             const index: number = carousel.selectedIndex;
             carousel.autoPlay = false;
             carousel.dataBind();
@@ -1213,7 +1215,7 @@ describe('Carousel Testing', () => {
         });
         it('autoPlay with play/pause button', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, autoPlay: true, showPlayButton: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, autoPlay: true, showPlayButton: true }, carouselElement);
             expect(carouselElement.querySelector('.e-pause-icon')).toBeTruthy();
             carousel.autoPlay = false;
             carousel.dataBind();
@@ -1226,7 +1228,7 @@ describe('Carousel Testing', () => {
         });
         it('interval', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, interval: 5000 }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, interval: 5000 }, carouselElement);
             const index: number = carousel.selectedIndex;
             carousel.interval = 2000;
             carousel.dataBind();
@@ -1238,7 +1240,7 @@ describe('Carousel Testing', () => {
         });
         it('infinite', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, selectedIndex: 4, loop: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, selectedIndex: 4, loop: true }, carouselElement);
             expect(carouselElement.querySelector('.e-next-button').getAttribute('disabled')).toEqual(null);
             carousel.loop = false;
             carousel.dataBind();
@@ -1258,7 +1260,7 @@ describe('Carousel Testing', () => {
         });
         it('cssClass', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, cssClass: 'carousel' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, cssClass: 'carousel' }, carouselElement);
             expect(carouselElement.classList.contains('carousel')).toEqual(true);
             carousel.cssClass = 'default-carousel';
             carousel.dataBind();
@@ -1267,14 +1269,14 @@ describe('Carousel Testing', () => {
         });
         it('htmlAttributes', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             carousel.htmlAttributes = { 'data-custom': 'test' };
             carousel.dataBind();
             expect(carouselElement.getAttribute('data-custom')).toEqual('test');
         });
         it('enableRTL', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items }, carouselElement);
             expect(carousel.element.classList.contains('e-rtl')).toBe(false);
             carousel.enableRtl = true;
             carousel.dataBind();
@@ -1285,7 +1287,7 @@ describe('Carousel Testing', () => {
         });
         it('enableTouchSwipe', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, enableTouchSwipe: false }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, enableTouchSwipe: false }, carouselElement);
             carousel.enableTouchSwipe = true;
             carousel.dataBind();
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
@@ -1316,7 +1318,7 @@ describe('Carousel Testing', () => {
         });
         it('width', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, width: '500px' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, width: '500px' }, carouselElement);
             expect(carouselElement.style.width).toEqual('500px');
             carousel.width = '700px';
             carousel.dataBind();
@@ -1324,7 +1326,7 @@ describe('Carousel Testing', () => {
         });
         it('height', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, height: '500px' }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, height: '500px' }, carouselElement);
             expect(carouselElement.style.height).toEqual('500px');
             carousel.height = '700px';
             carousel.dataBind();
@@ -1333,15 +1335,22 @@ describe('Carousel Testing', () => {
         it('animation', () => {
             const carouselElement: HTMLElement = document.getElementById('carousel');
             carousel = new Carousel({ items: items }, carouselElement);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-slide-animation')).toBe(true);
-            carousel.animation.effect = 'Fade';
+            expect(carouselElement.classList.contains('e-carousel-slide-animation')).toBe(true);
+            carousel.animationEffect = 'Fade';
             carousel.dataBind();
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-slide-animation')).toBe(false);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-fade-animation')).toBe(true);
-            carousel.animation.effect = 'None';
+            expect(carouselElement.classList.contains('e-carousel-slide-animation')).toBe(false);
+            expect(carouselElement.classList.contains('e-carousel-fade-animation')).toBe(true);
+            carousel.animationEffect = 'None';
             carousel.dataBind();
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-slide-animation')).toBe(false);
-            expect(carouselElement.querySelector('.e-carousel-items').classList.contains('e-carousel-fade-animation')).toBe(false);
+            expect(carouselElement.classList.contains('e-carousel-slide-animation')).toBe(false);
+            expect(carouselElement.classList.contains('e-carousel-fade-animation')).toBe(false);
+            expect(carouselElement.classList.contains('e-carousel-animation-none')).toBe(true);
+            carousel.animationEffect = 'Custom';
+            carousel.dataBind();
+            expect(carouselElement.classList.contains('e-carousel-slide-animation')).toBe(false);
+            expect(carouselElement.classList.contains('e-carousel-fade-animation')).toBe(false);
+            expect(carouselElement.classList.contains('e-carousel-animation-none')).toBe(false);
+            expect(carouselElement.classList.contains('e-carousel-custom-animation')).toBe(true);
         });
     });
 
@@ -1351,7 +1360,7 @@ describe('Carousel Testing', () => {
         beforeEach((): void => {
             carouselElement = document.createElement('div');
             carouselElement.id = 'carousel';
-            carousel = new Carousel({ animation: { effect: 'None' }, items: items, showIndicators: true }, carouselElement);
+            carousel = new Carousel({ animationEffect: 'None', items: items, showIndicators: true }, carouselElement);
             document.body.appendChild(carouselElement);
             jasmine.clock().install();
         });
@@ -1541,7 +1550,7 @@ describe('Carousel Testing', () => {
                 expect(carousel.selectedIndex).toEqual(4);
                 expect(carouselElement.querySelectorAll('.e-carousel-item')[4].classList.contains('e-active')).toBe(true);
             };
-            carousel.animation.effect = 'None';
+            carousel.animationEffect = 'None';
             carousel.dataBind();
             expect(carousel.selectedIndex).toEqual(0);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
@@ -1559,7 +1568,7 @@ describe('Carousel Testing', () => {
                 expect(carousel.selectedIndex).toEqual(1);
                 expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(true);
             };
-            carousel.animation.effect = 'None';
+            carousel.animationEffect = 'None';
             carousel.dataBind();
             expect(carousel.selectedIndex).toEqual(0);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);

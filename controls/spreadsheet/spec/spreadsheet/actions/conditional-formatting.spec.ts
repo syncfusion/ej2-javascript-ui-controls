@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet, dialog } from '../../../src/index';
-import { Dialog } from '../../../src/spreadsheet/services/index';
+import { Spreadsheet, clearViewer } from '../../../src/index';
+import { getComponent } from '@syncfusion/ej2-base';
 
 
 describe('Conditional formatting ->', () => {
@@ -55,7 +55,7 @@ describe('Conditional formatting ->', () => {
             helper.edit('E2', '10');
             expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 235, 132)');
             helper.invoke('clearConditionalFormat', ['E2:E11']);
-            expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('');
 
             helper.invoke('conditionalFormat', [{ type: "GreaterThan", cFColor: 'RedFT', value: '300', range: 'F2:F11' }]);
             expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('');
@@ -91,7 +91,7 @@ describe('Conditional formatting ->', () => {
             helper.invoke('conditionalFormat', [{ type: 'BelowAverage', range: 'B2:B11' }]);
             expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
             expect(helper.invoke('getCell', [1, 1]).style.color).toBe('rgb(156, 0, 85)');
-            expect(helper.invoke('getCell', [3, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [3, 1]).style.backgroundColor).toBe('');
 
             helper.invoke('conditionalFormat', [{ type: 'Duplicate', range: 'D2:D11' }]);
             expect(helper.invoke('getCell', [2, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
@@ -102,19 +102,19 @@ describe('Conditional formatting ->', () => {
             helper.invoke('conditionalFormat', [{ type: 'Unique', range: 'E2:E11' }]);
             expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
             expect(helper.invoke('getCell', [3, 4]).style.color).toBe('rgb(156, 0, 85)');
-            expect(helper.invoke('getCell', [4, 4]).style.color).toBe('rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [4, 4]).style.color).toBe('');
 
             helper.invoke('clearConditionalFormat', ['E2:E11']);
             helper.invoke('conditionalFormat', [{ type: 'Bottom10Percentage', range: 'E2:E11', value: "30" }]);
             expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
             expect(helper.invoke('getCell', [1, 4]).style.color).toBe('rgb(156, 0, 85)');
-            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('');
 
             helper.invoke('clearConditionalFormat', ['E2:E11']);
             helper.invoke('conditionalFormat', [{ type: "Between", cFColor: 'RedT', value: '16,30', range: 'E2:E11' }]);
-            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [2, 4]).style.color).toBe('rgb(156, 0, 85)');
-            expect(helper.invoke('getCell', [3, 4]).style.color).toBe('rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [3, 4]).style.color).toBe('');
 
             helper.invoke('clearConditionalFormat', ['E2:E11']);
             helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'YellowFT', value: '15', range: 'E2:E11' }]);
@@ -124,9 +124,614 @@ describe('Conditional formatting ->', () => {
             helper.invoke('clear', [{ type: 'Clear All', range: 'F2:G11' }]);
             expect(helper.invoke('getCell', [2, 5]).style.backgroundColor).toBe('');
             expect(helper.invoke('getCell', [6, 6]).style.backgroundColor).toBe('');
+
+            helper.invoke('clearConditionalFormat', ['H2:H11']);
+            helper.invoke('conditionalFormat', [{ type: 'LightBlueDataBar', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(0, 138, 239)');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+
+            helper.invoke('conditionalFormat', [{ type: 'OrangeDataBar', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(255, 182, 40)');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+
+            helper.invoke('conditionalFormat', [{ type: 'PurpleDataBar', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(214, 0, 123)');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+
+            helper.invoke('clearConditionalFormat', ['E2:E11']);
+            helper.invoke('conditionalFormat', [{ type: 'ThreeTriangles', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3triangles-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3triangles-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3triangles-2');
+            
+            helper.invoke('conditionalFormat', [{ type: 'FourArrows', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-4arrows-4');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-4arrows-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-4arrows-3');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-4arrows-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'FiveArrows', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-5arrows-5');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-5arrows-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-5arrows-4');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-5arrows-3');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeArrowsGray', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3arrowsgray-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3arrowsgray-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3arrowsgray-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'FourArrowsGray', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-4arrowsgray-4');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-4arrowsgray-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-4arrowsgray-3');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-4arrowsgray-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'FiveArrowsGray', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-5arrowsgray-5');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-5arrowsgray-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-5arrowsgray-4');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-5arrowsgray-3');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeTrafficLights1', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3trafficlights-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3trafficlights-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3trafficlights-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeSigns', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3signs-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3signs-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3signs-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'FourRedToBlack', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-4redtoblack-4');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-4redtoblack-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-4redtoblack-3');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-4redtoblack-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeTrafficLights2', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3rafficlights2-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3rafficlights2-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3rafficlights2-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'FourTrafficLights', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-4trafficlights-4');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-4trafficlights-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-4trafficlights-3');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-4trafficlights-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeSymbols', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3symbols-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3symbols-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3symbols-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeFlags', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3flags-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3flags-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3flags-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeSymbols2', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3symbols2-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3symbols2-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3symbols2-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'ThreeStars', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-3stars-3');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-3stars-1');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-3stars-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'FourRating', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-4rating-4');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-4rating-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-4rating-3');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-4rating-2');
+
+            helper.invoke('conditionalFormat', [{ type: 'FiveQuarters', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-5quarters-5');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-5quarters-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-5quarters-4');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-5quarters-3');
+
+            helper.invoke('conditionalFormat', [{ type: 'FiveRating', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-5rating-5');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-5rating-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-5rating-4');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-5rating-3');
+
+            helper.invoke('conditionalFormat', [{ type: 'FiveBoxes', range: 'E2:E11' }]);
+            expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-5boxes-5');
+            expect(helper.invoke('getCell', [2, 4]).children[0].classList).toContain('e-5boxes-1');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList).toContain('e-5boxes-4');
+            expect(helper.invoke('getCell', [4, 4]).children[0].classList).toContain('e-5boxes-3');
             done();
         });
     });
+
+    describe('Undo Redo for Conditional Formatting->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => { 
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        }); 
+        it('undo after one Conditional Formatting Applied->', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            spreadsheet = helper.getInstance();
+            spreadsheet.notify(clearViewer, { options: { type: 'Clear Formats', range: 'H2:H11' }, isAction: true });
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+            helper.invoke('undo');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            done();
+        });
+
+        it('undo and Redo after Conditional Formatting Applied->', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: "RYGColorScale", range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 235, 132)');
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('rgb(250, 157, 117)');
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBe('rgb(249, 131, 112)');
+            spreadsheet.notify(clearViewer, { options: { type: 'Clear Formats', range: 'H2:H11' }, isAction: true });
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBeNull;
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBeNull;
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBeNull;
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBeNull;
+            helper.invoke('undo');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 235, 132)');
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('rgb(250, 157, 117)');
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBe('rgb(249, 131, 112)');
+            helper.invoke('redo');
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBeNull;
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBeNull;
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBeNull;
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBeNull;
+            helper.invoke('undo');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 235, 132)');
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('rgb(250, 157, 117)');
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBe('rgb(249, 131, 112)');
+            done();
+        });
+
+        it('Clear Iconset->', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: 'ThreeArrows', range: 'D2:D11' }]);
+            expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-3arrows-3');
+            expect(helper.invoke('getCell', [5, 3]).children[0].classList).toContain('e-3arrows-2');
+            expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
+            spreadsheet.notify(clearViewer, { options: { type: 'Clear Formats', range: 'D2:D11' }, isAction: true });
+            expect(helper.invoke('getCell', [1, 3]).querySelector('e-3arrows-3')).toBeNull();
+            expect(helper.invoke('getCell', [5, 3]).querySelector('e-3arrows-3')).toBeNull();
+            expect(helper.invoke('getCell', [6, 3]).querySelector('e-3arrows-3')).toBeNull();
+            done();
+        });
+
+        it('Apply DataBars for Negative Values->', (done: Function) => {
+            helper.edit('F2', '-200');
+            helper.edit('F3', '-600');
+            helper.edit('F4', '-300');
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'F2:F4' }]);
+            expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.width).toBe('34%');
+            expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            expect(helper.invoke('getCell', [3, 5]).getElementsByClassName('e-databar')[1].style.width).toBe('50%');
+            expect(helper.invoke('getCell', [3, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [3, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            done();
+        });
+
+        it('Apply DataBars for Negative and Positive Values->', (done: Function) => {
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'F2:F4' }]);
+            helper.edit('F3', '600');
+            helper.edit('F4', '300');
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'F2:F3' }]);
+            expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.width).toBe('');
+            expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('');
+            expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.width).toBe('75%');
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [2, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(90, 138, 198)');
+            done();
+        });
+
+        it('Apply Greater Than for Regular Expressions->', (done: Function) => {
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'H2:H11' }]);
+            helper.invoke('conditionalFormat', [{ type: "GreaterThan", cFColor: 'RedFT', value: '10^1', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [2, 7]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [3, 7]).style.color).toBe('rgb(156, 0, 85)');
+            done();
+        });
+
+        it('Apply Between for Date Values->', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: "Between", cFColor: 'RedFT', value: '4/20/2014,9/16/2014', range: 'B2:B11' }]);
+            expect(helper.invoke('getCell', [2, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [2, 1]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [3, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [3, 1]).style.color).toBe('rgb(156, 0, 85)');
+            done();
+        });
+
+        it('Apply Between for Regular Expressions->', (done: Function) => {
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'H2:H11' }]);
+            helper.invoke('conditionalFormat', [{ type: "Between", cFColor: 'RedFT', value: '50^1,70^1', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [4, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [4, 7]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [5, 7]).style.color).toBe('rgb(156, 0, 85)');
+            done();
+        });
+
+        it('Apply Equal to for Date Values->', (done: Function) => {
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'B2:B11' }]);
+            helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'YellowFT', value: '07/22/2014', range: 'B2:B11' }]);
+            expect(helper.invoke('getCell', [6, 1]).style.backgroundColor).toBe('rgb(255, 235, 156)');
+            expect(helper.invoke('getCell', [6, 1]).style.color).toBe('rgb(156, 101, 0)');
+            done();
+        });
+
+        it('Apply Equal to for Regular Expressions->', (done: Function) => {
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'H2:H11' }]);
+            helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'YellowFT', value: '10^1', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [1, 7]).style.color).toBe('');
+            done();
+        });
+    });
+
+    describe('UI Interaction->', () => {
+        beforeAll((done: Function) => { 
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'F2:F11' }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply Greater Than->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_greaterthan_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn')
+                expect(btn.disabled).toBeTruthy();
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
+                input.value = '300';
+                const evt: Event = document.createEvent('Event');
+                evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                btn.click();
+                expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [2, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [2, 5]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [6, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [6, 5]).style.color).toBe('rgb(156, 0, 85)');
+                done();
+            });
+        });
+
+        it('Apply Less Than->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_lessthan_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
+                Color.ej2_instances[0].dataBind();
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
+                input.value = '300';
+                const evt: Event = document.createEvent('Event');
+                evt.initEvent('input', true, true);
+                input.dispatchEvent(evt);
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('rgb(255, 235, 156)');
+                expect(helper.invoke('getCell', [1, 5]).style.color).toBe('rgb(156, 101, 0)');
+                done();
+            });
+        });
+
+        it('Apply Between->', (done: Function) => {
+            helper.invoke('selectRange', ['G2:G11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_between_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Green Fill with Dark Green Text';
+                Color.ej2_instances[0].dataBind();
+                helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[0].value = '5';
+                const input: HTMLInputElement = helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[1] as HTMLInputElement;
+                input.value = '15';
+                const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [2, 6]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [2, 6]).style.color).toBe('rgb(0, 97, 0)');
+                expect(helper.invoke('getCell', [3, 6]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [3, 6]).style.color).toBe('rgb(0, 97, 0)');
+                done();
+            });
+        });
+
+        it('Apply Equal to->', (done: Function) => {
+            helper.invoke('selectRange', ['F2:F11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_eqaulto_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Red Fill';
+                Color.ej2_instances[0].dataBind();
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
+                input.value = '300';
+                const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [3, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [3, 5]).style.color).toBe('');
+                expect(helper.invoke('getCell', [4, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [4, 5]).style.color).toBe('');
+                done();
+            });
+        });
+
+        it('Apply Date->', (done: Function) => {
+            helper.invoke('selectRange', ['B2:B11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_adateoccuring_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
+                input.value = '7/22/2014';
+                const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [6, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [6, 1]).style.color).toBe('rgb(156, 0, 85)');
+                done();
+            });
+        });
+
+        it('Apply Top 10 Items->', (done: Function) => {
+            helper.invoke('selectRange', ['E2:E11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-topbottomrules');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_top10items_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input .e-numerictextbox').value = '5';
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [1, 4]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [2, 4]).style.color).toBe('rgb(156, 0, 85)');
+                done();
+            });
+        });
+
+        it('Apply Bottom 10 Items->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-topbottomrules');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_bottom10items_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
+                Color.ej2_instances[0].dataBind();
+                helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input .e-numerictextbox').value = '5';
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 235, 156)');
+                expect(helper.invoke('getCell', [3, 4]).style.color).toBe('rgb(156, 101, 0)');
+                expect(helper.invoke('getCell', [5, 4]).style.backgroundColor).toBe('rgb(255, 235, 156)');
+                expect(helper.invoke('getCell', [5, 4]).style.color).toBe('rgb(156, 101, 0)');
+                done();
+            });
+        });
+
+        it('Apply Top 10 Percentage->', (done: Function) => {
+            helper.invoke('selectRange', ['H2:H11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-topbottomrules');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_top10_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [9, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [9, 7]).style.color).toBe('rgb(156, 0, 85)');
+                done();
+            });
+        });
+
+        it('Apply Bottom 10 Percentage->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-topbottomrules');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_bottom10_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
+                Color.ej2_instances[0].dataBind();
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 235, 156)');
+                expect(helper.invoke('getCell', [1, 7]).style.color).toBe('rgb(156, 101, 0)');
+                done();
+            });
+        });
+
+        it('Apply Above Average->', (done: Function) => {
+            helper.invoke('selectRange', ['D2:D11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-topbottomrules');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_aboveaverage_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [5, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [5, 3]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [6, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [6, 3]).style.color).toBe('rgb(156, 0, 85)');
+                done();
+            });
+        });
+
+        it('Apply Below Average->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-topbottomrules');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_belowaverage_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
+                Color.ej2_instances[0].dataBind();
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 235, 156)');
+                expect(helper.invoke('getCell', [1, 3]).style.color).toBe('rgb(156, 101, 0)');
+                expect(helper.invoke('getCell', [2, 3]).style.backgroundColor).toBe('rgb(255, 235, 156)');
+                expect(helper.invoke('getCell', [2, 3]).style.color).toBe('rgb(156, 101, 0)');
+                done();
+            });
+        });
+
+        it('Input Value with "(" for Between Condition ->', (done: Function) => {
+            helper.invoke('selectRange', ['H2:H11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_between_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[0].value = '10(1)';
+                const input: HTMLInputElement = helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[1] as HTMLInputElement;
+                input.value = '100';
+                const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [2, 7]).style.color).toBe('');
+                expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [3, 7]).style.color).toBe('');
+                done();
+            });
+        });
+
+        it('Apply Duplicate->', (done: Function) => {
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'E2:E11' }]);
+            helper.invoke('selectRange', ['E2:E11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_duplicatevalues_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Red Text';
+                Color.ej2_instances[0].dataBind();
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [1, 4]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [2, 4]).style.color).toBe('rgb(156, 0, 85)');
+                done();
+            });
+        });
+    });
+
+    describe('Conditional formatting on clipboard actions ->', () => {
+        let spreadsheet: Spreadsheet;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{
+                conditionalFormats: [
+                  { type: "ContainsText", cFColor: "RedFT", value:'shoes', range: 'A2:A11' },
+                  { type: "DateOccur", cFColor: "YellowFT", value:'7/22/2014', range: 'B2:B11' },
+                  { type: "GreaterThan", cFColor: "GreenFT", value:'11:26:32 AM', range: 'C2:C11' },
+                  { type: "LessThan", cFColor: "RedF", value:'20', range: 'D2:D11' },
+                ],
+                ranges: [{ dataSource: defaultData }],
+            }, {}] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Copy / paste to othet sheet', (done: Function) => {
+            helper.invoke('copy', ['A1:H11']).then((): void => {
+                spreadsheet = helper.getInstance();
+                spreadsheet.activeSheetIndex = 1;
+                spreadsheet.dataBind();
+                setTimeout((): void => {
+                    helper.invoke('paste');
+                    expect(spreadsheet.sheets[1].conditionalFormats.length).toBe(4);
+                    let cell: HTMLElement = helper.invoke('getCell', [1, 0]);
+                    expect(cell.style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(cell.style.color).toBe('rgb(156, 0, 85)');
+                    cell = helper.invoke('getCell', [6, 1]);
+                    expect(cell.style.backgroundColor).toBe('rgb(255, 235, 156)');
+                    expect(cell.style.color).toBe('rgb(156, 101, 0)');
+                    cell = helper.invoke('getCell', [9, 2]);
+                    expect(cell.style.backgroundColor).toBe('rgb(198, 239, 206)');
+                    expect(cell.style.color).toBe('rgb(0, 97, 0)');
+                    cell = helper.invoke('getCell', [1, 3]);
+                    expect(cell.style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    helper.invoke('selectRange', ['A15']);
+                    helper.invoke('paste', ['A15', 'Values']);
+                    expect(spreadsheet.sheets[1].conditionalFormats.length).toBe(4);
+                    done();
+                });
+            });
+        });
+    });
+    
     describe('CR-Issues ->', () => {
         describe('fb22057, FB24222, FB23945 ->', () => {
             beforeAll((done: Function) => {
@@ -241,28 +846,28 @@ describe('Conditional formatting ->', () => {
             it('Cells are getting highlighted even if no value for conditional formatting is applied', (done: Function) => {
                 helper.getElement('#' + helper.id + '_conditionalformatting').click();
                 const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
                 helper.triggerMouseAction(
                     'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
                     target);
+                helper.getElement('#cf_greaterthan_dlg').click();
                 setTimeout((): void => {
-                    helper.getElement('#cf_greaterthan').click();
-                    setTimeout((): void => {
-                        const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-clearall-btn.e-btn');
-                        expect(btn.disabled).toBeTruthy();
-                        let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
-                        let evt: Event;
-                        ['1', ''].forEach((text: string): void => {
-                            input.value = text;
-                            evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
-                            if (text === '1') {
-                                expect(btn.disabled).toBeFalsy();
-                            } else {
-                                expect(btn.disabled).toBeTruthy();
-                            }
-                        });
-                        (helper.getInstance().serviceLocator.getService(dialog) as Dialog).hide();
-                        done();
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                    expect(btn.disabled).toBeTruthy();
+                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                    let evt: Event;
+                    ['1', ''].forEach((text: string): void => {
+                        input.value = text;
+                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                        if (text === '1') {
+                            expect(btn.disabled).toBeFalsy();
+                        } else {
+                            expect(btn.disabled).toBeTruthy();
+                        }
                     });
+                    btn.click();
+                    done();
                 });
             });
             it('Conditional formatting DataBars do not have cleared after clearing content', (done: Function) => {
@@ -303,9 +908,9 @@ describe('Conditional formatting ->', () => {
             });
             it('Importing excel having CF with formulas throws script error', (done: Function) => {
                 expect(helper.invoke('getCell', [1, 0]).classList).toContain('e-redft');
-                expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toContain('rgb(99, 190, 123)');
+                expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toContain('rgb(255, 235, 132)');
                 expect(helper.invoke('getCell', [0, 2]).querySelector('.e-databar')).not.toBeNull();
-                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-3arrows-3')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 3]).querySelector('.e-3arrows-2')).not.toBeNull();
                 done();
             });
         });
@@ -331,6 +936,261 @@ describe('Conditional formatting ->', () => {
                 };
                 spreadsheet.sheets[0].ranges = [{ dataSource: defaultData }];
                 spreadsheet.dataBind();
+            });
+        });
+        describe('I327232 ->' , () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'Text' }] }], selectedRange: 'A1' }] },done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Paste action for conditional formatting applied cell ->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction(
+                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                    target);
+                helper.getElement('#cf_textcontains_dlg').click();
+                setTimeout((): void => {
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                    expect(btn.disabled).toBeTruthy();
+                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                    let evt: Event;
+                    ['Text', ''].forEach((text: string): void => {
+                        input.value = text;
+                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                    });
+                    btn.click();
+                    helper.invoke('selectRange', ['A1']);
+                    helper.getElement('#' + helper.id + '_copy').click();
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['D4']);
+                        setTimeout(() => {
+                            helper.getElement('#' + helper.id + '_paste').click();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('fb25069 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'Sample' }] }], selectedRange: 'A1' }] },done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Unable to add More than 4 characters in the conditional formatting input feild ->', (done: Function) => {
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction(
+                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                    target);
+                helper.getElement('#cf_textcontains_dlg').click();
+                setTimeout((): void => {
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                    expect(btn.disabled).toBeTruthy();
+                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                    let evt: Event;
+                    ['Sample', ''].forEach((text: string): void => {
+                        input.value = text;
+                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                    });
+                    btn.click();
+                    done();
+                });
+            });
+        });
+        describe('EJ2-48232->', () => {
+            beforeEach((done: Function) => { 
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ }] }]}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Font Color is changed to default when data validation and conditional formatting is applied', (done: Function) => {
+                helper.invoke('addDataValidation', [{ type: "List", operator: "Between", value1: "a,b,c" }, 'B1']);
+                helper.invoke('selectRange', ['B1']);
+                const td: HTMLElement = helper.invoke('getCell', [0, 1]);
+                (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(1)');
+                    setTimeout(() => { 
+                        helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                        const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                        (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                        helper.triggerMouseAction(
+                            'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                            target);
+                        helper.getElement('#cf_textcontains_dlg').click();
+                        setTimeout((): void => {
+                            helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                            const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                            expect(btn.disabled).toBeTruthy();
+                            let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                            let evt: Event;
+                            ['a', ''].forEach((text: string): void => {
+                                input.value = text;
+                                evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                            });
+                            btn.click();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('EJ2-48541->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells:[{ value: '200'}, {index: 1, value: '300'}, {index: 3, formula: '=SUM(A1:B1)'} ] }], selectedRange: 'D1' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Conditional formatting is not getting refreshed in a cell with formula after editing argument values', (done: Function) => {
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction(
+                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                    target);
+                helper.getElement('#cf_textcontains_dlg').click();
+                setTimeout((): void => {
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                    expect(btn.disabled).toBeTruthy();
+                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                    let evt: Event;
+                    ['500', ''].forEach((text: string): void => {
+                        input.value = text;
+                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                        if (text === '500') {
+                            expect(btn.disabled).toBeFalsy();
+                        } else {
+                            expect(btn.disabled).toBeTruthy();
+                        }
+                    });
+                    btn.click()
+                    helper.edit('A1', '100');
+                    setTimeout((): void => {
+                        expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe(100);
+                        expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toBe(400);
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-48148->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A8:A2' }] },done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Conditional Formatting doesnot work when range selected from down to up/left to right', (done: Function) => {
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction(
+                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                    target);
+                helper.getElement('#cf_textcontains_dlg').click();
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                    expect(btn.disabled).toBeTruthy();
+                    const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                    input.value = 'Sneakers';
+                    const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                    expect(btn.disabled).toBeFalsy();
+                    btn.click();
+                    expect(helper.invoke('getCell', [6, 0]).style.color).toBe('rgb(156, 0, 85)');
+                    done();
+                });
+            });
+        });
+        describe('EJ2-51527', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cells are getting highlighted even if no range for formatting is applied', (done: Function) => {
+                helper.invoke('selectRange', ['H1:H11']);
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction(
+                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                    target);
+                helper.getElement('#cf_greaterthan_dlg').click();
+                setTimeout((): void => {
+                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                    expect(btn.disabled).toBeTruthy();
+                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                    let evt: Event;
+                    ['  ', ''].forEach((text: string): void => {
+                        input.value = text;
+                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                        if (text === '  ') {
+                            expect(btn.disabled).toBeTruthy();
+                        }
+                    });
+                    helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(2)');
+                    done();
+                });
+            });
+        });
+        describe('EJ2-55014->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Copy and paste didnt work properly with conditional formatting->', (done: Function) => {
+                helper.invoke('selectRange', ['D2:E6']);
+                helper.invoke('conditionalFormat', [{ type: "Duplicate", cFColor: "RedFT", range: "D2:E6" }]);
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+                helper.click('_copy');
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['K2']);
+                    helper.click('_paste');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 10]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-55991->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ value: '-103' }] }, { cells: [{ value: '-112' }] }, { cells: [{ value: '015' }] },
+                    { cells: [{ value: '107' }] }, { cells: [{ value: '-108' }] }, { cells: [{ value: '-110' }] },
+                    { cells: [{ value: '120' }] }, { cells: [{ value: '0' }] }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix the conditional formatting issue with the negative values for lesser than condition->', (done: Function) => {
+                helper.invoke('selectRange', ['A1:A10']);
+                helper.invoke('conditionalFormat', [{ type: "LessThan", cFColor: "RedFT", value: "-100", range: "A1:A10" }]);
+                expect(helper.invoke('getCell', [0, 0]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [7, 0]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [8, 0]).style.backgroundColor).toBe('');
+                done();
             });
         });
     });

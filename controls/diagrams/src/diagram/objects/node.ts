@@ -3521,6 +3521,13 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     public setTooltipTemplate: Function | string;
 
     /**
+     * Defines the collection of selected nodes and connectors
+     * @default []
+     */
+      @Collection<NodeModel | ConnectorModel>([], Node)
+      public selectedObjects: (NodeModel | ConnectorModel)[];
+
+    /**
      * Initializes the UI of the container
      */
     public init(diagram: Diagram): Container {

@@ -438,7 +438,7 @@ export class ComboBox extends DropDownList {
         }
         if (!this.preventAutoFill && this.getModuleName() === 'combobox' && this.isTyped) {
             setTimeout(() => {
-                this.inlineSearch();
+            this.inlineSearch();   
             });
         }
     }

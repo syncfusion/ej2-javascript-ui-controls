@@ -271,8 +271,8 @@ export class VerticalEvent extends EventBase {
                 'data-guid': record.Guid as string,
                 'role': 'button',
                 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
-                'aria-selected': 'false',
+                'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record),
+                'aria-pressed': 'false',
                 'aria-grabbed': 'true',
                 'aria-label': this.parent.getAnnouncementString(record)
             }
@@ -364,7 +364,7 @@ export class VerticalEvent extends EventBase {
             });
             const moreIndicatorElement: Element = createElement('div', {
                 className: cls.MORE_INDICATOR_CLASS,
-                attrs: { 'tabindex': '0', 'role': 'list', 'data-index': index.toString(), 'data-count': '1' },
+                attrs: { 'tabindex': '0', 'data-index': index.toString(), 'data-count': '1' },
                 innerHTML: '+1&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'))
             });
             innerCountWrap.appendChild(moreIndicatorElement);
@@ -515,7 +515,7 @@ export class VerticalEvent extends EventBase {
         const currentDate: Date = util.resetTime(new Date(this.dateRender[resource][dayIndex].getTime()));
         const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         const isValidEvent: boolean = this.isValidEvent(eventObj, eStart, eEnd, schedule);
-        if ((eStart.getTime() < this.parent.minDate.getTime()) || (eEnd.getTime() > this.parent.maxDate.getTime())) {
+        if((eStart.getTime() < this.parent.minDate.getTime()) || (eEnd.getTime() > this.parent.maxDate.getTime())){
             return;
         }
         if (eStart <= eEnd && isValidEvent) {

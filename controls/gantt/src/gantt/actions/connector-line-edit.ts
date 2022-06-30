@@ -90,9 +90,16 @@ export class ConnectorLineEdit {
     private addHighlight(element: Element): void {
         this.connectorLineElement = element;
         addClass([element], [cls.connectorLineHoverZIndex]);
-        addClass(element.querySelectorAll('.' + cls.connectorLine), [cls.connectorLineHover]);
-        addClass(element.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.connectorLineRightArrowHover]);
-        addClass(element.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.connectorLineLeftArrowHover]);
+        if (element.querySelectorAll('.' + cls.connectorLine)[0].classList.contains('e-criticalconnector-line')) {
+            addClass(element.querySelectorAll('.' + cls.connectorLine), [cls.criticalConnectorLineHover]);
+            addClass(element.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.criticalConnectorLineRightArrowHover]);
+            addClass(element.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.criticalConnectorLineLeftArrowHover]);
+        }
+        else {
+            addClass(element.querySelectorAll('.' + cls.connectorLine), [cls.connectorLineHover]);
+            addClass(element.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.connectorLineRightArrowHover]);
+            addClass(element.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.connectorLineLeftArrowHover]);
+        }
     }
 
     /**
@@ -104,9 +111,16 @@ export class ConnectorLineEdit {
     private removeHighlight(): void {
         if (!isNullOrUndefined(this.connectorLineElement)) {
             removeClass([this.connectorLineElement], [cls.connectorLineHoverZIndex]);
-            removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLine), [cls.connectorLineHover]);
-            removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.connectorLineRightArrowHover]);
-            removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.connectorLineLeftArrowHover]);
+            if (this.connectorLineElement.querySelectorAll('.' + cls.connectorLine)[0].classList.contains(cls.criticalConnectorLineHover)) {
+                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLine), [cls.criticalConnectorLineHover]);
+                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.criticalConnectorLineRightArrowHover]);
+                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.criticalConnectorLineLeftArrowHover]);
+            }
+            else {
+                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLine), [cls.connectorLineHover]);
+                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineRightArrow), [cls.connectorLineRightArrowHover]);
+                removeClass(this.connectorLineElement.querySelectorAll('.' + cls.connectorLineLeftArrow), [cls.connectorLineLeftArrowHover]);
+            }
             this.connectorLineElement = null;
         }
     }

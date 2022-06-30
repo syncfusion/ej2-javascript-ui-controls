@@ -3,7 +3,7 @@ import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workb
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFormatCheckArgs, rowFillHandler } from '../common/index';
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/index';
-import { setCellFormat, getTextSpace, NumberFormatArgs, isCustomDateTime } from './../index';
+import { setCellFormat, getTextSpace, NumberFormatArgs, isCustomDateTime, SetCellFormatArgs } from './../index';
 import { checkIsNumberAndGetNumber } from '../common/internalization';
 /**
  * Specifies number format.
@@ -263,26 +263,37 @@ export class WorkbookNumberFormat {
     }
 
     private processCustomConditions(cell: CellModel): string {
-        let result: string = cell.value;
         if (isNumber(cell.value)) {
             const conditions: string[] = cell.format.split(';');
-            let code: string;
+            const val: number = Number(cell.value); let colorCode: string[] = [];
+            let condition: string; let compareVal: string; let values: string[]; let conditionNotMatch: boolean;
             for (let i: number = 0; i < conditions.length; i++) {
-                code = conditions[i];
-                if (getColorCode(code)) {
-                    code = code.split('[' + getColorCode(code) + ']').join('');
+                condition = conditions[i];
+                colorCode.push(getColorCode(condition));
+                if (colorCode[i]) {
+                    condition = condition.split(`[${colorCode[i]}]`).join('');
                 }
-                const cond: string = code.split('[')[1].split(']')[0];
-                // eslint-disable-next-line no-eval
-                if (eval(cell.value + cond)) {
-                    cell.format = conditions[i].split('[' + cond + ']')[0] + conditions[i].split('[' + cond + ']')[1];
+                compareVal = condition.split('[')[1].split(']')[0];
+                if (((values = compareVal.split('<=')).length === 2 && val <= Number(values[1])) ||
+                    (values.length === 1 && (values = compareVal.split('>=')).length === 2 && val >= Number(values[1])) ||
+                    (values.length === 1 && (values = compareVal.split('<')).length === 2 && val < Number(values[1])) ||
+                    (values.length === 1 && (values = compareVal.split('>')).length === 2 && val > Number(values[1]))) {
+                    cell.format = conditions[i].split(`[${compareVal}]`)[0] + conditions[i].split(`[${compareVal}]`)[1];
+                    conditionNotMatch = false;
                     break;
+                } else {
+                    conditionNotMatch = values.length === 2;
                 }
             }
-            result = this.processCustomNumberFormat(cell);
-            return result;
+            if (conditionNotMatch) {
+                if (cell.style && cell.style.color && colorCode.indexOf(cell.style.color) > -1) {
+                    this.parent.notify(setCellFormat, <SetCellFormatArgs>{ style: { color: '' }, range: this.currentRange });
+                }
+                return '#####';
+            }
+            return this.processCustomNumberFormat(cell);
         } else {
-            return result;
+            return cell.value;
         }
     }
 
@@ -570,14 +581,16 @@ export class WorkbookNumberFormat {
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
-            } else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
-                Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN') {
-                options.args.value = Number(res.split(options.currencySymbol)[1].split(this.groupSep).join(''));
-                options.cell.format = options.args.format = getFormatFromType('Currency');
-                options.fResult = this.currencyFormat(options.args, options.intl, options.curCode);
-                options.cell.value = options.args.value.toString();
-                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
-                options.isRightAlign = true;
+            } else if (res.indexOf(options.currencySymbol) > -1) {
+                const curArr: string[] = res.split(options.currencySymbol);
+                if (curArr[0].trim() === '' && curArr[1] !== '' && isNumber(curArr[1].split(this.groupSep).join(''))) {
+                    options.args.value = Number(curArr[1].split(this.groupSep).join(''));
+                    options.cell.format = options.args.format = getFormatFromType('Currency');
+                    options.fResult = this.currencyFormat(options.args, options.intl, options.curCode);
+                    options.cell.value = options.args.value.toString();
+                    setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
+                    options.isRightAlign = true;
+                }
             }
         }
         if (addressFormula) {

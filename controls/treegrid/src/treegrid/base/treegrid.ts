@@ -1597,7 +1597,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         const splitFrozenCount: string = 'splitFrozenCount';
-        this.freezeModule = new Freeze(this);
         this.grid[splitFrozenCount](this.getGridColumns(this.columns as Column[]));
         if (this.isDestroyed) { return modules; }
         modules.push({
@@ -1646,8 +1645,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 member: 'ExcelExport', args: [this]
             });
         }
+        const freezePresent: Function[] = this.injectedModules.filter((e: Function) => {
+            return e.prototype.getModuleName() === 'freeze';
+        });
         if (this.frozenColumns || this.frozenRows || this.getFrozenColumns() ||
-            this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount() || this.freezeModule) {
+            this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount() || freezePresent.length) {
             modules.push({
                 member: 'freeze', args: [this]
             });

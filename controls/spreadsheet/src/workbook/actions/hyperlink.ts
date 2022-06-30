@@ -1,6 +1,7 @@
-import { Workbook, SheetModel, CellModel, setCell } from '../base/index';
+import { Workbook, SheetModel, CellModel, setCell, getCell } from '../base/index';
 import { setLinkModel, getRangeIndexes, updateCell } from '../common/index';
 import { HyperlinkModel } from '../common/class-model';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * The `WorkbookHyperlink` module is used to handle Hyperlink action in Spreadsheet.
@@ -81,12 +82,21 @@ export class WorkbookHyperlink {
         if (args.displayText) {
             cell.value = args.displayText;
         }
-        if (!updateCell(this.parent, sheet, { cell: cell, rowIdx: rowIdx, colIdx: colIdx, preventEvt: !args.triggerEvt })) {
-            if (!sheet.rows[rowIdx].cells[colIdx].style) {
-                sheet.rows[rowIdx].cells[colIdx].style = {};
+        for (let rIdx: number = cellIdx[0]; rIdx <= cellIdx[2]; rIdx++) {
+            for (let cIdx: number = cellIdx[1]; cIdx <= cellIdx[3]; cIdx++) {
+                let cellModel: CellModel = cell.value ? getCell(rIdx, cIdx, sheet) || {} : cell;
+                cellModel.hyperlink = hyperlink;
+                if (isNullOrUndefined(cellModel.value)) {
+                    cellModel.value = cell.value;
+                }
+                if (!updateCell(this.parent, sheet, { cell: cellModel, rowIdx: rIdx, colIdx: cIdx, preventEvt: !args.triggerEvt })) {
+                    if (!sheet.rows[rIdx].cells[cIdx].style) {
+                        sheet.rows[rIdx].cells[cIdx].style = {};
+                    }
+                    sheet.rows[rIdx].cells[cIdx].style.textDecoration = 'underline';
+                    sheet.rows[rIdx].cells[cIdx].style.color = '#00e';
+                }
             }
-            sheet.rows[rowIdx].cells[colIdx].style.textDecoration = 'underline';
-            sheet.rows[rowIdx].cells[colIdx].style.color = '#00e';
         }
     }
 

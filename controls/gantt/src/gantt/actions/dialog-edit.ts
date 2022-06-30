@@ -405,7 +405,7 @@ export class DialogEdit {
         dialogModel.target = document.body;
         dialogModel.close = this.dialogClose.bind(this);
         dialogModel.closeOnEscape = true;
-        dialogModel.beforeClose = function (args){
+	dialogModel.beforeClose = function (args){
             if(args.closedBy == "escape"){
                 if(args.event.name == "key-pressed" && args.event.target.nodeName == 'INPUT'){
                     args.cancel = true;
@@ -687,7 +687,7 @@ export class DialogEdit {
             this.resourceSelection(id);
         } else if (id === ganttObj.element.id + 'NotesTabContainer') {
             ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as RichTextEditor).refresh();
-            let notesTabElement: HTMLElement = document.querySelector('#' + this.parent.element.id + 'NotesTabContainer') as HTMLInputElement;
+	    let notesTabElement: HTMLElement = document.querySelector('#' + this.parent.element.id + 'NotesTabContainer') as HTMLInputElement;
             notesTabElement.style.overflow = 'scroll';
         } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
             if (isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate)) {
@@ -943,7 +943,7 @@ export class DialogEdit {
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
             } else if (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate)) {
                 if (ganttData.ganttProperties.isMilestone && ganttData.ganttProperties.duration !== 0) {
-		   this.parent.dateValidationModule.checkStartDate(ganttProp.startDate);
+                    this.parent.dateValidationModule.checkStartDate(ganttProp.startDate);
                 }
                 this.parent.dateValidationModule.calculateEndDate(ganttData);
             } else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {

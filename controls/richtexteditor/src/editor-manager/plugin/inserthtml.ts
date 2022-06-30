@@ -24,6 +24,7 @@ export class InsertHtml {
         'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
         'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
         'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
+    public static contentsDeleted: boolean = false;
     public static Insert(docElement: Document, insertNode: Node | string, editNode?: Element, isExternal?: boolean): void {
         let node: Node;
         if (typeof insertNode === 'string') {
@@ -240,7 +241,9 @@ export class InsertHtml {
             this.insertTempNode(range, node, nodes, nodeCutter, editNode);
             let isFirstTextNode: boolean = true;
             let isPreviousInlineElem: boolean; let paraElm: HTMLElement; let previousParent: HTMLElement;
-            range.deleteContents();
+            if (!this.contentsDeleted) {
+                range.deleteContents();
+            }
             while (node.firstChild) {
                 if (node.firstChild.nodeName === '#text' && node.firstChild.textContent.trim() === '') {
                     detach(node.firstChild); continue;
@@ -356,9 +359,27 @@ export class InsertHtml {
                 const nodeSelection: NodeSelection = new NodeSelection();
                 let currentNode: Node = this.getNodeCollection(range, nodeSelection, node)[this.getNodeCollection(range, nodeSelection, node).length - 1];
                 let splitedElm: Node;
-                if ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR') && !isNOU(currentNode.parentElement) &&
-                currentNode.parentElement.textContent.trim().length === 0) {
+                if ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR' ||
+                (currentNode.nodeName === '#text' && !isNOU(currentNode.parentElement) && currentNode.parentElement.nodeName === 'LI')) &&
+                (!isNOU(currentNode.parentElement) && currentNode.parentElement.textContent.trim().length === 0)) {
                     splitedElm = currentNode;
+                    if (currentNode.parentElement.nodeName === 'LI' && !isNOU(currentNode.nextSibling) &&
+                        currentNode.nextSibling.nodeName === 'BR') {
+                        detach(currentNode.nextSibling);
+                    }
+                } else if (currentNode.nodeName === '#text' && !isNOU(currentNode.parentElement) &&
+                currentNode.parentElement.nodeName === 'LI' && currentNode.parentElement.textContent.trim().length > 0) {
+                    splitedElm = currentNode;
+                    if (currentNode.parentElement.nodeName === 'LI' && !isNOU(currentNode.nextSibling) &&
+                    currentNode.nextSibling.nodeName === 'BR') {
+                        detach(currentNode.nextSibling);
+                    }
+                    if (!range.collapsed) {
+                        range.deleteContents();
+                    }
+                    range.insertNode(node);
+                    this.contentsDeleted = true;
+                    return;
                 } else {
                     splitedElm = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);
                 }

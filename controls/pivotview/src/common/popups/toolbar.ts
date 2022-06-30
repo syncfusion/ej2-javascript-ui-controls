@@ -90,6 +90,7 @@ export class Toolbar {
             locale: this.parent.locale,
             items: this.getItems(),
             allowKeyboard: false,
+            cssClass: this.parent.cssClass,
             width: !this.parent.gridSettings.allowAutoResizing ? (this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2)) : 'auto'
         });
         this.toolbar.isStringTemplate = true;
@@ -185,7 +186,7 @@ export class Toolbar {
                     let toDisable: boolean = this.parent.displayOption.view === 'Chart';
                     items.push({
                         prefixIcon: cls.TOOLBAR_GRID + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('grid'),
-                        id: this.parent.element.id + 'grid', cssClass: toDisable ? cls.MENU_DISABLE : '',
+                        id: this.parent.element.id + 'grid', cssClass: (toDisable ? cls.MENU_DISABLE : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                         click: this.menuItemClick.bind(this)
                     });
                     break;
@@ -193,7 +194,7 @@ export class Toolbar {
                     let validTypes: boolean = (this.parent.displayOption.view === 'Table');
                     items.push({
                         template: '<ul id="' + this.parent.element.id + 'chart_menu"></ul>',
-                        id: this.parent.element.id + 'chartmenu', cssClass: validTypes ? cls.MENU_DISABLE : ''
+                        id: this.parent.element.id + 'chartmenu', cssClass: (validTypes ? cls.MENU_DISABLE : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
 
                     });
                     break;
@@ -305,7 +306,7 @@ export class Toolbar {
     private saveReport(args: ClickEventArgs): void {
         if (this.currentReport && this.currentReport !== '' && args.item.id === (this.parent.element.id + 'save')) {
             let saveArgs: SaveReportArgs = {
-                report: this.parent.getPersistData(),
+                report: this.getCurrentReport(),
                 reportName: this.currentReport
             };
             this.parent.actionObj.actionName = this.parent.getActionCompleteName();
@@ -572,7 +573,7 @@ export class Toolbar {
                     return;
                 }
                 let saveArgs: SaveReportArgs = {
-                    report: _this.parent.getPersistData(),
+                    report: _this.getCurrentReport(),
                     reportName: reportInput.value
                 };
                 let actionInfo: PivotActionInfo = {
@@ -609,7 +610,7 @@ export class Toolbar {
                 }
                 _this.parent.trigger(events.newReport);
                 let saveArgs: SaveReportArgs = {
-                    report: _this.parent.getPersistData(),
+                    report: _this.getCurrentReport(),
                     reportName: reportInput.value
                 };
                 let actionInfo: PivotActionInfo = {
@@ -704,14 +705,14 @@ export class Toolbar {
                 {
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('yes'), isPrimary: true,
-                        cssClass: cls.OK_BUTTON_CLASS
+                        cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
                     },
                     click: this.okButtonClick.bind(this)
                 },
                 {
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('no'),
-                        cssClass: cls.CANCEL_BUTTON_CLASS
+                        cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
                     },
                     click: this.cancelButtonClick.bind(this)
                 }
@@ -755,7 +756,7 @@ export class Toolbar {
         } else if (this.action === 'New' || (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New')) {
             if (this.currentReport && this.currentReport !== '' && this.parent.isModified) {
                 let saveArgs: SaveReportArgs = {
-                    report: this.parent.getPersistData(),
+                    report: this.getCurrentReport(),
                     reportName: this.currentReport
                 };
                 let actionInfo: PivotActionInfo = {
@@ -778,7 +779,7 @@ export class Toolbar {
             } else if (this.action === 'New') {
                 this.parent.trigger(events.newReport);
                 let saveArgs: SaveReportArgs = {
-                    report: this.parent.getPersistData(),
+                    report: this.getCurrentReport(),
                     reportName: this.currentReport
                 };
                 this.parent.trigger(events.saveReport, saveArgs);
@@ -788,7 +789,7 @@ export class Toolbar {
             }
         } else if (this.action === 'Save') {
             let saveArgs: SaveReportArgs = {
-                report: this.parent.getPersistData(),
+                report: this.getCurrentReport(),
                 reportName: this.currentReport
             };
             this.parent.trigger(events.saveReport, saveArgs);
@@ -1086,6 +1087,15 @@ export class Toolbar {
         }
         this.updateItemElements();
     }
+    private getCurrentReport(): string {
+        let reportStr: string = this.parent.getPersistData();
+        if (this.parent.dataSourceSettings.type === 'CSV') {
+            let reportSettings: PivotView = JSON.parse(reportStr);
+            (reportSettings.dataSourceSettings.dataSource as string[][]).splice(0, 0, this.parent.engineModule.fields);
+            reportStr = JSON.stringify(reportSettings);
+        }
+        return reportStr;
+    }
     private updateItemElements(): void {
         let itemElements: HTMLElement[] = [].slice.call(this.toolbar.element.querySelectorAll('.e-toolbar-item'));
         for (let element of itemElements) {
@@ -1115,7 +1125,7 @@ export class Toolbar {
             this.parent.element.appendChild(inputCheckbox);
             let checkbox: CheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('multipleAxes'),
-                cssClass: 'e-multipleAxes',
+                cssClass: 'e-multipleAxes' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 checked: this.parent.chartSettings.enableMultipleAxis,
                 change: (args: StateChange) => {
                     document.getElementById(this.parent.element.id + '_' + 'multipleAxes').click();
@@ -1145,7 +1155,7 @@ export class Toolbar {
             let checkbox: CheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('showLegend'),
                 checked: this.getLableState(this.parent.chartSettings.chartSeries.type),
-                cssClass: 'e-showLegend',
+                cssClass: 'e-showLegend' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 change: (args: StateChange) => {
                     document.getElementById(this.parent.element.id + '_' + 'showLegend').click();
                 },
@@ -1170,8 +1180,8 @@ export class Toolbar {
         return this.showLableState;
     }
     private getAllChartItems(): string[] {
-        return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar','StackingLine', 'StepLine', 'StepArea',
-            'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100','Bubble', 'Pareto',
+        return ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StackingLine', 'StepLine', 'StepArea',
+            'SplineArea', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100', 'Bubble', 'Pareto',
             'Polar', 'Radar', 'Pie', 'Pyramid', 'Funnel', 'Doughnut'] as ChartSeriesType[];
     }
     private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
@@ -1520,11 +1530,11 @@ export class Toolbar {
             buttons: [
                 {
                     click: () => { this.chartTypeDialogUpdate(); },
-                    buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true },
+                    buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true },
                 },
                 {
                     click: () => { this.removeDialog(); },
-                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
             closeOnEscape: true,
@@ -1660,7 +1670,7 @@ export class Toolbar {
     private beforeOpen(): void {
         let checkbox: CheckBox = new CheckBox({
             label: this.parent.localeObj.getConstant('multipleAxes'),
-            cssClass: 'e-dialog-multiple-axis',
+            cssClass: 'e-dialog-multiple-axis' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             checked: this.parent.chartSettings.enableMultipleAxis ? this.parent.chartSettings.enableMultipleAxis : false,
             change: (args: StateChange) => {
                 (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = args.checked;
@@ -1672,7 +1682,7 @@ export class Toolbar {
             label: this.parent.localeObj.getConstant('showLegend'),
             checked: this.getLableState(this.parent.chartSettings.chartSeries.type),
             change: () => { this.chartLableState = true; },
-            cssClass: 'e-dialog-show-legend',
+            cssClass: 'e-dialog-show-legend' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale
         });

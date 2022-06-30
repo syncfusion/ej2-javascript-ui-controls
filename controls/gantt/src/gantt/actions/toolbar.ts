@@ -18,7 +18,7 @@ export class Toolbar {
     public toolbar: NavToolbar;
     private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
         'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport',
-        'CsvExport', 'PdfExport', 'Indent', 'Outdent'];
+        'CsvExport', 'PdfExport', 'Indent', 'Outdent', 'CriticalPath'];
     public element: HTMLElement;
     private searchElement: HTMLInputElement;
     constructor(parent: Gantt) {
@@ -46,10 +46,18 @@ export class Toolbar {
             }
             const preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
                 'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport',
-                'PdfExport', 'Indent', 'Outdent'];
+                'PdfExport', 'Indent', 'Outdent', 'CriticalPath'];
             for (const item of preItems) {
-                const itemStr: string = item.toLowerCase();
-                const localeName: string = item[0].toLowerCase() + item.slice(1);
+                let itemStr: string;
+                let localeName: string;
+                if(item === 'CriticalPath') {
+                    itemStr =  "critical-path";
+                    localeName = "criticalPath";
+                }
+                else {
+                    itemStr =  item.toLowerCase();
+                    localeName = item[0].toLowerCase() + item.slice(1);
+                }
                 this.predefinedItems[item] = {
                     id: this.parent.element.id + '_' + itemStr, prefixIcon: 'e-' + itemStr,
                     text: this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant(localeName),
@@ -250,6 +258,14 @@ export class Toolbar {
                 case gID + '_indent':
                     if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
                         gObj.indent();
+                    }
+                    break;
+                case gID + '_critical-path':
+                    if (gObj.enableCriticalPath) {
+                        gObj.enableCriticalPath = false;
+                    }
+                    else {
+                        gObj.enableCriticalPath = true;
                     }
                     break;
                 case gID + '_outdent':

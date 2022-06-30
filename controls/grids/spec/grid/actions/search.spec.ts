@@ -321,7 +321,7 @@ describe('Search module=>', () => {
                 done();
             };
             gridObj.actionComplete = actionComplete;            
-            gridObj.searchModule.search('jgfh');
+            gridObj.searchModule.search('TOMSP');
         });
 
         afterAll(() => {

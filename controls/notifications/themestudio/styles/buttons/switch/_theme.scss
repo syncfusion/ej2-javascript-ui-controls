@@ -133,7 +133,7 @@
             background-color: $switch-inner-on-font-color;
           }
           @else if $skin-name == 'FluentUI' {
-            background-color: $switch-handle-on-disabled-bg-color;
+            background-color: $switch-active-handle-bg;
           }
           @else {
             background-color: $switch-handle-disabled-bg-color;
@@ -159,7 +159,13 @@
       }
 
       & .e-switch-handle.e-switch-active {
-        background-color: $switch-handle-hover-bg-color;
+        @if $skin-name == 'FluentUI' {
+          background-color: $switch-active-handle-bg;
+        }
+
+        @else {
+          background-color: $switch-handle-hover-bg-color;
+        }
       }
       }
 
@@ -292,6 +298,9 @@
         & .e-switch-handle.e-switch-active {
           @if $skin-name == 'bootstrap4' {
             background-color: $switch-handle-hover-bg-color;
+          }
+          @else if $skin-name == 'FluentUI' {
+            background-color: $switch-active-handle-bg;
           }
           @else {
             background-color: $switch-handle-hover-bg-color;

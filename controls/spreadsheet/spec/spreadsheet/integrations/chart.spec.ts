@@ -100,5 +100,35 @@ describe('Chart ->', () => {
                 done();
             });
         });
+        describe('EJ2-50430->', () => {
+            beforeEach((done: Function) => {
+                let model: SheetModel[] = [{
+                    ranges: [{ dataSource: GDPData }],
+                    rows: [{ index: 1, cells: [{ index: 6, chart: [{ type: 'Pie', range: 'A1:E8' }] }] }],
+                    columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }]
+                }];
+                helper.initializeSpreadsheet({
+                    sheets: model,
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.cellFormat({ backgroundColor: '#e56590', color: '#fff', fontWeight: 'bold', textAlign: 'center' }, 'A1:E1');
+                    }
+                },done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Aggregate value wrongly displayed in chart Sample', (done: Function) => {
+                helper.invoke('selectRange', ['B2:E8']);
+                expect(helper.getInstance().sheets[0].selectedRange).toEqual('B2:E8');
+                helper.click('#' + helper.id + '_aggregate');
+                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 28');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+                helper.click('#' + helper.id + '_aggregate');
+                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 28');
+                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li:nth-child(2)').textContent).toBe('Sum: 197.61');
+                done();
+            });
+        });
     });
 });

@@ -188,13 +188,13 @@ export class AggregateMenu {
             buttons: [
                 {
                     click: this.updateValueSettings.bind(this),
-                    buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
+                    buttonModel: { cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
                     click: () => {
                         this.valueDialog.hide();
                     },
-                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                    buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
             closeOnEscape: (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') ? false : true,
@@ -352,7 +352,8 @@ export class AggregateMenu {
             // floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            value: fieldCaption, width: '100%'
+            value: fieldCaption, width: '100%',
+            cssClass: this.parent.cssClass
         });
         inputObj1.isStringTemplate = true;
         inputObj1.appendTo(inputField1);

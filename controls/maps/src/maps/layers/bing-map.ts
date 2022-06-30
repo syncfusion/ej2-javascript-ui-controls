@@ -1,5 +1,6 @@
 import { Maps } from '../maps';
 import { Tile, BingMapType } from '../index';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Bing map src doc
@@ -30,8 +31,12 @@ export class BingMap {
             }
             quadKey = quadKey + '' + digit;
         }
-        const subDomain: string = subDomains[Math.min(parseInt(quadKey.substr(quadKey.length - 1, 1), 10), subDomains.length)];
-        imageUrl = imageUrl.replace('{quadkey}', quadKey).replace('{subdomain}', subDomain);
-        return imageUrl += '&mkt=' + language + '&ur=IN&Key=' + key;
+        if (!isNullOrUndefined(subDomains)) {
+            const subDomain: string = subDomains[Math.min(parseInt(quadKey.substr(quadKey.length - 1, 1), 10), subDomains.length)];
+            imageUrl = imageUrl.replace('{quadkey}', quadKey).replace('{subdomain}', subDomain);
+            return imageUrl += '&mkt=' + language + '&ur=IN&Key=' + key;
+        } else {
+            return '';
+        }
     }
 }

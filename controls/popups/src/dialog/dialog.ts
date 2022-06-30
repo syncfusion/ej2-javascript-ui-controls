@@ -432,7 +432,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private allowMaxHeight: boolean;
     private preventVisibility: boolean;
     private refElement: HTMLElement;
-    private dlgClosedBy: string = DLG_USER_ACTION_CLOSED;
+    private dlgClosedBy: string;
     /**
      * Specifies the value that can be displayed in dialog's content area.
      * It can be information, list, or other HTML elements.
@@ -621,9 +621,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * The position can be represented with pre-configured positions or specific X and Y values.
      * * `X value`: left, center, right, or offset value.
      * * `Y value`: top, center, bottom, or offset value.
-     * 
+     *
      * > More information on the positioning in dialog can be found on this [documentation](../../dialog/getting-started/#positioning)  section.
-     * 
+     *
      * {% codeBlock src='dialog/position/index.md' %}{% endcodeBlock %}
      *
      * @default { X: 'center', Y: 'center' }
@@ -805,6 +805,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.renderComplete();
     }
+    private initializeValue(): void{
+        this.dlgClosedBy = DLG_USER_ACTION_CLOSED;
+
+    }
     /**
      *Initialize the event handler
      *
@@ -812,6 +816,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @private
      */
     protected preRender(): void {
+        this.initializeValue();
         this.headerContent = null;
         this.allowMaxHeight = true;
         this.preventVisibility = true;
@@ -1329,7 +1334,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private buttonClickHandler(index: number): void {
         this.trigger('buttons[' + index + '].click', {});
-    };
+    }
 
     private setContent(): void {
         attributes(this.element, { 'aria-describedby': this.element.id + '_dialog-content' });
@@ -1517,16 +1522,23 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setCSSClass(oldCSSClass?: string): void {
-        if (this.cssClass) {
-            addClass([this.element], this.cssClass.split(' '));
-        }
         if (oldCSSClass) {
             removeClass([this.element], oldCSSClass.split(' '));
+            if (this.isModal && !isNullOrUndefined(this.dlgContainer)) {
+                removeClass([this.dlgContainer], oldCSSClass.split(' '));
+            }
+        }
+        if (this.cssClass) {
+            addClass([this.element], this.cssClass.split(' '));
+            if (this.isModal && !isNullOrUndefined(this.dlgContainer)) {
+                addClass([this.dlgContainer], this.cssClass.split(' '));
+            }
         }
     }
 
     private setIsModal(): void {
         this.dlgContainer = this.createElement('div', { className: DLG_CONTAINER });
+        this.setCSSClass();
         this.element.classList.remove(DLG_SHOW);
         this.element.parentNode.insertBefore(this.dlgContainer, this.element);
         this.dlgContainer.appendChild(this.element);
@@ -1660,8 +1672,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             this.clearTemplate(['content']); detach(this.contentEle); this.contentEle = null; this.setContent();
                         } else {
                             typeof (this.content) === 'string' ? (this.isBlazorServerRender() && (this.contentEle.innerText === '')) ?
-                            this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
-                            this.updateSanitizeContent() : this.contentEle.appendChild(this.content);
+                                this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
+                                this.updateSanitizeContent() : this.contentEle.appendChild(this.content);
                         }
                         this.setMaxHeight();
                     } else {
@@ -1774,6 +1786,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.setEnableRTL(); break;
             case 'enableResize':
                 this.setResize(); break;
+            case 'minHeight':
+                if (this.minHeight !== '') {
+                    this.element.style.minHeight = formatUnit(this.minHeight);
+                } break;
             }
         }
     }
@@ -1971,13 +1987,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
     /**
      * Returns the current width and height of the Dialog
-     * 
+     *
      * @returns {DialogDimension}
      * @public
      */
-     public getDimension(): DialogDimension {
-        let dialogWidth = this.element.offsetWidth;
-        let dialogHeight = this.element.offsetHeight;
+    public getDimension(): DialogDimension {
+        const dialogWidth = this.element.offsetWidth;
+        const dialogHeight = this.element.offsetHeight;
         return {width: dialogWidth, height: dialogHeight};
     }
     /**
@@ -2131,8 +2147,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         const left: number = this.element.offsetLeft;
         /* eslint-enable */
         if (args) {
-            addClass([this.element], FULLSCREEN);
             this.element.style.top = document.scrollingElement.scrollTop + 'px';
+            addClass([this.element], FULLSCREEN);
             const display: string = this.element.style.display;
             this.element.style.display = 'none';
             this.element.style.maxHeight = (!isNullOrUndefined(this.target)) ?
@@ -2445,4 +2461,4 @@ interface ResizeTouchEventArgs extends TouchEvent  {
 interface DialogDimension {
     width: number;
     height: number;
-} 
+}

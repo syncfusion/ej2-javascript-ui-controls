@@ -69,18 +69,7 @@ export class HelperMethods {
         }
         return isNullOrUndefined(index) ? -1 : index;
     }
-    /**
-     * Convert ARGB to RGB 
-     * @private
-     * @param {string} color 
-     * @returns {string}
-     */
-     public static convertArgbToRgb(color: string): string {
-        if (color.length >= 8) {
-            return color.substr(0, 6);
-        }
-        return color;
-    }
+
     public static lastIndexOfAny(text: string, wordSplitCharacter: string[]): number {
         for (let i: number = text.length - 1; i >= 0; i--) {
             for (let j: number = 0; j <= wordSplitCharacter.length - 1; j++) {
@@ -90,6 +79,18 @@ export class HelperMethods {
             }
         }
         return -1;
+    }
+    /**
+     * Convert ARGB to RGB 
+     * @private
+     * @param {string} color 
+     * @returns {string}
+     */
+    public static convertArgbToRgb(color: string): string {
+        if (color.length >= 8) {
+            return color.substr(0, 6);
+        }
+        return color;
     }
 
     public static convertRgbToHex(val: number): string {
@@ -484,17 +485,7 @@ export class HelperMethods {
      * @returns {string} - Returns the unique id for document editor.
      */
     public static getUniqueElementId(): string {
-        const documentEditorElementId: string = 'de_element';
-        let index: number = 1;
-        /* eslint-disable-next-line no-constant-condition */
-        while (true) {
-            const ele: HTMLElement = document.getElementById(documentEditorElementId + index);
-            if (isNullOrUndefined(ele)) {
-                break;
-            }
-            index++;
-        }
-        return documentEditorElementId + index;
+        return 'de_element' + Date.now().toString(36) + Math.random().toString(36).substring(2);
     }
 }
 /**
@@ -666,6 +657,13 @@ export class Base64 {
 export interface TextSearchResultInfo {
     startOffset: string
     endOffset: string
+}
+/**
+ * ListSearchResultInfo
+ */
+export interface ListSearchResultInfo {
+    paragraph: ParagraphWidget
+    listId: number
 }
 
 /**
@@ -991,7 +989,13 @@ export interface PositionInfo {
     startPosition: TextPosition
     endPosition: TextPosition
 }
-
+/**
+ * @private
+ */
+export interface BorderRenderInfo {
+    skipTopBorder: boolean;
+    skipBottomBorder: boolean
+}
 /**
  * Specifies the field information.
  */

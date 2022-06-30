@@ -33,5 +33,17 @@
         }
       }
     }
+
+    &:not(.e-menu-container) {
+
+      & .e-menu-vscroll.e-vscroll {
+        background-color: inherit;
+        border: $cmenu-ul-border;
+
+        & .e-scroll-nav {
+          border-color: $cmenu-li-border-color;
+        }
+      }
+    }
   }
 }

@@ -18,6 +18,8 @@ import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WLevelOverride } from '../list/level-override';
 import { Dictionary } from '../../base/dictionary';
+import { LineStyle } from '../../base/types';
+import { WBorder, WBorders } from '../../implementation/format';
 /* eslint-disable */
 /**
  * Selection character format implementation
@@ -258,31 +260,31 @@ export class SelectionCharacterFormat {
     }
     private getPropertyValue(property: string): Object {
         switch (property) {
-        case 'bold':
-            return this.bold;
-        case 'italic':
-            return this.italic;
-        case 'fontSize':
-            if (this.fontSize >= 1) {
-                return this.fontSize;
-            }
-            return undefined;
-        case 'fontFamily':
-            return this.fontFamily;
-        case 'strikethrough':
-            return this.strikethrough;
-        case 'baselineAlignment':
-            return this.baselineAlignment;
-        case 'highlightColor':
-            return this.highlightColor;
-        case 'underline':
-            return this.underline;
-        case 'fontColor':
-            return this.fontColor;
-        case 'allCaps':
-            return this.allCaps;
-        default:
-            return undefined;
+            case 'bold':
+                return this.bold;
+            case 'italic':
+                return this.italic;
+            case 'fontSize':
+                if (this.fontSize >= 1) {
+                    return this.fontSize;
+                }
+                return undefined;
+            case 'fontFamily':
+                return this.fontFamily;
+            case 'strikethrough':
+                return this.strikethrough;
+            case 'baselineAlignment':
+                return this.baselineAlignment;
+            case 'highlightColor':
+                return this.highlightColor;
+            case 'underline':
+                return this.underline;
+            case 'fontColor':
+                return this.fontColor;
+            case 'allCaps':
+                return this.allCaps;
+            default:
+                return undefined;
         }
     }
     /**
@@ -483,10 +485,386 @@ export class SelectionCharacterFormat {
     }
 }
 /**
+ * Selection Border implementation
+ */
+export class SelectionBorder {
+    //Declaring the owner selection
+    private selection: Selection;
+    private colorIn: string = undefined;
+    private lineStyleIn: LineStyle = undefined;
+    private lineWidthIn: number = undefined;
+    private shadowIn: boolean = undefined;
+    private spaceIn: number = undefined;
+    private ownerBase: SelectionBorders;
+    private borderType: string;
+    /**
+     * Gets or sets the color for selected paragraph borders.
+     *
+     * @default undefined
+     * @aspType string
+     */
+    public get color(): string {
+        return this.colorIn;
+    }
+    /**
+     * Sets the color for selected paragraph borders.
+     *
+     * @default undefined
+     * @aspType string
+     */
+    public set color(value: string) {
+        if (value === this.colorIn) {
+            return;
+        }
+        this.colorIn = value;
+        this.notifyPropertyChanged("color");
+    }
+    /**
+     * Gets or sets the lineStyle for selected paragraph borders.
+     *
+     * @default undefined
+     * @aspType LineStyle
+     */
+    public get lineStyle(): LineStyle {
+        return this.lineStyleIn;
+    }
+    /**
+     * Sets the lineStyle for selected paragraph borders.
+     *
+     * @default undefined
+     * @aspType LineStyle
+     */
+    public set lineStyle(value: LineStyle) {
+        if (value === this.lineStyleIn) {
+            return;
+        }
+        this.lineStyleIn = value;
+        this.notifyPropertyChanged("lineStyle");
+    }
+    /**
+     * Gets or sets the lineWidth for selected paragraph borders.
+     *
+     * @default undefined
+     * @aspType number
+     */
+    public get lineWidth(): number {
+        return this.lineWidthIn;
+    }
+    /**
+     * Sets the lineWidth for selected paragraphs borders.
+     *
+     * @default undefined
+     * @aspType number
+     */
+    public set lineWidth(value: number) {
+        if (value === this.lineWidthIn) {
+            return;
+        }
+        this.lineWidthIn = value;
+        this.notifyPropertyChanged("lineWidth");
+    }
+    /**
+     * Gets or sets the shadow for selected paragraph borders.
+     *
+     * @default undefined
+     * @aspType boolean
+     */
+    public get shadow(): boolean {
+        return this.shadowIn;
+    }
+    /**
+     * Sets the shadow for selected paragraphs borders.
+     *
+     * @default undefined
+     * @aspType boolean
+     */
+    public set shadow(value: boolean) {
+        if (value === this.shadowIn) {
+            return;
+        }
+        this.shadowIn = value;
+        this.notifyPropertyChanged("shadow");
+    }
+    /**
+     * Gets or sets the space for selected paragraphs borders.
+     *
+     * @default undefined
+     * @aspType number
+     */
+    public get space(): number {
+        return this.spaceIn;
+    }
+    /**
+     * Sets the space for selected paragraphs borders.
+     *
+     * @default undefined
+     * @aspType number
+     */
+    public set space(value: number) {
+        if (value === this.spaceIn) {
+            return;
+        }
+        this.spaceIn = value;
+        this.notifyPropertyChanged('space');
+    }
+
+    /**
+     * @param SelectionBorders
+     * @private
+     */
+    public constructor(selection?: Selection, borderType?: string, node?: SelectionBorders) {
+        this.borderType = borderType;
+        this.ownerBase = node;
+        this.selection = selection;
+    }
+   /**
+    *Copies the format.
+    *
+    * @param {WBorder} border
+    * @returns {void}
+    * @private
+    */
+    public copyFormat(border: WBorder): void {
+        this.color = border.color;
+        this.lineStyle = border.lineStyle;
+        this.lineWidth = border.lineWidth;
+        this.shadow = border.shadow;
+        this.space = border.space;
+    }
+   /**
+    * Combines the format.
+    *
+    * @param {WBorder} border
+    * @returns {void}
+    * @private
+    */
+    public combineFormat(border: WBorder): void {
+        if (!isNullOrUndefined(this.color) && this.color !== border.color) {
+            this.color = undefined;
+        }
+        if (!isNullOrUndefined(this.lineStyle) && this.lineStyle !== border.lineStyle) {
+            this.lineStyle = undefined;
+        }
+        if (!isNullOrUndefined(this.lineWidth) && this.lineWidth !== border.lineWidth) {
+            this.lineWidth = undefined;
+        }
+        if (!isNullOrUndefined(this.shadow) && this.shadow !== border.shadow) {
+            this.shadow = undefined;
+        }
+        if (!isNullOrUndefined(this.space) && this.space !== border.space) {
+            this.space = undefined;
+        }
+    }
+    private getPropertyValue(property: string): Object {
+        switch (property) {
+            case 'color':
+                return this.color;
+            case 'lineStyle':
+                return this.lineStyle;
+            case 'lineWidth':
+                return this.lineWidth;
+            case 'space':
+                return this.space;
+            case 'shadow':
+                return this.shadow;
+        }
+        return undefined;
+    }
+    /**
+     * Notifies whenever the property gets changed.
+     * @param {string} propertyName 
+     * @returns {void}
+     */
+    private notifyPropertyChanged(propertyName: string): void {
+        if (!isNullOrUndefined(this.selection) &&
+            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)
+            && !this.selection.isRetrieveFormatting) {
+            return;
+        }
+        if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
+            const editor: Editor = this.selection.owner.editorModule;
+            const propertyValue: Object = this.getPropertyValue(propertyName);
+            if (!isNullOrUndefined(propertyValue)) {
+                editor.applyParagraphBorders(propertyName, this.borderType, propertyValue);
+            }
+        }
+    }
+    /**
+     * Destroys the managed resources.
+     *
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        if (!isNullOrUndefined(this.colorIn)) {
+            this.colorIn = undefined;
+        }
+        if (!isNullOrUndefined(this.lineStyleIn)) {
+            this.lineStyleIn = undefined;
+        }
+        if (!isNullOrUndefined(this.lineWidthIn)) {
+            this.lineWidthIn = undefined;
+        }
+        if (!isNullOrUndefined(this.spaceIn)) {
+            this.spaceIn = undefined;
+        }
+        if (!isNullOrUndefined(this.shadowIn)) {
+            this.shadowIn = undefined;
+        }
+    }
+}
+/**
+ * Selection Borders implementation
+ */
+export class SelectionBorders {
+    private selection: Selection;
+    private topIn: SelectionBorder;
+    private bottomIn: SelectionBorder;
+    private leftIn: SelectionBorder;
+    private rightIn: SelectionBorder;
+    private horizontalIn: SelectionBorder;
+    private verticalIn: SelectionBorder;
+    private ownerBase: Object = undefined;
+
+    /**
+     * Gets the top Border for selected paragraphs.
+     *
+     * @default undefined
+     * @aspType SelectionBorder
+     */
+    public get top(): SelectionBorder {
+        return this.topIn as SelectionBorder;
+    }
+    /**
+     * Gets the bottom Border for selected paragraphs.
+     *
+     * @default undefined
+     * @aspType SelectionBorder
+     */
+    public get bottom(): SelectionBorder {
+        return this.bottomIn as SelectionBorder;
+    }
+    /**
+     * Gets the left Border for selected paragraphs.
+     *
+     * @default undefined
+     * @aspType SelectionBorder
+     */
+    public get left(): SelectionBorder {
+        return this.leftIn as SelectionBorder;
+    }
+    /**
+     * Gets the right Border for selected paragraphs.
+     *
+     * @default undefined
+     * @aspType SelectionBorder
+     */
+    public get right(): SelectionBorder {
+        return this.rightIn as SelectionBorder;
+    }
+    /**
+     * Gets the horizontal Border for selected paragraphs.
+     *
+     * @default undefined
+     * @aspType SelectionBorder
+     */
+    public get horizontal(): SelectionBorder {
+        return this.horizontalIn as SelectionBorder;
+    }
+    /**
+     * Gets the vertical Border for selected paragraphs.
+     *
+     * @default undefined
+     * @aspType SelectionBorder
+     */
+    public get vertical(): SelectionBorder {
+        return this.verticalIn as SelectionBorder;
+    }
+    /**
+     * @param Object
+     * @private
+     */
+    public constructor(selection: Selection, node?: Object) {
+        this.ownerBase = node;
+        this.selection = selection;
+        this.topIn = new SelectionBorder(this.selection, 'topBorder', this);
+        this.bottomIn = new SelectionBorder(this.selection, 'bottomBorder', this);
+        this.rightIn = new SelectionBorder(this.selection, 'rightBorder', this);
+        this.leftIn = new SelectionBorder(this.selection, 'leftBorder', this);
+        this.horizontalIn = new SelectionBorder(this.selection, 'horizontalBorder', this);
+        this.verticalIn = new SelectionBorder(this.selection, 'verticalBorder', this);
+    }
+
+    /**
+     * Copies the format.
+     *
+     * @param {WBorders} borders
+     * @returns {void}
+     * @private
+     */
+    public copyFormat(borders: WBorders): void {
+        this.top.copyFormat(borders.top);
+        this.bottom.copyFormat(borders.bottom);
+        this.left.copyFormat(borders.left);
+        this.right.copyFormat(borders.right);
+        this.horizontal.copyFormat(borders.horizontal);
+        this.vertical.copyFormat(borders.vertical);
+    }
+    /**
+     * Combines the format.
+     *
+     * @param {WBorders} borders
+     * @private
+     */
+    public combineFormat(borders: WBorders) {
+        this.top.combineFormat(borders.top);
+        this.bottom.combineFormat(borders.bottom);
+        this.left.combineFormat(borders.left);
+        this.right.combineFormat(borders.right);
+        this.vertical.combineFormat(borders.vertical);
+        this.horizontal.combineFormat(borders.horizontal);
+    }
+
+    /**
+     * Destroys the managed resources.
+     *
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        if (!isNullOrUndefined(this.topIn)) {
+            this.topIn.destroy();
+            this.topIn = undefined;
+        }
+        if (!isNullOrUndefined(this.topIn)) {
+            this.bottomIn.destroy();
+            this.bottomIn = undefined;
+        }
+        if (!isNullOrUndefined(this.leftIn)) {
+            this.leftIn.destroy();
+            this.leftIn = undefined;
+        }
+        if (!isNullOrUndefined(this.rightIn)) {
+            this.rightIn.destroy();
+            this.rightIn = undefined;
+        }
+        if (!isNullOrUndefined(this.horizontalIn)) {
+            this.horizontalIn.destroy();
+            this.horizontalIn = undefined;
+        }
+        if (!isNullOrUndefined(this.verticalIn)) {
+            this.verticalIn.destroy();
+            this.verticalIn = undefined;
+        }
+    }
+
+   
+}
+/**
  * Selection paragraph format implementation
  */
 export class SelectionParagraphFormat {
-    // Declaring the owner selection
+    //Declaring the owner selection
     private selection: Selection;
     // Declaring the character format properties.
     private leftIndentIn: number = 0;
@@ -494,7 +872,7 @@ export class SelectionParagraphFormat {
     private beforeSpacingIn: number = 0;
     private afterSpacingIn: number = 0;
     private spaceAfterAutoIn: boolean = undefined;
-    private spaceBeforeAutoIn :boolean = undefined;
+    private spaceBeforeAutoIn: boolean = undefined;
     private textAlignmentIn: TextAlignment = undefined;
     private firstLineIndentIn: number = 0;
     private lineSpacingIn: number = 1;
@@ -504,6 +882,16 @@ export class SelectionParagraphFormat {
     private keepLinesTogetherIn: boolean = undefined;
     private widowControlIn: boolean = undefined;
     private contextualSpacingIn: boolean = undefined;
+    private bordersIn: SelectionBorders;
+    /**
+     * Gets the borders for selected paragraphs.
+     *
+     * @default undefined
+     * @aspType SelectionBorders
+     */
+    public get borders(): SelectionBorders {
+        return this.bordersIn;
+    }
     /**
      * @private
      */
@@ -660,7 +1048,7 @@ export class SelectionParagraphFormat {
      * @blazorType bool
      */
     public set spaceAfterAuto(value: boolean) {
-        if(value === this.spaceAfterAutoIn) {
+        if (value === this.spaceAfterAutoIn) {
             return;
         }
         this.spaceAfterAutoIn = value;
@@ -682,7 +1070,7 @@ export class SelectionParagraphFormat {
      * @blazorType bool
      */
     public set spaceBeforeAuto(value: boolean) {
-        if(value === this.spaceBeforeAutoIn) {
+        if (value === this.spaceBeforeAutoIn) {
             return;
         }
         this.spaceBeforeAutoIn = value;
@@ -819,7 +1207,7 @@ export class SelectionParagraphFormat {
      * @aspType bool
      * @returns {boolean} - `true` if the first and last lines of the paragraph are to remain on the same page; otherwise, `false`.
      */
-     public get widowControl(): boolean {
+    public get widowControl(): boolean {
         return this.widowControlIn;
     }
     /**
@@ -894,42 +1282,43 @@ export class SelectionParagraphFormat {
     constructor(selection: Selection, documentHelper: DocumentHelper) {
         this.selection = selection;
         this.documentHelper = documentHelper;
+        this.bordersIn = new SelectionBorders(this.selection, this);
     }
 
     private getPropertyValue(property: string): Object {
         switch (property) {
-        case 'leftIndent':
-            return this.leftIndent;
-        case 'rightIndent':
-            return this.rightIndent;
-        case 'firstLineIndent':
-            return this.firstLineIndent;
-        case 'beforeSpacing':
-            return this.beforeSpacing;
-        case 'afterSpacing':
-            return this.afterSpacing;
-        case 'spaceAfterAuto':
-            return this.spaceAfterAuto;
-        case 'spaceBeforeAuto':
-            return this.spaceBeforeAuto;
-        case 'textAlignment':
-            return this.textAlignment;
-        case 'lineSpacing':
-            return this.lineSpacing;
-        case 'lineSpacingType':
-            return this.lineSpacingType;
-        case 'bidi':
-            return this.bidi;
-        case 'contextualSpacing':
-            return this.contextualSpacing;
-        case 'keepWithNext':
-            return this.keepWithNext;
-        case 'keepLinesTogether':
-            return this.keepLinesTogether;     
-        case 'widowControl':
-            return this.widowControl;
-        default:
-            return undefined;
+            case 'leftIndent':
+                return this.leftIndent;
+            case 'rightIndent':
+                return this.rightIndent;
+            case 'firstLineIndent':
+                return this.firstLineIndent;
+            case 'beforeSpacing':
+                return this.beforeSpacing;
+            case 'afterSpacing':
+                return this.afterSpacing;
+            case 'spaceAfterAuto':
+                return this.spaceAfterAuto;
+            case 'spaceBeforeAuto':
+                return this.spaceBeforeAuto;
+            case 'textAlignment':
+                return this.textAlignment;
+            case 'lineSpacing':
+                return this.lineSpacing;
+            case 'lineSpacingType':
+                return this.lineSpacingType;
+            case 'bidi':
+                return this.bidi;
+            case 'contextualSpacing':
+                return this.contextualSpacing;
+            case 'keepWithNext':
+                return this.keepWithNext;
+            case 'keepLinesTogether':
+                return this.keepLinesTogether;
+            case 'widowControl':
+                return this.widowControl;
+            default:
+                return undefined;
         }
     }
     /**
@@ -999,6 +1388,7 @@ export class SelectionParagraphFormat {
         this.keepWithNext = format.keepWithNext;
         this.widowControl = format.widowControl;
         this.contextualSpacing = format.contextualSpacing;
+        this.borders.copyFormat(format.borders);
         if (!isNullOrUndefined(format.listFormat) && !isNullOrUndefined(format.listFormat.listId)) {
             this.listId = format.listFormat.listId;
             this.listLevelNumber = format.listFormat.listLevelNumber;
@@ -1023,10 +1413,10 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.beforeSpacing)) {
             format.beforeSpacing = this.beforeSpacing;
         }
-        if (!isNullOrUndefined(this.spaceAfterAuto)){
+        if (!isNullOrUndefined(this.spaceAfterAuto)) {
             format.spaceAfterAuto = this.spaceAfterAuto;
         }
-        if (!isNullOrUndefined(this.spaceBeforeAuto)){
+        if (!isNullOrUndefined(this.spaceBeforeAuto)) {
             format.spaceBeforeAuto = this.spaceBeforeAuto;
         }
         if (!isNullOrUndefined(this.leftIndent)) {
@@ -1124,6 +1514,7 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.styleName) && format.baseStyle && this.styleName !== format.baseStyle.name) {
             this.styleName = undefined;
         }
+        this.borders.combineFormat(format.borders);
     }
     /**
      * Clears the format.
@@ -1147,6 +1538,7 @@ export class SelectionParagraphFormat {
         this.styleName = undefined;
         this.bidi = undefined;
         this.contextualSpacing = undefined;
+     
     }
     /**
      * Gets the clone of list at current selection.
@@ -1212,7 +1604,7 @@ export class SelectionParagraphFormat {
             this.selection.owner.isLayoutEnabled = true;
             this.documentHelper.renderedLists.clear();
             this.documentHelper.renderedLevelOverrides = [];
-            if(isListDialog) {
+            if (isListDialog) {
                 this.documentHelper.layout.clearInvalidList(listAdv);
             }
             this.documentHelper.owner.editorModule.layoutWholeDocument();
@@ -1263,6 +1655,10 @@ export class SelectionParagraphFormat {
         this.styleName = undefined;
         this.bidi = undefined;
         this.contextualSpacing = undefined;
+        if (!isNullOrUndefined(this.bordersIn)) {
+            this.bordersIn.destroy();
+            this.bordersIn = undefined;
+        }
     }
 }
 /**
@@ -1628,74 +2024,74 @@ export class SelectionSectionFormat {
     }
     private getPropertyvalue(propertyName: string): Object {
         switch (propertyName) {
-        case 'pageHeight':
-            if (this.pageHeight > 0) {
-                return this.pageHeight;
-            }
-            return undefined;
-        case 'pageWidth':
-            if (this.pageWidth > 0) {
-                return this.pageWidth;
-            }
-            return undefined;
-        case 'leftMargin':
-            if (this.leftMargin >= 0) {
-                return this.leftMargin;
-            }
-            return undefined;
-        case 'rightMargin':
-            if (this.rightMargin >= 0) {
-                return this.rightMargin;
-            }
-            return undefined;
-        case 'topMargin':
-            if (this.topMargin >= 0) {
-                return this.topMargin;
-            }
-            return undefined;
-        case 'bottomMargin':
-            if (this.bottomMargin >= 0) {
-                return this.bottomMargin;
-            }
-            return undefined;
-        case 'differentFirstPage':
-            if (!isNullOrUndefined(this.differentFirstPage)) {
-                return this.differentFirstPage;
-            }
-            return undefined;
-        case 'differentOddAndEvenPages':
-            if (!isNullOrUndefined(this.differentOddAndEvenPages)) {
-                return this.differentOddAndEvenPages;
-            }
-            return undefined;
-        case 'headerDistance':
-            return this.headerDistanceIn;
-        case 'footerDistance':
-            return this.footerDistance;
-        case 'pageStartingNumber':
-            if (!isNullOrUndefined(this.pageStartingNumber)) {
-                return this.pageStartingNumber;
-            }
-            return undefined;
-        case 'restartPageNumbering':
-            if (!isNullOrUndefined(this.restartPageNumbering)) {
-                return this.restartPageNumbering;
-            }
-            return undefined;
-        case 'endnoteNumberFormat':
-            return this.endnoteNumberFormatIn;
-        case 'restartIndexForEndnotes':
-            return this.restartIndexForEndnotesIn;
-        case 'restartIndexForFootnotes':
-            return this.restartIndexForFootnotesIn;
-        case 'footNoteNumberFormat':
-            return this.footNoteNumberFormatIn;
-        case 'initialFootNoteNumber':
-            return this.initialFootNoteNumber;
-        case 'initialEndNoteNumber':
-            return this.initialEndNoteNumber;
-        default:
-            return undefined;
+            case 'pageHeight':
+                if (this.pageHeight > 0) {
+                    return this.pageHeight;
+                }
+                return undefined;
+            case 'pageWidth':
+                if (this.pageWidth > 0) {
+                    return this.pageWidth;
+                }
+                return undefined;
+            case 'leftMargin':
+                if (this.leftMargin >= 0) {
+                    return this.leftMargin;
+                }
+                return undefined;
+            case 'rightMargin':
+                if (this.rightMargin >= 0) {
+                    return this.rightMargin;
+                }
+                return undefined;
+            case 'topMargin':
+                if (this.topMargin >= 0) {
+                    return this.topMargin;
+                }
+                return undefined;
+            case 'bottomMargin':
+                if (this.bottomMargin >= 0) {
+                    return this.bottomMargin;
+                }
+                return undefined;
+            case 'differentFirstPage':
+                if (!isNullOrUndefined(this.differentFirstPage)) {
+                    return this.differentFirstPage;
+                }
+                return undefined;
+            case 'differentOddAndEvenPages':
+                if (!isNullOrUndefined(this.differentOddAndEvenPages)) {
+                    return this.differentOddAndEvenPages;
+                }
+                return undefined;
+            case 'headerDistance':
+                return this.headerDistanceIn;
+            case 'footerDistance':
+                return this.footerDistance;
+            case 'pageStartingNumber':
+                if (!isNullOrUndefined(this.pageStartingNumber)) {
+                    return this.pageStartingNumber;
+                }
+                return undefined;
+            case 'restartPageNumbering':
+                if (!isNullOrUndefined(this.restartPageNumbering)) {
+                    return this.restartPageNumbering;
+                }
+                return undefined;
+            case 'endnoteNumberFormat':
+                return this.endnoteNumberFormatIn;
+            case 'restartIndexForEndnotes':
+                return this.restartIndexForEndnotesIn;
+            case 'restartIndexForFootnotes':
+                return this.restartIndexForFootnotesIn;
+            case 'footNoteNumberFormat':
+                return this.footNoteNumberFormatIn;
+            case 'initialFootNoteNumber':
+                return this.initialFootNoteNumber;
+            case 'initialEndNoteNumber':
+                return this.initialEndNoteNumber;
+            default:
+                return undefined;
         }
     }
     /**
@@ -2087,32 +2483,32 @@ export class SelectionTableFormat {
     }
     private getPropertyValue(propertyName: string): Object {
         switch (propertyName) {
-        case 'tableAlignment':
-            return this.tableAlignment;
-        case 'leftIndent':
-            return this.leftIndent;
-        case 'cellSpacing':
-            return this.cellSpacing;
-        case 'leftMargin':
-            return this.leftMargin;
-        case 'rightMargin':
-            return this.rightMargin;
-        case 'topMargin':
-            return this.topMargin;
-        case 'bottomMargin':
-            return this.bottomMargin;
-        case 'background':
-            const shading: WShading = new WShading();
-            shading.backgroundColor = this.background;
-            return shading;
-        case 'preferredWidth':
-            return this.preferredWidth;
-        case 'preferredWidthType':
-            return this.preferredWidthType;
-        case 'bidi':
-            return this.bidi;
-        default:
-            return undefined;
+            case 'tableAlignment':
+                return this.tableAlignment;
+            case 'leftIndent':
+                return this.leftIndent;
+            case 'cellSpacing':
+                return this.cellSpacing;
+            case 'leftMargin':
+                return this.leftMargin;
+            case 'rightMargin':
+                return this.rightMargin;
+            case 'topMargin':
+                return this.topMargin;
+            case 'bottomMargin':
+                return this.bottomMargin;
+            case 'background':
+                const shading: WShading = new WShading();
+                shading.backgroundColor = this.background;
+                return shading;
+            case 'preferredWidth':
+                return this.preferredWidth;
+            case 'preferredWidthType':
+                return this.preferredWidthType;
+            case 'bidi':
+                return this.bidi;
+            default:
+                return undefined;
         }
     }
     private notifyPropertyChanged(propertyName: string): void {
@@ -2392,26 +2788,26 @@ export class SelectionCellFormat {
     }
     private getPropertyValue(propertyName: string): Object {
         switch (propertyName) {
-        case 'verticalAlignment':
-            return this.verticalAlignment;
-        case 'leftMargin':
-            return this.leftMargin;
-        case 'rightMargin':
-            return this.rightMargin;
-        case 'topMargin':
-            return this.topMargin;
-        case 'bottomMargin':
-            return this.bottomMargin;
-        case 'preferredWidth':
-            return this.preferredWidth;
-        case 'preferredWidthType':
-            return this.preferredWidthType;
-        case 'background':
-            const shading: WShading = new WShading();
-            shading.backgroundColor = this.background;
-            return shading;
-        default:
-            return undefined;
+            case 'verticalAlignment':
+                return this.verticalAlignment;
+            case 'leftMargin':
+                return this.leftMargin;
+            case 'rightMargin':
+                return this.rightMargin;
+            case 'topMargin':
+                return this.topMargin;
+            case 'bottomMargin':
+                return this.bottomMargin;
+            case 'preferredWidth':
+                return this.preferredWidth;
+            case 'preferredWidthType':
+                return this.preferredWidthType;
+            case 'background':
+                const shading: WShading = new WShading();
+                shading.backgroundColor = this.background;
+                return shading;
+            default:
+                return undefined;
         }
     }
     /**
@@ -2632,16 +3028,16 @@ export class SelectionRowFormat {
     }
     private getPropertyValue(propertyName: string): Object {
         switch (propertyName) {
-        case 'height':
-            return this.height;
-        case 'heightType':
-            return this.heightType;
-        case 'isHeader':
-            return this.isHeader;
-        case 'allowBreakAcrossPages':
-            return this.allowBreakAcrossPages;
-        default:
-            return undefined;
+            case 'height':
+                return this.height;
+            case 'heightType':
+                return this.heightType;
+            case 'isHeader':
+                return this.isHeader;
+            case 'allowBreakAcrossPages':
+                return this.allowBreakAcrossPages;
+            default:
+                return undefined;
         }
     }
     /**

@@ -186,8 +186,8 @@ export class FocusModule {
             break;
         }
         case 'delete':
-            if (ganttObj.selectionModule && ganttObj.editModule && (!ganttObj.editModule.dialogModule.dialogObj ||
-                     (ganttObj.editModule.dialogModule.dialogObj &&
+            if (ganttObj.selectionModule && ganttObj.editModule && ganttObj.editModule.dialogModule &&
+                (!ganttObj.editModule.dialogModule.dialogObj || (ganttObj.editModule.dialogModule.dialogObj &&
                     !ganttObj.editModule.dialogModule.dialogObj.visible)) && (!ganttObj.editSettings.allowTaskbarEditing
                     || (ganttObj.editSettings.allowTaskbarEditing && !ganttObj.editModule.taskbarEditModule.touchEdit))) {
                 if ((ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectionModule.selectedRowIndexes.length)

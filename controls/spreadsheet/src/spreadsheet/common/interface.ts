@@ -135,8 +135,8 @@ export interface ICellRenderer {
     renderColHeader(index: number, row: Element, refChild?: Element): void;
     renderRowHeader(index: number, row: Element, refChild?: Element): void;
     render(args: CellRenderArgs): Element;
-    refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean): void;
-    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCf?: boolean, checkWrap?: boolean): void;
+    refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean): void;
+    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean): void;
 }
 
 /**
@@ -266,10 +266,10 @@ export interface CellRenderArgs {
     insideFreezePane?: boolean;
     isRefreshing?: boolean;
     sheetIndex?: number;
-    checkCf?: boolean;
     onActionUpdate?: boolean;
     refChild?: Element;
     formulaRefresh?: boolean;
+    checkCF?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -337,7 +337,7 @@ export interface ConditionalFormatEventArgs {
 export interface CollaborativeEditArgs {
     action: string;
     eventArgs: UndoRedoEventArgs;
-    cancel: boolean;
+    cancel?: boolean;
 }
 
 /** @hidden */
@@ -406,6 +406,12 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     validation?: CellValidationEventArgs;
     previousSort?: SortCollectionModel;
     conditionalFormats:ConditionalFormatModel[];
+    /** Specifies the previous sorted cells. */
+    cellDetails?: PreviousCellDetails[];
+    /** Specifies the sorted cells. */
+    sortedCellDetails?: object[];
+    cfClearActionArgs?: object;
+    cfActionArgs?: { cfModel: ConditionalFormatModel[], sheetIdx: number };
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
@@ -560,4 +566,9 @@ export interface FilterCheckboxArgs {
     dataSource: { [key: string]: Object }[];
     btnObj: { element: HTMLElement };
     type: string;
+}
+/** @hidden */
+export interface BeforeActionDataInternal extends BeforeActionData {
+    /** Specifies the sorted cells. */
+    sortedCellDetails?: object[];
 }

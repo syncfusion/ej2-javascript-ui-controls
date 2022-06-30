@@ -632,7 +632,7 @@ export class Selection {
         const eventArgs: { action: string, editedValue: string, endFormulaRef: boolean } = { action: 'getCurrentEditValue', editedValue: '',
             endFormulaRef: false };
         this.parent.notify(editOperation, eventArgs);
-        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue, true) && !eventArgs.endFormulaRef;
+        const isFormulaEdit: boolean = (this.parent.isEdit ? checkIsFormula(eventArgs.editedValue, true) : false) && !eventArgs.endFormulaRef;
         const isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e);
         let ele: HTMLElement;
         if (!isMultiRange) {

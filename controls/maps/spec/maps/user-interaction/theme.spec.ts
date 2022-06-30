@@ -544,7 +544,7 @@ describe('Map layer testing', () => {
                 element = document.getElementById('container_Map_subtitle');
                 expect(element.getAttribute('font-family')).toBe('HelveticaNeue-Medium');
                 expect(element.getAttribute('font-weight')).toBe('Medium');
-                expect(element.getAttribute('font-size')).toBe('16px');
+                expect(element.getAttribute('font-size')).toBe('13px');
             };
 			maps.theme ='Bootstrap4';
             maps.refresh();

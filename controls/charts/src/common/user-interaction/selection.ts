@@ -431,7 +431,7 @@ export class BaseSelection {
      * @param selectedIndexes
      */
 
-    protected checkVisibility(selectedIndexes: Indexes[]): boolean {
+    protected checkVisibility(selectedIndexes: Indexes[], chart: Chart = null): boolean {
         if (!selectedIndexes) {
             return false;
         }
@@ -443,9 +443,17 @@ export class BaseSelection {
             }
         }
         for (const index of uniqueSeries) {
-            if (this.control.series[index].visible) {
-                visible = true;
-                break;
+            if (chart != null && chart.rangeColorSettings && chart.rangeColorSettings.length > 0) {
+                if (this.control.series[0].visible) {
+                    visible = true;
+                    break;
+                }
+            }
+            else {
+                if (this.control.series[index].visible) {
+                    visible = true;
+                    break;
+                }
             }
         }
         return visible;

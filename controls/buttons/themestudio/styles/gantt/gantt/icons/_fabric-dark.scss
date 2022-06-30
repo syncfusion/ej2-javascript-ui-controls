@@ -4,6 +4,10 @@
       content: '\e823';
     }
 
+    .e-critical-path::before {
+      content: '\e931';
+    }
+
     .e-edit::before {
       content: '\e944';
     }
@@ -109,4 +113,12 @@
       content: '\e903';
       }
    }
+
+  .e-gantt-tooltip-arrow-left::before {
+    content: '\e85b';
+  }
+
+  .e-gantt-tooltip-arrow-right::before {
+    content: '\e85f';
+  }
 }

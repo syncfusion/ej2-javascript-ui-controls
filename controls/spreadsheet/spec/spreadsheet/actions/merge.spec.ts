@@ -31,20 +31,22 @@ describe('Merge ->', () => {
     });
 
     describe('public method ->', () => {
+        let spreadsheet: Spreadsheet;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('', (done: Function) => {
+        it('Merge', (done: Function) => {
             helper.invoke('merge', ['A1:C2']);
-            let cell: CellModel = helper.getInstance().sheets[0].rows[0].cells[0];
+            spreadsheet = helper.getInstance();
+            let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[0];
             expect(cell.rowSpan).toBe(2);
             expect(cell.colSpan).toBe(3);
-            expect(helper.getInstance().sheets[0].rows[0].cells[1].colSpan).toBe(-1);
-            expect(helper.getInstance().sheets[0].rows[1].cells[2].colSpan).toBe(-2);
-            expect(helper.getInstance().sheets[0].rows[1].cells[2].rowSpan).toBe(-1);
+            expect(spreadsheet.sheets[0].rows[0].cells[1].colSpan).toBe(-1);
+            expect(spreadsheet.sheets[0].rows[1].cells[2].colSpan).toBe(-2);
+            expect(spreadsheet.sheets[0].rows[1].cells[2].rowSpan).toBe(-1);
             let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
             expect(td.getAttribute('rowspan')).toBe('2');
             expect(td.getAttribute('colspan')).toBe('3');
@@ -52,11 +54,11 @@ describe('Merge ->', () => {
             expect(helper.invoke('getCell', [1, 2]).style.display).toBe('none');
 
             helper.invoke('merge', ['E4:G6', 'Horizontally']);
-            cell = helper.getInstance().sheets[0].rows[3].cells[4];
+            cell = spreadsheet.sheets[0].rows[3].cells[4];
             expect(cell.colSpan).toBe(3);
             expect(cell.rowSpan).toBeUndefined();
-            expect(helper.getInstance().sheets[0].rows[3].cells[6].colSpan).toBe(-2);
-            expect(helper.getInstance().sheets[0].rows[4].cells[4].colSpan).toBe(3);
+            expect(spreadsheet.sheets[0].rows[3].cells[6].colSpan).toBe(-2);
+            expect(spreadsheet.sheets[0].rows[4].cells[4].colSpan).toBe(3);
             td = helper.invoke('getCell', [3, 4]);
             expect(td.colSpan).toBe(3);
             expect(td.rowSpan).toBe(1);
@@ -64,66 +66,69 @@ describe('Merge ->', () => {
             expect(helper.invoke('getCell', [3, 6]).style.display).toBe('none');
 
             helper.invoke('merge', ['B5:C7', 'Vertically']);
-            cell = helper.getInstance().sheets[0].rows[4].cells[1];
+            cell = spreadsheet.sheets[0].rows[4].cells[1];
             expect(cell.rowSpan).toBe(3);
             expect(cell.colSpan).toBeUndefined();
-            expect(helper.getInstance().sheets[0].rows[6].cells[1].rowSpan).toBe(-2);
-            expect(helper.getInstance().sheets[0].rows[4].cells[2].rowSpan).toBe(3);
+            expect(spreadsheet.sheets[0].rows[6].cells[1].rowSpan).toBe(-2);
+            expect(spreadsheet.sheets[0].rows[4].cells[2].rowSpan).toBe(3);
             td = helper.invoke('getCell', [4, 1]);
             expect(td.colSpan).toBe(1);
             expect(td.rowSpan).toBe(3);
             expect(helper.invoke('getCell', [5, 1]).style.display).toBe('none');
             expect(helper.invoke('getCell', [6, 1]).style.display).toBe('none');
-            done();
+            helper.invoke('selectRange', ['A1']);
+            setTimeout(() => {
+                done();
+            });
         });
 
-        it('Selection & Clipboard', (done: Function) => {
-            helper.invoke('selectRange', ['A1']);
-
+        it('Copy paste of merged range', (done: Function) => {
             helper.invoke('copy').then(() => {
                 checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['0px', '0px', '40px', '192px']);
                 helper.invoke('selectRange', ['K2']);
                 helper.invoke('paste', ['K2']);
                 setTimeout(() => {
-                    helper.invoke('getData', ['Sheet1!K2']).then((values: Map<string, CellModel>) => {
-                        expect(values.get('K2').value).toEqual('Item Name');
-                        expect(values.get('K2').colSpan).toBe(3);
-                        expect(values.get('K2').rowSpan).toBe(2);
-                        expect(helper.getInstance().sheets[0].rows[2].cells[12].colSpan).toBe(-2);
-                        expect(helper.getInstance().sheets[0].rows[2].cells[10].rowSpan).toBe(-1);
-                        const td: HTMLTableCellElement = helper.invoke('getCell', [1, 10]);
-                        expect(td.rowSpan).toBe(2);
-                        expect(td.colSpan).toBe(3);
-                        expect(helper.invoke('getCell', [1, 11]).style.display).toBe('none');
-                        // expect(helper.invoke('getCell', [2, 12]).style.display).toBe('none');
-
-                        // Cut paste for merged range
-                        helper.invoke('selectRange', ['B5:C5']);
-                        setTimeout(() => {
-                            helper.invoke('cut').then(() => {
-                                checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['79px', '63px', '61px', '65px']);
-                                checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['79px', '63px', '61px', '129px']);
-                                helper.invoke('selectRange', ['E10']);
-                                helper.invoke('paste', ['E10']);
-                                helper.invoke('getData', ['Sheet1!E10:F12']).then((values: any) => {
-                                    expect(values.get('E10').value).toBe(41964);
-                                    expect(values.get('E10').colSpan).toBeUndefined();
-                                    expect(values.get('E10').rowSpan).toBe(3);
-                                    expect(values.get('E11').rowSpan).toBe(-1);
-                                    expect(values.get('F10').value).toBe(0.2665972222222222);
-                                    expect(values.get('F10').colSpan).toBeUndefined();
-                                    expect(values.get('F10').rowSpan).toBe(3);
-                                    expect(values.get('F12').rowSpan).toBe(-2);
-                                    const td: HTMLTableCellElement = helper.invoke('getCell', [9, 5]);
-                                    expect(td.colSpan).toBe(1);
-                                    expect(td.rowSpan).toBe(3);
-                                    expect(helper.invoke('getCell', [10, 5]).style.display).toBe('none');
-                                    expect(helper.invoke('getCell', [11, 5]).style.display).toBe('none');
-                                    done();
-                                });
-                            });
-                        });
+                    const cell: CellModel = spreadsheet.sheets[0].rows[1].cells[10];
+                    expect(cell.value).toEqual('Item Name');
+                    expect(cell.colSpan).toBe(3);
+                    expect(cell.rowSpan).toBe(2);
+                    expect(spreadsheet.sheets[0].rows[2].cells[12].colSpan).toBe(-2);
+                    expect(spreadsheet.sheets[0].rows[2].cells[10].rowSpan).toBe(-1);
+                    const td: HTMLTableCellElement = helper.invoke('getCell', [1, 10]);
+                    expect(td.rowSpan).toBe(2);
+                    expect(td.colSpan).toBe(3);
+                    expect(helper.invoke('getCell', [1, 11]).style.display).toBe('none');
+                    expect(helper.invoke('getCell', [2, 12]).style.display).toBe('none');
+                    helper.invoke('selectRange', ['B5:C5']);
+                    setTimeout(() => {
+                        done();
                     });
+                });
+            });
+        });
+        it('Cut paste of merged range', (done: Function) => {
+            helper.invoke('cut').then(() => {
+                checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['79px', '63px', '61px', '65px']);
+                checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['79px', '63px', '61px', '129px']);
+                helper.invoke('selectRange', ['E10']);
+                helper.invoke('paste', ['E10']);
+                setTimeout(() => {
+                    let cell: CellModel = helper.getInstance().sheets[0].rows[9].cells[4];
+                    expect(cell.value as any).toBe(41964);
+                    expect(cell.colSpan).toBeUndefined();
+                    expect(cell.rowSpan).toBe(3);
+                    expect(spreadsheet.sheets[0].rows[10].cells[4].rowSpan).toBe(-1);
+                    cell = spreadsheet.sheets[0].rows[9].cells[5];
+                    expect(cell.value as any).toBe(0.2665972222222222);
+                    expect(cell.colSpan).toBeUndefined();
+                    expect(cell.rowSpan).toBe(3);
+                    expect(spreadsheet.sheets[0].rows[11].cells[5].rowSpan).toBe(-2);
+                    const td: HTMLTableCellElement = helper.invoke('getCell', [9, 5]);
+                    expect(td.colSpan).toBe(1);
+                    expect(td.rowSpan).toBe(3);
+                    expect(helper.invoke('getCell', [10, 5]).style.display).toBe('none');
+                    expect(helper.invoke('getCell', [11, 5]).style.display).toBe('none');
+                    done();
                 });
             });
         });
@@ -254,8 +259,117 @@ describe('Merge ->', () => {
                     expect(td.rowSpan).toBe(6);
                     expect(td.colSpan).toBe(7);
                     done();
-                });
-            })
+                }, 10);
+            }, 10)
+        });
+    });
+
+    describe('Checking for Dialog open  ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking for Dialog open', (done: Function) => {
+            helper.invoke('selectRange', ['B2:D4']);
+            helper.click('#' + helper.id + '_merge');
+            setTimeout(() => {
+               let dialogElem: number= document.getElementsByClassName("e-merge-alert-dlg").length
+               expect(dialogElem).toBe(1);
+                helper.click('.e-dialog .e-primary');
+                done();
+            });
+            
+        });
+    });
+    describe('Checking for Dialog not open  ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking for Dialog is not open', (done: Function) => {
+            helper.invoke('selectRange', ['I2:J4']);
+            helper.click('#' + helper.id + '_merge');
+               let dialogElem: number= document.getElementsByClassName("e-merge-alert-dlg").length
+               expect(dialogElem).toBe(0);
+               done();
+        });
+    });
+    describe('Apply merge cell for freeze pane row  ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply merge cell for freeze pane row', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(2,1,0);
+            setTimeout(function () {
+            helper.invoke('selectRange', ['A2:A3']);
+            helper.click('#' + helper.id + '_merge');
+            setTimeout(() => {
+                 helper.click('.e-dialog .e-primary');
+                 let emptyElem:number = document.getElementsByClassName("e-empty").length;
+                 expect(emptyElem).toBe(1);
+                 done();
+             });
+            });
+        });
+    });
+    describe('Apply merge cell for freeze pane column ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply merge cell for freeze pane column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(2,1,0);
+            setTimeout(function () {
+            helper.invoke('selectRange', ['A1:B1']);
+            helper.click('#' + helper.id + '_merge');
+            setTimeout(() => {
+                 helper.click('.e-dialog .e-primary');
+                 let emptyElem:number = document.getElementsByClassName("e-empty").length;
+                 expect(emptyElem).toBe(1);
+                 done();
+             });
+            });
+        });
+    });
+    describe('Apply merge cell for freeze pane column and row ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply merge cell for freeze pane column and row', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.freezePanes(2,1,0);
+            setTimeout(function () {
+            helper.invoke('selectRange', ['A1:B4']);
+            helper.click('#' + helper.id + '_merge');
+            setTimeout(() => {
+                 helper.click('.e-dialog .e-primary');
+                 let emptyElem:number = document.getElementsByClassName("e-empty").length;
+                 expect(emptyElem).toBe(3);
+                 document.getElementsByClassName("e-sheet-content")[0].parentElement.scrollTop = 400;
+                 setTimeout(() => {
+                    document.getElementsByClassName("e-sheet-content")[0].parentElement.scrollTop = 0;
+                    setTimeout(() => {
+                 expect(spreadsheet.sheets[0].frozenColumns).toBe(1);
+                 expect(spreadsheet.sheets[0].frozenRows).toBe(2);
+                 done();
+                    });
+                 });
+             });
+            });
         });
     });
 

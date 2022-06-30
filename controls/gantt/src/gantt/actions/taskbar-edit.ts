@@ -7,6 +7,7 @@ import {
 import { DateProcessor } from '../base/date-processor';
 import * as cls from '../base/css-constants';
 import { EditTooltip } from '../renderer/edit-tooltip';
+import { CriticalPath } from './critical-path';
 
 /**
  * File for handling taskbar editing operation in Gantt.
@@ -614,7 +615,7 @@ export class TaskbarEdit extends DateProcessor {
             } else if ((mouseX - 20) < containerPosition.left) {
                 this.timerCount = this.parent.ganttChartModule.scrollObject.previousScroll.left;
                 this.startScrollTimer('left');
-            } else if (isConnectorLineEdit && ((mouseY + 20) >
+            } else if (isConnectorLineEdit && ((mouseY + 80) >
                 containerPosition.top + this.parent.ganttChartModule.chartBodyContainer.offsetHeight)) {
                 this.timerCount = this.parent.ganttChartModule.scrollObject.previousScroll.top;
                 this.startScrollTimer('bottom');
@@ -1514,8 +1515,13 @@ export class TaskbarEdit extends DateProcessor {
                 this.taskBarEditedAction(e);
                 this.isMouseDragged = false;
             } else {
-				this.parent.isOnEdit = false;
+		this.parent.isOnEdit = false;
                 this.cancelTaskbarEditActionInMouseLeave();
+		if (this.parent.enableCriticalPath && this.parent.criticalPathModule) {
+                    let criticalModule: CriticalPath = this.parent.criticalPathModule;
+                    criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,
+							 true,criticalModule.predecessorCollectionTaskIds);
+                }  
             }
         }
         if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar && !isNullOrUndefined(this.taskBarEditElement)) {

@@ -1,7 +1,7 @@
 /**
  * Common utility methods
  */
-export interface IKeyValue extends CSSStyleDeclaration {
+ export interface IKeyValue extends CSSStyleDeclaration {
     // eslint-disable-next-line
     [key: string]: any;
 }
@@ -225,7 +225,7 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
                 } else {
                     /* istanbul ignore next */
                     clone = isBlazor() ? src && Object.keys(copy).length : src ? src : [];
-                    result[key] = extend([], clone, copy, deep);
+                    result[key] = extend([], clone, copy, (clone && (clone as any).length) || (copy &&(copy as any).length));
                 }
             } else {
                 result[key] = copy;

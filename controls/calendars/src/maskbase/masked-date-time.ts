@@ -253,9 +253,9 @@ export class MaskedDateTime {
         switch (this.previousHiddenMask[start - 1]) {
             case 'd':
                 let date: number = (this.isDayPart && newDateValue.getDate().toString().length < 2 && !this.isPersist() ? newDateValue.getDate() * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.isDateZero = (newVal[start - 1] == '0' );
                 this.parent.isFocused = this.parent.isFocused ? false : this.parent.isFocused;
                 this.navigated = this.navigated ? false : this.navigated;
-                this.isDateZero = (newVal[start - 1] == '0' );
                 if (isNaN(date)) {
                     return;
                 }
@@ -459,12 +459,12 @@ export class MaskedDateTime {
                 case 'dddd':
                 case 'd': result = proxy.isDayPart ? proxy.maskDateValue.getDate().toString() :  proxy.defaultConstant['day'].toString();
                           result = proxy.zeroCheck(proxy.isDateZero , proxy.isDayPart , result );
-                                if ( proxy.dayTypeCount == 2)
+                                if (proxy.dayTypeCount == 2)
                                 {
                                     proxy.isNavigate = true;
                                     proxy.dayTypeCount = 0;
                                 }
-                    break;
+                                break;
                 case 'dd': result = proxy.isDayPart ? proxy.roundOff(proxy.maskDateValue.getDate(), 2) :  proxy.defaultConstant['day'].toString();
                             result = proxy.zeroCheck(proxy.isDateZero , proxy.isDayPart , result )
                                 if ( proxy.dayTypeCount == 2)
@@ -485,12 +485,13 @@ export class MaskedDateTime {
                     break;
                 case 'M': result = proxy.isMonthPart ? (proxy.maskDateValue.getMonth() + 1).toString() :  proxy.defaultConstant['month'].toString();
                           result = proxy.zeroCheck(proxy.isMonthZero , proxy.isMonthPart , result )
-                           if ( proxy.monthTypeCount == 2)
-                           {
-                               proxy.isNavigate = true;
-                               proxy.monthTypeCount = 0;
-                           }
-                    break;
+                          if ( proxy.monthTypeCount == 2)
+                          {
+                              proxy.isNavigate = true;
+                              proxy.monthTypeCount = 0;
+                          }
+
+               break;
                 case 'MM': result = proxy.isMonthPart ? proxy.roundOff(proxy.maskDateValue.getMonth() + 1, 2) :  proxy.defaultConstant['month'].toString();
                            result = proxy.zeroCheck(proxy.isMonthZero , proxy.isMonthPart , result )
                            if ( proxy.monthTypeCount == 2)

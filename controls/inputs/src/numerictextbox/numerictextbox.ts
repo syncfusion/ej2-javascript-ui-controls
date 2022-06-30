@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, Browser, L10n, EmitType } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, Browser, L10n, EmitType, getUniqueID } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';
@@ -369,6 +369,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.l10n = new L10n('numerictextbox', localeText, this.locale);
         if (this.l10n.getConstant('placeholder') !== '') {
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        }
+        if (!this.element.hasAttribute('id')) {
+            this.element.setAttribute('id', getUniqueID('numerictextbox'));
         }
         this.isValidState = true;
         this.inputStyle = null;
@@ -1131,7 +1134,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         let currentChar: string = String.fromCharCode(event.which);
         let decimalSeparator: string = getValue('decimal', getNumericObject(this.locale));
         let isAlterNumPadDecimalChar: boolean = event.code === "NumpadDecimal" && currentChar !== decimalSeparator;
-        //EJ2-59813-replace the culture decimal separator with numberpad decimal separator when culture decimal separator and numberpad decimal separator are different
+        //EJ2-59813-replace the culture decimal separator value with numberpad decimal separator value when culture decimal separator and numberpad decimal separator are different
         if (isAlterNumPadDecimalChar) {
             currentChar = decimalSeparator;
         }
@@ -1144,7 +1147,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         } else {
             //EJ2-59813-update the numberpad decimal separator and update the cursor position
             if (isAlterNumPadDecimalChar) {
-            const start: number = this.element.selectionStart + 1;
+            const start : number = this.element.selectionStart + 1;
             this.element.value = text;
             this.element.setSelectionRange(start, start);
             event.preventDefault();

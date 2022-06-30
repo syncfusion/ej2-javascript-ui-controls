@@ -546,12 +546,6 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     }
                     if (!(this.overflowMode === 'Menu' && liElems[i].classList.contains(MENUCLASS))) {
                         liWidth += liElems[i].offsetWidth;
-                        if (liWidth > width) {
-                            maxItems = Math.ceil((i) / 2) + (this.overflowMode === 'Menu' && i <= 2 ? 0 : 1);
-                            this._maxItems = maxItems;
-                            this.initPvtProps();
-                            return this.reRenderItems();
-                        }
                     }
                 }
             }

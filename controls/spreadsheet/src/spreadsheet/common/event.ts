@@ -224,9 +224,7 @@ export const goToSheet: string = 'goToSheet';
 /** @hidden */
 export const showSheet: string = 'showSheet';
 /** @hidden */
-export const initiateConditionalFormat: string = 'initiateConditionalFormat';
-/** @hidden */
-export const setCF: string = 'setCF';
+export const renderCFDlg: string = 'renderCFDlg';
 /** @hidden */
 export const clearViewer: string = 'clearViewer';
 /** @hidden */
@@ -337,3 +335,7 @@ export const updateScrollValue: string = 'updateScrollValue';
 export const beforeCheckboxRender: string = 'beforeCheckboxfilterRenderer';
 /** @hidden */
 export const refreshCheckbox: string = 'refreshCheckbox';
+/** @hidden */
+export const renderInsertDlg: string = 'renderInsertDlg';
+/** @hidden */
+export const toggleFormulaBar: string = 'toggleFormulaBar';

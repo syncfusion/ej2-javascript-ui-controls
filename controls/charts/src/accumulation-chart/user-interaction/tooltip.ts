@@ -68,16 +68,20 @@ export class AccumulationTooltip extends BaseTooltip {
      * @return {void}
      */
     public tooltip(event: PointerEvent | TouchEvent): void {
-        let svgElement : HTMLElement = this.getElement(this.element.id + '_tooltip_svg');
-        let isTooltip: boolean = svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0;
-        let tooltipDiv: HTMLDivElement = this.getTooltipElement(isTooltip);
-        this.renderSeriesTooltip(event, this.accumulation, !isTooltip, tooltipDiv);
+       
+        this.renderSeriesTooltip(this.accumulation,
+            this.getPieData(event, this.accumulation, this.accumulation.mouseX, this.accumulation.mouseY));
     }
 
-    private renderSeriesTooltip(e: PointerEvent | TouchEvent, chart : AccumulationChart, isFirst: boolean,
-                                tooltipDiv: HTMLDivElement) : void {
-        let data: AccPointData = this.getPieData(e, chart, chart.mouseX, chart.mouseY);
-        let rect : Rect = chart.initialClipRect;
+    /**
+     * @private
+     */
+
+    public renderSeriesTooltip(chart: AccumulationChart, data: AccPointData): void {
+        let svgElement: HTMLElement = this.getElement(this.element.id + '_tooltip_svg');
+        let isTooltip: boolean = svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0;
+        let tooltipDiv: HTMLDivElement = this.getTooltipElement(isTooltip);
+        let isFirst: boolean = !isTooltip;
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
             if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index

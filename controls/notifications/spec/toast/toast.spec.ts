@@ -490,6 +490,15 @@ describe("Toast Testing", () => {
             toast.hide();
             setTimeout(() => { done(); }, TIME_DELAY);
         });
+        it("Toast Target as HTMLElement testing", (done: Function) => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({}, ele);
+            toast.show({ title: 'Sample_title', timeOut: 0, content: 'Sample_content', target: '#toast_target' });
+            expect(ele.parentElement.tagName).toEqual('DIV');
+            expect(ele.parentElement).toEqual(document.getElementById('toast_target'));
+            toast.hide();
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
         it("Toast Target default value testing", (done: Function) => {
             let ele: HTMLElement = document.getElementById("toast");
             toast = new Toast({}, ele);

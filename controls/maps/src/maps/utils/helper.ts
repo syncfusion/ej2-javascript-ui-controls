@@ -872,6 +872,8 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
     const opacity: number = shapeCustom['opacity']; const padding: number = 5;
     let rectOptions: RectOption;
     const pathOptions: PathOption = new PathOption(markerID, fill, borderWidth, borderColor, opacity, borderOpacity, dashArray, '');
+    size.width = typeof(size.width) === 'string' ? parseInt(size.width, 10) : size.width;
+    size.height = typeof(size.height) === 'string' ? parseInt(size.height, 10) : size.height;
     if (shape === 'Circle') {
         const radius: number = (size.width + size.height) / 4;
         const circleOptions: CircleOption = new CircleOption(markerID, fill, border, opacity,
@@ -2124,6 +2126,10 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             }
         } else {
             if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
+                if (mapHeight === 0 || mapWidth === 0 || mapHeight === mapWidth) {
+                    mapWidth = size.width / 2;
+                    mapHeight = size.height;
+                }
                 scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
                 mapWidth *= scaleFactor;
                 mapHeight *= scaleFactor;
@@ -2165,7 +2171,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                         mapObject.zoomTranslatePoint.x = x;
                         mapObject.zoomTranslatePoint.y = y;
                     } else {
-                        if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1 && !mapObject.zoomModule.isDragZoom) {
+                        if (!isNullOrUndefined(mapObject.previousProjection) && (mapObject.mapScaleValue === 1 || mapObject.mapScaleValue <= 1.05) && !mapObject.zoomModule.isDragZoom) {
                             scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
                             mapWidth *= scaleFactor;
                             x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
@@ -3003,6 +3009,7 @@ export function changeBorderWidth(element: Element, index: number, scale: number
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const borderWidthValue: any = maps.layersCollection[index].shapeSettings.borderWidthValuePath;
             const borderWidth: number = (<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width;
+            const circleRadius: number = (<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.circleRadius;
             if (maps.layersCollection[index].shapeSettings.borderWidthValuePath) {
                 value = checkShapeDataFields(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3022,8 +3029,8 @@ export function changeBorderWidth(element: Element, index: number, scale: number
                 currentStroke = (isNullOrUndefined(borderWidth) ? 0 : borderWidth);
             }
             childNode.setAttribute('stroke-width', (currentStroke / scale).toString());
-            if (element.id.indexOf('_LineString') > -1 && isNullOrUndefined(currentStroke)) {
-                childNode.setAttribute('stroke-width', (1 / scale).toString());
+            if (element.id.indexOf('_Point') > -1 || element.id.indexOf('_MultiPoint') > -1) {
+                childNode.setAttribute('r', (circleRadius / scale).toString());
             }
         }
     }

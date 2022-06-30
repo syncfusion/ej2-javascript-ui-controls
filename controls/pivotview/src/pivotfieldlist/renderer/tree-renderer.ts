@@ -10,7 +10,7 @@ import {
 } from '@syncfusion/ej2-navigations';
 import { IFieldOptions, IField, IDataOptions, FieldItemInfo } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { MaskedTextBox, MaskChangeEventArgs, TextBox } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
@@ -30,6 +30,10 @@ export class TreeViewRenderer implements IAction {
     private editorSearch: MaskedTextBox;
     private selectedNodes: string[] = [];
     private fieldListSort: string;
+    private fieldSearch: TextBox;
+    private nonSearchList: HTMLElement[];
+    private isSearching: boolean = false;
+    private parentIDs: string[] = [];
 
     /** Constructor for render module
      * @param {PivotFieldList} parent - Instance of field list.
@@ -55,15 +59,42 @@ export class TreeViewRenderer implements IAction {
                 className: cls.FIELD_HEADER_CLASS,
                 innerHTML: this.parent.localeObj.getConstant('allFields')
             });
-            let treeOuterDiv: HTMLElement = createElement('div', { className: cls.FIELD_LIST_TREE_CLASS + '-outer-div' });
+            let searchWrapper: HTMLElement = createElement('div', {
+                id: this.parent.element.id + '_SearchDiv', attrs: { 'tabindex': '-1' },
+                className: cls.FIELD_LIST_SEARCH_CLASS
+            });
+            let searchInput: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+            searchWrapper.appendChild(searchInput);
+            this.fieldSearch = new TextBox({
+                placeholder: this.parent.localeObj.getConstant('search'),
+                enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
+                cssClass: cls.FIELD_LIST_SEARCH_INPUT_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                input: this.textChange.bind(this),
+                showClearButton:true
+            });
+            this.fieldSearch.isStringTemplate = true;
+            this.fieldSearch.appendTo(searchInput);
+            this.fieldSearch.addIcon('append',cls.FIELD_LIST_SEARCH_ICON_CLASS + ' ' + cls.ICON);
+            let promptDiv: HTMLElement = createElement('div', {
+                className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
+                innerHTML: this.parent.localeObj.getConstant('noMatches')
+            });
+            let treeOuterDiv: HTMLElement = createElement('div', {
+                className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS +' '+ cls.TREE_CONTAINER
+            });
             this.treeViewElement = createElement('div', {
                 id: this.parent.element.id + '_TreeView',
                 className: cls.FIELD_LIST_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_FIELD_LIST_CLASS : '')
             });
-            let fieldHeaderWrappper: Element = createElement('div', { className: 'e-field-header-container' });
+            let fieldHeaderWrappper: Element = createElement('div', { className: cls.FIELD_HEADER_CONTAINER_CLASS });
             fieldHeaderWrappper.appendChild(treeHeader);
             fieldTable.appendChild(fieldHeaderWrappper);
             this.updateSortElements(fieldHeaderWrappper);
+            if (this.parent.enableFieldSearching) {
+                fieldTable.appendChild(searchWrapper);
+                fieldTable.appendChild(promptDiv);
+            }
             treeOuterDiv.appendChild(this.treeViewElement);
             fieldTable.appendChild(treeOuterDiv);
             this.parentElement.appendChild(fieldTable);
@@ -183,6 +214,39 @@ export class TreeViewRenderer implements IAction {
         if (args.node.querySelector('.' + cls.NODE_CHECK_CLASS)) {
             addClass([args.node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
         }
+        if (this.parent.enableFieldSearching && this.isSearching) {
+            let liElement: HTMLElement = args.node;
+            if (this.parent.dataType === 'olap') {
+                let id: string = liElement.getAttribute('data-uid');
+                let searchItem: HTMLElement[] = this.parent.pivotCommon.eventBase.searchListItem;
+                for (let i = 0; i < this.parentIDs.length; i++) {
+                    if (id === this.parentIDs[i]) {
+                        addClass([liElement], cls.ICON_DISABLE);
+                    }
+                    for (let li2 of searchItem) {
+                        let parentID: string[] = this.parent.pivotCommon.eventBase.getParentIDs(this.fieldTable, li2.getAttribute('data-uid'), []);
+                        if (PivotUtil.inArray(id, parentID) > -1) {
+                            removeClass([liElement], cls.ICON_DISABLE);
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                for (let i = 0; i < this.nonSearchList.length; i++) {
+                    if (liElement.textContent === this.nonSearchList[i].textContent) {
+                        addClass([liElement], cls.ICON_DISABLE);
+                        break;
+                    }
+                    else {
+                        if (liElement.innerText === this.nonSearchList[i].textContent) {
+                            addClass([liElement], cls.ICON_DISABLE);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
     private updateOlapTreeNode(args: DrawNodeEventArgs): boolean {
         let allowDrag: boolean = false;
@@ -235,12 +299,12 @@ export class TreeViewRenderer implements IAction {
             buttons: [{
                 click: this.closeTreeDialog.bind(this),
                 buttonModel: {
-                    cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel')
+                    cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel')
                 }
             }, {
                 click: this.onFieldAdd.bind(this),
                 buttonModel: {
-                    cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('add'),
+                    cssClass: cls.OK_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('add'),
                     isPrimary: true
                 }
             }],
@@ -271,7 +335,7 @@ export class TreeViewRenderer implements IAction {
         });
         let editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
         searchWrapper.appendChild(editorSearch);
-        let treeOuterDiv: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS + '-outer-div' });
+        let treeOuterDiv: HTMLElement = createElement('div', { className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS });
         let treeViewContainer: HTMLElement = createElement('div', {
             className: cls.EDITOR_TREE_CONTAINER_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-field-list-tree' : '')
         });
@@ -281,7 +345,7 @@ export class TreeViewRenderer implements IAction {
             placeholder: this.parent.localeObj.getConstant('search'),
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            cssClass: cls.EDITOR_SEARCH_CLASS,
+            cssClass: cls.EDITOR_SEARCH_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             change: this.textChange.bind(this)
         });
         this.editorSearch.isStringTemplate = true;
@@ -317,14 +381,41 @@ export class TreeViewRenderer implements IAction {
     }
 
     private textChange(e: MaskChangeEventArgs): void {
-        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
-        let promptDiv: HTMLElement = this.fieldDialog.element.querySelector('.' + cls.EMPTY_MEMBER_CLASS);
+        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true)
+        let promptDiv: HTMLElement;
+        let treeOuterDiv: HTMLElement;
+        if (this.parent.isAdaptive) {
+            promptDiv = this.fieldDialog.element.querySelector('.' + cls.EMPTY_MEMBER_CLASS);
+        }
+        else {
+            promptDiv = this.parentElement.querySelector('.' + cls.EMPTY_MEMBER_CLASS);
+            treeOuterDiv = this.parentElement.querySelector('.' + cls.TREE_CONTAINER);
+        }
         let liList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li')) as HTMLElement[];
         let disabledList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li.' + cls.ICON_DISABLE)) as HTMLElement[];
         if (liList.length === disabledList.length) {
             removeClass([promptDiv], cls.ICON_DISABLE);
+            if (!this.parent.isAdaptive) {
+                addClass([treeOuterDiv], cls.ICON_DISABLE);
+                removeClass([treeOuterDiv], cls.FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS);
+            }
         } else {
             addClass([promptDiv], cls.ICON_DISABLE);
+            if (!this.parent.isAdaptive) {
+                removeClass([treeOuterDiv], cls.ICON_DISABLE);
+                addClass([treeOuterDiv], cls.FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS);
+            }
+        }
+        this.isSearching = disabledList.length > 0 ? true : false;
+        this.nonSearchList = disabledList;
+        if (this.parent.dataType === 'olap') {
+            this.parentIDs = [];
+            for (let i = 0; i < liList.length; i++) {
+                if(liList[i].classList.contains("e-level-1")) {
+                    let id: string = liList[i].getAttribute('data-uid');
+                    this.parentIDs.push(id);
+                }
+            }
         }
     }
 
@@ -960,6 +1051,10 @@ export class TreeViewRenderer implements IAction {
         if (this.editorSearch && !this.editorSearch.isDestroyed) {
             this.editorSearch.destroy();
             this.editorSearch = null;
+        }
+        if (this.fieldSearch && !this.fieldSearch.isDestroyed) {
+            this.fieldSearch.destroy();
+            this.fieldSearch = null;
         }
     }
 }

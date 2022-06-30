@@ -153,6 +153,16 @@ export class TimelineMonth extends Month {
         return colLevels;
     }
 
+    public getAdjustedDate(startTime: Date): Date {
+        const timeSlots: TdData[] = this.colLevels[this.colLevels.length - 1];
+        for (let i: number = 0; i < timeSlots.length; i++) {
+            if (timeSlots[i].date.getTime() > startTime.getTime()) {
+                return timeSlots[i - 1].date;
+            }
+        }
+        return null;
+    }
+
     public destroy(): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         if (this.element) {

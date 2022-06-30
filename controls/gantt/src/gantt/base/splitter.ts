@@ -32,6 +32,7 @@ export class Splitter {
         this.splitterObject = new SplitterLayout({
             height: null,
             width: this.parent.ganttWidth.toString(),
+            enablePersistence: this.parent.enablePersistence,
             separatorSize: this.parent.splitterSettings.separatorSize,
             paneSettings: [
                 {
@@ -83,6 +84,9 @@ export class Splitter {
      * @private
      */
     public calculateSplitterPosition(splitter: SplitterSettingsModel, isDynamic?: boolean): string {
+        if (!isNullOrUndefined(this.splitterObject) && this.parent.enablePersistence) {
+            return this.splitterObject.paneSettings[0].size;
+        }
         if (splitter.view === 'Grid') {
             return '100%';
         } else if (splitter.view === 'Chart') {

@@ -635,7 +635,8 @@
   }
 
   .sf-colorpicker.e-container .e-input-container .e-float-input {
-    margin-right: $cpicker-blazor-input-margin;
+    float: left;
+    margin-left: $cpicker-blazor-input-margin;
   }
 
   .e-hide-opacity .e-container {
@@ -783,6 +784,7 @@
       }
 
       &.sf-colorpicker .e-selected-value .e-input-container .e-float-input {
+        float: right;
         margin-right: $cpicker-blazor-input-margin;
       }
     }

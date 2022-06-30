@@ -1,5 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
+import { WBorders } from './borders';
 import { LineSpacingType, TextAlignment, OutlineLevel, TabJustification, TabLeader } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
@@ -7,6 +8,7 @@ import { WListFormat } from './list-format';
 import { ParagraphWidget, BodyWidget, TableCellWidget, BlockContainer } from '../viewer/page';
 import { WStyle, WParagraphStyle } from './style';
 import { WListLevel } from '../list/list-level';
+import { DocumentHelper } from '../viewer';
 /* eslint-disable */
 /**
  * @private
@@ -60,6 +62,7 @@ export class WParagraphFormat {
     public uniqueParagraphFormat: WUniqueFormat = undefined;
     private static uniqueParagraphFormats: WUniqueFormats = new WUniqueFormats();
     private static uniqueFormatType: number = 3;
+    public borders: WBorders;
     public listFormat: WListFormat;
     public ownerBase: Object = undefined;
     public baseStyle: WStyle = undefined;
@@ -229,6 +232,7 @@ export class WParagraphFormat {
     public constructor(node?: Object) {
         this.ownerBase = node;
         this.listFormat = new WListFormat(this);
+        this.borders  = new WBorders(this);
         this.tabs = [];
     }
     private getListFormatParagraphFormat(property: string): object {
@@ -238,7 +242,10 @@ export class WParagraphFormat {
         }
         return undefined;
     }
-    private getListPargaraphFormat(property: string): WParagraphFormat {
+    /**
+    * @private
+    */
+    public getListPargaraphFormat(property: string): WParagraphFormat {
         if (this.listFormat.listId > -1 && this.listFormat.listLevelNumber > -1) {
             const level: WListLevel = this.listFormat.listLevel;
             const propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
@@ -297,7 +304,7 @@ export class WParagraphFormat {
     }
     private getDefaultValue(property: string): Object {
         const propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-        const docParagraphFormat: WParagraphFormat = this.documentParagraphFormat();
+        const docParagraphFormat: WParagraphFormat = this.getDocumentParagraphFormat();
         let isInsideBodyWidget: boolean = true;
         if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
             isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget ||
@@ -315,15 +322,31 @@ export class WParagraphFormat {
         }
         return WParagraphFormat.getPropertyDefaultValue(property);
     }
-    private documentParagraphFormat(): WParagraphFormat {
+    /**
+    * @private
+    */
+    public getDocumentParagraphFormat(): WParagraphFormat {
         let docParagraphFormat: WParagraphFormat;
         if (!isNullOrUndefined(this.ownerBase)) {
-            const bodyWidget: BlockContainer = (this.ownerBase as ParagraphWidget).bodyWidget;
-            if (!isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.documentHelper)) {
-                docParagraphFormat = bodyWidget.page.documentHelper.paragraphFormat;
+            let documentHelper: DocumentHelper = this.getDocumentHelperObject();
+            if (!isNullOrUndefined(documentHelper)) {
+                docParagraphFormat = documentHelper.paragraphFormat;
             }
         }
         return docParagraphFormat;
+    }
+    /**
+    * @private
+    */
+    public getDocumentHelperObject(): DocumentHelper {
+        let documentHelper: DocumentHelper;
+        if (this.ownerBase instanceof ParagraphWidget) {
+            const bodyWidget: BlockContainer = (this.ownerBase as ParagraphWidget).bodyWidget;
+            if (!isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.documentHelper)) {
+                documentHelper = bodyWidget.page.documentHelper;
+            }
+        }
+        return documentHelper;
     }
     private setPropertyValue(property: string, value: Object): void {
         if (isNullOrUndefined(value) || value === '') {
@@ -450,11 +473,19 @@ export class WParagraphFormat {
             }
             this.tabs = undefined;
         }
+        if (!isNullOrUndefined(this.borders)) {
+            this.borders.destroy();
+        }
+        this.borders = undefined;
     }
     public copyFormat(format: WParagraphFormat): void {
         if (!isNullOrUndefined(format)) {
             if (!isNullOrUndefined(format.uniqueParagraphFormat)) {
                 this.updateUniqueParagraphFormat(format);
+            }
+            if (!isNullOrUndefined(format.borders)) {
+                //this.borders = new WBorders(this);
+                (this.borders as WBorders).copyFormat(format.borders);
             }
             if (!isNullOrUndefined(format.listFormat)) {
                 this.listFormat.copyFormat(format.listFormat);
@@ -493,6 +524,7 @@ export class WParagraphFormat {
         } else {
             format.listFormat = this.listFormat.cloneListFormat();
         }
+        format.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
         return format;
     }
     private hasValue(property: string): boolean {

@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel, BpmnShapeModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, BpmnShapeModel, BpmnSubProcessModel, BpmnGatewayModel } from '../../../src/diagram/objects/node-model';
 import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
 import { ShadowModel, RadialGradientModel, StopModel } from '../../../src/diagram/core/appearance-model';
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
@@ -198,5 +198,125 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+});
+
+describe('BPMN shapes', () => {
+    describe('Changing of BPMN Shapes from one to another', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                shape: {
+                    type: 'Bpmn', shape: 'DataObject',
+                    dataObject: { collection: false, type: 'Input' }
+                } as BpmnShapeModel,
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 250, offsetY: 100,
+                shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'Start', trigger: 'None' }
+                }
+            };
+            let node3 :NodeModel= {
+                id: 'node3', width: 100, height: 100, offsetX: 380, offsetY: 100,
+                shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'Exclusive' } as BpmnGatewayModel },
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 100, height: 100, offsetX: 500, offsetY: 100,
+             shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: { collapsed: true } as BpmnSubProcessModel
+                    }
+                },
+            };
+            let node5: NodeModel = {
+                id: 'node5', width: 100, height: 100, offsetX: 650, offsetY: 100,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'Task', task: {
+                            type: 'Service'
+
+                        }
+                    },
+                },
+            };
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: [ node1,node2,node3,node4,node5]
+            });
+            diagram.appendTo('#diagram');
+            });
+            afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Update BPMN Shape from  dataobject to datasource', function (done) {
+                let node = diagram.nodes[0];
+                node.shape = {
+                    type: 'Bpmn', shape: 'DataSource',
+                    dataObject: { collection: false, type: 'Input' }
+                },
+                diagram.dataBind();
+                let pathElement = document.getElementById('node1_0_dataobj');
+                expect(pathElement === null).toBe(true);
+                done();
+        });
+        it('Update BPMN Shape from  event to activity task', function (done) {
+                let node = diagram.nodes[1];
+                node.shape = {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'Task', task: {
+                            type: 'Service'
+                        }
+                    },
+                },
+                diagram.dataBind();
+                let pathElement = document.getElementById('node2_1_event');
+                expect(pathElement === null).toBe(true);
+                done();
+        });
+        it('Update BPMN Shape from gateway to event', function (done) {
+                let node = diagram.nodes[2];
+                node.shape = {
+                    type: 'Bpmn', shape: 'Event',
+                        event: { event: 'Start', trigger: 'None' }
+                    }
+                diagram.dataBind();
+                let pathElement = document.getElementById('node3_0_gateway');
+                expect(pathElement === null).toBe(true);
+                done();
+        });
+        it('Update BPMN Shape from  activity subprocess to gateway', function (done) {
+                let node = diagram.nodes[3];
+                node.shape = {
+                    type: 'Bpmn', shape: 'Gateway', gateway: { type: 'Exclusive' } 
+                },
+                diagram.dataBind();
+                let pathElement = document.getElementById('node4_boundary');
+                expect(pathElement === null).toBe(true);
+                done();
+        });
+        it('Update BPMN Shape from  activity task to dataobject', function (done) {
+                let node = diagram.nodes[4];
+                node.shape = {
+                    type: 'Bpmn', shape: 'DataObject',
+                    dataObject: { collection: false, type: 'Input' }
+                },
+                diagram.dataBind();
+                let pathElement = document.getElementById('node5_0_task');
+                expect(pathElement === null).toBe(true);
+                done();
+        });
     });
 });

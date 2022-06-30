@@ -38,30 +38,6 @@ export interface CarouselItemModel {
 }
 
 /**
- * Interface for a class CarouselAnimationSettings
- */
-export interface CarouselAnimationSettingsModel {
-
-    /**
-     * Specifies the type of animation. The possible values for this property as follows
-     * * None
-     * * Slide
-     * * Fade
-     *
-     * @default 'Slide'
-     */
-    effect?: CarouselAnimationEffect;
-
-    /**
-     * Specifies the custom animation effect.
-     *
-     * @default null
-     */
-    customEffect?: string;
-
-}
-
-/**
  * Interface for a class Carousel
  */
 export interface CarouselModel extends ComponentModel{
@@ -74,11 +50,15 @@ export interface CarouselModel extends ComponentModel{
     items?: CarouselItemModel[];
 
     /**
-     * Specifies the animation setting for the carousel component.
-     *
-     * @default { effect: 'Slide', customEffect: null }
-     */
-    animation?: CarouselAnimationSettingsModel;
+     *  Specifies the type of animation effects. The possible values for this property as follows
+     *  * None
+     *  * Slide
+     *  * Fade
+     *  * Custom
+     * 
+     *  @default 'Slide'
+     * */
+    animationEffect?: CarouselAnimationEffect;
 
     /**
      * Accepts the template for previous navigation button.
@@ -164,6 +144,13 @@ export interface CarouselModel extends ComponentModel{
      * @default true
      */
     autoPlay?: boolean;
+
+    /**
+     * Defines whether the slide transition gets pause on hover or not.
+     *
+     * @default true
+     */
+    pauseOnHover?: boolean;
 
     /**
      * Defines whether the slide transitions loop end or not. When set to false, the transition stops at last slide.

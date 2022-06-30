@@ -446,7 +446,7 @@ describe('ICS calendar import', () => {
                 expect(schObj.eventsData.length).toEqual(16);
                 const events: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(events[1].classList).toContain('e-read-only');
-                expect(events[1].getAttribute('aria-readonly')).toEqual('true');
+                expect(events[1].getAttribute('aria-disabled')).toEqual('true');
             };
         });
     });

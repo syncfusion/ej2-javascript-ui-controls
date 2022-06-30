@@ -10,7 +10,7 @@ const bypassKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105,
  */
 class LicenseValidator {
     private isValidated: boolean = false;
-    public version: string = '20.1';
+    public version: string = '20.2';
     public platform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats/i;
     private errors: IErrorType = {
         noLicense: 'This application was built using a trial version of Syncfusion Essential Studio.' +
@@ -50,12 +50,23 @@ class LicenseValidator {
     })();
 
     /**
+     * To manage npx licensing operation.
+     */
+    private npxManager: { getKey: Function } = (() => {
+        let npxLicKey: string = "npxKeyReplace";
+        function get(): string { return npxLicKey; }
+        return {
+            getKey: get
+        };
+    })();
+
+    /**
      * To validate the provided license key.
      */
     public validate(): void {
         if (!this.isValidated && (containerObject && !getValue(convertToChar(bypassKey), containerObject) && !getValue('Blazor', containerObject))) {
             let validateMsg: string;
-            if (this.manager && this.manager.getKey()) {
+            if ((this.manager && this.manager.getKey()) || (this.npxManager && this.npxManager.getKey() != 'npxKeyReplace')) {
                 let result: IValidator[] = this.getInfoFromKey();
                 if (result && result.length) {
                     for (let res of result) {
@@ -116,14 +127,21 @@ class LicenseValidator {
      */
     private getInfoFromKey(): IValidator[] {
         try {
-            let licKey: string = this.manager.getKey();
-            let licKeySplit: string[] = licKey.split(';');
+            let licKey: string = '';
             let pkey: number[] = [5439488, 7929856, 5111808, 6488064, 4587520, 7667712, 5439488,
                 6881280, 5177344, 7208960, 4194304, 4456448, 6619136, 7733248, 5242880, 7077888,
                 6356992, 7602176, 4587520, 7274496, 7471104, 7143424];
             let decryptedStr: string[] = [];
             let resultArray: IValidator[] = [];
             let invalidPlatform: boolean = false;
+            let isNpxKey: boolean =  false;
+            if (this.manager.getKey()) {
+                licKey = this.manager.getKey();
+            } else {
+                isNpxKey = true;
+                licKey = this.npxManager.getKey().split('npxKeyReplace')[1];
+            }
+            let licKeySplit: string[] = licKey.split(';');
             for (let lKey of licKeySplit) {
                 let decodeStr: string = this.getDecryptedData(lKey);
                 if (!decodeStr) {
@@ -131,10 +149,21 @@ class LicenseValidator {
                 }
                 let k: number = 0;
                 let buffr: string = '';
-                for (let i: number = 0; i < decodeStr.length; i++, k++) {
-                    if (k === pkey.length) { k = 0; }
-                    let c: number = decodeStr.charCodeAt(i);
-                    buffr += String.fromCharCode(c ^ (pkey[k] >> 16));
+                if (!isNpxKey) {
+                    for (let i: number = 0; i < decodeStr.length; i++, k++) {
+                        if (k === pkey.length) { k = 0; }
+                        let c: number = decodeStr.charCodeAt(i);
+                        buffr += String.fromCharCode(c ^ (pkey[k] >> 16));
+                    }
+                } else {
+                    let charKey = decodeStr[decodeStr.length - 1];
+                    let decryptedKey: number[] = [];
+                    for (let i: number = 0; i < decodeStr.length; i++) {
+                        decryptedKey[i] = decodeStr[i].charCodeAt(0) - charKey.charCodeAt(0);
+                    }
+                    for (let i: number = 0; i < decryptedKey.length; i++) {
+                        buffr += String.fromCharCode(decryptedKey[i]);
+                    }
                 }
                 if (this.platform.test(buffr)) {
                     decryptedStr = buffr.split(';');

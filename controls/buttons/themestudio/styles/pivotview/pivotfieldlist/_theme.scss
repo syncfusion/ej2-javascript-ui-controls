@@ -58,6 +58,20 @@
       min-height: $field-list-toggle-bigger-size;
       min-width: $field-list-toggle-bigger-size;
     }
+
+    .e-member-editor-dialog,
+    .e-olap-editor-dialog {
+      max-height: 400px !important;
+      min-width: 370px !important;
+
+      .e-member-editor-container-outer-div {
+        min-height: 113px !important;
+
+        .e-list-parent .e-ul {
+          height: auto;
+        }
+      }
+    }
   }
 
   .e-pivotfieldlist-container {
@@ -147,9 +161,6 @@
     .e-dlg-header-content,
     .e-footer-content {
       border: 0;
-      @if ($skin-name == 'tailwind') {
-        height: 46px;
-      }
     }
 
     .e-dlg-header-content {
@@ -367,6 +378,12 @@
                 font-family: $field-list-font-family;
               }
             }
+
+            // sass-lint:disable-all
+            li.e-disable {
+              display: none !important;
+            }
+            // sass-lint:enable-all
           }
 
           &.e-olap-field-list-tree {
@@ -438,7 +455,6 @@
             @if ($skin-name == 'tailwind') {
               padding: 5px $field-list-header-padding;
             }
-
 
             .e-axis-icon-container {
               height: 20px;
@@ -702,6 +718,80 @@
       }
     }
 
+    &.e-search-mode {
+      &.e-static {
+        max-height: 750px;
+
+        .e-field-list-container .e-field-table {
+          height: 261px;
+        }
+      }
+
+      &.e-popup {
+        min-height: 540px;
+
+        .e-field-list-container {
+          height: 369px;
+
+          // sass-lint:disable-all
+          .e-field-table {
+            height: $field-list-search-popup-table-height !important;
+          }
+
+          .e-axis-table  {
+            height: 392px;
+
+            .e-axis-content {
+              height: $field-list-search-popup-axis-content-height !important;
+            }
+          }
+          // sass-lint:enable-all
+        }
+      }
+
+      .e-member-prompt {
+        color: $field-list-drag-icon-color;
+        padding: $field-list-member-prompt-padding-size;
+        text-align: center;
+        width: 100%;
+
+        &.e-disable {
+          display: none;
+        }
+      }
+
+      .e-field-table {
+        .e-field-list-search {
+          display: flex;
+          padding: $field-list-search-padding-size;
+
+          .e-field-list-search-input .e-field-list-search-icon {
+            float: right;
+            font-size: $field-list-header-icon-size;
+          }
+
+          // sass-lint:disable-all
+          .e-input-group .e-input-group-icon,
+          .e-input-group.e-control-wrapper .e-input-group-icon {
+            border-width: 0 !important;
+            cursor: text !important;
+          }
+
+          .e-input-group-icon:hover {
+            background-color: transparent !important;
+            border: transparent !important;
+            color: currentColor !important;
+          }
+        }
+
+        .e-field-list-tree-outer-div .e-disable,
+        .e-disable {
+          display: none !important;
+        }
+        // sass-lint:disable-all
+      }
+    }
+
     // sass-lint:disable-all
     .e-calculated-field {
       color: $field-list-cal-button-text-color;
@@ -827,7 +917,7 @@
           width: 100%;
 
           .e-field-list-tree-outer-div {
-            height: 175px;
+            height: 180px;
           }
         }
 
@@ -918,6 +1008,11 @@
         .e-dlg-header-content {
           background-color: transparent;
           color: $field-list-mobile-header-font-color;
+        }
+
+        .e-dlg-content .e-field-list-tree-outer-div {
+          height: 210px;
+          overflow: auto;
         }
       }
 
@@ -1041,7 +1136,7 @@
                   font-size: 14px !important;
 
                   @if ($field-list-skin == 'bootstrap4') {
-                    color: #fff;
+                    color: $white;
                   }
 
                   @if ($skin-name == 'bootstrap5') {
@@ -1506,7 +1601,6 @@
     }
 
     .e-axis-table {
-
       .e-left-axis-fields .e-field-list-filters,
       .e-left-axis-fields .e-field-list-rows,
       .e-right-axis-fields .e-field-list-columns,
@@ -1725,7 +1819,48 @@
         }
       }
     }
-  }
 
+    &.e-search-mode {
+      &.e-static {
+        max-height: 750px;
+
+        .e-field-list-container {
+          max-height: 800px;
+
+          .e-field-table {
+            height: 270px;
+          }
+        }
+      }
+
+      // sass-lint:disable-all
+      &.e-popup {
+        max-height: 600px !important;
+        min-height: $field-list-search-popup-container-bigger-height !important;
+
+        .e-field-list-container {
+          height: 387px;
+
+          .e-field-table {
+            height: $field-list-search-popup-table-bigger-height !important;
+          }
+
+          .e-axis-table {
+            height: $field-list-search-popup-axis-table-bigger-height;
+
+            .e-axis-content {
+              height: $field-list-search-popup-axis-content-bigger-height !important;
+            }
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-dlg-content .e-field-list-tree-outer-div {
+        max-height: $field-list-adaptive-outerdiv-height;
+      }
+    }
+  }
   // sass-lint:enable-all
 }

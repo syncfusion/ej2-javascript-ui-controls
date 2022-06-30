@@ -162,8 +162,12 @@ export class Save {
         const openTextE: HTMLElement = this.parent.createElement('div', { className: 'e-input-group' });
         dialogElem.appendChild(openTextHeader);
         dialogElem.appendChild(openTextE);
-        const openTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('FileName') });
-        const openTextIp: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text-open', attrs: { 'type': 'Text' }});
+        const header: string = l10n.getConstant('FileName');
+        const id: string = `${this.parent.element.id}_filename`;
+        const openTextH: HTMLElement = this.parent.createElement(
+            'p', { className: 'e-header', id: id, innerHTML: header, attrs: { 'aria-label': `${l10n.getConstant('SaveAs')} ${header}` } });
+        const openTextIp: HTMLElement = this.parent.createElement(
+            'input', { className: 'e-input e-text-open', attrs: { 'type': 'Text', 'aria-labelledby': id }});
         const openTextSpan: HTMLElement = this.parent.createElement('span', { className: 'e-input-group-icon'});
         openTextIp.onkeyup = (e: KeyboardEventArgs): void => {
             if (this.parent.element.querySelector('.e-file-alert-span') && e.keyCode !== 13) {

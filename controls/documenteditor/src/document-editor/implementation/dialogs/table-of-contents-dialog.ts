@@ -72,30 +72,29 @@ export class TableOfContentsDialog {
             rightBottomGeneralDivStyles = 'float:right;';
         }
 
-
-        let topContainer: HTMLDivElement = createElement('div', { id: 'general_top_container', styles: 'display:inline-flex' }) as HTMLDivElement;
-        let leftGeneralDiv: HTMLDivElement = createElement('div', { id: 'left_general', styles: leftGeneralDivStyles + 'position:relative;' }) as HTMLDivElement;
+        let topContainer: HTMLDivElement = createElement('div', { className: 'e-de-container-row' }) as HTMLDivElement;
+        let leftGeneralDiv: HTMLDivElement = createElement('div', {  className: 'e-de-subcontainer-left' }) as HTMLDivElement;
         topContainer.appendChild(leftGeneralDiv);
 
-        let rightGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-general-div' }) as HTMLDivElement;
+        let rightGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
         topContainer.appendChild(rightGeneralDiv);
         generalDiv.appendChild(topContainer);
 
-        let bottomContainer: HTMLDivElement = createElement('div', { id: 'general_bottom_container', styles: 'display:inline-flex' }) as HTMLDivElement;
-        let leftBottomGeneralDiv: HTMLDivElement = createElement('div', { id: 'leftBottom_general', styles: 'float:left;' }) as HTMLDivElement;
+        let bottomContainer: HTMLDivElement = createElement('div', { className: 'e-de-dlg-row' }) as HTMLDivElement;
+        let leftBottomGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
         bottomContainer.appendChild(leftBottomGeneralDiv);
 
-        let rightBottomGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-right-sub-container', styles: rightBottomGeneralDivStyles }) as HTMLDivElement;
+        let rightBottomGeneralDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-right' }) as HTMLDivElement;
         bottomContainer.appendChild(rightBottomGeneralDiv);
-        generalDiv.appendChild(bottomContainer);
+        
 
-        let pageNumberDiv: HTMLDivElement = createElement('div', { id: 'pageNumber_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
+        let pageNumberDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         let pageNumber: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_pageNumber'
         });
         pageNumberDiv.appendChild(pageNumber);
 
-        let rightAlignDiv: HTMLDivElement = createElement('div', { id: 'rightAlign_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
+        let rightAlignDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         let rightAlign: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_rightAlign'
         });
@@ -106,12 +105,12 @@ export class TableOfContentsDialog {
 
         this.rightAlign = new CheckBox({ label: locale.getConstant('Right align page numbers'), enableRtl: isRtl, checked: true, change: this.changeRightAlignValue });
         this.pageNumber.appendTo(pageNumber); this.rightAlign.appendTo(rightAlign);
+        let tabDivContainer: HTMLElement = createElement('div', {className: 'e-de-container-row'});
+        let tabDiv: HTMLDivElement = createElement('div', { className: 'e-de-subcontainer-left' }) as HTMLDivElement;
 
-        let tabDiv: HTMLDivElement = createElement('div', { id: 'tab_div', className: 'e-de-toc-dlg-tab-div' }) as HTMLDivElement;
+        let tabLeaderLabelDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
 
-        let tabLeaderLabelDiv: HTMLDivElement = createElement('div', { id: 'tabLeaderLabel_div' }) as HTMLDivElement;
-
-        let tabLeaderLabel: HTMLElement = createElement('label', { id: ownerId + '_tabLeaderLabel', className: 'e-de-toc-dlg-heading', innerHTML: locale.getConstant('Tab leader') + ':' });
+        let tabLeaderLabel: HTMLElement = createElement('label', { className: 'e-de-toc-dlg-heading', innerHTML: locale.getConstant('Tab leader') + ':' });
         tabLeaderLabelDiv.appendChild(tabLeaderLabel);
         let tabLeaderDiv: HTMLDivElement = createElement('div', { id: 'tabLeader_div' }) as HTMLDivElement;
         let tabLeader: HTMLElement = createElement('select', {
@@ -125,9 +124,10 @@ export class TableOfContentsDialog {
         leftGeneralDiv.appendChild(pageNumberDiv);
 
         leftGeneralDiv.appendChild(rightAlignDiv);
-        leftGeneralDiv.appendChild(tabDiv);
+        tabDivContainer.appendChild(tabDiv);
+        
 
-        this.tabLeader = new DropDownList({ width: 210, enableRtl: isRtl }); this.tabLeader.appendTo(tabLeader);
+        this.tabLeader = new DropDownList({ enableRtl: isRtl }); this.tabLeader.appendTo(tabLeader);
 
         let hyperlink: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_hyperlink'
@@ -137,19 +137,20 @@ export class TableOfContentsDialog {
         this.hyperlink = new CheckBox({ label: locale.getConstant('Use hyperlinks instead of page numbers'), cssClass: 'e-de-toc-label', enableRtl: isRtl, checked: true });
         this.hyperlink.appendTo(hyperlink);
 
-        let showDiv: HTMLDivElement = createElement('div', { id: 'show_div', className: 'e-de-toc-dlg-style-label' }) as HTMLDivElement;
+        let showDiv: HTMLDivElement = createElement('div', {className: 'e-de-subcontainer-right'}) as HTMLDivElement;
 
-        let showLevelLabelDiv: HTMLDivElement = createElement('div', { id: 'showLevelLabel_div', className: 'e-de-toc-dlg-show-level-div' }) as HTMLDivElement;
+        let showLevelLabelDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-show-level-div' }) as HTMLDivElement;
 
-        let showLevelLabel: HTMLElement = createElement('label', { id: ownerId + '_showLevelLabel', className: 'e-de-toc-dlg-heading', innerHTML: locale.getConstant('Show levels') + ':' });
+        let showLevelLabel: HTMLElement = createElement('label', { className: 'e-de-toc-dlg-heading', innerHTML: locale.getConstant('Show levels') + ':' });
         showLevelLabelDiv.appendChild(showLevelLabel);
 
-        let showLevelDiv: HTMLDivElement = createElement('div', { id: 'showLevel_div', className: 'e-de-toc-dlg-showlevel-div' }) as HTMLDivElement;
+        let showLevelDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-showlevel-div' }) as HTMLDivElement;
 
         let showLevel: HTMLInputElement = createElement('input', { id: ownerId + '_showLevel', attrs: { 'type': 'text' } }) as HTMLInputElement;
         showLevelDiv.appendChild(showLevel); showDiv.appendChild(showLevelLabelDiv); showDiv.appendChild(showLevelDiv);
-        rightGeneralDiv.appendChild(showDiv);
-        this.showLevel = new NumericTextBox({ format: '#', value: 3, min: 1, max: 9, width: 210, change: this.changeShowLevelValue.bind(this) });
+        tabDivContainer.appendChild(showDiv);
+        generalDiv.appendChild(tabDivContainer);
+        this.showLevel = new NumericTextBox({ format: '#', value: 3, min: 1, max: 9, change: this.changeShowLevelValue.bind(this) });
         this.showLevel.appendTo(showLevel);
         if (isRtl) {
             this.hyperlink.cssClass = 'e-de-toc-label-rtl';
@@ -159,15 +160,16 @@ export class TableOfContentsDialog {
         }
 
 
-        let buildTableDiv: HTMLDivElement = createElement('div', { id: 'buildTable_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
+        //let buildTableDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
 
-        let buildTableLabel: HTMLElement = createElement('div', { id: ownerId + '_buildTableLabel', className: 'e-de-toc-dlg-main-heading e-de-toc-dlg-build-table', styles: 'margin-bottom: 13px;', innerHTML: locale.getConstant('Build table of contents from') + ':' });
-        leftBottomGeneralDiv.appendChild(buildTableDiv);
-        leftBottomGeneralDiv.appendChild(buildTableLabel);
-
+        let buildTableLabel: HTMLElement = createElement('div', { className: 'e-de-toc-dlg-main-heading e-de-toc-dlg-build-table', innerHTML: locale.getConstant('Build table of contents from') + ':' });
+        //leftBottomGeneralDiv.appendChild(buildTableDiv);
+        // generalDiv.appendChild(buildTableLabel);
+        generalDiv.appendChild(bottomContainer);
         let style: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: this.target.id + '_style',
         });
+        leftBottomGeneralDiv.appendChild(buildTableLabel);
         leftBottomGeneralDiv.appendChild(style);
         this.style = new CheckBox({ label: locale.getConstant('Styles'), enableRtl: isRtl, checked: true, change: this.changeStyleValue });
         this.style.appendTo(style);
@@ -376,18 +378,18 @@ export class TableOfContentsDialog {
         resetElement.addEventListener('click', this.reset);
 
 
-        let tocStylesDiv: HTMLDivElement = createElement('div', { id: 'tocStyles_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
+       // let tocStylesDiv: HTMLDivElement = createElement('div', { id: 'tocStyles_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
 
         let tocStylesLabel: HTMLElement = createElement('div', {
-            id: ownerId + '_tocStylesLabel', className: 'e-de-toc-dlg-main-heading e-de-toc-dlg-styles',
+            id: ownerId + '_tocStylesLabel', className: 'e-de-toc-dlg-main-heading',
             innerHTML: locale.getConstant('Styles') + ':'
         });
-        rightBottomGeneralDiv.appendChild(tocStylesDiv);
+        //rightBottomGeneralDiv.appendChild(tocStylesDiv);
         rightBottomGeneralDiv.appendChild(tocStylesLabel);
 
-        let textBoxDiv: HTMLElement = createElement('div', { className: 'e-de-toc-dlg-style-input' });
+        let textBoxDiv: HTMLElement = createElement('div');
         rightBottomGeneralDiv.appendChild(textBoxDiv);
-        this.textBoxInput = createElement('input', { className: 'e-input', id: 'toclist' }) as HTMLInputElement;
+        this.textBoxInput = createElement('input', { className: 'e-input'}) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
         textBoxDiv.appendChild(this.textBoxInput);
 
@@ -490,7 +492,7 @@ export class TableOfContentsDialog {
      */
     private selectHandler = (args: SelectEventArgs): void => {
         (this.textBoxInput as HTMLInputElement).value = args.text;
-        let value: any = document.getElementById('toclist');
+        let value: any = this.textBoxInput
         value.setSelectionRange(0, (args.text as string).length);
         value.focus();
     }

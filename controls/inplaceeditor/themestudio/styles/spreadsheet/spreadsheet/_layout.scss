@@ -2149,94 +2149,31 @@
       }
     }
 
-    &.e-popup.e-menu-popup.e-cf-menu ul {
+    &.e-databars .e-ul,
+    &.e-colorscales .e-ul {
+      overflow: visible;
       padding: 0;
+
+      & .e-menu-item {
+        height: auto;
+        line-height: 0;
+        padding: 0;
+
+        & .e-cf-icon {
+          display: inline-block;
+          height: 40px;
+          width: 40px;
+        }
+      }
     }
 
-    &.e-popup.e-menu-popup.e-databars ul {
+    &.e-databars .e-ul {
       min-width: 110px;
-      overflow: visible;
-      padding: 0;
-
-      & .e-menu-item,
-      & .e-menu-item.e-focused {
-        height: auto;
-        line-height: 0;
-        padding: 0;
-
-        & .e-db {
-          height: auto;
-          width: auto;
-
-          & .e-bdatabar,
-          & .e-gdatabar,
-          & .e-rdatabar,
-          & .e-odatabar,
-          & .e-lbdatabar,
-          & .e-pdatabar {
-            height: 40px;
-            width: 40px;
-          }
-
-          & .e-databar-icon {
-            background-position: center;
-            float: left;
-          }
-
-          & .e-db1,
-          & .e-db2 {
-            display: flex;
-            height: 40px;
-          }
-        }
-      }
     }
 
-    &.e-popup.e-menu-popup.e-colorscales ul {
+    &.e-colorscales .e-ul {
       min-width: 150px;
-      overflow: visible;
-      padding: 0;
-
-      & .e-menu-item,
-      & .e-menu-item.e-focused {
-        height: auto;
-        line-height: 0;
-        padding: 0;
-
-        & .e-cs {
-          height: auto;
-          width: auto;
-
-          & .e-gyr,
-          & .e-ryg,
-          & .e-gwr,
-          & .e-rwg,
-          & .e-bwr,
-          & .e-rwb,
-          & .e-wr,
-          & .e-rw,
-          & .e-gw,
-          & .e-wg,
-          & .e-gy,
-          & .e-yg {
-            height: 40px;
-            width: 40px;
-          }
-
-          & .e-colorscale-icon {
-            background-position: center;
-            float: left;
-          }
-
-          & .e-cs1,
-          & .e-cs2,
-          & .e-cs3 {
-            display: flex;
-            height: 40px;
-            }
-          }
-        }
-      }
+    }
 
     &.e-popup.e-menu-popup.e-iconsets ul {
       min-width: 250px;

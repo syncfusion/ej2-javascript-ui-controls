@@ -89,6 +89,9 @@ export class CheckBoxFilterBase {
         if (this.parent.enableRtl) {
             addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
         }
+        if (this.parent.cssClass) {
+            addClass([this.cBoxTrue, this.cBoxFalse], [this.parent.cssClass]);
+        }
     }
 
     /**
@@ -168,7 +171,6 @@ export class CheckBoxFilterBase {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private searchBoxKeyUp(e?: KeyboardEvent): void {
         if (this.isCheckboxFilterTemplate) {
             this.parent.notify('refreshCheckbox', { event: e });
@@ -253,7 +255,8 @@ export class CheckBoxFilterBase {
             this.sBox.appendChild(this.searchBox);
             const inputargs: InputArgs = {
                 element: this.sInput as HTMLInputElement, floatLabelType: 'Never', properties: {
-                    placeholder: this.getLocalizedLabel('Search')
+                    placeholder: this.getLocalizedLabel('Search'),
+                    cssClass: this.parent.cssClass
                 }
             };
             Input.createInput(inputargs, this.parent.createElement);
@@ -539,6 +542,7 @@ export class CheckBoxFilterBase {
         return coll;
     }
 
+    // eslint-disable-next-line
     /** @hidden */
     public initiateFilter(fColl: PredicateModel[]): void {
         const firstVal: PredicateModel = fColl[0];
@@ -843,7 +847,7 @@ export class CheckBoxFilterBase {
             }
         }
     }
-    
+
     private processDataSource(query?: Query, isInitial?: boolean, dataSource?: Object[], args?: CheckBoxBeforeRenderer): void {
         showSpinner(this.spinner);
         // query = query ? query : this.options.query.clone();
@@ -853,7 +857,7 @@ export class CheckBoxFilterBase {
         this.updateResult();
         const args1: Object = { dataSource: this.fullData, isCheckboxFilterTemplate: false, column: this.options.column,
             element: this.cBox, type: this.options.type, format: this.options.type, btnObj: this.options.isResponsiveFilter ? null :
-            (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0], searchBox: this.searchBox };
+                (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0], searchBox: this.searchBox };
         this.parent.notify(events.beforeCheckboxfilterRenderer, args1);
         this.isCheckboxFilterTemplate = (<{ isCheckboxFilterTemplate?: boolean }>args1).isCheckboxFilterTemplate;
         if (!this.isCheckboxFilterTemplate) {
@@ -1017,6 +1021,9 @@ export class CheckBoxFilterBase {
                 innerDiv.classList.remove('e-checkfltrnmdiv');
             }
             const checkBox: Element = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
+            if (this.parent.cssClass) {
+                addClass([checkBox], [this.parent.cssClass]);
+            }
             const selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');
             cBoxes.appendChild(selectAll);

@@ -265,7 +265,7 @@ describe('BLAZ-13456 - Pasting on the content by selecting "ctrl+a" throws conso
     afterAll(function () {
         detach(divElement);
     });
-    it('Inserting pasted element for empty blocknodes with Br element', function () {
+    it('Inserting pasted element for empty blocknodes', function () {
         range = document.createRange();
         range.setStart(divElement.childNodes[0].firstChild, 0);
         range.setEnd(divElement.childNodes[1], 0);
@@ -417,9 +417,9 @@ describe('EJ2-53098- Numbered List order in the Rich Text Editor goes incorrect 
         range.setEnd(divElement.lastElementChild.lastElementChild.firstChild, 9);
         rangeNodes.push(divElement.lastElementChild.lastElementChild.firstChild);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
-        expect(divElement.childNodes[0].childNodes[3].childNodes[1].textContent).toBe('Initial 1');
-        expect(divElement.childNodes[0].childNodes[3].childNodes[2].textContent).toBe('Initial 2');
-        expect(divElement.childNodes[0].childNodes[3].childNodes[3].textContent).toBe('Initial 3');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].childNodes[3].textContent).toBe('Initial 3');
     });
     it('Inserting li element at middle in the existing OL', function () {
         divElement.innerHTML = innervalue;
@@ -428,9 +428,9 @@ describe('EJ2-53098- Numbered List order in the Rich Text Editor goes incorrect 
         range.setEnd(divElement.lastElementChild.childNodes[1].firstChild, 9);
         rangeNodes.push(divElement.lastElementChild.childNodes[1].firstChild);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
-        expect(divElement.childNodes[0].childNodes[2].childNodes[1].textContent).toBe('Initial 1');
-        expect(divElement.childNodes[0].childNodes[2].childNodes[2].textContent).toBe('Initial 2');
-        expect(divElement.childNodes[0].childNodes[2].childNodes[3].textContent).toBe('Initial 3');
+        expect(divElement.childNodes[0].childNodes[1].childNodes[1].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[1].childNodes[1].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[1].childNodes[1].childNodes[3].textContent).toBe('Initial 3');
     });
 });
 
@@ -461,9 +461,9 @@ describe('EJ2-53098- Unordered List order in the Rich Text Editor goes incorrect
         range.setEnd(divElement.lastElementChild.lastElementChild.firstChild, 9);
         rangeNodes.push(divElement.lastElementChild.lastElementChild.firstChild);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
-        expect(divElement.childNodes[0].childNodes[3].childNodes[1].textContent).toBe('Initial 1');
-        expect(divElement.childNodes[0].childNodes[3].childNodes[2].textContent).toBe('Initial 2');
-        expect(divElement.childNodes[0].childNodes[3].childNodes[3].textContent).toBe('Initial 3');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[2].childNodes[1].childNodes[3].textContent).toBe('Initial 3');
     });
     it('Inserting li element at middle in the existing UL', function () {
         divElement.innerHTML = innervalue;
@@ -472,8 +472,8 @@ describe('EJ2-53098- Unordered List order in the Rich Text Editor goes incorrect
         range.setEnd(divElement.lastElementChild.childNodes[1].firstChild, 9);
         rangeNodes.push(divElement.lastElementChild.childNodes[1].firstChild);
         (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
-        expect(divElement.childNodes[0].childNodes[2].childNodes[1].textContent).toBe('Initial 1');
-        expect(divElement.childNodes[0].childNodes[2].childNodes[2].textContent).toBe('Initial 2');
-        expect(divElement.childNodes[0].childNodes[2].childNodes[3].textContent).toBe('Initial 3');
+        expect(divElement.childNodes[0].childNodes[1].childNodes[1].childNodes[1].textContent).toBe('Initial 1');
+        expect(divElement.childNodes[0].childNodes[1].childNodes[1].childNodes[2].textContent).toBe('Initial 2');
+        expect(divElement.childNodes[0].childNodes[1].childNodes[1].childNodes[3].textContent).toBe('Initial 3');
     });
 });

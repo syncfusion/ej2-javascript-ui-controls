@@ -1559,6 +1559,7 @@ export interface LayerSettingsModel {
      * Sets and gets the Bing map type for the layer. If you use shape data with BingMapType without using layer type as Bing,
      * then the map will render based on shape data since default layer type will be set as Geometry.
      *
+     * @deprecated
      * @default Aerial
      */
     bingMapType?: BingMapType;
@@ -1566,6 +1567,7 @@ export interface LayerSettingsModel {
     /**
      * Sets and gets the type of the static maps.
      *
+     * @deprecated
      * @default RoadMap
      */
     staticMapType?: StaticMapType;
@@ -1573,6 +1575,7 @@ export interface LayerSettingsModel {
     /**
      * Sets and gets the key for the tile map layer in maps.
      *
+     * @deprecated
      * @default ''
      */
     key?: string;
@@ -1581,6 +1584,7 @@ export interface LayerSettingsModel {
      * Sets and gets the type of the layer in maps. If we use layer type with shape data property in layer of the maps
      * then map will render based on the provided layer type.
      *
+     * @deprecated
      * @default Geometry
      */
     layerType?: ShapeLayerType;
@@ -1588,7 +1592,7 @@ export interface LayerSettingsModel {
     /**
      * Sets and gets the template for the map using the url.
      *
-     * @default 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
+     * @default ''
      */
     urlTemplate?: string;
 

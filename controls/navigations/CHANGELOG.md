@@ -2,6 +2,54 @@
 
 ## [Unreleased]
 
+## 20.2.36 (2022-06-30)
+
+### Carousel
+
+#### New Features
+
+- Provided option to play or pause the slides when hovering the mouse pointer over the Carousel element.
+
+#### Breaking Changes
+
+- Removed `animation` property from Carousel component, now you can set the animation effect directly to the `animationEffect` property.
+- To apply custom animation effects, Needs to set `animationEffect` property to `custom` and specify the custom animation class in `cssClass` property.
+
+**Previous**
+
+```typescript
+
+const carouselObj: Carousel = new Carousel({
+  animation: { customEffect: "parallax" }
+});
+
+```
+
+**Now**
+
+```typescript
+
+const carouselObj: Carousel = new Carousel({
+  cssClass: 'parallax',
+  animationEffect: 'custom'
+});
+
+```
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I383454` - The issue with "The TreeView checked nodes state not maintained for remote data when enabling the persistence" has been resolved.
+
+## 20.1.61 (2022-06-21)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I384728` - An issue with "Tab `data-id` attribute does not work after the initial load" has been fixed.
+
 ## 20.1.60 (2022-06-14)
 
 ### Sidebar

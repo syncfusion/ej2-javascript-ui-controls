@@ -70,6 +70,8 @@ export class Row<T> {
 
     public parentUid: string;
 
+    public isSelectable?: boolean;
+
     constructor(options: { [x: string]: Object }, parent?: IGrid) {
         merge(this, options);
         this.parent = parent;

@@ -5,7 +5,7 @@ import { Revision } from './track-changes';
 import { CommentReviewPane } from '../comments';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget } from '../viewer/page';
+import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableRowWidget, TableWidget, BlockWidget } from '../viewer/page';
 import { WRowFormat, WCharacterFormat } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/index';
@@ -46,7 +46,11 @@ export class TrackChangesPane {
     private sortedRevisions: Revision[] = [];
     private noChangesVisibleInternal: boolean = true;
     public isTrackingPageBreak: boolean = false;
-
+    /***
+     * @private
+     */
+    public tableRevisions: Dictionary<Revision, Revision[]> = new Dictionary<Revision, Revision[]>();
+    public renderedChanges: Dictionary<Revision, ChangesSingleView>;
     public get setNoChangesVisibility(): boolean {
         return this.noChangesVisibleInternal;
     }
@@ -118,6 +122,7 @@ export class TrackChangesPane {
 
     private initTrackChangePane(): void {
         this.changes = new Dictionary<Revision, ChangesSingleView>();
+        this.renderedChanges = new Dictionary<Revision, ChangesSingleView>();
         this.trackChangeDiv = createElement('div', { className: 'e-de-tc-pane' });
         this.trackChangeDiv.appendChild(this.initPaneHeader());
         this.changesInfoDiv = createElement('div', { id: 'e-de-tc-pane-revision', styles: 'overflow:auto' });
@@ -302,6 +307,9 @@ export class TrackChangesPane {
             this.menuDropDownButton.items[1].text = this.locale.getConstant('Reject all') + ' ' + revisionType +
                 ' ' + this.locale.getConstant('By').toLowerCase() + ' ' + this.selectedUser;
         }
+        if (this.owner.documentHelper.isTrackedOnlyMode) {
+            this.menuDropDownButton.disabled = true;
+        }    
     }
 
     private sortCollectionToDisplay(): void {
@@ -350,6 +358,8 @@ export class TrackChangesPane {
 
     public updateTrackChanges(show?: boolean): void {
         if (show || isNullOrUndefined(show)) {
+            this.tableRevisions.clear();
+            this.renderedChanges.clear();
             this.removeAllChanges();
             if (!this.enableButtons && !this.menuoptionEle.classList.contains('e-de-overlay')) {
                 this.menuoptionEle.classList.add('e-de-overlay');
@@ -360,7 +370,33 @@ export class TrackChangesPane {
             this.owner.notify('reviewPane', { comment: this.commentReviewPane.isCommentTabVisible, changes: this.isChangesTabVisible});
             for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                 let revision: Revision = this.owner.revisions.changes[i];
-                this.addChanges(revision);
+                let ranges: object = this.owner.revisions.changes[i].range[0];
+                if(this.changes.containsKey(revision)) {
+                    continue;
+                }
+                if (ranges instanceof WRowFormat) {
+                    let groupedRevision: Revision[] = this.groupTableRevisions(this.owner.revisions.changes, i);
+                    if (groupedRevision.length > 1) {
+                        let changeView: ChangesSingleView;
+                        for (let j: number = 0; j < groupedRevision.length; j++) {
+                            let nextRevision: Revision = groupedRevision[j];
+                            if (j === 0) {
+                                this.addChanges(nextRevision);
+                                changeView = this.changes.get(revision);
+                            } else {
+                                let nextRowFormat: WRowFormat = nextRevision.range[0] as WRowFormat;
+                                changeView.appendRowToTable(nextRowFormat, j);
+                                this.revisions.push(revision);
+                                this.changes.add(nextRevision, changeView);
+                            }
+                            this.tableRevisions.add(nextRevision, groupedRevision);
+                        }
+                    } else {
+                        this.addChanges(revision);
+                    }
+                } else {
+                    this.addChanges(revision);
+                }
             }
             this.sortCollectionToDisplay();
             this.updateUsers();
@@ -372,9 +408,59 @@ export class TrackChangesPane {
         } else {
             this.currentSelectedRevision = undefined;
         }
-
     }
 
+    /**
+     * @private
+     */
+    public groupTableRevisions(revisions: Revision[], startIndex: number): Revision[] {
+        let startRevision: Revision = revisions[startIndex];
+        let groupedRevision: Revision[] = [startRevision];
+        let currentRevisionType: string = startRevision.revisionType;
+        let startRow: TableRowWidget = ((startRevision.range[0] as WRowFormat).ownerBase as TableRowWidget);
+        let startTable: TableWidget = startRow.ownerTable;
+        let rowIndex: number = startRow.index;
+        let startParentTable: TableWidget = this.owner.documentHelper.layout.getParentTable(startTable)
+        for (let i: number = startIndex + 1; i < revisions.length; i++) {
+            let nextRevision: Revision = revisions[i];
+            let nextRevisionType: string = nextRevision.revisionType;
+            let change: object = nextRevision.range[0];
+            if (change instanceof WRowFormat) {
+                let nextRow: TableRowWidget = change.ownerBase as TableRowWidget;
+                let nextTable: TableWidget = nextRow.ownerTable;
+                let nextRowIndex: number = nextRow.index;
+
+                if (!startTable.equals(nextTable) &&
+                    startParentTable.equals(this.owner.documentHelper.layout.getParentTable(nextTable))) {
+                    continue;
+                }
+                if (currentRevisionType === nextRevisionType && startRevision.author === nextRevision.author
+                    && startTable.equals(nextTable) && (rowIndex + 1 === nextRowIndex)) {
+                    groupedRevision.push(nextRevision);
+                    rowIndex = nextRowIndex;
+                } else {
+                    break;
+                }
+            } else {
+                let block: BlockWidget;
+                if (change instanceof WCharacterFormat) {
+                    block = (change as WCharacterFormat).ownerBase as ParagraphWidget;
+                } else if (change instanceof ElementBox) {
+                    block = change.line.paragraph;
+                }
+                if (block instanceof ParagraphWidget && block.isInsideTable) {
+                    let nextTable: TableWidget = block.associatedCell.ownerTable;
+                    let parentTable: TableWidget = this.owner.documentHelper.layout.getParentTable(nextTable)
+                    if (startTable.equals(nextTable) || (!startTable.equals(nextTable) &&
+                        startParentTable.equals(parentTable))) {
+                        continue;
+                    }
+                }
+                break;
+            }
+        }
+        return groupedRevision;
+    }
     public updateUsers(): void {
         if (this.users.length > 0) {
             this.userDropDownButton.removeItems(this.users);
@@ -449,9 +535,12 @@ export class TrackChangesPane {
         if (this.trackChangeDiv) {
             this.trackChangeDiv = undefined;
         }
+        if (this.tableRevisions) {
+            this.tableRevisions.destroy();
+            this.tableRevisions = undefined;
+        }
 
     }
-
     private addChanges(revision: Revision): void {
         let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this);
         this.changesInfoDiv.appendChild(currentChangeView.createSingleChangesDiv(revision));
@@ -461,20 +550,56 @@ export class TrackChangesPane {
                 currentChangeView.rejectButtonElement.classList.add('e-de-overlay');
             }
 
-        } else if (currentChangeView.acceptButtonElement.classList.contains('e-de-overlay')) {
+        } else if (currentChangeView.acceptButtonElement.classList.contains('e-de-overlay') && !this.owner.documentHelper.isTrackedOnlyMode) {
             currentChangeView.acceptButtonElement.classList.remove('e-de-overlay');
             currentChangeView.rejectButtonElement.classList.remove('e-de-overlay');
         }
         this.revisions.push(revision);
         this.changes.add(revision, currentChangeView);
+        this.renderedChanges.add(revision, currentChangeView);
+    }
+    /**
+         * @private
+         * @returns {void}
+         */
+    public navigatePreviousChanges(): void {
+        this.revisionNavigateInternal(false);
+    }
+    /**
+         * @private
+         * @returns {void}
+         */
+    public navigateNextChanges(): void {
+        this.revisionNavigateInternal(true);
     }
 
-    private navigatePreviousChanges(): void {
-        this.owner.selection.navigatePreviousRevision();
-    }
-
-    private navigateNextChanges(): void {
-        this.owner.selection.navigateNextRevision();
+    private revisionNavigateInternal(next: boolean): void {
+        let changes: Revision[] = this.renderedChanges.keys;
+        if (!this.currentSelectedRevisionInternal) {
+            if (changes.length === 0) {
+                return;
+            }
+            this.currentSelectedRevision = changes[0];
+        }
+        if (this.currentSelectedRevision) {
+            let revisions: Revision[] = changes;
+            let revision: Revision = this.currentSelectedRevision;
+            let index: number = revisions.indexOf(revision);
+            if (next) {
+                revision = (index === (revisions.length - 1)) ? revisions[0] : revisions[index + 1];
+            } else {
+                revision = index === 0 ? revisions[revisions.length - 1] : revisions[index - 1];
+            }
+            this.owner.documentHelper.currentSelectedRevision = revision;
+            let ranges: object = revision.range[0];
+            if (ranges instanceof WRowFormat) {
+                let groupingAccept: Revision[] = this.groupTableRevisions(this.owner.revisions.changes, this.owner.revisions.changes.indexOf(revision));
+                this.owner.selection.selectTableRevision(groupingAccept);
+            } else {
+                this.owner.selection.selectRevision(revision);
+            }
+        }
+        this.currentSelectedRevision = this.currentSelectedRevision;
     }
 }
 
@@ -489,7 +614,10 @@ export class ChangesSingleView {
     public singleInnerDiv: HTMLElement;
     public acceptButtonElement: HTMLButtonElement;
     public rejectButtonElement: HTMLButtonElement;
-
+    /***
+     * @private
+     */
+    public tableElement: HTMLTableElement;
 
     public constructor(owner: DocumentEditor, trackChangesPane: TrackChangesPane) {
         this.owner = owner;
@@ -497,7 +625,6 @@ export class ChangesSingleView {
         this.locale.setLocale(this.owner.locale);
         this.trackChangesPane = trackChangesPane;
     }
-
 
     public createSingleChangesDiv(revision: Revision): HTMLElement {
         this.revision = revision;
@@ -556,20 +683,26 @@ export class ChangesSingleView {
             styles: 'float:left;'
         });
         this.acceptButtonElement = createElement('button', { className: 'e-de-track-accept-button' }) as HTMLButtonElement;
-        let acceptButton: Button = new Button({ cssClass: 'e-outline', content: this.locale.getConstant('Accept') });
+        let acceptButton: Button = new Button({ cssClass: 'e-outline e-success', content: this.locale.getConstant('Accept') });
         buttonDiv.appendChild(this.acceptButtonElement);
         buttonTotalDiv.appendChild(buttonDiv);
         acceptButton.appendTo(this.acceptButtonElement);
+        if (this.owner.documentHelper.isTrackedOnlyMode) {
+            this.acceptButtonElement.classList.add('e-de-overlay'); 
+        }
         this.acceptButtonElement.addEventListener('click', this.acceptButtonClick.bind(this));
 
         buttonDiv = createElement('div', {
             styles: 'float:left;'
         });
         this.rejectButtonElement = createElement('button', { className: 'e-de-track-reject-button' }) as HTMLButtonElement;
-        let rejectButton: Button = new Button({ cssClass: 'e-outline', content: this.locale.getConstant('Reject') });
+        let rejectButton: Button = new Button({ cssClass: 'e-outline e-danger', content: this.locale.getConstant('Reject') });
         buttonDiv.appendChild(this.rejectButtonElement);
         buttonTotalDiv.appendChild(buttonDiv);
         rejectButton.appendTo(this.rejectButtonElement);
+        if (this.owner.documentHelper.isTrackedOnlyMode) {
+            this.rejectButtonElement.classList.add('e-de-overlay');    
+        }
         this.rejectButtonElement.addEventListener('click', this.rejectButtonClick.bind(this));
 
         let changesCount: HTMLElement = createElement('div', { className: 'e-de-track-chngs-count', styles: 'float:right;' });
@@ -582,9 +715,25 @@ export class ChangesSingleView {
         return this.outerSingleDiv;
     }
 
+    /**
+     * @private
+     */
+    public appendRowToTable(rowFormat: WRowFormat, insertIndex: number): void {
+        this.tableElement.insertRow();
+        for (let k: number = 0; k < rowFormat.ownerBase.childWidgets.length; k++) {
+            this.tableElement.rows[insertIndex].insertCell();
+            this.tableElement.rows[insertIndex].cells[k].classList.add('e-de-tc-tble-cell');
+        }
+    }
     private selectRevision(): void {
-        this.owner.selection.selectRevision(this.revision);
-        this.trackChangesPane.onSelection(this.revision);
+        let ranges: object = this.revision.range[0];
+        if (ranges instanceof WRowFormat) {
+            let groupingAccept: Revision[] = this.trackChangesPane.groupTableRevisions(this.owner.revisions.changes, this.owner.revisions.changes.indexOf(this.revision));
+            this.owner.selection.selectTableRevision(groupingAccept);
+        } else {
+            this.owner.selection.selectRevision(this.revision);
+            this.trackChangesPane.onSelection(this.revision);
+        }
     }
 
     private layoutElementText(range: object[], changesText: HTMLElement): void {
@@ -592,7 +741,7 @@ export class ChangesSingleView {
         let text: string = '';
         let toSkip: boolean = false;
         for (let i: number = 0; i < range.length; i++) {
-            let element: ElementBox = range[i] as ElementBox;
+            let element:ElementBox = range[i] as ElementBox;
             if (element instanceof FieldElementBox && element.fieldType === 1) {
                 toSkip = false;
                 continue;
@@ -639,14 +788,14 @@ export class ChangesSingleView {
                 imageEle.classList.add('e-de-tc-shrink-img');
                 changesText.appendChild(imageEle);
             } else if (element instanceof WRowFormat) {
-                let tableEle: HTMLTableElement = createElement('table') as HTMLTableElement;
-                tableEle.classList.add('e-de-track-chng-table');
-                tableEle.insertRow();
+                this.tableElement = createElement('table') as HTMLTableElement;
+                this.tableElement.classList.add('e-de-track-chng-table');
+                this.tableElement.insertRow();
                 for (let i: number = 0; i < element.ownerBase.childWidgets.length; i++) {
-                    tableEle.rows[0].insertCell();
-                    tableEle.rows[0].cells[i].classList.add('e-de-tc-tble-cell');
+                    this.tableElement.rows[0].insertCell();
+                    this.tableElement.rows[0].cells[i].classList.add('e-de-tc-tble-cell');
                 }
-                changesText.appendChild(tableEle);
+                changesText.appendChild(this.tableElement);
                 return;
             } else if (element instanceof WCharacterFormat) {
                 if (text !== '') {
@@ -672,7 +821,6 @@ export class ChangesSingleView {
         }
         return span;
     }
-
     private acceptButtonClick(): void {
         this.trackChangesPane.changesInfoDiv.removeChild(this.outerSingleDiv);
         this.removeFromParentCollec();

@@ -544,3 +544,8 @@ export const CLS_RTE_FIXED_TB_EXPAND: string = 'e-rte-fixed-tb-expand';
  * @deprecated
  */
 export const CLS_RTE_TB_ENABLED: string = 'e-rte-toolbar-enabled';
+/**
+ * @hidden
+ * @deprecated
+ */
+ export const CLS_RTE_RES_WEST: string = 'e-south-west';

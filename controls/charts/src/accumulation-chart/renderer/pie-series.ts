@@ -37,11 +37,15 @@ export class PieSeries extends PieBase {
         point.endAngle = this.startAngle % 360;
         point.symbolLocation = degreeToLocation(point.midAngle, (this.radius + this.innerRadius) / 2, this.center);
         if (!redraw) {
-            seriesGroup.appendChild(chart.renderer.drawPath(option));
+            let element: Element = chart.renderer.drawPath(option);
+            element.setAttribute("tabindex",  point.index === 0 ? "0" : "");
+            seriesGroup.appendChild(element);
             point.degree = degree;
             point.start = start;
         } else {
-            seriesGroup.appendChild(chart.renderer.drawPath(option));
+            let element: Element = chart.renderer.drawPath(option);
+            element.setAttribute("tabindex",  point.index === 0 ? "0" : "");
+            seriesGroup.appendChild(element);
             this.refresh(point, degree, start, chart, option);
         }
     }

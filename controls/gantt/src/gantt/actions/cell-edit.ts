@@ -56,7 +56,7 @@ export class CellEdit {
             return;
         }
         if (data.hasChildRecords && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
-            data['isManual'] == false) || this.parent.taskMode == 'Auto')) || field === taskSettings.duration
+            data['isManual'] === false) || this.parent.taskMode === 'Auto')) || field === taskSettings.duration
             || field === taskSettings.dependency || field === taskSettings.progress
             || field === taskSettings.work || field === 'taskType')) {
             args.cancel = true;
@@ -231,7 +231,7 @@ export class CellEdit {
         const ganttProb: ITaskData = args.data.ganttProperties;
         let currentValue: Date = args.data[this.parent.taskFields.startDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
-        currentValue = this.parent.dateValidationModule.checkStartDate(currentValue);
+        currentValue = this.parent.dateValidationModule.checkStartDate(currentValue, ganttData.ganttProperties, ganttData.ganttProperties.isMilestone);
         if (isNOU(currentValue)) {
             if (!ganttData.hasChildRecords) {
                 this.parent.setRecordValue('startDate', null, ganttProb, true);
@@ -370,7 +370,9 @@ export class CellEdit {
         const currentDuration: number = ganttProb.duration;
         if (isNOU(currentDuration)) {
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
-            this.parent.setRecordValue('endDate', null, ganttProb, true);
+            if (args.data[this.parent.taskFields.duration]!=null) {
+                this.parent.setRecordValue('endDate', null, ganttProb, true);
+            }
         } else {
             if (isNOU(startDate) && !isNOU(endDate)) {
                 this.parent.setRecordValue(

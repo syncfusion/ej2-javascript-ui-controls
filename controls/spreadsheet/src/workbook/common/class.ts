@@ -493,6 +493,9 @@ export class ConditionalFormat extends ChildProperty<ConditionalFormat> {
      */
     @Property('')
     public range: string;
+
+    /** @hidden */
+    public result: string[] | number[];
 }
 
 /**

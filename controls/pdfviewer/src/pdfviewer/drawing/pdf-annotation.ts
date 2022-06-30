@@ -658,6 +658,22 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     @Property(false)
     public isReadonly: boolean;
 
+    /**
+     * Represents the page rotation angle
+     * @private
+     *
+     */
+    @Property(0)
+    public pageRotation: number;
+
+    /**
+     * Represents the annotation is added programmatically.
+     * @private
+     *
+     */
+    @Property(false)
+    public isAddAnnotationProgrammatically: boolean;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);

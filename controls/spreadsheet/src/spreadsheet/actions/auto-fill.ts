@@ -33,14 +33,15 @@ export class AutoFill {
             { text: l10n.getConstant('FillFormattingOnly') },
             { text: l10n.getConstant('FillWithoutFormatting') }];
     }
-    private init(): void {
-        this.createAutoFillElement();
-    }
 
     private createAutoFillElement(): void {
         const element: HTMLElement = this.parent.getMainContent();
         const ele: HTMLElement = this.parent.createElement('div', { className: 'e-autofill' });
-        element.appendChild(ele);
+        if (element.lastElementChild && element.lastElementChild.classList.contains('e-ss-overlay')) {
+            element.insertBefore(ele, element.getElementsByClassName('e-ss-overlay')[0]);
+        } else {
+            element.appendChild(ele);
+        }
         this.autoFillElement = ele;
         this.getautofillDDB({ id: this.parent.element.id + '_autofilloptionbtn', appendElem: element });
     }
@@ -235,7 +236,7 @@ export class AutoFill {
 
     private hideAutoFillElement(): void {
         const elem: Element = this.parent.element;
-        elem.querySelectorAll('.e-autofill').forEach((optElem: Element) => {
+       [].slice.call(elem.querySelectorAll('.e-autofill')).forEach((optElem: Element) => {
             if (elem) {
                 addClass([optElem], 'e-hide');
             }
@@ -244,7 +245,7 @@ export class AutoFill {
 
     private hideAutoFillOptions(): void {
         const elem: Element = this.parent.element;
-        elem.querySelectorAll('.e-filloption').forEach((optElem: Element) => {
+        [].slice.call(elem.querySelectorAll('.e-filloption')).forEach((optElem: Element) => {
             if (elem) {
                 addClass([optElem], 'e-hide');
             }
@@ -570,7 +571,7 @@ export class AutoFill {
     }
 
     private addEventListener(): void {
-        this.parent.on(contentLoaded, this.init, this);
+        this.parent.on(contentLoaded, this.createAutoFillElement, this);
         this.parent.on(positionAutoFillElement, this.positionAutoFillElement, this);
         this.parent.on(hideAutoFillOptions, this.hideAutoFillOptions, this);
         this.parent.on(hideAutoFillElement, this.hideAutoFillElement, this);
@@ -583,7 +584,7 @@ export class AutoFill {
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(contentLoaded, this.init);
+            this.parent.off(contentLoaded, this.createAutoFillElement);
             this.parent.off(positionAutoFillElement, this.positionAutoFillElement);
             this.parent.off(hideAutoFillOptions, this.hideAutoFillOptions);
             this.parent.off(hideAutoFillElement, this.hideAutoFillElement);

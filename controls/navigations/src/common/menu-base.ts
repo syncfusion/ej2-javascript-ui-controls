@@ -893,7 +893,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.navIdx.length !== 0 && closest(e.target as Element, '.e-menu-parent.e-control')) {
                         this.closeMenu(0, e);
                     } else if(isOpen && !this.isMenu && selectAll('.e-menu-parent', wrapper)[ulIndex - 1] && e.which === 3) {
-                        this.closeMenu(null, e);
+                        this.closeMenu(null, e);    
                     } else {
                         if (isOpen && (this.keyType === 'right' || this.keyType === 'click')) {
                             this.afterCloseMenu(e as MouseEvent);
@@ -1507,7 +1507,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (closest(e.target as Element, '.e-menu-wrapper').querySelector('ul.e-menu-parent').id !== this.element.id) {
             return;
         }
-        if (this.element.classList.contains('e-hide-menu')) {
+        if (this.element.className.indexOf('e-hide-menu') > -1) {
             this.openHamburgerMenu(e);
         } else {
             this.closeHamburgerMenu(e);
@@ -1882,9 +1882,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private removeItem(item: MenuItemModel[], navIdx: number[], idx: number): void {
         item.splice(idx, 1);
         const uls: HTMLCollection = this.getWrapper().children;
-        const uls_length: number = this.hamburgerMode? 1 : uls.length;
-        if (navIdx.length < uls_length) {
-            detach(uls[this.hamburgerMode ? 1 : navIdx.length].children[idx]);
+        if (navIdx.length < uls.length) {
+            detach(uls[navIdx.length].children[idx]);
         }
     }
 

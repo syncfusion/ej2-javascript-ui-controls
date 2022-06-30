@@ -3,6 +3,7 @@ import { createElement, isNullOrUndefined, getValue, addClass, removeClass, exte
 import { Gantt } from '../base/gantt';
 import { TimelineSettingsModel } from '../models/timeline-settings-model';
 import * as cls from '../base/css-constants';
+import { CriticalPath } from '../actions/critical-path';
 import { TimelineViewMode } from '../base/enum';
 import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData, ZoomEventArgs, ZoomTimelineSettings } from '../base/interface';
 import { DataUtil } from '@syncfusion/ej2-data';
@@ -45,6 +46,9 @@ export class Timeline {
         this.totalTimelineWidth = 0;
         this.customTimelineSettings = null;
         this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
+        if (this.parent.enablePersistence) {
+            this.parent.timelineSettings = this.parent.currentZoomingLevel;
+          }
     }
 
     /**
@@ -175,6 +179,10 @@ export class Timeline {
         this.processTimelineUnit();
         this.parent.updateProjectDates(
             this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
+        const criticalModule: CriticalPath  = this.parent.criticalPathModule;
+        if (this.parent.enableCriticalPath && criticalModule) {
+            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
+         }
         if (this.isZooming || this.isZoomToFit) {
             const args: ZoomEventArgs = {
                 requestType: this.isZoomIn ? 'AfterZoomIn' : this.isZoomToFit ? 'AfterZoomToProject' : 'AfterZoomOut',
@@ -836,7 +844,7 @@ export class Timeline {
             parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell, isFirstCell);
             scheduleDateCollection.push(new Date(startDate.toString()));
             if (isFirstCell) {
-                newTime = this.calculateQuarterEndDate(startDate).getTime();
+                newTime = this.calculateQuarterEndDate(startDate, count).getTime();
             } else {
                 increment = this.getIncrement(startDate, count, mode);
                 newTime = startDate.getTime() + increment;
@@ -990,16 +998,25 @@ export class Timeline {
             this.parent.nonWorkingDayIndex.indexOf(day.getDay()) !== -1;
     }
 
-    private calculateQuarterEndDate(date: Date) {
+    private calculateQuarterEndDate(date: Date, count: number) {
         const month: number = date.getMonth();
-        if (month >= 0 && month <= 2) {
-            return new Date(date.getFullYear(), 3, 1);
-        } else if (month >= 3 && month <= 5) {
-            return new Date(date.getFullYear(), 6, 1);
-        } else if (month >= 6 && month <= 8) {
-            return new Date(date.getFullYear(), 9, 1);
-        } else {
-            return new Date(date.getFullYear() + 1, 0, 1);
+        if(count === 3){
+            if (month >= 0 && month <= 2) {
+                return new Date(date.getFullYear(), 3, 1);
+            } else if (month >= 3 && month <= 5) {
+                return new Date(date.getFullYear(), 6, 1);
+            } else if (month >= 6 && month <= 8) {
+                return new Date(date.getFullYear(), 9, 1);
+            } else {
+                return new Date(date.getFullYear() + 1, 0, 1);
+            }
+        }
+        else{
+            if (month >= 0 && month <= 5) {
+                return new Date(date.getFullYear(), 6, 1);
+            }else {
+                return new Date(date.getFullYear() + 1, 0, 1);
+            }
         }
     }
 
@@ -1032,7 +1049,7 @@ export class Timeline {
         thWidth = (this.getIncrement(scheduleWeeks, count, mode) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
         const cellWidth: number = thWidth;
         thWidth = isLast || isFirstCell ? isLast ? this.calculateWidthBetweenTwoDate(
-            mode, scheduleWeeks, this.timelineRoundOffEndDate) : this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks))
+            mode, scheduleWeeks, this.timelineRoundOffEndDate) : this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
             : thWidth;
         const isWeekendCell: boolean = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         const textClassName: string = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
@@ -1367,10 +1384,10 @@ export class Timeline {
             this.parent.updateProjectDates(args.projectStartDate, args.ProjectEndDate, args.isTimelineRoundOff, isFrom);
             if (type === 'prevTimeSpan' && isFrom === 'publicMethod') {
                 this.parent.ganttChartModule.updateScrollLeft(0);
-            } else if (type === 'nextTimeSpan' && isFrom === 'publicMethod') {
-                this.parent.ganttChartModule.updateScrollLeft(this.parent.timelineModule.totalTimelineWidth);
+            } else if ((type === 'nextTimeSpan' && isFrom === 'publicMethod') || (type === 'nextTimeSpan' && isFrom === 'TaskbarEditing')) {
+                let currentScrollLeft: number = document.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
+                this.parent.element.querySelector('.e-timeline-header-container').scrollLeft = currentScrollLeft;
             }
-
             this.parent.timelineModule.timeSpanActionEvent('actionComplete', type, isFrom);
         } else {
             this.parent.cloneProjectStartDate = projectStartDate;

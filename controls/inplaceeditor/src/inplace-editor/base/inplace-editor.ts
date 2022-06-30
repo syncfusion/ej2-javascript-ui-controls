@@ -129,30 +129,30 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private valueWrap: HTMLElement;
     private templateEle: HTMLElement;
     private containerEle: HTMLElement;
-    private initRender: boolean = true;
+    private initRender: boolean;
     private inlineWrapper: HTMLElement;
-    private isTemplate: boolean = false;
-    private isVue: boolean = false;
+    private isTemplate: boolean;
+    private isVue: boolean;
     private formValidate: FormValidator;
     private componentObj: ComponentTypes;
-    private isExtModule: boolean = false;
-    private submitBtn: Button = undefined;
-    private cancelBtn: Button = undefined;
-    private isClearTarget: boolean = false;
+    private isExtModule: boolean;
+    private submitBtn: Button;
+    private cancelBtn: Button;
+    private isClearTarget: boolean;
     private beginEditArgs: BeginEditEventArgs;
-    private btnElements: HTMLElement = undefined;
-    private dataManager: DataManager = undefined;
-    private oldValue: string | number | Date | string[] | Date[] | number[] = undefined;
+    private btnElements: HTMLElement;
+    private dataManager: DataManager;
+    private oldValue: string | number | Date | string[] | Date[] | number[];
     private componentRoot: HTMLElement | HTMLInputElement;
     private dataAdaptor: UrlAdaptor | ODataV4Adaptor | WebApiAdaptor;
     private prevValue: string | number | Date | string[] | Date[] | number[];
-    private divComponents: string[] = ['RTE', 'Slider'];
-    private clearComponents: string[] = ['AutoComplete', 'Mask', 'Text'];
-    private dateType: string[] = ['Date', 'DateTime', 'Time'];
-    private inputDataEle: string[] = ['Date', 'DateTime', 'DateRange', 'Time', 'Numeric'];
-    private dropDownEle: string[] = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
+    private divComponents: string[];
+    private clearComponents: string[];
+    private dateType: string[];
+    private inputDataEle: string[];
+    private dropDownEle: string[];
     private compPrevValue: string | string[] | number | number[] | boolean[] | Date | Date[] | DateRange;
-    private moduleList: string[] = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
+    private moduleList: string[];
     private afterOpenEvent: EmitType<TooltipEventArgs>;
     private onScrollResizeHandler: EventListenerOrEventListenerObject;
 
@@ -163,7 +163,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * @hidden
      */
-    public needsID: boolean = true;
+    public needsID: boolean;
     /**
      * @hidden
      */
@@ -533,6 +533,26 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     @Event()
     public destroyed: EmitType<Event>;
+    
+    private initializeValue(): void{
+        this.needsID=true;
+        this.initRender=true;
+        this.isTemplate=false;
+        this.isVue=false;
+        this.isExtModule=false;
+        this.submitBtn=undefined;
+        this.cancelBtn=undefined;
+        this.isClearTarget=false;
+        this.btnElements=undefined;
+        this.dataManager=undefined;
+        this.oldValue=undefined;
+        this.divComponents = ['RTE', 'Slider'];
+        this.clearComponents= ['AutoComplete', 'Mask', 'Text'];
+        this.dateType = ['Date', 'DateTime', 'Time'];
+        this.inputDataEle=['Date', 'DateTime', 'DateRange', 'Time', 'Numeric'];
+        this.dropDownEle = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
+        this.moduleList = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
+    }
     /**
      * Initialize the event handler
      *
@@ -540,6 +560,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     protected preRender(): void {
+        this.initializeValue();
         this.onScrollResizeHandler = this.scrollResizeHandler.bind(this);
         if (isNOU(this.model)) {
             this.setProperties({ model: {} }, true);

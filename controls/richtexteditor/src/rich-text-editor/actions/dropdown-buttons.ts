@@ -44,7 +44,7 @@ export class DropDownButtons {
     }
 
     private beforeRender(args: MenuEventArgs): void {
-        const item: IDropDownItemModel = args.item as IDropDownItemModel;
+        const item: IDropDownItemModel = args.item as    IDropDownItemModel;
         if (item.cssClass) {
             addClass([args.element], item.cssClass);
         }
@@ -197,7 +197,8 @@ export class DropDownButtons {
                     break;
                 case 'align': this.imageAlignmentDropDown(type, tbElement, targetElement);
                     break;
-                case 'display': this.imageDisplayDropDown(type, tbElement, targetElement);
+                case 'display':
+                    this.imageDisplayDropDown(type, tbElement, targetElement);
                     break;
                 case 'tablerows': this.rowDropDown(type, tbElement, targetElement);
                     break;

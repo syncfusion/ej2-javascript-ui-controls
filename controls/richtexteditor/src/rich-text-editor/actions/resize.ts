@@ -26,9 +26,10 @@ export class Resize {
     }
 
     private renderResizable(): void {
+        let enableRtlClass =(this.parent.enableRtl)?classes.CLS_RTE_RES_WEST:classes.CLS_RTE_RES_EAST
         this.resizer = this.parent.createElement('div', {
             id: this.parent.getID() + '-resizable', className: 'e-icons'
-                + ' ' + classes.CLS_RTE_RES_HANDLE + ' ' + classes.CLS_RTE_RES_EAST
+                + ' ' + classes.CLS_RTE_RES_HANDLE + ' ' + enableRtlClass
         });
         this.parent.element.classList.add(classes.CLS_RTE_RES_CNT);
         this.parent.element.appendChild(this.resizer);
@@ -61,11 +62,11 @@ export class Resize {
         const boundRect: ClientRect = this.parent.element.getBoundingClientRect();
         if (this.isMouseEvent(e)) {
             this.parent.element.style.height = (<MouseEvent>e).clientY - boundRect.top + 'px';
-            this.parent.element.style.width = (<MouseEvent>e).clientX - boundRect.left + 'px';
+              this.parent.element.style.width = (!this.parent.enableRtl)?(<MouseEvent>e).clientX - boundRect.left + 'px' : boundRect.right- (<MouseEvent>e).clientX + 'px';
         } else {
             const eventType: MouseEvent | Touch = Browser.info.name !== 'msie' ? (<TouchEvent>e).touches[0] : (<MouseEvent>e);
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
-            this.parent.element.style.width = eventType.clientX - boundRect.left + 'px';
+             this.parent.element.style.width =(!this.parent.enableRtl)? (<MouseEvent>e).clientX - boundRect.left + 'px' : boundRect.right- (<MouseEvent>e).clientX + 'px';
         }
         if (!this.parent.toolbarSettings.enable) {
             this.parent.setContentHeight('', false);

@@ -438,6 +438,9 @@ export class PivotChart {
                 if (this.persistSettings.chartSeries && this.persistSettings.chartSeries.emptyPointSettings) {
                     currentSeries.emptyPointSettings = this.persistSettings.chartSeries.emptyPointSettings;
                 }
+                if (!currentSeries.emptyPointSettings) {
+                    currentSeries.emptyPointSettings = { mode: 'Zero' };
+                }
                 this.chartSeries = (this.chartSeries as SeriesModel[]).concat(currentSeries);
             }
         }

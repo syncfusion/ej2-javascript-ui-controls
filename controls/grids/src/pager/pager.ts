@@ -289,6 +289,9 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.setAttribute('data-role', 'pager');
         this.element.setAttribute('aria-label', 'Pager Container');
         this.element.setAttribute('tabindex', '-1');
+        if (this.cssClass) {
+            addClass([this.element], [this.cssClass]);
+        }
         if (!this.hasParent) {
             this.element.setAttribute('tabindex', '0');
         }
@@ -496,6 +499,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private onFocusOut(e: FocusEvent): void {
         const focusedElement: Element = this.getFocusedElement();
         const dropDownPage: Element = this.getDropDownPage();
@@ -689,6 +693,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         return false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private navigateToPageByEnterOrSpace(e: KeyboardEventArgs): void {
         const currentItemPagerFocus: Element = this.getFocusedElement();
         if (currentItemPagerFocus) {
@@ -765,7 +770,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         return this.element.querySelector('.e-active');
     }
 
-    private getDropDownPage(): Element {
+    /**
+     * @returns {Element} - Returns DropDown Page
+     * @hidden */
+    public getDropDownPage(): Element {
         const dropDownPageHolder: Element = this.element.querySelector('.e-pagerdropdown');
         let dropDownPage: Element;
         if (dropDownPageHolder) {
@@ -795,7 +803,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         return this.element.querySelector('.' + className);
     }
 
-    private getFocusablePagerElements(element: Element, previousElements: Element[]): Element[] {
+    /**
+     * @param {Element} element - Pager element
+     * @param {Element[]} previousElements - Iterating pager element
+     * @returns {Element[]} - Returns focusable pager element
+     * @hidden */
+    public getFocusablePagerElements(element: Element, previousElements: Element[]): Element[] {
         const target: Element = element;
         const targetChildrens: HTMLCollection = target.children;
         let pagerElements: Element[] = previousElements;

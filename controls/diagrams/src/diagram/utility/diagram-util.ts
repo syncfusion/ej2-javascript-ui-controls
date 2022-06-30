@@ -9,7 +9,7 @@ import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel
 import { Point } from './../primitives/point';
 import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows, DiagramAction,
-    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction
+    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction, ControlPointsVisibility
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
@@ -2173,6 +2173,21 @@ export function canResizeCorner(
  */
 export function canShowCorner(selectorConstraints: SelectorConstraints, action: string): boolean {
     if (SelectorConstraints[action] & selectorConstraints) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * canShowControlPoints method \
+ *
+ * @returns {boolean } canShowControlPoints method .\
+ * @param {ControlPointsVisibility} bezierControlPoints - provide the bezierControlPoints value.
+ * @param {string} action - provide the value.
+ * @private
+ */
+export function canShowControlPoints(bezierControlPoints: ControlPointsVisibility, action: string): boolean {
+    if (ControlPointsVisibility[action] & bezierControlPoints) {
         return true;
     }
     return false;

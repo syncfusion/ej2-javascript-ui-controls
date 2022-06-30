@@ -206,7 +206,7 @@
 
     & .e-protect-content {
       font-size: 13px;
-      height: 30px;
+      height: 37px;
       padding-top: 20px;
       width: 100%;
     }
@@ -1043,26 +1043,11 @@
     }
 
     .e-filloption {
-      height: 30px;
       position: absolute;
-      width: 47px;
       z-index: 3;
 
       @if $skin-name == 'material' {
         background-color: $cell-border-color;
-      }
-
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        width: 65px;
-      }
-
-      @else if $skin-name == 'bootstrap5' {
-        width: 56px;
-      }
-
-      @else if $skin-name == 'FluentUI' {
-        height: 32px;
-        width: 62px;
       }
     }
 
@@ -2149,94 +2134,31 @@
       }
     }
 
-    &.e-popup.e-menu-popup.e-cf-menu ul {
+    &.e-databars .e-ul,
+    &.e-colorscales .e-ul {
+      overflow: visible;
       padding: 0;
+
+      & .e-menu-item {
+        height: auto;
+        line-height: 0;
+        padding: 0;
+
+        & .e-cf-icon {
+          display: inline-block;
+          height: 40px;
+          width: 40px;
+        }
+      }
     }
 
-    &.e-popup.e-menu-popup.e-databars ul {
+    &.e-databars .e-ul {
       min-width: 110px;
-      overflow: visible;
-      padding: 0;
-
-      & .e-menu-item,
-      & .e-menu-item.e-focused {
-        height: auto;
-        line-height: 0;
-        padding: 0;
-
-        & .e-db {
-          height: auto;
-          width: auto;
-
-          & .e-bdatabar,
-          & .e-gdatabar,
-          & .e-rdatabar,
-          & .e-odatabar,
-          & .e-lbdatabar,
-          & .e-pdatabar {
-            height: 40px;
-            width: 40px;
-          }
-
-          & .e-databar-icon {
-            background-position: center;
-            float: left;
-          }
-
-          & .e-db1,
-          & .e-db2 {
-            display: flex;
-            height: 40px;
-          }
-        }
-      }
     }
 
-    &.e-popup.e-menu-popup.e-colorscales ul {
+    &.e-colorscales .e-ul {
       min-width: 150px;
-      overflow: visible;
-      padding: 0;
-
-      & .e-menu-item,
-      & .e-menu-item.e-focused {
-        height: auto;
-        line-height: 0;
-        padding: 0;
-
-        & .e-cs {
-          height: auto;
-          width: auto;
-
-          & .e-gyr,
-          & .e-ryg,
-          & .e-gwr,
-          & .e-rwg,
-          & .e-bwr,
-          & .e-rwb,
-          & .e-wr,
-          & .e-rw,
-          & .e-gw,
-          & .e-wg,
-          & .e-gy,
-          & .e-yg {
-            height: 40px;
-            width: 40px;
-          }
-
-          & .e-colorscale-icon {
-            background-position: center;
-            float: left;
-          }
-
-          & .e-cs1,
-          & .e-cs2,
-          & .e-cs3 {
-            display: flex;
-            height: 40px;
-            }
-          }
-        }
-      }
+    }
 
     &.e-popup.e-menu-popup.e-iconsets ul {
       min-width: 250px;
@@ -2666,7 +2588,6 @@
 
   .e-bigger .e-spreadsheet,
   .e-bigger.e-spreadsheet {
-
     @if $skin-name == 'FluentUI' {
       & .e-protect-dlg {
         height: 790px !important; // sass-lint:disable-line no-important
@@ -2678,18 +2599,30 @@
 
       & .e-merge-alert-dlg {
         height: 215px;
-      }
 
-      .e-filloption {
-        height: 40px;
-        width: 76px;
-      }
-
-      & .e-validation-list {
-        & .e-ddl-icon {
-          min-height: 0 !important; // sass-lint:disable-line no-important
-          min-width: 0 !important; // sass-lint:disable-line no-important
+        .e-dlg-content {
+          padding-bottom: 0;
         }
+      }
+
+      .e-validationerror-dlg .e-dlg-content {
+        padding-bottom: 0;
+      }
+
+      .e-spreadsheet-function-dlg {
+        height: 515px !important; // sass-lint:disable-line no-important
+      }
+    }
+
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+      & .e-validation-list .e-ddl-icon {
+        min-height: 0;
+        min-width: 0;
+        padding: 0;
+      }
+
+      & .e-findtool-dlg .e-dlg-content .e-find-toolbar .e-input {
+        width: calc(100% - 70px);
       }
     }
 
@@ -2839,7 +2772,7 @@
 
     & .e-customsort-dlg {
       width: 590px !important; // sass-lint:disable-line no-important
-      @if $skin-name == 'FluentUI' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
         width: 630px !important; // sass-lint:disable-line no-important
       }
     }
@@ -2861,6 +2794,7 @@
       & .e-footer-content {
         & .e-btn {
           font-size: 11px;
+          margin-top: 6px;
         }
       }
     }
@@ -2924,6 +2858,13 @@
   .e-bigger .e-dropdown-popup {
     &.e-font-size-ddb ul {
       min-width: 70px;
+    }
+
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+      &.e-dragfill-ddb ul,
+      &.e-numformat-ddb ul {
+        max-width: initial;
+      }
     }
   }
 

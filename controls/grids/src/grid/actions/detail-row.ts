@@ -104,7 +104,7 @@ export class DetailRow {
                         this.parent.renderTemplates();
                     } else {
                         appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID,
-                            undefined, undefined, undefined, this.parent['root']));
+                                                                            undefined, undefined, undefined, this.parent['root']));
                     }
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
@@ -134,7 +134,7 @@ export class DetailRow {
                     }
                     const gridElem: HTMLElement = this.parent.createElement('div', {
                         id: 'child' + parents(tr, 'e-grid').length +
-                        '_grid' + tr.rowIndex + getUid('')
+                        '_grid' + tr.rowIndex + getUid(''), className: 'e-childgrid'
                     });
                     detailCell.appendChild(gridElem);
                     childGrid.appendTo(gridElem);

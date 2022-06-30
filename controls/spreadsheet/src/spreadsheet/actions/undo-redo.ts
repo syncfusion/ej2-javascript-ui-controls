@@ -1,14 +1,17 @@
-import { Spreadsheet, locale, deleteImage, createImageElement, positionAutoFillElement, showAggregate, paste, undoRedoForChartDesign, cut, copy } from '../../spreadsheet/index';
-import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction } from '../common/index';
+import { Spreadsheet, locale, deleteImage, createImageElement, positionAutoFillElement, showAggregate, paste, undoRedoForChartDesign, cut, copy, activeSheetChanged } from '../../spreadsheet/index';
+import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction, BeforeActionDataInternal } from '../common/index';
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, ValidationModel, cellValidation, getIndexesFromAddress, getSheetNameFromAddress } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, cellValidation } from '../../workbook/index';
+import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, ValidationModel, getSwapRange } from '../../workbook/index';
+import { getIndexesFromAddress, getSheetNameFromAddress, updateSortedDataOnCell, getSheetIndexFromAddress } from '../../workbook/index';
+import { sortComplete, ConditionalFormatModel, ApplyCFArgs } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, replaceAll, applyCellFormat, CellFormatArgs } from '../../workbook/index';
 import { addClass, extend, isNullOrUndefined, isObject, L10n, select } from '@syncfusion/ej2-base';
 import { CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, isFilterHidden, getRowHeight } from '../../workbook/index';
-import { SortDescriptor, getColIndex, beginAction, ActionEventArgs, ChartModel } from '../../workbook/index';
+import { SortDescriptor, getColIndex, beginAction, ActionEventArgs, ConditionalFormat, updateCFModel, applyCF } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
  */
@@ -17,7 +20,7 @@ export class UndoRedo {
     private undoCollection: CollaborativeEditArgs[] = [];
     private redoCollection: CollaborativeEditArgs[] = [];
     private isUndo: boolean = false;
-    private beforeActionData: BeforeActionData;
+    private beforeActionData: BeforeActionDataInternal;
     private undoRedoStep: number = 100;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -87,8 +90,13 @@ export class UndoRedo {
             address = getRangeIndexes(eventArgs.address);
             break;
         }
-        cells = this.getCellDetails(address, sheet, args.action);
-        this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
+        if (args.action === 'beforeSort') {
+            this.beforeActionData = { cellDetails: eventArgs.cellDetails };
+            this.beforeActionData.sortedCellDetails = eventArgs.sortedCellDetails;
+        } else {
+            cells = this.getCellDetails(address, sheet, args.action);
+            this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
+        }
     }
 
     private getBeforeActionData(args: { beforeDetails: BeforeActionData }): void {
@@ -131,7 +139,6 @@ export class UndoRedo {
             switch (undoRedoArgs.action) {
             case 'cellSave':
             case 'format':
-            case 'sorting':
             case 'wrap':
             case 'cellDelete':
             case 'autofill':
@@ -139,6 +146,9 @@ export class UndoRedo {
             case 'hyperlink':
             case 'removeHyperlink':
                 undoRedoArgs = this.performOperation(undoRedoArgs, args.preventEvt, args.preventReSelect, args.isPublic);
+                break;
+            case 'sorting':
+                this.undoForSorting(undoRedoArgs, args.isUndo);
                 break;
             case 'clipboard':
                 undoRedoArgs = this.undoForClipboard(undoRedoArgs, args.isUndo, actionArgs);
@@ -181,6 +191,10 @@ export class UndoRedo {
                 break;
             case 'clear':
                 undoRedoArgs = this.performOperation(undoRedoArgs);
+                if (args.isUndo && undoRedoArgs.eventArgs.cfClearActionArgs) {
+                    updateAction(
+                        { action: 'clearCF', eventArgs: <UndoRedoEventArgs>undoRedoArgs.eventArgs.cfClearActionArgs }, this.parent, !args.isUndo);
+                }
                 break;
             case 'conditionalFormat':
                 updateAction(undoRedoArgs, this.parent, !args.isUndo, this.undoCollection);
@@ -228,6 +242,64 @@ export class UndoRedo {
                 }
             }
             this.parent.notify(refreshRibbonIcons, null);
+        }
+    }
+
+    private undoForSorting(args: CollaborativeEditArgs, isUndo: boolean): void {
+        const sheetIndex: number = getSheetIndexFromAddress(this.parent, args.eventArgs.range);
+        const range: number[] = getRangeIndexes(args.eventArgs.range);
+        const updateSortIcon: Function = (idx: number, add: boolean): void => {
+            if (sheetIndex === this.parent.activeSheetIndex) {
+                let td: Element = this.parent.getCell(range[0] - 1, this.parent.sortCollection[idx].columnIndex);
+                if (td) {
+                    td = select('.e-filter-icon', td);
+                    if (td) {
+                        add ? td.classList.add(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`) :
+                            td.classList.remove(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`);
+                    }
+                }
+            }
+        };
+        if (isUndo) {
+            this.parent.notify(updateSortedDataOnCell, { result: args.eventArgs.beforeActionData.cellDetails, range: range, sheet: getSheet(this.parent, sheetIndex),
+                 jsonData: (args.eventArgs.beforeActionData as BeforeActionDataInternal).sortedCellDetails, isUndo: true });
+            this.parent.notify(sortComplete, { range: args.eventArgs.range });
+            if (this.parent.sortCollection && args.eventArgs.previousSort) {
+                for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+                    if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
+                        updateSortIcon(i, false);
+                        this.parent.sortCollection.splice(i, 1);
+                        if (args.eventArgs.previousSort.order) {
+                            this.parent.sortCollection.splice(i, 0, args.eventArgs.previousSort);
+                            updateSortIcon(i, true);
+                        } else if (!this.parent.sortCollection.length) {
+                            this.parent.sortCollection = undefined;
+                        }
+                        break;
+                    }
+                }
+            }
+        } else {
+            updateAction(args, this.parent, true);
+            if (args.eventArgs.previousSort) {
+                let idx: number;
+                if (this.parent.sortCollection) {
+                    for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+                        if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
+                            updateSortIcon(i, false);
+                            idx = i; this.parent.sortCollection.splice(i, 1);
+                            break;
+                        }
+                    }
+                } else {
+                    this.parent.sortCollection = []; idx = 0;
+                }
+                this.parent.sortCollection.splice(
+                    idx, 0, { sortRange: args.eventArgs.range.split('!')[1], sheetIndex: sheetIndex, columnIndex:
+                        getColIndex((args.eventArgs.sortOptions.sortDescriptors as SortDescriptor).field), order:
+                        (args.eventArgs.sortOptions.sortDescriptors as SortDescriptor).order });
+                updateSortIcon(idx, true);
+            }
         }
     }
 
@@ -292,7 +364,7 @@ export class UndoRedo {
         const copiedInfo: { [key: string]: Object } = eventArgs.copiedInfo;
         const actionData: BeforeActionData = eventArgs.beforeActionData;
         const isFromUpdateAction: boolean = (args as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction;
-        const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex, isFromUpdateAction);
+        const isRefresh: boolean = sheetIndex === this.parent.activeSheetIndex;
         let pictureElem: HTMLElement;
         if (actionArgs) {
             (actionArgs as unknown as { isUndoRedo: boolean }).isUndoRedo = true;
@@ -349,9 +421,20 @@ export class UndoRedo {
                     this.updateCellDetails(
                         cells, getSheet(this.parent as Workbook, getSheetIndexFromId(this.parent as Workbook, <number>copiedInfo.sId)),
                         getSwapRange(copiedInfo.range as number[]), isRefresh, args);
+                    if (eventArgs.cfClearActionArgs) {
+                        updateAction({ action: 'clearCF', eventArgs: <UndoRedoEventArgs>eventArgs.cfClearActionArgs }, this.parent, false);
+                    }
                 }
                 if (actionData) {
                     this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args);
+                }
+                if (eventArgs.cfActionArgs) {
+                    eventArgs.cfActionArgs.cfModel.forEach((cf: ConditionalFormatModel): void => {
+                        updateAction(
+                            { eventArgs: <UndoRedoEventArgs>{ range: cf.range, type: cf.type, cFColor: cf.cFColor, value: cf.value,
+                                sheetIdx: eventArgs.cfActionArgs.sheetIdx, cancel: true }, action: 'conditionalFormat' }, this.parent,
+                                false);
+                    });
                 }
                 setMaxHgt(sheet, range[0], range[1], getRowHeight(sheet, range[0]));
                 const hgt: number = getMaxHgt(sheet, range[0]);
@@ -393,6 +476,8 @@ export class UndoRedo {
             if (isRefresh && !isFromUpdateAction) {
                 this.parent.notify(selectRange, { address: address[1] });
                 this.parent.notify(positionAutoFillElement, {});
+            } else {
+                this.checkRefreshNeeded(sheetIndex, isFromUpdateAction);
             }
         }
         return args;
@@ -446,18 +531,6 @@ export class UndoRedo {
         const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex, isFromUpdateAction);
         const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [range[0], range[1]], isUnique: false , uniqueRange: ''};
         this.parent.notify(checkUniqueRange, uniqueArgs);
-        const updateSortIcon: Function = (idx: number, add: boolean): void => {
-            if (sheetIndex === this.parent.activeSheetIndex) {
-                let td: Element = this.parent.getCell(range[0] - 1, this.parent.sortCollection[idx].columnIndex);
-                if (td) {
-                    td = select('.e-filter-icon', td);
-                    if (td) {
-                        add ? td.classList.add(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`) :
-                            td.classList.remove(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`);
-                    }
-                }
-            }
-        };
         if (this.isUndo) {
             if (uniqueArgs.isUnique && eventArgs.formula && eventArgs.formula.indexOf('UNIQUE') > - 1) {
                 const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
@@ -501,21 +574,6 @@ export class UndoRedo {
                     }
                 }
                 this.parent.notify(reApplyFormula, null);
-            }
-            if (args.action === 'sorting' && this.parent.sortCollection && eventArgs.previousSort) {
-                for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
-                    if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
-                        updateSortIcon(i, false);
-                        this.parent.sortCollection.splice(i, 1);
-                        if (eventArgs.previousSort.order) {
-                            this.parent.sortCollection.splice(i, 0, eventArgs.previousSort);
-                            updateSortIcon(i, true);
-                        } else if (!this.parent.sortCollection.length) {
-                            this.parent.sortCollection = undefined;
-                        }
-                        break;
-                    }
-                }
             }
         } else {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -611,25 +669,6 @@ export class UndoRedo {
                     }
                 }
             }
-            if (args.action === 'sorting' && eventArgs.previousSort) {
-                let idx: number;
-                if (this.parent.sortCollection) {
-                    for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
-                        if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
-                            updateSortIcon(i, false);
-                            idx = i; this.parent.sortCollection.splice(i, 1);
-                            break;
-                        }
-                    }
-                } else {
-                    this.parent.sortCollection = []; idx = 0;
-                }
-                this.parent.sortCollection.splice(
-                    idx, 0, { sortRange: address[1], sheetIndex: sheetIndex, columnIndex:
-                        getColIndex((eventArgs.sortOptions.sortDescriptors as SortDescriptor).field), order:
-                        (eventArgs.sortOptions.sortDescriptors as SortDescriptor).order });
-                updateSortIcon(idx, true);
-            }
         }
         if (args.action === 'autofill') {
             address[1] = this.isUndo ? args.eventArgs.dataRange : args.eventArgs.selectedRange;
@@ -666,8 +705,10 @@ export class UndoRedo {
         const len: number = cells.length;
         const triggerEvt: boolean = args && !preventEvt && (args.action === 'cellSave' || args.action === 'cellDelete' ||
             args.action === 'autofill' || args.action === 'clipboard');
-        let cellElem: HTMLElement; let prevCell: CellModel;
-        let select: boolean;
+        let cellElem: HTMLElement; let prevCell: CellModel; let select: boolean;
+        const cf: ConditionalFormat[] = args && !args.eventArgs.cfClearActionArgs && sheet.conditionalFormats &&
+            sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
+        const cfRule: ConditionalFormatModel[] = [];
         for (let i: number = 0; i < len; i++) {
             prevCell = getCell(cells[i].rowIndex, cells[i].colIndex, sheet, false, true);
             if (prevCell.style && args && (args.action === 'format' || args.action === 'clipboard')) {
@@ -691,7 +732,7 @@ export class UndoRedo {
                 }
             }
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
-                value: cells[i].value, format: cells[i].format, isLocked: cells[i].isLocked,
+                value: (cells[i].formula && cells[i].formula.toUpperCase().includes('UNIQUE')) ? null : cells[i].value, format: cells[i].format, isLocked: cells[i].isLocked,
                 style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
                 wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
                 colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink
@@ -722,7 +763,7 @@ export class UndoRedo {
                     cells[i].colIndex]);
                 cellElem = this.parent.getCell(cells[i].rowIndex, cells[i].colIndex);
                 if (args.eventArgs.type === 'Clear All' || args.eventArgs.type === 'Clear Hyperlinks') {
-                    this.parent.addHyperlink(cells[i].hyperlink, args.eventArgs.range);
+                    this.parent.addHyperlink(cells[i].hyperlink, args.eventArgs.range, cells[i].value);
                 } else if (args.eventArgs.type === 'Clear Formats') {
                     addClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
                 }
@@ -733,9 +774,15 @@ export class UndoRedo {
                         address: `${sheet.name}!${getCellAddress(cells[i].rowIndex, cells[i].colIndex)}`,
                         displayText: this.parent.getDisplayText(cells[i]) });
             }
+            if (cf) {
+                updateCFModel(cf, cfRule, cells[i].rowIndex, cells[i].colIndex);
+            }
         }
         if (isRefresh) {
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, false, false, true);
+            if (cfRule.length) {
+                this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: cfRule, isAction: true });
+            }
             if (select) { getUpdateUsingRaf((): void => this.parent.selectRange(sheet.selectedRange)); }
         }
     }

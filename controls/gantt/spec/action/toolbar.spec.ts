@@ -93,17 +93,6 @@ describe('Gantt toolbar support', () => {
             expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineEndDate, 'MM/dd/yyyy')).toBe('12/31/2017');
         });
 
-        it('Update handler function', () => {
-            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(2)') as HTMLElement;
-            triggerMouseEvent(taskName, 'dblclick');
-            let taskValue: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName'));
-            taskValue.value = 'Update TaskName';
-            let updateToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_update') as HTMLElement;
-            triggerMouseEvent(updateToolbar, 'click');
-            expect(getValue('TaskName', ganttObj.flatData[4])).toBe('Update TaskName');
-            ganttObj.selectionModule.clearSelection();
-        });
-
         it('Edit handler function', () => {
             ganttObj.selectionModule.selectRow(2);
             expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(1);
@@ -323,6 +312,62 @@ describe('Gantt toolbar support', () => {
             ganttObj.refresh();
             let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
             triggerMouseEvent(zoomIn, 'click');
+        });
+        it('Destroy method', () => {
+            ganttObj.toolbarModule.destroy();
+        });
+    });
+     describe('Gantt toolbar action', () => {
+        Gantt.Inject(Edit, Toolbar, Selection, Filter);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    allowSelection: true,
+                    allowFiltering: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                        segments: 'Segments'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Update handler function', () => {
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let taskValue: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName'));
+            if(taskValue) {
+            taskValue.value = 'Update TaskName';
+            let updateToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_update') as HTMLElement;
+            triggerMouseEvent(updateToolbar, 'click');
+            expect(getValue('TaskName', ganttObj.flatData[4])).toBe('Update TaskName');
+            ganttObj.selectionModule.clearSelection();
+            }
         });
         it('Destroy method', () => {
             ganttObj.toolbarModule.destroy();
@@ -554,6 +599,70 @@ describe('Gantt toolbar support', () => {
             expect(ganttObj.timelineModule.topTier == 'Week');
         });
     });
+    describe('Perform outdent in immutable mode', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: true  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                enableImmutableMode: true,
+                toolbar: ['Indent','Outdent'],
+                height: '550px',
+                allowUnscheduledTasks: true,
+                actionComplete: (args?: any) => {
+                    if(args.requestType == "refresh") {
+                        expect(ganttObj.currentViewData[17].level).toBe(3);
+                    }
+                },
+              //  connectorLineBackground: "red",
+              //  connectorLineWidth: 3,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Outdent performed', () => {
+            ganttObj.selectRow(15);
+            let outdent: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_outdent') as HTMLElement;
+            triggerMouseEvent(outdent, 'click');
+        });
+    });
     describe('Zoom To Fit - ', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
@@ -616,7 +725,7 @@ describe('Gantt toolbar support', () => {
             expect(date1).toBe(date2);
         });
     });
-    describe('Disable indent outdent', () => {
+     describe('Disable indent outdent', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt({

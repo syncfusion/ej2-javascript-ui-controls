@@ -496,7 +496,7 @@ export class EventBase {
     public removeSelectedAppointmentClass(): void {
         const selectedAppointments: Element[] = this.getSelectedAppointments();
         for (const appointment of selectedAppointments) {
-            appointment.setAttribute('aria-selected', 'false');
+            appointment.setAttribute('aria-pressed', 'false');
         }
         removeClass(selectedAppointments, cls.APPOINTMENT_BORDER);
         if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
@@ -506,7 +506,7 @@ export class EventBase {
 
     public addSelectedAppointments(cells: Element[]): void {
         for (const cell of cells) {
-            cell.setAttribute('aria-selected', 'true');
+            cell.setAttribute('aria-pressed', 'true');
         }
         if (this.parent.currentView !== 'MonthAgenda') {
             this.parent.removeSelectedClass();
@@ -857,7 +857,7 @@ export class EventBase {
         const exception: string = event[this.parent.eventFields.recurrenceException] as string;
         let maxCount: number;
         if (this.parent.currentView !== 'Agenda' && isMaxCount) {
-            maxCount = util.getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
+            maxCount = util.getDateCount(viewDate, this.parent.activeView.endDate()) + 1;
         }
         const newTimezone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
         const firstDay: number = this.parent.activeViewOptions.firstDayOfWeek;
@@ -1047,7 +1047,7 @@ export class EventBase {
             className: cls.BLOCK_APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.parent.eventFields.id],
-                'aria-readonly': 'true', 'aria-selected': 'false'
+                'aria-disabled': 'true', 'aria-pressed': 'false'
             }
         });
         let templateElement: HTMLElement[];
