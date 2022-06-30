@@ -33,7 +33,7 @@ Following list of components are available in the package
 : Tool for visualize data of high frequency circuit applications. It contains two sets of circles to plot parameters of transmission lines.
       *	[Getting started](https://ej2.syncfusion.com/documentation/smithchart/getting-started.html?lang=typescript)
       *	[View online demos](https://ej2.syncfusion.com/demos/#/material/smithchart/default.html)
-      
+
 ## Supported frameworks
  These components are available in following list of
   1. [Angular](https://github.com/syncfusion/ej2-ng-charts/?utm_source=npm&utm_campaign=chart)
@@ -141,7 +141,7 @@ Today, we provide 1700+ controls and frameworks for web ([ASP.NET Core](https://
 <hr style="height:0.3px;border:none;color:lightgrey;background-color:lightgrey;" />
 
 <p align="center">
-  <a href="mailto:sales@syncfusion.com?Subject=Syncfusion Angular Charts - Github Sample" target="_top">sales@syncfusion.com</a> | Toll Free: 1-888-9 DOTNET <br>
+  <a href="mailto:sales@syncfusion.com?Subject=Syncfusion JavaScript Charts - Github Sample" target="_top">sales@syncfusion.com</a> | Toll Free: 1-888-9 DOTNET <br>
 </p>
 
 © Copyright 2019 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
