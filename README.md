@@ -5,7 +5,7 @@
  </a>
 </h1>
 
-[<font size="3">NPM</font>](https://www.npmjs.com/package/@syncfusion/ej2)&nbsp;&nbsp;[![license](https://ej2.syncfusion.com/github/images/license.svg)](https://www.syncfusion.com/eula/es/)
+<a href="https://www.npmjs.com/package/@syncfusion/ej2">NPM</a>&nbsp;&nbsp;[![license](https://ej2.syncfusion.com/github/images/license.svg)](https://www.syncfusion.com/eula/es/)
 
 The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 65 high-performance, lightweight, modular, and responsive UI components in a single package.
 
@@ -14,33 +14,23 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
  *Screens of [showcase applications](#showcase-applications) created using Syncfusion Essential JS 2 UI controls*
  
 ## Table of Contents
-- [Table of Contents](#table-of-contents)
-- [Framework highlights](#framework-highlights)
-  - [Lightweight and user friendly](#lightweight-and-user-friendly)
-  - [Modular architecture](#modular-architecture)
-  - [Built for performance](#built-for-performance)
-  - [Responsive and touch friendly](#responsive-and-touch-friendly)
-  - [Stunning built-in themes](#stunning-built-in-themes)
-  - [Globalization simplified](#globalization-simplified)
-  - [Stay current](#stay-current)
-- [Control List](#control-list)
-  - [Grids](#grids)
-  - [Editors](#editors)
-  - [Dropdowns](#dropdowns)
-  - [Inputs](#inputs)
-  - [Data Visualization](#data-visualization)
-  - [Calendars](#calendars)
-  - [Navigation](#navigation)
-  - [Buttons](#buttons)
-  - [Layout](#layout)
-  - [Notification](#notification)
-  - [Forms](#forms)
-  - [Viewer](#viewer)
-- [Supported Frameworks](#supported-frameworks)
-- [Showcase Applications](#showcase-applications)
-- [Resources](#resources)
-- [Release Notes](#release-notes)
-- [License](#license)
+* [Framework highlights](#framework-highlights)
+* [Control list](#control-list)
+    * [Grids](#grids)
+    * [Editors](#editors)
+    * [Dropdowns](#dropdowns)
+    * [Data Visualization](#data-visualization)
+    * [Calendars](#calendars)
+    * [Navigation](#navigation)
+    * [Buttons](#buttons)
+    * [Layout](#layout)
+    * [Notification](#notification)
+    * [Viewer](#viewer)
+* [Resources](#resources)
+* [Supported Frameworks](#supported-frameworks)
+* [Showcase Applications](#showcase-applications)
+* [Release Notes](#release-notes)
+* [License](#license)
 
 ## Framework highlights
 ### Lightweight and user friendly
