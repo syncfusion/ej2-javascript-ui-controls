@@ -126,6 +126,23 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 ### Editors
 
 <table>
+     <tr>
+        <td>
+            <a href="https://www.syncfusion.com/javascript-ui-controls/js-in-place-editor?utm_medium=listing&utm_source=github"><b>In-place Editor</b></a>
+        </td>
+        <td>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-inplace-editor"><img src="https://ej2.syncfusion.com/github/images/npm.png" alt="npm package @syncfusion/ej2-inplace-editor" title="@syncfusion/ej2-inplace-editor" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-inplace-editor"><img src="https://ej2.syncfusion.com/badges/ej2-inplace-editor/coverage.svg" alt="code coverage of @syncfusion/ej2-inplace-editor" title="@syncfusion/ej2-inplace-editor" /></a>
+        </td>
+        <td>
+            <a href="controls/inplaceeditor/src">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos/#/material/inplace-editor/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/in-place-editor/getting-started/">Documentation</a>
+        </td>
+    </tr>
     <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-wysiwyg-rich-text-editor?utm_medium=listing&utm_source=github"><b>Rich Text Editor</b></a>
@@ -306,7 +323,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-color-picker?utm_medium=listing&utm_source=github"><b>Color Picker</b></a>
         </td>
-        <td rowspan="7">
+        <td rowspan="8">
             <a href="https://www.npmjs.com/package/@syncfusion/ej2-inputs"><img src="https://ej2.syncfusion.com/github/images/npm.png" alt="npm package @syncfusion/ej2-inputs" title="@syncfusion/ej2-inputs" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-inputs"><img src="https://ej2.syncfusion.com/badges/ej2-inputs/coverage.svg" alt="code coverage of @syncfusion/ej2-inputs" title="@syncfusion/ej2-inputs" /></a>
         </td>
         <td>
@@ -401,6 +418,20 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/textbox/getting-started/">Documentation</a>
+        </td>
+    </tr>
+     <tr>
+        <td>
+            <a href="https://www.syncfusion.com/javascript-ui-controls/Signature?utm_medium=listing&utm_source=github"><b>Signature</b></a>
+        </td>
+        <td>
+            <a href="controls/inputs/src/signature">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/javascript/demos/#/material/signature/default.html?utm_medium=listing&utm_source=github">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/signature/getting-started/?utm_medium=listing&utm_source=github">Documentation</a>
         </td>
     </tr>
 </table>
@@ -752,7 +783,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-accordion?utm_medium=listing&utm_source=github"><b>Accordion</b></a>
         </td>
-        <td rowspan="7">
+        <td rowspan="9">
             <a href="https://www.npmjs.com/package/@syncfusion/ej2-navigations"><img src="https://ej2.syncfusion.com/github/images/npm.png" alt="npm package @syncfusion/ej2-navigations" title="@syncfusion/ej2-navigations" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-navigations"><img src="https://ej2.syncfusion.com/badges/ej2-navigations/coverage.svg" alt="code coverage of @syncfusion/ej2-navigations" title="@syncfusion/ej2-navigations" /></a>
         </td>
         <td>
@@ -763,6 +794,34 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/accordion/getting-started/">Documentation</a>
+        </td>
+    </tr>
+     <tr>
+        <td>
+            <a href="https://www.syncfusion.com/javascript-ui-controls/breadcrumb?utm_medium=listing&utm_source=github"><b>Breadcrumb</b></a>
+        </td>
+        <td>
+            <a href="controls/navigations/src/breadcrumb">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos#/material/breadcrumb/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/breadcrumb/getting-started/">Documentation</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://www.syncfusion.com/javascript-ui-controls/carousel?utm_medium=listing&utm_source=github"><b>Carousel</b></a>
+        </td>
+        <td>
+            <a href="controls/navigations/src/carousel">Source</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/demos#/material/carousel/default.html">Live demo</a>
+        </td>
+        <td>
+            <a href="https://ej2.syncfusion.com/documentation/carousel/getting-started/">Documentation</a>
         </td>
     </tr>
     <tr>
@@ -1131,23 +1190,6 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 ### Forms
 
 <table>
-    <tr>
-        <td>
-            <a href="https://www.syncfusion.com/javascript-ui-controls/js-in-place-editor?utm_medium=listing&utm_source=github"><b>In-place Editor</b></a>
-        </td>
-        <td>
-            <a href="https://www.npmjs.com/package/@syncfusion/ej2-inplace-editor"><img src="https://ej2.syncfusion.com/github/images/npm.png" alt="npm package @syncfusion/ej2-inplace-editor" title="@syncfusion/ej2-inplace-editor" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-inplace-editor"><img src="https://ej2.syncfusion.com/badges/ej2-inplace-editor/coverage.svg" alt="code coverage of @syncfusion/ej2-inplace-editor" title="@syncfusion/ej2-inplace-editor" /></a>
-        </td>
-        <td>
-            <a href="controls/inplaceeditor/src">Source</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/inplace-editor/default.html">Live demo</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/documentation/in-place-editor/getting-started/">Documentation</a>
-        </td>
-    </tr>
     <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_medium=listing&utm_source=github"><b>Query Builder UI</b></a>
