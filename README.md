@@ -126,7 +126,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 ### Editors
 
 <table>
-     <tr>
+    <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-in-place-editor?utm_medium=listing&utm_source=github"><b>In-place Editor</b></a>
         </td>
@@ -420,12 +420,12 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="https://ej2.syncfusion.com/documentation/textbox/getting-started/">Documentation</a>
         </td>
     </tr>
-     <tr>
+    <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/Signature?utm_medium=listing&utm_source=github"><b>Signature</b></a>
         </td>
         <td>
-            <a href="controls/inputs/src/signature">Source</a>
+            <a href="controls/barcodegenerator/src">Source</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/javascript/demos/#/material/signature/default.html?utm_medium=listing&utm_source=github">Live demo</a>
@@ -796,7 +796,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="https://ej2.syncfusion.com/documentation/accordion/getting-started/">Documentation</a>
         </td>
     </tr>
-     <tr>
+    <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/breadcrumb?utm_medium=listing&utm_source=github"><b>Breadcrumb</b></a>
         </td>
@@ -1234,7 +1234,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 ## Supported Frameworks
 
 | [<img src="https://ej2.syncfusion.com/github/images/angular.svg" height="50" />](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/blazor.svg" height="50" />](https://www.syncfusion.com/blazor-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Blazor](https://www.syncfusion.com/blazor-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
-| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 
 ## Showcase Applications
 
