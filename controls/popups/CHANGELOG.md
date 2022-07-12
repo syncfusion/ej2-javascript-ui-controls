@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.2.38 (2022-07-12)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#FB35757` - Now, the issue with Content Security Policy is resolved when pasting the contents into the Rich Text Editor.
+
+- `#F175969` - Now, the dragging working properly when dynamically set the dialog header.
+
 ## 20.1.58 (2022-05-31)
 
 ### Popup

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.2.38 (2022-07-12)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- The selection is now properly working when using the selection mode of the pivot table.
+- The engine population events are now properly triggered during virtual scrolling.
+
 ## 20.2.36 (2022-06-30)
 
 ### Pivot Table

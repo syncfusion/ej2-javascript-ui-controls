@@ -24,7 +24,7 @@ export class ICalendarExport {
         const timeZone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
         const fields: EventFieldsMapping = this.parent.eventFields;
         eventsData.forEach((eventObj: Record<string, any>) => {
-            let uId: string = this.parent.eventBase.generateGuid();
+            let uId: string = eventObj[fields.id] || eventObj.Guid || this.parent.eventBase.generateGuid();
             const editedExDate: string[] = [];
             if (eventObj[fields.recurrenceID]) {
                 const filter: Record<string, any>[] =

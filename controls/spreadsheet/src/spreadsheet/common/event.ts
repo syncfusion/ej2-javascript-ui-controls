@@ -320,8 +320,6 @@ export const autoFill: string = 'autoFill';
 /** @hidden */
 export const fillRange: string = 'fillRange';
 /** @hidden */
-export const UnProtectWorksheet: string = 'UnProtectWorksheet';
-/** @hidden */
 export const hideAutoFillElement: string = 'hideAutoFillElement';
 /** @hidden */
 export const unProtectSheetPassword: string = 'unProtectSheetPassword';
@@ -339,3 +337,5 @@ export const refreshCheckbox: string = 'refreshCheckbox';
 export const renderInsertDlg: string = 'renderInsertDlg';
 /** @hidden */
 export const toggleFormulaBar: string = 'toggleFormulaBar';
+/** @hidden */
+export const toggleProtect: string = 'toggleProtect';

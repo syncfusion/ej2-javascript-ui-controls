@@ -678,9 +678,6 @@ export class KeyboardNavigation {
                 cont.scrollTop = offsetTopSize + getRowsHeight(sheet, paneTopLeftIdxes[0], actIdxes[0], true) - cont.getBoundingClientRect().height;
             } else {
                 cont.scrollTop = offsetTopSize + getRowHeight(sheet, skipHiddenIdx(sheet, paneTopLeftIdxes[0], true), true);
-                if (actIdxes[0] < skipHiddenIdx(sheet, sheet.rowCount - 1, false)) {
-                    this.parent.scrollModule.isKeyScroll = false;
-                }
             }
         } else if (topIdx > actIdxes[0]) {
             if (scrollToCell) {
@@ -696,9 +693,6 @@ export class KeyboardNavigation {
                 hCont.scrollLeft += getColumnsWidth(sheet, paneTopLeftIdxes[1], actIdxes[1], true) + hCont.getBoundingClientRect().width;
             } else {
                 hCont.scrollLeft += getColumnWidth(sheet, scrollLeftIdx, null, true) * x;
-                if (actIdxes[1] < scrollLeftIdx) {
-                    this.parent.scrollModule.isKeyScroll = false;
-                }
             }
         } else if (leftIdx > actIdxes[1] && hCont) {
             if (scrollToCell) {

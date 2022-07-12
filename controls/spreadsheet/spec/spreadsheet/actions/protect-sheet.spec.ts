@@ -41,7 +41,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 helper.click('.e-protect-dlg .e-primary');
                 expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
                 helper.invoke('selectRange', ['D4']);
@@ -49,8 +49,8 @@ describe('Protect sheet ->', () => {
                 // helper.editInUI('Test'); // This case need to be fixed
                 setTimeout(() => {
                     // expect(helper.getElementFromSpreadsheet('#' + helper.id + '_protect').textContent).toBe('Unprotect Sheet'); // Check this now
-                    // expect(helper.getElementFromSpreadsheet('.e-editAlert-dlg')).not.toBeNull(); // This case need to be fixed
-                    // helper.setAnimationToNone('.e-editAlert-dlg');
+                    // expect(helper.getElementFromSpreadsheet('.e-editAlert-dlg.e-dialog')).not.toBeNull(); // This case need to be fixed
+                    // helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
                     // helper.click('.e-editAlert-dlg .e-primary');
                     // expect(helper.invoke('getCell', [2, 3]).textContent).toBe('20');
                     done();
@@ -61,8 +61,8 @@ describe('Protect sheet ->', () => {
         it('Delete in locked cell', (done: Function) => {
             helper.triggerKeyNativeEvent(46);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-editAlert-dlg');
-                expect(helper.getElement('.e-editAlert-dlg')).not.toBeNull();
+                helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).not.toBeNull();
                 helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":"Item Name"}');
                 done();
@@ -74,7 +74,7 @@ describe('Protect sheet ->', () => {
             helper.invoke('selectRange', ['B2']);
             helper.triggerKeyNativeEvent(46);
             setTimeout(() => {
-                expect(helper.getElement('.e-editAlert-dlg')).toBeNull();
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[1])).toBe('{"format":"mm-dd-yyyy","isLocked":false}');
                 done();
             });
@@ -86,7 +86,7 @@ describe('Protect sheet ->', () => {
             expect(helper.getInstance().sheets[0].columns[3].isLocked).toBeFalsy();
             helper.triggerKeyNativeEvent(46);
             setTimeout(() => {
-                expect(helper.getElement('.e-editAlert-dlg')).toBeNull();
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
                 done();
             });
         });
@@ -94,7 +94,7 @@ describe('Protect sheet ->', () => {
         it('Protect workbook', (done: Function) => {
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
-                //helper.setAnimationToNone('.e-protectworkbook-dlg');
+                //helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
                 (helper.getElementFromSpreadsheet('.e-protectworkbook-dlg input') as HTMLInputElement).value = 'T1@/a';
                 (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'T1@/a';
                 helper.click('.e-protectworkbook-dlg .e-primary');
@@ -124,7 +124,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (document.getElementsByClassName('e-frame e-icons')[3] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[4] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[5] as HTMLElement).click();
@@ -149,7 +149,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (document.getElementsByClassName('e-frame e-icons')[0] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[2] as HTMLElement).click();
@@ -171,7 +171,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (document.getElementsByClassName('e-frame e-icons')[2] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[0] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[0] as HTMLElement).click();
@@ -194,7 +194,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (document.getElementsByClassName('e-frame e-icons')[3] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[4] as HTMLElement).click();
                 (document.getElementsByClassName('e-frame e-icons')[5] as HTMLElement).click();
@@ -218,7 +218,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.click('.e-protect-dlg .e-primary');
                 setTimeout(() => {
@@ -226,9 +226,9 @@ describe('Protect sheet ->', () => {
                     (helper.getElements('.e-reenterpwd-dlg .e-primary')[0] as HTMLInputElement).disabled = false;
                     helper.click('.e-reenterpwd-dlg .e-primary');
                     setTimeout(() => {
-                    var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[0] as HTMLElement).textContent;
-                    expect(btnText).toBe('Unprotect Sheet');
-                    done();
+                        var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[0] as HTMLElement).textContent;
+                        expect(btnText).toBe('Unprotect Sheet');
+                        done();
                     }, 10);
                 });
             },);
@@ -236,7 +236,7 @@ describe('Protect sheet ->', () => {
         it('Checking for unprotect sheet', (done: Function) => {
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-unprotectworksheet-dlg');
+                helper.setAnimationToNone('.e-unprotectworksheet-dlg.e-dialog');
                 (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 (helper.getElements('.e-unprotectworksheet-dlg .e-primary')[0] as HTMLInputElement).disabled = false;
                 helper.click('.e-unprotectworksheet-dlg .e-primary');
@@ -261,7 +261,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.click('.e-protect-dlg .e-primary');
                 setTimeout(() => {
@@ -290,7 +290,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.click('.e-protect-dlg .e-primary'); 
                 setTimeout(() => {
@@ -299,7 +299,7 @@ describe('Protect sheet ->', () => {
                     helper.click('.e-reenterpwd-dlg .e-primary');
                     helper.click('#' + helper.id + '_protect');
                     setTimeout(() => {
-                        helper.setAnimationToNone('.e-unprotectworksheet-dlg');
+                        helper.setAnimationToNone('.e-unprotectworksheet-dlg.e-dialog');
                         (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement).value = 'syncfusion1';
                         (helper.getElements('.e-unprotectworksheet-dlg .e-primary')[0] as HTMLInputElement).disabled = false;
                         helper.click('.e-unprotectworksheet-dlg .e-primary');
@@ -326,7 +326,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.click('.e-protect-dlg .e-primary');
                 setTimeout(() => {
@@ -356,7 +356,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.click('.e-protect-dlg .e-primary');
             setTimeout(() => {
@@ -381,7 +381,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.click('.e-protect-dlg .e-primary');
                 setTimeout(() => {
@@ -399,7 +399,7 @@ describe('Protect sheet ->', () => {
         it('Checking for keyup event for unprotect password dialog', (done: Function) => {
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-unprotectworksheet-dlg');
+                helper.setAnimationToNone('.e-unprotectworksheet-dlg.e-dialog');
                 (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-unprotectworksheet-dlg input')[0] as HTMLInputElement));
                 helper.click('.e-unprotectworksheet-dlg .e-primary');
@@ -426,7 +426,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protectworkbook-dlg');
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
                 (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                     (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'syncfusion';
                     (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
@@ -441,7 +441,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-unprotectworkbook-dlg');
+                helper.setAnimationToNone('.e-unprotectworkbook-dlg.e-dialog');
                 (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                 helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement));
                     (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
@@ -466,7 +466,7 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protectworkbook-dlg');
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
                 (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                     (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'syncfusion123';
                     (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
@@ -491,13 +491,13 @@ describe('Protect sheet ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protectworkbook-dlg');
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
                 (helper.getElements('.e-protectworkbook-dlg input')[0] as HTMLInputElement).value = 'syncfusion';
                     (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'syncfusion';
                     (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
                     helper.click('#' + helper.id + '_protectworkbook');
                     setTimeout(()=>{
-                        helper.setAnimationToNone('.e-unprotectworkbook-dlg');
+                        helper.setAnimationToNone('.e-unprotectworkbook-dlg.e-dialog');
                         (helper.getElements('.e-unprotectworkbook-dlg input')[0] as HTMLInputElement).value = 'syncfusion123';
                         (helper.getElements('.e-unprotectworkbook-dlg .e-primary')[0] as HTMLInputElement).disabled = false;
                         (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
@@ -536,7 +536,7 @@ describe('Protect sheet ->', () => {
                 helper.triggerMouseAction('dblclick', { x: cell.getBoundingClientRect().left + 2, y:
                     cell.getBoundingClientRect().top + 2 }, null, cell);
                 setTimeout((): void => {
-                    let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg');
+                    let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg.e-dialog');
                     expect(!!dialog).toBeTruthy();
                     expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                     const editor: HTMLElement = helper.getElement('#' + helper.id + '_edit');
@@ -557,7 +557,7 @@ describe('Protect sheet ->', () => {
                                 x: cell.getBoundingClientRect().left + 2, y: cell.getBoundingClientRect().top + 2
                             }, null, cell);
                             setTimeout((): void => {
-                                dialog = helper.getElement('.e-editAlert-dlg');
+                                dialog = helper.getElement('.e-editAlert-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
@@ -584,8 +584,8 @@ describe('Protect sheet ->', () => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('spreadsheet');
                 setTimeout((): void => {
-                    helper.setAnimationToNone('.e-editAlert-dlg');
-                    expect(helper.getElement('.e-editAlert-dlg')).not.toBeNull();
+                    helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
+                    expect(helper.getElement('.e-editAlert-dlg.e-dialog')).not.toBeNull();
                     helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
                     done();
                 });
@@ -600,10 +600,10 @@ describe('Protect sheet ->', () => {
                     setTimeout(() => {
                         helper.triggerKeyEvent('keydown', 65, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
                         setTimeout(() => {
-                            expect(helper.getElement('.e-editAlert-dlg')).toBeNull();
-                            helper.setAnimationToNone('.e-hyperlink-dlg');
+                            expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
+                            helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                             helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
-                            expect(helper.getElement('.e-hyperlink-dlg')).toBeNull();
+                            expect(helper.getElement('.e-hyperlink-dlg.e-dialog')).toBeNull();
                             done();
                         });
                     });
@@ -627,7 +627,7 @@ describe('Protect sheet ->', () => {
                 helper.triggerKeyEvent('keydown', 46, null, null, null, helper.invoke('getCell', [0, 0]));
                 expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('spreadsheet');
                 setTimeout((): void => {
-                    expect(helper.getElement('#' + helper.id + ' .e-editAlert-dlg')).toBeNull();
+                    expect(helper.getElement('#' + helper.id + ' .e-editAlert-dlg.e-dialog')).toBeNull();
                     done();
                 });
             });
@@ -886,7 +886,7 @@ describe('Protect sheet ->', () => {
                 helper.triggerMouseAction('dblclick', { x: td.getBoundingClientRect().left + 2, y:
                 td.getBoundingClientRect().top + 2 }, null, td);
                 setTimeout(() => {
-                    let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg');
+                    let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg.e-dialog');
                     expect(!!dialog).toBeTruthy();
                     expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                     helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
@@ -898,7 +898,7 @@ describe('Protect sheet ->', () => {
                         setTimeout(() => {
                             helper.click('.e-ddl.e-popup li:nth-child(1)');
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                                 done();
@@ -930,7 +930,7 @@ describe('Protect sheet ->', () => {
                     helper.invoke('selectRange', ['D4']);
                     helper.getElement('#' + helper.id + '_paste').click();
                     setTimeout(() => {
-                        let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg');
+                        let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg.e-dialog');
                         expect(!!dialog).toBeTruthy();
                         expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                         expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
@@ -987,7 +987,7 @@ describe('Protect sheet ->', () => {
                 setTimeout(() => {
                     helper.click('#' + helper.id + '_contextmenu li:nth-child(6)');
                     setTimeout(() => {
-                        expect(helper.getElementFromSpreadsheet('.e-dlg-container .e-unprotectworksheet-dlg')).not.toBeNull();
+                        expect(helper.getElementFromSpreadsheet('.e-dlg-container .e-unprotectworksheet-dlg.e-dialog')).not.toBeNull();
                         done();
                     });
                 });

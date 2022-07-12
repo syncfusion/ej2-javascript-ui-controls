@@ -4516,7 +4516,7 @@ export class WordExport {
                 let horizontalAlignment: string = table.positioning.horizontalAlignment.toLowerCase();
                 writer.writeAttributeString('w', 'tblpXSpec', this.wNamespace, horizontalAlignment);
             }
-            if (table.positioning.verticalAlignment) {
+            if (table.positioning.verticalAlignment && table.positioning.verticalAlignment !== 'None') {
                 let verticalAlignment: string = table.positioning.verticalAlignment.toLowerCase();
                 writer.writeAttributeString('w', 'tblpYSpec', this.wNamespace, verticalAlignment);
             }
@@ -4526,7 +4526,7 @@ export class WordExport {
                 let horizontalPosition: string = Math.round(table.positioning.horizontalPosition * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'tblpX', this.wNamespace, horizontalPosition);
             }
-            if (!table.positioning.verticalAlignment && table.positioning.verticalPosition > 0) {
+            if ((!table.positioning.verticalAlignment || table.positioning.verticalAlignment === 'None') && table.positioning.verticalPosition > 0) {
                 let verticalPosition: string = Math.round(table.positioning.verticalPosition * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'tblpY', this.wNamespace, verticalPosition);
             }

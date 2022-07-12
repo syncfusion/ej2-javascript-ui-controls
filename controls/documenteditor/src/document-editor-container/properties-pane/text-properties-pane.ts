@@ -104,6 +104,7 @@ export class TextProperties {
             this.paragraph.destroy();
             this.paragraph = undefined;
         }
+        this.container = undefined;
     }
 }
 

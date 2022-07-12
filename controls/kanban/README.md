@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-kanban/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-kanban)
+
 # ej2-kanban
 
 The Kanban Board is an efficient way to visualize workflow at each stage along its path to completion. The control supports necessary features to design task scheduling applications. The key features are swimlanes, customizable cards, binding from local and remote data sources, columns mapping, stacked headers, WIP validation, templating, responsiveness, filtering, and editing.

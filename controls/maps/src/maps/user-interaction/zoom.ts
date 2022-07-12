@@ -788,7 +788,7 @@ export class Zoom {
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Hide') {
                         if (scale > 1) {
-                            text = (this.zoomshapewidth['width'] >= zoomtextSize['width']) ? zoomtext : '';
+                            text = ((this.maps.dataLabelShape[l] * scale) >= zoomtextSize['width']) ? zoomtext : '';
                             element.innerHTML = text;
                         } else {
                             text = (this.maps.dataLabelShape[l] >= zoomtextSize['width']) ? zoomtext : '';
@@ -797,7 +797,7 @@ export class Zoom {
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Trim') {
                         if (scale > 1) {
-                            zoomtrimLabel = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            zoomtrimLabel = textTrim((this.maps.dataLabelShape[l] * scale), zoomtext, style);
                             text = zoomtrimLabel; element.innerHTML = text;
                         } else {
                             zoomtrimLabel = textTrim(this.maps.dataLabelShape[l], zoomtext, style);
@@ -830,7 +830,7 @@ export class Zoom {
                                     || textLocations['heightTop'] > this.intersect[j]['heightBottom']) {
                                     trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
                                     if (scale > 1) {
-                                        trimmedLable = textTrim(this.zoomshapewidth['width'], trimmedLable, style);
+                                        trimmedLable = textTrim((this.maps.dataLabelShape[l] * scale), trimmedLable, style);
                                     }
                                     element.innerHTML = trimmedLable;
                                 } else {
@@ -855,10 +855,11 @@ export class Zoom {
                         }
                         this.intersect.push(textLocations);
                         if (isNullOrUndefined(trimmedLable)) {
-                            trimmedLable = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            trimmedLable = textTrim((this.maps.dataLabelShape[l] * scale), zoomtext, style);
                             element.innerHTML = trimmedLable;
                         }
-                    } else {
+                    }
+                    if (animate || duration > 0) {
                         smoothTranslate(element, 0, duration, new MapLocation(labelX, labelY));
                     }
                 }

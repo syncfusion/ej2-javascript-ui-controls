@@ -57,6 +57,10 @@ export class WorkbookFormula {
      */
     public destroy(): void {
         this.removeEventListener();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((this.parent as any).refreshing) {
+            this.clearAllUniqueFormulaValue();
+        }
         this.calculateInstance.dispose();
         this.calculateInstance = null;
         this.parent = null;
@@ -172,10 +176,9 @@ export class WorkbookFormula {
                     this.parent.sheets[<number>args.sheetIndex].rows[<number>args.rowIndex].cells[<number>args.colIndex].value = '';
                 }
             }
-            this.refreshCalculate(
-                <number>args.rowIndex, <number>args.colIndex, <string>args.value,
-                <boolean>args.isFormula, <number>args.sheetIndex, <boolean>args.isRefreshing
-            );
+            args.isFormulaDependent = this.refreshCalculate(
+                <number>args.rowIndex, <number>args.colIndex, <string>args.value, <boolean>args.isFormula, <number>args.sheetIndex,
+                <boolean>args.isRefreshing);
             args.value = args.value ? args.value.toString().split('-*').join('-').split('/*').join('/').split('*/').
                 join('*').split('-/').join('-').split('*+').join('*').split('+*').join('+') : args.value;
             break;
@@ -223,14 +226,20 @@ export class WorkbookFormula {
             args.calcValue = this.calculateInstance.computeExpression(<string>args.formula);
             break;
         case 'registerGridInCalc':
-            this.calculateInstance.grid = <string>args.sheetID; break;
+            this.calculateInstance.grid = <string>args.sheetID;
+            break;
+        case 'dependentCellsAvailable':
         case 'checkFormulaAdded':
             // eslint-disable-next-line no-case-declarations
             const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(args.sheetId);
             if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
                 args.address = family.parentObjectToToken.get(args.sheetId) + args.address;
             }
-            args.added = this.calculateInstance.getFormulaInfoTable().has(<string>args.address);
+            if (action === 'checkFormulaAdded') {
+                args.added = this.calculateInstance.getFormulaInfoTable().has(<string>args.address);                
+            } else {
+                args.isAvailable = this.calculateInstance.getDependentCells().has(<string>args.address);
+            }
             break;
         }
     }
@@ -399,7 +408,11 @@ export class WorkbookFormula {
         args.range = this.calculateInstance.uniqueRange;
     }
 
-    private removeUniquecol(): void {
+    private removeUniquecol(args?: { clearAll: boolean }): void {
+        if (args && args.clearAll) {
+            this.clearAllUniqueFormulaValue();
+            return;
+        }
         const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = 0; i < this.calculateInstance.uniqueRange.length; i++) {
             const uniqRngAddress: string[] = this.calculateInstance.uniqueRange[i].split(':')[0].split('!');
@@ -417,10 +430,15 @@ export class WorkbookFormula {
         }
     }
     private refreshCalculate(
-        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): void {
+        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): boolean {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
         let sheetId: string = sheet.id + '';
         const sheetName: string = sheet.name;
+        const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
+        let cellRef: string = getColumnHeaderText(colIdx + 1) + (rowIdx + 1);
+        if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
+            cellRef = family.parentObjectToToken.get(sheetId) + cellRef;
+        }
         if (isFormula) {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
@@ -445,16 +463,10 @@ export class WorkbookFormula {
                 }
             }
         } else {
-            const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
-            let cellRef: string = getColumnHeaderText(colIdx + 1) + (rowIdx + 1);
-            if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
-                cellRef = family.parentObjectToToken.get(sheetId) + cellRef;
-            }
             if (this.calculateInstance.getFormulaInfoTable().has(cellRef)) {
                 this.calculateInstance.getFormulaInfoTable().delete(cellRef);
                 this.calculateInstance.clearFormulaDependentCells(cellRef);
             }
-            this.calculateInstance.getComputedValue().clear();
             this.calculateInstance.refresh(cellRef);
             this.calculateInstance.refreshRandValues(cellRef);
         }
@@ -476,6 +488,7 @@ export class WorkbookFormula {
                 }
             }
         }
+        return this.calculateInstance.getDependentCells().has(cellRef);
     }
 
     private dollarFormulaDecimalHandler(updatedCell: CellModel) {
@@ -785,6 +798,28 @@ export class WorkbookFormula {
         for (let i: number = range[0]; i <= range[2]; i++) {
             for (let j: number = range[1]; j <= range[3]; j++) {
                 delete getCell(i, j, sheet, false, true).value;
+            }
+        }
+    }
+
+    private clearAllUniqueFormulaValue(): void {
+        const ranges: string[] = this.calculateInstance.uniqueRange;
+        let uniqueAddr: string[]; let cell: CellModel; let sheet: SheetModel; let range: number[];
+        for (let i: number = 0; i < ranges.length; i++) {
+            uniqueAddr = ranges[i].split('!');
+            sheet = getSheet(this.parent, getSheetIndex(this.parent, uniqueAddr[0]));
+            range = getRangeIndexes(uniqueAddr[1]);
+            cell = getCell(range[0], range[1], sheet);
+            if (cell && cell.value === '#SPILL!') {
+                continue;
+            }
+            for (let j: number = range[0]; j <= range[2]; j++) {
+                for (let k: number = range[1]; k <= range[3]; k++) {
+                    cell = getCell(j, k, sheet);
+                    if (cell && cell.value) {
+                        delete cell.value;
+                    }
+                }
             }
         }
     }

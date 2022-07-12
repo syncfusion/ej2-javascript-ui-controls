@@ -1112,7 +1112,12 @@ export class BasicFormulas {
 
     public clearDependency(value: string): void {
         let actCell: string = this.parent.actCell;
-        actCell = actCell.indexOf('!') > - 1 ? actCell.split('!')[1] : actCell;
+        let actCellSheetName: string = '';
+        if (actCell.indexOf('!') > - 1) {
+            const actCellAddr: string[] = actCell.split('!');
+            actCell = actCellAddr[1];
+            actCellSheetName = actCellAddr[0] + '!';
+        }
         const actRowIdx: number = this.parent.rowIndex(actCell);
         const actColIdx: number = this.parent.colIndex(actCell);
         const j: number = value.indexOf(':');
@@ -1133,7 +1138,7 @@ export class BasicFormulas {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1, '', i, j);
                     this.parent.refresh('!' + this.parent.getSheetID(this.parent.grid) + '!' + getAlphalabel(j) + i, actCell);
-                    this.parent.actCell = actCell;
+                    this.parent.actCell = actCellSheetName + actCell;
                 }
             }
         }
@@ -2213,7 +2218,12 @@ export class BasicFormulas {
         if (argCount > 2) {
             for (let i: number = 0; i < argCount; i++) {
                 if (this.parent.isCellReference(argArr[i]) && argArr[i].indexOf(':') < 0) {
-                    return this.parent.getErrorStrings()[CommonErrors.ref];
+                    const argValue: string = this.parent.getValueFromArg(argArr[i]);
+                    if (this.parent.getErrorStrings().indexOf(argValue) > -1) {
+                        return this.parent.getErrorStrings()[CommonErrors.ref];
+                    } else {
+                        rangeArr[i] = argValue;
+                    }
                 }
                 if (this.parent.isCellReference(argArr[i])) {
                     rangeArr[i] = argArr[i];

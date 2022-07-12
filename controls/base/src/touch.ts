@@ -307,6 +307,10 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         diffX = Math.floor(diffX < 0 ? -1 * diffX : diffX);
         diffY = Math.floor(diffY < 0 ? -1 * diffY : diffX);
         this.isTouchMoved = diffX > 1 || diffY > 1;
+        const isFirefox: boolean = (/Firefox/).test(Browser.userAgent);
+        if (isFirefox && point.clientX === 0 && point.clientY === 0 && evt.type === 'mouseup') {
+            this.isTouchMoved = false;
+        }
         this.endPoint = point;
         this.calcPoints(evt);
         const swipeArgs: SwipeEventArgs = {

@@ -78,8 +78,15 @@ export class ICalendarImport {
                         break;
                     case 'UID':
                         curEvent[uId] = value;
-                        curEvent[fields.id] = typeof(id) === 'string' ? id + count.toString() : id + count;
-                        count++;
+                        if (typeof(id) == 'number') {
+                            curEvent[fields.id] = parseInt(value, 10);
+                            if (isNaN(curEvent[fields.id])) {
+                                curEvent[fields.id] = id + count;
+                                count++;
+                            }
+                        } else {
+                            curEvent[fields.id] = value;
+                        }
                         break;
                     case 'SUMMARY':
                         curEvent[fields.subject] = value;
@@ -116,6 +123,10 @@ export class ICalendarImport {
         const appoint: Record<string, any>[] = [];
         const uId: string = 'UID';
         const fields: EventFieldsMapping = this.parent.eventFields;
+        let appointmentIds: number[] = [];
+        this.parent.eventsData.forEach((eventObj: Record<string, any>) => {
+            appointmentIds.push(eventObj[fields.id]);
+        });
         app.forEach((eventObj: Record<string, any>) => {
             let parentObj: Record<string, any>;
             let id: string;
@@ -124,23 +135,25 @@ export class ICalendarImport {
                 parentObj = eventObj;
                 id = eventObj[fields.id] as string;
             }
-            const data: Record<string, any>[] = app.filter((data: Record<string, any>) => data.UID === eventObj[uId]);
-            if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
-                for (let i: number = 0; i < data.length; i++) {
-                    // eslint-disable-next-line no-prototype-builtins
-                    if (data[i].hasOwnProperty(fields.recurrenceID)) {
-                        const exdate: string = data[i][fields.recurrenceID] as string;
-                        data[i][fields.recurrenceID] = id;
-                        data[i][fields.recurrenceException] = null;
-                        parentObj[fields.recurrenceException] = (isNullOrUndefined(parentObj[fields.recurrenceException])) ?
-                            exdate : parentObj[fields.recurrenceException] + ',' + exdate;
-                        appoint.push(data[i]);
+            if (appointmentIds.indexOf(eventObj[fields.id]) < 0) {
+                const data: Record<string, any>[] = app.filter((data: Record<string, any>) => data.UID === eventObj[uId]);
+                if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
+                    for (let i: number = 0; i < data.length; i++) {
+                        // eslint-disable-next-line no-prototype-builtins
+                        if (data[i].hasOwnProperty(fields.recurrenceID)) {
+                            const exdate: string = data[i][fields.recurrenceID] as string;
+                            data[i][fields.recurrenceID] = id;
+                            data[i][fields.recurrenceException] = null;
+                            parentObj[fields.recurrenceException] = (isNullOrUndefined(parentObj[fields.recurrenceException])) ?
+                                exdate : parentObj[fields.recurrenceException] + ',' + exdate;
+                            appoint.push(data[i]);
+                        }
                     }
+                    appoint.push(parentObj);
+                    // eslint-disable-next-line no-prototype-builtins
+                } else if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
+                    appoint.push(eventObj);
                 }
-                appoint.push(parentObj);
-                // eslint-disable-next-line no-prototype-builtins
-            } else if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
-                appoint.push(eventObj);
             }
         });
         return appoint;

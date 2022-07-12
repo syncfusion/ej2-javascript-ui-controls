@@ -161,7 +161,7 @@ export class PdfViewerBase {
     /**
      * @private
      */
-    public isFreeTextSelected: boolean;
+    public isFreeTextSelected: boolean = false;
     /**
      * @private
      */
@@ -1964,7 +1964,7 @@ export class PdfViewerBase {
         if (Browser.isIE || Browser.info.name === 'edge') {
             documentId = decodeURI(window.sessionStorage.getItem('hashId'));
         } else {
-            documentId = window.sessionStorage.getItem('hashId');
+            documentId = proxy.hashId ? proxy.hashId : window.sessionStorage.getItem('hashId');
         }
         const documentLiveCount: string = window.sessionStorage.getItem('documentLiveCount');
         if (documentId !== null) {
@@ -3308,6 +3308,12 @@ export class PdfViewerBase {
                                 this.pdfViewer.toolbar.annotationToolbarModule.deselectAllItems();
                             }
                         }
+                        if (this.pdfViewer.isFormDesignerToolbarVisible && document.getElementById('FormField_helper_html_element')) {
+                            var formFieldElement = document.getElementById('FormField_helper_html_element');
+                            if (formFieldElement) {
+                                formFieldElement.remove();
+                            }
+                        }
                         this.pdfViewer.tool = '';
                         this.focusViewerContainer();
                     }
@@ -3532,7 +3538,7 @@ export class PdfViewerBase {
                     if (this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation && this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation.shapeAnnotationType === 'Image') {
                         canvas = new Rect(left, top, canvas1.width - 10, canvas1.height - 10);
                     } else {
-                        canvas = new Rect(left + 10, top + 10, canvas1.width - 10, canvas1.height - 10);
+                        canvas = new Rect(left + 1, top + 1, canvas1.width - 3, canvas1.height - 3);
                     }
                 }
             } else if (!this.pdfViewer.annotationModule && this.pdfViewer.formDesignerModule) {
@@ -4330,6 +4336,9 @@ export class PdfViewerBase {
         }
         this.diagramMouseUp(event);
         this.renderStampAnnotation(event);
+        if (!Browser.isDevice) {
+            this.focusViewerContainer();
+        }
     };
 
     private renderStampAnnotation(event: TouchEvent): void {
@@ -4343,13 +4352,15 @@ export class PdfViewerBase {
                     if (pageDiv) {
                         const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
                         // eslint-disable-next-line max-len
-                        if (Browser.isDevice && event.type === 'touchend' && this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation.shapeAnnotationType === 'Image') {
+                        if (event.type === 'touchend' && this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation.shapeAnnotationType === 'Image') {
                             let currentStampObj: any = this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation;
                             currentStampObj.pageIndex = pageIndex;
                             currentStampObj.bounds.x = (event.changedTouches[0].clientX - pageCurrentRect.left) / zoomFactor;
                             currentStampObj.bounds.y = (event.changedTouches[0].clientY - pageCurrentRect.top) / zoomFactor;
                             stampModule.updateDeleteItems(pageIndex, currentStampObj, currentStampObj.opacity);
                             this.pdfViewer.add(currentStampObj);
+                            let canvas : any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                            this.pdfViewer.renderDrawing(canvas, pageIndex);
                         } else {
                             // eslint-disable-next-line max-len
                             stampModule.renderStamp((event.changedTouches[0].clientX - pageCurrentRect.left) / zoomFactor, (event.changedTouches[0].clientY - pageCurrentRect.top) / zoomFactor, null, null, pageIndex, null, null, null, null);

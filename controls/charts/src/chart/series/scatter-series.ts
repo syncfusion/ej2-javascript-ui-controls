@@ -12,6 +12,8 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
 import { Axis, VisibleRangeModel } from '../../chart/axis/axis';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { BorderModel } from '../../common/model/base-model';
+import { ChartShape } from '../utils/enum';
 
 /**
  * `ScatterSeries` module is used to render the scatter series.
@@ -35,6 +37,9 @@ export class ScatterSeries {
         const getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         let startLocation: ChartLocation;
         const redraw: boolean = series.chart.redraw;
+        let scatterBorder: BorderModel = {
+            width: this.isLineShapeMarker(marker.shape) ? series.width : series.border.width,
+            color: this.isLineShapeMarker(marker.shape) ? series.interior : series.border.color };
         for (const point of visiblePoints) {
             startLocation = (redraw && point.symbolLocations) ? point.symbolLocations[0] : null;
             point.symbolLocations = []; point.regions = [];
@@ -42,7 +47,7 @@ export class ScatterSeries {
                 argsData = {
                     cancel: false, name: pointRender, series: series, point: point,
                     fill: series.setPointColor(point, series.interior),
-                    border: series.setBorderColor(point, { width: series.border.width, color: series.border.color }),
+                    border: series.setBorderColor(point, scatterBorder),
                     height: marker.height, width: marker.width, shape: marker.shape
                 };
                 series.chart.trigger(pointRender, argsData);
@@ -57,6 +62,11 @@ export class ScatterSeries {
                 }
             }
         }
+    }
+
+    private isLineShapeMarker(shape: ChartShape): boolean
+    {
+        return shape === 'HorizontalLine' || shape === 'VerticalLine';
     }
 
     /**

@@ -130,4 +130,26 @@ describe('Spreadsheet cell navigation module ->', () => {
             });
         });
     });
+    describe('EJ2-60990 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ showHeaders: false ,rowCount: 5 , selectedRange: 'C4:C4'}], scrollSettings: { isFinite: true } }, done);
+        });
+
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('When showheader is false and in finite mode, Keyboard navigation is not working', (done: Function) => {
+            helper.getElement().focus();
+            helper.triggerKeyNativeEvent(40);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('C5:C5');
+                helper.triggerKeyNativeEvent(38);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('C4:C4');
+                    done();
+                },10);
+            },50);
+        });
+    });
 });

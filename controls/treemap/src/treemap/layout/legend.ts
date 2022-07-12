@@ -114,8 +114,8 @@ export class TreeMapLegend {
             let startX: number = 0; let startY: number = 0; const shapePadding: number = legend.shapePadding;
             let rectWidth: number; let rectHeight: number; const itemTextStyle: FontModel = legend.textStyle;
             const legendLength: number = this.legendCollections.length;
-            legend.textStyle.size = treemap.themeStyle.legendFontSize || legend.textStyle.size;
-            legend.textStyle.fontFamily = treemap.themeStyle.fontFamily || legend.textStyle.fontFamily;
+            itemTextStyle.size = itemTextStyle.size || treemap.themeStyle.legendFontSize;
+            itemTextStyle.fontFamily = itemTextStyle.fontFamily || treemap.themeStyle.fontFamily; 
             if (legendMode === 'Default') {
                 legendWidth = (isNullOrUndefined(legendWidth)) ? treemap.areaRect.width : legendWidth;
                 legendHeight = (isNullOrUndefined(legendHeight)) ? treemap.areaRect.height : legendHeight;
@@ -126,7 +126,7 @@ export class TreeMapLegend {
                     if (isNullOrUndefined(this.totalPages[this.page])) {
                         this.totalPages[this.page] = { Page: (this.page + 1), Collection: [] };
                     }
-                    const legendTextSize: Size = measureText(legendItem['legendName'], legend.textStyle);
+                    const legendTextSize: Size = measureText(legendItem['legendName'], itemTextStyle);
                     this.textMaxWidth = Math.max(this.textMaxWidth, legendTextSize.width);
                     if (i === 0) {
                         startX = shapeX = (leftPadding + (shapeWidth / 2));
@@ -219,7 +219,6 @@ export class TreeMapLegend {
                     width: legendWidth, height: legendHeight
                 };
             } else {
-                const itemTextStyle: FontModel = legend.textStyle;
                 const legendLength: number = this.legendCollections.length;
                 const rectWidth: number = (orientation === 'Horizontal') ? (isNullOrUndefined(legendWidth)) ? (treemap.areaRect.width / legendLength) :
                     (legendWidth / legendLength) : (isNullOrUndefined(legendWidth)) ? defaultSize : legendWidth;

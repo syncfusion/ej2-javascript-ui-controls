@@ -258,7 +258,13 @@ export class Selection {
             }
             if (indeter > 0 || (checkChildRecords > 0 && checkChildRecords !== length)) {
                 record.checkboxState = 'indeterminate';
-            } else if (checkChildRecords === 0 && indeter === 0) {
+            }
+            else if (checkChildRecords === 0 && (!record.hasFilteredChildRecords || isNullOrUndefined(record.hasFilteredChildRecords)) && !isNullOrUndefined(this.parent['dataResults']['actionArgs']) &&
+            (this.parent['dataResults']['actionArgs'].requestType === 'searching' || this.parent['dataResults']['actionArgs'].requestType === 'filtering') && record.checkboxState === 'check') {
+                record.checkboxState = 'check';
+            }
+            else if ((checkChildRecords === 0 && indeter === 0) || (checkChildRecords === 0 && record.hasFilteredChildRecords && !isNullOrUndefined(this.parent['dataResults']['actionArgs']) &&
+            (this.parent['dataResults']['actionArgs'].requestType === 'searching' || this.parent['dataResults']['actionArgs'].requestType === 'filtering') && record.checkboxState === 'check' )) {
                 record.checkboxState = 'uncheck';
             } else {
                 record.checkboxState = 'check';

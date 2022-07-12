@@ -1961,3 +1961,45 @@ export function getGroupKeysAndFields(index: number, rowsObject: Row<Column>[]):
     }
     return { fields: fields, keys: keys };
 }
+
+// eslint-disable-next-line
+/**
+ *
+ * @param { number[][] } checkActiveMatrix - Defines matrix to check
+ * @param { number[] } checkCellIndex - Defines index to check
+ * @param { boolean } next - Defines select next or previous index
+ * @returns { number[] } - Returns next active current index
+ */
+export function findCellIndex(checkActiveMatrix: number[][], checkCellIndex: number[], next: boolean): number[] {
+    const activeMatrix: number[][] = checkActiveMatrix;
+    let cellIndex: number[] = checkCellIndex;
+    let currentCellIndexPass: boolean = false;
+    if (next) {
+        for (let i: number = cellIndex[0]; i < activeMatrix.length; i++) {
+            const rowCell: number[] = activeMatrix[i];
+            for (let j: number = 0; j < rowCell.length; j++) {
+                if (currentCellIndexPass && activeMatrix[i][j] === 1) {
+                    cellIndex = [i, j];
+                    return cellIndex;
+                }
+                if (!currentCellIndexPass && cellIndex.toString() === [i, j].toString()) {
+                    currentCellIndexPass = true;
+                }
+            }
+        }
+    } else {
+        for (let i: number = cellIndex[0]; i >= 0; i--) {
+            const rowCell: number[] = activeMatrix[i];
+            for (let j: number = rowCell.length - 1; j >= 0; j--) {
+                if (currentCellIndexPass && activeMatrix[i][j] === 1) {
+                    cellIndex = [i, j];
+                    return cellIndex;
+                }
+                if (!currentCellIndexPass && cellIndex.toString() === [i, j].toString()) {
+                    currentCellIndexPass = true;
+                }
+            }
+        }
+    }
+    return cellIndex;
+}

@@ -348,8 +348,8 @@ export class WParagraphFormat {
         }
         return documentHelper;
     }
-    private setPropertyValue(property: string, value: Object): void {
-        if (isNullOrUndefined(value) || value === '') {
+    private setPropertyValue(property: string, value: Object, clearProperty?:boolean): void {
+        if (isNullOrUndefined(value) || value === ''&& !clearProperty) {
             value = WParagraphFormat.getPropertyDefaultValue(property);
         }
         if (isNullOrUndefined(this.uniqueParagraphFormat)) {
@@ -450,6 +450,19 @@ export class WParagraphFormat {
         }
         return value;
     }
+    public clearIndent(): void {
+        this.clearPropertyValue('leftIndent');
+        this.clearPropertyValue('firstLineIndent');
+    }
+    public clearPropertyValue(property: string): void {
+        this.setPropertyValue(property, undefined, true);
+        if (!isNullOrUndefined(this.uniqueParagraphFormat)) {
+            let key: number = WUniqueFormat.getPropertyType(this.uniqueParagraphFormat.uniqueFormatType, property);
+            if (this.uniqueParagraphFormat.propertiesHash.containsKey(key)) {
+                this.uniqueParagraphFormat.propertiesHash.remove(key);
+            }
+        }
+    }
     public clearFormat(): void {
         if (!isNullOrUndefined(this.listFormat)) {
             this.listFormat.clearFormat();
@@ -523,6 +536,7 @@ export class WParagraphFormat {
             format.listFormat = undefined;
         } else {
             format.listFormat = this.listFormat.cloneListFormat();
+            format.listFormat.ownerBase = format;
         }
         format.borders = isNullOrUndefined(this.borders) ? undefined : this.borders.cloneFormat();
         return format;

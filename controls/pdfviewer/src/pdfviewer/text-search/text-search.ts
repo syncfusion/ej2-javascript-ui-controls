@@ -403,7 +403,7 @@ export class TextSearch {
                 }
             }
         }
-        if (this.pdfViewerBase.pageCount === (this.searchMatches && this.searchMatches.length)) {
+        if (this.pdfViewerBase.pageCount === (this.searchedPages && this.searchedPages.length)) {
             if (!this.isTextSearchEventTriggered) {
                 this.isTextSearchEventTriggered = true;
                 this.pdfViewer.fireTextSearchComplete(this.searchString, this.isMatchCase);

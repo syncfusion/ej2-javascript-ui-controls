@@ -218,13 +218,14 @@ export class Edit {
         this.parent.notify(initiateFormulaReference, { range: editValue, formulaSheetIdx: sheetIdx });
     }
 
-    private keyDownHandler(e: KeyboardEventArgs): void {
-        const trgtElem: HTMLElement = <HTMLElement>e.target; const keyCode: number = e.keyCode;
-        const sheet: SheetModel = this.parent.getActiveSheet(); const actCell: number[] = getCellIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
-        if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')
-            && !closest(e.target as Element, '.e-hyperlink-dlg')) {
-            if (!sheet.isProtected || closest(e.target as Element, '.e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1]))) {
+    private keyDownHandler(e: KeyboardEventArgs): void | boolean {
+        const trgtElem: HTMLElement = <HTMLElement>e.target;
+        const keyCode: number = e.keyCode;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const actCell: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
+        if (!closest(trgtElem, '.e-dialog')) {
+            if (!sheet.isProtected || trgtElem.classList.contains('e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1]))) {
                 if (this.isEdit) {
                     const editorElem: HTMLElement = this.getEditElement(sheet);
                     const isFormulaEdit: boolean = checkIsFormula(this.editCellData.value, true);
@@ -283,64 +284,66 @@ export class Edit {
                             break;
                         }
                     }
-                } else {
-                    if (!this.isEdit && (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel'))) {
-                        const isAlphabet: boolean = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET);
-                        const isNumeric: boolean = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
-                        const isNumpadKeys: boolean = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
-                        let isSymbolkeys: boolean = (keyCode >= this.keyCodes.SYMBOLSETONESTART &&
-                            keyCode <= this.keyCodes.SYMBOLSETONEEND);
-                        if (!isSymbolkeys) {
-                            isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
-                        }
-                        const isFirefoxExceptionkeys: boolean = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
-                            (keyCode === this.keyCodes.FIREFOXMINUS);
-                        const isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2);
-                        const isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
-                        if ((!e.ctrlKey && !e.metaKey && !e.altKey && (
-                            (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
-                            isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
-                        )) || isF2Edit || isBackSpace) {
-                            if (isF2Edit) { this.isNewValueEdit = false; }
-                            const pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
-                            const pictureLen: number = pictureElements.length;
-                            if (pictureLen > 0) {
-                                if (keyCode === this.keyCodes.DELETE) {
-                                    this.parent.notify(deleteImage, {
-                                        id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
-                                    });
-                                }
-                            } else { this.startEdit(null, null, true, true); }
-                        }
-                        if (keyCode === this.keyCodes.DELETE) {
-                            const islockcell: boolean = sheet.isProtected && isLockedCells(this.parent);
-                            if (!islockcell) { this.editingHandler('delete');
-                                this.parent.notify(activeCellChanged, null);
-                            } else {
-                                this.parent.notify(editAlert, null);
+                } else if (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel')) {
+                    if (keyCode === 13 && trgtElem.contentEditable === 'true') {
+                        e.preventDefault();
+                    }
+                    const key: string = String.fromCharCode(keyCode);
+                    const isAlphabet: boolean = (keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET) ||
+                        key.toLowerCase() !== key.toUpperCase();
+                    const isNumeric: boolean = (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER);
+                    const isNumpadKeys: boolean = (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD);
+                    let isSymbolkeys: boolean = (keyCode >= this.keyCodes.SYMBOLSETONESTART &&
+                        keyCode <= this.keyCodes.SYMBOLSETONEEND);
+                    if (!isSymbolkeys) {
+                        isSymbolkeys = (keyCode >= this.keyCodes.SYMBOLSETTWOSTART && keyCode <= this.keyCodes.SYMBOLSETTWOEND);
+                    }
+                    const isFirefoxExceptionkeys: boolean = (keyCode === this.keyCodes.FIREFOXEQUALPLUS) ||
+                        (keyCode === this.keyCodes.FIREFOXMINUS);
+                    const isF2Edit: boolean = (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2);
+                    const isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
+                    if ((!e.ctrlKey && !e.metaKey && !e.altKey && (
+                        (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
+                        isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
+                    )) || isF2Edit || isBackSpace) {
+                        if (isF2Edit) { this.isNewValueEdit = false; }
+                        const pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
+                        if (pictureElements.length) {
+                            if (keyCode === this.keyCodes.DELETE) {
+                                this.parent.notify(deleteImage, { id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1 });
                             }
+                        } else {
+                            this.startEdit(null, null, true, true);
+                            this.getEditElement(sheet).focus();
+                        }
+                    }
+                    if (keyCode === this.keyCodes.DELETE) {
+                        const islockcell: boolean = sheet.isProtected && isLockedCells(this.parent);
+                        if (!islockcell) {
+                            this.editingHandler('delete');
+                            this.parent.notify(activeCellChanged, null);
+                        } else {
+                            this.parent.notify(editAlert, null);
                         }
                     }
                 }
-            } else {
-                if (((keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET) ||
-                    (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER)
-                    || (keyCode === this.keyCodes.DELETE) || (keyCode === this.keyCodes.BACKSPACE) || (keyCode === this.keyCodes.SPACE)
-                    || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
-                    (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
-                    || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2))
-                    && (keyCode !== 67) && (keyCode !== 89) && (keyCode !== 90)) {
-                    if (sheet.protectSettings.insertLink && keyCode === 75) {
-                        return;
-                    }
-                    if (!this.parent.element.querySelector('.e-editAlert-dlg') && !e.ctrlKey && e.keyCode !== 70 &&
-                        !trgtElem.parentElement.classList.contains('e-unprotectpwd-content') &&
-                        !trgtElem.parentElement.classList.contains('e-password-content') &&
-                        !trgtElem.parentElement.classList.contains('e-sheet-password-content') &&
-                        !trgtElem.parentElement.classList.contains('e-unprotectsheetpwd-content') &&
-                        !trgtElem.parentElement.classList.contains('e-reenterpwd-content')) {
-                        this.parent.notify(editAlert, null);
-                    }
+            } else if (((keyCode >= this.keyCodes.FIRSTALPHABET && keyCode <= this.keyCodes.LASTALPHABET) ||
+                (keyCode >= this.keyCodes.FIRSTNUMBER && keyCode <= this.keyCodes.LASTNUMBER)
+                || (keyCode === this.keyCodes.DELETE) || (keyCode === this.keyCodes.BACKSPACE) || (keyCode === this.keyCodes.SPACE)
+                || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
+                (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
+                || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && !e.metaKey && keyCode === this.keyCodes.F2))
+                && (keyCode !== 67) && (keyCode !== 89) && (keyCode !== 90)) {
+                if (sheet.protectSettings.insertLink && keyCode === 75) {
+                    return;
+                }
+                if (!e.ctrlKey && e.keyCode !== 70 && !this.parent.element.querySelector('.e-editAlert-dlg') &&
+                    !trgtElem.parentElement.classList.contains('e-unprotectpwd-content') &&
+                    !trgtElem.parentElement.classList.contains('e-password-content') &&
+                    !trgtElem.parentElement.classList.contains('e-sheet-password-content') &&
+                    !trgtElem.parentElement.classList.contains('e-unprotectsheetpwd-content') &&
+                    !trgtElem.parentElement.classList.contains('e-reenterpwd-content')) {
+                    this.parent.notify(editAlert, null);
                 }
             }
         }
@@ -742,6 +745,7 @@ export class Edit {
     private initiateEditor(refreshCurPos: boolean): void {
         const data: Promise<Map<string, CellModel>> = this.parent.getData(this.editCellData.fullAddr);
         data.then((values: Map<string, CellModel>): void => {
+            if (!this.parent) { return; }
             (values as Map<string, CellModel>).forEach((cell: CellModel): void => {
                 const args: { [key: string]: CellModel | string } = { cell: cell, value: cell ? cell.value : '' };
                 this.parent.notify(getFormattedBarText, args);
@@ -886,12 +890,13 @@ export class Edit {
             this.editCellData.value && this.editCellData.value.toString().indexOf('UNIQUE') > - 1 && isUniqueRange) {
                 this.updateUniqueRange('');
             }
-            this.parent.notify(
-                workbookEditOperation, { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
+            const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
+                address: this.editCellData.addr, value: this.editCellData.value };
+            this.parent.notify(workbookEditOperation, evtArgs);
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(
-                    applyCF, <ApplyCFArgs>{ indexes: [this.editCellData.rowIndex, this.editCellData.colIndex, this.editCellData.rowIndex,
-                        this.editCellData.colIndex], isAction: true });
+                    applyCF, <ApplyCFArgs>{ indexes: [this.editCellData.rowIndex, this.editCellData.colIndex], isAction: true,
+                        refreshAll: evtArgs.isFormulaDependent });
             }
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
             const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);

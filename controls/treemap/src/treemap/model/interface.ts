@@ -544,6 +544,10 @@ export interface IThemeStyle {
      */
     fontSize?: string;
     /**
+     * Defines the font size of the texts in the subtitle of the TreeMap, supporting the theme.
+     */
+     subtitleFontSize?: string;
+    /**
      * Defines the font size of the legend texts in the treemap, supporting the theme.
      */
     legendFontSize?: string;

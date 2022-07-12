@@ -1285,5 +1285,6 @@ export class SpellChecker {
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             localStorage.removeItem(this.uniqueKey);
         }
+        this.documentHelper = undefined;
     }
 }

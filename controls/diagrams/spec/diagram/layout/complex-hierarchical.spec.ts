@@ -4205,7 +4205,8 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
             var connectorpath6 = document.getElementById("connector6_path_groupElement");
             var connectorpath4 = document.getElementById("connector4_path_groupElement");
             expect(connectorpath6.children[0].getAttribute("d") === "M0,9 L0,0 L352,0 L352,299 L148.5,299 L148.5,283.5 ").toBe(true);
-            expect(connectorpath4.children[0].getAttribute("d") === "M17.25,9 L17.25,0 L282.67,0 L282.67,299 L0,299 L0,291 L0,291 L0,287 L0,287 L0.15,283.5 ").toBe(true);
+            expect(connectorpath4.children[0].getAttribute("d") === "M17.25,9 L17.25,0 L282.67,0 L282.67,299 L0,299 L0,291 L0,291 L0,287 L0,287 L0.15,283.5 " || 
+                connectorpath4.children[0].getAttribute("d") === "M0,9 L0,0 L265.42,0 L265.42,306 L6.09,306 L6.09,291 L6.09,291 L6.09,287 L6.09,287 L5.94,283.5 " ).toBe(true);
             diagram.layout.orientation = "LeftToRight";
             diagram.dataBind();
             var connectorpath6 = document.getElementById("connector6_path_groupElement");
@@ -4217,7 +4218,8 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
             var connectorpath6 = document.getElementById("connector6_path_groupElement");
             var connectorpath4 = document.getElementById("connector4_path_groupElement");
             expect(connectorpath6.children[0].getAttribute("d") === "M9,0 L0,0 L0,333 L299,333 L299,148.5 L283.5,148.74 ").toBe(true);
-            expect(connectorpath4.children[0].getAttribute("d") === "M9,17.25 L0,17.25 L0,263.67 L299,263.67 L299,0 L291,0 L291,0 L287,0 L287,0 L283.5,0.37 ").toBe(true);
+            expect(connectorpath4.children[0].getAttribute("d") === "M9,17.25 L0,17.25 L0,263.67 L299,263.67 L299,0 L291,0 L291,0 L287,0 L287,0 L283.5,0.37 " ||
+                connectorpath4.children[0].getAttribute("d") === "M9,0 L0,0 L0,246.42 L306,246.42 L306,6.09 L291,6.09 L291,6.09 L287,6.09 L287,6.09 L283.5,6.16 ").toBe(true);
             diagram.layout.horizontalSpacing = 60;
             diagram.layout.verticalSpacing = 60;
             diagram.dataBind();
@@ -4236,7 +4238,8 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
             console.log("//code added"+connectorpath6.children[0].getAttribute("d"))//code added
             //expect(connectorpath6.children[0].getAttribute("d") === "M40,0 L0,0 L0,549 L450,549 L450,244.5 L410.5,244.75 ").toBe(true);
             expect(connectorpath6.children[0].getAttribute("d") === "M9,0 L0,0 L0,549 L419,549 L419,244.5 L379.5,244.75 "||connectorpath6.children[0].getAttribute("d") === "M40,0 L0,0 L0,549 L450,549 L450,244.5 L410.5,244.75 ").toBe(true);
-            expect(connectorpath4.children[0].getAttribute("d") === "M9,17.25 L0,17.25 L0,431.67 L419,431.67 L419,0 L399,0 L399,0 L389,0 L389,0 L379.5,0.4 ").toBe(true);
+            expect(connectorpath4.children[0].getAttribute("d") === "M9,17.25 L0,17.25 L0,431.67 L419,431.67 L419,0 L399,0 L399,0 L389,0 L389,0 L379.5,0.4 " ||
+                connectorpath4.children[0].getAttribute("d") === "M9,0 L0,0 L0,414.42 L419,414.42 L419,6.09 L399,6.09 L399,6.09 L389,6.09 L389,6.09 L379.5,6.17 ").toBe(true);
             diagram.layout.horizontalAlignment = "Right";
             diagram.dataBind();
             done();
@@ -5803,6 +5806,8 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
 
 
     // });
+
+  
 
 
 });

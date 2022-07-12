@@ -1,0 +1,31 @@
+//layout variables
+$btn-grp-margin: -1px !default;
+$btn-grp-margin-left: -1px !default;
+$btn-grp-wrapper-border: 4px !default;
+$btn-grp-round-radius: 20px !default;
+$btn-grp-icon-font-size: 18px !default;
+$btn-grp-icon-font-size-bigger: 22px !default;
+
+//Normal Outline GroupButton
+$btn-grp-outline-focus-border-color: $secondary-border-color !default;
+$btn-grp-outline-focus-color: inherit !default;
+
+//Outline Primary
+$btn-grp-outline-primary-focus-border-color: $primary !default;
+$btn-grp-outline-focus-primary-color: inherit !default;
+
+//Outline Success
+$btn-grp-outline-success-focus-border-color: $btn-success-focus-border-color !default;
+$btn-grp-outline-focus-success-color: inherit !default;
+
+//Outline Info
+$btn-grp-outline-info-focus-border-color: $btn-info-focus-border-color !default;
+$btn-grp-outline-focus-info-color: inherit !default;
+
+//Outline warning
+$btn-grp-outline-warning-focus-border-color: $btn-warning-focus-border-color !default;
+$btn-grp-outline-focus-warning-color: inherit !default;
+
+//Outline danger
+$btn-grp-outline-danger-focus-border-color: $btn-danger-focus-border-color !default;
+$btn-grp-outline-focus-danger-color: inherit !default;

@@ -605,6 +605,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
                 } else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
                     leftValue = POINTER_ADJUST + 'px';
+                }else if((tipPosExclude)&&(this.tipPointerPosition === 'End'||this.tipPointerPosition === 'Start')){
+                    leftValue = (this.tipPointerPosition==='End')?((target.offsetWidth +((this.tooltipEle.offsetWidth-target.offsetWidth)/2))-(tipWidth/2))-POINTER_ADJUST + 'px': ((this.tooltipEle.offsetWidth-target.offsetWidth)/2)-(tipWidth/2)+POINTER_ADJUST+ 'px';
                 } else {
                     leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
                 }

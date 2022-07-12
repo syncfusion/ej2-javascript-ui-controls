@@ -4,10 +4,11 @@ import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
 import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
-import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect, UnProtectWorksheet } from '../common/index';
+import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
 import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel} from '../../workbook/common/index';
 import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow } from '../../workbook/index';
+import { toggleProtect } from '../common/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -196,14 +197,7 @@ export class ContextMenu {
                 this.parent.notify(removeHyperlink, { range: this.parent.getActiveSheet().selectedRange });
                 break;
             case id + '_protect':
-                sheet = this.parent.getActiveSheet();
-                if (sheet.isProtected && sheet.password && sheet.password.length > 0) {
-                    this.parent.notify(UnProtectWorksheet, null);
-                } else {
-                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
-                    isActive = sheet.isProtected ? false : true;
-                    this.parent.notify(applyProtect, { isActive: isActive, sheetIndex: this.parent.activeSheetIndex, triggerEvent: true });
-                }
+                this.parent.notify(toggleProtect, {});
                 break;
             }
         }

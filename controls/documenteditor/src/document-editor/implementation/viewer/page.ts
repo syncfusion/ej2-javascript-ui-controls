@@ -1669,10 +1669,22 @@ export class TableWidget extends BlockWidget {
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         else if (!isNullOrUndefined(cell)) {
-            cellWidth = cell.getMinimumPreferredWidth();
+            cellWidth = this.getMinimumPreferredWidth(cell);
         }
         return cellWidth;
     }
+
+    private getMinimumPreferredWidth(cell: TableCellWidget): number {
+        let defaultWidth: number = 0;
+        ////For fixed table, cell width (grid column width) should be considered as default width, When the preferred cell width is zero.
+        if (cell.cellFormat.preferredWidth === 0 && cell.cellFormat.cellWidth !== 0) {
+            defaultWidth = cell.cellFormat.cellWidth;
+        } else {
+            defaultWidth = cell.getMinimumPreferredWidth();
+        }
+        return defaultWidth;
+    }
+
     /**
      * @private
      */
@@ -8370,10 +8382,22 @@ export class WTableHolder {
                 // If Previous column offset + current column preferred width is less than current column offset, 
                 // Then current column preferred width is set to current column offset - previous column offset.
                 if (this.columns[i - 1].endOffset + this.columns[i].preferredWidth < this.columns[i].endOffset) {
-                    this.columns[i].preferredWidth = this.columns[i].endOffset - this.columns[i - 1].endOffset;
+                    if (this.columns[i - 1].endOffset === 0) {
+                        this.columns[i].preferredWidth = this.columns[i].endOffset - this.getPreviousValidOffset(i - 2);
+                    } else {
+                        this.columns[i].preferredWidth = this.columns[i].endOffset - this.columns[i - 1].endOffset;
+                    }
                 }
             }
         }
+    }
+    private getPreviousValidOffset(columnIndex: number): number {
+        for (let j = columnIndex; j >= 0; j--) {
+            if (this.columns[j].endOffset !== 0) {
+                return this.columns[j].endOffset;
+            }
+        }
+        return 0;
     }
     /**
      * @private

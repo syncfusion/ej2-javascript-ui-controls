@@ -442,3 +442,38 @@ console.log('Footer overlap validation');
         expect(editor.documentHelper.pages[0].footerWidget.y.toFixed()).toBe('990');
     });
 });
+
+describe('Protect and unprotect document with password empty string', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, enableBookmarkDialog: true, isReadOnly: false, enableContextMenu: true, enableFontDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('Protect document with empty string', () => {
+console.log('Protect document with empty string');
+       editor.editor.enforceProtection('', 'ReadOnly');
+       expect(editor.documentHelper.isDocumentProtected).toBe(true);
+    });
+    it('Unprotect document', () => {
+console.log('Unprotect document');
+        editor.editor.stopProtection('');
+        expect(editor.documentHelper.isDocumentProtected).toBe(false);
+    });
+});

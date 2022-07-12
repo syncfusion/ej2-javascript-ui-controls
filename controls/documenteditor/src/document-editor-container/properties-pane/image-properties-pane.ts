@@ -186,11 +186,15 @@ export class ImageProperties {
         this.container = undefined;
         if (this.widthNumericBox) {
             this.widthNumericBox.destroy();
-            this.widthNumericBox = undefined;
         }
+        this.widthNumericBox = undefined;
         if (this.heightNumericBox) {
             this.heightNumericBox.destroy();
-            this.heightNumericBox = undefined;
         }
+        this.heightNumericBox = undefined;
+        if (this.aspectRatioBtn) {
+            this.aspectRatioBtn.destroy();
+        }
+        this.aspectRatioBtn = undefined;
     }
 }

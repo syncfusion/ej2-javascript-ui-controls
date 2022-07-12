@@ -291,4 +291,15 @@ export class FormFieldPopUp {
             this.popupObject = undefined;
         }
     };
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        if (this.formField) {
+            this.formField.destroy();
+        }
+        this.formField = undefined;
+        this.owner = undefined;
+    }
 }

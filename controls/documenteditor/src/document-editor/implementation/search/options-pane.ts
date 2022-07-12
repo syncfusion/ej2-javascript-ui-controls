@@ -1141,6 +1141,7 @@ export class OptionsPane {
         }
         this.focusedElement = undefined;
         this.destroyInternal();
+        this.documentHelper = undefined;
     }
     /**
      * Dispose the internal objects which are maintained.

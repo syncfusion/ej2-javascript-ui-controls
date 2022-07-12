@@ -1465,6 +1465,87 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('Editor changed window validation', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const template: string = '<table class="custom-event-editor" width="100%" cellpadding="5"><tbody>' +
+                '<tr><td class="e-textlabel">Summary</td><td colspan="4"><input id="Subject" class="e-field e-input" type="text" value="" ' +
+                'name="Subject" style="width: 100%"/></td></tr><tr><td class="e-textlabel">Status</td> <td colspan="4">' +
+                '<input type="text" id="EventType" name="EventType" class="e-field" style="width: 100%" /> ' +
+                '</td></tr><tr><td class="e-textlabel">From</td><td ' +
+                'colspan="4"><input id="StartTime" class="e-field" type="text" name="StartTime"/></td></tr><tr><td class="e-textlabel">To' +
+                '</td><td colspan="4"><input id="EndTime" class="e-field" type="text" name="EndTime"/></td></tr><tr><td class="e-textlabel">Reason</td><td colspan="4">' +
+                '<textarea id="Description" class="e-field e-input" name="Description" rows="3" cols="50"' +
+                'style="width: 100%; height: 60px !important; resize: vertical"></textarea></td></tr></tbody></table>';
+            const onPopupOpen: EmitType<PopupOpenEventArgs> = (args: PopupOpenEventArgs) => {
+                if (args.type === 'Editor') {
+                    let formElement: HTMLElement = <HTMLElement>args.element.querySelector('.e-schedule-form');
+                    let statusElement: HTMLInputElement = args.element.querySelector('#EventType') as HTMLInputElement;
+                    if (!statusElement.classList.contains('e-dropdownlist')) {
+                        let dropDownListObject: DropDownList = new DropDownList({
+                            placeholder: 'Choose status', value: statusElement.value,
+                            dataSource: ['New', 'Requested', 'Confirmed']
+                        });
+                        dropDownListObject.appendTo(statusElement);
+                    }
+                    let validator: FormValidator = ((formElement as EJ2Instance).ej2_instances[0] as FormValidator);
+                    validator.addRules('EventType', { required: true });
+                    let startElement: HTMLInputElement = args.element.querySelector('#StartTime') as HTMLInputElement;
+                    if (!startElement.classList.contains('e-datetimepicker')) {
+                        new DateTimePicker({ value: new Date(startElement.value) || new Date() }, startElement);
+                    }
+                    let endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
+                    if (!endElement.classList.contains('e-datetimepicker')) {
+                        new DateTimePicker({ value: new Date(endElement.value) || new Date() }, endElement);
+                    }
+                }
+            };
+
+            const model: ScheduleModel = {
+                editorTemplate: template, popupOpen: onPopupOpen, height: '500px',
+                currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1)
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('event window validation checking with save', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            expect((schObj.eventWindow.dialogObject.element.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('This field is required.');
+            const cancelButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement;
+            cancelButton.click();
+        });
+
+        it('event window changed validation checking with save', () => {
+            schObj.editorTemplate = '<table class="custom-event-editor" width="100%" cellpadding="5"><tbody>' +
+                '<tr><td class="e-textlabel">Summary</td><td colspan="4"><input id="Subject" class="e-field e-input" type="text" value="" ' +
+                'name="Subject" style="width: 100%"/></td></tr><tr><td class="e-textlabel">Status</td> <td colspan="4">' +
+                '<input type="text" id="EventType" name="EventType" class="e-field" style="width: 100%" /> ' +
+                '</td></tr><tr><td class="e-textlabel">From</td><td ' +
+                'colspan="4"><input id="StartTime" class="e-field" type="text" name="StartTime"/></td></tr><tr><td class="e-textlabel">To' +
+                '</td><td colspan="4"><input id="EndTime" class="e-field" type="text" name="EndTime"/></td></tr><tr><td class="e-textlabel">Reason</td><td colspan="4">' +
+                '<textarea id="Description" class="e-field e-input" name="Description" rows="3" cols="50"' +
+                'style="width: 100%; height: 60px !important; resize: vertical"></textarea></td></tr></tbody></table>'
+            schObj.dataBind();
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            expect((schObj.eventWindow.dialogObject.element.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('This field is required.');
+            const cancelButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement;
+            cancelButton.click();
+        });
+    });
+
     describe('Editor window validation', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

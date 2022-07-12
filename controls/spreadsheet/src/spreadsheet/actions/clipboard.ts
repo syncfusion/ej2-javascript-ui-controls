@@ -18,6 +18,7 @@ import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLock
 import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
 import { updateCell, ModelType, beginAction, isFilterHidden, applyCF, CFArgs, ApplyCFArgs } from '../../workbook/index';
+import { removeUniquecol } from '../../workbook/common/event';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -400,6 +401,9 @@ export class Clipboard {
                                     if (curSheet.isProtected && cell && cell.isLocked !== false) {
                                         cell.isLocked = prevCell.isLocked;
                                     }
+                                    if (prevCell && prevCell.formula && prevCell.formula.indexOf('=UNIQUE(') > -1) {
+                                        this.parent.notify(removeUniquecol, null);
+                                    }
                                     const args: { cellIdx: number[], isUnique: boolean, uniqueRange: string, sheetName: string } = {
                                         cellIdx: [i, j], isUnique: false, uniqueRange: '', sheetName: prevSheet.name
                                     };
@@ -489,10 +493,8 @@ export class Clipboard {
                     const hgt: number = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
                 }
-                if (cf.length) {
-                    this.parent.notify(
-                        applyCF, <ApplyCFArgs>{ cfModel: cf, sheetIdx: cSIdx, otherSheets: cSIdx !== this.parent.activeSheetIndex,
-                            isAction: true });
+                if (cf.length && cSIdx === this.parent.activeSheetIndex) {
+                    this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: cf, isAction: true });
                 }
                 const copySheet: SheetModel = getSheet(this.parent as Workbook, copiedIdx);
                 if (!isExternal && cIdx[0] === cIdx[2] && (cIdx[3] - cIdx[1]) === copySheet.colCount - 1) {

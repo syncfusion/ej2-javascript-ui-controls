@@ -582,6 +582,11 @@ export class LineDistribution {
     /* tslint:disable */
     private initPort(connectors: string[], diagram: Diagram, node: Node | NodeModel, targetDirection: string, inConnectors: boolean) {
         const obstacleCollection: string = 'obstaclePointCollection';
+        let objects: string[] = connectors;
+        // EJ2-61463 - Added below code to sort the objects based on the source node offset position
+        if (connectors.length > 1 && inConnectors) {
+            connectors = this.sortObjects(objects, inConnectors, diagram);
+        }
         for (let i: number = 0; i <= connectors.length - 1; i++) {
             const internalConnector: Connector = diagram.nameTable[connectors[i]];
             internalConnector[obstacleCollection] = [];
@@ -607,6 +612,38 @@ export class LineDistribution {
         }
     }
     /* tslint:enable */
+
+    //EJ2-61463 - Method used to sort the connectors based on the source node offset position
+    private sortObjects(objects: string[], inConnectors: boolean, diagram: Diagram): string[] {
+        let temp: string;
+        for (let i: number = 0; i < objects.length; i++) {
+            for (let j: number = i + 1; j < objects.length; j++) {
+                const internalConnector: Connector = diagram.nameTable[objects[i]];
+                const internalConnector2: Connector = diagram.nameTable[objects[j]];
+                if (inConnectors) {
+                    let childNode: NodeModel = diagram.nameTable[internalConnector.sourceID];
+                    let childNode2: NodeModel = diagram.nameTable[internalConnector2.sourceID];
+                    // For LeftToRight and RightToLeft we want to consider source node offsetY position
+                    if (diagram.layout.orientation === 'LeftToRight' || diagram.layout.orientation === 'RightToLeft') {
+                        if (childNode.offsetY > childNode2.offsetY) {
+                            temp = objects[i];
+                            objects[i] = objects[j];
+                            objects[j] = temp;
+                        }
+                    } else {
+                        // For TopToBottom or BottomToTop means we want to consider source node offsetX position
+                        if (childNode.offsetX > childNode2.offsetX) {
+                            temp = objects[i];
+                            objects[i] = objects[j];
+                            objects[j] = temp;
+                        }
+                    }
+                }
+            }
+        }
+        return objects;
+    }
+    
 
     private shiftMatrixCells(
         value: number, startingCell: MatrixCellGroupObject, shiftChildren: boolean,

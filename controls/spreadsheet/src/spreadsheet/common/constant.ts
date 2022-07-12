@@ -575,7 +575,7 @@ export const defaultLocale: object = {
     Bootstrap5Dark: 'Bootstrap5 Dark',
     Bootstrap5: 'Bootstrap5',
     Tailwind: 'Tailwind',
-    TailwindDark: 'TailwindDark',
+    TailwindDark: 'Tailwind Dark',
     VerticalAxisTitle: 'Vertical Axis Title',
     HorizontalAxisTitle: 'Horizontal Axis Title',
     EnterTitle: 'Enter Title',
@@ -604,5 +604,5 @@ export const defaultLocale: object = {
     ReEnterPassword: 'Re-enter password to proceed',
     SheetPassword: 'Password to unprotect sheet:',
     Fluent: 'Fluent',
-    FluentDark: 'FluentDark'
+    FluentDark: 'Fluent Dark'
 };

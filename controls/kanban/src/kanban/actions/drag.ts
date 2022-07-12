@@ -177,6 +177,9 @@ export class DragAndDrop {
                 } else if (target.classList.contains(cls.CARD_WRAPPER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
                     && contentCell.querySelectorAll('.' + cls.CARD_CLASS).length === 0) {
                     target.appendChild(this.dragObj.targetClone);
+                } else if (target.classList.contains(cls.BORDER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
+                    && (target.nextElementSibling && target.nextElementSibling.classList.contains(cls.CARD_WRAPPER_CLASS))) {
+                    target.nextElementSibling.appendChild(this.dragObj.targetClone);
                 }
             } else if (keys.length > 1 && (contentCell.classList.contains(cls.DROPPING_CLASS)  ||
             contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.DROPPING_CLASS))) {
@@ -213,9 +216,9 @@ export class DragAndDrop {
             }
         }
         document.body.style.cursor = (contentCell && contentCell.classList.contains(cls.DROPPING_CLASS) ||
-        (contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.BORDER_CLASS))) ? '' : 'not-allowed';
+        (contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.DROPPING_CLASS))) ? '' : 'not-allowed';
         if (cardElement && !(closest(cardElement, '.' + cls.CONTENT_CELLS_CLASS)).classList.contains(cls.DROPPING_CLASS) &&
-        !(contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.BORDER_CLASS))) {
+        !(contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.DROPPING_CLASS))) {
             cardElement.style.cursor = 'not-allowed';
             document.body.style.cursor = 'not-allowed';
         }

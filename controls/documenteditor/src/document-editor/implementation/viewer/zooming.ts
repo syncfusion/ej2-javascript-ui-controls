@@ -72,6 +72,13 @@ export class Zoom {
             }
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.documentHelper = undefined;
+    }
 
     //Zoom Implementation Ends
 }

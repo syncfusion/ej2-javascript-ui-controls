@@ -1175,7 +1175,7 @@ export class Table {
                 },
                 buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + this.parent.cssClass, content: cancel }
             }],
-            cssClass: this.parent.cssClass
+            cssClass: this.editdlgObj.cssClass + ' e-rte-edit-table-prop-dialog'
         });
         this.editdlgObj.element.style.maxHeight = 'none';
         (this.editdlgObj.content as HTMLElement).querySelector('input').focus();

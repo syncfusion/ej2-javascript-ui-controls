@@ -2,30 +2,55 @@
 
 ## [Unreleased]
 
+## 20.2.38 (2022-07-12)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-383108` - Now,the custom stamp annotations are added properly in touch mode
+- `#SF-377362` - Annotations are now placed in the correct position in the download PDF document with crop value.
+- `#SF-383385` - The delete key can be used to remove annotations added in touch mode.
+- `#SF-381030` - Unloading a PDF document from the first PDF Viewer component no longer affects the rendering of the PDF document in the second PDF Viewer component.
+- `#SF-385936` - The value of the Add Signature button will not extend outside the button and missing Portuguese tooltips have been translated.
+- `#SF-372855`, `#F173951` - An annotation can now be added and resized up to the edge of the PDF document.
+- `#SF-380996` - The `TextSearchComplete` event will be triggered when the text is searched in the PDF viewer.
+- `#SF-377035`,`#SF-379948` - A tooltip will be displayed in a form field even if the FormDesignerService is not injected.
+- `#SF-380472` - Added form fields after pressing escape no longer shades form fields.
+- `#SF-384112` - The `formFieldSelect` event will be triggered while selecting the first form field in the document.
+- `#SF-386568` - In the Bootstrap5 theme, the search icon will change to a clear icon after a search has been initiated.
+- `#SF-382999` - The type signature in the signature fields will be modified based on the height of the Signature field while resizing.
+- `#SF-379221` - Now, cache values (PDF_CONTENT) are updated in the `getCache()` method.
+- `#SF-385864` - Now, the dropdown values will be changed programmatically in the PDF Viewer.
+- `#SF-386545` - Now, the signature field color will appear while scrolling down long document.
+- `#SF-272377` - Now, the position and size of the arrow shapes in the shape annotation are same as in the downloaded document.
+- `#F173953` - Now, Script error have been resolved.
+- `#SF-378591` - The issue with the comment panel not opening after disabling and enabling again has been fixed.
+
 ## 20.2.36 (2022-06-30)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- `#SF-371792` - Pan mode is now activated for all mobile devices by default.
-- `#SF-363298` - The issue when form fields had different names when the form designer module is enabled and disabled has been fixed.
+- `#I371792` - Pan mode is now activated for all mobile devices by default.
+- `#I363298` - The issue when form fields had different names when the form designer module is enabled and disabled has been fixed.
 - `#F173953` - The issue with the incorrect sentence search functionality in the PDF Viewer has been resolved.
-- `#SF-368423` - Now, rotation for form elements is considered.
+- `#I368423` - Now, rotation for form elements is considered.
 - `#F173751` - Radio buttons that have been dynamically imported can now preserve its checked status.
-- `#SF-376227` - The issue with the PDF Viewer's annotation FillColor not updating correctly has been fixed.
-- `#SF-376346` - This issue with an annotation moving to the top of multiple pages has been resolved.
+- `#I376227` - The issue with the PDF Viewer's annotation FillColor not updating correctly has been fixed.
+- `#I376346` - This issue with an annotation moving to the top of multiple pages has been resolved.
 - `#F173061`- A `zoomToRect()` method is now used to zoom a particular area multiple times with different scroll positions in the viewport.
-- `#SF-377714` - The problem with pinch zooming and form field position has been fixed.
-- `#SF-377638` - The issue with the Read Only radio button value changing when downloading has been fixed.
-- `#SF-378257`- The issue with the checkbox printing multiple times has been resolved.
-- `#SF-378394` - Changes to form field properties that are made using the `formFieldPropertiesChange` event are no longer lost is now working properly.
-- `#SF-379205` - Drawing a freehand signature when switching between tabs in the Add signature dialogue is no longer possible.
-- `#SF-379120` - The pixel quality of the handwritten signature has now improved.
-- `#SF-386899` - Issue with signature rendering is now resolved.
-- `#SF-383513` - When a textbox is marked as required, it no longer has a red border in the document that's been downloaded is now working properly.
-- `#SF-369733`- The free text annotation is no longer rotated when it is added programmatically to rotated documents.
-- `#SF-383963` - Issue with cloned form field value is duplicated has been fixed.
+- `#I377714` - The problem with pinch zooming and form field position has been fixed.
+- `#I377638` - The issue with the Read Only radio button value changing when downloading has been fixed.
+- `#I378257`- The issue with the checkbox printing multiple times has been resolved.
+- `#I378394` - Changes to form field properties that are made using the `formFieldPropertiesChange` event are no longer lost is now working properly.
+- `#I379205` - Drawing a freehand signature when switching between tabs in the Add signature dialogue is no longer possible.
+- `#I379120` - The pixel quality of the handwritten signature has now improved.
+- `#I386899` - Issue with signature rendering is now resolved.
+- `#I383513` - When a textbox is marked as required, it no longer has a red border in the document that's been downloaded is now working properly.
+- `#I369733`- The free text annotation is no longer rotated when it is added programmatically to rotated documents.
+- `#I383963` - Issue with cloned form field value is duplicated has been fixed.
 
 ## 20.1.60 (2022-06-14)
 

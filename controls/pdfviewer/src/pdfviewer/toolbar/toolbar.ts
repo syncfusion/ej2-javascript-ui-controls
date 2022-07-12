@@ -525,7 +525,9 @@ export class Toolbar {
     }
 
     private enableSelectionTool(enableSelectionTool: boolean): void {
-        this.toolbar.enableItems(this.textSelectItem.parentElement, enableSelectionTool);
+        if (this.textSelectItem && this.textSelectItem.parentElement) {
+            this.toolbar.enableItems(this.textSelectItem.parentElement, enableSelectionTool);
+        }
     }
 
     private enableScrollingTool(enableScrollingTool: boolean): void {

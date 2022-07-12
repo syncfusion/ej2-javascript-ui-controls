@@ -9605,4 +9605,59 @@ describe('MultiSelect', () => {
             expect(listObj.ulElement.children[0].classList.contains('e-disable')).toBe(true);
         });
     });
+    describe('EJ2-60441', () => {
+        let count: number = 0;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let datasource: ['1','2','3']
+        beforeEach(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (ele) {
+                ele.remove();
+            }
+        });
+        it('allowCustom feature does not work for a single digit character.', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: datasource,
+                allowCustomValue: true,
+                value: ['1','2','3']
+            });
+            listObj.appendTo('#multi');
+            (<any>listObj).inputElement.value = "4";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 52;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(listObj.ulElement.childElementCount === 1).toBe(true);
+            expect(listObj.ulElement.querySelector('li').textContent === '4').toBe(true);
+            (<any>listObj).inputElement.value = "45";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 53;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(listObj.ulElement.childElementCount === 1).toBe(true);
+            expect(listObj.ulElement.querySelector('li').textContent === '45').toBe(true);
+            let list: Array<HTMLElement> = (<any>listObj).list.querySelectorAll('li');
+            mouseEventArgs.target = list[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            expect((<any>listObj).isPopupOpen()).toBe(false);
+            (<any>listObj).inputElement.value = "6";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 54;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            expect(listObj.ulElement.childElementCount === 1).toBe(true);
+            expect(listObj.ulElement.querySelector('li').textContent === '6').toBe(true);
+        });
+    });
 });
+

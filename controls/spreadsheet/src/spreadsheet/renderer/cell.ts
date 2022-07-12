@@ -8,7 +8,7 @@ import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHid
 import { getRowHeight, setRowHeight, getCell, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, applyCF } from '../../workbook/common/index';
-import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView } from '../../workbook/index';
+import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
 import { checkIsFormula, ApplyCFArgs } from '../../workbook/common/index';
 /**
  * CellRenderer class which responsible for building cell content.
@@ -354,7 +354,8 @@ export class CellRenderer implements ICellRenderer {
             }
             this.updateColZIndex(colIdx, frozenCol);
             for (let i: number = frozenRow, len: number = rowIdx + (rowSpan - 1); i <= len; i++) {
-                height = getRowHeight(sheet, i); spanRowTop += -height;
+                height = getRowHeight(sheet, skipHiddenIdx(sheet, i, true), true);
+                spanRowTop += -height;
                 if (frozenRow + emptyRows.length > i) { continue; }
                 rowEle = row.cloneNode() as HTMLElement;
                 rowEle.classList.add('e-empty'); rowEle.style.visibility = 'hidden';
@@ -420,7 +421,8 @@ export class CellRenderer implements ICellRenderer {
                 if (frozenCol + emptyCols.length > i) { continue; }
                 col = colGrp.childNodes[0].cloneNode() as HTMLElement;
                 col.classList.add('e-empty'); col.style.visibility = 'hidden';
-                width = getColumnWidth(sheet, i, null, true); col.style.width = width + 'px';
+                width = getColumnWidth(sheet, skipHiddenIdx(sheet, i, true, 'columns'), null, true);
+                col.style.width = width + 'px';
                 colGrp.appendChild(col);
                 if (i === len) {
                     this.parent.serviceLocator.getService<IRenderer>('sheet').setPanelWidth(
@@ -587,7 +589,7 @@ export class CellRenderer implements ICellRenderer {
                             checkHeight };
                         this.update(args);
                         if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
-                            this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: cRange, isAction: true });
+                            this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [i, j], isAction: true });
                         }
                         this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
                         if (checkWrap) {
@@ -601,15 +603,19 @@ export class CellRenderer implements ICellRenderer {
 
     public refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) { return; }
+        if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) {
+            return;
+        }
         if (element || !this.parent.scrollSettings.enableVirtualization || this.parent.insideViewport(rowIdx, colIdx)) {
             const cell: HTMLTableCellElement = <HTMLTableCellElement>(element || this.parent.getCell(rowIdx, colIdx));
-            if (!cell) { return; }
+            if (!cell) {
+                return;
+            }
             const args: CellRenderArgs = { rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(rowIdx, colIdx, sheet), isRefresh: true,
                 lastCell: lastCell, isHeightCheckNeeded: true, manualUpdate: true, first: '' };
             this.update(args);
             if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
-                this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx, rowIdx, colIdx], isAction: true });
+                this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx], isAction: true });
             }
             this.parent.notify(renderFilterCell, { td: cell, rowIndex: rowIdx, colIndex: colIdx });
             if (checkWrap) {

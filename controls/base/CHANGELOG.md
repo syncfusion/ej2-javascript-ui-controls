@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.38 (2022-07-12)
+
+### Common
+
+#### Bug Fixes
+
+- `#I383984` - The issue with the "Unwanted swipe event trigger in Firefox browser" has been resolved.
+
 ## 20.2.36 (2022-06-30)
 
 ### Common
@@ -9,19 +17,70 @@
 #### New Features
 
 - Provided the TypeScript 4.7 compatible support for the EJ2 components.
+- Provided the option to register the license key by using the `npx` command. Follow these steps to register the license using the `npx` command:
 
-- Provided option to register the license key by using the `npx` command. Follow these steps to register the license using the `npx` command:
-- - Install the Syncfusion packages from npm.
-- - Add the license key either in the environment variable `SYNCFUSION_LICENSE` or in the `syncfusion-license.txt` text file.
-- - Run the command `npx syncfusion-license activate` to register the license automatically.
+| The `npx` command |
+|---|
+| Install the Syncfusion packages from `npm`. |
+| Add the license key either in the environment variable `SYNCFUSION_LICENSE` or in the `syncfusion-license.txt` text file. |
+| Run the command `npx syncfusion-license activate` to automatically register the license. |
 
-- `#I376821` - Provided support to compile the Sass files using [Dart Sass](https://sass-lang.com/dart-sass) instead of [node-sass](https://github.com/sass/node-sass). This change has been made since `node-sass` has been deprecated.
+## 20.1.61 (2022-06-21)
 
 ### Common
 
 #### Bug Fixes
 
-- `I324684` - Resolved the `Treeview` check box issues in safari browser.
+- `#F173517` - "The Chart with ngFor data binding is not working" issue has been resolved.
+
+## 20.1.60 (2022-06-14)
+
+### Common
+
+#### Bug Fixes
+
+- `#I372767`, `#I370308` - The empty space issue in `Treeview` component while dragging the element has been resolved.
+
+## 20.1.56 (2022-05-17)
+
+### Common
+
+#### Bug Fixes
+
+- `#F173666` - The issue with sanitize html while creating a appointment in scheduler has been resolve.
+
+## 20.1.55 (2022-05-12)
+
+### Common
+
+#### Bug Fixes
+
+- `#I376600` - The issue with "`IsDevice` value return as false only for Safari browser in iPad" has been resolved.
+
+## 20.1.50 (2022-04-19)
+
+### Common
+
+#### Bug Fixes
+
+- `#I370803` - The issue with "Script error occurs while opening the popup in the DropDownList" has been resolved.
+
+## 20.1.48 (2022-04-12)
+
+### Common
+
+#### Bug Fixes
+
+- `#I374390` - Resolved window undefined in server side rendering with React next JS.
+
+## 20.1.47 (2022-04-04)
+
+### Common
+
+#### Bug Fixes
+
+- `#I324684` - Resolved the `Treeview` check box issues in safari browser.
+- `#I342741`, `#F172105`, `#I365783`, `#F172867`, `#I367588`, `#I358914` - Provided the `draggable` support for the mobile and touch devices.
 
 ## 17.4.51 (2020-02-25)
 

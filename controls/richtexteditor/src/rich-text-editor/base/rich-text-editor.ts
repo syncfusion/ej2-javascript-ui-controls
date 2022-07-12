@@ -1530,8 +1530,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const closestLI: Element = closest(endNode, 'LI');
         if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
         !range.collapsed && isNOU(endNode.nextElementSibling)) {
-            closestLI.textContent = closestLI.textContent.trim();
-            currentEndOffset = closestLI.textContent.length - 1;
+            for (let i: number = 0; i < closestLI.childNodes.length; i++) {
+                if (closestLI.childNodes[i].nodeName === "#text" && closestLI.childNodes[i].textContent.trim().length === 0) {
+                    detach(closestLI.childNodes[i]);
+                    i--;
+                }
+            }
             let currentLastElem: Element = closestLI;
             while (currentLastElem.nodeName !== '#text') {
                 currentLastElem = currentLastElem.lastChild as Element;

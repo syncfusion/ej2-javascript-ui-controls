@@ -472,6 +472,7 @@ export interface CellUpdateArgs {
     eventOnly?: boolean;
     requestType?: string;
     cellDelete?: boolean;
+    isFormulaDependent?: boolean;
 }
 /** @hidden */
 export interface NumberFormatArgs {
@@ -525,9 +526,8 @@ export interface ApplyCFArgs {
     cfModel?: ConditionalFormatModel[];
     isAction?: boolean;
     prevVal?: string;
-    sheetIdx?: number;
-    otherSheets?: boolean;
     isRender?: boolean;
+    refreshAll?: boolean;
 }
 /** @hidden */
 export interface CFArgs {

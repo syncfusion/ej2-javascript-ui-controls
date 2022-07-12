@@ -4158,9 +4158,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         let rows: HTMLTableRowElement[] = [];
         rows = gridRows.filter(
             (r: HTMLTableRowElement) =>
-                r.querySelector(
+                ((r.querySelector(
                     '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
-                )
+                )) || (r.querySelector(
+                    '.e-gridrowindex' + record.index + 'level0' + '.e-summarycell'
+                )))
         );
         if (action === 'expand') {
             this.notify(events.remoteExpand, {record: record, rows: rows, parentRow: row});

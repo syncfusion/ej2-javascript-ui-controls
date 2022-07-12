@@ -176,7 +176,7 @@ export class WaterfallSeries extends ColumnBase {
      * @private
      */
     public processInternalData(json: Object[], series: Series): Object[] {
-        const data: Object[] = json; let index: number;
+        const data: Object[] = json; let index: number; let sumValue : number = 0;
         const intermediateSum: number[] = series.intermediateSumIndexes;
         const sumIndex: number[] = series.sumIndexes;
         if (intermediateSum !== undefined && intermediateSum.length > 0) {
@@ -200,9 +200,14 @@ export class WaterfallSeries extends ColumnBase {
                         if (intermediateSum !== undefined) {
                             index = subArraySum(data, intermediateSum[k] - 1, sumIndex[k], sumIndex, series);
                         } else {
-                            index = subArraySum(data, -1, sumIndex[k], null, series);
+                            if (k === 0) {
+                                index = subArraySum(data, -1, sumIndex[k], null, series);
+                            } else {
+                                index = subArraySum(data, sumIndex[k - 1], sumIndex[k], null, series);
+                            }
+                            sumValue += index;
                         }
-                        data[j][series.yName] = index;
+                        data[j][series.yName] = sumValue;
                     }
                 }
             }

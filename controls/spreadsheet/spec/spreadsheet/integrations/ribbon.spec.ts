@@ -1,6 +1,7 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, getCell, SpreadsheetModel, Spreadsheet } from '../../../src/index';
+import { L10n } from '@syncfusion/ej2-base';
 
 /**
  *  Spreadsheet Ribbon spec
@@ -419,6 +420,29 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 expect(helper.getElementFromSpreadsheet('.e-ribbon .e-content .e-toolbar-items .e-hscroll-content').children[21].textContent).toBe('Custom');
                 done();
             });
+        });
+    });
+    describe('EJ2-61618->', () => {
+        L10n.load({
+            'de-DE': {
+                'spreadsheet': {
+                    'Home': 'Huis',
+                    'Insert': 'Einfügen',
+                    'Formulas': 'Formeln',
+                    'View': 'Aussicht',
+                }
+            }
+        });
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],locale: 'de-DE' }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Console Error while using "addToobarItems" in localization.', () => {
+            let spreadsheet:Spreadsheet = helper.getInstance();
+            spreadsheet.addToolbarItems('Home', [{ type: 'Separator' }, { text: 'Custom', tooltipText: 'Custom Btn' }], 2);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].header.text).toBe('Huis');
         });
     });
 });

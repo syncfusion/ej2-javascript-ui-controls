@@ -1842,7 +1842,6 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.initial = true;
                 this.activeIndex = this.index;
                 this.initRemoteRender = false;
-                this.initial = false;
                 if (this.value && this.dataSource instanceof DataManager) {
                     const checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
                     const checkVal: boolean = list.some((x: {[key: string]: boolean | string | number}) => x[checkField] === this.value);
@@ -1862,6 +1861,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 } else {
                     this.updateValues(); 
                 }
+                this.initial = false;
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter

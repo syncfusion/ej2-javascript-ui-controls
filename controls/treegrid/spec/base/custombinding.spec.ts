@@ -250,3 +250,54 @@ describe('Custom Binding', () => {
       destroy(gridObj);
     });
   });
+
+  describe('EJ2-61682 - Expand/collapse in observable binding', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let dataStateChange: (args: any) => void;
+    let elem: HTMLElement = createElement('div', { id: 'Grid' });    
+    beforeAll((done: Function) => {
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+        {
+          dataSource: { result: customTotalData, count: 2 },
+          hasChildMapping: 'isParent',
+          idMapping: 'TaskID',
+          dataStateChange: dataStateChange,
+          parentIdMapping: 'parentID',
+          allowPaging: true,
+          treeColumnIndex: 1,
+          allowSorting: true,
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row' },
+          pageSettings: { pageSize: 1, pageSizeMode: 'Root' },
+          columns: ['TaskID', 'TaskName', 'StartDate', 'Duration']
+        }
+      );
+      gridObj.appendTo('#Grid');
+      done();
+    });
+    it('Expand testing first parent record', () => {
+      dataStateChange = (args: any) => {
+        if (args.requestType === 'expand') {
+          args.childData = childdata1;
+          args.childDataBind();
+        }        
+      };
+      gridObj.dataStateChange = dataStateChange;
+      rows = gridObj.getRows();
+      gridObj.expandRow(rows[0] as HTMLTableRowElement);
+      gridObj.collapseRow(rows[0] as HTMLTableRowElement);
+      expect(gridObj.getRows()[0].getElementsByClassName('e-treegridcollapse').length === 1).toBe(true);
+    });
+    it('Expand testing second parent record', () => {
+      rows = gridObj.getRows();
+      gridObj.expandRow(rows[3] as HTMLTableRowElement);
+      expect(gridObj.getRows()[0].getElementsByClassName('e-treegridcollapse').length === 1).toBe(true);
+      expect(gridObj.getRows()[3].getElementsByClassName('e-treegridexpand').length === 1).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  

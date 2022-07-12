@@ -51,6 +51,9 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             tooltipFontColor: '#ffffff',
             legendTitleColor: '#DADADA',
             legendTextColor: '#DADADA',
+            fontSize: '15px',
+            subtitleFontSize: '14px',
+            legendFontSize: '13px',
             fontFamily: 'Roboto, Noto, Sans-serif'
         };
         break;
@@ -63,6 +66,9 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             tooltipFontColor: '#ffffff',
             legendTitleColor: '#FFFFFF',
             legendTextColor: '#FFFFFF',
+            fontSize: '15px',
+            subtitleFontSize: '14px',
+            legendFontSize: '13px',
             fontFamily: 'Roboto, Noto, Sans-serif'
         };
         break;
@@ -79,6 +85,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             legendTextColor: '#212529',
             fontFamily: 'HelveticaNeue-Medium',
             fontSize: '16px',
+            subtitleFontSize: '14px',
             legendFontSize: '14px',
             labelFontFamily: 'HelveticaNeue'
         };
@@ -96,6 +103,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             legendTextColor: '#374151',
             fontFamily: 'Inter',
             fontSize: '14px',
+            subtitleFontSize: '12px',
             legendFontSize: '12px',
             labelFontFamily: 'Inter'
         };
@@ -113,6 +121,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             legendTextColor: '#D1D5DB',
             fontFamily: 'Inter',
             fontSize: '14px',
+            subtitleFontSize: '12px',
             legendFontSize: '12px',
             labelFontFamily: 'Inter'  
         };
@@ -130,6 +139,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             legendTextColor: '#212529',
             fontFamily: 'Helvetica Neue',
             fontSize: '14px',
+            subtitleFontSize: '12px',
             legendFontSize: '12px',
             labelFontFamily: 'Helvetica Neue'  
         };
@@ -147,6 +157,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             legendTextColor: '#FFFFFF',
             fontFamily: 'Helvetica Neue',
             fontSize: '14px',
+            subtitleFontSize: '12px',
             legendFontSize: '12px',
             labelFontFamily: 'Helvetica Neue'  
         };
@@ -164,6 +175,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             legendTextColor: '#201F1E',
             fontFamily: 'Segoe UI',
             fontSize: '14px',
+            subtitleFontSize: '12px',
             legendFontSize: '12px',
             labelFontFamily: 'Segoe UI'  
         };
@@ -181,6 +193,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             legendTextColor: '#F3F2F1',
             fontFamily: 'Segoe UI',
             fontSize: '14px',
+            subtitleFontSize: '12px',
             legendFontSize: '12px',
             labelFontFamily: 'Segoe UI'  
         };
@@ -194,6 +207,9 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             tooltipFontColor: '#ffffff',
             legendTitleColor: '#353535',
             legendTextColor: '#353535',
+            fontSize: '15px',
+            subtitleFontSize: '14px',
+            legendFontSize: '13px',
             fontFamily: 'Roboto, Noto, Sans-serif'
         };
         break;

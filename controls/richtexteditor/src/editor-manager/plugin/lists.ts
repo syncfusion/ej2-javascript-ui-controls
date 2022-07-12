@@ -192,6 +192,8 @@ export class Lists {
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
         endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
+        startNode = startNode.nodeName !== 'LI' && !isNOU(startNode.closest('LI')) ? startNode.closest('LI') : startNode;
+        endNode = endNode.nodeName !== 'LI' && !isNOU(endNode.closest('LI')) ? endNode.closest('LI') : endNode;
         if (((range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'LI') &&
         isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset &&
         isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||

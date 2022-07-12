@@ -359,7 +359,7 @@ describe('Undo redo ->', () => {
                     ddlElem.ej2_instances[0].value = 'List';
                     ddlElem.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '1,2,3';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
                     setTimeout(() => {
                         const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[4];
@@ -650,7 +650,7 @@ describe('Undo redo ->', () => {
             setTimeout(() => {
                 helper.getElements('.e-dlg-container .e-webpage input')[1].value = 'www.syncfusion.com';
                 helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 (helper.getRibbonElement().querySelector('.e-tab-header .e-toolbar-items').children[2] as HTMLElement).click();
                 helper.getElement('#' + helper.id + '_clear').click();

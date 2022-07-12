@@ -1603,6 +1603,7 @@ export class SfdtExport {
         tableFormat.preferredWidthType = wTableFormat.hasValue('preferredWidthType') ? wTableFormat.preferredWidthType : undefined;
         tableFormat.bidi = wTableFormat.hasValue('bidi') ? wTableFormat.bidi : undefined;
         tableFormat.allowAutoFit = wTableFormat.hasValue('allowAutoFit') ? wTableFormat.allowAutoFit : undefined;
+        tableFormat.styleName = !isNullOrUndefined(wTableFormat.styleName) ? wTableFormat.styleName : undefined;
         return tableFormat;
     }
     private footnotes(documentHelper: DocumentHelper): void {

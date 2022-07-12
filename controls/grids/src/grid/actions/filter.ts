@@ -291,8 +291,8 @@ export class Filter implements IAction {
             } else {
                 this.filterSettings.columns.push(this.currentFilterObject);
             }
-            if (isNullOrUndefined(this.value) && (this.operator === 'equal' || this.operator === 'notequal') &&
-                (moduleName !== 'ODataAdaptor' && moduleName !== 'ODataV4Adaptor')) {
+            if (!this.column.isForeignColumn() && isNullOrUndefined(this.value) && (this.operator === 'equal' ||
+                this.operator === 'notequal') && (moduleName !== 'ODataAdaptor' && moduleName !== 'ODataV4Adaptor')) {
                 this.filterSettings.columns = [];
                 if (col.type === 'string') {
                     this.filterSettings.columns.push({

@@ -1,7 +1,7 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
 import { applyProtect, protectSheet, protectCellFormat, editAlert, enableFormulaInput, protectWorkbook, keyUp, unProtectSheetPassword, completeAction, setProtectWorkbook, removeWorkbookProtection } from '../common/event';
-import { unProtectWorkbook, getPassWord, importProtectWorkbook, UnProtectWorksheet, hideAutoFillElement } from '../common/event';
-import { clearCopy, protectSelection, clearUndoRedoCollection, focus, isLockedCells } from '../common/index';
+import { unProtectWorkbook, getPassWord, importProtectWorkbook, hideAutoFillElement } from '../common/event';
+import { clearCopy, protectSelection, clearUndoRedoCollection, focus, isLockedCells, toggleProtect } from '../common/index';
 import { Dialog } from '../services/dialog';
 import { ListView, SelectedCollection, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { L10n, EventHandler, closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -52,12 +52,12 @@ export class ProtectSheet {
         this.parent.on(protectWorkbook, this.protectWorkbook, this);
         this.parent.on(keyUp, this.KeyUpHandler, this);
         this.parent.on(unProtectWorkbook, this.unProtectWorkbook, this);
-        this.parent.on(UnProtectWorksheet, this.unProtectsheet, this);
         this.parent.on(unProtectSheetPassword, this.unProtectSheetPassword, this);
         this.parent.on(getPassWord, this.getPassWord, this);
         this.parent.on(importProtectWorkbook, this.importProtectWorkbook, this);
         this.parent.on(setProtectWorkbook, this.protectWorkbookHandler, this);
         this.parent.on(removeWorkbookProtection, this.removeWorkbookProtection, this);
+        this.parent.on(toggleProtect, this.toggleProtect, this);
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
@@ -67,12 +67,12 @@ export class ProtectSheet {
             this.parent.off(protectWorkbook, this.protectWorkbook);
             this.parent.off(keyUp, this.KeyUpHandler);
             this.parent.off(unProtectWorkbook, this.unProtectWorkbook);
-            this.parent.off(UnProtectWorksheet, this.unProtectsheet);
             this.parent.off(unProtectSheetPassword, this.unProtectSheetPassword);
             this.parent.off(getPassWord, this.getPassWord);
             this.parent.off(importProtectWorkbook, this.importProtectWorkbook);
             this.parent.off(setProtectWorkbook, this.protectWorkbookHandler);
             this.parent.off(removeWorkbookProtection, this.removeWorkbookProtection);
+            this.parent.off(toggleProtect, this.toggleProtect);
         }
     }
     private protect(args: { isActive: boolean, sheetIndex: number }): void {
@@ -153,12 +153,12 @@ export class ProtectSheet {
                 focus(this.parent.element);
             },
             buttons: [{
-                click: (this.selectOption.bind(this, this.dialog, this)),
+                click: this.selectOption.bind(this, this.dialog, this),
                 buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true }
             },
             {
-                click: (this.cancelClick.bind(this, this.dialog, this)),
-                buttonModel: { content: l10n.getConstant('Cancel')}
+                click: (): void => this.dialog.hide(),
+                buttonModel: { content: l10n.getConstant('Cancel') }
             }]
         }, false);
         checkbox.appendTo('#' + this.parent.element.id + '_protect_check');
@@ -171,11 +171,6 @@ export class ProtectSheet {
         checkboxElement.addEventListener('focus', (): void => {
             this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
         });
-    }
-    private cancelClick(): void {
-        const sheetDlgPopup: HTMLElement = document.querySelector('.e-protect-dlg');
-        const sheetDlg: Dialog = getComponent(sheetDlgPopup, 'dialog');
-        sheetDlg.destroy();
     }
     private checkBoxClickHandler(): void {
         const ch: HTMLInputElement = document.getElementById(this.parent.element.id + '_protect_check') as HTMLInputElement;
@@ -232,7 +227,7 @@ export class ProtectSheet {
             this.parent.setSheetPropertyOnMute(actSheet, 'password', (pwd as CellModel).value);
             this.updateProtectSheet((pwd as CellModel).value);
             this.dialog.hide();
-            const sheetDlgPopup: HTMLElement = document.querySelector('.e-protect-dlg');
+            const sheetDlgPopup: HTMLElement = document.querySelector('.e-protect-dlg.e-dialog');
             const sheetDlg: Dialog = getComponent(sheetDlgPopup, 'dialog');
             sheetDlg.destroy();
             if (!actSheet.protectSettings.selectCells && !actSheet.protectSettings.selectUnLockedCells) {
@@ -558,7 +553,7 @@ export class ProtectSheet {
         });
     }
 
-    private unProtectsheet(args : { isImportedSheet?: boolean}): void {
+    private unProtectsheet(isImportedSheet?: boolean): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
@@ -583,7 +578,7 @@ export class ProtectSheet {
                 },
                 click: (): void => {
                     this.alertMessage();
-                    this.unprotectSheetdlgOkClick(dialogInst, args && args.isImportedSheet);
+                    this.unprotectSheetdlgOkClick(dialogInst, isImportedSheet);
                 }
             }]
         });
@@ -783,6 +778,22 @@ export class ProtectSheet {
         this.parent.open(impArgs);
     }
 
+    private toggleProtect(args: OpenOptions): void {
+        let isActive: boolean;
+        const parentId: string = this.parent.element.id;
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        if (this.parent.openModule.isImportedFile &&
+            this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) {
+            this.unProtectsheet(true);
+        }
+        else if (sheet.password && sheet.password.length > 0) {
+            this.unProtectsheet();
+        } else {
+            this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
+            isActive = sheet.isProtected ? false : true;
+            this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect', sheetIndex: this.parent.activeSheetIndex, triggerEvent: true });
+        }
+    }
 
     /**
      * Get the module name.

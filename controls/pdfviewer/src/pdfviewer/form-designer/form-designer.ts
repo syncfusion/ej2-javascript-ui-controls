@@ -2281,6 +2281,15 @@ export class FormDesigner {
                 if (!(formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox')) {
                     (htmlElement as IElement).value = (options as TextFieldSettings).value;
                 }
+                else if( formFieldObject.formFieldAnnotationType === "DropdownList" || formFieldObject.formFieldAnnotationType === "ListBox")
+                {
+                    for(let i = 0 as number; i <  (htmlElement as IElement).options.length ; i++)
+                    {
+                        if((htmlElement as IElement).options[i].text === (options as TextFieldSettings).value){
+                            (htmlElement as IElement).options.selectedIndex = i;
+                        }                        
+                    }
+                }
                 (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].value = (options as TextFieldSettings).value;
                 if (isValueChanged) {
                     this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
@@ -3046,7 +3055,7 @@ export class FormDesigner {
         }
         inputElement.style.color = obj.color ? obj.color : 'black';
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
-        inputElement.style.backgroundColor = isPrint ? 'transparent' : '#FFE48559';
+        inputElement.style.backgroundColor = isPrint ? 'transparent' : (obj.backgroundColor ? obj.backgroundColor : '#FFE48559');
         if (obj.isReadonly) {
             (inputElement as HTMLInputElement).disabled = true;
             inputElement.style.cursor = 'default';

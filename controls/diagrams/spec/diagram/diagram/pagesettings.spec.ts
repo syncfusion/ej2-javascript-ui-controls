@@ -1,16 +1,17 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { DiagramTools, NodeConstraints } from '../../../src/diagram/enum/enum';
+import { ChildArrangement, ConnectionPointOrigin, DiagramTools, NodeConstraints } from '../../../src/diagram/enum/enum';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
-import { LayerModel, Rect, UndoRedo, PointModel } from '../../../src/index';
+import { LayerModel, Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-Diagram.Inject(BpmnDiagrams, UndoRedo);
+import { DataManager, Query } from '@syncfusion/ej2-data';
+Diagram.Inject(BpmnDiagrams, UndoRedo, LineDistribution, ComplexHierarchicalTree, DataBinding);
 /**
  * PageSettings Spec
  */
@@ -2523,3 +2524,116 @@ describe('Distribute command not working properly issue', () => {
         done();
     });
 })
+
+describe('Connector gets crossed each other issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramlayout' });
+        document.body.appendChild(ele);
+
+        let Data: any = [
+            { Name: 'node11', fillColor: '#e7704c', border: '#c15433' },
+            {
+                Name: 'node12',
+                ReportingPerson: ['node11'],
+                fillColor: '#efd46e',
+                border: '#d6b123',
+            },
+            {
+                Name: 'node13',
+                ReportingPerson: ['node12'],
+                fillColor: '#efd46e',
+                border: '#d6b123',
+            },
+            {
+                Name: 'node14',
+                ReportingPerson: ['node13'],
+                fillColor: '#efd46e',
+                border: '#d6b123',
+            },
+            {
+                Name: 'node15',
+                ReportingPerson: ['node13'],
+                fillColor: '#efd46e',
+                border: '#d6b123',
+            },
+            {
+                Name: 'node16',
+                ReportingPerson: ['node15'],
+                fillColor: '#efd46e',
+                border: '#d6b123',
+            },
+        ];
+
+        let items: DataManager = new DataManager(Data as JSON[], new Query().take(7));
+
+         diagram = new Diagram({
+            width: 1500, height: 2500,
+            layout: {
+                type: 'ComplexHierarchicalTree',
+                connectionPointOrigin: ConnectionPointOrigin.DifferentPoint,
+                horizontalSpacing: 40,
+                verticalSpacing: 40,
+                orientation: 'LeftToRight',
+                margin: { left: 10, right: 0, top: 100, bottom: 0 },
+                verticalAlignment: 'Top',
+                horizontalAlignment: 'Center'
+            },
+            dataSourceSettings: {
+                id: 'Name', parentId: 'ReportingPerson', dataSource: items,
+                doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                    nodeModel.id = (data as any).Name;
+                    nodeModel.style = { fill: (data as any).fillColor };
+                    nodeModel.annotations = [
+                        {
+                            content: (data as any).Name
+                        }
+                    ];
+                }
+            },
+            getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                obj.width = 50;
+                obj.height = 50;
+                //Initialize shape
+                obj.shape = { type: 'Basic', shape: 'Rectangle', cornerRadius: 7 };
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.type = 'Orthogonal';
+                connector.cornerRadius = 7;
+                connector.targetDecorator.height = 7;
+                connector.targetDecorator.width = 7;
+                connector.style.strokeColor = '#6d6d6d';
+            }
+        });
+        diagram.appendTo('#diagramlayout');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether connector are arranged properly in layout', function (done) {
+        let connector: ConnectorModel = {
+            id: 'node14_node16',
+            sourceID: "node14",
+            targetID: "node16",
+            cornerRadius: 10,
+            type: 'Orthogonal',
+    
+        };
+        diagram.add(connector);
+        diagram.layout.arrangement = ChildArrangement.Linear;
+        diagram.layout.connectionPointOrigin =
+                ConnectionPointOrigin.DifferentPoint;
+        diagram.doLayout();
+        let node: NodeModel = diagram.getObject('node16');
+        let connector1: ConnectorModel = diagram.getObject((node as Node).inEdges[0]);
+        let connector2: ConnectorModel = diagram.getObject((node as Node).inEdges[1]);
+        expect(connector1.targetPoint.y < connector2.targetPoint.y).toBe(true);
+        done();
+    });
+
+});

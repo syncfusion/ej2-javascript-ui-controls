@@ -1,0 +1,2424 @@
+@include export-module('slider-layout') {
+  // sass-lint:disable no-vendor-prefixes
+  // sass-lint:disable no-important
+
+  .e-control-wrapper.e-slider-container.e-material-slider .e-slider .e-handle {
+    &.e-material-handle {
+      cursor: default;
+      transition: transform .4s cubic-bezier(.25, .8, .25, 1);
+      z-index: 3;
+    }
+
+    &.e-tab-handle {
+      &::after {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          background-color: transparent;
+        }
+      }
+    }
+
+    &.e-handle-start.e-tab-handle {
+      &::after {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+
+  .e-slider-tooltip.e-tooltip-wrap.e-popup {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+      background-color: $slider-handle-bg-color;
+      border: 0;
+      border-radius: 8px;
+      // sass-lint:disable-all
+      cursor: -webkit-grab;
+      cursor: grab;
+      // sass-lint:enable-all
+      opacity: 1;
+
+      &.e-popup.e-popup-close {
+        display: block;
+        opacity: 0;
+      }
+
+      &.e-material-tooltip-start {
+        background-color: $slider-handle-border-color;
+
+        .e-arrow-tip-inner {
+          color: $grey-black;
+          opacity: 0;
+        }
+
+        .e-arrow-tip-outer.e-tip-bottom {
+          border-top-color: $slider-handle-border-color;
+        }
+
+        .e-arrow-tip-outer.e-tip-top {
+          border-bottom-color: $slider-handle-border-color;
+        }
+
+        .e-arrow-tip-outer.e-tip-right {
+          border-left-color: $slider-handle-border-color;
+        }
+
+        .e-arrow-tip-outer.e-tip-left {
+          border-right-color: $slider-handle-border-color;
+        }
+      }
+
+      &.e-tooltip-active {
+        // sass-lint:disable-all
+        cursor: -webkit-grabbing;
+        cursor: grabbing;
+        // sass-lint:enable-all
+      }
+
+      .e-arrow-tip {
+        visibility: visible;
+      }
+
+      .e-tip-content {
+        background-color: transparent;
+        height: 16px;
+        overflow: hidden;
+        padding: 0 8px;
+        text-align: center;
+        top: calc(50% - 8px);
+        width: 100%;
+
+        &.e-material-tooltip-show {
+          color: $slider-material-tooltip-content-color;
+        }
+
+        &.e-material-tooltip-hide {
+          color: transparent;
+        }
+      }
+
+      .e-arrow-tip-inner {
+        color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-bottom {
+        border-top-color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-top {
+        border-bottom-color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-right {
+        border-left-color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-left {
+        border-right-color: $slider-handle-bg-color;
+      }
+
+      &.e-tooltip-wrap.e-popup.e-material-default {
+        background-color: $slider-handle-bg-color;
+        border: 0;
+        border-bottom-left-radius: 50%;
+        border-bottom-right-radius: 0%;
+        border-top-left-radius: 50%;
+        border-top-right-radius: 50%;
+        // sass-lint:disable-all
+        cursor: -webkit-grab;
+        cursor: grab;
+        // sass-lint:enable-all
+        opacity: 1;
+
+        &.e-material-tooltip-start {
+          background-color: $slider-handle-border-color;
+        }
+
+        &.e-tooltip-active {
+          // sass-lint:disable-all
+          cursor: -webkit-grabbing;
+          cursor: grabbing;
+          // sass-lint:enable-all
+        }
+
+        .e-arrow-tip {
+          visibility: hidden;
+        }
+
+        &.e-slider-horizontal-before {
+          .e-tip-content {
+            transform: rotate(-45deg);
+          }
+        }
+
+        &.e-slider-horizontal-after {
+          .e-tip-content {
+            transform: rotate(-225deg);
+          }
+        }
+
+        &.e-slider-vertical-before {
+          .e-tip-content {
+            transform: rotate(45deg);
+          }
+        }
+
+        &.e-slider-vertical-after {
+          .e-tip-content {
+            transform: rotate(225deg);
+          }
+        }
+
+        .e-tip-content {
+          background-color: transparent;
+          height: 16px;
+          overflow: hidden;
+          padding: 0;
+          text-align: center;
+          top: calc(50% - 8px);
+          width: 100%;
+
+          &.e-material-tooltip-show {
+            color: $slider-material-tooltip-content-color;
+          }
+
+          &.e-material-tooltip-hide {
+            color: transparent;
+          }
+        }
+      }
+    }
+    @else {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        background-color: $slider-active-handle-bg-color;
+        border: 1px solid $slider-hover-handle-color;
+      }
+
+      .e-tip-content {
+        padding: $slider-tooltip-padding;
+        text-align: center;
+
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+          color: $slider-button-icon-color;
+        }
+      }
+    }
+  }
+
+  .e-slider-horizantal-color {
+    height: 100%;
+    position: absolute;
+    top: 0;
+  }
+
+  .e-slider-vertical-color {
+    left: -1px;
+    position: absolute;
+    width: 100%;
+  }
+
+  .e-bigger {
+    @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+      .e-slider-tooltip.e-tooltip-wrap.e-popup {
+        .e-tip-content {
+          padding: $slider-tooltip-padding;
+        }
+      }
+
+      &.e-slider-tooltip.e-tooltip-wrap.e-popup {
+        .e-tip-content {
+          padding: $slider-tooltip-padding;
+        }
+      }
+    }
+    @else {
+      &.e-slider-tooltip.e-tooltip-wrap.e-popup {
+        .e-tip-content {
+          font-size: 11px;
+          line-height: 16px;
+        }
+      }
+
+      .e-slider-tooltip.e-tooltip-wrap.e-popup {
+        .e-tip-content {
+          font-size: 11px;
+          line-height: 16px;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-control-wrapper.e-slider-container,
+  .e-control-wrapper.e-slider-container.e-bigger {
+    @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+      .e-slider {
+        .e-handle {
+          height: $slider-handle-mobile-height;
+          width: $slider-handle-mobile-width;
+        }
+      }
+
+      @if ($skin-name == 'FluentUI') {
+        .e-slider-button {
+          height: 20px;
+          width: 20px;
+        }
+
+        &.e-horizontal {
+          .e-first-button,
+          .e-second-button {
+            margin-top: $slider-touch-btn-center-align;
+
+            .e-button-icon::before {
+              font-size: 17px;
+            }
+          }
+        }
+
+        &.e-vertical {
+          .e-first-button,
+          .e-second-button {
+            margin-right: $slider-touch-btn-center-align;
+
+            .e-button-icon::before {
+              font-size: 17px;
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+        .e-slider-button {
+          height: 18px;
+          width: 18px;
+        }
+
+        &.e-vertical {
+          &.e-slider-btn {
+            @if ($skin-name == 'bootstrap5') {
+              padding: 36px 0;
+            }
+            @else {
+              padding: 34px 0;
+            }
+          }
+
+          .e-first-button,
+          .e-second-button {
+            @if ($skin-name == 'bootstrap5') {
+              margin-right: -12px;
+            }
+            @else {
+              margin-right: -9px;
+            }
+          }
+
+          .e-slider {
+            .e-slider-track {
+              left: calc(50% - 4px);
+              width: 8px;
+            }
+
+            .e-range {
+              left: calc(50% - 4px);
+              width: 8px;
+            }
+          }
+        }
+
+        &.e-horizontal .e-slider {
+          .e-limits {
+            height: 8px;
+            top: calc(50% - 4px);
+            @if ($skin-name == 'bootstrap5' and $skin-name == 'FluentUI') {
+              border-radius: $slider-range-border-radius;
+            }
+          }
+        }
+
+        &.e-vertical .e-slider {
+          .e-limits {
+            left: calc(50% - 4px);
+            width: 8px;
+            @if ($skin-name == 'bootstrap5' and $skin-name == 'FluentUI') {
+              border-radius: $slider-range-border-radius;
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap5') {
+
+        &.e-horizontal,
+        &.e-vertical {
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            border-radius: 12px;
+            height: 24px;
+            width: 24px;
+
+            .e-button-icon::before {
+              font-size: 22px;
+            }
+          }
+        }
+
+        &.e-horizontal {
+
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            margin-top: -12px;
+          }
+
+          .e-tick-both {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: 24px;
+                  top: -14px;
+                }
+
+                .e-large {
+                  height: 32px;
+                  top: -10px;
+                }
+              }
+            }
+          }
+
+          .e-tick-before {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: $tick-after-mobile-height;
+                  top: $tick-before-mobile-top;
+                }
+
+                .e-large {
+                  height: $largetick-before-mobile-height;
+                  top: $tick-before-mobile-top;
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: $tick-after-mobile-height;
+                  top: $tick-after-mobile-top;
+                }
+
+                .e-large {
+                  height: $largetick-before-mobile-height;
+                  top: $largetick-after-mobile-top;
+                }
+              }
+            }
+          }
+        }
+
+        &.e-vertical {
+
+          .e-tick-both {
+            &.e-scale {
+              .e-tick {
+                left: 2px;
+                width: 24px;
+              }
+
+              .e-large {
+                left: -2px;
+                width: 32px;
+              }
+            }
+          }
+
+          .e-tick-before {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  left: $tick-before-mobile-left;
+                  width: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  left: $largetick-before-mobile-left;
+                  width: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  left: $tick-after-mobile-left;
+                  width: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  left: $tick-after-mobile-left;
+                  width: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'tailwind') {
+        .e-scale.e-h-scale {
+          &.e-tick-after {
+            top: 7px;
+          }
+        }
+
+        &.e-horizontal,
+        &.e-vertical {
+          .e-slider-button.e-first-button,
+          .e-slider-button.e-second-button {
+            border-radius: 12px;
+            height: 24px;
+            width: 24px;
+
+            .e-button-icon::before {
+              font-size: 22px;
+            }
+          }
+        }
+
+        &.e-horizontal {
+
+          &.e-scale-both {
+            .e-range {
+              height: 6px;
+            }
+          }
+
+          .e-slider-track {
+            border-radius: 6px;
+          }
+
+          .e-limits {
+            height: 6px;
+          }
+
+          .e-first-button,
+          .e-second-button {
+            margin-top: -14px;
+          }
+
+          .e-tick-both {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: 22px;
+                  top: -19px;
+                }
+
+                .e-large {
+                  height: 30px;
+                  top: -16px;
+                }
+              }
+            }
+          }
+
+          .e-tick-before {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  height: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+            &.e-scale {
+              &.e-h-scale {
+                .e-tick {
+                  height: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  height: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+
+          &.e-scale-both {
+            .e-scale {
+              top: 17px;
+            }
+          }
+
+          &.e-slider-btn {
+            padding: $slider-button-horizon-mobile-padding;
+          }
+        }
+
+        &.e-vertical {
+
+          &.e-scale-both {
+            .e-range {
+              width: 6px;
+            }
+          }
+
+          .e-range {
+            width: 6px;
+          }
+
+          .e-slider-track {
+            border-radius: 6px;
+          }
+
+          &.e-slider-btn {
+            padding: $slider-button-vertical-mobile-padding;
+          }
+
+          .e-slider-button {
+            margin-right: -15px;
+          }
+
+          .e-tick-both {
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  left: 4px;
+                  width: 22px;
+                }
+
+                .e-large {
+                  left: 0;
+                  width: 30px;
+                }
+              }
+            }
+          }
+
+          .e-tick-before {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  width: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  width: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+
+          .e-tick-after {
+
+            &.e-scale {
+              &.e-v-scale {
+                .e-tick {
+                  width: $tick-after-mobile-height;
+                }
+
+                .e-large {
+                  width: $largetick-before-mobile-height;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      &.e-horizontal {
+        @if ($skin-name == 'bootstrap5') {
+          &.e-slider-btn {
+            padding: 0 36px;
+          }
+        }
+        @if ($skin-name == 'bootstrap4') {
+          &.e-slider-btn {
+            padding: 0 34px;
+          }
+
+          .e-slider-button {
+            height: $slider-handle-mobile-buttons-height;
+            margin-top: -9px;
+            width: $slider-handle-mobile-buttons-width;
+          }
+        }
+
+        @if ($skin-name == 'tailwind') {
+          .e-slider-track {
+            height: 6px;
+          }
+
+          .e-range {
+            height: 6px;
+          }
+        }
+
+        .e-slider {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+            .e-slider-track {
+              height: 8px;
+              top: calc(50% - 4px);
+            }
+
+            .e-range {
+              height: 8px;
+              top: calc(50% - 4px);
+            }
+          }
+
+          .e-handle {
+            @if($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+              margin-left: $slider-handle-mobile-margin-left;
+              top: $slider-handle-mobile-handle-top;
+            }
+            @else {
+              margin-left: -9px;
+              top: calc(50% - 9px);
+            }
+          }
+        }
+
+        &.e-scale-both {
+          .e-slider {
+            .e-handle {
+              @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+                margin-left: -9px;
+                top: calc(50% - 8px);
+              }
+            }
+          }
+        }
+      }
+
+      &.e-vertical {
+        .e-slider {
+          .e-handle {
+            @if ($skin-name == 'tailwind') {
+              left: calc(50% - 5px);
+            }
+            @else {
+              left: calc(50% - 9px);
+            }
+            margin-bottom: -9px;
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+              left: calc(50% - 8px);
+              margin-bottom: -8px;
+            }
+          }
+
+          @if ($skin-name == 'tailwind') {
+            .e-range {
+              width: 6px;
+            }
+          }
+        }
+
+        &.e-scale-both {
+          .e-slider {
+            .e-handle {
+              @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+                left: calc(50% - 10px);
+                margin-bottom: -9px;
+              }
+              @if $skin-name == 'bootstrap4' {
+                left: calc(50% - 8px);
+                margin-bottom: -8px;
+              }
+            }
+          }
+        }
+
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+          .e-slider-track {
+            width: 6px;
+          }
+
+          .e-range {
+            width: 6px;
+          }
+        }
+      }
+
+      &.e-rtl {
+        &.e-horizontal {
+          .e-slider {
+            .e-handle {
+              @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+                margin: 0 -8px 0 0;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .e-scale .e-tick .e-tick-value {
+      font-size: $slider-mobile-scale-font-size;
+    }
+  }
+
+  .e-control-wrapper.e-slider-container {
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    box-sizing: border-box;
+    display: inline-block;
+    height: $slider-wrap-height;
+    line-height: normal;
+    outline: none;
+    position: relative;
+    user-select: none;
+
+    &::after {
+      content: $skin-name;
+      display: none;
+    }
+
+    .e-slider {
+      .e-handle {
+        &.e-large-thumb-size {
+          transform: scale(1.5);
+        }
+      }
+    }
+
+    &.e-rtl {
+      &.e-horizontal {
+        .e-slider {
+          .e-handle {
+            margin: $rtl-slider-h-handle-margin;
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+              top: calc(50% - 8px);
+            }
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              top: calc(50% - 8px);
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              top: calc(50% - 6px);
+            }
+          }
+        }
+
+        .e-scale {
+          &.e-h-scale {
+            .e-tick.e-first-tick {
+              @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+                background-position-x: right;
+              }
+
+              @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+                background-position: right center;
+                left: 0;
+              }
+
+              @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+                background-position: right center;
+                left: 0;
+              }
+            }
+
+            .e-tick.e-last-tick {
+              @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+                background-position-x: left;
+              }
+              @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+                background-position: left center;
+              }
+            }
+          }
+        }
+
+        .e-slider-button {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI') {
+            margin-top: -8px;
+          }
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+            margin-top: -7px;
+          }
+          @if ($skin-name == 'tailwind'  or $skin-name == 'bootstrap5') {
+            margin-top: -13px;
+
+            .e-button-icon::before {
+              font-size: 18px;
+            }
+          }
+        }
+      }
+
+      &.e-vertical {
+        direction: ltr;
+      }
+    }
+
+    &.e-disabled {
+      @if ($skin-name == 'tailwind') {
+        filter: alpha(Opacity=100);
+        opacity: 1;
+      }
+      @if ($skin-name == 'bootstrap5') {
+        opacity: .5;
+      }
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        &.e-material-slider .e-slider .e-handle.e-handle-first {
+          background-color: $grey-600;
+        }
+
+        &:hover {
+          .e-scale .e-tick {
+            visibility: hidden;
+          }
+        }
+
+        .e-slider {
+          .e-range {
+            background: $slider-disabled-bg-color;
+          }
+
+          .e-handle {
+            background: $grey-600;
+            transform: scale(.5) !important;
+
+            &.e-handle-first {
+              background-color: $grey-600;
+              border: 0;
+            }
+
+            &::after {
+              -ms-transform: scale(0);
+              -webkit-transform: scale(0);
+              background: transparent;
+              border: 7px solid $slider-material-tooltip-content-color;
+              border-radius: 50%;
+              box-sizing: border-box;
+              content: '';
+              height: 26px;
+              left: calc(50% - 13px);
+              opacity: 1;
+              position: absolute;
+              top: calc(50% - 13px);
+              transform: scale(1);
+              transition: none;
+              width: 26px;
+              z-index: -1;
+            }
+          }
+        }
+      }
+
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        .e-slider {
+          .e-range {
+            background: $slider-disabled-bg-color;
+          }
+
+          .e-handle {
+            border-color: $slider-disabled-bg-color;
+          }
+        }
+      }
+
+      .e-btn {
+        cursor: default;
+      }
+
+      .e-slider {
+        .e-handle {
+          cursor: default;
+
+          &.e-handle-disable {
+            display: $slider-disabled-handle-show;
+          }
+        }
+      }
+
+      @if ($skin-name == 'bootstrap4') {
+        .e-slider {
+          .e-range {
+            background-color: $slider-disabled-range-color;
+          }
+
+          .e-handle {
+            background-color: $slider-disabled-handle-color;
+            border-color: $slider-disabled-handle-color;
+          }
+
+          .e-slider-track {
+            background-color: $slider-disabled-track-color;
+          }
+        }
+
+        .e-scale .e-tick {
+          .e-tick-value {
+            color: $slider-button-bg-color;
+          }
+        }
+
+        .e-slider-button {
+          background-color: $slider-disabled-bg-color;
+          border-color: $white;
+        }
+      }
+    }
+
+    @if ($skin-name == 'bootstrap4') {
+      &:not(.e-disabled) {
+        .e-slider-button {
+          &:hover {
+            background-color: darken($gray-600, 7.5%);
+            border-color: darken($gray-600, 10%);
+          }
+
+          &:active {
+            background-color: darken($gray-600, 10%);
+            border-color: darken($gray-600, 12%);
+          }
+        }
+      }
+    }
+
+    &.e-horizontal {
+      height: 48px;
+      width: 100%;
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        .e-first-button {
+          left: 0;
+          margin-top: $slider-btn-center-align;
+          top: 50%;
+
+          .e-button-icon {
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAkFBMVEUAAAD////////////////////////+/v7////+/v7////////+/v7+/v7////////+/v7+/v7+/v7////+/v7+/v7+/v7+/v7////+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7///8G+5iqAAAAL3RSTlMABAgMEBQYHCAkKDA0ODxETFRYYGRsdHyAh4uTm6Onr7O/w8fL09ff4+fr7/P3+/6nVicAAADJSURBVHgBldJHdoNgAANhQUjvPTHuxbgAuv/t/J5O8I82Wn27UfGaVmjvBwvsdmEDUH33JuBxYwNQ/48m4LWzAbie2QR8nkzA/coGoPodTMDzzgagae1ykHAASDgAJBwAEk4xSDgAJBwAEg4ACacYJBwAEg4ACYeAjyMEaqYQSC97CFT/DQxID2sIpK8zBLqZQyC9dRDoajIyID1tIVD10zMg3S0ZSF4IJC8GkhcDyQuB5MVA8kIgeTGQvBhIXggkLwaSFwLJK3cBRvanB71ijlkAAAAASUVORK5CYII=');
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: inline-block;
+            height: 7px;
+            left: calc(50% - 4.6px);
+            position: absolute;
+            top: calc(50% - 3.6px);
+            width: 7px;
+          }
+        }
+
+        .e-second-button {
+          margin-top: $slider-btn-center-align;
+          right: 0;
+          top: 50%;
+
+          .e-button-icon {
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAkFBMVEUAAAD////////////////////////+/v7////////+/v7+/v7+/v7////////+/v7////+/v7+/v7+/v7+/v7+/v7////////+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7///9VYKa9AAAAL3RSTlMABAgMEBQYHCAoLDQ4PEBMUFhcZGx0eICDi5Obn6ers7vDx8vP19vf4+fr7/P3++LF0fAAAADNSURBVHgBldNHbsNAGEPhkZSi9F4S915k6d3/dga8Jgjw7bkYzPeXS5ObkkX3EQ5gcRcO6H/qbACbp3AAo6twwOEtHMCsDQecvqpsAKuHcMDw12QD2L2EA/C8EFleiCwvRJYXIssLmeGFzPBCZnghM7yQGV7IDC9Eglc26D6zwfS2JIP9a/To4b8pyWD9GH1c/11FNOZthO/4nvEeX5dksH2OTnT4rUsyWN4Xk4cj8nBEHo7IwxF5OCIPR+ThiDwckYcj8nBEHo5Iw5GdAVm8p9sPUXNKAAAAAElFTkSuQmCC');
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: inline-block;
+            height: 7px;
+            left: calc(50% - 2.6px);
+            position: absolute;
+            top: calc(50% - 3.6px);
+            width: 7px;
+          }
+        }
+      }
+      @else if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light') {
+        .e-first-button {
+          left: 0;
+          margin-top: $slider-btn-center-align;
+          top: 50%;
+
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
+            .e-button-icon {
+              background-image: $slider-button-hleft-bg-image;
+              background-repeat: no-repeat;
+              background-size: cover;
+              height: 8px;
+              left: calc(50% - 5px);
+              position: absolute;
+              top: calc(50% - 4px);
+              width: 8px;
+            }
+          }
+          @else if($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              @if ($skin-name == 'FluentUI') {
+                content: '\e738';
+                font-size: 14px;
+              }
+              @else {
+                content: '\e738';
+                font-size: 17px;
+              }
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 17px;
+              @if ($skin-name == 'tailwind') {
+                color: $slider-button-icon-bg-color;
+                content: '\e765';
+              }
+              @else {
+                content: '\e761';
+              }
+            }
+          }
+        }
+
+        .e-second-button {
+          margin-top: $slider-btn-center-align;
+          right: 0;
+          top: 50%;
+
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5'  and $skin-name != 'FluentUI') {
+            .e-button-icon {
+              background-image: $slider-button-hright-bg-image;
+              background-repeat: no-repeat;
+              background-size: cover;
+              height: 8px;
+              left: calc(50% - 3px);
+              position: absolute;
+              top: calc(50% - 4px);
+              width: 8px;
+            }
+          }
+          @else if($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              @if($skin-name == 'FluentUI') {
+                content: '\e75c';
+                font-size: 14px;
+              }
+              @else {
+                content: '\e75c';
+                font-size: 17px;
+                margin-left: 1px;
+              }
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 18px;
+              @if ($skin-name == 'tailwind') {
+                color: $slider-button-icon-bg-color;
+                content: '\e748';
+              }
+              @else {
+                content: '\e707';
+              }
+            }
+          }
+        }
+      }
+      @else {
+        .e-first-button {
+          left: 0;
+          margin-top: $slider-btn-center-align;
+          top: 50%;
+
+          .e-button-icon {
+            font-family: 'e-icons';
+          }
+
+          .e-button-icon::before {
+            color: $slider-button-icon-color;
+            content: '\e829';
+            font-size: 8px;
+            font-weight: 600;
+            left: calc(50% - 5px);
+            position: absolute;
+            top: calc(50% - 4px);
+          }
+        }
+
+        .e-second-button {
+          margin-top: $slider-btn-center-align;
+          right: 0;
+          top: 50%;
+
+          .e-button-icon {
+            font-family: 'e-icons';
+          }
+
+          .e-button-icon::before {
+            color: $slider-button-icon-color;
+            content: '\e830';
+            font-size: 8px;
+            font-weight: 600;
+            left: calc(50% - 3px);
+            position: absolute;
+            top: calc(50% - 4px);
+          }
+        }
+      }
+
+      &.e-slider-btn {
+        padding: $slider-button-horizon-padding;
+      }
+
+      .e-slider {
+        height: 32px;
+        position: relative;
+        top: calc(50% - 16px);
+        width: 100%;
+      }
+
+      .e-slider-track {
+        height: $slider-container-height;
+        left: 0;
+        position: absolute;
+        width: 100%;
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          background: $slider-handle-start-border-color;
+          overflow: hidden;
+          top: calc(50% - 1px);
+        }
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+          background: $slider-track-color;
+          overflow: hidden;
+          top: calc(50% - 2px);
+          @if $skin-name == 'FluentUI' {
+            border-radius: 2px;
+          }
+        }
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+          background: $slider-track-color;
+          border-radius: 4px;
+          overflow: hidden;
+          top: calc(50% - 4px);
+        }
+        @if($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+          top: calc(50% - 3px);
+        }
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+          background: $slider-handle-start-border-color;
+          border: 1px solid $slider-track-border-color;
+          border-radius: 4px;
+          overflow: hidden;
+          top: calc(50% - 5px);
+        }
+        @if $skin-name == 'bootstrap4' {
+          background: $slider-handle-start-border-color;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+      }
+
+      .e-handle {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'bootstrap5') {
+          margin-left: -6px;
+          top: calc(50% - 6px);
+        }
+        @else if ($skin-name == 'bootstrap4') {
+          margin-left: -7px;
+          top: calc(50% - 7px);
+        }
+        @else {
+          @if ($skin-name == 'tailwind') {
+            margin-left: -6px;
+          }
+          @else {
+            margin-left: -8px;
+          }
+          top: calc(50% - 8px);
+        }
+      }
+
+      &.e-scale-both {
+        .e-handle {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            margin-left: -8px;
+            top: calc(50% - 7px);
+          }
+        }
+
+        .e-range {
+          height: $slider-range-height;
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            top: calc(50% - 2px);
+          }
+        }
+      }
+
+      .e-range {
+        height: $slider-range-height;
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          top: calc(50% - 1px);
+        }
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+          top: calc(50% - 2px);
+        }
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+          top: calc(50% - 3px);
+        }
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'tailwind') {
+          top: calc(50% - 4px);
+        }
+      }
+
+      .e-limits {
+        background-color: $slider-limit-bar-color;
+        height: $slider-limit-bar-horizontal-height;
+        position: absolute;
+        top: $slider-limit-bar-top;
+        @if ($skin-name == 'bootstrap5') {
+          border-radius: 4px;
+        }
+        @if ($skin-name == 'FluentUI') {
+          border-radius: 2px;
+        }
+      }
+    }
+
+    &.e-vertical {
+      height: inherit;
+      @if ($skin-name == 'tailwind') {
+        padding: 28px 0;
+      }
+      @else if ($skin-name == 'FluentUI') {
+        padding: 32px 0;
+      }
+      @else {
+        padding: 38px 0;
+      }
+      width: 48px;
+      @if ($skin-name == 'bootstrap4') {
+        padding: 30px 0;
+      }
+
+      @if ($skin-name == 'bootstrap5') {
+        padding: 28px 0;
+      }
+
+      .e-slider {
+        height: 100%;
+        @if ($skin-name == 'FluentUI') {
+          left: calc(50% - 15px);
+        }
+        @else {
+          left: calc(50% - 16px);
+        }
+        position: relative;
+        width: 32px;
+      }
+
+      .e-slider-track {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI') {
+          background: $slider-track-color;
+        }
+        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'FluentUI') {
+          background: $slider-handle-start-border-color;
+        }
+        bottom: 0;
+        height: 100%;
+        position: absolute;
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+          @if ($skin-name == 'tailwind') {
+            left: calc(50%);
+          }
+          @else {
+            left: calc(50% - 2px);
+          }
+          overflow: hidden;
+          width: 4px;
+        }
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+          left: calc(50% - 4px);
+          overflow: hidden;
+          width: 8px;
+        }
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+          border: 1px solid $slider-track-border-color;
+          border-radius: 3px;
+          left: calc(50% - 5px);
+          overflow: hidden;
+          width: 10px;
+        }
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+          left: calc(50% - 3px);
+          overflow: hidden;
+          width: 6px;
+        }
+        @if ($skin-name == 'bootstrap4') {
+          border-radius: 6px;
+        }
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          left: calc(50% - 1px);
+          overflow: hidden;
+          width: 2px;
+        }
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+          border-radius: 4px;
+        }
+        @if ($skin-name == 'FluentUI') {
+          border-radius: 2px;
+        }
+      }
+
+      &.e-small-size {
+        &.e-slider-btn {
+          height: 100%;
+          padding: $slider-button-vertical-padding;
+
+          .e-slider {
+            height: 100%;
+            width: $slider-height;
+          }
+        }
+      }
+
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        .e-first-button {
+          bottom: 0;
+          margin-right: $slider-btn-center-align;
+          right: 50%;
+
+          .e-button-icon {
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAjVBMVEUAAAD////////////////////////+/v7////+/v7////////+/v7////////+/v7+/v7+/v7+/v7////+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7////1kjJ6AAAALnRSTlMABAgMEBQYHCAkKDA4QERITFRcYGRodHyDj5OXn6Ons7e7v8vP09ff5+vv8/f7zZvJMAAAAItJREFUeAHdyVcagjAQBsAfUVTAXsTeSTRm7388i/kUQjYHYF4H9bAUXjuEV/KQEdC98f9I8dLXxJngY879CsbG/ccARuPsetHCT1tWXyUoSDXZRiiZ2p/Bsi7/HrbgVPw8REUk/n+P4ZAoMvQATmMyFmBk39+CExzefwnBauZEsgOPWOkevIYz1NEToo45F58KJy0AAAAASUVORK5CYII=');
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: inline-block;
+            height: 8px;
+            left: calc(50% - 3.8px);
+            position: absolute;
+            top: calc(50% - 2.7px);
+            width: 8px;
+          }
+        }
+
+        .e-second-button {
+          margin-right: $slider-btn-center-align;
+          right: 50%;
+          top: 0;
+
+          .e-button-icon {
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAjVBMVEUAAAD////////////////////////////////+/v7////+/v7+/v7////////+/v7+/v7////+/v7////+/v7+/v7////+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7////wrNfvAAAALnRSTlMABAgMEBQYICgsMDQ4QERITFBcYGhseHyDi5Obn6Ort7u/x8/X29/j5+vv8/f77y3LJgAAAI1JREFUeAHdyVeagjAUBtCbYQTsXewFENGYf//LsyB8kORmAZzXQ600mLrfz2XX9X8xcO0Qb4+3s2B/ia8N9yOFwtz+wR0/z77tvQSVm0+mI2piYXyEhp3+E2gWzQ8lNGpY//8UhjygijjBIvGotIbVofwZGFHxPQmGGn/ez8B6hETiAofUo1XmtKVWeAEhzjgqqZr/lwAAAABJRU5ErkJggg==');
+            background-repeat: no-repeat;
+            background-size: cover;
+            display: inline-block;
+            height: 8px;
+            left: calc(50% - 3.8px);
+            position: absolute;
+            top: calc(50% - 4.7px);
+            width: 8px;
+          }
+        }
+      }
+      @else if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light') {
+        .e-first-button {
+          bottom: 0;
+          margin-right: $slider-btn-center-align;
+          right: 50%;
+
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
+            .e-button-icon {
+              background-image: $slider-button-vdown-bg-image;
+              background-repeat: no-repeat;
+              background-size: cover;
+              display: inline-block;
+              height: 8px;
+              left: calc(50% - 4px);
+              position: absolute;
+              top: calc(50% - 3.6px);
+              width: 8px;
+            }
+          }
+          @else if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              @if ($skin-name == 'bootstrap5') {
+                content: '\e734';
+                font-size: 18px;
+              }
+              @else {
+                content: '\e734';
+                font-size: 14px;
+              }
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 18px;
+              @if ($skin-name == 'tailwind') {
+                color: $slider-button-icon-bg-color;
+                content: '\e729';
+              }
+              @else {
+                content: '\e729';
+              }
+            }
+          }
+        }
+
+        .e-second-button {
+          margin-right: $slider-btn-center-align;
+          right: 50%;
+          top: 0;
+
+          @if ($skin-name != 'tailwind' and $skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
+            .e-button-icon {
+              background-image: $slider-button-vup-bg-image;
+              background-repeat: no-repeat;
+              background-size: cover;
+              display: inline-block;
+              height: 8px;
+              left: calc(50% - 4px);
+              position: absolute;
+              top: calc(50% - 4.5px);
+              width: 8px;
+            }
+          }
+          @else if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            .e-button-icon {
+              font-family: 'e-icons';
+            }
+
+            .e-button-icon::before {
+              color: $slider-button-icon-bg-color;
+              @if ($skin-name == 'bootstrap5') {
+                content: '\e7dd';
+                font-size: 18px;
+              }
+              @else {
+                content: '\e7dd';
+                font-size: 14px;
+              }
+            }
+          }
+          @else {
+            .e-button-icon::before {
+              font-size: 18px;
+              @if ($skin-name == 'tailwind') {
+                color: $slider-button-icon-bg-color;
+                content: '\e776';
+              }
+              @else {
+                content: '\e7a0';
+              }
+            }
+          }
+        }
+      }
+      @else {
+        .e-first-button {
+          bottom: 0;
+          margin-right: $slider-btn-center-align;
+          right: 50%;
+
+          .e-button-icon {
+            font-family: 'e-icons';
+          }
+
+          .e-button-icon::before {
+            color: $slider-button-icon-color;
+            content: '\e829';
+            font-size: 9px;
+            font-weight: 600;
+            left: calc(50% - 4.15px);
+            position: absolute;
+            top: calc(50% - 4px);
+            transform: rotate(-90deg);
+          }
+        }
+
+        .e-second-button {
+          margin-right: $slider-btn-center-align;
+          right: 50%;
+          top: 0;
+
+          .e-button-icon {
+            font-family: 'e-icons';
+          }
+
+          .e-button-icon::before {
+            color: $slider-button-icon-color;
+            content: '\e829';
+            font-size: 9px;
+            font-weight: 600;
+            left: calc(50% - 5.5px);
+            position: absolute;
+            top: calc(50% - 5.8px);
+            transform: rotate(90deg);
+          }
+        }
+      }
+
+      &.e-scale-both {
+        .e-slider {
+          .e-handle {
+            margin-bottom: $slider-v-handle-margin;
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              left: calc(50% - 9px);
+            }
+          }
+        }
+      }
+
+      .e-slider {
+        .e-handle {
+          margin-bottom: $slider-v-handle-margin;
+          @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'bootstrap5') {
+            left: calc(50% - 6px);
+          }
+          @else if($skin-name == 'bootstrap4') {
+            left: calc(50% - 7px);
+          }
+          @else if($skin-name == 'tailwind') {
+            left: calc(50% - 4px);
+          }
+          @else {
+            left: calc(50% - 8px);
+          }
+        }
+
+        .e-range {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+            left: calc(50% - 4px);
+            width: 8px;
+          }
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+            left: calc(50% - 3px);
+            width: 6px;
+          }
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'FluentUI') {
+            @if ($skin-name == 'tailwind') {
+              left: calc(50%);
+            }
+            @else {
+              left: calc(50% - 2px);
+            }
+            @if ($skin-name == 'bootstrap5') {
+              width: 6px;
+            }
+            @else {
+              width: 4px;
+            }
+          }
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            left: calc(50% - 3px);
+            width: 6px;
+          }
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            left: calc(50% - 1px);
+            width: 2px;
+          }
+        }
+
+        .e-limits {
+          background-color: $slider-limit-bar-color;
+          left: $slider-limit-bar-left;
+          position: absolute;
+          width: $slider-limit-bar-vertical-width;
+          @if ($skin-name == 'bootstrap5') {
+            border-radius: 4px;
+          }
+          @if ($skin-name == 'FluentUI') {
+            border-radius: 2px;
+          }
+        }
+      }
+    }
+
+    .e-range {
+      border-radius: $slider-range-border-radius;
+      position: absolute;
+      transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, width 300ms ease-out,
+      height 300ms ease-out;
+
+      &.e-drag-horizontal {
+        cursor: pointer;
+      }
+
+      &.e-drag-vertical {
+        cursor: pointer;
+      }
+    }
+
+    .e-slider {
+      box-sizing: border-box;
+      cursor: $slider-cursor;
+      display: block;
+      outline: 0 none;
+      padding: 0;
+      position: relative;
+
+      .e-handle {
+        border-radius: $slider-border-radius-handle;
+        @if ($skin-name == 'tailwind') {
+          box-shadow: $slider-handle-box-shadow;
+        }
+        box-sizing: border-box;
+        cursor: $slider-handle-hover-cursor;
+        height: $slider-handle-height;
+        outline: none;
+        position: absolute;
+        touch-action: none;
+        transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, transform 300ms ease-out;
+        width: $slider-handle-width;
+        z-index: 10;
+
+        &.e-handle-active {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            background-color: $slider-active-handle-bg-color;
+            border-color: $slider-hover-handle-color;
+          }
+        }
+
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          // sass-lint:disable-all
+          cursor: -webkit-grab;
+          cursor: grab;
+          // sass-lint:enable-all
+
+          &.e-handle-active {
+            // sass-lint:disable-all
+            cursor: -webkit-grabbing;
+            cursor: grabbing;
+            // sass-lint:enable-all
+          }
+
+          &.e-handle-start {
+            background-color: $slider-handle-start-background;
+            border: $slider-start-handle-border-size;
+          }
+
+          &::after {
+            -moz-box-sizing: content-box;
+            -ms-transform: scale(0);
+            -webkit-box-sizing: content-box;
+            -webkit-transform: scale(0);
+            border: 0 solid;
+            border-radius: 50%;
+            box-sizing: content-box;
+            content: '';
+            filter: alpha(opacity=26);
+            height: 32px;
+            left: calc(50% - 16px);
+            opacity: .26;
+            position: $slider-handle-after-position;
+            top: calc(50% - 16px);
+            transform: scale(0);
+            transition: transform .4s cubic-bezier(.25, .8, .25, 1);
+            width: 32px;
+            z-index: -1;
+          }
+        }
+
+        &.e-tab-handle {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            &.e-handle-start::after {
+              background-color: $slider-tab-background;
+              opacity: .38;
+            }
+
+            &::after {
+              -ms-transform: scale(1);
+              -webkit-transform: scale(1);
+              background-color: $slider-color;
+              transform: scale(1);
+            }
+          }
+
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI') {
+            border-color: $slider-tab-border-color;
+          }
+
+          // sass-lint:disable-all
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+            background-color: $slider-tab-background;
+            border-color: $slider-tab-border-color;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+          }
+          @if ($skin-name == 'bootstrap4') {
+            background-color: $slider-tab-background;
+            border-color: $slider-tab-border-color;
+            box-shadow: $slider-tab-active-box-shadow;
+          }
+          @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+            background-color: $slider-tab-background;
+            border: $slider-tab-border;
+            box-shadow: $slider-tab-active-box-shadow;
+          }
+          // sass-lint:enable-all
+        }
+      }
+
+      .e-tab-track {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+          background-color: $slider-tab-track-color;
+        }
+      }
+    }
+
+    .e-tick-before {
+      &.e-scale {
+        &.e-h-scale {
+          .e-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              height: $tick-after-height;
+              top: $tick-after-top;
+            }
+            @else {
+              background-position: bottom;
+              height: 50%;
+              top: 1px;
+            }
+          }
+
+          .e-large {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              height: $largetick-before-height;
+              top: $largetick-before-top;
+            }
+          }
+        }
+
+        &.e-v-scale {
+          .e-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              left: $tick-after-left;
+              width: $tick-after-height;
+            }
+            @else {
+              background-position: right;
+              left: 1px;
+              width: 50%;
+            }
+          }
+
+          .e-large {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              left: $largetick-before-left;
+              width: $largetick-before-height;
+            }
+          }
+        }
+      }
+    }
+
+    .e-tick-after {
+      &.e-scale {
+        &.e-h-scale {
+          .e-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              height: $tick-before-height;
+              top: $tick-before-top;
+            }
+            @else {
+              background-position-x: center;
+              height: 50%;
+              top: calc(50% - 1px);
+            }
+          }
+
+          .e-large {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              height: $largetick-after-height;
+              top: $largetick-after-top;
+            }
+          }
+        }
+
+        &.e-v-scale {
+          .e-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              left: $tick-before-left;
+              width: $tick-before-height;
+            }
+            @else {
+              background-position: left;
+              left: calc(50% - 1px);
+              width: 50%;
+            }
+          }
+
+          .e-large {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              left: $largetick-after-left;
+              width: $largetick-after-height;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-scale-before {
+      .e-scale {
+        &.e-v-scale {
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            right: 9px;
+          }
+        }
+      }
+    }
+
+    &.e-scale-after {
+      .e-scale {
+        &.e-v-scale {
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            right: 9px;
+          }
+        }
+      }
+    }
+
+    .e-tick-both {
+      &.e-scale {
+        &.e-h-scale {
+          .e-tick {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              height: calc(100% - 6px);
+              top: -11px;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              height: 16px;
+              top: -8px;
+            }
+            @if($skin-name == 'bootstrap5') {
+              height: 18px;
+              top: -11px;
+            }
+            @if ($skin-name == 'tailwind') {
+              height: 16px;
+              top: -16px;
+            }
+
+            @if($skin-name == 'FluentUI') {
+              height: 30px;
+              top: -17px;
+            }
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
+              height: calc(100% - 3px);
+              top: -12.5px;
+            }
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              height: calc(100% - 6px);
+              top: -12px;
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position: center;
+              height: 99%;
+            }
+          }
+
+          .e-large {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              height: 100%;
+              top: -8px;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              height: 22px;
+              top: -5px;
+
+            }
+            @if ($skin-name == 'bootstrap5') {
+              height: 26px;
+              top: -7px;
+            }
+            @if ($skin-name == 'tailwind') {
+              height: 24px;
+              top: -12px;
+            }
+            @if ($skin-name == 'FluentUI') {
+              height: 38px;
+              top: -13px;
+            }
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              height: calc(100% + 3px);
+              top: -9px;
+            }
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              height: calc(100% + 2px);
+              top: -8px;
+            }
+          }
+        }
+
+        &.e-v-scale {
+          .e-tick {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              background-position: center;
+              width: 100%;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              background-position: center;
+              left: 6px;
+              width: calc(100% - 12px);
+            }
+            @if($skin-name == 'bootstrap5') {
+              background-position: center;
+              left: 5px;
+              width: 18px;
+            }
+            @if ($skin-name == 'tailwind') {
+              left: 6px;
+              width: 16px;
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position: center;
+              width: 100%;
+            }
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+              left: 0;
+              width: calc(100% - 2px);
+            }
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              left: 2px;
+              width: calc(100% - 6px);
+            }
+          }
+
+          .e-large {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+              width: 100%;
+            }
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+              left: 3px;
+              width: calc(100% - 6px);
+            }
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+              left: 1px;
+              width: 26px;
+            }
+            @if ($skin-name == 'tailwind') {
+              left: 3px;
+              width: 24px;
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              width: 100%;
+            }
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+              left: -2px;
+              width: calc(100% + 3px);
+            }
+          }
+        }
+      }
+    }
+
+    .e-scale {
+      box-sizing: content-box;
+      font-family: $slider-scale-font-family;
+      height: 28px;
+      line-height: normal;
+      list-style: none outside none;
+      margin: 0;
+      outline: 0 none;
+      padding: 0;
+      position: absolute;
+      top: $slider-scale-top;
+      width: 100%;
+      z-index: 1;
+      @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+        font-size: $slider-scale-font-size;
+        margin-top: $slider-center-align;
+      }
+
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        z-index: -1;
+      }
+
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        &.e-tick-both {
+          top: 12px;
+        }
+      }
+
+      .e-tick {
+        @if ($theme-name == 'bootstrap5-dark' or $theme-name == 'tailwind-dark' or $theme-name == 'fluentui-dark') {
+          background-image: $slider-scale-tick-image-dark;
+        }
+        @else {
+          background-image: $slider-scale-tick-image;
+        }
+        cursor: $slider-cursor;
+        outline: none;
+        position: relative;
+        user-select: none;
+        @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+          background-position: center center;
+        }
+
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+          &.e-large {
+            @if ($skin-name != 'bootstrap4') {
+              background-image: $slider-scale-tick-image-dark;
+            }
+            @else {
+              background-image: $slider-small-scale-tick-image;
+            }
+          }
+        }
+
+        .e-tick-value {
+          color: $slider-tick-font-color;
+          font-family: $slider-scale-font-family;
+          font-size: $slider-scale-font-size;
+          outline: none;
+          position: absolute;
+          user-select: none;
+          white-space: nowrap;
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+            line-height: 1.5;
+          }
+          @if ($skin-name == 'tailwind') {
+            line-height: 18px;
+          }
+        }
+      }
+
+      &.e-v-scale {
+        height: 100%;
+        @if ($skin-name == 'tailwind') {
+          left: calc(50% - 12px);
+        }
+        @else {
+          left: calc(50% - 14px);
+        }
+
+        top: 0;
+        width: 28px;
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+          margin-top: -2px;
+        }
+
+        .e-tick {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            background-repeat: no-repeat;
+          }
+
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            background-repeat: repeat-x;
+          }
+
+          &.e-first-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              background-position-y: center;
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position-y: top;
+            }
+          }
+
+          &.e-last-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              background-position-y: bottom;
+              margin-top: 2px;
+              @if ($skin-name == 'tailwind') {
+                margin-top: 3px;
+              }
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position-y: bottom;
+            }
+          }
+        }
+      }
+
+      &.e-h-scale {
+        &.e-tick-after {
+          @if ($skin-name == 'tailwind') {
+            top: 3px;
+          }
+        }
+
+        &.e-tick-before {
+          @if ($skin-name == 'tailwind') {
+            top: 15px;
+          }
+        }
+
+        .e-tick {
+          display: inline-block;
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            background-repeat: no-repeat;
+          }
+
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            background-repeat: repeat-y;
+            height: 100%;
+            top: 0;
+          }
+
+          .e-tick-value {
+            &.e-tick-before {
+              top: -18px;
+            }
+
+            &.e-tick-after {
+              bottom: -20px;
+            }
+
+            &.e-tick-both {
+              bottom: -20px;
+
+              &:first-child {
+                top: -18px;
+              }
+            }
+          }
+
+          &.e-first-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              background-position: left center;
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position-x: left;
+            }
+          }
+
+          &.e-last-tick {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+              background-position: right center;
+            }
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+              background-position-x: right;
+            }
+          }
+        }
+      }
+    }
+
+    &.e-horizontal {
+      &.e-scale-both {
+        .e-scale {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            top: 12px;
+          }
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
+            top: 15px;
+          }
+        }
+
+        .e-slider-track {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            border-color: $slider-track-border-color;
+            border-radius: 1px;
+            border-style: solid;
+            border-width: 5px 0;
+            height: 14px;
+            margin-top: -4px;
+            top: calc(50% - 3px);
+          }
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            border-color: $slider-tack-ticks-border-color;
+            border-radius: 4px;
+            border-style: solid;
+            border-width: 4px;
+            height: 14px;
+            top: calc(50% - 6px);
+          }
+        }
+      }
+    }
+
+    &.e-vertical {
+      &.e-scale-both {
+        .e-scale {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            right: 12px;
+          }
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            right: 11px;
+          }
+        }
+
+        .e-slider-track {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            border-color: $slider-track-border-color;
+            border-radius: 1px;
+            border-style: solid;
+            border-width: 0 5px;
+            left: calc(50% - 1px);
+            margin-left: -7px;
+            width: 14px;
+          }
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+            border-color: $slider-tack-ticks-border-color;
+            border-radius: 1px;
+            border-style: solid;
+            border-width: 0 5px;
+            left: calc(50% - 1px);
+            margin-left: -7px;
+            width: 14px;
+          }
+        }
+
+        .e-range {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI') {
+            margin-left: -1px;
+          }
+        }
+      }
+    }
+
+    &.e-scale-both {
+      &.e-vertical {
+        .e-scale {
+          &.e-h-scale {
+            @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' {
+              margin-left: -7px;
+            }
+          }
+        }
+
+        &.e-small-size {
+          .e-scale {
+            &.e-h-scale {
+              @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' {
+                margin-left: -7px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-control-wrapper.e-slider-container {
+    &.e-vertical {
+      &.e-scale-both {
+        .e-scale.e-v-scale {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+            right: 10px;
+          }
+        }
+      }
+    }
+
+    .e-scale.e-v-scale {
+      &.e-tick-after {
+        @if ($skin-name == 'tailwind') {
+          left: calc(50% - 17px);
+        }
+      }
+
+      &.e-tick-before {
+        @if ($skin-name == 'tailwind') {
+          left: calc(50% - 7px);
+        }
+      }
+
+      .e-tick {
+        .e-tick-value {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+            &.e-tick-before {
+              right: 26px;
+            }
+
+            &.e-tick-after {
+              left: 27px;
+            }
+
+            &.e-tick-both {
+              right: 41px;
+
+              &:first-child {
+                left: 39px;
+              }
+            }
+          }
+          @else {
+            &.e-tick-before {
+              right: 17px;
+            }
+
+            &.e-tick-after {
+              left: 19px;
+            }
+
+            &.e-tick-both {
+              @if $skin-name == 'bootstrap4' {
+                right: 30px;
+              }
+              @else {
+                right: 44px;
+              }
+
+              &:first-child {
+                @if $skin-name == 'bootstrap4' {
+                  left: 30px;
+                }
+                @else {
+                  left: 42px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-control-wrapper.e-slider-container {
+    .e-scale .e-tick {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        visibility: hidden;
+      }
+
+      .e-tick-value {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+          visibility: visible;
+        }
+      }
+    }
+  }
+
+  .e-control-wrapper.e-slider-container:hover {
+    .e-scale .e-tick {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        visibility: visible;
+      }
+    }
+  }
+
+  .e-control-wrapper.e-slider-container:active {
+    .e-scale .e-tick {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+        visibility: visible;
+      }
+    }
+  }
+
+  .e-slider-hover .e-scale .e-tick {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark') {
+      visibility: visible;
+    }
+  }
+
+  .e-control-wrapper.e-slider-container .e-slider {
+    .e-handle.e-handle-active {
+      @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
+        background-color: $slider-handle-active-bg-color;
+        border-color: $slider-handle-active-border-color;
+      }
+      @if ($skin-name == 'bootstrap4') {
+        box-shadow: $slider-handle-active-box-shadow;
+      }
+    }
+  }
+}

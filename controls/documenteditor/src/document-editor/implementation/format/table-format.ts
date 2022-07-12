@@ -17,6 +17,7 @@ export class WTableFormat {
     public borders: WBorders = new WBorders(this);
     public shading: WShading = new WShading(this);
     public ownerBase: TableWidget = undefined;
+    private _styleName: string = undefined;
 
     public get allowAutoFit(): boolean {
         return this.getPropertyValue('allowAutoFit') as boolean;
@@ -103,6 +104,12 @@ export class WTableFormat {
     }
     public set horizontalPosition(value: number) {
         this.setPropertyValue('horizontalPosition', value);
+    }
+    public get styleName(): string {
+        return this._styleName;
+    }
+    public set styleName(value: string) {
+        this._styleName = value;
     }
     public constructor(owner?: TableWidget) {
         this.ownerBase = owner;
@@ -257,6 +264,7 @@ export class WTableFormat {
         tableFormat.shading = isNullOrUndefined(this.shading) ? undefined : this.shading.cloneFormat();
         tableFormat.bidi = this.bidi;
         tableFormat.allowAutoFit = this.allowAutoFit;
+        tableFormat.styleName = this.styleName;
         return tableFormat;
     }
     public hasValue(property: string): boolean {
@@ -282,6 +290,7 @@ export class WTableFormat {
                 this.allowAutoFit = format.allowAutoFit;
                 this.horizontalPosition = format.horizontalPosition;
                 this.horizontalPositionAbs = format.horizontalPositionAbs;
+                this.styleName = format.styleName;
             }
             if (!isNullOrUndefined(format.borders)) {
                 this.borders = new WBorders(this);

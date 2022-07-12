@@ -9242,6 +9242,9 @@ export class Selection {
             this.createPasteElement(top, left);
         } else if (this.pasteElement) {
             this.pasteElement.style.display = 'none';
+            if (!isNullOrUndefined(this.owner.editor)) {
+                this.owner.editor.isHtmlPaste = false;
+            }
         }
     }
     /**

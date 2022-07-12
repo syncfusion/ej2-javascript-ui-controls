@@ -100,9 +100,16 @@ export function updateDecoratorElement(
     obj: PdfAnnotationBaseModel, element: DrawingElement, pt: PointModel, adjacentPoint: PointModel, isSource: boolean): void {
     element.offsetX = pt.x; element.offsetY = pt.y;
     const angle: number = Point.findAngle(pt, adjacentPoint);
-    const thickness: number = obj.thickness <= 5 ? 5 : obj.thickness;
     const getPath: string = getDecoratorShape(isSource ? obj.sourceDecoraterShapes : obj.taregetDecoraterShapes);
-    const size: Size = new Size(thickness * 2, thickness * 2);
+    let thickness: number = 0;
+    let size: Size;
+    if (obj.shapeAnnotationType === 'LineWidthArrowHead') {
+        thickness = obj.thickness;
+        size = new Size(thickness * 12, thickness * 12);
+    } else {
+        thickness = obj.thickness <= 5 ? 5 : obj.thickness;
+        size = new Size(thickness * 2, thickness * 2);
+    }
     element.transform = RotateTransform.Self;
     setElementStype(obj, element);
     element.style.fill = (obj.fillColor !== 'tranparent') ? obj.fillColor : 'white';

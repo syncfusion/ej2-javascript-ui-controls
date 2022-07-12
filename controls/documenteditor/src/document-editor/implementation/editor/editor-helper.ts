@@ -650,6 +650,13 @@ export class Base64 {
         }
         return output;
     }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.keyStr = undefined;
+    }
 }
 /**
  * TextSearchResultInfo

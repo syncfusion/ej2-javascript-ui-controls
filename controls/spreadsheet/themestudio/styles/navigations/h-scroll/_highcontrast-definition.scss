@@ -1,0 +1,52 @@
+$hscroll-skin: 'highcontrast' !default;
+$hscroll-dash-border: 2px solid #fff;
+$hscroll-border-type: solid !default;
+$hscroll-hover-font: $hover-font-color  !default;
+$hscroll-active-font-color: $active-font-color  !default;
+$hscroll-default-bg: $bg-base-0 !default;
+$hscroll-press-bg: $selection-bg !default;
+$hscroll-active-bg: $selection-bg !default;
+$hscroll-nav-nrml-minheight: 40px !default;
+$hscroll-nav-bgr-minheight: 50px !default;
+$hscroll-mob-nav-nrml-width: 50px !default;
+$hscroll-nav-nrml-width: 40px !default;
+$hscroll-nav-bgr-width: 50px !default;
+$hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
+$hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
+$hscroll-border-size: 1px !default;
+$hscroll-default-border: $border-fg !default;
+$hscroll-box-shadow: none !default;
+$hscroll-hover-bg: $hover-bg !default;
+$hscroll-hover-border-color: '' !default;
+$hscroll-focus-border: 0 !default;
+$hscroll-active-border: 0 !default;
+$hscroll-hover-border: 0 !default;
+$hscroll-active-box-shadow: none !default;
+$hscroll-default-icon-color: $bg-base-100 !default;
+$hscroll-overlay-opacity: .5 !default;
+$hscroll-overlay-bg: $bg-base-10 !default;
+$hscroll-overlay-start: rgba($hscroll-overlay-bg, 0) !default;
+$hscroll-overlay-end: rgba($hscroll-overlay-bg, 1) !default;
+$hscroll-right-bg: linear-gradient(-270deg, $hscroll-overlay-start 0%, $hscroll-overlay-end 100%) !default;
+$hscroll-left-bg:  linear-gradient(-270deg, $hscroll-overlay-end 0%, $hscroll-overlay-start 100%) !default;
+$hscroll-nav-hover-border-color: $hover-border !default;
+$hscroll-nav-active-color: $selection-font !default;
+$hscroll-nav-focus-bg-color: inherit !default;
+
+$hscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06) !default;
+$hscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06) !default;
+$hscroll-device-arrow-bg: $bg-base-15 !default;
+$hscroll-device-arrow-border-size: 1px !default;
+$hscroll-device-arrow-border-color: $border-fg !default;
+$hscroll-device-arrow-color: $selection-bg !default;
+$hscroll-device-arrow-size: 14px !default;
+$hscroll-device-arrow-size-bigger: 18px !default;
+$hscroll-device-arrow-width: 52px !default;
+
+@mixin hscroll-btn-animation {
+  content: '';
+}
+
+@mixin hscroll-btn-animation-after {
+  content: '';
+}

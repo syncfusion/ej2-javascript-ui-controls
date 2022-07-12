@@ -182,8 +182,10 @@ export class BatchEdit {
             switch (e.keyArgs.action) {
             case 'tab':
             case 'shiftTab':
+                let indent: number = this.parent.isRowDragable() && this.parent.isDetail() ? 2 :
+                    this.parent.isRowDragable() || this.parent.isDetail() ? 1 : 0;
                 // eslint-disable-next-line no-case-declarations
-                const col: Column = this.parent.getColumns()[e.indexes[1]];
+                const col: Column = this.parent.getColumns()[e.indexes[1] - indent];
                 if (col && !this.parent.isEdit) {
                     this.editCell(e.indexes[0], col.field);
                 }

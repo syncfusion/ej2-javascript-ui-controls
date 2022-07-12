@@ -1325,9 +1325,13 @@ export class TablePropertiesDialog {
         this.cellTopAlign = undefined;
         this.cellCenterAlign = undefined;
         this.cellBottomAlign = undefined;
-        this.tableFormat.destroy();
-        this.cellFormat.destroy();
-        this.tableFormat = undefined;
-        this.cellFormat = undefined;
+        if (this.tableFormatIn) {
+            this.tableFormatIn.destroy();
+        }
+        if (this.cellFormatIn) {
+            this.cellFormatIn.destroy();
+        }
+        this.tableFormatIn = undefined;
+        this.cellFormatIn = undefined;
     }
 }

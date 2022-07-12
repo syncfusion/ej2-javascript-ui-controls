@@ -292,7 +292,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         attributes(this.element, {
             ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
             ['aria-owns']: this.getPopUpElement().id, ['type']: 'button',
-            ['aria-label']: this.element.textContent + ' dropdownbutton'
+            ['aria-label']: this.element.textContent ? this.element.textContent : 'dropdownbutton'
         });
         if (this.cssClass) { addClass([div], this.cssClass.split(' ')); }
         this.isPopupCreated = true;
@@ -318,14 +318,15 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             item = items[i];
             const tempItem: string = item.text;
             li = this.createElement('li', {
+                innerHTML: item.url ? '' : tempItem,
                 className: item.separator ? classNames.ITEM + ' ' + classNames.SEPARATOR : classNames.ITEM,
-                attrs: { 'role': 'menuItem', 'tabindex': '-1' },
+                attrs: { 'role': 'menuItem', 'tabindex': '-1', 'aria-label': tempItem },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
             });
             if (this.enableHtmlSanitizer) {
                 li.textContent = item.url ? '' : tempItem;
             }
-            else{
+            else {
                 li.innerHTML = item.url ? '' : tempItem;
             }
             if (item.url) {

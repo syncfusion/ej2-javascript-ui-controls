@@ -233,10 +233,7 @@ export class DataLabel {
                                     }
                                 }
                             } else {
-                                isDataLabelOverlap = isCollide(
-                                    this.chart.chartAreaType !== 'PolarRadar' && series.type.indexOf("Stacking") > -1 ?
-                                        new Rect(rect.x - 10, rect.y, rect.width, rect.height) : rect, chart.dataLabelCollections, clip
-                                );
+                                isDataLabelOverlap = isCollide(rect, chart.dataLabelCollections, clip);
                             }
                             if ((!isDataLabelOverlap || dataLabel.labelIntersectAction === 'None') && isRender) {
                                 chart.dataLabelCollections.push(actualRect);
@@ -427,8 +424,7 @@ export class DataLabel {
             this.locationY = location.y;
             const alignmentValue: number = textSize.width + this.borderWidth + this.margin.left + this.margin.right - padding;
             location.x = dataLabel.position === 'Auto' ? location.x :
-                this.calculateAlignment(alignmentValue, location.x, dataLabel.alignment, point.yValue < 0) +
-                (this.chart.chartAreaType !== "PolarRadar" && series.type.indexOf("Stacking") > -1 && point.yValue === 0 ? padding : 0);
+                this.calculateAlignment(alignmentValue, location.x, dataLabel.alignment, point.yValue < 0);
             location.x = this.calculateRectPosition(
                 location.x, labelRegion, point.yValue < 0 !== this.yAxisInversed,
                 dataLabel.position, series, textSize, labelIndex, point

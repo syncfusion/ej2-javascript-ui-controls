@@ -206,6 +206,7 @@ export class BookmarkDialog {
             this.listviewInstance.destroy();
             this.listviewInstance = undefined;
         }
+        this.documentHelper = undefined;
     }
 }
 

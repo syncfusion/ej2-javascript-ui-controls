@@ -346,6 +346,43 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
     });
 });
 
+describe('EJ2-61099: Link in the list reverted when press ctrl+C', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'c', stopPropagation: () => { }, shiftKey: false, which: 67};
+    it('clearing all list maintains the list element', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Rich Text Editor is a WYSIWYG editing control that will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.</p><p><b>Paste Cleanup properties:</b></p><ul>
+            <li><p>prompt - specifies whether to enable the prompt when pasting in Rich Text Editor.</p></li>
+            <li>
+                <p><a class="e-rte-anchor" href="http://dummylink" title="http://dummylink" target="_blank">plainText - specifies whether to paste as plain text or not in Rich Text Editor.</a></p>
+            </li>
+            <li>
+                <p>keepFormat- specifies whether to keep or remove the format when pasting in Rich Text Editor.</p>
+            </li>
+            <li>
+                <p>deniedTags - specifies the tags to restrict when pasting in Rich Text Editor.</p>
+            </li>
+            <li>
+                <p>deniedAttributes - specifies the attributes to restrict when pasting in Rich Text Editor.</p>
+            </li>
+            <li>
+                <p>allowedStyleProperties - specifies the allowed style properties when pasting in Rich Text Editor.</p>
+            </li>
+        </ul>`,
+        });
+        let node: any = (rteObj as any).inputElement.querySelector('.e-rte-anchor').childNodes[0];
+        let sel = new NodeSelection().setSelectionText(document, node, node, 0, 80);
+        keyBoardEvent.keyCode = 67;
+        keyBoardEvent.code = 'C';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.inputElement.querySelectorAll('a').length).toBe(1);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-57616: clearing all list maintains the list element', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};

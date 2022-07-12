@@ -47,7 +47,7 @@ export class DateProcessor {
         if (hour < this.parent.defaultStartTime && (!validateAsMilestone || isLoad)) {
             this.setTime(this.parent.defaultStartTime, cloneStartDate);
         } else if (hour < this.parent.defaultStartTime && validateAsMilestone) {
-            this.setTime(this.parent.defaultEndTime, cloneStartDate);
+            this.setTime(this.parent.defaultStartTime, cloneStartDate);
         } else if ((hour === this.parent.defaultEndTime && (!ganttProp || !validateAsMilestone)) || hour > this.parent.defaultEndTime) {
             cloneStartDate.setDate(cloneStartDate.getDate() + 1);
             this.setTime(this.parent.defaultStartTime, cloneStartDate);

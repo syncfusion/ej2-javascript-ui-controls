@@ -1592,6 +1592,29 @@ describe('Filtering module => ', () => {
             expect(gridObj.element.querySelectorAll('.e-filtermenudiv')[3].classList.contains('e-filtered')).toBeFalsy();
             done();
         });
+
+        it('clear filter action', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'refresh'){
+                    expect(args.rows.length).toBe(10);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearFiltering();
+        });
+
+        it('checking filter empty string null foreignkey column data with equal/notequal operator', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(1);
+                    done();    
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('CustomerID', 'equal', '');
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

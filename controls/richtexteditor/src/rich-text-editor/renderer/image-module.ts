@@ -1004,7 +1004,8 @@ export class Image {
                     buttonModel: {
                         content: linkUpdate, cssClass: 'e-flat e-update-link' + ' ' + this.parent.cssClass, isPrimary: true
                     }
-                }]
+                }],
+                cssClass: this.dialogObj.cssClass + ' e-rte-img-link-dialog'
             });
             if (!isNOU(this.parent.cssClass)) {
                 this.dialogObj.setProperties({ cssClass: this.parent.cssClass });
@@ -1052,7 +1053,8 @@ export class Image {
                     buttonModel: {
                         content: linkUpdate, cssClass: 'e-flat e-update-alt' + ' ' + this.parent.cssClass, isPrimary: true
                     }
-                }]
+                }],
+                cssClass: this.dialogObj.cssClass + ' e-rte-img-alt-dialog'
             });
             if (!isNOU(this.parent.cssClass)) {
                 this.dialogObj.setProperties({ cssClass: this.parent.cssClass });
@@ -1278,7 +1280,8 @@ export class Image {
                     buttonModel: {
                         content: linkUpdate, cssClass: 'e-flat e-update-size' + ' ' + this.parent.cssClass, isPrimary: true
                     }
-                }]
+                }],
+                cssClass: this.dialogObj.cssClass + ' e-rte-img-size-dialog'
             });
             if (!isNOU(this.parent.cssClass)) {
                 this.dialogObj.setProperties({ cssClass: this.parent.cssClass });

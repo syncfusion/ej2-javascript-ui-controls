@@ -1,0 +1,68 @@
+$skin-name: 'bootstrap' !default;
+$theme: 'Bootstrap' !default;
+$spin-overlay-background: rgba($grey-white, .2) !default;
+$spin-overlay-stroke-color: $grey-base !default;
+$spin-overlay-font-color: $grey-light-font !default;
+$spin-material-stroke-color: $grey-base !default;
+$spin-boot4-stroke-color: $grey-base !default;
+$spin-boot4-stroke-width: 4 !default;
+$spin-fabric-stroke-color: $grey-base !default;
+$spin-fabric-stroke-width: 1.5 !default;
+$spin-fabric-arc-color: $grey-base !default;
+$spin-label-font-family: 'Helvetica Neue', 'Segoe UI' !default;
+$spin-bootstrap-stroke-color: $grey-base !default;
+$spin-label-font-size: 14px !default;
+$spin-label-margin-top: 10px !default;
+$spin-label-color: $grey-light-font !default;
+$spin-padding: 10px !default;
+$spin-boot5-stroke-width: 4;
+$spin-tailwind-stroke-width: 4.5;
+$spin-boot5-stroke-color: $grey-base;
+$spin-tailwind-arc-color: $grey-base;
+$spin-tailwind-stroke-color: $grey-light-font;
+
+@mixin boot5-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
+}
+
+@mixin tw-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.21, .21, .21, .21);
+}
+
+@mixin mat-spinner-rotate {
+  animation: material-spinner-rotate 1568.63ms linear infinite;
+}
+
+@mixin fb-spinner-rotate {
+  animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.53, .21, .29, .67);
+}
+
+@mixin boot4-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes material-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+// sass-lint:disable no-vendor-prefixes
+@keyframes fabric-spinner-rotate {
+  0% {
+    -webkit-transform: rotate(0);
+    transform: rotate(0);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

@@ -208,6 +208,7 @@ export class Editor {
     //public isSkipHistory: boolean = false;
     public isPaste: boolean = false;
     public isPasteListUpdated: boolean = false;
+    public isHtmlPaste: boolean = false;
     public base64: Base64;
     /**
      * @private
@@ -980,6 +981,12 @@ export class Editor {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public stopProtection(password: string): void {
         if (this.documentHelper.isDocumentProtected) {
+            if ((!isNullOrUndefined(this.documentHelper.saltValue) || this.documentHelper.saltValue === '')
+            && (!isNullOrUndefined(this.documentHelper.hashValue) || this.documentHelper.hashValue === '')
+            && (!isNullOrUndefined(password) || password === '')) {
+                this.unProtectDocument();
+                return;
+            }
             const unProtectDocumentHandler: XmlHttpRequestHandler = new XmlHttpRequestHandler();
             const passwordBase64: string = this.base64.encodeString(password);
             const formObject: any = {
@@ -2010,7 +2017,8 @@ export class Editor {
                     isRtl = this.documentHelper.textHelper.getRtlLanguage(inline.text).isRtl;
                     isTextContainsSpecChar = this.documentHelper.textHelper.containsSpecialCharAlone(text);
                 }
-                if (!isBidi && inline.characterFormat.bidi && (inlineLangId !== 0 || (isTextContainsSpecChar && isRtl))) {
+                if ((!isBidi && inline.characterFormat.bidi && (inlineLangId !== 0 || (isTextContainsSpecChar && isRtl)))
+                    || (text === ' ' && this.selection.characterFormat.bidi)) {
                     isBidi = true;
                 }
                 if (isBidi || !this.documentHelper.owner.isSpellCheck) {
@@ -4062,6 +4070,7 @@ export class Editor {
      */
     public pasteInternal(event: ClipboardEvent, pasteWindow?: any): void {
         this.currentPasteOptions = this.owner.defaultPasteOption;
+        this.isHtmlPaste = false;
         if (this.documentHelper.owner.enableLocalPaste) {
             this.paste();
         } else {
@@ -4093,6 +4102,7 @@ export class Editor {
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
             } else if (htmlContent !== '') {
+                this.isHtmlPaste = true;
                 let doc: Document = new DOMParser().parseFromString(htmlContent, 'text/html');
                 let result: string = new XMLSerializer().serializeToString(doc);
                 result = result.replace(/<!--StartFragment-->/gi, '');
@@ -4458,10 +4468,13 @@ export class Editor {
                 if (element !== currentInline.element) {
                     element = this.selection.getNextValidElement(currentInline.element);
                 }
-                let insertFormat: WCharacterFormat = element && element === currentInline.element ? startParagraph.characterFormat :
-                    element ? element.characterFormat : this.copyInsertFormat(startParagraph.characterFormat, false);
-                if (!isNullOrUndefined(this.previousCharFormat)) {
-                    insertFormat = this.previousCharFormat;
+                let insertFormat: WCharacterFormat;
+                if (startParagraph.isEmpty()) {
+                    insertFormat = startParagraph.characterFormat;
+                } else if (!isNullOrUndefined(element)) {
+                    insertFormat = element.characterFormat;
+                } else {
+                    this.copyInsertFormat(startParagraph.characterFormat, false);
                 }
                 let insertParaFormat: WParagraphFormat = this.documentHelper.selection.copySelectionParagraphFormat();
                 if (!isNullOrUndefined(this.previousParaFormat)) {
@@ -4499,6 +4512,7 @@ export class Editor {
             for (let i: number = 0; i < pasteContent.sections.length; i++) {
                 let parser: SfdtReader = this.documentHelper.owner.parser;
                 parser.isPaste = isPaste;
+                parser.isHtmlPaste = this.isHtmlPaste;
                 if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
                     if (this.documentHelper.lists.length > 0) {
                         this.updatePasteContent(pasteContent, i);
@@ -4559,6 +4573,7 @@ export class Editor {
                     parser.parseSectionFormat(pasteContent.sections[i].sectionFormat, bodyWidget.sectionFormat);
                 }
                 parser.isPaste = false;
+                parser.isHtmlPaste = false;
             }
             if (pasteContent.lastParagraphMarkCopied) {
                 let paragraphWidget: ParagraphWidget = new ParagraphWidget();
@@ -9124,6 +9139,7 @@ export class Editor {
         let list = this.documentHelper.getListById(currentPara.paragraphFormat.listFormat.listId);
         let abstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
         let level: WListLevel;
+        this.initHistory('List');
         if (value < 0) {
             if ((abstractList.levels[0].paragraphFormat.leftIndent + (value as number)) <= 0) {
                 value =  18 - abstractList.levels[0].paragraphFormat.leftIndent;
@@ -9133,6 +9149,9 @@ export class Editor {
             return;
         }
         for (let i: number = 0; i < abstractList.levels.length; i++) {
+            if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
+                this.editorHistory.currentBaseHistoryInfo.addModifiedPropertiesForList(abstractList.levels[i]);
+            }
             level = abstractList.levels[i];
             level.paragraphFormat.leftIndent += value as number;
         }
@@ -9408,6 +9427,7 @@ export class Editor {
                 }
             } else if (property === 'listFormat') {
                 format.listFormat = value.listFormat;
+                format.listFormat.ownerBase = format;
                 // this.handleListFormat(format, value as WParagraphFormat);
             }
         }
@@ -9433,7 +9453,7 @@ export class Editor {
             format.firstLineIndent = value as number;
         } else if (property === 'textAlignment') {
             let textAlignment: TextAlignment = <TextAlignment>value;
-            if (format.bidi) {
+            if (format.bidi && !(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
                 if (textAlignment === 'Left') {
                     textAlignment = 'Right';
                 } else if (textAlignment === 'Right') {
@@ -9463,11 +9483,13 @@ export class Editor {
             format.applyStyle(value as WStyle);
         } else if (property === 'listFormat') {
             if (value instanceof WParagraphFormat) {
-                this.copyFromListLevelParagraphFormat(format, value);
                 value = value.listFormat;
             }
             format.listFormat.copyFormat(<WListFormat>value);
             this.documentHelper.layout.clearListElementBox(format.ownerBase as ParagraphWidget);
+            if(format.listFormat.listId >= 0) {
+                format.clearIndent();
+            }
             this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
             return;
         } else if (property === 'bidi') {
@@ -9489,6 +9511,7 @@ export class Editor {
     private copyParagraphFormat(sourceFormat: WParagraphFormat, destFormat: WParagraphFormat): void {
         destFormat.uniqueParagraphFormat = sourceFormat.uniqueParagraphFormat;
         destFormat.listFormat = sourceFormat.listFormat;
+        destFormat.listFormat.ownerBase = destFormat;
         destFormat.baseStyle = sourceFormat.baseStyle;
         //destFormat.borders = sourceFormat.borders;
     }
@@ -12590,6 +12613,9 @@ export class Editor {
             if (!isNullOrUndefined(block.paragraphFormat)
                 && !isNullOrUndefined(block.paragraphFormat.listFormat)
                 && !isNullOrUndefined(block.paragraphFormat.listFormat.listId)) {
+                if (block.paragraphFormat.listFormat.listId >= 0) {
+                    block.paragraphFormat.clearIndent();
+                }
                 if (isNullOrUndefined(this.documentHelper.listParagraphs)) {
                     this.documentHelper.listParagraphs = [];
                 }

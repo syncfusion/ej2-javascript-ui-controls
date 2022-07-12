@@ -27,18 +27,22 @@ describe('Freeze pane ->', () => {
             done();
         });
     });
-    it('Virtual scrolling', (done: Function) => {
+    it('Virtual scrolling - scroll down', (done: Function) => {
         helper.invoke('goTo', ['CS244']);
         setTimeout((): void => {
             expect(sheet.topLeftCell).toBe('A1');
             expect(sheet.paneTopLeftCell).toBe('CS244');
             expect(helper.invoke('getContentTable').tBodies[0].childElementCount).toBe(childCount);
-            helper.invoke('goTo', ['D59']);
-            setTimeout((): void => {
-                expect(sheet.paneTopLeftCell).toBe('D59');
-                expect(helper.invoke('getContentTable').tBodies[0].childElementCount).toBe(childCount);
-                done();
-            });
+            done();
+        });
+    });
+    it('Virtual scrolling - scroll up', (done: Function) => {
+        helper.invoke('goTo', ['D59']);
+        setTimeout((): void => {
+            expect(sheet.topLeftCell).toBe('A1');
+            expect(sheet.paneTopLeftCell).toBe('D59');
+            expect(helper.invoke('getContentTable').tBodies[0].childElementCount).toBe(childCount);
+            done();
         });
     });
     it('Sorting', (done: Function) => {

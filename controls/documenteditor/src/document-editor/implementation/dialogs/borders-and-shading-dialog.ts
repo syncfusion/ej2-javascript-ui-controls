@@ -1344,5 +1344,6 @@ export class BordersAndShadingDialog {
         this.customDiv = undefined;
         this.allDiv = undefined;
         this.boxDiv = undefined;
+        this.documentHelper = undefined;
     }
 }

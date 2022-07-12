@@ -19,6 +19,12 @@ export class Paragraph {
     private justify: HTMLElement;
     private increaseIndent: HTMLElement;
     private decreaseIndent: HTMLElement;
+    private leftAlignmentBtn: Button;
+    private rightAlignmentBtn: Button;
+    private centerAlignmentBtn: Button;
+    private justifyBtn: Button;
+    private increaseIndentBtn: Button;
+    private decreaseIndentBtn: Button;
     private lineSpacing: DropDownButton;
     private style: DropDownList;
     private isRetrieving: boolean = false;
@@ -44,7 +50,8 @@ export class Paragraph {
     private splitButtonClass: string = 'e-de-prop-splitbutton';
     private bulletListBtn: SplitButton;
     private numberedListBtn: SplitButton;
-    private borders: HTMLElement
+    private borders: HTMLElement;
+    private bordersBtn: Button;
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
@@ -82,10 +89,10 @@ export class Paragraph {
             indentClassName = 'e-rtl ' + indentClassName;
         }
         indentDiv.className = indentClassName;
-        this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align left Tooltip'));
-        this.centerAlignment = this.createButtonTemplate(element + '_centerIndent', 'e-de-ctnr-aligncenter e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Center Tooltip'));
-        this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align right Tooltip'));
-        this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify Tooltip'));
+        this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', 'Align left Tooltip');
+        this.centerAlignment = this.createButtonTemplate(element + '_centerIndent', 'e-de-ctnr-aligncenter e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', 'Center Tooltip');
+        this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', 'Align right Tooltip');
+        this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', 'Justify Tooltip');
         let increaseIndentIconCss: string = 'e-de-ctnr-increaseindent e-icons';
         let decreaseIndentIconCss: string = 'e-de-ctnr-decreaseindent e-icons';
         const incDecIndentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
@@ -96,8 +103,8 @@ export class Paragraph {
             decreaseIndentIconCss += ' e-de-flip';
         }
         incDecIndentDiv.className = indentClassName;
-        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', decreaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
-        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', increaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
+        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', decreaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-button', '37', 'Decrease indent');
+        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', increaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-last-button', '37', 'Increase indent');
         const listDiv: HTMLElement = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
         const paraDiv: HTMLElement = this.createDivElement(element + '_paraDiv', paragraphDiv, 'display:flex');
         classList(listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
@@ -124,7 +131,7 @@ export class Paragraph {
         }
         this.createBulletListDropButton(bulletIconCss, bulletButton);
         this.createNumberListDropButton(numberIconCss, numberingList);
-        this.borders = this.createButtonTemplate(element + '_borders', 'e-de-ctnr-borders e-icons', paraDiv, 'e-de-ctnr-group-btn', '37', this.localObj.getConstant('Borders'));
+        this.borders = this.createButtonTemplate(element + '_borders', 'e-de-ctnr-borders e-icons', paraDiv, 'e-de-ctnr-group-btn', '37', 'Borders');
     }
     private createSeparator(parentDiv: HTMLElement): void {
         const separator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
@@ -151,7 +158,29 @@ export class Paragraph {
             cssClass: buttonClass, iconCss: iconcss
         });
         btn.appendTo(buttonElement);
-        buttonElement.setAttribute('title', toolTipText);
+        buttonElement.setAttribute('title', this.localObj.getConstant(toolTipText));
+        switch (toolTipText) {
+        case 'Align left Tooltip':
+            this.leftAlignmentBtn = btn;
+            break;
+        case 'Align right Tooltip':
+            this.rightAlignmentBtn = btn;
+            break;
+        case 'Justify Tooltip':
+            this.justifyBtn = btn;
+            break;
+        case 'Decrease indent':
+            this.decreaseIndentBtn = btn;
+            break;
+        case 'Increase indent':
+            this.increaseIndentBtn = btn;
+            break;
+        case 'Borders':
+            this.bordersBtn = btn;
+            break;
+        default:
+            this.centerAlignmentBtn = btn;
+        }
         return buttonElement;
     }
     private createLineSpacingDropdown(button: HTMLElement): DropDownButton {
@@ -612,7 +641,7 @@ export class Paragraph {
             } else if (this.localObj.getConstant('Normal') === args.itemData.StyleName) {
                 args.itemData.StyleName = 'Normal';
             }
-            this.documentEditor.editor.applyStyle(args.itemData.StyleName);
+            this.documentEditor.editor.applyStyle(args.itemData.StyleName,true);
         }
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -852,6 +881,34 @@ export class Paragraph {
         if (this.numberedListBtn) {
             this.numberedListBtn.destroy();
             this.numberedListBtn = undefined;
+        }
+        if (this.leftAlignmentBtn) {
+            this.leftAlignmentBtn.destroy();
+            this.leftAlignmentBtn = undefined;
+        }
+        if (this.rightAlignmentBtn) {
+            this.rightAlignmentBtn.destroy();
+            this.rightAlignmentBtn = undefined;
+        }
+        if (this.centerAlignmentBtn) {
+            this.centerAlignmentBtn.destroy();
+            this.centerAlignmentBtn = undefined;
+        }
+        if (this.justifyBtn) {
+            this.justifyBtn.destroy();
+            this.justifyBtn = undefined;
+        }
+        if (this.decreaseIndentBtn) {
+            this.decreaseIndentBtn.destroy();
+            this.decreaseIndentBtn = undefined;
+        }
+        if (this.increaseIndentBtn) {
+            this.increaseIndentBtn.destroy();
+            this.increaseIndentBtn = undefined;
+        }
+        if (this.bordersBtn) {
+            this.bordersBtn.destroy();
+            this.bordersBtn = undefined;
         }
     }
 }

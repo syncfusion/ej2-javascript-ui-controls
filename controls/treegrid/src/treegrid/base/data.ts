@@ -395,8 +395,8 @@ export class DataManipulation {
             if (!Object.prototype.hasOwnProperty.call(currentData, 'index')) {
                 currentData.index = this.storedIndex;
             }
-            if (!isNullOrUndefined(currentData[this.parent.childMapping]) ||
-          (currentData[this.parent.hasChildMapping] && isCountRequired(this.parent))) {
+            if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) ||
+            ((currentData[this.parent.hasChildMapping]) && isCountRequired(this.parent) && this.parent.initialRender)) {
                 currentData.hasChildRecords = true;
                 if (this.parent.enableCollapseAll || !isNullOrUndefined(this.parent.dataStateChange)
             && isNullOrUndefined(currentData[this.parent.childMapping])) {
@@ -538,9 +538,9 @@ export class DataManipulation {
             const modifiedData: Object = new DataManager(parentData).executeLocal(srtQry);
             if (this.parent.allowRowDragAndDrop && !isNullOrUndefined(this.parent.rowDragAndDropModule['draggedRecord']) &&
             this.parent.rowDragAndDropModule['droppedRecord'].hasChildRecords && this.parent.rowDragAndDropModule['dropPosition'] !== 'middleSegment') {
-                var dragdIndex = (modifiedData as ITreeData[]).indexOf(this.parent.rowDragAndDropModule['draggedRecord']);
+                const dragdIndex: number = (modifiedData as ITreeData[]).indexOf(this.parent.rowDragAndDropModule['draggedRecord']);
                 (modifiedData as ITreeData[]).splice(dragdIndex, 1);
-                var dropdIndex = (modifiedData as ITreeData[]).indexOf(this.parent.rowDragAndDropModule['droppedRecord']);
+                const dropdIndex: number = (modifiedData as ITreeData[]).indexOf(this.parent.rowDragAndDropModule['droppedRecord']);
                 if (this.parent.rowDragAndDropModule['droppedRecord'].hasChildRecords && this.parent.rowDragAndDropModule['dropPosition'] === 'topSegment') {
                     (modifiedData as ITreeData[]).splice(dropdIndex, 0, this.parent.rowDragAndDropModule['draggedRecord']);
                 }

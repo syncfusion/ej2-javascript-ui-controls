@@ -708,7 +708,8 @@ export class UndoRedo {
         let cellElem: HTMLElement; let prevCell: CellModel; let select: boolean;
         const cf: ConditionalFormat[] = args && !args.eventArgs.cfClearActionArgs && sheet.conditionalFormats &&
             sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
-        const cfRule: ConditionalFormatModel[] = [];
+        const cfRule: ConditionalFormatModel[] = []; let cfRefreshAll: boolean;
+        let evtArgs: { [key: string]: string | boolean | number[] | number };
         for (let i: number = 0; i < len; i++) {
             prevCell = getCell(cells[i].rowIndex, cells[i].colIndex, sheet, false, true);
             if (prevCell.style && args && (args.action === 'format' || args.action === 'clipboard')) {
@@ -735,28 +736,19 @@ export class UndoRedo {
                 value: (cells[i].formula && cells[i].formula.toUpperCase().includes('UNIQUE')) ? null : cells[i].value, format: cells[i].format, isLocked: cells[i].isLocked,
                 style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
                 wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
-                colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink
+                colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink, validation: cells[i] && cells[i].validation
             });
-            this.parent.notify(
-                workbookEditOperation,
-                {
-                    action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
-                        cells[i].colIndex], value: cells[i].formula ? cells[i].formula : cells[i].value,
-                    sheetIndex: getSheetIndex(this.parent, sheet.name)
-                });
+            evtArgs = { action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex, cells[i].colIndex],
+                value: cells[i].formula ? cells[i].formula : cells[i].value, sheetIndex: getSheetIndex(this.parent, sheet.name) };
+            this.parent.notify(workbookEditOperation, evtArgs);
+            if (!cfRefreshAll) {
+                cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
+            }
             if ((args && args.action === 'wrap' && args.eventArgs.wrap) || (prevCell.wrap && !cells[i].wrap)) {
                 this.parent.notify(wrapEvent, {
                     range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
                         cells[i].colIndex], wrap: false, sheet: sheet
                 });
-            }
-            if (args && args.action === 'removeValidation' && cells[i].validation) {
-                const rules: ValidationModel = {
-                    type: cells[i].validation.type, operator: cells[i].validation.operator, value1: cells[i].validation.value1,
-                    value2: cells[i].validation.value2, ignoreBlank: cells[i].validation.ignoreBlank,
-                    inCellDropDown: cells[i].validation.inCellDropDown
-                };
-                this.parent.notify(cellValidation, { rules: rules, range: args.eventArgs.range });
             }
             if (args && cells[i].hyperlink && args.action === 'clear') {
                 args.eventArgs.range = sheet.name + '!' + getRangeAddress([cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
@@ -774,14 +766,14 @@ export class UndoRedo {
                         address: `${sheet.name}!${getCellAddress(cells[i].rowIndex, cells[i].colIndex)}`,
                         displayText: this.parent.getDisplayText(cells[i]) });
             }
-            if (cf) {
+            if (cf && !cfRefreshAll) {
                 updateCFModel(cf, cfRule, cells[i].rowIndex, cells[i].colIndex);
             }
         }
         if (isRefresh) {
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, false, false, true);
-            if (cfRule.length) {
-                this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: cfRule, isAction: true });
+            if (cfRule.length || cfRefreshAll) {
+                this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
             }
             if (select) { getUpdateUsingRaf((): void => this.parent.selectRange(sheet.selectedRange)); }
         }

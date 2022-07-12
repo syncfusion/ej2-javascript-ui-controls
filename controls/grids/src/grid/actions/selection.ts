@@ -943,7 +943,8 @@ export class Selection implements IAction {
     private rowDeselect(
         type: string, rowIndex: number[], data: Object, row: Element[],
         foreignKeyData: Object[], target: Element, mRow?: Element[], rowDeselectCallBack?: Function, frozenRightRow?: Element[]): void {
-        if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked)) ||
+        if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked || (this.focus['activeKey'] &&
+            this.focus.currentInfo.element.classList.contains('e-gridchkbox') && this.focus['activeKey'] === 'space'))) ||
             !this.selectionSettings.persistSelection) {
             const cancl: string = 'cancel';
             const isSingleDeSel: boolean = rowIndex.length === 1 && this.deSelectedData.length === 1;
@@ -3424,7 +3425,7 @@ export class Selection implements IAction {
             this.checkSelectAllAction(false);
             this.checkedTarget = null;
         }
-        if (this.isRowType()) {
+        if (this.isRowType() && !this.selectionSettings.checkboxOnly) {
             if (this.parent.frozenRows) {
                 this.selectRow(rowIndex, true);
                 this.applyUpDown(gObj.selectedRowIndex);

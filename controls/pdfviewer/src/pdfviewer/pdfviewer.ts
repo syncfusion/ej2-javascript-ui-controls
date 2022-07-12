@@ -6199,7 +6199,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 bounds = this.formFieldsModule.getDefaultBoundsforSign(bounds);
             }
             currentData.Bounds = bounds;
-            var fontSize: number = bounds.height / 2;
+            var fontSize: number = bounds.height / 1.25;
             let textWidth: number = this.formFieldsModule.getTextWidth(currentData.value, fontSize, currentData.FontFamily);
             let widthRatio: number = 1;
             if (textWidth > bounds.width)

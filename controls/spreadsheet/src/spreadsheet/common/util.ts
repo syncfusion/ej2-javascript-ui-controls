@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData } from './../common/index';
-import { Cell, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
+import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel } from '../../workbook/index';
@@ -1726,7 +1726,7 @@ export function getTextHeight(context: Workbook, style: CellStyleModel, lines: n
  export function getLineHeight(style: CellStyleModel): number {
     let lineHeight: number = textLineHeight;
     if (style) {
-        if (style.fontFamily === 'Arial Black') {
+        if (style.fontFamily === 'Arial Black' || style.fontFamily === 'Comic Sans MS') {
             lineHeight = 1.44;
         } else if ((style.fontFamily as string) === '"Segoe UI", sans-serif') {
             lineHeight = 1.36;
@@ -1974,6 +1974,11 @@ export function focus(ele: HTMLElement): void {
             ele.focus();
             window.scrollTo(scrollX, scrollY);
         } else {
+            if (ele.classList.contains('e-input')) {
+                const inputEle: HTMLInputElement = ele as HTMLInputElement;
+                const position: number = inputEle.value.length;
+                inputEle.setSelectionRange(position, position);
+            }
             /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
             (ele as any).focus({ preventScroll: true });
         }
@@ -2023,10 +2028,10 @@ export function isDiscontinuousRange(range: string): boolean {
  */
 export function clearRange(context: Spreadsheet, range: number[], sheetIdx: number): void {
     const sheet: SheetModel = getSheet(context, sheetIdx);
-    let skip: boolean; let cell: CellModel; let newCell: CellModel; let td: HTMLElement;
-    const uiRefresh: boolean = sheetIdx === context.activeSheetIndex;
+    let skip: boolean; let cell: CellModel; let newCell: CellModel; let td: HTMLElement; let prop: CellUpdateArgs;
+    const uiRefresh: boolean = sheetIdx === context.activeSheetIndex; let cfRefreshAll: boolean;
     const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
-    const cfRule: ConditionalFormatModel[] = [];
+    let cfRule: ConditionalFormatModel[] = [];
     for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
         if (isFilterHidden(sheet, sRIdx)) { continue; }
         for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
@@ -2051,10 +2056,13 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                         newCell.hyperlink = '';
                     }
                     td = context.getCell(sRIdx, sCIdx);
-                    if (!Object.keys(newCell).length || updateCell(
-                        context, sheet, { cell: newCell, rowIdx: sRIdx, colIdx: sCIdx, valChange: true, uiRefresh: uiRefresh, td: td,
-                            cellDelete: true })) {
+                    prop = { cell: newCell, rowIdx: sRIdx, colIdx: sCIdx, valChange: true, uiRefresh: uiRefresh, td: td,
+                        cellDelete: true };
+                    if (!Object.keys(newCell).length || updateCell(context, sheet, prop)) {
                         continue;
+                    }
+                    if (!cfRefreshAll) {
+                        cfRefreshAll = prop.isFormulaDependent;
                     }
                     if (td) {
                         if (td.querySelector('.e-cf-databar')) {
@@ -2064,14 +2072,14 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                             td.removeChild(td.querySelector('.e-iconsetspan'));
                         }
                     }
-                    if (cf) {
+                    if (cf && !cfRefreshAll) {
                         updateCFModel(cf, cfRule, sRIdx, sCIdx);
                     }
                 }
             }
         }
     }
-    if (cfRule.length) {
-        context.notify(applyCF, <ApplyCFArgs>{ cfModel: cfRule, sheetIdx: sheetIdx, otherSheets: !uiRefresh, isAction: true });
+    if ((cfRule.length || cfRefreshAll) && uiRefresh) {
+        context.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
     }
 }

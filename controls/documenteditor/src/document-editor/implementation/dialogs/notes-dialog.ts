@@ -266,6 +266,7 @@ export class NotesDialog {
             this.notesList = undefined;
         }
         this.footCount = undefined;
+        this.documentHelper = undefined;
     }
 
 }

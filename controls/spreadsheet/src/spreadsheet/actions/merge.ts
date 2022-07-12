@@ -22,7 +22,8 @@ export class Merge {
         this.parent = parent;
         this.addEventListener();
     }
-    private merge(args: { rowIdx?: number, colIdx?: number, showDialog?: boolean, lastCell?: boolean, element?: Element }): void {
+    private merge(
+        args: { rowIdx?: number, colIdx?: number, showDialog?: boolean, lastCell?: boolean, element?: Element, mergeCel?: boolean }): void {
         if (args.showDialog) {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                 target: this.parent.element,

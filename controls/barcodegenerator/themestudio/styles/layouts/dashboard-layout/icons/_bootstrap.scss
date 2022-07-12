@@ -1,0 +1,81 @@
+@include export-module('dashboardlayout-bootsrtap-icons') {
+  .e-dashboardlayout.e-control {
+    & .e-panel {
+
+      & .e-resize.e-single,
+      & .e-resize.e-double {
+        &.e-east {
+          height: 100%;
+          padding: 20px 0;
+          right: 1px;
+          top: 0;
+          width: 12px;
+
+        }
+
+        &.e-west {
+          height: 100%;
+          left: 0;
+          padding: 20px 0;
+          top: 0;
+          width: 12px;
+        }
+
+        &.e-north {
+          height: 12px;
+          padding: 0 20px;
+          top: 1px;
+          width: 100%;
+        }
+
+        &.e-south {
+          bottom: 1px;
+          height: 12px;
+          padding: 0 20px;
+          width: 100%;
+        }
+
+        &.e-south-east {
+          bottom: 0;
+          right: 1px;
+          z-index: 10;
+        }
+
+        &.e-north-west {
+          left: 2px;
+          top: 2px;
+          z-index: 10;
+        }
+
+        &.e-north-east {
+          right: 2px;
+          top: 2px;
+          z-index: 10;
+        }
+
+        &.e-south-west {
+          bottom: 1px;
+          left: 1px;
+          z-index: 10;
+        }
+
+        &.e-south-east::before {
+          bottom: 0;
+          content: '\eb08';
+          font-size: 12px;
+          position: absolute;
+          right: 0;
+        }
+
+        &.e-south-west::before {
+          bottom: 0;
+          content: '\eb08';
+          font-size: 12px;
+          left: 0;
+          position: absolute;
+          transform: rotateY(180deg);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+@include export-module('hscroll-bootstrap-dark-icons') {
+  /*! hscroll icons */
+  #{&}.e-hscroll {
+
+    &.e-rtl {
+
+      &.e-scroll-device {
+
+        .e-nav-right-arrow::before {
+          content: '\e904';
+        }
+
+        .e-nav-left-arrow::before {
+          content: '\e913';
+        }
+
+      }
+
+      .e-nav-left-arrow::before {
+        content: '\e848';
+        }
+
+      .e-nav-right-arrow::before {
+        content: '\e84b';
+        }
+    }
+
+    &.e-scroll-device {
+
+      .e-nav-right-arrow::before {
+        content: '\e913';
+      }
+
+      .e-nav-left-arrow::before {
+        content: '\e904';
+      }
+    }
+
+    .e-nav-left-arrow::before {
+      content: '\e84b';
+      line-height: normal;
+    }
+
+    .e-nav-right-arrow::before {
+      content: '\e848';
+      line-height: normal;
+    }
+  }
+}
+  

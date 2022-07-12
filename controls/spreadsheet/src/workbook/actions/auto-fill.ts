@@ -1,8 +1,8 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, getSheet, isFilterHidden } from '../base/index';
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress } from './../common/index';
-import { checkIsFormula, getColumnHeaderText, isNumber } from './../common/index';
-import { updateCell, intToDate, dateToInt } from './../common/index';
+import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel } from './../common/index';
+import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
 
 /**
  * WorkbookAutoFill module allows to perform auto fill functionalities.
@@ -122,6 +122,9 @@ export class WorkbookAutoFill {
         const isVFill: boolean = ['Down', 'Up'].indexOf(options.direction) > -1;
         const isRFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
         const len: number = isVFill ? dmaxc - dminc : dmaxr - dminr; const withFrmt: boolean = options.fillType === 'FillSeries';
+        let prop: CellUpdateArgs; let cfRefreshAll: boolean;
+        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
+        let cfRule: ConditionalFormatModel[] = [];
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dminr, dminc, dmaxr, dmaxc, fminr, fminc, fmaxr, fmaxc, i);
             patrnRange = pRanges.patternRange;
@@ -234,13 +237,22 @@ export class WorkbookAutoFill {
                 if (checkIsFormula(val)) {
                     cellProps.formula = val;
                 }
-                updateCell(
-                    this.parent, sheet, { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
-                        uiRefresh: true, pvtExtend: true });
+                prop = { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
+                    uiRefresh: true, pvtExtend: true };
+                updateCell(this.parent, sheet, prop);
+                if (!cfRefreshAll) {
+                    cfRefreshAll = prop.isFormulaDependent;
+                }
+                if (cf && !cfRefreshAll) {
+                    updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                }
                 cellProps = {};
                 j++;
             }
             i++;
+        }
+        if (cfRule.length || cfRefreshAll) {
+            this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
         }
     }
 
@@ -270,7 +282,9 @@ export class WorkbookAutoFill {
         const sheetIndex: number = isUndefined(options.sheetIndex) ? this.parent.activeSheetIndex : options.sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const formatOnly: boolean = options.fillType === 'FillFormattingOnly';
-        let prevCellData: CellModel;
+        let prevCellData: CellModel; let cfRefreshAll: boolean; let prop: CellUpdateArgs;
+        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
+        let cfRule: ConditionalFormatModel[] = [];
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dMinR, dMinC, dMaxR, dMaxC, fMinR, fMinC, fMaxR, fMaxC, i);
             patrnRange = pRanges.patternRange;
@@ -284,33 +298,33 @@ export class WorkbookAutoFill {
             if (isRFill) {
                 cells = cells.reverse();
             }
-            if (formatOnly) {
-                while (j < clen) {
-                    k = j % dlen;
-                    cellIdx = cells[j];
+            while (j < clen) {
+                k = j % dlen;
+                cellIdx = cells[j];
+                if (formatOnly) {
                     prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet);
-                    Object.assign(cellProperty, data[k], null, true);
+                }
+                Object.assign(cellProperty, data[k], null, true);
+                if (formatOnly) {
                     cellProperty.value = prevCellData.value;
                     cellProperty.formula = prevCellData.formula;
-                    updateCell(
-                        this.parent, sheet, { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
-                            uiRefresh: true, pvtExtend: true });
-                    cellProperty = {};
-                    j++;
                 }
-            } else {
-                while (j < clen) {
-                    k = j % dlen;
-                    cellIdx = cells[j];
-                    Object.assign(cellProperty, data[k], null, true);
-                    updateCell(
-                        this.parent, sheet, { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
-                        uiRefresh: true, pvtExtend: true });
-                    cellProperty = {};
-                    j++;
+                prop = { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true, uiRefresh: true,
+                    pvtExtend: true };
+                updateCell(this.parent, sheet, prop);
+                if (!cfRefreshAll) {
+                    cfRefreshAll = prop.isFormulaDependent;
                 }
+                if (cf && !cfRefreshAll) {
+                    updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                }
+                cellProperty = {};
+                j++;
             }
             i++;
+        }
+        if (cfRule.length || cfRefreshAll) {
+            this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
         }
     }
 

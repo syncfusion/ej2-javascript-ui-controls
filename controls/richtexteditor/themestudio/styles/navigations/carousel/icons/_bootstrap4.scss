@@ -1,0 +1,30 @@
+@include export-module('carousel-bootstrap4-icons') {
+  .e-carousel {
+
+    .e-previous-icon::before {
+      content: '\e70d';
+    }
+
+    .e-next-icon::before {
+      content: '\e76a';
+    }
+
+    .e-play-icon::before {
+      content: '\e72d';
+    }
+
+    .e-pause-icon::before {
+      content: '\e757';
+    }
+
+    &.e-rtl {
+      .e-previous-icon::before {
+        content: '\e76a';
+      }
+
+      .e-next-icon::before {
+        content: '\e70d';
+      }
+    }
+  }
+}

@@ -170,6 +170,9 @@ export class EditorHistory {
      * @returns {void}
      */
     public initializeHistory(action: Action): void {
+        if(!isNullOrUndefined(this.currentBaseHistoryInfo)) {
+            this.currentBaseHistoryInfo.destroy();
+        }
         this.currentBaseHistoryInfo = new BaseHistoryInfo(this.owner);
         this.currentBaseHistoryInfo.action = action;
         this.currentBaseHistoryInfo.updateSelection();
@@ -475,19 +478,17 @@ export class EditorHistory {
         this.documentHelper.owner.isLayoutEnabled = false;
         this.owner.editorModule.updateListParagraphs();
         for (let i: number = 0; i < modifiedCollection.keys.length; i++) {
-            const levelNumber: number = modifiedCollection.keys[0];
+            const levelNumber: number = modifiedCollection.keys[i];
             let modifiedLevel: ModifiedLevel = modifiedCollection.get(levelNumber);
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
                 modifiedLevel = this.currentBaseHistoryInfo.addModifiedPropertiesForList(modifiedLevel.ownerListLevel) as ModifiedLevel;
             }
             this.owner.editorModule.copyListLevel(modifiedLevel.ownerListLevel, modifiedLevel.modifiedListLevel);
         }
-        this.revertListChanges();
         this.documentHelper.owner.isLayoutEnabled = true;
         this.documentHelper.renderedLists.clear();
         this.documentHelper.renderedLevelOverrides = [];
-        this.documentHelper.pages = [];
-        this.documentHelper.layout.layout();
+        this.owner.editorModule.layoutWholeDocument();
         const selection: Selection = this.documentHelper.selection;
         selection.start.updatePhysicalPosition(true);
         if (selection.isEmpty) {
@@ -498,25 +499,6 @@ export class EditorHistory {
         selection.upDownSelectionLength = selection.end.location.x;
         selection.fireSelectionChanged(false);
         this.updateHistory();
-    }
-    /**
-     * Revert list changes
-     *
-     * @returns {void}
-     */
-    private revertListChanges(): void {
-        if (!isNullOrUndefined(this.currentBaseHistoryInfo)
-            && this.documentHelper.owner.editorHistory.modifiedParaFormats.containsKey(this.currentBaseHistoryInfo)) {
-            const collection: ModifiedParagraphFormat[] = this.modifiedParaFormats.get(this.currentBaseHistoryInfo);
-            for (let i: number = 0; i < collection.length; i++) {
-                const modified: WParagraphFormat = new WParagraphFormat(null);
-                modified.leftIndent = collection[i].ownerFormat.leftIndent;
-                modified.firstLineIndent = collection[i].ownerFormat.firstLineIndent;
-                collection[i].ownerFormat.copyFormat(collection[i].modifiedFormat);
-                collection[i].modifiedFormat.leftIndent = modified.leftIndent;
-                collection[i].modifiedFormat.firstLineIndent = modified.firstLineIndent;
-            }
-        }
     }
     /**
      * Reverts the last editing action.

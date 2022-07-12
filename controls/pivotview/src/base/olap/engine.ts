@@ -1814,7 +1814,7 @@ export class OlapEngine {
                 }
                 isHeaderSortByDefault = true;
             }
-            if (isHeaderSortByDefault) {
+            if (isHeaderSortByDefault && this.getHeaderSortInfo) {
                 let copyOrder: string[] = [];
                 for (let m: number = 0, n: number = 0; m < headers.length; m++) {
                     if (headers[m].actualText !== 'Grand Total') {
@@ -1854,7 +1854,7 @@ export class OlapEngine {
             }
             isHeaderSortByDefault = true;
         }
-        if (isHeaderSortByDefault) {
+        if (isHeaderSortByDefault && this.getHeaderSortInfo) {
             let copyOrder: string[] = [];
             for (let m: number = 0, n: number = 0; m < keys.length; m++) {
                 if (keys[m] !== 'Grand Total') {

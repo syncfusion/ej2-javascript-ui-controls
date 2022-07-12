@@ -62,7 +62,7 @@ export class WorkbookEdit {
         const action: string = <string>args.action;
         switch (action) {
         case 'updateCellValue':
-            this.updateCellValue(
+            args.isFormulaDependent = this.updateCellValue(
                 <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly, <string>args.formula);
             break;
         }
@@ -86,11 +86,12 @@ export class WorkbookEdit {
         return value;
     }
 
-    private updateCellValue(address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string): void {
+    private updateCellValue(
+        address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string): boolean {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
-        let range: number[];
+        let range: number[]; let isFormulaDependent: boolean;
         if (typeof address === 'string') {
             range = getRangeIndexes(address);
         } else {
@@ -145,6 +146,7 @@ export class WorkbookEdit {
                 this.parent.notify(checkUniqueRange, args);
                 if (!skipFormula) {
                     this.parent.notify(workbookFormulaOperation, eventArgs);
+                    isFormulaDependent = <boolean>eventArgs.isFormulaDependent;
                 } else {
                     value = cell.value;
                 }
@@ -170,5 +172,6 @@ export class WorkbookEdit {
         if (this.parent.chartColl.length) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
+        return isFormulaDependent;
     }
 }

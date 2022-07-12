@@ -943,5 +943,15 @@ export class ContextMenu {
         this.menuItems = [];
         this.customMenuItems = [];
         this.ids = [];
+        this.customItems = [];
+        this.spellContextItems = [];
+        this.currentContextInfo = undefined;
+        this.menuItems = undefined;
+        this.customMenuItems = undefined;
+        this.ids = undefined;
+        this.customItems = undefined;
+        this.locale = undefined;
+        this.spellContextItems = undefined;
+        this.documentHelper = undefined;
     }
 }

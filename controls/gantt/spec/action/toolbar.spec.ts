@@ -777,4 +777,59 @@ describe('Gantt toolbar support', () => {
             expect(toolbarItems).toBe(2);
         });
     });
+    describe('Add new record ', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [],
+                taskFields: {
+                    id: 'taskID',
+                    name: 'taskName',
+                    startDate: 'startDate',
+                    endDate: 'endDate',
+                    duration: 'duration',
+                    progress: 'progress',
+                    dependency: 'predecessor',
+                    baselineStartDate: 'baselineStartDate',
+                    baselineEndDate: 'baselineEndDate',
+                },
+                toolbar: ['Add', 'Edit', 'Delete'],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                  },
+                renderBaseline: true,
+                timezone: 'UTC',
+                height: '450px',
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Add record in UTC', () => {
+            let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+            triggerMouseEvent(add, 'click');
+            let StartDateInput: any = (document.getElementById(ganttObj.element.id + 'startDate') as any).ej2_instances[0];
+            StartDateInput.value = new Date('6/28/2022');
+            let EndDateInput: any = (document.getElementById(ganttObj.element.id + 'endDate') as any).ej2_instances[0];
+            EndDateInput.value = new Date('6/28/2022');
+            let duration: any = (document.getElementById(ganttObj.element.id + 'duration') as any).ej2_instances[0];
+            duration.value = '0 day';
+            let BaselineStartDateInput: any = (document.getElementById(ganttObj.element.id + 'baselineStartDate') as any).ej2_instances[0];
+            BaselineStartDateInput.value = new Date('6/28/2022');
+            let BaselineEndDateInput: any = (document.getElementById(ganttObj.element.id + 'baselineEndDate') as any).ej2_instances[0];
+            BaselineEndDateInput.value = new Date('6/28/2022');
+            let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+            triggerMouseEvent(save, 'click');
+            expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('06/28/2022 08:00');
+        });
+    });
 });

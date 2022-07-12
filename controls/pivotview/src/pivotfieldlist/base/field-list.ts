@@ -1101,7 +1101,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 customProperties.enableValueSorting = this.staticPivotGridModule ?
                     this.staticPivotGridModule.enableValueSorting : this.enableValueSorting;
                 if (this.dataSourceSettings.mode !== 'Server') {
-                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this), this.getHeaderSortInfo.bind(this));
+                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.aggregateCellInfo ? this.getValueCellInfo.bind(this) : undefined, this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
                 }
                 this.pivotFieldList = this.engineModule.fieldList;
                 let eventArgs: EnginePopulatedEventArgs = {
@@ -1117,7 +1117,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 });
             } else if (this.dataType === 'olap') {
                 this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions,
-                    this.frameCustomProperties(this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList), this.getHeaderSortInfo.bind(this));
+                    this.frameCustomProperties(this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList), this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
                 this.pivotFieldList = this.olapEngineModule.fieldList;
                 let eventArgs: EnginePopulatedEventArgs = {
                     pivotFieldList: this.pivotFieldList,
@@ -1197,9 +1197,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.fieldListSpinnerElement = this.element.querySelector('.e-pivotfieldlist-container');
         }
         if (this.spinnerTemplate) {
-            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate }, this.createElement);
+            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate, cssClass: this.cssClass ? this.cssClass : undefined }, this.createElement);
         } else {
-            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement }, this.createElement);
+            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, cssClass: this.cssClass ? this.cssClass : undefined }, this.createElement);
         }
         let args: CommonArgs;
         args = {
@@ -1351,7 +1351,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             pivot.lastCalcFieldInfo = {};
                             pivot.lastFilterInfo = {};
                         } else {
-                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot), pivot.getHeaderSortInfo.bind(pivot));
+                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.aggregateCellInfo ? pivot.getValueCellInfo.bind(pivot) : undefined, pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
                         }
                     }
                 } else {
@@ -1443,7 +1443,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.olapEngineModule.onSort(pivot.dataSourceSettings as IDataOptions);
             }
         } else {
-            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getHeaderSortInfo.bind(pivot));
+            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
         }
         pivot.lastSortInfo = {};
         pivot.lastAggregationInfo = {};

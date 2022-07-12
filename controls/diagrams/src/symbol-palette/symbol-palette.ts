@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Component, Property, Complex, CollectionFactory, ChildProperty, Event } from '@syncfusion/ej2-base';
+import { Component, Property, Complex, CollectionFactory, ChildProperty, Event, L10n } from '@syncfusion/ej2-base';
 import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
@@ -442,6 +442,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private isMethod: boolean = false;
     private paletteid: number = 88123;
     private checkOnRender: boolean = false;
+    private l10n: L10n;
 
     //region - protected methods
 
@@ -624,6 +625,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     protected preRender(): void {
+        this.l10n = new L10n(this.getModuleName(),this.defaultLocale(), this.locale);
         if (this.element.id === '') {
             const collection: number = document.getElementsByClassName('e-symbolpalette').length;
             this.element.id = 'symbolpalette_' + this.paletteid + '_' + collection;
@@ -676,7 +678,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         this.unWireEvents();
         this.wireEvents();
     }
-
+    /**
+     * EJ2-61531- Localization support for the symbol palette search box placeholder. 
+     * @returns defaultLocale
+     */
+    public defaultLocale()
+    {
+        return{ SearchShapes: 'Search Shapes'};
+    }
     /**
      * Renders the rulers.
      *
@@ -1811,7 +1820,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.renderPalette(symGroup);
         }
     }
-
     private createTextbox(): void {
         const searchDiv: HTMLElement = createHtmlElement('div', { id: this.element.id + '_search' });
         applyStyleAgainstCsp(searchDiv, 'backgroundColor:white;height:30px');
@@ -1819,7 +1827,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         searchDiv.className = 'e-input-group';
         this.element.appendChild(searchDiv);
         const textBox: HTMLInputElement = createHtmlElement('input', {}) as HTMLInputElement;
-        textBox.placeholder = 'Search Shapes';
+        textBox.placeholder = this.l10n.getConstant('SearchShapes');
         textBox.id = 'textEnter';
         applyStyleAgainstCsp(textBox, 'width:100%;height:auto');
         //textBox.setAttribute('style', 'width:100%;height:auto');

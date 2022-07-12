@@ -22,6 +22,8 @@ export class StatusBar {
     private allowSuggestion: boolean;
     private pageButton: HTMLButtonElement;
     private webButton: HTMLButtonElement;
+    private pageBtn : Button;
+    private webBtn: Button;
 
     private get documentEditor(): DocumentEditor {
         return this.container ? this.container.documentEditor : undefined;
@@ -73,8 +75,8 @@ export class StatusBar {
             const spellCheckBtn: HTMLButtonElement = this.addSpellCheckElement();
             this.spellCheckButton.appendTo(spellCheckBtn);
         }
-        this.pageButton = this.createButtonTemplate((this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e-icons', this.localObj.getConstant('Print layout'), this.statusBarDiv, this.pageButton, (this.documentEditor.layoutType === 'Pages') ? true : false);
-        this.webButton = this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e-icons', this.localObj.getConstant('Web layout'), this.statusBarDiv, this.webButton, (this.documentEditor.layoutType === 'Continuous') ? true : false);
+        this.pageButton = this.createButtonTemplate((this.container.enableSpellCheck) ? 'e-de-statusbar-pageweb e-btn-pageweb-spellcheck' : 'e-de-statusbar-pageweb', 'e-de-printlayout e-icons', 'Print layout', this.statusBarDiv, this.pageButton, (this.documentEditor.layoutType === 'Pages') ? true : false);
+        this.webButton = this.createButtonTemplate('e-de-statusbar-pageweb', 'e-de-weblayout e-icons', 'Web layout', this.statusBarDiv, this.webButton, (this.documentEditor.layoutType === 'Continuous') ? true : false);
         this.pageButton.addEventListener('click', (): void => {
             this.documentEditor.layoutType = 'Pages';
             this.addRemoveClass(this.pageButton, this.webButton);
@@ -301,7 +303,12 @@ export class StatusBar {
             appendDiv.classList.add('e-btn-toggle');
         }
         btn.appendTo(appendDiv);
-        appendDiv.setAttribute('title', toolTipText);
+        appendDiv.setAttribute('title', this.localObj.getConstant(toolTipText));
+        if (toolTipText === 'Web layout') {
+            this.webBtn = btn;
+        } else {
+            this.pageBtn = btn;
+        }
         return appendDiv;
     }
     /**
@@ -309,7 +316,6 @@ export class StatusBar {
      * @returns {void}
      */
     public destroy(): void {
-        this.container = undefined;
         if (this.zoom) {
             this.zoom.destroy();
             this.zoom = undefined;
@@ -318,11 +324,21 @@ export class StatusBar {
             this.spellCheckButton.destroy();
             this.spellCheckButton = undefined;
         }
-        if (this.pageButton) {
-            this.pageButton = undefined;
+        if (this.pageBtn) {
+            this.pageBtn.destroy();
+            this.pageBtn = undefined;
         }
-        if (this.webButton) {
-            this.webButton = undefined;
+        if (this.webBtn) {
+            this.webBtn.destroy();
+            this.webBtn = undefined;
         }
+        this.pageButton = undefined;
+        this.webButton = undefined;
+        this.pageNumberInput = undefined;
+        this.statusBarDiv = undefined;
+        this.pageCount = undefined;
+        this.editablePageNumber = undefined;
+        this.localObj = undefined;
+        this.container = undefined;
     }
 }

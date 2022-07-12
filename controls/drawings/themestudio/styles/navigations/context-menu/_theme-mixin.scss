@@ -1,0 +1,59 @@
+@mixin focused-icon-color {
+  & .e-caret {
+    color: $cmenu-caret-color;
+  }
+
+  & .e-menu-icon {
+    color: $cmenu-icon-color;
+  }
+}
+
+@mixin selected-icon-color {
+  & .e-caret {
+    color: $cmenu-caret-hover-color;
+  }
+
+  & .e-menu-icon {
+    color: $cmenu-hover-icon-color;
+  }
+}
+
+@mixin icon-color {
+  &.e-menu-header {
+    border-bottom-color: $cmenu-li-border-color;
+  }
+  @include focused-icon-color;
+}
+
+@mixin focused-color {
+  background-color: $cmenu-li-bgcolor;
+  color: $cmenu-li-selection-font-color;
+  outline: $cmenu-li-hover-outline;
+  outline-offset: $cmenu-li-hover-outline-offset;
+}
+
+@mixin selected-color {
+  background-color: $cmenu-li-selection-bgcolor;
+  color: $cmenu-selected-color;
+  outline: $cmenu-li-selected-outline;
+  outline-offset: $cmenu-li-selected-outline-offset;
+}
+
+@mixin disabled-color {
+  & .e-disabled {
+    color: $cmenu-disable-text;
+    opacity: 1;
+
+    & .e-menu-icon {
+      color: $cmenu-icon-disabled-color;
+    }
+
+    & .e-caret {
+      color: $cmenu-icon-disabled-color;
+    }
+
+    & .e-menu-url {
+      color: $cmenu-disable-text;
+    }
+  }
+}

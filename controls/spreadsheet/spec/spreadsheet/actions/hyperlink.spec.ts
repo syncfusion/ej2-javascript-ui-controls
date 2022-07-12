@@ -51,7 +51,7 @@ describe('Hyperlink ->', () => {
             setTimeout(() => {
                 helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
                 helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink.address).toBe('http://www.google.com');
                 const td: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
@@ -80,7 +80,7 @@ describe('Hyperlink ->', () => {
             helper.openAndClickCMenuItem(0, 0, [9]);
             setTimeout(() => {
                 helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1].value = 'www.amazon.com';
-                helper.setAnimationToNone('.e-edithyperlink-dlg');
+                helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
                 helper.click('.e-edithyperlink-dlg .e-footer-content button:nth-child(1)');
                 expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink.address).toBe('http://www.amazon.com');
                 expect(helper.invoke('getCell', [0, 0]).children[0].getAttribute('href')).toBe('http://www.amazon.com');
@@ -160,7 +160,7 @@ describe('Hyperlink ->', () => {
         });
 
         it('Checking Insert Button in Hyperlink Dialog Box - II ->', (done?: Function) => {
-            helper.setAnimationToNone('.e-hyperlink-dlg');
+            helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
             helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
             helper.getElements('.e-hyperlink-dlg .e-document .e-input')[1].value = ' ';
             helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
@@ -210,7 +210,7 @@ describe('Hyperlink ->', () => {
                 helper.getElement('#' + helper.id + '_hyperlink').click();
                 helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
                 helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                     setTimeout(() => {
                         const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
@@ -237,7 +237,7 @@ describe('Hyperlink ->', () => {
                 helper.getElement('#' + helper.id + '_hyperlink').click();
                 helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
                 helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 setTimeout(() => {
                     helper.switchRibbonTab(1);
@@ -271,10 +271,10 @@ describe('Hyperlink ->', () => {
                     setTimeout(() => {
                         helper.triggerKeyEvent('keydown', 65, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
                         setTimeout(() => {
-                            expect(helper.getElement('.e-editAlert-dlg')).toBeNull();
-                            helper.setAnimationToNone('.e-hyperlink-dlg');
+                            expect(helper.getElement('.e-editAlert-dl.e-dialogg')).toBeNull();
+                            helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                             helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
-                            expect(helper.getElement('.e-hyperlink-dlg')).toBeNull();
+                            expect(helper.getElement('.e-hyperlink-dlg.e-dialog')).toBeNull();
                             done();
                         });
                     });
@@ -334,7 +334,7 @@ describe('Hyperlink ->', () => {
                 helper.getElement('#' + helper.id + '_hyperlink').click();
                 helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
                 helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg');
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 setTimeout(() => {
                     let td: HTMLElement = helper.invoke('getCell', [1, 4]);

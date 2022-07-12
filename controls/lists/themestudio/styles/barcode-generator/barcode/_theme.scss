@@ -1,0 +1,33 @@
+@include export-module('barcode-theme') {
+
+  .e-barcode {
+    display: block;
+  }
+
+  .e-datamatrix {
+    display: block;
+   }
+
+  .e-qrcode {
+    display: block;
+   }
+
+  .e-content-placeholder.e-barcode.e-placeholder-barcode {
+    background-size: 100% 100%;
+    max-height: 100px;
+    max-width: 100px;
+   }
+
+  .e-content-placeholder.e-datamatrixgenerator.e-placeholder-datamatrixgenerator {
+    background-size: 100% 100%;
+    max-height: 100px;
+    max-width: 100px;
+   }
+
+  .e-content-placeholder.e-qrcodegenerator.e-placeholder-qrcodegenerator {
+    background-size: 100% 100%;
+    max-height: 100px;
+    max-width: 100px;
+   }
+
+}

@@ -630,7 +630,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     private elementChange(): void {
         if (this.treeMapLegendModule && this.legendSettings.visible && this.treeMapLegendModule.legendGroup && this.layout.layoutGroup
-            && !isNullOrUndefined(this.svgObject)) {
+            && !isNullOrUndefined(this.svgObject) && !isNullOrUndefined(document.getElementById(this.layout.layoutGroup.id))
+            && !isNullOrUndefined(document.getElementById(this.treeMapLegendModule.legendGroup.id))) {
             this.svgObject.insertBefore(this.layout.layoutGroup, this.treeMapLegendModule.legendGroup);
         }
     }
@@ -655,11 +656,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private renderTitle(title: TitleSettingsModel, type: string, bounds: Rect, groupEle: Element): void {
-        const style: FontModel = title.textStyle;
+        const style: FontModel = {
+            color: title.textStyle.color, size: title.textStyle.size, fontFamily: title.textStyle.fontFamily,
+            fontStyle: title.textStyle.fontStyle, fontWeight: title.textStyle.fontWeight, opacity: title.textStyle.opacity
+        };
         let height: number; const titlePadding: number = 10;
         const width: number = (this.availableSize.width - this.margin.right - this.margin.left);
-        title.textStyle.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
-        title.textStyle.size = this.themeStyle.fontSize || title.textStyle.size;
+        style.fontFamily = style.fontFamily || this.themeStyle.fontFamily;
+        style.size = style.size || (type === 'title' ? this.themeStyle.fontSize : this.themeStyle.subtitleFontSize);
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });

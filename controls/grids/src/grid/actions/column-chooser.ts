@@ -357,7 +357,7 @@ export class ColumnChooser implements IAction {
         const searchDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cc-searchdiv e-cc e-input-group' });
         const ccsearchele: HTMLElement = this.parent.createElement('input', {
             className: 'e-ccsearch e-cc e-input',
-            attrs: { placeholder: this.l10n.getConstant('Search'), cssClas: this.parent.cssClass }
+            attrs: { placeholder: this.l10n.getConstant('Search'), cssClass: this.parent.cssClass }
         });
         const ccsearchicon: HTMLElement = this.parent.createElement('span', {
             className: 'e-ccsearch-icon e-icons e-cc e-input-group-icon',

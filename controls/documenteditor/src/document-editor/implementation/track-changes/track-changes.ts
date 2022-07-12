@@ -504,5 +504,6 @@ export class RevisionCollection {
 
     public destroy(): void {
         this.changes = [];
+        this.owner = undefined;
     }
 }

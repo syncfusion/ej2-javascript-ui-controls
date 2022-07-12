@@ -232,12 +232,14 @@ export class StampAnnotation {
                                 // eslint-disable-next-line
                                 let proxy: any = this;
                                 image.onload = (): void => {
-                                    if (position) {
-                                        let y: number = parseFloat(position.y ? position.y : position.Y);
-                                        if (y < 0) {
-                                            position.Y = (proxy.pdfViewerBase.pageSize[pageIndex].height + y) * (72/96);
-                                        }
-                                    }
+                                    // This code is no more required.Since this issue have neen fixed in server side itself. 
+                                    // refer https://syncfusion.atlassian.net/browse/EJ2-54035
+                                    // if (position) {
+                                    //     let y: number = parseFloat(position.y ? position.y : position.Y);
+                                    //     if (y < 0) {
+                                    //         position.Y = (proxy.pdfViewerBase.pageSize[pageIndex].height + y) * (72/96);
+                                    //     }
+                                    // }
                                     let currentLocation: IRectCollection = proxy.calculateImagePosition(position, true);
                                     // eslint-disable-next-line max-len
                                     annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;
@@ -661,7 +663,7 @@ export class StampAnnotation {
                 annotationObject.stampAnnotationPath = csData;
             }
             annotation.creationDate = new Date().toLocaleDateString();
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice && annotation.wrapper) {
                 annotationObject.bounds.width = annotation.wrapper.actualSize.width;
                 annotationObject.bounds.height = annotation.wrapper.actualSize.height;
                 annotationObject.bounds.left = annotation.wrapper.bounds.x;

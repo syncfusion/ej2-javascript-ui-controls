@@ -1,0 +1,86 @@
+@include export-module('base-core') {
+  /*! common core */
+  .e-control,
+  .e-css  {
+    font-family: $font-family;
+    font-size: $font-size;
+    font-weight: $font-weight;
+  }
+
+  $white: #fff;
+  $background: #e82824;
+
+  $warning: #ffd800;
+
+  .e-error {
+    color: $error-font-color;
+    font-family: $font-family;
+    font-size: $font-size;
+    font-weight: $font-weight;
+  }
+
+  .e-control,
+  .e-control [class^='e-'],
+  .e-control [class*=' e-'] {
+    box-sizing: border-box;
+  }
+
+  .e-control:focus,
+  .e-control *:focus {
+    outline: none;
+  }
+
+  .e-rtl {
+    direction: rtl;
+    text-align: right;
+  }
+
+  .e-overlay {
+    background-color: $overlay-bg-color;
+    filter: alpha(opacity=50);
+    height: 100%;
+    opacity: .5;
+    pointer-events: none;
+    touch-action: none;
+    width: 100%;
+  }
+
+  .e-hidden {
+    display: none;
+  }
+
+  .e-blazor-hidden {
+    visibility: hidden;
+  }
+
+  .e-disabled {
+    background-image: none;
+    cursor: default;
+    filter: alpha(Opacity=35);
+    opacity: .35;
+  }
+
+  .e-ul {
+    list-style-type: none;
+  }
+
+  .e-prevent-select {
+    user-select: none;
+  }
+
+  .e-warning {
+    color: $warning-font-color;
+  }
+
+  .e-success {
+    color: $success-font-color;
+  }
+
+  .e-information {
+    color: $information-font-color;
+  }
+
+  .e-block-touch {
+    touch-action: pinch-zoom;
+  }
+}

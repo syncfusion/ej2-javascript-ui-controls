@@ -877,8 +877,9 @@ export class EventBase {
             }
         }
         const occurrenceCollection: Record<string, any>[] = [];
-        for (const date of dates) {
+        for (let date of dates) {
             const clonedObject: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+            date = this.getDSTAdjustedTime(date, clonedObject);
             clonedObject[this.parent.eventFields.startTime] = new Date(date);
             clonedObject[this.parent.eventFields.endTime] = new Date(new Date(date).setMilliseconds(duration));
             clonedObject[this.parent.eventFields.recurrenceID] = clonedObject[this.parent.eventFields.id];
@@ -888,6 +889,23 @@ export class EventBase {
             occurrenceCollection.push(clonedObject);
         }
         return occurrenceCollection;
+    }
+
+    private getDSTAdjustedTime(date: number, event: Record<string, any>): number {
+        let occurDate: number = date;
+        if (this.parent.timezone &&
+            (event[this.parent.eventFields.startTimezone] || event[this.parent.eventFields.endTimezone])) {
+            const eventOffset: number = this.getDSTDiff(event[this.parent.eventFields.startTime], new Date(date), event[this.parent.eventFields.startTimezone]);
+            const schOffset: number = this.getDSTDiff(event[this.parent.eventFields.startTime], new Date(date), this.parent.timezone);
+            occurDate = (new Date(date).getTime() - (eventOffset - schOffset) * 60000);
+        }
+        return occurDate;
+    }
+
+    private getDSTDiff(startDate: Date, occurDate: Date, timezone: string): number {
+        const startOffset: number = this.parent.tzModule.offset(new Date(startDate), timezone);
+        const occurOffset: number = this.parent.tzModule.offset(new Date(occurDate), timezone);
+        return startOffset - occurOffset;
     }
 
     public getParentEvent(eventObj: Record<string, any>, isParent: boolean = false): Record<string, any> {

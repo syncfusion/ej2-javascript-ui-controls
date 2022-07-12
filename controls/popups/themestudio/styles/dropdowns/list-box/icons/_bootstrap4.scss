@@ -1,0 +1,25 @@
+@include export-module('list-box-bootstrap4-icons') {
+  .e-listbox-tool .e-moveup::before {
+    content: '\e808';
+  }
+
+  .e-listbox-tool .e-movedown::before {
+    content: '\e806';
+  }
+
+  .e-listbox-tool .e-moveto::before {
+    content: '\e807';
+  }
+
+  .e-listbox-tool .e-movefrom::before {
+    content: '\e809';
+  }
+
+  .e-listbox-tool .e-moveallto::before {
+    content: '\e7bb';
+   }
+
+  .e-listbox-tool .e-moveallfrom::before {
+    content: '\e7ba';
+  }
+}

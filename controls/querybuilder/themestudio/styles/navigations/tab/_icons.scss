@@ -1,0 +1,43 @@
+@include export-module('tab-icons') {
+  /*! tab icons */
+  #{&}.e-tab {
+
+    .e-tab-header {
+
+      .e-close-icon::before {
+        content: '\e7fc';
+        position: relative;
+      }
+
+      .e-popup-up-icon::before {
+        content: $tab-pop-up-icon;
+
+        @media screen and (max-width: 480px) {
+          content: $tab-mob-pop-up-icon;
+        }
+      }
+
+      .e-popup-down-icon::before {
+        content: $tab-pop-down-icon;
+
+        @media screen and (max-width: 480px) {
+          content: $tab-mob-pop-down-icon;
+        }
+      }
+    }
+
+    &.e-vertical-icon .e-tab-header {
+
+      @media screen and (max-width: 480px) {
+
+        .e-popup-up-icon::before {
+          content: $tab-mob-tb-pop-up-icon;
+        }
+
+        .e-popup-down-icon::before {
+          content: $tab-mob-tb-pop-down-icon;
+        }
+      }
+    }
+  }
+}

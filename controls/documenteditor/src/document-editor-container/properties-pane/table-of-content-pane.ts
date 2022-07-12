@@ -328,5 +328,17 @@ export class TocProperties {
             this.borderLevelStyle.destroy();
             this.borderLevelStyle = undefined;
         }
+        if (this.hyperlink) {
+            this.hyperlink.destroy();
+        }
+        this.hyperlink = undefined;
+        if (this.updateBtn) {
+            this.updateBtn.destroy();
+        }
+        this.updateBtn = undefined;
+        if (this.cancelBtn) {
+            this.cancelBtn.destroy();
+        }
+        this.cancelBtn = undefined;
     }
 }

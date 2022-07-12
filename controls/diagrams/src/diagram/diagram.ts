@@ -1521,7 +1521,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public swimlaneZIndexTable: {} = {};
     /** @private */
-    public canExpand: boolean = true;
+    public canExpand: boolean = false;
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
     private previousNodeCollection: NodeModel[] = [];
@@ -10971,37 +10971,40 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.triggerEvent(DiagramEvent.dragEnter, arg);
                         let newNode: Node;
                         let newConnector: Connector;
-                        if (arg.dragItem && (arg.dragItem as Connector).sourcePoint && (arg.dragItem as Connector).targetPoint) {
-                            newConnector = new Connector(this, 'connectors', arg.dragItem, true);
+                        // EJ2-61664 - Check whether dragItem is returned from dragEnter event or not.
+                        // If it does not returned means then we do not change the treeview object as node
+                        if (arg.dragItem) {
+                            if ((arg.dragItem as Connector).sourcePoint && (arg.dragItem as Connector).targetPoint) {
+                                newConnector = new Connector(this, 'connectors', arg.dragItem, true);
+                            } else {
+                                newNode = new Node(this, 'nodes', arg.dragItem, true);
+                            }
+                            newObj = newNode ? newNode : (newConnector as any);
+                            this.initObject(newObj as IElement, undefined, undefined, true);
+                            this['enterObject'] = newObj;
+                            this['enterTable'] = entryTable;
+                            if (newObj instanceof Node) {
+                                newNode.offsetX = position.x + 5 + (newNode.width) * newNode.pivot.x;
+                                newNode.offsetY = position.y + (newNode.height) * newNode.pivot.y;
+                            }
+                            else if (newObj instanceof Connector) {
+                                const newObjBounds: Rect = Rect.toBounds([newObj.sourcePoint, newObj.targetPoint]);
+                                const diffx: number = position.x - newObjBounds.left;
+                                const diffy: number = position.y - newObjBounds.top;
+                                newObj.sourcePoint.x += diffx; newObj.sourcePoint.y += diffy;
+                                newObj.targetPoint.x += diffx; newObj.targetPoint.y += diffy;
+                            }
+                            this.preventDiagramUpdate = true;
+                            this.currentSymbol = newObj as Node | Connector;
+                            if (this.mode !== 'SVG') {
+                                this.refreshDiagramLayer();
+                            }
+                            this.selectDragedNode(newObj, args, selectedSymbol);
+                            delete this['enterObject'];
+                            delete this['enterTable'];
+                            this.droppable[selectedSymbols] = selectedSymbol;
+                            this.allowServerDataBinding = true;
                         }
-                        else if (arg.dragItem) {
-                            newNode = new Node(this, 'nodes', arg.dragItem, true);
-                        }
-                        newObj = newNode ? newNode : (newConnector as any);
-                        this.initObject(newObj as IElement, undefined, undefined, true);
-                        this['enterObject'] = newObj;
-                        this['enterTable'] = entryTable;
-                        if (newObj instanceof Node) {
-                            newNode.offsetX = position.x + 5 + (newNode.width) * newNode.pivot.x;
-                            newNode.offsetY = position.y + (newNode.height) * newNode.pivot.y;
-                        }
-                        else if (newObj instanceof Connector) {
-                            const newObjBounds: Rect = Rect.toBounds([newObj.sourcePoint, newObj.targetPoint]);
-                            const diffx: number = position.x - newObjBounds.left;
-                            const diffy: number = position.y - newObjBounds.top;
-                            newObj.sourcePoint.x += diffx; newObj.sourcePoint.y += diffy;
-                            newObj.targetPoint.x += diffx; newObj.targetPoint.y += diffy;
-                        }
-                        this.preventDiagramUpdate = true;
-                        this.currentSymbol = newObj as Node | Connector;
-                        if (this.mode !== 'SVG') {
-                            this.refreshDiagramLayer();
-                        }
-                        this.selectDragedNode(newObj, args, selectedSymbol);
-                        delete this['enterObject'];
-                        delete this['enterTable'];
-                        this.droppable[selectedSymbols] = selectedSymbol;
-                        this.allowServerDataBinding = true;
                     }
                     if (paletteId) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any

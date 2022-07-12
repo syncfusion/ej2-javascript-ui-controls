@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 20.2.38 (2022-07-12)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I388045` - In mobile devices, the marker tooltip will now render properly when touched.
+
 ## 20.2.36 (2022-06-30)
 
 ### Maps

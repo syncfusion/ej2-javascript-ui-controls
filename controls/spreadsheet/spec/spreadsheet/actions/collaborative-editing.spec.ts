@@ -381,7 +381,7 @@ describe('Collaborative Editing ->', () => {
 
         it('Merge', (done: Function) => {
             helper.click('#spreadsheet_merge');
-            helper.setAnimationToNone('.e-merge-alert-dlg');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {
                 expect(getCell(2, 3, sheets2[0]).rowSpan).toBe(2);
@@ -856,7 +856,7 @@ describe('Collaborative Editing ->', () => {
             helper.switchRibbonTab(4);
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                helper.setAnimationToNone('.e-protect-dlg');
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
                 helper.click('.e-protect-dlg .e-primary');
                 setTimeout(() => {
                     expect(sheets2[0].isProtected).toBeTruthy();
@@ -911,7 +911,7 @@ describe('Collaborative Editing ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             helper.getElements('.e-datavalidation-dlg #minvalue')[0].value = '1';
             helper.getElements('.e-datavalidation-dlg #maxvalue')[0].value = '2';
-            helper.setAnimationToNone('.e-datavalidation-dlg');
+            helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
             helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
             setTimeout(() => {
                 expect(JSON.stringify(getCell(1, 7, sheets2[0]).validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"1","value2":"2","ignoreBlank":true,"inCellDropDown":null}');
@@ -1637,7 +1637,7 @@ describe('Collaborative Editing ->', () => {
 
         it('Delete sheet', (done: Function) => {
             helper.openAndClickCMenuItem(null, null, [2], null, null, null, true, document.querySelector('.e-sheet-tab .e-toolbar-item:nth-child(5)'));
-            helper.setAnimationToNone('.e-delete-sheet-dlg');
+            helper.setAnimationToNone('.e-delete-sheet-dlg.e-dialog');
             helper.click('.e-delete-sheet-dlg .e-primary');
             setTimeout(() => {
                 expect(sheets2.length).toBe(4);

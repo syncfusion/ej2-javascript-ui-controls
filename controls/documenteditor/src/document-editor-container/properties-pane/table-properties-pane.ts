@@ -121,6 +121,7 @@ export class TableProperties {
     }
     private onTabSelection(): void {
         this.documentEditor.resize();
+        this.documentEditor.focusIn();
     }
     private wireEvent(): void {
         this.shadingBtn.addEventListener('change', this.changeBackgroundColor.bind(this));
@@ -692,5 +693,88 @@ export class TableProperties {
             this.propertiesTab.destroy();
             this.propertiesTab = undefined;
         }
+        if (this.imageProperty) {
+            this.imageProperty.destroy();
+            this.imageProperty = undefined;
+        }
+        if (this.tableOutlineBorder) {
+            this.tableOutlineBorder.destroy();
+        }
+        this.tableOutlineBorder = undefined;
+        if (this.tableAllBorder) {
+            this.tableAllBorder.destroy();
+        }
+        this.tableAllBorder = undefined;
+        if (this.tableCenterBorder) {
+            this.tableCenterBorder.destroy();
+        }
+        this.tableCenterBorder = undefined;
+        if (this.tableLeftBorder) {
+            this.tableLeftBorder.destroy();
+        }
+        this.tableLeftBorder = undefined;
+        if (this.tableCenterVerticalBorder) {
+            this.tableCenterVerticalBorder.destroy();
+        }
+        this.tableCenterVerticalBorder = undefined;
+        if (this.tableRightBorder) {
+            this.tableRightBorder.destroy();
+        }
+        this.tableRightBorder = undefined;
+        if (this.tableTopBorder) {
+            this.tableTopBorder.destroy();
+        }
+        this.tableTopBorder = undefined;
+        if (this.tableCenterHorizontalBorder) {
+            this.tableCenterHorizontalBorder.destroy();
+        }
+        this.tableCenterHorizontalBorder = undefined;
+        if (this.tableBottomBorder) {
+            this.tableBottomBorder.destroy();
+        }
+        this.tableBottomBorder = undefined;
+        if (this.horizontalMerge) {
+            this.horizontalMerge.destroy();
+        }
+        this.horizontalMerge = undefined;
+        if (this.insertRowAbove) {
+            this.insertRowAbove.destroy();
+        }
+        this.insertRowAbove = undefined;
+        if (this.insertRowBelow) {
+            this.insertRowBelow.destroy();
+        }
+        this.insertRowBelow = undefined;
+        if (this.insertColumnLeft) {
+            this.insertColumnLeft.destroy();
+        }
+        this.insertColumnLeft = undefined;
+        if (this.insertColumnRight) {
+            this.insertColumnRight.destroy();
+        }
+        this.insertColumnRight = undefined;
+        if (this.deleteRow) {
+            this.deleteRow.destroy();
+        }
+        this.deleteRow = undefined;
+        if (this.deleteColumn) {
+            this.deleteColumn.destroy();
+        }
+        this.deleteColumn = undefined;
+        if (this.alignBottom) {
+            this.alignBottom.destroy();
+        }
+        this.alignBottom = undefined;
+        if (this.alignCenterHorizontal) {
+            this.alignCenterHorizontal.destroy();
+        }
+        this.alignCenterHorizontal = undefined;
+        if (this.alignTop) {
+            this.alignTop.destroy();
+        }
+        this.alignTop = undefined;
+        this.groupButtonClass = undefined;
+        this.borderColor = undefined;
+        this.elementId = undefined;
     }
 }

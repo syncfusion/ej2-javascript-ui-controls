@@ -99,6 +99,21 @@ describe('ICS calendar export', () => {
             schObj.exportToICalendar('icsFile');
             setTimeout(() => done(), 50);
         });
+
+        it('CRIssue - EJ2-61312 - Exporting appointment with and without Id value', (done: DoneFn) => {
+            let customData: Record<string, any>[] = [{
+                Subject: 'Meeting',
+                StartTime: new Date(2017, 9, 19, 10, 0),
+                EndTime: new Date(2017, 9, 19, 11, 0)
+            }, {
+                Id: 2,
+                Subject: 'Conference',
+                StartTime: new Date(2017, 9, 19, 11, 30),
+                EndTime: new Date(2017, 9, 19, 12, 30)
+            }];
+            schObj.exportToICalendar('SchEvents', customData);
+            setTimeout(() => done(), 50);
+        });
     });
 
     describe('Custom field', () => {

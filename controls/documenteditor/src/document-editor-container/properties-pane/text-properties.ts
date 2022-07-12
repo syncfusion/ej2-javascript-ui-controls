@@ -21,6 +21,13 @@ export class Text {
     private strikethrough: HTMLElement;
     private subscript: HTMLElement;
     private superscript: HTMLElement;
+    private boldBtn: Button;
+    private italicBtn: Button;
+    private underlineBtn: Button;
+    private strikethroughBtn: Button;
+    private subscriptBtn: Button;
+    private superscriptBtn: Button;
+    private clearFormatBtn: Button;
     private fontColor: HTMLElement;
     private highlightColor: SplitButton;
     private highlightColorElement: HTMLElement;
@@ -89,18 +96,18 @@ export class Text {
             id: element + '_leftDiv', className: divClassName, styles: 'display:inline-flex;'
         });
         propertiesDiv.appendChild(leftDiv);
-        this.bold = this.createButtonTemplate(element + '_bold', 'e-de-ctnr-bold e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Bold Tooltip'));
-        this.italic = this.createButtonTemplate(element + '_italic', 'e-de-ctnr-italic e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Italic Tooltip'));
-        this.underline = this.createButtonTemplate(element + '_underline', 'e-de-ctnr-underline e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Underline Tooltip'));
-        this.strikethrough = this.createButtonTemplate(element + '_strikethrough', 'e-de-ctnr-strikethrough e-icons', leftDiv, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Strikethrough'));
+        this.bold = this.createButtonTemplate(element + '_bold', 'e-de-ctnr-bold e-icons', leftDiv, 'e-de-prop-font-button', '40.5', 'Bold Tooltip');
+        this.italic = this.createButtonTemplate(element + '_italic', 'e-de-ctnr-italic e-icons', leftDiv, 'e-de-prop-font-button', '40.5', 'Italic Tooltip');
+        this.underline = this.createButtonTemplate(element + '_underline', 'e-de-ctnr-underline e-icons', leftDiv, 'e-de-prop-font-button', '40.5', 'Underline Tooltip');
+        this.strikethrough = this.createButtonTemplate(element + '_strikethrough', 'e-de-ctnr-strikethrough e-icons', leftDiv, 'e-de-prop-font-last-button', '40.5', 'Strikethrough');
         divClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
             divClassName = 'e-rtl ' + divClassName;
         }
         const rightDiv: HTMLElement = createElement('div', { id: element + '_rightDiv', className: divClassName, styles: 'display:inline-flex;' });
         propertiesDiv.appendChild(rightDiv);
-        this.superscript = this.createButtonTemplate(element + '_superscript', 'e-de-ctnr-superscript e-icons', rightDiv, 'e-de-prop-font-button', '38.5', this.localObj.getConstant('Superscript Tooltip'));
-        this.subscript = this.createButtonTemplate(element + '_subscript', 'e-de-ctnr-subscript e-icons', rightDiv, 'e-de-prop-font-last-button', '38.5', this.localObj.getConstant('Subscript Tooltip'));
+        this.superscript = this.createButtonTemplate(element + '_superscript', 'e-de-ctnr-superscript e-icons', rightDiv, 'e-de-prop-font-button', '38.5', 'Superscript Tooltip');
+        this.subscript = this.createButtonTemplate(element + '_subscript', 'e-de-ctnr-subscript e-icons', rightDiv, 'e-de-prop-font-last-button', '38.5', 'Subscript Tooltip');
         const colorDiv: HTMLElement = createElement('div', {
             id: element + '_colorDiv', styles: 'display:inline-flex;', className: 'e-de-ctnr-segment'
         });
@@ -120,7 +127,7 @@ export class Text {
         this.highlightColor = this.createHighlightColorSplitButton(element + '_highlightColor', 34.5, leftDiv2, this.localObj.getConstant('Text highlight color'));
         classList(this.highlightColor.element.nextElementSibling.firstElementChild, ['e-de-ctnr-highlight', 'e-icons'], ['e-caret']);
         this.highlightColorInputElement = this.highlightColor.element.firstChild as HTMLElement;
-        this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Clear all formatting'));
+        this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', 'Clear all formatting');
         const rightDiv2: HTMLElement = createElement('div', {
             id: element + '_rightDiv2', className: divClassName.replace('e-btn-group',''), styles: 'display:inline-flex;'
         });
@@ -366,7 +373,29 @@ export class Text {
             cssClass: buttonClass, iconCss: iconcss, enableRtl: this.isRtl
         });
         btn.appendTo(button);
-        button.setAttribute('title', toolTipText);
+        button.setAttribute('title', this.localObj.getConstant(toolTipText));
+        switch (toolTipText) {
+            case 'Bold Tooltip':
+                this.boldBtn = btn;
+                break;
+            case 'Italic Tooltip':
+                this.italicBtn = btn;
+                break;
+            case 'Underline Tooltip':
+                this.underlineBtn = btn;
+                break;
+            case 'Strikethrough':
+                this.strikethroughBtn = btn;
+                break;
+            case 'Superscript Tooltip':
+                this.superscriptBtn = btn;
+                break;
+            case 'Subscript Tooltip':
+                this.subscriptBtn = btn;
+                break;
+            default:
+                this.clearFormatBtn = btn;
+            }
         return button;
     }
     private createFontColorPicker(id: string, width: number, divElement: HTMLElement, toolTipText: string): HTMLInputElement {
@@ -658,7 +687,6 @@ export class Text {
     }
 
     public destroy(): void {
-        this.container = undefined;
         if (this.highlightColor) {
             this.highlightColor.destroy();
             this.highlightColor = undefined;
@@ -679,5 +707,34 @@ export class Text {
             this.changeCaseDropdown.destroy();
             this.changeCaseDropdown = undefined;
         }
+        if (this.boldBtn) {
+            this.boldBtn.destroy();
+            this.boldBtn = undefined;
+        }
+        if (this.italicBtn) {
+            this.italicBtn.destroy();
+            this.italicBtn = undefined;
+        }
+        if (this.underlineBtn) {
+            this.underlineBtn.destroy();
+            this.underlineBtn = undefined;
+        }
+        if (this.strikethroughBtn) {
+            this.strikethroughBtn.destroy();
+            this.strikethroughBtn = undefined;
+        }
+        if (this.subscriptBtn) {
+            this.subscriptBtn.destroy();
+            this.subscriptBtn = undefined;
+        }
+        if (this.superscriptBtn) {
+            this.superscriptBtn.destroy();
+            this.superscriptBtn = undefined;
+        }
+        if (this.clearFormatBtn) {
+            this.clearFormatBtn.destroy();
+            this.clearFormatBtn = undefined;
+        }
+        this.container = undefined;
     }
 }

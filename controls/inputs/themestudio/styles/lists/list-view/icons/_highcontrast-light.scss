@@ -1,0 +1,12 @@
+@include export-module('listview-highcontrast-light-icons') {
+  .e-listview {
+    .e-icon-collapsible::before {
+      content: '\e85c';
+    }
+
+    .e-icon-back::before {
+      content: '\e85b';
+      font-size: $listview-back-icon-font-size;
+    }
+  }
+}

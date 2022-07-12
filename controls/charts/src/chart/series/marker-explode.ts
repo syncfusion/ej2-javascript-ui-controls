@@ -269,6 +269,7 @@ export class MarkerExplode extends ChartData {
         let height: number = 0;
         (<HTMLElement>elements).style.visibility = 'hidden';
         let reducedHeight: number = endAnimate ? -8 : 1;
+        let transform: string = elements.getAttribute("transform");
         new Animation({}).animate(<HTMLElement>elements, {
             duration: durations,
             delay: delays,
@@ -282,6 +283,7 @@ export class MarkerExplode extends ChartData {
             },
             end: () => {
                 (<HTMLElement>elements).style.visibility = '';
+                elements.setAttribute("transform", transform);
                 if (!isLabel && (pointIndex === series.points.length - 1)) {
                     series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
                 }

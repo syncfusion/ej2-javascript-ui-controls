@@ -147,6 +147,10 @@ export const uiUpdate: string = 'ui-update';
 /** @hidden */
 export const scroll: string = 'scroll';
 /** @hidden */
+export const verticalScroll: string = 'vertical-scroll';
+/** @hidden */
+export const horizontalScroll: string = 'horizontal-scroll';
+/** @hidden */
 export const contentReady: string = 'content-ready';
 /** @hidden */
 export const dataReady: string = 'data-ready';
@@ -350,3 +354,7 @@ export const windowResized: string = 'Window resized';
 export const recordUpdated: string = 'Records updated';
 /** @hidden */
 export const drillThroughClosed: string = 'Drill-through closed';
+/** @hidden */
+export const verticalScrolled: string = 'Vertically scrolled';
+/** @hidden */
+export const horizontalScrolled: string = 'Horizontally scrolled';

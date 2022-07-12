@@ -1,0 +1,11 @@
+@include export-module('listview-material-dark-icons') {
+  .e-listview {
+    .e-icon-collapsible::before {
+      content: '\e913';
+    }
+
+    .e-icon-back::before {
+      content: '\e85b';
+    }
+  }
+}

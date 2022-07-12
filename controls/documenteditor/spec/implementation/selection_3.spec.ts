@@ -1,6 +1,7 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { LayoutViewer, PageLayoutViewer, SfdtExport, DocumentHelper } from '../../src/index';
-
+import { DocumentEditorContainer} from '../../src/document-editor-container/document-editor-container';
+import { Toolbar} from '../../src/document-editor-container/tool-bar/tool-bar';
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor } from '../../src/index';
@@ -512,5 +513,62 @@ console.log('Selection Validation');
     it('HighLightNextBlock Validation', () => {
 console.log('HighLightNextBlock Validation');
         expect(editor.selection.isHighlightNext).toBe(false);
+    });
+});
+describe('selection table row navigation', () => {
+    let container: DocumentEditorContainer = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'height: 500px' });
+        document.body.appendChild(ele);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ enableToolbar: true});
+        container.appendTo('#container');
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        container.destroy();
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it("selection table row forward navigation",()=>{
+        container.onPropertyChanged({showPropertiesPane: true}, {});
+        let element: Element = document.getElementsByClassName("e-de-pane")[0];
+        expect((element as HTMLDivElement).style.display).toEqual("block");
+        container.documentEditor.editor.insertTable(2,2);
+        expect(container.documentEditor.selection.start.paragraph.isInsideTable).toBe(true);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(0);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(0);
+        container.documentEditor.selection.handleTabKey(true,false);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(1);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(0);
+        container.documentEditor.selection.handleTabKey(true,false);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(0);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(1);
+        container.documentEditor.selection.handleTabKey(true,false);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(1);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(1);
+    });
+    it("selection table row backward navigation",()=>{
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(1);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(1);
+        container.documentEditor.selection.handleTabKey(true,true);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(0);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(1);
+        container.documentEditor.selection.handleTabKey(true,true);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(1);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(0);
+        container.documentEditor.selection.handleTabKey(true,true);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.columnIndex).toBe(0);
+        expect(container.documentEditor.selection.start.paragraph.associatedCell.rowIndex).toBe(0);
+    });
+    it("selection table navigation",()=>{
+        container.documentEditor.selection.handleTabKey(true,false);
+        container.documentEditor.selection.handleTabKey(true,false);
+        container.documentEditor.selection.handleTabKey(true,false);
+        container.documentEditor.selection.moveToNextParagraph();
+        expect(container.documentEditor.selection.start.paragraph.isInsideTable).toBe(false);
     });
 });

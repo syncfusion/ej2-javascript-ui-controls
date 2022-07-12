@@ -300,7 +300,7 @@ export class CheckBoxFormFieldDialog {
      * @private
      * @returns {void}
      */
-    private destroy(): void {
+    public destroy(): void {
         let checkBoxDialogTarget: HTMLElement = this.target;
         if (checkBoxDialogTarget) {
             if (checkBoxDialogTarget.parentElement) {

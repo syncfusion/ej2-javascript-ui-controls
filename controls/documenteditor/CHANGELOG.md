@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.2.38 (2022-07-12)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#SF-379353`, `#SF-378987` - Resolved floating table overlapping issue.
+- `#F174378` - Improved performance while editing in the protected document.
+- `#SF-375732` - Resolved issue in rendering merged cell.
+- `#SF-376914` - Resolved script error while updating the list.
+- `#SF-378333` - Resolved tab character layouting issue.
+- `#SF-381087` - Resolved issue in `stopProtection` API.
+- `#SF-382546`, `#SF-384249` - Resolved table disappearing issue while applying top margin.
+
 ## 20.1.52 (2022-05-04)
 
 ### Document Editor

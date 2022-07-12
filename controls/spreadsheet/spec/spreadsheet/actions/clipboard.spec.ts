@@ -775,7 +775,7 @@ describe('Clipboard ->', () => {
                 helper.invoke('selectRange', ['A1:B5']);
                 helper.triggerKeyNativeEvent(70, true);
                 setTimeout(function () {
-                    var dialog = helper.getElement('.e-findtool-dlg');
+                    var dialog = helper.getElement('.e-findtool-dlg.e-dialog');
                     expect(!!dialog).toBeTruthy();
                     expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                     helper.invoke('copy', ['A1:B5']).then(() => {

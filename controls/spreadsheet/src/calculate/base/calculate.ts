@@ -63,8 +63,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public maxValue: number = Number.MAX_SAFE_INTEGER;
     public categoryCollection: string[] = ['All'];
     public dependencyLevel: number = 0;
-    private refreshedCells: Map<string, string[]> = new Map<string, string[]>();
-    private computedValues: Map<string, string | number> = null;
     /** @hidden */
     public randomValues: Map<string, string> = new Map<string, string>();
     /** @hidden */
@@ -942,7 +940,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         args = customArgs;
                     } else {
                         args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
-                            .replace(',n', ',').split(this.getParseArgumentSeparator());
+                            .split(this.getParseArgumentSeparator());
                         if (sFormula.includes(this.getParseArgumentSeparator() + this.tic)) {
                             let joinIdx: number = null;
                             for (let k: number = 0; k < args.length; k++) {
@@ -2577,20 +2575,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         if (isCompute && isComputedValueChanged && this.getDependentCells().has(cellTxt) &&
             this.getDependentCells().get(cellTxt).toString() !== cellTxt) {
-            this.getComputedValue().clear();
             this.refresh(cellTxt);
         }
-    }
-
-    /**
-     * @hidden
-     * @returns {Map<string, string | number>} - To get computed value.
-     */
-    public getComputedValue(): Map<string, string | number> {
-        if (this.computedValues === null) {
-            this.computedValues = new Map<string, string | number>();
-        }
-        return this.computedValues;
     }
 
     /**
@@ -2887,7 +2873,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     public refresh(cellRef: string, uniqueCell?: string): void {
-        if (this.getDependentCells().has(cellRef) && this.getDependentCells().get(cellRef) !== null) {
+        if (this.getDependentCells().has(cellRef)) {
             const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
             try {
                 const dependentCells: string[] = this.getDependentCells().get(cellRef);
@@ -2898,9 +2884,21 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         continue;
                     }
                     const token: string = this.getSheetToken(dCell);
-                    this.actCell = dCell.split(token)[1];
                     if (token.length) {
                         this.grid = family.tokenToParentObject.get(token);
+                        const sheetId: number = Number(this.grid);
+                        const sheets: { name: string, id?: number }[] = (this.parentObject as { sheets: { name: string }[] }).sheets;
+                        let sheetName: string = '';
+                        if (!this.isNaN(sheetId) && sheets) {
+                            for (let i: number = 0; i < sheets.length; i++) {
+                                if (sheets[i].id === sheetId) {
+                                    sheetName = sheets[i].name;
+                                }
+                            }
+                        }
+                        this.actCell =  sheetName + '!' + dCell.split(token)[1];
+                    } else {
+                        this.actCell = dCell.split(token)[1];
                     }
                     try {
                         const rowIdx: number = this.rowIndex(dCell);
@@ -2911,8 +2909,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             this.cell = dCell;
                             this.parser.isFormulaParsed = true;
                             result = this.calculateFormula(formulaInfo.getParsedFormula(), true);
-                            const computedValues: Map<string, string | number> = this.getComputedValue();
-                            computedValues.set(dCell, result);
                             formulaInfo.setFormulaValue(result);
                         }
                         if ((<{ setValueRowCol: Function }>this.parentObject).setValueRowCol === undefined) {

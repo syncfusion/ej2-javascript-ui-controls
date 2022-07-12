@@ -1,0 +1,186 @@
+//default 
+$ddl-chip-mobile-close-font: 16px !default;
+
+$ddl-multiselect-skin-name: 'bootstrap' !default;
+$ddl-delim-font-size: 14px !default;
+$ddl-rtl-wrapper: 0 2px 0 32px !default;
+$ddl-chip-mobile-bg: $brand-primary !default;
+$ddl-chip-mobile-font: $brand-primary-font !default;
+$ddl-chip-bg-color:  $grey-44 !default;
+$ddl-chip-hover-bg-color: $grey-88 !default;
+$ddl-chip-hover-font-color: $grey-dark-font !default;
+$ddl-chip-font-color:  $grey-dark-font !default;
+$ddl-chip-close:  $grey-dark-font !default;
+$ddl-sel-chip-font-color: $grey-dark-font !default;
+$ddl-sel-chip-close: $grey-dark-font !default;
+$ddl-sel-chip-color: $grey-dark-font !default;
+$ddl-sel-chip-bg-color: $grey-99 !default;
+$ddl-chip-selected-shadow-value: 0 6px 12px rgba(0, 0, 0, .175) !default;
+$ddl-popup-shadow-value: 0 6px 12px rgba(0, 0, 0, .175) !default;
+$ddl-remains-font-color: $grey-f5 !default;
+$ddl-remains-padding-left: 10px !default;
+$ddl-chip-margin: 2px 4px 2px 0 !default;
+$ddl-chip-margin-bigger: 3px 4px 2px 0 !default;
+$ddl-chip-radius: 4px !default;
+$ddl-search-wrapper-width: calc(100% - 43px) !default;
+$ddl-bigger-search-wrapper-width: calc(100% - 49px) !default;
+$ddl-bigger-small-search-wrapper-width: calc(100% - 45px) !default;
+$ddl-small-search-wrapper-width: calc(100% - 37px) !default;
+$ddl-chip-content-padding: 6px 10px 6px 10px !default;
+$ddl-chip-mobile-content-padding: 7px 10px 7px 10px !default;
+$ddl-rtl-chip-mobile-content-padding: $ddl-chip-mobile-content-padding !default;
+$ddl-chip-padding: 0 !default;
+$ddl-closer-margin-top: -4em !default;
+$ddl-icon-margin-top: -2.65em !default;
+$ddl-clear-margin-top: -3.2em !default;
+$ddl-icon-margin-top-bigger: -2.7em !default;
+$ddl-closer-margin-top-bigger: -4em !default;
+$ddl-chip-close-top: 9px !default;
+$ddl-chip-close-left: 10px !default;
+$ddl-chip-close-margin: 0 0 0 !default;
+$ddl-chip-close-square: 30px !default;
+$ddl-chip-close-font: 10px !default;
+$ddl-chip-height: 28px !default;
+$ddl-chip-mobile-height: 32px !default;
+$ddl-chip-collection-top: 0 !default;
+$ddl-input-height: 32px !default;
+$ddl-input-bigger-height: 38px !default;
+$ddl-delimviewheight-bigger: 36px !default;
+$ddl-input-mob-height: 30px !default;
+$ddl-control-height: 32px !default;
+$ddl-control-bigger-height: 38px !default;
+$ddl-delimviewheight: 32px !default;
+$ddl-closer-hooker-font: 10px !default;
+$ddl-closer-hooker-color: $grey-dark-font !default;
+$ddl-chip-hooker-square: 40px !default;
+$ddl-sel-hover-chip-bg-color: $grey-99 !default;
+$ddl-sel-chip-hover-font-color: $grey-dark-font !default;
+$ddl-chip-hooker-right: 0 !default;
+$ddl-chip-font-family: inherit !default;
+$ddl-chip-mobile-radius: 4px !default;
+$ddl-chip-sel-mobile-height: 46px !default;
+$ddl-chip-selected-padding: 13px 0 13px 0 !default;
+$ddl-chip-mobile-close-margin: 1px 0 0 !default;
+$ddl-chip-close-mob-margin: 0 0 0 !default;
+$ddl-closer-hooker-top: 100% !default;
+$ddl-chip-mob-left: 0 !default;
+$ddl-chip-mob-padding: 0 0 0 20px !default;
+$ddl-chip-font-size: 15px !default;
+$ddl-rtl-chip-close-left: -10px !default;
+$ddl-rtl-chip-content-padding: 6px 10px 6px 10px !default;
+$ddl-rtl-mob-chip-content-padding: 8px 4px !default;
+$ddl-rtl-mob-chip-content-margin: 2px 0 2px 4px !default;
+$ddl-rtl-mob-sel-chip-content-padding: 12px 4px !default;
+$ddl-rtl-chip-padding: 0 8px 0 0 !default;
+$ddl-rtl-mob-sel-chip-padding: 0 8px 0 4px !default;
+$ddl-rtl-mob-chip-padding: 0 4px 0 8px !default;
+$ddl-overall-close-left: 15px !default;
+$ddl-overall-close-top: 17px !default;
+$ddl-rtl-hooker-left: -15px !default;
+$ddl-chip-close-mob-top: 0 !default;
+$ddl-chip-close-mobile-top: 10px !default;
+$ddl-control-placholder-padding: 0 32px 0 2px !default;
+$ddl-sel-chip-close-mobile-top: 8px !default;
+$ddl-sel-chip-close-mobile-left: 17px !default;
+$ddl-chip-sel-mobile-close-height: 40px !default;
+$ddl-chip-sel-mobile-close-margin: 0 0 0 0 !default;
+$ddl-input-text-indent: 6px !default;
+$ddl-rtl-chip-sel-close-left: -10px !default;
+$ddl-popup-active-focus-bg-color: $brand-primary !default;
+$ddl-popup-active-focus-font-color: $brand-primary-font !default;
+$ddl-popup-active-focus-border-color: $input-border-focus !default;
+$ddl-popup-active-focus-border-width: 1px !default;
+$ddl-popup-active-focus-shadow-item: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6) !default;
+$ddl-input-placeholder: $grey-lighter !default;
+$ddl-popup-active-border-color: $brand-primary-darken-35 !default;
+$ddl-popup-active-border-width: 1px !default;
+$ddl-delim-text-indent: 6px !default;
+$ddl-delimview-bigger-padding-left: $ddl-delim-text-indent !default;
+$ddl-popup-normal-border-width: 1px !default;
+$ddl-check-right: 21px !default;
+$ddl-check-left: 12px !default;
+$ddl-bigger-select-all-height: 40px !default;
+$ddl-select-all-height: 26px !default;
+$ddl-back-icon-margin: -2px 10px 0 -54px !default;
+$ddl-back-icon-padding: 0 !default;
+$ddl-filterbar-padding: 8px !default;
+$ddl-bigger-filterbar-padding: 4px 0 !default;
+$ddl-delimviewheight-check-bigger: 36px !default;
+$ddl-popup-reorder-border: $grey-88 !default;
+$ddl-check-right-margin: 8px !default;
+$ddl-bigger-check-right-margin: 10px !default;
+$ddl-selectall-font-size: 14px !default;
+$ddl-close-icon-left: 38px !default;
+$ddl-check-icon-top: 0 !default;
+$ddl-bigger-check-right: 25px !default;
+$ddl-multi-list-default-font-color: $grey-dark-font !default;
+$ddl-multi-list-hover-bg-color: $grey-44 !default;
+$ddl-delim-text-padding-right: 6px !default;
+$ddl-remains-font-color: $grey-dd !default;
+$ddl-list-rtl-padding-right: 15px !default;
+$ddl-close-rtl-icon-left: 38px !default;
+$ddl-chip-close-rtl-left: -15px !default;
+$ddl-delim-font-color: $grey-light-font !default;
+$ddl-close-icon-color: $grey-light-font !default;
+$ddl-multiselect-group-list-item-rtl-padding-right: 29px !default;
+$ddl-bigger-multiselect-group-list-item-rtl-padding-right: 5px !default;
+$ddl-multiselect-group-list-group-item-padding-left: 24px !default;
+$ddl-multiselect-group-checkbox-wrapper-padding-left: 14px !default;
+$ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: 20px !default;
+$ddl-multiselect-group-list-group-item-rtl-padding-right: 20px !default;
+$ddl-multiselect-label-position: 17px !default;
+$multiselect-disable-font-color: $grey-dd !default;
+// Small size
+$ddl-select-all-height-small: 22px !default;
+$ddl-small-chip-height: 22px !default;
+$ddl-chip-small-font-size: 13px !default;
+$ddl-small-chip-close-square: 24px !default;
+$ddl-small-chip-close-font: 8px !default;
+$ddl-control-small-height: 24px !default;
+$ddl-small-input-height: 26px !default;
+$ddl-delim-small-font-size: 13px !default;
+$ddl-small-closer-margin-top: -3.5em !default;
+$ddl-chip-close-hooker-small-left: 8px !default;
+$ddl-delimviewheight-small: 26px !default;
+// Touch Small size
+$ddl-select-all-height-bigger-small: 34px !default;
+$ddl-bigger-small-chip-height: 28px !default;
+$ddl-chip-bigger-small-font-size: 15px !default;
+$ddl-bigger-small-chip-close-square: 30px !default;
+$ddl-bigger-small-chip-close-font: 10px !default;
+$ddl-control-bigger-small-height: 30px !default;
+$ddl-bigger-small-input-height: 34px !default;
+$ddl-delim-bigger-small-font-size: 14px !default;
+$ddl-delimviewheight-bigger-small: 34px !default;
+$ddl-closer-margin-top-bigger-small: -4em !default;
+//enddefault
+
+@include export-module('multiselect-bootstrap-dark') {
+  .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
+    line-height: 30px;
+    top: 0;
+  }
+
+  .e-multiselect .e-input-group-icon.e-ddl-icon {
+    border-radius: 0 4px 4px 0;
+    border-right-width: 0;
+    height: 34px;
+    width: 36px;
+  }
+
+  .e-multiselect.e-rtl .e-input-group-icon.e-ddl-icon {
+    border-left-width: 0;
+    border-radius: 4px 0 0 4px;
+    border-right-width: 1px;
+  }
+
+  .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+    height: 32px;
+    width: 32px;
+  }
+
+  .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+    height: $ddl-chip-hooker-square;
+    width: $ddl-chip-hooker-square;
+  }
+}

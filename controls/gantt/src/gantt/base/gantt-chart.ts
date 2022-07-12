@@ -759,6 +759,9 @@ export class GanttChart {
      * @private
      */
     public expandedGanttRow(args: object): void {
+        if(isNullOrUndefined(args['gridRow'])){
+            return;
+        }
         const record: IGanttData = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);

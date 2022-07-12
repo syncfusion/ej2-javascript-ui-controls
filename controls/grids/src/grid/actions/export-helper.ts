@@ -2,7 +2,7 @@ import { Column } from './../models/column';
 import { Row } from './../models/row';
 import { IGrid, ICell, ExportHelperArgs, ForeignKeyFormat } from '../base/interface';
 import { CellType } from '../base/enum';
-import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, createElement, NumberFormatOptions} from '@syncfusion/ej2-base';
 import { Cell } from '../models/cell';
 import { ValueFormatter } from './../services/value-formatter';
 import { Query, DataManager, DataResult } from '@syncfusion/ej2-data';
@@ -318,8 +318,11 @@ export class ExportValueFormatter {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value as string | number)[0]);
         }
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
+            if (typeof args.column.format === 'string') {
+                args.column.format = {format: args.column.format as string};
+            }
             return args.value || args.value === 0  ?
-                this.internationalization.getNumberFormat({ format: args.column.format as string })(args.value) : '';
+                this.internationalization.getNumberFormat(args.column.format as NumberFormatOptions)(args.value) : '';
         } else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
             /* tslint:disable-next-line:max-line-length */

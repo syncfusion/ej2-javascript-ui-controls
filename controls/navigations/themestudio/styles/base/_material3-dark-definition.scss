@@ -1,0 +1,10 @@
+@import 'common/mixin.scss';
+@import 'definition/fluent-dark.scss';
+
+$font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif !default;
+$font-size: 12px !default;
+$font-weight: 400 !default;
+$error-font-color: $danger !default;
+$warning-font-color: $orange20 !default;
+$success-font-color: $green20 !default;
+$information-font-color: $white !default;

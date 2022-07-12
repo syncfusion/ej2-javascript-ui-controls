@@ -894,7 +894,7 @@ export class BaseHistoryInfo {
             if (property === 'listFormat') {
                 value = new WParagraphFormat(undefined);
                 (value as WParagraphFormat).copyFormat(previousFormat);
-                previousFormat.listFormat = new WListFormat();
+                previousFormat.listFormat = new WListFormat(previousFormat);
                 previousFormat.listFormat.copyFormat(format.listFormat);
                 this.currentPropertyIndex++;
                 return value;

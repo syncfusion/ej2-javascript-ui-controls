@@ -626,8 +626,12 @@ export class Renderer {
     }
     private renderTableCellWidget(page: Page, cellWidget: TableCellWidget): void {
         if (!this.isPrinting) {
-            if (this.getScaledValue(cellWidget.y, 2) + cellWidget.height * this.documentHelper.zoomFactor < 0 ||
-                this.getScaledValue(cellWidget.y, 2) > this.documentHelper.visibleBounds.height) {
+            let cellTopMargin = 0;
+            let cellBottomMargin = 0;
+            cellTopMargin = cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth;
+            cellBottomMargin = cellWidget.margin.bottom - (cellWidget.containerWidget as TableRowWidget).bottomBorderWidth;
+            if (this.getScaledValue(cellWidget.y, 2) + cellWidget.height + cellBottomMargin * this.documentHelper.zoomFactor < 0 ||
+                (this.getScaledValue(cellWidget.y, 2) - cellTopMargin > this.documentHelper.visibleBounds.height)) {
                 return;
             }
         }
@@ -746,32 +750,10 @@ export class Renderer {
             }
         }
     }
-    private isTOC(para: ParagraphWidget): boolean {
-        for (let i: number = 0; i < (para.childWidgets[0] as LineWidget).children.length; i++) {
-            let element: ElementBox = (para.childWidgets[0] as LineWidget).children[i];
-            if (element instanceof FieldElementBox && !isNullOrUndefined(element.fieldSeparator) && !isNullOrUndefined(element.fieldSeparator.previousElement) && element.fieldSeparator.previousElement instanceof TextElementBox) {
-                let textElementBox: TextElementBox = element.fieldSeparator.previousElement as TextElementBox;
-                let fieldCode: string = textElementBox.text;
-                if (fieldCode.match('TOC ') || fieldCode.match('Toc')) {
-                    return true;
-                }
-            } else {
-                continue;
-            }
-        }
-        return false;
-    }
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
-        let isTOCHeading: boolean = false;
         this.renderSelectionHighlight(page, lineWidget, top);
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
-        if (!isNullOrUndefined(lineWidget.paragraph.nextRenderedWidget)) {
-            let para: ParagraphWidget = lineWidget.paragraph.nextRenderedWidget as ParagraphWidget;
-            if ((para.childWidgets[0] as LineWidget) instanceof LineWidget && (para.childWidgets[0] as LineWidget).children.length != 0) {
-                isTOCHeading = this.isTOC(para);
-            }
-        }
-        if (lineWidget.isFirstLine() && !paraFormat.bidi && !isTOCHeading) {
+        if (lineWidget.isFirstLine() && !paraFormat.bidi) {
             left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         if (this.documentHelper && this.documentHelper.selection && !isNullOrUndefined(this.documentHelper.selection.formFieldHighlighters)

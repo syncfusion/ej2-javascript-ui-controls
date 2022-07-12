@@ -1,7 +1,7 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI } from '../common/index';
-import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze } from '../common/index';
+import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze, toggleProtect } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
 import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, completeAction, applySort, hideRibbonTabs } from '../common/index';
@@ -27,7 +27,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { findDlg, insertDesignChart, removeDesignChart, UnProtectWorksheet } from '../common/index';
+import { findDlg, insertDesignChart, removeDesignChart } from '../common/index';
 import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule } from '../../workbook/common/index';
 
 /**
@@ -448,8 +448,9 @@ export class Ribbon {
     }
 
     private getChartThemeDDB(id: string): Element {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const chartThemeBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart_theme' });
-        chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Material' }));
+        chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: l10n.getConstant('Material') }));
         let theme: ChartTheme = 'Material';
         const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
         if (overlay) {
@@ -462,7 +463,6 @@ export class Ribbon {
         }
         const chartThemeDDB: DropDownButton = new DropDownButton({
             items: this.getChartThemeDdbItems(theme),
-            content: theme,
             createPopupOnClick: true,
             select: (args: MenuEventArgs): void => {
                 this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
@@ -1715,8 +1715,8 @@ export class Ribbon {
                     } else if (args.item.cssClass === 'e-findRib-more') {
                         this.findDialog.animationSettings.effect = 'None';
                         this.findDialog.setProperties({ animationSettings: this.findDialog.animationSettings }, true);
+                        this.parent.notify(findDlg, null);
                         this.findDialog.hide();
-                        this.parent.notify(findDlg, null)
                     }
                 }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
             });
@@ -1933,7 +1933,7 @@ export class Ribbon {
     }
     private getFontFamilyItems(): ItemModel[] {
         return [{ text: 'Arial' }, { text: 'Arial Black' }, { text: 'Axettac Demo' }, { text: 'Batang' }, { text: 'Book Antiqua' },
-            { text: 'Calibri', iconCss: 'e-icons e-selected-icon' }, { text: 'Courier' }, { text: 'Courier New' },
+            { text: 'Calibri', iconCss: 'e-icons e-selected-icon' }, { text: 'Comic Sans MS' }, { text: 'Courier' }, { text: 'Courier New' },
             { text: 'Din Condensed' }, { text: 'Georgia' }, { text: 'Helvetica' }, { text: 'Helvetica New' }, { text: 'Roboto' },
             { text: 'Tahoma' }, { text: 'Times New Roman' }, { text: 'Verdana' }];
     }
@@ -2343,17 +2343,7 @@ export class Ribbon {
                 this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
                 break;
             case parentId + '_protect':
-                if (this.parent.openModule.isImportedFile &&
-                    this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) ===  -1) {
-                    this.parent.notify(UnProtectWorksheet, {isImportedSheet: true});
-                }
-                else if (sheet.password && sheet.password.length > 0) {
-                    this.parent.notify(UnProtectWorksheet, null);
-                } else {
-                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
-                    isActive = sheet.isProtected ? false : true;
-                    this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect', sheetIndex: this.parent.activeSheetIndex, triggerEvent: true });
-                }
+                this.parent.notify(toggleProtect, {});
                 break;
             case parentId + '_undo':
                 this.parent.notify(performUndoRedo, { isUndo: true });
@@ -2634,7 +2624,8 @@ export class Ribbon {
     }
 
     private addToolbarItems(args: { tab: string, items: ItemModel[], index: number }): void {
-        this.ribbon.addToolbarItems(args.tab, args.items, args.index);
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        this.ribbon.addToolbarItems(l10n.getConstant(args.tab), args.items, args.index);
     }
 
     private enableToolbarItems(args: { tab?: string, items?: number[] | string[], enable?: boolean }[]): void {

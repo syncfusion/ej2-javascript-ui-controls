@@ -793,3 +793,68 @@ describe('To check line broken into two lines while pasting text only content', 
         expect(text).toBe('On behalf of __________ (the "Employer"), I am delighted to offer you employment on a part-time full-');
     });
 });
+
+
+fdescribe('Pasting RTL content with Html format', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableLocalPaste: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it('RTL text ordering after paste validation in bidi paragraph', () => {
+        console.log('Validating textonly content pasting');
+        editor.openBlank();
+        editor.selection.start.paragraph.paragraphFormat.bidi = true;
+        editor.editor.isHtmlPaste = true;
+        // SFDT generated from html content 
+        let pasteContent: any = {"sections":[{"blocks":[{"characterFormat":{"fontSize":12},"paragraphFormat":{"firstLineIndent":0,"textAlignment":"Right"},"inlines":[{"text":"יראיראי","characterFormat":{"bold":false,"italic":false,"fontSize":11.027594566345215,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}},{"text":"I am here","characterFormat":{"bold":false,"italic":false,"fontSize":11.027594566345215,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}},{"text":" ","characterFormat":{"bold":false,"italic":false,"fontSize":11.027594566345215,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}},{"text":" ","characterFormat":{"bold":false,"italic":false,"fontSize":11.027594566345215,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}},{"text":"דשצפךק","characterFormat":{"bold":false,"italic":false,"fontSize":11.027594566345215,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}},{"text":" ","characterFormat":{"bold":false,"italic":false,"fontSize":11.027594566345215,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}},{"text":"hello","characterFormat":{"bold":false,"italic":false,"fontSize":11.027594566345215,"fontFamily":"Calibri","fontColor":"#000000FF","boldBidi":false,"italicBidi":false,"fontFamilyBidi":"Calibri","allCaps":false}}]}],"headersFooters":{},"sectionFormat":{"pageWidth":595.2999877929688,"pageHeight":841.9000244140625,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"Arabic"}}],"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"fontSize":12,"fontFamily":"Times New Roman","fontSizeBidi":12,"localeId":1033,"localeIdEastAsia":1058,"localeIdBidi":1025}},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":36,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"inlines":[{"text":"\\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"inlines":[{"text":"\\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2013"};
+        editor.editor.paste(JSON.stringify(pasteContent));
+        let lineWidget: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
+        expect((lineWidget.renderedElements[0] as TextElementBox).text).toBe("hello");
+        expect((lineWidget.renderedElements[1] as TextElementBox).text).toBe(" ");
+        expect((lineWidget.renderedElements[2] as TextElementBox).text).toBe("דשצפךק");
+        expect((lineWidget.renderedElements[3] as TextElementBox).text).toBe(" ");
+        expect((lineWidget.renderedElements[4] as TextElementBox).text).toBe("I am here");
+        expect((lineWidget.renderedElements[5] as TextElementBox).text).toBe(" ");
+        expect((lineWidget.renderedElements[6] as TextElementBox).text).toBe("יראיראי");
+        editor.editor.isHtmlPaste = false;
+    });
+    it('Insert space character by toggling character format bidi', () => {
+        console.log('Insert space character by toggling character format bidi');
+        editor.openBlank();
+        editor.selection.start.paragraph.paragraphFormat.bidi = true;
+        editor.editor.insertText("יראיראי");
+        editor.editor.insertText(" ");
+        editor.editor.insertText("I am here");
+        editor.selection.characterFormat.bidi = true;
+        editor.editor.insertText(" ");
+        editor.editor.insertText("דשצפךק");
+        editor.editor.insertText(" ");
+        editor.editor.insertText("hello");
+        let lineWidget: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
+        expect((lineWidget.renderedElements[0] as TextElementBox).text).toBe("hello");
+        expect((lineWidget.renderedElements[1] as TextElementBox).text).toBe(" ");
+        expect((lineWidget.renderedElements[2] as TextElementBox).text).toBe("דשצפךק");
+        expect((lineWidget.renderedElements[3] as TextElementBox).text).toBe(" ");
+        expect((lineWidget.renderedElements[4] as TextElementBox).text).toBe("I am here");
+        expect((lineWidget.renderedElements[5] as TextElementBox).text).toBe(" ");
+        expect((lineWidget.renderedElements[6] as TextElementBox).text).toBe("יראיראי");
+    });
+});

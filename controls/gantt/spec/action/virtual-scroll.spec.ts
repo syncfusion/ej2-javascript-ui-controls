@@ -135,4 +135,55 @@ describe('Gantt virtual scroll', () => {
             expect(ganttObj.flatData[0].expanded).toBe(true);
         });
     });
+    describe('Collapse/Expand search actions', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: virtualData,
+                    enableVirtualization: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks'
+                    },
+                    height: '550px',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: false
+                    },
+                    allowSelection: true,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Collapse/Expand search method', () => {
+            let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall');
+            triggerMouseEvent(collapseallToolbar, 'click');
+            let searchbar: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbar'));
+            searchbar.value = 'Task';
+            let searchButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbutton') as HTMLElement;
+            triggerMouseEvent(searchButton, 'click');
+            searchbar.value = 'T';
+            let searchButton1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbutton') as HTMLElement;
+            triggerMouseEvent(searchButton1, 'click');
+            expect(ganttObj.currentViewData.length).toBe(24);
+        });
+    });
 });

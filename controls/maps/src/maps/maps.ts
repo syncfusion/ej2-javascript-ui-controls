@@ -1796,7 +1796,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.notify(Browser.touchEndEvent, e);
-        if (e.cancelable) {
+        if (e.cancelable && !this.isTouch) {
             e.preventDefault();
         }
         return false;

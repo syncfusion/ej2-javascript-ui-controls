@@ -2,7 +2,10 @@ import { EventHandler, setStyleAttribute, KeyboardEvents, KeyboardEventArgs, Bro
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { PivotEngine, OlapEngine } from '../../base';
+import { PivotEngine, OlapEngine, IDataOptions } from '../../base';
+import { EnginePopulatedEventArgs, EnginePopulatingEventArgs, PivotActionBeginEventArgs } from '../../common/base/interface';
+import { PivotUtil } from '../../base/util';
+import * as events from '../../common/base/constant';
 
 /**
  * `VirtualScroll` module is used to handle scrolling behavior.
@@ -158,6 +161,9 @@ export class VirtualScroll {
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {  /* eslint-disable-line */
         this.parent.isScrolling = true;
         let engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
+        let args: EnginePopulatingEventArgs = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
+        };
         if (this.parent.pageSettings && engine.pageSettings) {
             if (this.direction === 'vertical') {
                 let rowValues: number = this.parent.dataType === 'pivot' ?
@@ -169,27 +175,31 @@ export class VirtualScroll {
                     // this.parent.hideWaitingPopup();
                     return;
                 }
+                this.parent.actionObj.actionName = events.verticalScroll;
+                this.parent.actionBeginMethod();  
                 this.parent.showWaitingPopup();
                 this.parent.scrollPosObject.vertical = section;
                 engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;
-                if (this.parent.dataType === 'pivot') {
-                    if (this.parent.dataSourceSettings.mode === 'Server') {
-                        this.parent.getEngine('onScroll', null, null, null, null, null, null);
+                this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
+                    if (this.parent.dataType === 'pivot') {
+                        if (this.parent.dataSourceSettings.mode === 'Server') {
+                            this.parent.getEngine('onScroll', null, null, null, null, null, null);
+                        } else {
+                            this.parent.engineModule.generateGridData(
+                                this.parent.dataSourceSettings, true, this.parent.engineModule.headerCollection);
+                            rowStartPos = this.parent.engineModule.rowStartPos;
+                        }
                     } else {
-                        this.parent.engineModule.generateGridData(
-                            this.parent.dataSourceSettings, true, this.parent.engineModule.headerCollection);
-                        rowStartPos = this.parent.engineModule.rowStartPos;
+                        this.parent.olapEngineModule.scrollPage('scroll');
+                        rowStartPos = this.parent.olapEngineModule.pageRowStartPos;
                     }
-                } else {
-                    this.parent.olapEngineModule.scrollPage('scroll');
-                    rowStartPos = this.parent.olapEngineModule.pageRowStartPos;
-                }
-                this.parent.pivotValues = engine.pivotValues;
-                let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
-                let pos: number = exactSize * exactPage -
-                    (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
-                this.parent.scrollPosObject.verticalSection = pos;
+                    this.enginePopulatedEventMethod(engine);
+                }); 
+                    let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
+                    let pos: number = exactSize * exactPage -
+                        (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
+                    this.parent.scrollPosObject.verticalSection = pos;
             } else {
                 let colValues: number =
                     this.parent.dataType === 'pivot' ?
@@ -201,31 +211,50 @@ export class VirtualScroll {
                     // this.parent.hideWaitingPopup();
                     return;
                 }
+                this.parent.actionObj.actionName = events.horizontalScroll;
+                this.parent.actionBeginMethod();
                 this.parent.showWaitingPopup();
                 let pivot: PivotView = this.parent;
                 pivot.scrollPosObject.horizontal = section;
                 engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;
                 let colStartPos: number = 0;
-                if (pivot.dataType === 'pivot') {
-                    if (this.parent.dataSourceSettings.mode === 'Server') {
-                        this.parent.getEngine('onScroll', null, null, null, null, null, null);
+                this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
+                    if (pivot.dataType === 'pivot') {
+                        if (this.parent.dataSourceSettings.mode === 'Server') {
+                            this.parent.getEngine('onScroll', null, null, null, null, null, null);
+                        } else {
+                            pivot.engineModule.generateGridData(pivot.dataSourceSettings, true, pivot.engineModule.headerCollection);
+                            colStartPos = pivot.engineModule.colStartPos;
+                        }
                     } else {
-                        pivot.engineModule.generateGridData(pivot.dataSourceSettings, true, pivot.engineModule.headerCollection);
-                        colStartPos = pivot.engineModule.colStartPos;
+                        pivot.olapEngineModule.scrollPage('scroll');
+                        colStartPos = pivot.olapEngineModule.pageColStartPos;
                     }
-                } else {
-                    pivot.olapEngineModule.scrollPage('scroll');
-                    colStartPos = pivot.olapEngineModule.pageColStartPos;
-                }
-                pivot.pivotValues = engine.pivotValues;
+                    this.enginePopulatedEventMethod(engine);
+                });  
                 let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnSize * colValues));
                 let pos: number = exactSize * exactPage - (engine.colFirstLvl *
                     colValues * pivot.gridSettings.columnWidth);
                 pivot.scrollPosObject.horizontalSection = pos;
             }
+            this.parent.actionObj.actionName = this.parent.getActionCompleteName();
+            if (this.parent.actionObj.actionName) {
+                this.parent.actionCompleteMethod();
+            }
         }
     }
 
+    private enginePopulatedEventMethod(engine: PivotEngine | OlapEngine, control?: PivotView): void {
+        let pivot: PivotView = control ? control : this.parent;
+        let eventArgs: EnginePopulatedEventArgs = {
+            dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
+            pivotValues: pivot.pivotValues
+        };
+        pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+            this.parent.pivotValues = engine.pivotValues;
+        });
+    }
+    
     private setPageXY(): Function { /* eslint-disable-line */
         return (e: PointerEvent | TouchEvent) => {
             if ((e as PointerEvent).pointerType === 'mouse') {

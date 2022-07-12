@@ -357,11 +357,12 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             const isFormulaCell: boolean = !!(prevCell && prevCell.formula);
             setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
             const cell: CellModel = getCell(args.rowIndex, args.colIndex, sheet, false, true);
-            context.notify(
-                workbookEditOperation, { action: 'updateCellValue', address: [args.rowIndex, args.colIndex], sheetIndex:
-                getSheetIndex(context, sheet.name), value: isFormulaCell && !cell.formula ? (cell.value ||
-                    (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value ||
-                        (<unknown>cell.value === 0 ? '0' : '')) });
+            const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
+                address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
+                isFormulaCell && !cell.formula ? (cell.value || (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value ||
+                    (<unknown>cell.value === 0 ? '0' : '')) };
+            context.notify(workbookEditOperation, evtArgs);
+            prop.isFormulaDependent = <boolean>evtArgs.isFormulaDependent;
             if (prop.requestType && args.cell === null) {
                 setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
             }

@@ -418,7 +418,7 @@ export class TextFormFieldDialog {
      * @private
      * @returns {void}
      */
-    private destroy(): void {
+    public destroy(): void {
         let textDialogTarget: HTMLElement = this.target;
         if (textDialogTarget) {
             if (textDialogTarget.parentElement) {

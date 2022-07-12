@@ -400,7 +400,7 @@ export class DropDownFormFieldDialog {
      * @private
      * @returns {void}
      */
-    private destroy(): void {
+    public destroy(): void {
         let dropDownDialogTarget: HTMLElement = this.target;
         if (dropDownDialogTarget) {
             if (dropDownDialogTarget.parentElement) {

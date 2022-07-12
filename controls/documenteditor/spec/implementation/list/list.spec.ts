@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
-import { BodyWidget, LineWidget, ListTextElementBox, ParagraphWidget, Selection} from '../../../src/index';
+import { BodyWidget, LineWidget, ListTextElementBox, ParagraphWidget, Selection, WUniqueFormat} from '../../../src/index';
 import { Editor } from '../../../src/index';
 import { WListLevel } from '../../../src/document-editor/implementation/list/list-level';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -348,5 +348,131 @@ describe('Indenting the list using Tab key', () => {
         expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(132);
         expect(container.selection.start.paragraph.paragraphFormat.listFormat.listLevel.listLevelPattern).toBe('LowLetter');
         expect(container.selection.start.paragraph.paragraphFormat.listFormat.listLevelNumber).toBe(1);
+    });
+});
+
+describe('To check the direct formatting value is cleared while applying list', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('To check the direct formatting of leftIndent value is cleared while applying list',() => {
+        console.log('To check the direct formatting of leftIndent value is cleared while applying list');
+        container.editor.insertText('Item 1');
+        container.editor.applyNumbering('%1.', 'Arabic');
+        let propertyType: number = WUniqueFormat.getPropertyType(container.selection.start.paragraph.paragraphFormat.uniqueParagraphFormat.uniqueFormatType, 'leftIndent');
+        expect(container.selection.start.paragraph.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)).toBe(false);
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(container.selection.start.paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat.leftIndent);
+    });
+    it('To check the direct formatting of firstLineIndnet value is cleared while applying list',() => {
+        console.log('To check the direct formatting of firstLineIndnet value is cleared while applying list');
+        let propertyType: number = WUniqueFormat.getPropertyType(container.selection.start.paragraph.paragraphFormat.uniqueParagraphFormat.uniqueFormatType, 'firstLineIndent');
+        expect(container.selection.start.paragraph.paragraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)).toBe(false);
+        expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(container.selection.start.paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat.firstLineIndent);
+    });
+    it('After undo action', () => {
+        console.log('After undo action');
+        container.editorHistory.undo();
+        expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(0);
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(0);
+    });
+});
+
+describe('Undo and Redo validation for list', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Increasing indent in list paragraph and perform undo and redo action - 1',() => {
+        console.log('Incresing indent in list paragraph and perform undo action - 1');
+        container.editor.insertText('Item 1');
+        container.editor.onEnter();
+        container.editor.insertText('Item 2');
+        container.editor.onEnter();
+        container.editor.insertText('Item 3');
+        container.selection.selectAll();
+        container.editor.applyNumbering('%1.', 'Arabic');
+        container.selection.moveToDocumentStart();
+        let initialLeftIndent : number = container.selection.start.paragraph.paragraphFormat.leftIndent;
+        let initialFirstLineIndent : number = container.selection.start.paragraph.paragraphFormat.firstLineIndent;
+        for(let i = 0; i < 5; i++) {
+            container.editor.increaseIndent();
+        }
+        let indentedLeftIndent : number = container.selection.start.paragraph.paragraphFormat.leftIndent;
+        let indentedFirstLineIndent : number = container.selection.start.paragraph.paragraphFormat.firstLineIndent;
+        for(let i = 0; i < 5; i++) {
+            container.editorHistory.undo();
+        }
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(initialLeftIndent);
+        expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(initialFirstLineIndent);
+        for(let i = 0; i < 5; i++) {
+            container.editorHistory.redo();
+        }
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(indentedLeftIndent);
+        expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(indentedFirstLineIndent);
+    });
+
+    it('Increasing indent in list paragraph and perform undo and redo action - 2',() => {
+        console.log('Incresing indent in list paragraph and perform undo and redo action - 2');
+        container.openBlank();
+        container.editor.insertText('Item 1');
+        container.editor.onEnter();
+        container.editor.insertText('Item 2');
+        container.editor.onEnter();
+        container.editor.insertText('Item 3');
+        container.selection.selectAll();
+        container.editor.applyNumbering('%1.', 'Arabic');
+        container.selection.moveToDocumentStart();
+        let initialLeftIndent : number = container.selection.start.paragraph.paragraphFormat.leftIndent;
+        let initialFirstLineIndent : number = container.selection.start.paragraph.paragraphFormat.firstLineIndent;
+        container.editor.increaseIndent();
+        let indentedLeftIndent : number = container.selection.start.paragraph.paragraphFormat.leftIndent;
+        let indentedFirstLineIndent : number = container.selection.start.paragraph.paragraphFormat.firstLineIndent;
+         container.editorHistory.undo();
+         expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(initialLeftIndent);
+        expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(initialFirstLineIndent);
+        container.editorHistory.redo();
+        for(let i = 0; i < 5; i++) {
+            container.editorHistory.undo();
+            container.editorHistory.redo();
+        }
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(indentedLeftIndent);
+        expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(indentedFirstLineIndent);
     });
 });

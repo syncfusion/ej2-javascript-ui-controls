@@ -7,7 +7,7 @@ import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { splitArrayCollection, processPathData, cornersPointsBeforeRotation, Rect, PointModel } from '@syncfusion/ej2-drawings';
 import { DiagramHtmlElement } from '../drawing/html-element';
 import { ItemModel } from '../pdfviewer-model';
-
+import { Tooltip } from '@syncfusion/ej2-popups';
 
 /**
  * The `FormFields` module is to render formfields in the PDF document.
@@ -255,6 +255,9 @@ export class FormFields {
                                     if (isNullOrUndefined(currentData.Value)) {
                                         currentData.Value = currentData['Text']
                                     }
+                                    if (currentData.ToolTip) {
+                                        this.setToolTip(currentData.ToolTip, inputField); 
+                                    }
                                     this.applyCommonProperties(inputField, pageIndex, i, currentData, isFieldRotated);
                                     this.checkIsReadonly(currentData, inputField);
                                     this.applyTabIndex(currentData, inputField, pageIndex);
@@ -302,6 +305,15 @@ export class FormFields {
         }
     }
 
+    private setToolTip(tooltipContent: string, targetElement: any): void {
+        //initialize tooltip component
+        let tooltip: Tooltip = new Tooltip({
+            content: tooltipContent
+        });
+        // render initialized tooltip
+        tooltip.appendTo(targetElement);
+    }
+    
     private trim(str: string): string {
         return str.replace(/^\s+|\s+$/gm, '');
     }
@@ -1216,7 +1228,7 @@ export class FormFields {
      * @private
      */
     public getDefaultBoundsforSign(bounds:any):any{
-       return { x: bounds.x + 10, y: bounds.y + 10, width: bounds.width - 23, height: bounds.height - 23 }
+       return { x: bounds.x + 10, y: bounds.y + 10, width: bounds.width - 21, height: bounds.height - 21 }
     }
     /**
      * @private

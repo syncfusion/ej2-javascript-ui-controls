@@ -452,4 +452,27 @@ export class RestrictEditing {
             }
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        if (this.addUserDialog) {
+            this.addUserDialog.destroy();
+        }
+        this.addUserDialog = undefined;
+        if (this.enforceProtectionDialog) {
+            this.enforceProtectionDialog.destroy();
+        }
+        this.enforceProtectionDialog = undefined;
+        if (this.unProtectDialog) {
+            this.unProtectDialog.destroy();
+        }
+        this.unProtectDialog = undefined;
+        if (this.base64) {
+            this.base64.destroy();
+        }
+        this.base64 = undefined;
+        this.documentHelper = undefined;
+    }
 }

@@ -89,7 +89,7 @@ describe('Find & Replace ->', () => {
             setTimeout(() => {
                 helper.click('.e-findtool-dlg .e-findRib-more');
                 setTimeout(() => {
-                    helper.setAnimationToNone('.e-find-dlg');
+                    helper.setAnimationToNone('.e-find-dlg.e-dialog');
                     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeTruthy();
                     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeTruthy();
                     const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
@@ -118,7 +118,7 @@ describe('Find & Replace ->', () => {
                         helper.click('.e-find-dlg .e-btn-findNext');
                         expect(helper.getInstance().sheets[0].selectedRange).toBe('D11:D11');
 
-                        const dialog: any = helper.getElementFromSpreadsheet('.e-find-dlg');
+                        const dialog: any = helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog');
                         findTxtBox.focus();
                         // Find next by pressing enter key
                         dialog.ej2_instances[0].keyDown({ preventDefault: function () { }, target: findTxtBox, keyCode: 13 });
@@ -145,7 +145,7 @@ describe('Find & Replace ->', () => {
                                     // Replace all
                                     helper.click('.e-find-dlg .e-btn-replaceAll');
                                     setTimeout(() => {
-                                        expect(helper.getElementFromSpreadsheet('.e-findtool-dlg')).toBeNull();
+                                        expect(helper.getElementFromSpreadsheet('.e-findtool-dlg.e-dialog')).toBeNull();
                                         expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe('Test');
                                         expect(helper.invoke('getCell', [10, 3]).textContent).toBe('Test');
                                         expect(helper.getInstance().sheets[0].rows[10].cells[5].value).toBe('Test0');
@@ -181,7 +181,7 @@ describe('Find & Replace ->', () => {
                                         //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as any).disabled).toBeTruthy();
                                         helper.click('.e-find-dlg .e-dlg-closeicon-btn');
                                         setTimeout(() => {
-                                            // expect(helper.getElementFromSpreadsheet('.e-find-dlg')).toBeNull(); // Check this now
+                                            // expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).toBeNull(); // Check this now
                                             done();
                                         }, 20);
                                         //});
@@ -214,7 +214,7 @@ describe('Find & Replace ->', () => {
         it('GoTo', (done: Function) => {
             helper.triggerKeyNativeEvent(71, true);
             setTimeout(() => {
-                helper.setAnimationToNone('.e-goto-dlg');
+                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
                 const goToText: HTMLInputElement = helper.getElementFromSpreadsheet('.e-goto-dlg .e-text-goto') as HTMLInputElement;
                 helper.click('.e-goto-dlg .e-btn-goto-ok'); // Check this now
                 expect(helper.getElementFromSpreadsheet('.e-goto-alert-span').textContent).toBe('Reference value is not valid.');
@@ -223,7 +223,7 @@ describe('Find & Replace ->', () => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('H10:H10');
                 helper.click('.e-goto-dlg .e-dlg-closeicon-btn');
                 setTimeout(() => {
-                    expect(helper.getElementFromSpreadsheet('.e-goto-dlg')).toBeNull(); // Need to check this
+                    expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).toBeNull(); // Need to check this
                      done();
                 });
             });
@@ -350,7 +350,7 @@ describe('Find & Replace ->', () => {
                 });
             });
         });
-        describe('EJ2-51507', () => {
+        describe('EJ2-51507, EJ2-61517 ->', () => {
             const model: SpreadsheetModel = { sheets: [{  ranges: [{ dataSource: defaultData }] }] };
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet( model, done);
@@ -366,9 +366,22 @@ describe('Find & Replace ->', () => {
                         helper.invoke('destroy');
                         new Spreadsheet(model, '#' + helper.id);
                         setTimeout(() => {
-                            expect(helper.getElementFromSpreadsheet('.e-find-dlg')).toBeNull();
+                            expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).toBeNull();
                             done();
                         });
+                    });
+                });
+            });
+            it('Find & replace text not updated in its dialog', (done: Function) => {
+                helper.click('#' + helper.id + '_findbtn');
+                setTimeout(() => {
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+                    findTxtBox.value = 'Test';
+                    helper.click('.e-findtool-dlg .e-findRib-more');
+                    setTimeout(() => {
+                        const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                        expect(findTxtBox.value).toBe('Test');
+                        done();
                     });
                 });
             });

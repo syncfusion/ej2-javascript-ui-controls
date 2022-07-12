@@ -710,7 +710,7 @@ export class StyleDialog {
                 tmpStyle.basedOn = basedOn;
                 this.documentHelper.styles.push(tmpStyle as any);
                 name = styleName;
-                this.documentHelper.owner.editorModule.applyStyle(name);
+                this.documentHelper.owner.editorModule.applyStyle(name,true);
             }
             this.documentHelper.dialog2.hide();
             this.documentHelper.updateFocus();
@@ -1020,9 +1020,11 @@ export class StyleDialog {
             this.template = undefined;
         }
         if (this.style) {
+            this.style.destroy();
             this.style = undefined;
         }
         if (this.abstractList) {
+            this.abstractList.destroy();
             this.abstractList = undefined;
         }
         if (this.numberingBulletDialog) {

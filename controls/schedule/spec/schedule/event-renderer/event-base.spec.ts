@@ -654,6 +654,74 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('checking occurrences in dst time zone', () => {
+        let schObj: Schedule;
+        let eventData: Record<string, any>[] = [];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2022, 2, 20), timezone: 'UTC', currentView: 'Month'
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('CR issue - EJ2-60349 - To check occurrences in UTC timezone before dst date', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(app.length).toBe(11);
+                expect(app[0].querySelector('.e-time').innerHTML).toEqual('2:00 AM');
+                done();
+            };
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toBe(0);
+            eventData = [
+                {
+                    Id: 1,
+                    Subject: 'Paris',
+                    StartTime: new Date(2022, 2, 23, 2, 0),
+                    EndTime: new Date(2022, 2, 23, 3, 0),
+                    IsAllDay: false,
+                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;UNTIL=20221229T203000Z;',
+                    StartTimezone: 'UTC',
+                    EndTimezone: 'UTC'
+                }
+            ];
+            schObj.addEvent(eventData);
+        });
+        it('CR issue - EJ2-60349 - To check occurrences after dst date in UTC timezone', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(app.length).toBe(33);
+                expect(app[32].querySelector('.e-time').innerHTML).toEqual('2:00 AM');
+                done();
+            };
+            schObj.selectedDate = new Date(2022, 11, 30);
+            schObj.dataBind();
+        });
+        it('CR issue - EJ2-60349 - To check occurrences after dst date in eastern timezone', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(app.length).toBe(12);
+                expect(app[0].querySelector('.e-time').innerHTML).toEqual('10:00 PM');
+                done();
+            };
+            schObj.selectedDate = new Date(2022, 2, 20);
+            schObj.timezone = 'America/New_York';
+            schObj.dataBind();
+        });
+        it('CR issue - EJ2-60349 - To check occurrences before dst date in eastern timezone', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(app.length).toBe(33);
+                expect(app[32].querySelector('.e-time').innerHTML).toEqual('9:00 PM');
+                done();
+            };
+            schObj.selectedDate = new Date(2022, 11, 30);
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

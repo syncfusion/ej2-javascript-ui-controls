@@ -661,5 +661,7 @@ export class Search {
         if (this.textSearchResults) {
             this.textSearchResults.destroy();
         }
+        this.textSearchResults = undefined;
+        this.owner =undefined;
     }
 }

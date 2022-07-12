@@ -1,0 +1,104 @@
+/*! component's theme wise override material-definitions and variables */
+
+// Generic
+$grid-layout-position: relative !default;
+$panel-position: absolute !default;
+$panel-box-sizing: border-box !default;
+$icon-zero: 0 !default;
+$icon-border-radius: 50% !default;
+
+// Header styles
+
+// Mouse
+
+$panel-header-height: 28px !default;
+$panel-header-padding: 2px 12px !default;
+$panel-header-color: rgba($grey-light-font, .54) !default;
+$panel-header-font-size: 14px !default;
+$panel-header-font-weight: 500 !default;
+$panel-header-border-bottom: none !default;
+$panel-header-font-family: 'Roboto', 'Segoe UI', 'GeezaPro', 'DejaVu Serif', 'sans-serif', '-apple-system', 'BlinkMacSystemFont' !default;
+$panel-header-white-space: nowrap !default;
+$panel-header-overflow: hidden !default;
+$panel-header-text-overflow: ellipsis !default;
+
+// Touch
+
+$panel-bigger-header-height: 30px !default;
+$panel-bigger-header-padding: 0 12px !default;
+$panel-bigger-header-color: rgba($grey-light-font, .54) !default;
+$panel-bigger-header-font-size: 13px !default;
+$panel-bigger-header-font-weight: 500 !default;
+
+// Panel styles
+
+$panel-background: $grey-white !default;
+$panel-border: 1px $grey-300 solid !default;
+$panel-hover-border: 1px $grey-400 solid !default;
+$panel-active-border: 1px $primary solid !default;
+$panel-border-radius: 2px !default;
+$panel-full-height: 100% !default;
+$panel-full-width: 100% !default;
+$panel-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .15) !default;
+
+// Blazor ContentTemplate styles
+
+$panel-content-template-height: inherit !default;
+$panel-content-template-width: inherit !default;
+
+// icons styles
+
+$panel-resize-one-dimensional-icon-height: 20px !default;
+$panel-resize-one-dimensional-icon-width: 20px !default;
+$panel-resize-one-dimensional-icon-background: none !default;
+$panel-resize-one-dimensional-icon-border: none !default;
+$panel-resize-one-dimensional-icon-shadow: none !default;
+
+$panel-resize-two-dimensional-icon-height: 20px !default;
+$panel-resize-two-dimensional-icon-width: 20px !default;
+$panel-resize-two-dimensional-inner-icon-height: 20px !default;
+$panel-resize-two-dimensional-inner-icon-width: 20px !default;
+$panel-resize-two-dimensional-icon-background: none !default;
+$panel-resize-two-dimensional-icon-color: $grey-light-font !default;
+$panel-resize-two-dimensional-icon-border: none !default;
+$panel-resize-two-dimensional-icon-shadow: none !default;
+
+// south-east-icon-styles
+
+$panel-south-east-icon-right: 1px !default;
+$panel-south-east-icon-bottom: 1px !default;
+
+// south-west-icon-style
+
+$panel-south-west-icon-left: 1px !default;
+$panel-south-west-icon-bottom: 1px !default;
+
+
+// north-east-icon-styles
+
+$panel-north-east-icon-right: 1px !default;
+$panel-north-east-icon-top: 1px !default;
+
+// north-west-icon-styles
+
+$panel-north-west-icon-left: 1px !default;
+$panel-north-west-icon-top: 1px !default;
+
+// droppable area border
+
+$panel-drop-border: 1px $primary dotted !default;
+$panel-drop-background: rgba($primary, .2) !default;
+$panel-drop-border-radius: 2px !default;
+
+// dragging element style
+
+$panel-dragging-cursor: move !default;
+$panel-drag-prevent: none !default;
+// sass-lint:disable-all
+$panel-dragging-zindex: 1111 !important !default;
+$panel-drag-prevent: none !default;
+// sass-lint:disable-all
+$element-width-complete: 100% !important !default;
+//gridlines
+$gridline-background: $grey-100 !default;
+$gridline-border: $grey-400 !default;

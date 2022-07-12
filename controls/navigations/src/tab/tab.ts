@@ -2166,7 +2166,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     index = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
                 }
                 this.items.splice(index, 1);
-                this.itemIndexArray.splice(index, 1);
+                const targetEleIndex: number = this.itemIndexArray.indexOf(trg.id);
+                this.itemIndexArray.splice(targetEleIndex, 1);
                 this.refreshActiveBorder();
                 const cntTrg: HTEle =
                     <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));

@@ -1,0 +1,11 @@
+@include export-module('numerictextbox-bootstrap-dark-icons') {
+  .e-input-group-icon.e-spin-up::before {
+    content: '\e834';
+    font-family: 'e-icons';
+  }
+
+  .e-input-group-icon.e-spin-down::before {
+    content: '\e83d';
+    font-family: 'e-icons';
+  }
+}

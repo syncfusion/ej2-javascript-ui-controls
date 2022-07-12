@@ -1,0 +1,55 @@
+$datetime-default-text-indent: 20px !default;
+$datetime-list-bigger-line-height: 40px !default;
+$datetime-list-normal-line-height: 26px !default;
+$datetime-list-normal-font-size: 14px !default;
+$datetime-list-bigger-font-size: 15px !default;
+$datetime-list-normal-text-indent: $datetime-default-text-indent !default;
+$datetime-list-bigger-text-indent: 20px !default;
+$datetime-popup-border-radius: 4px !default;
+$datetime-list-active-icon-color: $white !default;
+$datetime-icon-active-bg-color: darken($gray-600, 10%) !default;
+$datetime-active-border-color: darken($gray-600, 10%) !default;
+$datetime-list-font-weight: regular !default;
+$datetime-popup-shadow:  none !default;
+$datetime-list-default-font-color: $gray-900 !default;
+$datetime-list-border-color: 1px solid rgba($black, .15) !default;
+$datetime-list-bg-color: $content-bg !default;
+$datetime-list-active-bg-color: $primary  !default;
+$datetime-list-active-font-color: $primary-font !default;
+$datetime-list-hover-bg-color: darken($gray-100, 2%) !default;
+$datetime-list-hover-font-color: $gray-900 !default;
+$datetime-list-active-hover-bg-color: $primary !default;
+$datetime-list-active-hover-font-color: $primary-font !default;
+$datetime-list-normal-padding: 5px !default;
+$datetime-list-bigger-padding: 10px !default;
+$datetime-list-popup-icon-active-color: $white !default;
+$datetime-time-font-icon: '\e93e' !default;
+$datetime-icon-normal-font-size: 16px !default;
+$datetime-icon-bigger-font-size: 20px !default;
+$datetime-date-icon-margin: 0 !default;
+$datetime-time-icon-margin: 0 !default;
+$datetime-time-bigger-icon-margin: 0 !default;
+$datetime-time-rtl-icon-margin: 0 !default;
+$datetime-time-rtl-bigger-icon-margin: 0 !default;
+$datetime-normal-min-height: 29px !default;
+$datetime-normal-min-width: 24px !default;
+$datetime-bigger-min-height: 36px !default;
+$datetime-bigger-min-width: 34px !default;
+$datetime-time-icon-border: 1px !default;
+$datetime-time-icon-border-style: none !default;
+$datetime-list-hover-border-color: none !default;
+$datetime-list-default-border-style: none !default;
+$datetime-default-overlay: rgba($black, .15) !default;
+//mouse small
+$datetime-list-small-line-height: 22px !default;
+$datetime-list-small-text-indent: 12px !default;
+$datetime-list-small-font-size: 13px !default;
+// mouse small icon
+$datetime-icon-small-font-size: 12px !default;
+//touch small
+$datetime-list-bigger-small-line-height: 34px !default;
+$datetime-list-bigger-small-text-indent: 20px !default;
+$datetime-list-bigger-small-font-size: 14px !default;
+// touch small icon
+$datetime-icon-bigger-small-font-size: 15px !default;
+//enddefault

@@ -1,0 +1,14 @@
+
+@include export-module('breadcrumb-bootstrap-dark-icons') {
+  /*! breadcrumb icons */
+  .e-breadcrumb {
+    .e-breadcrumb-collapsed::before,
+    .e-breadcrumb-menu::before {
+      content: '\e615';
+    }
+
+    .e-home::before {
+      content: '\e92b';
+    }
+  }
+}

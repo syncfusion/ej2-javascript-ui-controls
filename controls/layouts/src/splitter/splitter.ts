@@ -1358,11 +1358,11 @@ export class Splitter extends Component<HTMLElement> {
         const flexPaneIndexes: number[] = [];
         let flexCount: number = 0;
         const children: HTMLCollection = this.element.children;
-        for (let i: number = 0; i < children.length; i++) {
+        for (let i: number = 0,len :number = children.length; i < len; i++) {
             totalWidth += this.orientation === 'Horizontal' ? (children[i] as HTMLElement).offsetWidth :
                 (children[i] as HTMLElement).offsetHeight;
         }
-        for (let j: number = 0; j < this.allBars.length; j++) {
+        for (let j: number = 0,len: number = this.allBars.length; j < len; j++) {
             totalWidth += this.orientation === 'Horizontal' ? parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) +
                 parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) : parseInt(getComputedStyle(this.allBars[j]).marginTop, 10) +
                 parseInt(getComputedStyle(this.allBars[j]).marginBottom, 10);
@@ -1370,14 +1370,16 @@ export class Splitter extends Component<HTMLElement> {
         const diff: number = this.orientation === 'Horizontal' ? this.element.offsetWidth -
             ((this.border * 2) + totalWidth) :
             this.element.offsetHeight - ((this.border * 2) + totalWidth);
-        for (let i: number = 0; i < this.allPanes.length; i++) {
-            if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
+        for (let i: number = 0,len: number = this.allPanes.length; i < len; i++) {
+            if ( this.allPanes[ i ].innerText === '' ? !(this.paneSettings[ i ].size ) || !( this.allPanes[ i ].innerText === '' )
+               :!( this.paneSettings[ i ].size ) && !( this.allPanes[ i ].innerText === '' ) )
+            {
                 flexPaneIndexes[flexCount] = i;
                 flexCount++;
             }
         }
         const avgDiffWidth: number = diff / flexPaneIndexes.length;
-        for (let j: number = 0; j < flexPaneIndexes.length; j++) {
+        for (let j: number = 0,len: number = flexPaneIndexes.length; j < len; j++) {
             this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === 'Horizontal' ?
                 (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + 'px' :
                 (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + 'px';
@@ -1457,15 +1459,7 @@ export class Splitter extends Component<HTMLElement> {
         if (icon.classList.contains(ARROW_RIGHT) || icon.classList.contains(ARROW_DOWN)) {
             this.expandAction(e);
         }
-        let totalWidth: number = 0;
-        const children: HTMLCollection = this.element.children;
-        for (let i: number = 0; i < children.length; i++) {
-            totalWidth += this.orientation === 'Horizontal' ? (children[i] as HTMLElement).offsetWidth :
-                (children[i] as HTMLElement).offsetHeight;
-        }
-        if (totalWidth > this.element.offsetWidth) {
-            this.updateSplitterSize();
-        }
+        this.updateSplitterSize();
     }
 
     private expandAction(e: Event): void {

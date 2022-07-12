@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, getCell } from '../../../src/index';
+import { CellModel, getCell, RowModel } from '../../../src/index';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -649,7 +649,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-57075 ->', () => {
+        describe('EJ2-57075, EJ2-60798 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{       rows: [
@@ -658,6 +658,9 @@ describe('Spreadsheet formula module ->', () => {
                             { value: '10' },
                             { value: '10' },
                             { formula: '=SUMIF(A1:A2,"10",B1)' },
+                            { value: 'Apple' },
+                            { value: 'Fruit' },
+                            { formula: '=IF(D1="NA",E1,Concat(D1:E1))' }
                           ],
                         },
                         { cells: [{ value: '10' }, { value: '10' }] },
@@ -668,6 +671,15 @@ describe('Spreadsheet formula module ->', () => {
             });
             it('SUMIF calculation while criteriaRange is greater than Sum range', (done: Function) => {
                 expect(helper.getInstance().sheets[0].rows[0].cells[2].value.toString()).toEqual('20');
+                done();
+            });
+            it('Concat two string inside if formula is not working', (done: Function) => {
+                const cell: CellModel = helper.getInstance().sheets[0].rows[0].cells[5];
+                expect(cell.value).toBe('AppleFruit');
+                expect(helper.invoke('getCell', [0, 5]).textContent).toBe('AppleFruit');
+                helper.edit('D1', 'NA');
+                expect(cell.value).toBe('Fruit');
+                expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Fruit');
                 done();
             });
         });
@@ -1103,34 +1115,45 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
         describe('EJ2-56672->', () => {
-            beforeEach((done: Function) => {
+            let rows: RowModel[];
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ rows: [{ cells: [{ value: 'cat' }, { formula: '=UNIQUE(A1:A100)' }, { formula: '=IFS(B1=0,"null",TRUE,B1)' }] }, 
                     { cells: [{ value: 'dog' }] }, { cells: [{ value: 'lion' }] }, { cells: [{ value: 'tiger' }] }], selectedRange: 'C1' }]
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('To refresh the all dependent cells for a formula that refers another formula cell->', (done: Function) => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[1].formula).toBe('=UNIQUE(A1:A100)');
-                expect(helper.getInstance().sheets[0].rows[0].cells[2].formula).toBe('=IFS(B1=0,"null",TRUE,B1)');
-                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('cat');
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe('dog');
-                expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toBe('lion');
-                expect(helper.getInstance().sheets[0].rows[3].cells[1].value).toBe('tiger');
-                expect(helper.getInstance().sheets[0].rows[4].cells[1].value).toBeUndefined;
-                expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('cat');
+                rows = helper.getInstance().sheets[0].rows;
+                expect(rows[0].cells[1].formula).toBe('=UNIQUE(A1:A100)');
+                expect(rows[0].cells[2].formula).toBe('=IFS(B1=0,"null",TRUE,B1)');
+                expect(rows[0].cells[1].value).toBe('cat');
+                expect(rows[1].cells[1].value).toBe('dog');
+                expect(rows[2].cells[1].value).toBe('lion');
+                expect(rows[3].cells[1].value).toBe('tiger');
+                expect(rows[4].cells[1].value).toBeUndefined;
+                expect(rows[0].cells[2].value).toBe('cat');
                 helper.invoke('autoFill', ['C2:C10', 'C1', 'Down', 'FillWithoutFormatting']);
-                expect(helper.getInstance().sheets[0].rows[1].cells[2].value).toBe('dog');
-                expect(helper.getInstance().sheets[0].rows[2].cells[2].value).toBe('lion');
-                expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toBe('tiger');
-                expect(helper.getInstance().sheets[0].rows[4].cells[2].value).toBeUndefined; 
-                expect(helper.getInstance().sheets[0].rows[9].cells[2].value).toBeUndefined;
+                expect(rows[1].cells[2].value).toBe('dog');
+                expect(rows[2].cells[2].value).toBe('lion');
+                expect(rows[3].cells[2].value).toBe('tiger');
+                expect(rows[4].cells[2].value).toBeUndefined; 
+                expect(rows[9].cells[2].value).toBeUndefined;
                 helper.edit('A4', 'hippo');
                 setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].rows[3].cells[1].value).toBe('hippo');
-                    expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toBe('hippo');
+                    expect(rows[3].cells[1].value).toBe('hippo');
+                    expect(rows[3].cells[2].value).toBe('hippo');
+                    done();
+                });
+            });
+            it('Unique formula cell value throws #spill error on refresh ->', (done: Function) => {
+                expect(rows[0].cells[1].formula).toBe('=UNIQUE(A1:A100)');
+                expect(rows[0].cells[1].value).toBe('cat');
+                helper.getInstance().refresh();
+                setTimeout(() => {
+                    expect(rows[0].cells[1].value).toBe('cat');
                     done();
                 });
             });

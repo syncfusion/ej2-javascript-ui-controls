@@ -57,7 +57,7 @@ export interface CarouselModel extends ComponentModel{
      *  * Custom
      * 
      *  @default 'Slide'
-     * */
+     */
     animationEffect?: CarouselAnimationEffect;
 
     /**

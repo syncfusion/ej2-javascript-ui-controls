@@ -331,7 +331,7 @@ export class CheckBoxFilterBase {
         const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
         content.appendChild(this.sBox);
         this.wireEvents();
-        createSpinner({ target: this.spinner }, this.parent.createElement);
+        createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null }, this.parent.createElement);
         showSpinner(this.spinner);
         this.getAllData();
     }

@@ -94,6 +94,14 @@ export class EnforceProtectionDialog {
             this.viewer.owner.editor.addProtection(this.password, this.owner.protectionType);
         }
     };
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.documentHelper = undefined;
+        this.owner = undefined;
+    }
 
 }
 /**
@@ -181,5 +189,13 @@ export class UnProtectDocumentDialog {
         this.passwordTextBox.value = '';
         this.documentHelper.dialog.hide();
     };
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.documentHelper = undefined;
+        this.owner = undefined;
+    }
     /* eslint-enable @typescript-eslint/no-explicit-any */
 }

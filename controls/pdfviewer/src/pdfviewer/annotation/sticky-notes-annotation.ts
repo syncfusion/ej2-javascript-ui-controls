@@ -751,7 +751,7 @@ export class StickyNotesAnnotation {
     // eslint-disable-next-line
     public createPageAccordion(pageIndex: number): any {
         const pageAccordionContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + pageIndex);
-        if (pageAccordionContainer === null && this.pdfViewer.enableCommentPanel) {
+        if (pageAccordionContainer === null) {
             this.accordionContent = createElement('div', { id: this.pdfViewer.element.id + '_accordioncontent' + pageIndex });
             this.accordionContent.style.zIndex = '1000';
             // eslint-disable-next-line max-len

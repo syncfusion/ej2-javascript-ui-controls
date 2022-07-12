@@ -1504,6 +1504,8 @@ export function deserialize(model: string, diagram: Diagram): Object {
     if (dataObj.selectedItems) {
         dataObj.selectedItems.nodes = [];
         dataObj.selectedItems.connectors = [];
+		//EJ2-61674 Excetion occurs when move the node after perform save and load
+		dataObj.selectedItems.selectedObjects = [];
     }
     diagram.selectedItems = dataObj.selectedItems;
     diagram.enableServerDataBinding(true);

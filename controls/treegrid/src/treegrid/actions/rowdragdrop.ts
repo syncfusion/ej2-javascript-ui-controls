@@ -107,7 +107,7 @@ export class RowDD {
             this.parent[dropPosition] = this.dropPosition;
             const data: ITreeData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
-                const index: number = (this.parent.getRowByIndex(fromIndexes[i]) as any).rowIndex;
+                const index: number = (this.parent.getRowByIndex(fromIndexes[i]) as HTMLTableRowElement).rowIndex;
                 data[i] = this.parent.getCurrentViewRecords()[index];
             }
             const isByMethod: boolean = true;
@@ -220,7 +220,7 @@ export class RowDD {
                     }
                 }
                 if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop && this.selectedRecord) {
-                    dropIndex = parseInt(this.parent.getRows()[dropIndex].getAttribute('aria-rowindex'), 10)
+                    dropIndex = parseInt(this.parent.getRows()[dropIndex].getAttribute('aria-rowindex'), 10);
                 }
                 tObj[action] = 'outdenting'; tObj[droppedIndex] = dropIndex;
                 this.eventTrigger('outdenting', dropIndex);
@@ -464,7 +464,7 @@ export class RowDD {
     }
 
     private updateIcon(row: Element[], index: number, args: RowDragEventArgs): string {
-        let rowEle: Element = args.target ? closest(args.target, 'tr') : null;
+        const rowEle: Element = args.target ? closest(args.target, 'tr') : null;
         this.dropPosition = undefined;
         let rowPositionHeight: number = 0;
         this.removeFirstrowBorder(rowEle as HTMLTableRowElement);
@@ -923,7 +923,7 @@ export class RowDD {
             } else {
                 args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
                 if (this.parent.enableVirtualization) {
-                    const index: number = (this.parent.getRowByIndex(args.dropIndex) as any).rowIndex;
+                    const index: number = (this.parent.getRowByIndex(args.dropIndex) as HTMLTableRowElement).rowIndex;
                     this.droppedRecord = tObj.getCurrentViewRecords()[index];
                 }
                 else {

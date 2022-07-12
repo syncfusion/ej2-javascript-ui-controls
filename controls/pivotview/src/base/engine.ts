@@ -1725,7 +1725,7 @@ export class PivotEngine {
                         row: rows[i],
                         column: columns,
                         value: value,
-                        cellSets: this.getCellSet(this.rawIndexObject),
+                        cellSets: this.getValueCellInfo ? this.getCellSet(this.rawIndexObject) : [],
                         rowCellType: (rows[i].hasChild && rows[i].isDrilled ? 'subTotal' : rows[i].type === 'grand sum' ? 'grandTotal' : 'value'),
                         columnCellType: (columns.hasChild && columns.isDrilled ? 'subTotal' : columns.type === 'grand sum' ? 'grandTotal' : 'value'),
                         aggregateType: aggregate as SummaryTypes,
@@ -2598,7 +2598,7 @@ export class PivotEngine {
             PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
             isHeaderSortByDefault = true;
         }
-        if (isHeaderSortByDefault) {
+        if (isHeaderSortByDefault && this.getHeaderSortInfo) {
             let copyOrder: string[] | number[] = [];
             for (let m: number = 0, n: number = 0; m < sortMembersOrder.length; m++) {
                 let member: IAxisSet = sortMembersOrder[m];
@@ -2726,7 +2726,7 @@ export class PivotEngine {
                     row: header,
                     column: member,
                     value: value,
-                    cellSets: this.getCellSet(this.rawIndexObject),
+                    cellSets: this.getValueCellInfo ? this.getCellSet(this.rawIndexObject) : [],
                     rowCellType: (header.hasChild && header.isDrilled ? 'subTotal' : header.type === 'grand sum' ? 'grandTotal' : 'value'),
                     columnCellType: (member.hasChild && member.isDrilled ? 'subTotal' : member.type === 'grand sum' ? 'grandTotal' : 'value'),
                     aggregateType: mType as SummaryTypes,
@@ -4241,7 +4241,7 @@ export class PivotEngine {
             row: rows[rln],
             column: columns[cln],
             value: value,
-            cellSets: this.getCellSet(this.rawIndexObject),
+            cellSets: this.getValueCellInfo ? this.getCellSet(this.rawIndexObject) : [],
             rowCellType: (rows[rln].hasChild && rows[rln].isDrilled ? 'subTotal' : rows[rln].type === 'grand sum' ? 'grandTotal' : 'value'),
             columnCellType: (columns[cln].hasChild && columns[cln].isDrilled ? 'subTotal' : columns[cln].type === 'grand sum' ? 'grandTotal' : 'value'),
             aggregateType: aggregate as SummaryTypes,

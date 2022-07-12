@@ -1,12 +1,14 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData } from './datasource.spec';
+import { sampleData, projectData, sampleData1 } from './datasource.spec';
 import { RowSelectEventArgs, RowSelectingEventArgs, CellSelectEventArgs, CheckBoxChangeEventArgs } from '@syncfusion/ej2-grids';
 import { RowDeselectEventArgs, CellSelectingEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { getObject, IIndex } from '@syncfusion/ej2-grids';
 import { rowSelected, CellSaveEventArgs } from '../../src';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { Page } from '../../src/treegrid/actions/page';
+import { Filter } from '../../src/treegrid/actions/filter';
+import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SelectedEventArgs } from '@syncfusion/ej2-inputs';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
@@ -14,7 +16,7 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
  * Grid base spec 
  */
 
-TreeGrid.Inject(Sort,Page);
+TreeGrid.Inject(Sort,Page,Filter,Toolbar);
 
 describe('Selection module', () => {
   beforeAll(() => {
@@ -726,6 +728,66 @@ describe('Selection module', () => {
        (gridObj.getRows()[0].getElementsByClassName('e-rowcell')[0] as HTMLElement).click();
       expect(gridObj.getRows()[0].getElementsByClassName('e-active').length > 0).toBe(true);
       done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-60435 - selecting multiple hierarchy levels checkbox with searching and filtering', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData1,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: '410',
+          autoCheckHierarchy: true,
+          toolbar: ['Search'],
+          allowFiltering:true,
+          allowSelection: true,
+          selectionSettings: { type: 'Multiple'},
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150, showCheckbox: true },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('CheckBox Selection with searching', (done: Function) => {
+      actionComplete = (args?: CellSaveEventArgs): void => {
+        if (args.requestType === 'searching') {
+          expect((gridObj.getCurrentViewRecords()[3] as any).taskID === 13).toBe(true);
+          expect((gridObj.getCurrentViewRecords()[3] as any).checkboxState === 'check').toBe(true);
+          gridObj.actionComplete = null;
+          done();
+        }
+      };
+    (gridObj.element.querySelectorAll('.e-row')[12].getElementsByClassName('e-frame e-icons')[0] as any).click();
+    gridObj.search("Planning");
+    gridObj.actionComplete = actionComplete;
+    });
+
+    it('CheckBox Selection with filtering', (done: Function) => {
+      actionComplete = (args?: CellSaveEventArgs): void => {
+        if (args.requestType === 'filtering') {
+          expect((gridObj.getCurrentViewRecords()[3] as any).taskID === 13).toBe(true);
+          expect((gridObj.getCurrentViewRecords()[3] as any).checkboxState === 'check').toBe(true);
+          gridObj.actionComplete = null;
+          done();
+        }
+      };
+    gridObj.search("");
+    (gridObj.element.querySelectorAll('.e-row')[3].getElementsByClassName('e-frame e-icons')[0] as any).click();
+    (gridObj.element.querySelectorAll('.e-row')[3].getElementsByClassName('e-frame e-icons')[0] as any).click();
+    gridObj.filterByColumn('taskName', 'startswith', 'Planning');
+    gridObj.actionComplete = actionComplete;
     });
     afterAll(() => {
       destroy(gridObj);

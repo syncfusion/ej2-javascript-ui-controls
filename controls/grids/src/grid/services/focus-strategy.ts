@@ -8,7 +8,7 @@ import { Cell } from '../models/cell';
 import { Column } from '../models/column';
 import { NotifyArgs, EJ2Intance } from '../base/interface';
 import { RowModelGenerator } from './row-model-generator';
-import { parentsUntil, addRemoveEventListener } from '../base/util';
+import { parentsUntil, addRemoveEventListener, findCellIndex } from '../base/util';
 import * as literals from '../base/string-literals';
 import { Grid } from '../base/grid';
 import { Group } from '../actions/group';
@@ -58,7 +58,7 @@ export class FocusStrategy {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) { return; }
         this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.isFrozenGrid());
         if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
-            || (this.parent.editSettings.mode === 'Batch' && !this.parent.editModule.getBatchChanges()[literals.addedRecords].length))) {
+            || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule && !this.parent.editModule.getBatchChanges()[literals.addedRecords].length))) {
             this.getContent().matrix.
                 generate(
                     this.rowModelGen.generateRows({ rows: [new Row<Column>({ isDataRow: true })] }),
@@ -141,7 +141,7 @@ export class FocusStrategy {
                     let lastHeaderCellIndex: number[] = [this.active.matrix.matrix.length - 1,
                         this.active.matrix.matrix[this.active.matrix.matrix.length - 1].length - 1];
                     if (this.active.matrix.matrix[lastHeaderCellIndex[0]][lastHeaderCellIndex[1]] === 0) {
-                        lastHeaderCellIndex = this.findCellIndex(false, lastHeaderCellIndex);
+                        lastHeaderCellIndex = findCellIndex(this.active.matrix.matrix, lastHeaderCellIndex, false);
                     }
                     this.active.matrix.current = lastHeaderCellIndex;
                     e.preventDefault();
@@ -283,18 +283,18 @@ export class FocusStrategy {
         if (e.target && parentsUntil(e.target as Element, 'e-gridheader')) {
             if (!this.parent.isFrozenGrid()) {
                 if (e.action === 'tab' && bValue.toString() === this.active.matrix.current.toString()) {
-                    const nextHeaderCellIndex: number[] = this.findCellIndex(true);
+                    const nextHeaderCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, true);
                     let lastHeaderCellIndex: number[] = [this.active.matrix.matrix.length - 1,
                         this.active.matrix.matrix[this.active.matrix.matrix.length - 1].length - 1];
                     if (this.active.matrix.matrix[lastHeaderCellIndex[0]][lastHeaderCellIndex[1]] === 0) {
-                        lastHeaderCellIndex = this.findCellIndex(false, lastHeaderCellIndex);
+                        lastHeaderCellIndex = findCellIndex(this.active.matrix.matrix, lastHeaderCellIndex, false);
                     }
                     if (this.active.matrix.current.toString() === lastHeaderCellIndex.toString()) {
                         returnVal = true;
                         this.setActive(true);
                         let firstContentCellIndex: number[] = [0, 0];
                         if (this.active.matrix.matrix[firstContentCellIndex[0]][firstContentCellIndex[1]] === 0) {
-                            firstContentCellIndex = this.findCellIndex(true, [0, 0]);
+                            firstContentCellIndex = findCellIndex(this.active.matrix.matrix, [0, 0], true);
                         }
                         this.active.matrix.current = firstContentCellIndex;
                     } else if (this.active.matrix.current.toString() !== nextHeaderCellIndex.toString()) {
@@ -302,7 +302,7 @@ export class FocusStrategy {
                     }
                 }
                 if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
-                    const previousCellIndex: number[] = this.findCellIndex(false);
+                    const previousCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, false);
                     if (previousCellIndex.toString() === this.active.matrix.current.toString()) {
                         this.focusOutFromHeader(e);
                         return;
@@ -324,7 +324,7 @@ export class FocusStrategy {
                 if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
                     let firstContentCellIndex: number[] = [0, 0];
                     if (this.active.matrix.matrix[firstContentCellIndex[0]][firstContentCellIndex[1]] === 0) {
-                        firstContentCellIndex = this.findCellIndex(true, [0, 0]);
+                        firstContentCellIndex = findCellIndex(this.active.matrix.matrix, [0, 0], true);
                     }
                     if (!returnVal && firstContentCellIndex.toString() === this.active.matrix.current.toString()) {
                         returnVal = true;
@@ -363,7 +363,7 @@ export class FocusStrategy {
         let lastContentCellIndex: number[] = [this.active.matrix.matrix.length - 1,
             this.active.matrix.matrix[this.active.matrix.matrix.length - 1].length - 1];
         if (this.active.matrix.matrix[lastContentCellIndex[0]][lastContentCellIndex[1]] === 0) {
-            lastContentCellIndex = this.findCellIndex(false, lastContentCellIndex);
+            lastContentCellIndex = findCellIndex(this.active.matrix.matrix, lastContentCellIndex, false);
         }
         this.active.matrix.current = lastContentCellIndex;
     }
@@ -432,43 +432,6 @@ export class FocusStrategy {
         } else {
             this.parent.element.focus();
         }
-    }
-
-    private findCellIndex(next: boolean, checkCellIndex?: number[]): number[] {
-        const activeMatrix: number[][] = this.active.matrix.matrix;
-        let cellIndex: number[] = this.active.matrix.current;
-        if (checkCellIndex) {
-            cellIndex = checkCellIndex;
-        }
-        let currentCellIndexPass: boolean = false;
-        if (next) {
-            for (let i: number = cellIndex[0]; i < activeMatrix.length; i++) {
-                const rowCell: number[] = activeMatrix[i];
-                for (let j: number = 0; j < rowCell.length; j++) {
-                    if (currentCellIndexPass && activeMatrix[i][j] === 1) {
-                        cellIndex = [i, j];
-                        return cellIndex;
-                    }
-                    if (!currentCellIndexPass && cellIndex.toString() === [i, j].toString()) {
-                        currentCellIndexPass = true;
-                    }
-                }
-            }
-        } else {
-            for (let i: number = cellIndex[0]; i >= 0; i--) {
-                const rowCell: number[] = activeMatrix[i];
-                for (let j: number = rowCell.length - 1; j >= 0; j--) {
-                    if (currentCellIndexPass && activeMatrix[i][j] === 1) {
-                        cellIndex = [i, j];
-                        return cellIndex;
-                    }
-                    if (!currentCellIndexPass && cellIndex.toString() === [i, j].toString()) {
-                        currentCellIndexPass = true;
-                    }
-                }
-            }
-        }
-        return cellIndex;
     }
 
     private allowToPaging(e: KeyboardEventArgs): boolean {
@@ -1076,7 +1039,17 @@ export class ContentFocus implements IFocus {
     public getCurrentFromAction(action: string, navigator: number[] = [0, 0], isPresent?: boolean, e?: KeyboardEventArgs): number[] {
         if (!isPresent && !this.indexesByKey(action) || (this.matrix.current.length === 0)) { return null; }
         if (!this.shouldFocusChange(e)) { return this.matrix.current; }
-        const [rowIndex, cellIndex, rN, cN]: number[] = this.indexesByKey(action) || [...this.matrix.current, ...navigator];
+        // eslint-disable-next-line
+        let [rowIndex, cellIndex, rN, cN]: number[] = this.indexesByKey(action) || [...this.matrix.current, ...navigator];
+        if (action === 'ctrlEnd') {
+            let lastContentCellIndex: number[] = [this.matrix.matrix.length - 1,
+                this.matrix.matrix[this.matrix.matrix.length - 1].length - 1];
+            if (this.matrix.matrix[lastContentCellIndex[0]][lastContentCellIndex[1]] === 0) {
+                lastContentCellIndex = findCellIndex(this.matrix.matrix, lastContentCellIndex, false);
+            }
+            rowIndex = lastContentCellIndex[0];
+            cellIndex = lastContentCellIndex[1] + 1;
+        }
         const current: number[] = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
         return current;
     }
@@ -1263,9 +1236,12 @@ export class ContentFocus implements IFocus {
         const isData: boolean = info.element.classList.contains(literals.rowCell);
         const isSelectable: boolean = isData || (e && e.action !== 'enter' && (info.element.classList.contains('e-detailrowcollapse')
             || info.element.classList.contains('e-detailrowexpand')));
-        // eslint-disable-next-line max-len
-        const [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.ariaRowIndex), 10), rIndex),
+        // eslint-disable-next-line
+        let [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.ariaRowIndex), 10), rIndex),
             Math.min(parseInt(info.element.getAttribute(literals.ariaColIndex), 10), cIndex)];
+        if (this.parent.allowGrouping && this.parent.groupSettings.enableLazyLoading && isData) {
+            rowIndex = this.parent.getDataRows().indexOf(info.element.parentElement);
+        }
         return { isContent: true, isDataCell: isData, indexes: [rowIndex, cellIndex], isSelectable: isSelectable };
     }
 

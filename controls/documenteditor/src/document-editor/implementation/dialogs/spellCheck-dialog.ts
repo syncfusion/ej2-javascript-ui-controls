@@ -315,6 +315,11 @@ export class SpellCheckDialog {
             this.target.remove();
             this.target = undefined;
         }
+        if (this.elementBox) {
+            this.elementBox.destroy();
+            this.elementBox = undefined;
+        }
+        this.documentHelper = undefined;
         if (this.spellingListView) {
             this.spellingListView.destroy();
             this.spellingListView = undefined;

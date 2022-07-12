@@ -35,7 +35,7 @@ const CLS_TEMPLATE: string = 'e-template';
 const CLS_SLIDE_ANIMATION: string = 'e-carousel-slide-animation';
 const CLS_FADE_ANIMATION: string = 'e-carousel-fade-animation';
 const CLS_CUSTOM_ANIMATION: string = 'e-carousel-custom-animation';
-const CLS_ANIMATION_NONE: string = "e-carousel-animation-none";
+const CLS_ANIMATION_NONE: string = 'e-carousel-animation-none';
 const CLS_PREV_SLIDE: string = 'e-prev';
 const CLS_NEXT_SLIDE: string = 'e-next';
 const CLS_TRANSITION_START: string = 'e-transition-start';
@@ -64,6 +64,7 @@ export type CarouselButtonVisibility = 'Hidden' | 'Visible' | 'VisibleOnHover';
  * * `None` - The carousel item transition happens without animation.
  * * `Slide` - The carousel item transition happens with slide animation.
  * * `Fade` - The Carousel item transition happens with fade animation.
+ * * `Custom` - The Carousel item transition happens with custom animation.
  */
 export type CarouselAnimationEffect = 'None' | 'Fade' | 'Slide' | 'Custom';
 
@@ -164,9 +165,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
      *  * Custom
      * 
      *  @default 'Slide'
-     * */
-     @Property('Slide')
-     public animationEffect: CarouselAnimationEffect;
+     */
+    @Property('Slide')
+    public animationEffect: CarouselAnimationEffect;
 
     /**
      * Accepts the template for previous navigation button.

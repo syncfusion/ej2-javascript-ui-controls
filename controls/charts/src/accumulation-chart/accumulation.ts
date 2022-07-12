@@ -792,8 +792,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.allowServerDataBinding = false;
 
         this.unWireEvents();
-        this.element.setAttribute('tabindex', "0");
-        this.element.setAttribute("class", this.element.getAttribute("class") + " e-accumulationchart-focused");
         this.setCulture();
         this.animateSeries = true;
         if (this.element.id === '') {
@@ -819,6 +817,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.element.className.indexOf('e-accumulationchart') === -1) {
             this.element.classList.add('e-accumulationchart');
         }
+        this.element.setAttribute('tabindex', "0");
+        this.element.setAttribute("class", this.element.getAttribute("class") + " e-accumulationchart-focused");
+        
         const loadEventData: IAccLoadedEventArgs = {
             chart: this.isBlazor ? {} as AccumulationChart : this,
             accumulation: this.isBlazor ? {} as AccumulationChart : this,
@@ -1914,6 +1915,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.unWireEvents();
             super.destroy();
             this.element.classList.remove('e-accumulationchart');
+            this.element.classList.remove('e-accumulationchart-focused');
             this.removeSvg();
             this.svgObject = null;
         }

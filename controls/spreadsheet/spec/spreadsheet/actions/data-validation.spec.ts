@@ -58,8 +58,8 @@ describe('Data validation ->', () => {
                 expect(helper.invoke('getCell', [1, 3]).innerText).toBe('13');
                 helper.editInUI('15');
                 setTimeout(() => {
-                    expect(helper.getElements('.e-validationerror-dlg').length).toBe(1);
-                    helper.setAnimationToNone('.e-validationerror-dlg');
+                    expect(helper.getElements('.e-validationerror-dlg.e-dialog').length).toBe(1);
+                    helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                     helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                     done();
                 });
@@ -88,13 +88,13 @@ describe('Data validation ->', () => {
                 helper.click('.e-datavalidation-ddb li:nth-child(1)');
                 helper.getElements('.e-datavalidation-dlg #minvalue')[0].value = '12';
                 helper.getElements('.e-datavalidation-dlg #maxvalue')[0].value = '25';
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[4].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"12","value2":"25","ignoreBlank":true,"inCellDropDown":null}');
                 helper.editInUI('26');
                 setTimeout(() => {
-                    expect(helper.getElements('.e-validationerror-dlg').length).toBe(1);
-                    helper.setAnimationToNone('.e-validationerror-dlg');
+                    expect(helper.getElements('.e-validationerror-dlg.e-dialog').length).toBe(1);
+                    helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                     helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                     expect(helper.invoke('getCell', [1, 4]).textContent).toBe('20');
                     done();
@@ -129,7 +129,7 @@ describe('Data validation ->', () => {
                 helper.click('.e-datavalidation-ddb li:nth-child(4)');
                 expect(helper.getInstance().sheets[0].rows[1].cells[4].validation).toBeUndefined();
                 helper.editInUI('30');
-                expect(helper.getElements('.e-validationerror-dlg').length).toBe(0);
+                expect(helper.getElements('.e-validationerror-dlg.e-dialog').length).toBe(0);
                 done();
             });
         });
@@ -150,7 +150,7 @@ describe('Data validation ->', () => {
                             helper.triggerKeyNativeEvent(9);
                             helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = 'dumm';
                             helper.triggerKeyEvent('keyup', 89, null, null, null, helper.getElements('.e-datavalidation-dlg .e-values e-input')[0]);
-                            helper.setAnimationToNone('.e-datavalidation-dlg');
+                            helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                             // helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)'); // This case need to be fixed
                             // expect(helper.getElements('.e-datavalidation-dlg .e-values .e-dlg-error')[0].textContent).toBe('Please enter a correct value.'); // This case need to be fixed
                             helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '3';
@@ -181,7 +181,7 @@ describe('Data validation ->', () => {
                     expect(helper.invoke('getCell', [1, 3]).innerText).toBe('11'); // check this now
                     helper.editInUI('10');
                     setTimeout(() => {
-                        expect(helper.getElements('.e-validationerror-dlg').length).toBe(0);
+                        expect(helper.getElements('.e-validationerror-dlg.e-dialog').length).toBe(0);
                         done();
                     });
                 });
@@ -198,7 +198,7 @@ describe('Data validation ->', () => {
                     ddlElem.ej2_instances[0].value = 'List';
                     ddlElem.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=G:G';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
                     expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8].validation)).toBe('{"type":"List","operator":"Between","value1":"=G:G","value2":"","ignoreBlank":true,"inCellDropDown":true}');
                     const td: HTMLElement = helper.invoke('getCell', [0, 8]).children[0];
@@ -241,18 +241,18 @@ describe('Data validation ->', () => {
             setTimeout(() => {
                 helper.getElement('.e-datavalidation-dlg #minvalue').value = '-10';
                 helper.getElement('.e-datavalidation-dlg #maxvalue').value = '-5';
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-footer-content .e-primary');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"-10","value2":"-5","ignoreBlank":true,"inCellDropDown":null}');
                 helper.editInUI('5');
                 setTimeout(() => {
-                    expect(helper.getElements('.e-validationerror-dlg').length).toBe(1);
-                    helper.setAnimationToNone('.e-validationerror-dlg');
+                    expect(helper.getElements('.e-validationerror-dlg.e-dialog').length).toBe(1);
+                    helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                     helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                     expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
                     helper.editInUI('-5');
                     setTimeout(() => {
-                        expect(helper.getElements('.e-validationerror-dlg').length).toBe(0);
+                        expect(helper.getElements('.e-validationerror-dlg.e-dialog').length).toBe(0);
                         expect(helper.invoke('getCell', [1, 7]).textContent).toBe('-5');
                         done();
                     });
@@ -270,15 +270,26 @@ describe('Data validation ->', () => {
                 ddlObj.dataBind();
                 helper.getElement('.e-datavalidation-dlg .e-minimum input').value = '-10';
                 helper.getElement('.e-datavalidation-dlg .e-maximum input').value = '-5';
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-footer-content .e-primary');
                 expect(helper.getElement('.e-datavalidation-dlg .e-dlg-error').textContent).toBe('Please enter a correct value.');
                 helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(3)');
-                expect(helper.getElement('.e-datavalidation-dlg')).toBeNull();
+                expect(helper.getElement('.e-datavalidation-dlg.e-dialog')).toBeNull();
                 done();
             });
         });
 
+        it('Undo on cell format removes data validation', (done: Function) => {
+            helper.invoke('selectRange', ['E2']);
+            helper.switchRibbonTab(1);
+            helper.click('#' + helper.id + '_bold');
+            helper.click('#' + helper.id + '_undo');
+            const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[4];
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"TextLength","operator":"EqualTo","value1":"3","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":false}');
+            expect(cell.style).toBeNull();
+            expect(helper.invoke('getCell', [1, 4]).style.fontWeight).toBe('');
+            done();
+        });
     });
  
     describe('Add list validation and remove list validation ->', () => {
@@ -450,7 +461,7 @@ describe('Defined name - text with apostofe ->', () => {
                 ddlElem.ej2_instances[0].value = 'List';
                 ddlElem.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=value';
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[3].validation)).toBe('{"type":"List","operator":"Between","value1":"=value","value2":"","ignoreBlank":true,"inCellDropDown":true}');
                 done(); 
@@ -512,7 +523,7 @@ describe('Defined name - text with apostofe ->', () => {
                     ddlElem.ej2_instances[0].value = 'List';
                     ddlElem.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=3:3';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
                     expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8].validation)).toBe('{"type":"List","operator":"Between","value1":"=3:3","value2":"","ignoreBlank":true,"inCellDropDown":true}');
                     const td: HTMLElement = helper.invoke('getCell', [0, 8]).children[0];
@@ -549,7 +560,7 @@ describe('Defined name - text with apostofe ->', () => {
             setTimeout(() => {
                 expect(helper.getElement('#' + helper.id + '_protect').textContent).toBe('Unprotect Sheet');
                 (helper.getElements('.e-list-item')[0] as HTMLElement).click();
-                expect(document.getElementsByClassName('e-editAlert-dlg').length).toBe(1);
+                expect(helper.getElements('.e-editAlert-dlg.e-dialog').length).toBe(1);
                 done();
             });       
         });
@@ -578,7 +589,7 @@ describe('Defined name - text with apostofe ->', () => {
                     ddlElem.ej2_instances[0].value = 'List';
                     ddlElem.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '11,12,13';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
                     expect(JSON.stringify(helper.getInstance().sheets[0].rows[199].cells[0].validation)).toBe('{"type":"List","operator":"Between","value1":"11,12,13","value2":"","ignoreBlank":true,"inCellDropDown":true}');
                     helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -623,7 +634,7 @@ describe('Key press in datavalidation dialog input ->', () => {
                 var btnElem = helper.getElements('.e-datavalidation-dlg .e-primary')[0].disabled;
                 expect(btnElem).toBeTruthy();
                 helper.triggerKeyEvent('keyup', 110, null, null, null, helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0]);
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '11,12,13';
                 btnElem = helper.getElements('.e-datavalidation-dlg .e-primary')[0].disabled;
                 expect(btnElem).toBeFalsy();
@@ -679,11 +690,11 @@ describe('Providing formula in value1 and value2 input ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(1)');
                                 done();
                             });
@@ -718,7 +729,7 @@ describe('Equal To Datavalidation ->', () => {
                         ddlElement.ej2_instances[0].value = 'Equal to';
                         ddlElement.ej2_instances[0].dataBind();
                         helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '30';
-                        helper.setAnimationToNone('.e-datavalidation-dlg');
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                         helper.click('.e-datavalidation-dlg .e-primary');
                         setTimeout(() => {
                             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -729,11 +740,11 @@ describe('Equal To Datavalidation ->', () => {
                                 helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                                 helper.triggerKeyNativeEvent(13);
                                 setTimeout(() => {
-                                    let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                    let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                     expect(!!dialog).toBeTruthy();
                                     expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                     "This value doesn't match the data validation restrictions defined for the cell.");
-                                    helper.setAnimationToNone('.e-validationerror-dlg');
+                                    helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                     helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                     setTimeout(() => {
                                         helper.invoke('selectRange', ['E3']);
@@ -776,7 +787,7 @@ describe('Not Equal To Datavalidation ->', () => {
                     ddlElement.ej2_instances[0].value = 'Not equal to';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -787,11 +798,11 @@ describe('Not Equal To Datavalidation ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                 setTimeout(() => {
                                     helper.invoke('selectRange', ['E3']);
@@ -834,7 +845,7 @@ describe('Greater Than Datavalidation ->', () => {
                     ddlElement.ej2_instances[0].value = 'Greater than';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '20';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -845,11 +856,11 @@ describe('Greater Than Datavalidation ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                 setTimeout(() => {
                                     helper.invoke('selectRange', ['E3']);
@@ -892,7 +903,7 @@ describe('Less Than Datavalidation ->', () => {
                     ddlElement.ej2_instances[0].value = 'Less than';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -903,11 +914,11 @@ describe('Less Than Datavalidation ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                 setTimeout(() => {
                                     helper.invoke('selectRange', ['E3']);
@@ -950,7 +961,7 @@ describe('Greater Than or equal to Datavalidation ->', () => {
                     ddlElement.ej2_instances[0].value = 'Greater than or equal to';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '20';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -961,11 +972,11 @@ describe('Greater Than or equal to Datavalidation ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                 setTimeout(() => {
                                     helper.invoke('selectRange', ['E3']);
@@ -1008,7 +1019,7 @@ describe('Less Than or equal to Datavalidation ->', () => {
                     ddlElement.ej2_instances[0].value = 'Less than or equal to';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '5';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -1019,11 +1030,11 @@ describe('Less Than or equal to Datavalidation ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                 setTimeout(() => {
                                     helper.invoke('selectRange', ['E3']);
@@ -1067,7 +1078,7 @@ describe('NotBetween Datavalidation ->', () => {
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '5';
                     helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '15';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -1078,11 +1089,11 @@ describe('NotBetween Datavalidation ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                 setTimeout(() => {
                                     helper.invoke('selectRange', ['E3']);
@@ -1126,7 +1137,7 @@ describe('Between Datavalidation ->', () => {
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '15';
                     helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '20';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -1137,11 +1148,11 @@ describe('Between Datavalidation ->', () => {
                             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                             helper.triggerKeyNativeEvent(13);
                             setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                                 expect(!!dialog).toBeTruthy();
                                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                                 "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg');
+                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                                 helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                                 setTimeout(() => {
                                     helper.invoke('selectRange', ['E3']);
@@ -1184,7 +1195,7 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                     ddlElement.ej2_instances[0].value = 'Equal to';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '41';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -1225,7 +1236,7 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                     ddlElement.ej2_instances[0].value = 'Greater than';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '45';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -1266,7 +1277,7 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                     ddlElement.ej2_instances[0].value = 'Less than';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '35';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -1307,7 +1318,7 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                     ddlElement.ej2_instances[0].value = 'Greater than or equal to';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '50';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -1347,7 +1358,7 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                 ddlObj.value = 'Less than or equal to';
                 ddlObj.dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '50';
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
@@ -1380,7 +1391,7 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                 ddlObj.dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '45';
                 helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '60';
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
@@ -1413,7 +1424,7 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                 ddlObj.dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '30';
                 helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '45';
-                helper.setAnimationToNone('.e-datavalidation-dlg');
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
@@ -1446,7 +1457,7 @@ describe('Checking for Extend validation dialog ->', () => {
                     ddlElement.ej2_instances[0].value = 'Greater than';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.invoke('selectRange', ['D2:D10']);
@@ -1454,7 +1465,7 @@ describe('Checking for Extend validation dialog ->', () => {
                         setTimeout(() => {
                             helper.click('.e-datavalidation-ddb li:nth-child(1)');
                             setTimeout(() => {
-                                helper.setAnimationToNone('.e-goto-dlg');
+                                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
                                 helper.click('.e-goto-dlg .e-footer-content button:nth-child(1)');
                                         done();
                                     });
@@ -1488,7 +1499,7 @@ describe('Checking for Extend validation dialog ->', () => {
                     ddlElement.ej2_instances[0].value = 'Greater than';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                     setTimeout(() => {
                         helper.invoke('selectRange', ['D2:D10']);
@@ -1496,7 +1507,7 @@ describe('Checking for Extend validation dialog ->', () => {
                         setTimeout(() => {
                             helper.click('.e-datavalidation-ddb li:nth-child(1)');
                             setTimeout(() => {
-                                helper.setAnimationToNone('.e-goto-dlg');
+                                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
                                 helper.getElements('.e-goto-dlg .e-primary')[1].click();
                                 done();
                             });
@@ -1529,7 +1540,7 @@ describe('Checking for More validation dialog->', () => {
             setTimeout(() => {
                 helper.click('.e-datavalidation-ddb li:nth-child(1)');
                 setTimeout(() => {
-                    helper.setAnimationToNone('.e-goto-dlg');
+                    helper.setAnimationToNone('.e-goto-dlg.e-dialog');
                     helper.getElements('.e-goto-dlg .e-primary')[0].click();
                     done();
                 });
@@ -1562,7 +1573,7 @@ describe('Check MinMaxError in Between Datavalidation  ->', () => {
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '60';
                     helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '45';
-                    helper.setAnimationToNone('.e-datavalidation-dlg');
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                     helper.click('.e-datavalidation-dlg .e-primary');
                         setTimeout(() => {
                             expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The Maximum must be greater than or equal to the Minimum.');
@@ -1596,7 +1607,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                         ddlElement.ej2_instances[0].value = 'List';
                         ddlElement.ej2_instances[0].dataBind();
                         helper.getElements('.e-datavalidation-dlg .e-input')[2].value = 'Syncfusion JavaScript (Essential JS 2) is a modern UI Controls library that has been built from the ground up to be lightweight, responsive, modular and touch friendly. It is written in TypeScript and has no external dependencies. It also includes complete support for Angular, React, Vue, ASP.NET MVC and ASP.NET Core frameworks.';
-                        helper.setAnimationToNone('.e-datavalidation-dlg');
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                         helper.click('.e-datavalidation-dlg .e-primary');
                             setTimeout(() => {
                                 expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The list values allows only upto 256 charcters');
@@ -1694,7 +1705,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                 helper.getElement('#' + helper.id + '_datavalidation').click();
                 helper.getElement('#' + helper.id + '_datavalidation-popup .e-item').click();
                 setTimeout((): void => { // Data validation model is not set properly in dialog.
-                    let dlg: HTMLElement = helper.getElement().querySelector('.e-datavalidation-dlg') as HTMLElement;
+                    let dlg: HTMLElement = helper.getElement().querySelector('.e-datavalidation-dlg.e-dialog') as HTMLElement;
                     expect(!!dlg).toBeTruthy();
                     expect((dlg.querySelector('.e-cellrange .e-input') as HTMLInputElement).value).toBe('A1:A1');
                     expect((dlg.querySelector('.e-ignoreblank .e-checkbox') as HTMLInputElement).checked).toBeTruthy();
@@ -1712,7 +1723,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                 spreadsheet.dataBind();
                 helper.edit('A1', '0');
                 setTimeout((): void => {
-                    let dlg: HTMLElement = helper.getElement().querySelector('.e-validationerror-dlg') as HTMLElement;
+                    let dlg: HTMLElement = helper.getElement().querySelector('.e-validationerror-dlg.e-dialog') as HTMLElement;
                     expect(!!dlg).toBeTruthy();
                     expect(dlg.querySelector('.e-dlg-content').textContent).toBe('Invalid value');
                     (spreadsheet.serviceLocator.getService(dialog) as Dialog).hide();
@@ -2058,11 +2069,11 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                 expect(validation.address).toBe('G1:G2 G6:G1048576');
                 helper.edit('G3', '4');
                 setTimeout(() => {
-                    expect(helper.getElementFromSpreadsheet('.e-validationerror-dlg')).toBeNull();
+                    expect(helper.getElementFromSpreadsheet('.e-validationerror-dlg.e-dialog')).toBeNull();
                     helper.edit('G2', '4');
                     setTimeout(() => {
-                        expect(helper.getElementFromSpreadsheet('.e-validationerror-dlg')).not.toBeNull();
-                        helper.setAnimationToNone('.e-validationerror-dlg');
+                        expect(helper.getElementFromSpreadsheet('.e-validationerror-dlg.e-dialog')).not.toBeNull();
+                        helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                         helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
                         // Clearing another range
                         helper.invoke('selectRange', ['G10:G14']);
@@ -2282,7 +2293,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                         ddlElement.ej2_instances[0].value = 'Equal to';
                         ddlElement.ej2_instances[0].dataBind();
                         helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '6/23/2014';
-                        helper.setAnimationToNone('.e-datavalidation-dlg');
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                         helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
                         setTimeout(() => {
                             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -2312,7 +2323,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                         ddlElement.ej2_instances[0].value = 'Equal to';
                         ddlElement.ej2_instances[0].dataBind();
                         helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '12:43:59 AM';
-                        helper.setAnimationToNone('.e-datavalidation-dlg');
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                         helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
                         setTimeout(() => {
                             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -2351,7 +2362,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                         ddlElement.ej2_instances[0].value = 'Greater than';
                         ddlElement.ej2_instances[0].dataBind();
                         helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '6';
-                        helper.setAnimationToNone('.e-datavalidation-dlg');
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                         helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
                         setTimeout(() => {
                             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
@@ -2368,11 +2379,11 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                 helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                 helper.triggerKeyNativeEvent(13);
                 setTimeout(() => {
-                    let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg');
+                    let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
                     expect(!!dialog).toBeTruthy();
                     expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                     "This value doesn't match the data validation restrictions defined for the cell.");
-                    helper.setAnimationToNone('.e-validationerror-dlg');
+                    helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
                     helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(1)');
                     setTimeout(() => {
                         expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 255, 0)');
@@ -2412,7 +2423,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                         ddlElem.ej2_instances[0].value = 'List';
                         ddlElem.ej2_instances[0].dataBind();
                         helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = 'A,B,C';
-                        helper.setAnimationToNone('.e-datavalidation-dlg');
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                         helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
                         done();
                     });

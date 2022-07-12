@@ -1,5 +1,5 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { defaultData } from '../util/datasource.spec';
+import { defaultData, InventoryList } from '../util/datasource.spec';
 import { Spreadsheet, clearViewer } from '../../../src/index';
 import { getComponent } from '@syncfusion/ej2-base';
 
@@ -422,7 +422,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_greaterthan_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn')
                 expect(btn.disabled).toBeTruthy();
                 const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
@@ -446,7 +446,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_lessthan_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
                 Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
                 Color.ej2_instances[0].dataBind();
@@ -470,7 +470,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_between_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
                 Color.ej2_instances[0].value = 'Green Fill with Dark Green Text';
                 Color.ej2_instances[0].dataBind();
@@ -495,7 +495,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_eqaulto_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
                 Color.ej2_instances[0].value = 'Red Fill';
                 Color.ej2_instances[0].dataBind();
@@ -519,7 +519,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_adateoccuring_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
                 input.value = '7/22/2014';
                 const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
@@ -539,7 +539,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_top10items_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input .e-numerictextbox').value = '5';
                 helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
                 expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
@@ -557,7 +557,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_bottom10items_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
                 Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
                 Color.ej2_instances[0].dataBind();
@@ -579,7 +579,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_top10_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
                 expect(helper.invoke('getCell', [9, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
                 expect(helper.invoke('getCell', [9, 7]).style.color).toBe('rgb(156, 0, 85)');
@@ -594,7 +594,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_bottom10_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
                 Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
                 Color.ej2_instances[0].dataBind();
@@ -613,7 +613,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_aboveaverage_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
                 expect(helper.invoke('getCell', [5, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
                 expect(helper.invoke('getCell', [5, 3]).style.color).toBe('rgb(156, 0, 85)');
@@ -630,7 +630,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_belowaverage_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
                 Color.ej2_instances[0].value = 'Yellow Fill with Dark Yellow Text';
                 Color.ej2_instances[0].dataBind();
@@ -651,7 +651,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_between_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[0].value = '10(1)';
                 const input: HTMLInputElement = helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[1] as HTMLInputElement;
                 input.value = '100';
@@ -674,7 +674,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             helper.getElement('#cf_duplicatevalues_dlg').click();
             setTimeout((): void => {
-                helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                 let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
                 Color.ej2_instances[0].value = 'Red Text';
                 Color.ej2_instances[0].dataBind();
@@ -731,7 +731,24 @@ describe('Conditional formatting ->', () => {
             });
         });
     });
-    
+
+    describe('EJ2-60930 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: InventoryList }] }] }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Color Scales w.r.t Conditional Formatting not working properly', (done: Function) => {
+            helper.getInstance().conditionalFormat({ type: 'GYRColorScale', range: 'D1:D15' });
+            let cell1: HTMLElement = helper.invoke('getCell', [1, 3]);
+            let cell2: HTMLElement = helper.invoke('getCell', [2, 3]);
+            expect(cell1.textContent).not.toBe(cell2.textContent);
+            expect(cell1.style.backgroundColor).not.toBe(cell2.style.backgroundColor);
+            done();
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('fb22057, FB24222, FB23945 ->', () => {
             beforeAll((done: Function) => {
@@ -852,7 +869,7 @@ describe('Conditional formatting ->', () => {
                     target);
                 helper.getElement('#cf_greaterthan_dlg').click();
                 setTimeout((): void => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                     const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
                     expect(btn.disabled).toBeTruthy();
                     let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
@@ -954,7 +971,7 @@ describe('Conditional formatting ->', () => {
                     target);
                 helper.getElement('#cf_textcontains_dlg').click();
                 setTimeout((): void => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                     const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
                     expect(btn.disabled).toBeTruthy();
                     let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
@@ -992,7 +1009,7 @@ describe('Conditional formatting ->', () => {
                     target);
                 helper.getElement('#cf_textcontains_dlg').click();
                 setTimeout((): void => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                     const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
                     expect(btn.disabled).toBeTruthy();
                     let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
@@ -1029,7 +1046,7 @@ describe('Conditional formatting ->', () => {
                             target);
                         helper.getElement('#cf_textcontains_dlg').click();
                         setTimeout((): void => {
-                            helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                            helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                             const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
                             expect(btn.disabled).toBeTruthy();
                             let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
@@ -1061,7 +1078,7 @@ describe('Conditional formatting ->', () => {
                     target);
                 helper.getElement('#cf_textcontains_dlg').click();
                 setTimeout((): void => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                     const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
                     expect(btn.disabled).toBeTruthy();
                     let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
@@ -1101,7 +1118,7 @@ describe('Conditional formatting ->', () => {
                     target);
                 helper.getElement('#cf_textcontains_dlg').click();
                 setTimeout(() => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg');
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
                     const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
                     expect(btn.disabled).toBeTruthy();
                     const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');

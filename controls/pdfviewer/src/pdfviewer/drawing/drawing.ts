@@ -731,6 +731,13 @@ export class Drawing {
         }
         container.children.push(srcDecorator);
         container.children.push(targetDecorator);
+        if (obj.shapeAnnotationType === 'LineWidthArrowHead') 
+        {
+            container.children[1].width = 12 * obj.thickness;
+            container.children[1].height = 12 * obj.thickness;
+            container.children[2].width = 12 * obj.thickness;
+            container.children[2].height = 12 * obj.thickness;
+        }
         container.id = obj.id;
         container.offsetX = segment.offsetX;
         container.offsetY = segment.offsetY;
@@ -2562,7 +2569,14 @@ export class Drawing {
         }
         if (node.thickness !== undefined) {
             actualObject.thickness = node.thickness;
-            actualObject.wrapper.children[0].style.strokeWidth = node.thickness; update = true;
+            actualObject.wrapper.children[0].style.strokeWidth = node.thickness;
+            if (actualObject.shapeAnnotationType === 'LineWidthArrowHead') {
+                actualObject.wrapper.children[1].width = 12 * node.thickness;
+                actualObject.wrapper.children[1].height = 12 * node.thickness;
+                actualObject.wrapper.children[2].width = 12 * node.thickness;
+                actualObject.wrapper.children[2].height = 12 * node.thickness;
+            }
+            update = true;
             updateConnector = true;
         }
         if (node.borderDashArray !== undefined) {
@@ -2923,7 +2937,7 @@ export class Drawing {
         const bounds: Rect = nodeBounds;
         // eslint-disable-next-line
         let canvas: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
-        let heightDifference: number = 10;
+        let heightDifference: number = 1;
         if (canvas) {
             const width: number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();
             const height: number = canvas.clientHeight / this.pdfViewer.viewerBase.getZoomFactor();
@@ -2939,7 +2953,7 @@ export class Drawing {
                     }
                 }
             }
-            if ((right <= width - 10 && left >= 10 && bottom <= height - 10 && top >= heightDifference) || isSkip) {
+            if ((right <= width - 3 && left >= 1 && bottom <= height - 3 && top >= heightDifference) || isSkip) {
                 return true;
             }
         }

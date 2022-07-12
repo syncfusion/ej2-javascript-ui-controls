@@ -186,6 +186,7 @@ export class EventWindow {
     public setDialogContent(): void {
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
+        this.applyFormValidation();
     }
 
     private preventEventSave(e: KeyboardEventArgs): void {

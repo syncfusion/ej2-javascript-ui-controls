@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 20.2.36 (2022-06-30)
-
-### DropDownButton
-
-#### Bug Fixes
-
-- `#I375771` - Text content contains html tag elements considered as HTML Element in DropDownButton issue has been resolved.
-
 ## 19.4.40 (2021-12-28)
 
 ### DropDownButton

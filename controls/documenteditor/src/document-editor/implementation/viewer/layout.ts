@@ -549,15 +549,6 @@ export class Layout {
                         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + height);
                     }
                 }
-                else if(shape instanceof TableWidget && !table.wrapTextAround && !shape.isInsideTable && shape.positioning.allowOverlap){
-                    const tableWidget: Rect = new Rect(shape.x, shape.y, shape.width, shape.height);
-                    if(tableRect.isIntersecting(tableWidget)){
-                        table.y = shape.y + shape.height;
-                        this.updateChildLocationForTable(table.y, table);
-                        const height: number = table.y - tableY;
-                        this.viewer.cutFromTop(this.viewer.clientActiveArea.y + height);
-                    }
-                }
             });
         }
     }
@@ -1165,12 +1156,18 @@ export class Layout {
                     this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
                 }
                 this.moveToNextLine(currentLine);
-                // Recalculates tab width based on new client active area X position
-                element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element as TabElementBox);
-                this.addElementToLine(paragraph, element);
-                if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0
-                    && !element.line.isLastLine()) {
-                    this.moveElementFromNextLine(element.line);
+                this.nextElementToLayout = element;
+                if (currentLine.paragraph.bodyWidget.floatingElements.length > 0) {
+                    this.hasFloatingElement = true;
+                    return;
+                } else {
+                    // Recalculates tab width based on new client active area X position
+                    element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element as TabElementBox);
+                    this.addElementToLine(paragraph, element);
+                    if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0
+                        && !element.line.isLastLine()) {
+                        this.moveElementFromNextLine(element.line);
+                    }
                 }
             } else {
                 //Splits the text and arrange line by line, till end of text.
@@ -1310,8 +1307,12 @@ export class Layout {
         return (container.floatingElements.length > 0 && wrapIndex !== wrapCollectionIndex
             && wrapItemIndex !== wrapCollectionIndex && wrappingStyle !== 'Inline'
             && wrappingStyle !== 'Behind' && wrappingStyle !== 'TopAndBottom'
-            && wrappingStyle !== 'InFrontOfText' && (Math.round((rect.y + height)) >= Math.round(textWrappingBounds.y))
-            && Math.round(rect.y) < Math.round((textWrappingBounds.y + textWrappingBounds.height))
+            && wrappingStyle !== 'InFrontOfText'
+            && ((Math.round(rect.y + height) >= Math.round(textWrappingBounds.y)
+            && Math.round(rect.y) < Math.round(textWrappingBounds.bottom))
+            //Checks whether the bottom of the table intersects with floating item.
+            || Math.round(rect.y + height) <= Math.round(textWrappingBounds.bottom)
+            && Math.round(rect.y + height) >= Math.round(textWrappingBounds.y))
             && !(allowOverlap && (isInTextBox)));
     }
     private isNeedToWrapLeafWidget(pargaraph: ParagraphWidget, elementBox: ElementBox): boolean {
@@ -1446,6 +1447,7 @@ export class Layout {
             yValue = yposition;
         }
         isFirstItem = isNullOrUndefined(ownerPara.previousWidget);
+        //Update Layout area based on text wrap
         if (this.isNeedToWrapLeafWidget(ownerPara, elementBox)) {
             let clientLayoutArea: Rect = layouter.clientArea;
             //Need to handle sorting floating items.
@@ -1496,6 +1498,10 @@ export class Layout {
                     width = floatingItem.width;
                 } else {
                     width = floatingItem.getTableCellWidth();
+                    distanceLeft = floatingItem.positioning.distanceLeft;
+                    distanceTop = floatingItem.positioning.distanceTop;
+                    distanceRight = floatingItem.positioning.distanceRight;
+                    distanceBottom = floatingItem.positioning.distanceBottom;
                 }
                 let textWrappingBounds: Rect = new Rect(floatingItem.x - distanceLeft, floatingItem.y - distanceTop,
                     width + distanceLeft + distanceRight,
@@ -1506,7 +1512,7 @@ export class Layout {
                 //  //Need to skip the wrapping for line break when it is first item of corresponding paragraph and that paragraph contains First line indent as per Word 2010 and its lower version behavior.
                 //  if (IsLineBreakIntersectOnFloatingItem(leafWidget, textWrappingStyle, textWrappingBounds, rect, size, ownerPara))
                 //  continue;
-                let minimumWidthRequired: number = 18;
+                let minimumWidthRequired: number = 24;
                 let bottom: number = layouter.clientArea.y + floatingItem.height;
 
                 // if (this.isNeedToWrapParaMarkToRightSide(elementBox, ownerPara, textWrappingBounds, bottom, layouter, this.viewer.clientArea, textWrappingType, minimumWidthRequired)) {
@@ -1528,6 +1534,7 @@ export class Layout {
                         let listLeftIndent: number = 0;
                         let firstLineIndent: number = HelperMethods.convertPointToPixel(elementBox.paragraph.paragraphFormat.firstLineIndent);
                         let paragraphLeftIndent: number = HelperMethods.convertPointToPixel(ownerPara.paragraphFormat.leftIndent);
+                        let paragarphRightIndent: number = HelperMethods.convertPointToPixel(ownerPara.paragraphFormat.rightIndent);
                         firstLineIndent = ((elementBox.indexInOwner === 0 && elementBox.line.isFirstLine()) && firstLineIndent > 0) ? firstLineIndent : 0;
                         let currTextRange: ElementBox = elementBox;
                         let containerWidget: Widget = floatingItem instanceof TableWidget ? floatingItem.containerWidget : floatingItem.line.paragraph.containerWidget;
@@ -1536,7 +1543,7 @@ export class Layout {
                             //Right indent is considered only if the rect.X greater than the floating item's X position and
                             //Text wrapping style should not be left
                             if (rect.x >= textWrappingBounds.x && textWrappingType !== 'Left') {
-                                rightIndent = ownerPara.paragraphFormat.rightIndent;
+                                rightIndent = paragarphRightIndent;
                             }
                             //Left indent is considered only if the rect.X less than the floating item's X position and
                             //Text wrapping style should not be right
@@ -1558,17 +1565,48 @@ export class Layout {
                         //     this.viewer.updateClientAreaForTextWrap(rect);
                         //     return rect;
                         // }
+                        if (textWrappingStyle === 'Square') {
+                            //If the floating item intersects the Horizontal line shape, then we fit the shape in the remaining area
+                            if (elementBox instanceof ShapeBase &&
+                                (elementBox as ShapeElementBox).textWrappingStyle === 'Inline') {
+                                if (textWrappingBounds.x - rect.x > 24) {
+                                    floatingItem.width = textWrappingBounds.x - rect.x;
+                                } else {
+                                    floatingItem.width = floatingItem.width - (textWrappingBounds.right - rect.x) - rightIndent;
+                                }
+                            }
+                        }
+                        /* Since the Microsoft Word has different behavior to calculate minimum width required to fit a word to a side of Table, 
+                        the minimum width required changes based upon table border value and table alignment.
+                        And this value even differ for different word version, such that 2013, will have different minimum required value, where all other version shares the same logic to calculate minimum width required */
+                        let border: number = 0;
+                        let isBorderValueZero: boolean = false;
+                        let table: TableWidget;
+                        let borderThickness: number = 0;
+                        let tableHorizontalPosition: HorizontalAlignment;
+                        if (floatingItem instanceof TableWidget) {
+                            table = floatingItem;
+                            tableHorizontalPosition = floatingItem.positioning.horizontalAlignment;
+                            border = this.getMaximumRightCellBorderWidth(floatingItem);
+                            isBorderValueZero = this.getDefaultBorderSpacingValue(border, isBorderValueZero, tableHorizontalPosition);
+                            borderThickness = floatingItem.tableFormat.borders.left.lineWidth / 2;
+                        }
                         // Skip to update when the wrap type as left
-                        if (rect.x >= textWrappingBounds.x && rect.x < textWrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
+                        if (rect.x + borderThickness >= textWrappingBounds.x && rect.x < textWrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
                         {
                             rect.width = rect.width - (textWrappingBounds.right - rect.x) - rightIndent;
                             this.isWrapText = true;
                             let isEntityFitInCurrentLine: boolean = true;
+                            if (table !== null) {
+                                minimumWidthRequired = this.getMinimumWidthRequiredForTable(isBorderValueZero, tableHorizontalPosition, border);
+                            }
+                            //checks minimum width
                             if (!isEntityFitInCurrentLine || Math.round(rect.width) < minimumWidthRequired || (rect.width < elementBox.width && (elementBox as TextElementBox).text === '\t')
                                 || (textWrappingBounds.x < ownerPara.x + paragraphLeftIndent)) // check whether the TextWrap X position is less than the paragraph X position
                             {
                                 //TODO
                                 rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0);
+                                //checks minimum width of the single word
                                 let minwidth: number = 0;
                                 if (currTextRange) {
                                     minwidth = this.getMinWidth(elementBox as TextElementBox, elementBox.width, elementBox.height, rect);
@@ -1676,16 +1714,21 @@ export class Layout {
                             let remainingClientWidth: number = this.viewer.clientArea.right - textWrappingBounds.right;
                             remainingClientWidth = remainingClientWidth > 0 ? remainingClientWidth : 0;
                             this.isWrapText = true;
+                            //checks minimum width
                             let minwidth: number = 0;
                             if (currTextRange) {
                                 minwidth = this.getMinWidth(currTextRange as TextElementBox, elementBox.width, elementBox.height, rect);
                             } else {
                                 minwidth = elementBox.width;
                             }
+                            if (table !== null) {
+                                minimumWidthRequired = this.getMinimumWidthRequiredForTable(isBorderValueZero, tableHorizontalPosition, border);
+                            }
                             if (this.isNeedDoIntermediateWrapping(remainingClientWidth, textWrappingType, rect, elementBox.width, elementBox.paragraph, textWrappingBounds, elementBox, minwidth, minimumWidthRequired)) {
+                                let leftMinimumWidthRequired: number = 24;
                                 rect.width = remainingClientWidth;
                                 this.isWrapText = true;
-                                if (rect.x + minwidth > textWrappingBounds.x || textWrappingType === 'Right') //Update X position when the wrap type as largest or right or the minimum width + rect.X > wrap x position
+                                if (rect.x + minwidth > textWrappingBounds.x || textWrappingType === 'Right' || clientLayoutArea.x > textWrappingBounds.x - leftMinimumWidthRequired) //Update X position when the wrap type as largest or right or the minimum width + rect.X > wrap x position
                                 {
                                     rect.x = textWrappingBounds.right;
                                     // let listFormat: WListFormat = null;
@@ -1822,9 +1865,10 @@ export class Layout {
                     floatingElement.height + distanceTop + distanceBottom);
                 let textWrappingStyle: TextWrappingStyle = floatingElement instanceof TableWidget ? 'Square' : floatingElement.textWrappingStyle;
                 let textWrappingType: string = floatingElement instanceof TableWidget ? 'Both' : floatingElement.textWrappingType;
-                let minimumWidthRequired: number = 18;
+                let minimumWidthRequired: number = 24;
+                let tableHeight: number = table.childWidgets.length > 0 ? (table.childWidgets[0] as TableRowWidget).rowFormat.height : 0;
                 if (!(clientLayoutArea.x > (wrappingBounds.right + minimumWidthRequired) || clientLayoutArea.right < wrappingBounds.x - minimumWidthRequired)) {
-                    if (this.isNeedToWrapForSquareTightAndThroughForTable(bodyWidget, table, -1, -1, textWrappingStyle, wrappingBounds, allowOverlap, 1, floatingElement, false, rect, tableWidth, table.height)) {
+                    if (this.isNeedToWrapForSquareTightAndThroughForTable(bodyWidget, table, -1, -1, textWrappingStyle, wrappingBounds, allowOverlap, 1, floatingElement, false, rect, tableWidth, tableHeight)) {
                         // Skip to update when the wrap type as left
                         if (rect.x >= wrappingBounds.x && rect.x < wrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
                         {
@@ -3218,7 +3262,7 @@ export class Layout {
                     }
                     this.updateClientAreaForNextBlock(line, lastBlock);
                 }
-                if (line.indexInOwner === 0 && !(line.children[0] instanceof ListTextElementBox)) {
+                if (line.isFirstLine() && line.indexInOwner === 0 && !(line.children[0] instanceof ListTextElementBox)) {
                     let firstLineIndent: number = -HelperMethods.convertPointToPixel(line.paragraph.paragraphFormat.firstLineIndent);
                     this.viewer.updateClientWidth(firstLineIndent);
                 }
@@ -3994,8 +4038,8 @@ export class Layout {
         if (clientActiveX < clientWidth) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
-        if ((element instanceof ListTextElementBox && lineWidget.isFirstLine()
-            && leftIndent > 0 && firstLineIndent < 0)) {
+        if (lineWidget.isFirstLine()
+            && leftIndent > 0 && firstLineIndent < 0) {
             if ((viewer.clientArea.x - viewer.clientActiveArea.x) > 0) {
                 return viewer.clientArea.x - viewer.clientActiveArea.x;
             } else if (tabs.length === 0 && paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listLevel) {
@@ -4883,6 +4927,9 @@ export class Layout {
                     if (!isAllowBreakAcrossPages || (isHeader && row.ownerTable.continueHeader) || (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientArea.bottom)) {
                         if ((heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientActiveArea.height && (isAllowBreakAcrossPages || row.indexInOwner === 0)) || (heightType !== 'Exactly' && tableRowWidget.y === viewer.clientArea.y) || (heightType === 'Auto' && isAllowBreakAcrossPages)) {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
+                            if (isNullOrUndefined(splittedWidget) && tableRowWidget.y === viewer.clientArea.y) {
+                                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
+                            }
                         }
                         // if (heightType === 'AtLeast' && row.ownerTable.spannedRowCollection.keys.length > 0) {
                         //     splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
@@ -4915,6 +4962,9 @@ export class Layout {
                         if ((heightType === 'Auto' || heightType === 'AtLeast') && isAllowBreakAcrossPages) {
                             if (!(HelperMethods.convertPointToPixel(row.rowFormat.height) > viewer.clientArea.bottom) || tableRowWidget.y === viewer.clientArea.y) {
                                 splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
+                                if (isNullOrUndefined(splittedWidget) && tableRowWidget.y === viewer.clientArea.y) {
+                                    this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
+                                }
                             }
                         } else if (heightType === 'Exactly' && tableRowWidget.y === viewer.clientArea.y) {
                             this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
@@ -6591,7 +6641,7 @@ export class Layout {
             this.updateClientAreaForWrapTable(tableView, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
         }
         tableView[tableView.length - 1].isLayouted = true;
-        if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable) {
+        if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable && !table.wrapTextAround) {
             this.viewer.clientArea.x = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
         }
         return tableView[tableView.length - 1];
@@ -9369,7 +9419,7 @@ export class Layout {
                             this.viewer.clientActiveArea.y = (HelperMethods.convertPointToPixel(sectionFormat.topMargin) + HelperMethods.convertPointToPixel(position.verticalPosition));
                         }
                     } else if (position.verticalOrigin === 'Paragraph') {
-                        if (isNullOrUndefined(position.verticalAlignment)) {
+                        if (isNullOrUndefined(position.verticalAlignment) || position.verticalAlignment === 'None') {
                             this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
                         }
                     }
@@ -9385,10 +9435,16 @@ export class Layout {
                         } else if (position.horizontalAlignment === 'Outside') {
                             // TODO
                             this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth) - tableTotalWidth;
+                        } else if (position.horizontalAlignment === 'Center') {
+                            this.viewer.clientActiveArea.x = (HelperMethods.convertPointToPixel(sectionFormat.pageWidth) - tableTotalWidth) / 2;
                         }
                     } else if (position.horizontalOrigin === 'Margin' || position.horizontalOrigin === 'Column') {
                         if (position.horizontalAlignment === 'Left') {
                             this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+                            if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable) {
+                                this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -
+                                    HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
+                            }
                         } else if (position.horizontalAlignment === 'Inside') {
                             // TODO
                             this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
@@ -9399,14 +9455,14 @@ export class Layout {
                             // TODO
                             this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.pageWidth)
                                 - (HelperMethods.convertPointToPixel(sectionFormat.rightMargin) + tableTotalWidth);
+                        } else if (position.horizontalAlignment === 'Center') {
+                            this.viewer.clientActiveArea.x = HelperMethods.convertPointToPixel(sectionFormat.leftMargin) 
+                                + (HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.rightMargin - sectionFormat.leftMargin) - tableTotalWidth) / 2;
                         }
                     }
 
                     if (Math.round(position.horizontalPosition) > 0) {
                         this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
-                    }
-                    if (position.horizontalAlignment === 'Center') {
-                        this.viewer.clientActiveArea.x = (HelperMethods.convertPointToPixel(sectionFormat.pageWidth) / 2) - (tableTotalWidth / 2);
                     }
                 } else if (table.isInsideTable) {
                     let ownerCell: TableCellWidget = table.containerWidget as TableCellWidget;
@@ -9476,6 +9532,66 @@ export class Layout {
             totalColumnSpan += (tableRow.childWidgets[i] as TableCellWidget).cellFormat.columnSpan;
         }
         return totalColumnSpan;
+    }
+
+    private getMaximumRightCellBorderWidth(table: TableWidget): number {
+        let highestBorderSize: number = 0;
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            let cell: TableCellWidget = row.childWidgets[row.childWidgets.length - 1] as TableCellWidget;
+            let cellBorder: number = cell.cellFormat.borders.right.lineWidth;
+            if (highestBorderSize < cellBorder) {
+                highestBorderSize = cellBorder;
+            }
+        }
+        return highestBorderSize;
+    }
+
+    private getDefaultBorderSpacingValue(border: number, isBorderValueZero: boolean, tableHorizontalPosition: HorizontalAlignment): boolean {
+        if (border == 0) {
+            if (this.documentHelper.compatibilityMode != 'Word2013' && tableHorizontalPosition == 'Center') {
+                border = 1.5;
+            } else {
+                border = 0.75;
+            }
+            return true;
+        }
+        return isBorderValueZero;
+    }
+
+    private getMinimumWidthRequiredForTable(isBorderValueZero: boolean, tableHorizontalPosition: HorizontalAlignment, border: number): number {
+        let minimumWidthRequired: number = 0;
+        //To fit the item right side of the Table Microsoft Word 2013 application and other version has different value based on border of the table and alignment of the table.
+        if (this.documentHelper.compatibilityMode == 'Word2013') {
+            if (tableHorizontalPosition == 'Center') {
+                if (isBorderValueZero) {
+                    minimumWidthRequired = 18.5 + Math.round(0.75 / 2);
+                } else {
+                    minimumWidthRequired = 18.5 + Math.round(border / 2);
+                }
+            } else {
+                if (isBorderValueZero) {
+                    minimumWidthRequired = 18.5 + 0.75;
+                } else {
+                    minimumWidthRequired = 18.5 + border;
+                }
+            }
+        } else {
+            if (tableHorizontalPosition == 'Center') {
+                if (isBorderValueZero) {
+                    minimumWidthRequired = 19.25;
+                } else {
+                    minimumWidthRequired = 18.5 + (border / 2);
+                }
+            } else {
+                if (border == 0.25) {
+                    minimumWidthRequired = 18.5;
+                } else {
+                    minimumWidthRequired = 19.3;
+                }
+            }
+        }
+        return HelperMethods.convertPointToPixel(minimumWidthRequired);
     }
 
     private shiftFloatingItemsFromTable(table: TableWidget, bodyWidget: BodyWidget): void {

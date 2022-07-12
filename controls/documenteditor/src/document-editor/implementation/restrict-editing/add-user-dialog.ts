@@ -188,4 +188,12 @@ export class AddUserDialog {
             this.userList.dataBind();
         }
     };
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.documentHelper = undefined;
+    }
 }

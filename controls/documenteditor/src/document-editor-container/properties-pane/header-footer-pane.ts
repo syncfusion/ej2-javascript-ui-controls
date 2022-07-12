@@ -275,6 +275,14 @@ export class HeaderFooterProperties {
         }
     }
     public destroy(): void {
+        if (this.firstPage) {
+            this.firstPage.destroy();
+        }
+        this.firstPage = undefined;
+        if (this.oddOrEven) {
+            this.oddOrEven.destroy();
+        }
+        this.oddOrEven = undefined;
         if (this.headerFromTop) {
             this.headerFromTop.destroy();
             this.headerFromTop = undefined;
@@ -283,5 +291,6 @@ export class HeaderFooterProperties {
             this.footerFromTop.destroy();
             this.footerFromTop = undefined;
         }
+        this.container = undefined;
     }
 }

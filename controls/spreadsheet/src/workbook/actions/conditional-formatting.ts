@@ -228,7 +228,7 @@ export class WorkbookConditionalFormat {
                 this.parent.notify(goto, { address: sheet.name + '!' + args.range });
             }
         } else if (refreshCF.length) {
-            this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: refreshCF, sheetIdx: args.sheetIdx, isAction: true });
+            this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: refreshCF, isAction: true });
         }
         if ((args.isAction || args.isClear) && args.oldCFModel.length) {
             const eventArgs: { [key: string]: object | string | number } = { cFormats: updatedCFModel, oldRange: oldRange,

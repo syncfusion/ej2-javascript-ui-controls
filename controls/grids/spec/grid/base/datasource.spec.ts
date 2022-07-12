@@ -362,7 +362,7 @@ export let fdata: Object[] = [
         {
             OrderID: 10252, CustomerName: 'SUPRD', EmployeeID: 4, OrderDate: new Date(8368506e5),
             ShipName: 'Suprêmes délices', ShipCity: 'Charleroi', ShipAddress: 'Boulevard Tirou, 255',
-            ShipRegion: 'CJ', ShipPostalCode: 'B-6000', ShipCountry: 'Belgium', Freight: 51.3, Verified: !0
+            ShipRegion: 'CJ', ShipPostalCode: 'B-6000', ShipCountry: '', Freight: 51.3, Verified: !0
         },
         {
             OrderID: 10253, CustomerName: 'HANAR', EmployeeID: 3, OrderDate: new Date(836937e6),

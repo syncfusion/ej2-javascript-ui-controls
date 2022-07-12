@@ -163,6 +163,10 @@ export class StylesDialog {
             this.listviewInstance.destroy();
             this.listviewInstance = undefined;
         }
+        this.documentHelper = undefined;
+        this.styleName = undefined;
+        this.localValue = undefined;
+        this.target = undefined;
     }
 }
 

@@ -1,7 +1,7 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, Spreadsheet } from "../../../src/index";
-import { checkPosition } from "../actions/selection.spec";
+import { CellModel, setColumn, setRow, SheetModel, Spreadsheet } from '../../../src/index';
+import { checkPosition } from '../actions/selection.spec';
 
 describe('Merge ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -275,8 +275,7 @@ describe('Merge ->', () => {
             helper.invoke('selectRange', ['B2:D4']);
             helper.click('#' + helper.id + '_merge');
             setTimeout(() => {
-               let dialogElem: number= document.getElementsByClassName("e-merge-alert-dlg").length
-               expect(dialogElem).toBe(1);
+               expect(helper.getElements('.e-merge-alert-dlg.e-dialog').length).toBe(1);
                 helper.click('.e-dialog .e-primary');
                 done();
             });
@@ -298,78 +297,65 @@ describe('Merge ->', () => {
                done();
         });
     });
-    describe('Apply merge cell for freeze pane row  ->', () => {
+    describe('Merge action with freeze pane ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet({ sheets: [{ frozenRows: 2, frozenColumns: 1, selectedRange: 'A2:A3' }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('Apply merge cell for freeze pane row', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.freezePanes(2,1,0);
-            setTimeout(function () {
-            helper.invoke('selectRange', ['A2:A3']);
+        it('Merge / unMerge between freeze and movable rows', (done: Function) => {
             helper.click('#' + helper.id + '_merge');
-            setTimeout(() => {
-                 helper.click('.e-dialog .e-primary');
-                 let emptyElem:number = document.getElementsByClassName("e-empty").length;
-                 expect(emptyElem).toBe(1);
-                 done();
-             });
-            });
+            const emptyRows: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName('e-empty') as HTMLCollectionOf<HTMLElement>;
+            expect(emptyRows.length).toBe(1);
+            expect(emptyRows[0].style.height).toBe('20px');
+            expect(emptyRows[0].style.visibility).toBe('hidden');
+            helper.click('#' + helper.id + '_merge');
+            expect(document.getElementsByClassName('e-empty').length).toBe(0);
+            done();
         });
-    });
-    describe('Apply merge cell for freeze pane column ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Apply merge cell for freeze pane column', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.freezePanes(2,1,0);
-            setTimeout(function () {
+        it('Merge / unMerge between freeze and movable columns', (done: Function) => {
             helper.invoke('selectRange', ['A1:B1']);
             helper.click('#' + helper.id + '_merge');
-            setTimeout(() => {
-                 helper.click('.e-dialog .e-primary');
-                 let emptyElem:number = document.getElementsByClassName("e-empty").length;
-                 expect(emptyElem).toBe(1);
-                 done();
-             });
-            });
-        });
-    });
-    describe('Apply merge cell for freeze pane column and row ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Apply merge cell for freeze pane column and row', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.freezePanes(2,1,0);
-            setTimeout(function () {
-            helper.invoke('selectRange', ['A1:B4']);
+            const emptyCols: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName('e-empty') as HTMLCollectionOf<HTMLElement>;
+            expect(emptyCols.length).toBe(1);
+            expect(emptyCols[0].style.width).toBe('64px');
+            expect(emptyCols[0].style.visibility).toBe('hidden');
             helper.click('#' + helper.id + '_merge');
-            setTimeout(() => {
-                 helper.click('.e-dialog .e-primary');
-                 let emptyElem:number = document.getElementsByClassName("e-empty").length;
-                 expect(emptyElem).toBe(3);
-                 document.getElementsByClassName("e-sheet-content")[0].parentElement.scrollTop = 400;
-                 setTimeout(() => {
-                    document.getElementsByClassName("e-sheet-content")[0].parentElement.scrollTop = 0;
-                    setTimeout(() => {
-                 expect(spreadsheet.sheets[0].frozenColumns).toBe(1);
-                 expect(spreadsheet.sheets[0].frozenRows).toBe(2);
-                 done();
-                    });
-                 });
-             });
-            });
+            expect(document.getElementsByClassName('e-empty').length).toBe(0);
+            done();
+        });
+        it('Merge / unMerge between freezepanes', (done: Function) => {
+            helper.invoke('selectRange', ['A1:C4']);
+            helper.click('#' + helper.id + '_merge');
+            const emptyRows: NodeListOf<HTMLElement> = document.querySelectorAll('.e-row.e-empty') as NodeListOf<HTMLElement>;
+            expect(emptyRows.length).toBe(2);
+            expect(emptyRows[0].style.height).toBe('20px');
+            expect(emptyRows[0].style.visibility).toBe('hidden');
+            const emptyCols: NodeListOf<HTMLElement> = document.querySelectorAll('.e-empty:not(.e-row)') as NodeListOf<HTMLElement>;
+            expect(emptyCols.length).toBe(2);
+            expect(emptyCols[0].style.width).toBe('64px');
+            expect(emptyCols[0].style.visibility).toBe('hidden');
+            helper.click('#' + helper.id + '_merge');
+            expect(document.getElementsByClassName('e-empty').length).toBe(0);
+            done();
+        });
+        it('Merge / unMerge between freezepanes with hidden row and column', (done: Function) => {
+            const sheet: SheetModel = helper.getInstance().getActiveSheet();
+            setRow(sheet, 2, { hidden: true });
+            setColumn(sheet, 1, { hidden: true });
+            helper.click('#' + helper.id + '_merge');
+            const emptyRows: NodeListOf<HTMLElement> = document.querySelectorAll('.e-row.e-empty') as NodeListOf<HTMLElement>;
+            expect(emptyRows.length).toBe(1);
+            expect(emptyRows[0].style.height).toBe('20px');
+            expect(emptyRows[0].style.visibility).toBe('hidden');
+            const emptyCols: NodeListOf<HTMLElement> = document.querySelectorAll('.e-empty:not(.e-row)') as NodeListOf<HTMLElement>;
+            expect(emptyCols.length).toBe(1);
+            expect(emptyCols[0].style.width).toBe('64px');
+            expect(emptyCols[0].style.visibility).toBe('hidden');
+            helper.click('#' + helper.id + '_merge');
+            expect(document.getElementsByClassName('e-empty').length).toBe(0);
+            done();
         });
     });
 

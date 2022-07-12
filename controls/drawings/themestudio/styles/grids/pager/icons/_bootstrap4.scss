@@ -1,0 +1,49 @@
+@include export-module('pager-bootstrap4-icons') {
+  /*!componenticons*/
+
+  #{&}.e-pager,
+  .e-grid-menu {
+
+    .e-icon-last::before {
+      content: '\e7bb';
+    }
+
+    .e-icon-first::before {
+      content: '\e7ba';
+    }
+
+    .e-icon-prev::before {
+      content: '\e70d';
+    }
+
+    .e-icon-next::before {
+      content: '\e76a';
+    }
+
+    &.e-rtl {
+      & .e-icon-last.e-lastpage::before,
+      & .e-icon-last.e-lastpage:hover,
+      & .e-icon-last.e-lastpagedisabled::before {
+        content: '\e7ba';
+      }
+
+      & .e-icon-first.e-firstpage::before,
+      & .e-icon-first.e-firstpage:hover,
+      & .e-icon-first.e-firstpagedisabled::before {
+        content: '\e7bb';
+      }
+
+      & .e-icon-prev.e-prevpage::before,
+      & .e-icon-prev.e-prevpage:hover,
+      & .e-icon-prev.e-prevpagedisabled::before {
+        content: '\e76a';
+      }
+
+      & .e-icon-next.e-nextpage::before,
+      & .e-icon-next.e-nextpage:hover,
+      & .e-icon-next.e-nextpagedisabled::before {
+        content: '\e70d';
+      }
+    }
+  }
+}

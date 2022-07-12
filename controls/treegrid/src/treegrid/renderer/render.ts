@@ -55,7 +55,7 @@ export class Render {
             const parentrec: ITreeData[] = this.parent.getCurrentViewRecords().filter((rec: ITreeData) => {
                 return getValue(proxy.idMapping, rec) === getValue(proxy.parentIdMapping, data);
             });
-            if (parentrec.length > 0) {
+            if (parentrec.length > 0 && !parentrec[0].isSummaryRow) {
                 const display: string = parentrec[0].expanded ? 'table-row' : 'none';
                 args.row.setAttribute('style', 'display: ' + display  + ';');
             }

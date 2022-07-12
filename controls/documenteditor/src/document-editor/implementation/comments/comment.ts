@@ -465,6 +465,18 @@ export class CommentReviewPane {
         if (!this.owner.isDestroyed) { 
             this.owner.off('reviewPane', this.reviewPaneHelper);
         }
+        if (!isNullOrUndefined(this.reviewTab)) {
+            this.reviewTab.destroy();
+        }
+        this.reviewTab = undefined;
+        if (!isNullOrUndefined(this.confirmDialog)) {
+            this.confirmDialog.destroy();
+        }
+        this.confirmDialog = undefined;
+        if (!isNullOrUndefined(this.previousSelectedCommentInt)) {
+            this.previousSelectedCommentInt.destroy();
+        }
+        this.previousSelectedCommentInt = undefined;
         this.reviewPane.innerHTML = '';
         this.reviewPane = undefined;
         this.owner = undefined;
@@ -1248,6 +1260,7 @@ export class CommentView {
         if (this.cancelButton) {
             this.cancelButton.destroy();
         }
+        this.cancelButton = undefined;
         if (this.replyPostButton) {
             this.replyPostButton.destroy();
             this.replyPostButton = undefined;

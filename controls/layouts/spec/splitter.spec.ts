@@ -5563,5 +5563,169 @@ describe('Splitter Control', () => {
             expect(splitterObj.allPanes[1].style.flexGrow).toBe('1');
             expect(splitterObj.allPanes[2].style.flexGrow).toBe('0');
         })
-    })
+    });
+    describe( 'EJ2-61101 Panes resize not working properly ', () =>{
+        appendSplitterStyles();
+        let splitterObj : any;
+        beforeAll( (): void =>
+        {
+            let element: HTMLElement = createElement( 'div', { id: 'default' } );
+            let child1: HTMLElement = createElement( 'div', { styles: "background-color:red" } );
+            let child2: HTMLElement = createElement( 'div', { styles: "background-color:blue" } );
+            let child3: HTMLElement = createElement( 'div', { styles: "background-color:green" } );
+            element.appendChild( child1 );
+            element.appendChild( child2 );
+            element.appendChild( child3 );
+            document.body.appendChild( element );
+            splitterObj = new Splitter( {
+                width: '800px',
+                height: '300px',
+                paneSettings: [
+                    { size: '50%', collapsible: true },
+                    { collapsible: false },
+                    { size: '10%', collapsible: true }
+                ]
+            } );
+            splitterObj.appendTo( document.getElementById( 'default' ) );
+        } );
+        afterAll( (): void =>
+        {
+            document.body.innerHTML = '';
+        } );
+        it( 'should resize correctly ', () =>
+        {
+            appendSplitterStyles();
+            // 1. Resizing first pane 50%
+            let mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[0]).dispatchEvent( mouseEvent );
+            let eventArgs: any = {
+                target: document,
+                pageX: 130,
+                pageY: 115,
+                type: 'mousemove',
+                which: 1,
+                x: 0,
+                y: 0
+            }
+            splitterObj.onMouseMove( eventArgs );
+            // 2. Resizing third pane to the right end
+            mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 1 ] ).dispatchEvent( mouseEvent );
+            eventArgs = {
+                target: document,
+                pageX: 132,
+                pageY: 115,
+                type: 'mousemove',
+                which: 1,
+                x: 0,
+                y: 0
+            }
+            splitterObj.onMouseMove( eventArgs );
+            // 3. Collapsing pane 3 
+            mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 1 ] ).dispatchEvent( mouseEvent );
+            splitterObj.allBars[ 1 ].lastElementChild.click();
+            // 4. Collapsing pane 1 
+            mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 0 ] ).dispatchEvent( mouseEvent );
+            splitterObj.allBars[ 0 ].firstElementChild.click();
+            // 5. Expanding pane 1
+            mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 0 ] ).dispatchEvent( mouseEvent );
+            splitterObj.allBars[ 0 ].lastElementChild.click();
+            // 6. Resizing pane 1
+            mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 0 ] ).dispatchEvent( mouseEvent );
+            eventArgs = {
+                target: document,
+                pageX: 500,
+                pageY: 115,
+                type: 'mousemove',
+                which: 1,
+                x: 0,
+                y: 0
+            };
+            splitterObj.onMouseMove( eventArgs );
+            expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 0 ].style.flexBasis ).toEqual( '54.75%' );
+            expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 1 ].style.flexBasis ).toEqual( '0px' );
+            expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 2 ].style.flexBasis ).toEqual( '45%' );
+        });
+    });
+    describe( 'EJ2-61100 Splitter first pane not moved on right side when resize the panes.', () =>
+    {
+        appendSplitterStyles();
+        let splitterObj: any;
+        beforeAll( (): void =>
+        {
+            let element: HTMLElement = createElement( 'div', { id: 'default' } );
+            let child1: HTMLElement = createElement( 'div', { styles: "background-color:red" } );
+            let child2: HTMLElement = createElement( 'div', { styles: "background-color:blue" } );
+            let child3: HTMLElement = createElement( 'div', { styles: "background-color:green" } );
+            element.appendChild( child1 );
+            element.appendChild( child2 );
+            element.appendChild( child3 );
+            document.body.appendChild( element );
+            splitterObj = new Splitter( {
+                width: '800px',
+                height: '300px',
+                paneSettings: [
+                    { size: '50%', collapsible: true },
+                    { collapsible: false },
+                    { size: '10%', collapsible: true }
+                ]
+            } );
+            splitterObj.appendTo( document.getElementById( 'default' ) );
+        } );
+        afterAll( (): void =>
+        {
+            document.body.innerHTML = '';
+        } );
+        it( 'should resize correctly ', () =>
+        {
+            debugger;
+            appendSplitterStyles();
+            // 1. Resizing third pane all the way to left side
+            let mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 1 ] ).dispatchEvent( mouseEvent );
+            let eventArgs: any = {
+                target: document,
+                pageX: 256,
+                pageY: 115,
+                type: 'mousemove',
+                which: 1,
+                x: 0,
+                y: 0
+            }
+            splitterObj.onMouseMove( eventArgs );
+            // 2. Collapsing pane 3 
+            mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 1 ] ).dispatchEvent( mouseEvent );
+            splitterObj.allBars[ 1 ].lastElementChild.click();
+            // 6. Resizing pane 1 to right side
+            mouseEvent = document.createEvent( 'MouseEvents' );
+            mouseEvent.initEvent( 'mousedown', true, true );
+            ( splitterObj.allBars[ 0 ] ).dispatchEvent( mouseEvent );
+            eventArgs = {
+                target: document,
+                pageX: 600,
+                pageY: 115,
+                type: 'mousemove',
+                which: 1,
+                x: 0,
+                y: 0
+            };
+            splitterObj.onMouseMove( eventArgs );
+            expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 0 ].style.flexBasis ).toEqual( '73.875%' );
+            expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 1 ].style.flexBasis ).toEqual( '127px' );
+            expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 2 ].style.flexBasis ).toEqual( '10%' );
+        } );
+    } );
  });

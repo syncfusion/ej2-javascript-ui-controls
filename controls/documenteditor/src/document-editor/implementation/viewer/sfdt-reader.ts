@@ -60,7 +60,10 @@ export class SfdtReader {
      * @private
      */
     public isPaste: boolean = false;
-
+    /**
+     * @private
+     */
+    public isHtmlPaste: boolean = false;
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
     }
@@ -881,6 +884,25 @@ export class SfdtReader {
                 this.parseCharacterFormat(inline.characterFormat, textElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, textElement);
                 textElement.text = inline.text;
+                if (this.isHtmlPaste && textElement instanceof TextElementBox) {
+                    let previousElement: ElementBox;
+                    if (lineWidget.children.length > 0) {
+                        previousElement = lineWidget.children[lineWidget.children.length - 1];
+                    }
+                    // In html content, text bidi property is not present in the file level
+                    // Hence bidi property is false for RTL content
+                    // So, For html pasting we need to check and content and enable bidi to order the content similar to MS Word
+                    if (this.documentHelper.textHelper.isRTLText(textElement.text)) {
+                        textElement.characterFormat.bidi = true;
+                        if (previousElement instanceof TextElementBox && previousElement.text === ' ') {
+                            previousElement.characterFormat.bidi = true;
+                        }
+                    } 
+                    //If previous element is RTL element, the we need to enable bidi for space character
+                    else if (textElement.text === ' ' && previousElement && previousElement.characterFormat.bidi) {
+                        textElement.characterFormat.bidi = true;
+                    }
+                }
                 if (this.documentHelper.owner.parser.isPaste && !(this.isCutPerformed)) {
                     if (!isNullOrUndefined(inline.revisionIds)) {
                         for (let j: number = 0; j < inline.revisionIds.length; j++) {
@@ -1503,6 +1525,9 @@ export class SfdtReader {
         if (!isNullOrUndefined(sourceFormat.horizontalPosition)) {
             tableFormat.horizontalPosition = sourceFormat.horizontalPosition;
         }
+        if (!isNullOrUndefined(sourceFormat.styleName)) {
+            tableFormat.styleName = sourceFormat.styleName;
+        }
     }
     private parseCellFormat(sourceFormat: any, cellFormat: WCellFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
@@ -1772,7 +1797,7 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.widowControl)) {
                 paragraphFormat.widowControl = sourceFormat.widowControl;
             }
-            paragraphFormat.listFormat = new WListFormat();
+            paragraphFormat.listFormat = new WListFormat(paragraphFormat);
             if (sourceFormat.hasOwnProperty('listFormat')) {
                 this.parseListFormat(sourceFormat, paragraphFormat.listFormat);
             }
@@ -1901,5 +1926,40 @@ export class SfdtReader {
             }
         }
         return element;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        if (this.footnotes) {
+            this.footnotes.destroy();
+        }
+        this.footnotes = undefined;
+        if (this.endnotes) {
+            this.endnotes.destroy();
+        }
+        this.endnotes = undefined;
+        if (this.editableRanges) {
+            this.editableRanges.destroy();
+        }
+        this.editableRanges = undefined;
+        if (this.commentEnds) {
+            this.commentEnds.destroy();
+        }
+        this.commentEnds = undefined;
+        if (this.commentStarts) {
+            this.commentStarts.destroy();
+        }
+        this.commentStarts = undefined;
+        if (this.commentsCollection) {
+            this.commentsCollection.destroy();
+        }
+        this.commentsCollection = undefined;
+        if (this.revisionCollection) {
+            this.revisionCollection.destroy();
+        }
+        this.revisionCollection = undefined;
+        this.documentHelper = undefined;
     }
 }

@@ -2586,9 +2586,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.cellTemplateFn = this.templateParser(this.cellTemplate);
             this.tooltipTemplateFn = this.templateParser(this.tooltipTemplate);
             if (this.spinnerTemplate) {
-                createSpinner({ target: this.element, template: this.spinnerTemplate }, this.createElement);
+                createSpinner({ target: this.element, template: this.spinnerTemplate, cssClass: this.cssClass ? this.cssClass : undefined }, this.createElement);
             } else {
-                createSpinner({ target: this.element }, this.createElement);
+                createSpinner({ target: this.element, cssClass: this.cssClass ? this.cssClass : undefined }, this.createElement);
             }
             let loadArgs: LoadEventArgs = {
                 dataSourceSettings: this.dataSourceSettings as IDataOptions,
@@ -3252,7 +3252,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             pivot.lastSortInfo = {};
                         }
                     } else {
-                        pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getHeaderSortInfo.bind(pivot));
+                        pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
                     }
                     pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
@@ -3292,7 +3292,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         pivot.lastFilterInfo = {};
                     } else {
                         pivot.engineModule.renderEngine(
-                            pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot), pivot.getHeaderSortInfo.bind(pivot));
+                            pivot.dataSourceSettings as IDataOptions, customProperties, pivot.aggregateCellInfo ? pivot.getValueCellInfo.bind(pivot) : undefined, pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
                         pivot.allowServerDataBinding = false;
                         pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
                         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -4113,6 +4113,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.lastCellClicked = (e.target as Element);
         }
         let target: Element = (e.target as Element);
+        if (closest(target, '.' + cls.PIVOT_BUTTON_CLASS)) {
+            return;
+        }
         let ele: Element = null;
         let axis: string = (target.parentElement.classList.contains(cls.ROWSHEADER) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
         ele = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
@@ -4529,6 +4532,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.getSelectedCellsPos();
             });
         }
+        else{
+            this.clearSelection(null, e, null, null);
+        }
     }
 
     private rowDeselect(ele: Element, e: MouseEvent | KeyboardEventArgs, rowIndex: number, mode: string, observedArgs: PivotCellSelectedEventArgs): void {
@@ -4568,13 +4574,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public clearSelection(ele: Element, e: MouseEvent | KeyboardEventArgs, colIndex: number, rowIndex: number) {
         if ((!e.shiftKey && !e.ctrlKey) || this.gridSettings.selectionSettings.type === 'Single') {
             if (this.gridSettings.selectionSettings.mode === 'Cell') {
-                if (ele.classList.contains(cls.COLUMNSHEADER)) {
+                if (ele && ele.classList.contains(cls.COLUMNSHEADER)) {
                     removeClass(this.element.querySelectorAll(('.' + cls.ROW_CELL_CLASS + '.') + cls.CELL_SELECTED_BGCOLOR), cls.CELL_SELECTED_BGCOLOR);
                 } else {
                     removeClass(this.element.querySelectorAll(('.' + cls.COLUMNSHEADER + '.') + cls.CELL_ACTIVE_BGCOLOR), [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
                 }
             } else if (this.gridSettings.selectionSettings.mode === 'Both') {
-                if (ele.classList.contains(cls.ROW_CELL_CLASS)) {
+                if (ele && ele.classList.contains(cls.ROW_CELL_CLASS)) {
                     for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR + ', .' + cls.CELL_SELECTED_BGCOLOR))) {
                         // if (Number((ele as HTMLElement).getAttribute('index')) !== rowIndex) {
                         removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR, cls.CELL_SELECTED_BGCOLOR]);
@@ -4799,7 +4805,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
                 }
                 if (this.dataSourceSettings.mode !== 'Server') {
-                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getValueCellInfo.bind(this), this.getHeaderSortInfo.bind(this));
+                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.aggregateCellInfo ? this.getValueCellInfo.bind(this) : undefined, this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
                 }
                 this.allowServerDataBinding = false;
                 this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
@@ -4809,7 +4815,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } else if (this.dataSourceSettings.providerType === 'SSAS' && this.dataType === 'olap') {
                 customProperties.savedFieldList = this.olapEngineModule.fieldList;
                 (customProperties as IOlapCustomProperties).savedFieldListData = this.olapEngineModule.fieldListData;
-                this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.getHeaderSortInfo.bind(this));
+                this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
                 this.allowServerDataBinding = false;
                 this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
                 delete (this as any).bulkChanges.pivotValues;
@@ -5298,7 +5304,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                     : this.actionObj.actionName == events.removeRecord ? events.recordRemoved : (this.actionObj.actionName == events.pngExport) ? events.pngExported : (this.actionObj.actionName == events.jpegExport) ? events.jpegExported
                                         : (this.actionObj.actionName == events.svgExport) ? events.svgExported : (this.actionObj.actionName == events.pdfExport) ? events.pdfExported : (this.actionObj.actionName == events.csvExport) ? events.csvExported : (this.actionObj.actionName == events.excelExport) ? events.excelExported : this.actionObj.actionName == events.windowResize ? events.windowResized
                                             : this.actionObj.actionName == events.saveCurrentReport ? events.reportSaved : (this.actionObj.actionName == events.addNewReport) ? events.newReportAdded : (this.actionObj.actionName == events.saveAsCurrentReport) ? events.reportReSaved
-                                                : (this.actionObj.actionName == events.renameCurrentReport) ? events.reportRenamed : this.actionObj.actionName;
+                                                : (this.actionObj.actionName == events.renameCurrentReport) ? events.reportRenamed : (this.actionObj.actionName == events.renameCurrentReport) ? events.reportRenamed : (this.actionObj.actionName == events.horizontalScroll) ? events.horizontalScrolled
+                                                    : (this.actionObj.actionName == events.verticalScroll) ? events.verticalScrolled : this.actionObj.actionName;
         return actionName;
     }
 

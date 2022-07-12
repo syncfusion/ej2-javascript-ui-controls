@@ -156,7 +156,7 @@ export class SubTitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the text style for the subtitle in the treemap component.
      */
-    @Complex<FontModel>({ size: '14px' }, Font)
+    @Complex<FontModel>({ fontFamily: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the alignment of the subtitle text in the treemap component.
@@ -173,7 +173,7 @@ export class TitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the options to customizing the text styles of the treemap component.
      */
-    @Complex<FontModel>({ size: '15px' }, Font)
+    @Complex<FontModel>({ fontFamily: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the text position of the title text in the treemap component.
@@ -299,7 +299,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Sets and gets the options to customize the text style of legend in the treemap component.
      */
-    @Complex<FontModel>({ size: '13px' }, Font)
+    @Complex<FontModel>({ fontFamily: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the shape color of legend in the treemap component.

@@ -240,8 +240,8 @@ export class Timeline {
             }
         }
         const newTimeline: ZoomTimelineSettings = extend({}, {}, zoomingLevel, true);
-        this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
-        this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
+        this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
         const numberOfCells: number = this.calculateNumberOfTimelineCells(newTimeline);
         const scrollHeight: number = this.parent.ganttChartModule.scrollElement.offsetHeight - 17; //17 is horizontal scrollbar width
         const contentHeight: number = this.parent.ganttChartModule.chartBodyContent.offsetHeight;
@@ -257,21 +257,40 @@ export class Timeline {
         this.parent.trigger('actionBegin', args);
         this.changeTimelineSettings(newTimeline);
     }
+    
+    private bottomTierCellWidthCalc(mode: string, zoomLevel: ZoomTimelineSettings, date: Date) {
+        let convertedMilliSeconds: number;
+        switch (mode) {
+            case 'Minutes':
+                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 1000);
+                break
+            case 'Hour':
+                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 1000);
+                break
+            case 'Week':
+                convertedMilliSeconds = zoomLevel.bottomTier.count * (7 * 24 * 60 * 60 * 1000);
+                break
+            case 'Day':
+                convertedMilliSeconds = zoomLevel.bottomTier.count * (24 * 60 * 60 * 1000);
+                break;
+            case 'Month':
+                const daysInMonth: number = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 24 * daysInMonth * 1000);
+                break
+            case 'Year':
+                const daysInYear: number = (date.getFullYear() % 400 === 0 || (date.getFullYear() % 100 !== 0 && date.getFullYear() % 4 === 0)) ? 366 : 365;
+                convertedMilliSeconds = zoomLevel.bottomTier.count * (60 * 60 * 24 * daysInYear * 1000);
+                break
+        }
+        return convertedMilliSeconds;
+    }
 
-    private roundOffDateToZoom(date: Date, isStartDate: boolean, perDayWidth: number, tierMode: string): void {
-        const width: number = tierMode === 'Month' || tierMode === 'Year' ? 60 : 20;
-        const roundOffTime: number = (width / perDayWidth) * (24 * 60 * 60 * 1000);
+    private roundOffDateToZoom(date: Date, isStartDate: boolean, perDayWidth: number, tierMode: string, zoomingLevel: ZoomTimelineSettings): void {
+        const roundOffTime: number = this.bottomTierCellWidthCalc(tierMode, zoomingLevel, date);
         if (isStartDate) {
             date.setTime(date.getTime() - roundOffTime);
         } else {
             date.setTime(date.getTime() + roundOffTime);
-        }
-        if (tierMode === 'Hour') {
-            date.setMinutes(isStartDate ? -120 : 120);
-        } else if (tierMode === 'Minutes') {
-            date.setSeconds(isStartDate ? -120 : 120);
-        } else {
-            date.setHours(isStartDate ? -48 : 48, 0, 0, 0);
         }
     }
 
@@ -1384,7 +1403,9 @@ export class Timeline {
             this.parent.updateProjectDates(args.projectStartDate, args.ProjectEndDate, args.isTimelineRoundOff, isFrom);
             if (type === 'prevTimeSpan' && isFrom === 'publicMethod') {
                 this.parent.ganttChartModule.updateScrollLeft(0);
-            } else if ((type === 'nextTimeSpan' && isFrom === 'publicMethod') || (type === 'nextTimeSpan' && isFrom === 'TaskbarEditing')) {
+            } else if (type === 'nextTimeSpan' && isFrom === 'publicMethod') {
+                this.parent.ganttChartModule.updateScrollLeft(this.parent.timelineModule.totalTimelineWidth);
+            } else if (type === 'nextTimeSpan' && isFrom === 'TaskbarEditing') {
                 let currentScrollLeft: number = document.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
                 this.parent.element.querySelector('.e-timeline-header-container').scrollLeft = currentScrollLeft;
             }

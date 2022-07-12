@@ -544,10 +544,11 @@ export class Edit {
                 this.parent.parentData.push(data[i]);
             }
         }
-        if (details.action === 'add' && this.previousNewRowPosition != null) {
-            this.parent.setProperties({editSettings: {newRowPosition:  this.previousNewRowPosition}}, true);
-            this.previousNewRowPosition = null;
-        }
+        if (!this.parent.enableInfiniteScrolling) {
+            if (details.action === 'add' && this.previousNewRowPosition != null) {
+                this.parent.setProperties({editSettings: {newRowPosition:  this.previousNewRowPosition}}, true);
+                this.previousNewRowPosition = null;
+            }}
     }
     private updateIndex (data: Object, rows: Object, records: Object): void {
         for (let j: number = 0; j < this.parent.getDataRows().length; j++ ) {
@@ -781,13 +782,17 @@ export class Edit {
                 }
             } else {
                 if (this.isAddedRowByMethod && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
-                    this.addRowIndex = args.index;
+                    if (args.index !== 0) {
+                        this.addRowIndex = args.index;
+                    } else {
+                        this.addRowIndex = this.parent.grid.selectedRowIndex;
+                    }
                 } else {
                     this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
                 }
             }
             if (this.isAddedRowByMethod && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
-                this.addRowRecord = this.parent.flatData[args.index];
+                this.addRowRecord = this.parent.flatData[this.parent.grid.selectedRowIndex];
             } else {
                 this.addRowRecord = this.parent.getSelectedRecords()[0];
             }

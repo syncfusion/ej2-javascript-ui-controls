@@ -12,6 +12,7 @@ import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX
 import { RectOption, textElement, stringToNumber } from '../utils/helper';
 import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';
 import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';
+import { Series } from '../../chart/series/chart-series';
 import { Legend } from '../../chart/legend/legend';
 import { AccumulationType } from '../../accumulation-chart/model/enum';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
@@ -1124,9 +1125,11 @@ export class BaseLegend {
         let regionPadding: number;
         shape = shape === 'Scatter' ? legendOption.markerShape : shape;
         if (isCustomBorder && legendIndex < (this.chart as Chart).visibleSeries.length) {
-            const seriesBorder: BorderModel = (this.chart as Chart).visibleSeries[legendIndex].border;
-            borderColor = seriesBorder.color ? seriesBorder.color : symbolColor;
-            strokewidth = seriesBorder.width ? seriesBorder.width : 1;
+            const series: Series = (this.chart as Chart).visibleSeries[legendIndex];
+            const seriesBorder: BorderModel = series.border;
+            const isLineShapemarker: boolean = (shape as ChartShape) === 'HorizontalLine' || (shape as ChartShape) === 'VerticalLine';
+            borderColor = isLineShapemarker ? symbolColor : seriesBorder.color ? seriesBorder.color : symbolColor;
+            strokewidth = isLineShapemarker ? series.width : seriesBorder.width ? seriesBorder.width : 1;
         }
         const symbolOption: PathOption = new PathOption(
             this.legendID + this.generateId(legendOption, '_shape_', legendIndex), symbolColor, strokewidth,

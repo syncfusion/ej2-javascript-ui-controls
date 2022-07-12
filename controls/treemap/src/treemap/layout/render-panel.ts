@@ -541,9 +541,11 @@ export class LayoutPanel {
                     }
                     if (template) {
                         templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
-                        templateGroup.appendChild(templateEle);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this.treemap as any).renderReactTemplates();
+                        if (!isNullOrUndefined(templateEle)) {
+                            templateGroup.appendChild(templateEle);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (this.treemap as any).renderReactTemplates();
+                        }
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
                     itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
@@ -686,15 +688,18 @@ export class LayoutPanel {
                 template = template.replace(new RegExp('{{:' + <string>keys[i] + '}}', 'g'), item['data'][keys[i].toString()]);
             }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const templateFn: any = getTemplateFunction(template);
-        const templateElement: HTMLCollection = templateFn(item['data'], this.treemap, template, this.treemap.element.id + baseTemplateId, false);
-        const labelEle: HTMLElement = convertElement(templateElement, templateId, item['data']);
-        const templateSize: Size = measureElement(labelEle, secondaryEle);
-        const templateLocation: Location = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
-        labelEle.style.left = templateLocation.x + 'px';
-        labelEle.style.top = templateLocation.y + 'px';
-        return labelEle;
+        let labelElement: HTMLElement;
+        if (!isNullOrUndefined(document.getElementById(this.treemap.element.id + '_Secondary_Element'))) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const templateFn: any = getTemplateFunction(template);
+            const templateElement: HTMLCollection = templateFn(item['data'], this.treemap, template, this.treemap.element.id + baseTemplateId, false);
+            labelElement = convertElement(templateElement, templateId, item['data']);
+            const templateSize: Size = measureElement(labelElement, secondaryEle);
+            const templateLocation: Location = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
+            labelElement.style.left = templateLocation.x + 'px';
+            labelElement.style.top = templateLocation.y + 'px';
+        }
+        return labelElement;
     }
     private labelInterSectAction(rect: Rect, text: string, textStyle: FontModel, alignment: LabelAlignment): string | string[] {
         let textValue: string | string[]; const maxWidth: number = rect.width - 10;

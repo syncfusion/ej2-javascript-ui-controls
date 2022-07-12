@@ -1,0 +1,354 @@
+//layout variables
+$btn-font-size: $text-sm !default;
+$btn-border: 1px solid !default;
+$btn-icon-margin-top: -2px !default;
+$btn-icon-btn-width: 1em !default;
+$btn-icon-top-bottom-padding: 8px !default;
+$btn-icon-small-width: 1em !default;
+$btn-icon-bigger-small-width: 1em !default;
+$btn-top-icon-padding: 12px 12px !default;
+$btn-top-icon-bigger-padding: 16px 16px !default;
+$btn-small-icon-top-bottom-padding: 6px !default;
+$btn-icon-bigger-width: 1em !default;
+$btn-bigger-icon-top-bottom-padding: 8px !default;
+$btn-focus-outline-offset: 0 !default;
+$btn-active-outline-offset: 0 !default;
+$btn-font-weight: $font-weight-medium !default;
+$btn-font-size: $text-sm !default;
+$btn-small-font-size: $text-xs !default;
+$btn-bigger-font-size: $text-base !default;
+$btn-bigger-small-font-size: $text-sm !default;
+$btn-border-radius: 4px !default;
+$btn-text-transform: none !default;
+$btn-icon-font-size: $text-lg !default;
+$btn-small-icon-font-size: $text-base !default;
+$btn-bigger-icon-font-size: 22px !default;
+$btn-bigger-small-icon-font-size: $text-xl !default;
+$btn-round-small-height: 26px !default;
+$btn-round-small-width: 26px !default;
+$btn-round-height: 32px !default;
+$btn-round-width: 32px !default;
+$btn-round-bigger-small-height: 34px !default;
+$btn-round-bigger-small-width: 34px !default;
+$btn-round-bigger-height: 38px !default;
+$btn-round-bigger-width: 38px !default;
+$btn-round-font-size: 14px !default;
+$btn-small-round-font-size: 14px !default;
+$btn-bigger-round-font-size: 16px !default;
+$btn-bigger-small-round-font-size: 14px !default;
+$btn-icon-margin: -.5em !default;
+$btn-small-icon-margin: -.57143em !default;
+$btn-bigger-icon-margin: -.6111em !default;
+$btn-bigger-small-icon-margin: -.5em !default;
+$btn-icon-width: 2em !default;
+$btn-small-icon-width: 2em !default;
+$btn-bigger-icon-width: 2em !default;
+$btn-bigger-small-icon-width: 2em !default;
+$btn-round-icon-line-height: 0 !default;
+$btn-small-round-icon-line-height: 0 !default;
+$btn-bigger-round-icon-line-height: 0 !default;
+$btn-bigger-small-round-icon-line-height: 0 !default;
+$btn-text-line-height: 1.429em !default;
+$btn-bigger-text-line-height: 1.5em !default;
+$btn-small-text-line-height: 1.5em !default;
+$btn-bigger-small-text-line-height: 1.572em !default;
+$btn-padding: 4px 12px !default;
+$btn-small-padding: 3px 8px !default;
+$btn-bigger-padding: 6px 16px !default;
+$btn-bigger-small-padding: 5px 14px !default;
+$btn-icon-padding: 3px 11px !default;
+$btn-small-icon-padding: 3px 7px !default;
+$btn-bigger-icon-padding: 5px 15px !default;
+$btn-bigger-small-icon-padding: 6px 13px !default;
+//normal
+$btn-color: $secondary-text-color !default;
+$btn-bgcolor: $secondary-bg-color !default;
+$btn-border-color: $secondary-border-color !default;
+$btn-hover-bgcolor: $secondary-bg-color-hover !default;
+$btn-hover-border-color: $secondary-border-color-hover !default;
+$btn-hover-color: $secondary-text-color-hover !default;
+$btn-focus-bgcolor: $secondary-bg-color-focus !default;
+$btn-focus-border-color: $btn-border-color !default;
+$btn-focus-color: $secondary-text-color-focus !default;
+$btn-active-outline: $btn-bgcolor 0 solid !default;
+$btn-focus-outline: $btn-bgcolor 0 solid !default;
+$btn-focus-outline-round: $white 0 solid !default;
+$btn-active-border-color: $secondary-border-color-pressed !default;
+$btn-active-bgcolor: $secondary-bg-color-pressed !default;
+$btn-active-color: $secondary-text-color-pressed !default;
+$btn-disabled-color: $secondary-text-color-disabled !default;
+$btn-disabled-bgcolor: $secondary-bg-color-disabled !default;
+$btn-disabled-border-color: $secondary-border-color-disabled !default;
+$btn-active-box-shadow: $shadow-sm !default;
+$btn-ripple-bgcolor: transparent !default;
+$btn-link-bgcolor: transparent !default;
+$btn-link-border-color: transparent !default;
+$btn-link-color: $primary !default;
+$btn-link-hover-color: $primary-bg-color-pressed !default;
+$btn-link-disabled-bgcolor: transparent !default;
+//endnormal
+//primary
+$btn-ripple-primary-bgcolor: transparent !default;
+$btn-primary-outline: $btn-bgcolor 0 solid !default;
+$btn-primary-color: $primary-text-color !default;
+$btn-primary-hover-color: $primary-text-hover !default;
+$btn-primary-focus-color: $primary-text-focus !default;
+$btn-primary-active-color: $primary-text-pressed !default;
+$btn-primary-bgcolor: $primary-bg-color !default;
+$btn-primary-hover-bgcolor: $primary-bg-color-hover !default;
+$btn-primary-active-bgcolor: $primary-bg-color-pressed !default;
+$btn-primary-border-color:  $primary-border-color !default;
+$btn-primary-hover-border-color: $primary-border-color-hover !default;
+$btn-primary-focus-border-color: $btn-primary-border-color !default;
+$btn-primary-active-border-color: $primary-border-color-pressed !default;
+$btn-primary-focus-bgcolor: $primary-bg-color-focus !default;
+$btn-primary-disabled-bgcolor: $primary-bg-color-disabled !default;
+$btn-primary-disabled-color: $primary-text-disabled !default;
+$btn-primary-disabled-border-color: $primary-border-color-disabled !default;
+//endprimary
+//outline
+$btn-outline-color: $btn-color !default;
+$btn-outline-bgcolor: transparent !default;
+$btn-outline-hover-bgcolor: $btn-hover-bgcolor !default;
+$btn-outline-hover-color: $btn-hover-color !default;
+$btn-outline-focus-bgcolor: $btn-focus-bgcolor !default;
+$btn-outline-focus-color: $btn-focus-color !default;
+$btn-outline-active-color: $btn-active-color !default;
+$btn-outline-active-bgcolor: $btn-active-bgcolor !default;
+$btn-outline-border-color: $btn-border-color !default;
+$btn-outline-hover-border-color: $btn-hover-border-color !default;
+$btn-outline-focus-border-color: $btn-outline-border-color !default;
+$btn-outline-default-focus-border-color: $btn-outline-border-color !default;
+$btn-outline-active-border-color: $btn-active-border-color !default;
+$btn-outline-active-box-shadow: $btn-active-box-shadow !default;
+$btn-outline-disabled-bgcolor: $secondary-bg-color-disabled !default;
+$btn-outline-disabled-border-color: $secondary-border-color-disabled !default;
+$btn-outline-disabled-color: $secondary-text-color-disabled !default;
+$btn-outline-primary-color: $btn-primary-bgcolor !default;
+$btn-outline-primary-focus-bgcolor: $btn-primary-bgcolor !default;
+$btn-outline-primary-focus-color: $white !default;
+
+//endoutline
+//flat
+$btn-flat-color: $btn-color !default;
+$btn-flat-border: $btn-border !default;
+$btn-flat-border-color: $transparent !default;
+$btn-flat-hover-color: $btn-hover-color !default;
+$btn-flat-focus-color: $btn-focus-color !default;
+$btn-flat-active-color: $btn-active-color !default;
+$btn-flat-box-shadow: none !default;
+$btn-flat-active-bgcolor: $btn-active-bgcolor !default;
+$btn-flat-bgcolor: $transparent !default;
+$btn-flat-hover-bgcolor: $btn-hover-bgcolor !default;
+$btn-flat-focus-bgcolor: $btn-flat-hover-bgcolor !default;
+$btn-flat-hover-border-color: $btn-hover-border-color !default;
+$btn-flat-active-border-color: $btn-active-border-color !default;
+$btn-flat-focus-border-color: $btn-flat-hover-border-color !default;
+$btn-flat-active-box-shadow: $btn-active-box-shadow !default;
+$btn-flat-disabled-border-color: $btn-disabled-border-color !default;
+$btn-flat-disabled-bgcolor: $btn-disabled-bgcolor !default;
+$btn-flat-disabled-color: $btn-disabled-color !default;
+$btn-ripple-flat-bgcolor: transparent !default;
+$btn-ripple-flat-primary-bgcolor: transparent !default;
+$btn-ripple-flat-success-bgcolor: transparent !default;
+$btn-ripple-flat-info-bgcolor: transparent !default;
+$btn-ripple-flat-warning-bgcolor: transparent !default;
+$btn-ripple-flat-danger-bgcolor: transparent !default;
+//endflat
+//success
+$btn-success-color: $success-text !default;
+$btn-success-bgcolor: $success-bg-color !default;
+$btn-success-hover-bgcolor: $success-bg-color-hover !default;
+$btn-success-focus-bgcolor: $success-bg-color-focus !default;
+$btn-success-active-bgcolor: $success-bg-color-pressed !default;
+$btn-success-border-color: $success-border-color !default;
+$btn-success-hover-border-color: $success-border-color-hover !default;
+$btn-success-focus-border-color: $btn-success-border-color !default;
+$btn-success-active-border-color: $success-border-color-pressed !default;
+$btn-success-disabled-bgcolor: $success-bg-color-disabled !default;
+$btn-success-disabled-color: $success-text-disabled !default;
+$btn-success-disabled-border-color: $success-border-color-disabled !default;
+$btn-success-hover-color: $success-text-hover !default;
+$btn-success-focus-color: $success-text-focus !default;
+$btn-ripple-success-bgcolor: transparent !default;
+$btn-success-active-color: $btn-success-color !default;
+
+//endsuccess
+//warning
+$btn-warning-bgcolor: $warning-bg-color !default;
+$btn-warning-color: $warning-text !default;
+$btn-warning-hover-color: $warning-text-hover !default;
+$btn-warning-hover-bgcolor: $warning-bg-color-hover !default;
+$btn-warning-focus-bgcolor: $warning-bg-color-focus !default;
+$btn-warning-active-bgcolor: $warning-bg-color-pressed !default;
+$btn-warning-border-color: $warning-border-color !default;
+$btn-warning-hover-border-color: $warning-border-color-hover !default;
+$btn-warning-focus-border-color: $btn-warning-border-color !default;
+$btn-warning-focus-color: $warning-text-focus !default;
+$btn-warning-active-color: $warning-text-pressed !default;
+$btn-warning-active-border-color: $warning-border-color-pressed !default;
+$btn-warning-disabled-bgcolor: $warning-bg-color-disabled !default;
+$btn-warning-disabled-color: $warning-text-disabled !default;
+$btn-warning-disabled-border-color: $warning-border-color-disabled !default;
+$btn-ripple-warning-bgcolor: transparent !default;
+//endwarning
+//danger
+$btn-danger-color: $danger-text !default;
+$btn-danger-bgcolor: $danger-bg-color !default;
+$btn-danger-hover-bgcolor: $danger-bg-color-hover !default;
+$btn-danger-focus-bgcolor: $danger-bg-color-focus !default;
+$btn-danger-active-bgcolor: $danger-bg-color-pressed !default;
+$btn-danger-active-color: $danger-text-pressed !default;
+$btn-danger-border-color: $danger-border-color !default;
+$btn-danger-hover-border-color: $danger-border-color-hover !default;
+$btn-danger-focus-border-color: $btn-danger-border-color !default;
+$btn-danger-active-border-color: $danger-border-color-pressed !default;
+$btn-danger-disabled-bgcolor: $danger-bg-color-disabled !default;
+$btn-danger-disabled-color: $warning-text-disabled !default;
+$btn-danger-disabled-border-color: $danger-border-color-disabled !default;
+$btn-danger-hover-color: $danger-text-hover !default;
+$btn-ripple-danger-bgcolor: transparent !default;
+//enddanger
+//info
+$btn-info-bgcolor: $info-bg-color !default;
+$btn-info-color: $info-text !default;
+$btn-info-hover-bgcolor: $info-bg-color-hover !default;
+$btn-info-focus-bgcolor: $info-bg-color-focus !default;
+$btn-info-active-bgcolor: $info-bg-color-pressed !default;
+$btn-info-border-color: $info-border-color !default;
+$btn-info-hover-border-color: $info-border-color-hover !default;
+$btn-info-focus-border-color: $btn-info-border-color !default;
+$btn-info-active-border-color: $info-border-color-pressed !default;
+$btn-info-disabled-bgcolor: $info-bg-color-disabled !default;
+$btn-info-disabled-color: $info-text-disabled !default;
+$btn-info-disabled-border-color: $info-border-color-disabled !default;
+$btn-info-active-color: $info-text-pressed !default;
+$btn-info-hover-color: $info-text-hover !default;
+$btn-ripple-info-bgcolor: transparent !default;
+//endinfo
+//round
+$btn-round-focus-color: $secondary-text-color !default;
+$btn-round-active-color: $secondary-text-color-pressed !default;
+$btn-round-bgcolor: $btn-bgcolor !default;
+$btn-round-border-color: $btn-border-color !default;
+$btn-round-color: $btn-color !default;
+$btn-round-hover-bgcolor: $btn-hover-bgcolor !default;
+$btn-round-hover-border-color: $btn-hover-border-color !default;
+$btn-round-hover-color: $btn-hover-color !default;
+//endround
+//flatprimary
+$btn-flat-primary-hover-bgcolor: $btn-primary-hover-bgcolor !default;
+$btn-flat-primary-border-color: $btn-flat-border-color !default;
+$btn-flat-primary-hover-border-color: $btn-primary-hover-border-color !default;
+$btn-flat-primary-active-border-color: $btn-primary-active-border-color !default;
+$btn-flat-primary-focus-border-color: $btn-flat-primary-border-color !default;
+$btn-flat-primary-disabled-border-color: transparent !default;
+$btn-flat-primary-focus-bgcolor: $btn-flat-primary-hover-bgcolor !default;
+$btn-flat-disabled-color: $secondary-text-color-disabled !default;
+$btn-flat-primary-disabled-color: $primary-text-disabled !default;
+$btn-flat-primary-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-primary-color: $btn-primary-bgcolor !default;
+$btn-flat-primary-hover-color: $btn-primary-color !default;
+$btn-flat-primary-focus-color: $btn-primary-focus-color !default;
+$btn-flat-primary-active-color: $btn-primary-color !default;
+$btn-flat-primary-active-bgcolor: $btn-primary-active-bgcolor !default;
+//endflatprimary
+//flatsuccess
+$btn-flat-success-color: $btn-success-bgcolor !default;
+$btn-flat-success-hover-color: $btn-success-color !default;
+$btn-flat-success-focus-color: $btn-success-color !default;
+$btn-flat-success-active-color: $btn-success-color !default;
+$btn-flat-success-active-bgcolor: $btn-success-active-bgcolor !default;
+$btn-flat-success-disabled-color: rgba($btn-flat-success-color, .65) !default;
+$btn-flat-success-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-success-hover-bgcolor: $btn-success-hover-bgcolor !default;
+$btn-flat-success-border-color: $btn-flat-border-color !default;
+$btn-flat-success-hover-border-color: $btn-success-hover-border-color !default;
+$btn-flat-success-active-border-color: $btn-success-active-border-color !default;
+$btn-flat-success-focus-border-color: $btn-flat-success-border-color !default;
+$btn-flat-success-disabled-border-color: $btn-success-disabled-border-color !default;
+$btn-flat-success-focus-bgcolor: $btn-success-hover-bgcolor !default;
+//endflatsuccess
+//flatinfo
+$btn-flat-info-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-info-hover-bgcolor: $btn-info-hover-bgcolor !default;
+$btn-flat-info-border-color: $btn-flat-border-color !default;
+$btn-flat-info-hover-border-color: $btn-info-hover-border-color !default;
+$btn-flat-info-active-border-color: $btn-info-active-border-color !default;
+$btn-flat-info-focus-border-color: $btn-flat-info-border-color !default;
+$btn-flat-info-disabled-border-color: $btn-info-disabled-border-color !default;
+$btn-flat-info-focus-bgcolor: $btn-info-hover-bgcolor !default;
+$btn-flat-info-color: $btn-info-bgcolor !default;
+$btn-flat-info-disabled-color: rgba($btn-flat-info-color, .65) !default;
+$btn-flat-info-hover-color: $btn-info-color !default;
+$btn-flat-info-focus-color: $btn-info-color !default;
+$btn-flat-info-active-color: $btn-info-color !default;
+$btn-flat-info-active-bgcolor: $btn-info-active-bgcolor !default;
+//endflatinfo
+//flatwarning
+$btn-flat-warning-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-warning-hover-bgcolor: $btn-warning-hover-bgcolor !default;
+$btn-flat-warning-border-color: $btn-flat-border-color !default;
+$btn-flat-warning-hover-border-color: $btn-warning-hover-border-color !default;
+$btn-flat-warning-active-border-color: $btn-warning-active-border-color !default;
+$btn-flat-warning-focus-border-color: $btn-flat-warning-border-color !default;
+$btn-flat-warning-disabled-border-color: $btn-warning-disabled-border-color !default;
+$btn-flat-warning-focus-bgcolor: $btn-warning-hover-bgcolor !default;
+$btn-flat-warning-color: $btn-warning-bgcolor !default;
+$btn-flat-warning-disabled-color: rgba($btn-flat-warning-color, .65) !default;
+$btn-flat-warning-hover-color: $btn-warning-color !default;
+$btn-flat-warning-focus-color: $btn-warning-color !default;
+$btn-flat-warning-active-color: $btn-warning-color !default;
+$btn-flat-warning-active-bgcolor: $btn-warning-active-bgcolor !default;
+//endflatwarning
+//flatdanger
+$btn-flat-danger-bgcolor: $btn-flat-bgcolor !default;
+$btn-flat-danger-hover-bgcolor: $btn-danger-hover-bgcolor !default;
+$btn-flat-danger-border-color: $btn-flat-border-color !default;
+$btn-flat-danger-hover-border-color: $btn-danger-hover-border-color !default;
+$btn-flat-danger-active-border-color: $btn-danger-active-border-color !default;
+$btn-flat-danger-focus-border-color: $btn-flat-danger-border-color !default;
+$btn-flat-danger-disabled-border-color: $btn-danger-disabled-border-color !default;
+$btn-flat-danger-focus-bgcolor: $btn-danger-hover-bgcolor !default;
+$btn-flat-danger-color: $btn-danger-bgcolor !default;
+$btn-flat-danger-hover-color: $btn-danger-color !default;
+$btn-flat-danger-focus-color: $btn-danger-color !default;
+$btn-flat-danger-active-color: $btn-danger-color !default;
+$btn-flat-danger-active-bgcolor: $btn-danger-active-bgcolor !default;
+$btn-flat-danger-disabled-color: rgba($btn-flat-danger-color, .65) !default;
+//endflatdanger
+//outlineprimary
+$btn-outline-primary-disabled-color: rgba($primary, .65) !default;
+$btn-outline-primary-disabled-border-color: rgba($primary, .65) !default;
+$btn-outline-primary-hover-border-color: $primary !default;
+$btn-outline-primary-hover-bgcolor: $btn-primary-bgcolor !default;
+$btn-outline-primary-focus-border-color: $primary !default;
+$btn-outline-primary-active-border-color: $primary !default;
+//endoutlineprimay
+//outlinesuccess
+$btn-outline-success-disabled-color: rgba($success, .65) !default;
+$btn-outline-success-disabled-border-color: rgba($btn-success-bgcolor, .65) !default;
+$btn-outline-success-hover-bgcolor: $btn-success-bgcolor !default;
+//endoutlinesuccess
+//outlineinfo
+$btn-outline-info-disabled-color: rgba($info, .65) !default;
+$btn-outline-info-disabled-border-color: rgba($btn-info-bgcolor, .65) !default;
+//endoutlineinfo
+//outlinewarning
+$btn-outline-warning-disabled-color: rgba($warning, .65) !default;
+$btn-outline-warning-disabled-border-color: rgba($btn-warning-bgcolor, .65) !default;
+//endoutlinewarning
+//outlinedanger
+$btn-outline-danger-disabled-color: rgba($danger, .65) !default;
+$btn-outline-danger-disabled-border-color: rgba($btn-danger-bgcolor, .65) !default;
+//endoutlinedanger
+//size
+$btn-box-shadow: $shadow-sm !default;
+$btn-hover-focus-box-shadow: none !default;
+$btn-flat-primary-disabled-bgcolor: $btn-primary-disabled-bgcolor !default;
+$btn-flat-success-disabled-bgcolor: $btn-success-disabled-bgcolor !default;
+$btn-flat-info-disabled-bgcolor: $btn-info-disabled-bgcolor !default;
+$btn-flat-warning-disabled-bgcolor: $btn-warning-disabled-bgcolor !default;
+$btn-flat-danger-disabled-bgcolor: $btn-danger-disabled-bgcolor !default;
+$btn-focus-box-shadow: $shadow-focus-ring2 !default;
+//endsize

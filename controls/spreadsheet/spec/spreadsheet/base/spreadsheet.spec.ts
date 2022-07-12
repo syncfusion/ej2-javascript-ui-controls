@@ -1762,7 +1762,7 @@ describe('Spreadsheet base module ->', () => {
                     setTimeout(() => {
                         helper.getElements('.e-datavalidation-dlg #minvalue')[0].value = '12';
                         helper.getElements('.e-datavalidation-dlg #maxvalue')[0].value = '25';
-                        helper.setAnimationToNone('.e-datavalidation-dlg');
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                         helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
                         expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"12","value2":"25","ignoreBlank":true,"inCellDropDown":null}');
                         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();

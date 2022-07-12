@@ -8,14 +8,6 @@
 
 #### Bug Fixes
 
-- Image width and height are proper in Grid to Excel Export.
-
-## 20.1.47 (2022-04-04)
-
-### Excel Export
-
-#### Bug Fixes
-
 - Internet Explorer version 11 Grid to Excel export issue is fixed.
 
 - Date issue is fixed for CSV export.

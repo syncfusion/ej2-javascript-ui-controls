@@ -419,6 +419,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private primaryButtonEle: HTMLElement;
     private targetEle: HTMLElement;
     private dialogOpen: boolean;
+    private isVue: boolean;
     private initialRender: boolean;
     private innerContentElement: Node;
     private storeActiveElement: HTMLElement;
@@ -1385,8 +1386,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if ((typeof template === 'string')) {
                 template = this.sanitizeHelper(template as string);
             }
-            templateFn = compile(template as string);
-            templateValue = template as string;
+            if (this.isVue) { 
+                templateFn = compile(template as string);
+                templateValue = template as string;
+            } else {
+                toElement.innerHTML = template as string;
+            }
         }
         const fromElements: HTMLElement[] = [];
         if (!isNullOrUndefined(templateFn)) {
@@ -1522,23 +1527,16 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setCSSClass(oldCSSClass?: string): void {
-        if (oldCSSClass) {
-            removeClass([this.element], oldCSSClass.split(' '));
-            if (this.isModal && !isNullOrUndefined(this.dlgContainer)) {
-                removeClass([this.dlgContainer], oldCSSClass.split(' '));
-            }
-        }
         if (this.cssClass) {
             addClass([this.element], this.cssClass.split(' '));
-            if (this.isModal && !isNullOrUndefined(this.dlgContainer)) {
-                addClass([this.dlgContainer], this.cssClass.split(' '));
-            }
+        }
+        if (oldCSSClass) {
+            removeClass([this.element], oldCSSClass.split(' '));
         }
     }
 
     private setIsModal(): void {
         this.dlgContainer = this.createElement('div', { className: DLG_CONTAINER });
-        this.setCSSClass();
         this.element.classList.remove(DLG_SHOW);
         this.element.parentNode.insertBefore(this.dlgContainer, this.element);
         this.dlgContainer.appendChild(this.element);

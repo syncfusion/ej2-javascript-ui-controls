@@ -70,9 +70,9 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
     }
 
     private dropDownClose(args: PopupEventArgs): void {
-        if (args.event && (args.event as KeyboardEventArgs).action === 'escape') {
-            (this as DropDownEditCell).parent.editModule.editCellDialogClose = true;
-        }
+        // if (args.event && (args.event as KeyboardEventArgs).action === 'escape') {
+        //     (this as DropDownEditCell).parent.editModule.editCellDialogClose = true;
+        // }
     }
 
     private addEventListener(): void {

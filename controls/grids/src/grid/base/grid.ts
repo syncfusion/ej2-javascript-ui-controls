@@ -2814,7 +2814,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     protected render(): void {
         this.log(['module_missing', 'promise_enabled', 'locale_missing', 'check_datasource_columns']);
         this.ariaService.setOptions(this.element, { datarole: 'grid' });
-        createSpinner({ target: this.element }, this.createElement);
+        createSpinner({ target: this.element, cssClass: this.cssClass ? this.cssClass : null }, this.createElement);
         this.renderModule = new Render(this, this.serviceLocator);
         this.searchModule = new Search(this);
         this.scrollModule = new Scroll(this);

@@ -417,7 +417,8 @@ export class WorkbookCellFormat {
         let sRowIdx: number = range[0];
         const eRowIdx: number = range[2];
         const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
-        const cfRule: ConditionalFormatModel[] = [];
+        const cfRule: ConditionalFormatModel[] = []; let cfRefreshAll: boolean;
+        let evtArgs: { [key: string]: string | boolean | number[] | number };
         let sColIdx: number;
         let eColIdx: number; let isValExist: boolean;
         for (sRowIdx; sRowIdx <= eRowIdx; sRowIdx++) {
@@ -437,13 +438,15 @@ export class WorkbookCellFormat {
                         }
                         isValExist = !!(cell.value || cell.formula);
                         delete cell.value; delete cell.formula;
-                        if (cf) {
-                            updateCFModel(cf, cfRule, sRowIdx, sColIdx);
-                        }
                         if (isValExist) {
-                            this.parent.notify(
-                                workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx,
-                                sheetIndex: sheetIdx });
+                            evtArgs = { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx, sheetIndex: sheetIdx };
+                            this.parent.notify(workbookFormulaOperation, evtArgs);
+                            if (!cfRefreshAll) {
+                                cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
+                            }
+                            if (cf && !cfRefreshAll) {
+                                updateCFModel(cf, cfRule, sRowIdx, sColIdx);
+                            }
                         }
                         break;
                     case 'Clear Hyperlinks':
@@ -453,19 +456,19 @@ export class WorkbookCellFormat {
                         isValExist = !!(cell.value || cell.formula);
                         setCell(sRowIdx, sColIdx, sheet, {}, false);
                         if (isValExist) {
-                            this.parent.notify(
-                                workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx,
-                                sheetIndex: sheetIdx });
+                            evtArgs = { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx, sheetIndex: sheetIdx };
+                            this.parent.notify(workbookFormulaOperation, evtArgs);
+                            if (!cfRefreshAll) {
+                                cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
+                            }
                         }
                         break;
                     }
                 }
             }
         }
-        if (cfRule.length) {
-            this.parent.notify(
-                applyCF, <ApplyCFArgs>{ cfModel: cfRule, sheetIdx: sheetIdx, otherSheets: sheetIdx !== this.parent.activeSheetIndex,
-                    isAction: true });
+        if ((cfRule.length || cfRefreshAll) && sheetIdx === this.parent.activeSheetIndex) {
+            this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
         }
     }
     /**

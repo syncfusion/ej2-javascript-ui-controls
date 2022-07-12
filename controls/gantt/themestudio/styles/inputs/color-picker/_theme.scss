@@ -1,0 +1,183 @@
+@include export-module('color-picker-theme') {
+  .e-container {
+    background-color: $cpicker-color;
+
+    & .e-palette {
+      & .e-tile {
+        &:hover {
+          border-color: $cpicker-tile-active-border-color;
+        }
+
+        &.e-selected {
+          @if $skin-name == 'bootstrap4' {
+            border-color: transparent;
+          }
+          border-color: $cpicker-tile-active-border-color;
+        }
+      }
+    }
+
+    & .e-handler,
+    & .e-handle {
+      &.e-hide-handler {
+        background-color: transparent;
+        border-color: transparent;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .e-container .e-control-wrapper.e-slider-container {
+    & .e-slider.e-hue-slider,
+    & .e-slider.e-opacity-slider {
+      & .e-handle:not(.e-tab-handle) {
+        background-color: $cpicker-slider-handler-color;
+        border-color: $cpicker-slider-handler-color;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          border: 1px solid $white;
+        }
+
+        &.e-handle-start:not(.e-tab-handle) {
+          background-color: $cpicker-slider-handler-color;
+          border-color: $cpicker-slider-handler-color;
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            border-color: $white;
+          }
+        }
+      }
+
+      & .e-handle {
+        &.e-tab-handle {
+          background-color: $cpicker-slider-tab-handler-color;
+          border-color: $cpicker-slider-handler-focus-color;
+          box-shadow: $cpicker-slider-tab-shadow;
+        }
+      }
+    }
+  }
+
+  .e-colorpicker-wrapper,
+  .e-colorpicker-container {
+    &.e-disabled {
+      & .e-value-switch-btn,
+      & .e-mode-switch-btn {
+        color: $btn-disabled-color;
+
+        &:focus {
+          background-color: transparent;
+          color: $btn-disabled-color;
+          outline: none;
+          outline-offset: unset;
+        }
+
+        &:active {
+          background-color: transparent;
+          color: $btn-disabled-color;
+        }
+      }
+    }
+
+    & .e-split-btn-wrapper .e-split-colorpicker.e-split-btn {
+      @if $skin-name == 'bootstrap4' {
+        background-color: $cpicker-handler-tooltip-color;
+        border-color: $gray-400;
+      }
+    }
+
+    & .e-split-btn-wrapper .e-split-colorpicker+.e-dropdown-btn {
+      @if $skin-name == 'bootstrap4' {
+        border-color: $gray-400;
+      }
+    }
+
+    & .e-btn.e-icon-btn {
+      @if $skin-name == 'bootstrap4' {
+        background-color: $cpicker-handler-tooltip-color;
+        color: $gray-700;
+        }
+      @else if $skin-name == 'bootstrap5' {
+        background-color: transparent;
+        color: $cpicker-split-btn-icon-color;
+        }
+      }
+
+    & .e-icon-btn {
+      &:hover {
+        @if $skin-name == 'bootstrap4' {
+          background-color: $gray-600;
+          color: $cpicker-handler-tooltip-color;
+        }
+        @else if $skin-name == 'bootstrap5' {
+          background-color: $btn-hover-bgcolor;
+          color: $cpicker-handler-tooltip-color;
+        }
+      }
+
+      &:focus {
+        @if $skin-name == 'bootstrap4' {
+          background-color: $cpicker-handler-tooltip-color;
+          border-color: $gray-700;
+          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, .15), .5);
+          box-shadow: 0 0 0 .2rem $color-rgba;
+          color: $gray-700;
+        }
+        @else if $skin-name == 'bootstrap5' {
+          background-color: $btn-focus-bgcolor;
+          border-color: $btn-focus-border-color;
+          box-shadow: $btn-active-box-shadow;
+          color: $btn-active-color;
+        }
+      }
+
+      &:active {
+        @if $skin-name == 'bootstrap4' {
+          background-color: $gray-600;
+          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, .15), .5);
+          box-shadow: 0 0 0 .2rem $color-rgba;
+          color: $cpicker-handler-tooltip-color;
+        }
+        @else if $skin-name == 'bootstrap5' {
+          background-color: $btn-active-bgcolor;
+          box-shadow: $btn-active-box-shadow;
+          color: $btn-active-color;
+        }
+      }
+
+      &:disabled,
+      &.e-disabled {
+        background-color: transparent;
+        box-shadow: none;
+        @if $skin-name != 'tailwind' and $skin-name != 'FluentUI' {
+          color: $btn-disabled-bgcolor;
+        }
+        @if $skin-name == 'tailwind' {
+          border-color: $btn-disabled-border-color;
+        }
+      }
+    }
+  }
+
+  #{if(&, '&', '*')} .e-color-picker .e-selected-value {
+    & .e-css.e-btn.e-flat {
+      @if $skin-name == 'bootstrap4' {
+        background-color: $cpicker-handler-tooltip-color;
+        border-color: $cpicker-handler-tooltip-color;
+        color: $gray-700;
+      }
+
+      &:hover,
+      &:active {
+        @if $skin-name == 'bootstrap4' {
+          color: $gray-900;
+        }
+      }
+    }
+  }
+
+  .e-popup.e-tooltip-wrap {
+    &.e-color-picker-tooltip {
+      background-color: $cpicker-handler-tooltip-color;
+      border-color: $cpicker-handler-tooltip-color;
+    }
+  }
+}

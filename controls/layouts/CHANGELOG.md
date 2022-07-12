@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.38 (2022-07-12)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#F385792` - The issues with the Splitter's first pane resizing to the right and the pane resizing not working properly has been resolved.
+
 ## 20.1.61 (2022-06-21)
 
 ### Dashboard Layout
