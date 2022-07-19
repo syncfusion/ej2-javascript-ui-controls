@@ -46,7 +46,6 @@ describe('Find & Replace ->', () => {
     });
 
     describe('UI Interaction ->', () => {
-
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ index: 11, cells:
                 [{ index: 6, value: 'Total Amount:' }, { formula: '=G12' }] }] }] }, done);
@@ -57,6 +56,10 @@ describe('Find & Replace ->', () => {
         it('Find in tool dialog', (done: Function) => {
             helper.click('#' + helper.id + '_findbtn');
             setTimeout(() => {
+                const findToolDlg: HTMLElement = helper.getElement('.e-findtool-dlg');
+                expect(findToolDlg.style.top).toBe(`${helper.invoke('getColumnHeaderContent').parentElement.offsetHeight + 1}px`);
+                expect(findToolDlg.style.left).toBe('');
+                expect(findToolDlg.style.right).not.toBe('');
                 const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
                 findTxtBox.value = 'Loafers';
                 helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');

@@ -635,6 +635,8 @@ export class Column {
                 } else if (keys[i] === 'headerTemplate') {
                     this.headerTemplateFn = templateCompiler(column[keys[i]]);
                     this.parent.refreshReactHeaderTemplateByUid(this.uid);
+                } else if (keys[i] === 'editTemplate') {
+                    this.editTemplateFn = templateCompiler(column[keys[i]]);
                 }
             }
         }

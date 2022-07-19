@@ -512,8 +512,9 @@ export class ToolbarRenderer implements IRenderer {
                 proxy.parent.notify(events.selectionRestore, {});
                 (proxy.currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor = colorpickerValue;
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
+                const closestElement: Element = closest(range.startContainer.parentNode, 'table');
                 if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' || range.startContainer.nodeName === 'BODY' ||
-                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && args.subCommand === 'BackgroundColor') {
+                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && args.subCommand === 'BackgroundColor' && closest(closestElement,'.'+ classes.CLS_RTE)) {
                     proxy.parent.notify(events.tableColorPickerChanged, colorPickerArgs);
                 } else {
                     proxy.parent.notify(events.colorPickerChanged, colorPickerArgs);

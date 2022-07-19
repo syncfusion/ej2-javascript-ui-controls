@@ -577,4 +577,57 @@ describe('Gantt Drag and Drop support', () => {
             triggerMouseEvent(indentRecord, 'click');
         });
     });
+    describe('RowDrag and drop without subtasks', () => {
+        let ganttObj_self: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_self = createGantt(
+                {
+                    dataSource:  [{"TaskID":1,"TaskName":"New Task 1","StartDate":"2022-07-04T13:00:00.000Z","EndDate":"2022-07-04T22:00:00.000Z","Duration":1,"Progress":0,"Predecessor":"","resources":[],"info":null},{"TaskID":2,"TaskName":"New Task 2","StartDate":"2022-07-04T13:00:00.000Z","EndDate":"2022-07-04T22:00:00.000Z","Duration":1,"Progress":0,"Predecessor":"","resources":[],"info":null},{"TaskID":3,"TaskName":"New Task 3","StartDate":"2022-07-04T13:00:00.000Z","EndDate":"2022-07-04T22:00:00.000Z","Duration":1,"Progress":0,"Predecessor":"","resources":[],"info":null},{"TaskID":4,"TaskName":"New Task 4","StartDate":"2022-07-04T13:00:00.000Z","EndDate":"2022-07-04T22:00:00.000Z","Duration":1,"Progress":0,"Predecessor":"","resources":[],"info":null}],
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks'
+        },
+        allowRowDragAndDrop: true,
+        height: '450px',
+        columns: [
+            { field: 'TaskID', headerText: 'ID', width: 80 },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor', headerText: 'Dependency' }
+        ],
+        labelSettings: {
+            leftLabel: 'TaskName'
+        },
+        selectionSettings: {
+            type: 'Multiple'
+        },
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('07/06/2019'),
+        splitterSettings: {
+            columnIndex: 3
+        },
+        }, done);
+        });
+        afterAll(() => {
+            if (ganttObj_self) {
+                destroyGantt(ganttObj_self);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Drag and drop', function () {
+            ganttObj_self.reorderRows([3],0,'below')
+            expect(ganttObj_self.dataSource[1].TaskID).toBe(4);
+        });
+    });
 });

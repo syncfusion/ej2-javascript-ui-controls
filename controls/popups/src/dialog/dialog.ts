@@ -181,6 +181,7 @@ const DLG_USER_ACTION_CLOSED: string = 'user action';
 const DLG_CLOSE_ICON_CLOSED: string = 'close icon';
 const DLG_ESCAPE_CLOSED: string = 'escape';
 const DLG_OVERLAYCLICK_CLOSED: string = 'overlayClick';
+const DLG_DRAG : string = 'e-draggable';
 
 /**
  * Provides information about a BeforeOpen event.
@@ -1254,39 +1255,41 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setAllowDragging(): void {
         const handleContent: string = '.' + DLG_HEADER_CONTENT;
-        this.dragObj = new Draggable(this.element, {
-            clone: false,
-            isDragScroll: true,
-            abort: '.e-dlg-closeicon-btn',
-            handle: handleContent,
-            // eslint-disable-next-line
-            dragStart: (event: Object & BlazorDragEventArgs) => {
+        if (!this.element.classList.contains( DLG_DRAG)){
+            this.dragObj = new Draggable(this.element, {
+                clone: false,
+                isDragScroll: true,
+                abort: '.e-dlg-closeicon-btn',
+                handle: handleContent,
                 // eslint-disable-next-line
-                this.trigger('dragStart', event, (dragEventArgs: Object & BlazorDragEventArgs) => {
-                    if (isBlazor()) {
-                        dragEventArgs.bindEvents(event.dragElement);
+                dragStart: (event: Object & BlazorDragEventArgs) => {
+                    // eslint-disable-next-line
+                    this.trigger('dragStart', event, (dragEventArgs: Object & BlazorDragEventArgs) => {
+                        if (isBlazor()) {
+                            dragEventArgs.bindEvents(event.dragElement);
+                        }
+                    });
+                },
+                // eslint-disable-next-line
+                dragStop: (event: Object) => {
+                    if (this.isModal) {
+                        if (!isNullOrUndefined(this.position)) {
+                            this.dlgContainer.classList.remove('e-dlg-' + this.position.X + '-' + this.position.Y);
+                        }
+                        // Reset the dialog position after drag completion.
+                        this.element.style.position = 'relative';
                     }
-                });
-            },
-            // eslint-disable-next-line
-            dragStop: (event: Object) => {
-                if (this.isModal) {
-                    if (!isNullOrUndefined(this.position)) {
-                        this.dlgContainer.classList.remove('e-dlg-' + this.position.X + '-' + this.position.Y);
-                    }
-                    // Reset the dialog position after drag completion.
-                    this.element.style.position = 'relative';
+                    this.trigger('dragStop', event);
+                    this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
+                },
+                // eslint-disable-next-line
+                drag: (event: Object) => {
+                    this.trigger('drag', event);
                 }
-                this.trigger('dragStop', event);
-                this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
-            },
-            // eslint-disable-next-line
-            drag: (event: Object) => {
-                this.trigger('drag', event);
+            });
+            if (!isNullOrUndefined(this.targetEle)) {
+                this.dragObj.dragArea = this.targetEle;
             }
-        });
-        if (!isNullOrUndefined(this.targetEle)) {
-            this.dragObj.dragArea = this.targetEle;
         }
     }
 
@@ -1386,7 +1389,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if ((typeof template === 'string')) {
                 template = this.sanitizeHelper(template as string);
             }
-            if (this.isVue) { 
+            if (this.isVue || typeof template !== 'string') { 
                 templateFn = compile(template as string);
                 templateValue = template as string;
             } else {
@@ -1475,6 +1478,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.headerEle = this.createElement('div', { id: this.element.id + '_title', className: DLG_HEADER });
         }
         this.createHeaderContent();
+        if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
+            this.setAllowDragging();
+        }
         this.headerContent.appendChild(this.headerEle);
         this.setTemplate(this.header, this.headerEle, 'header');
         attributes(this.element, { 'aria-labelledby': this.element.id });

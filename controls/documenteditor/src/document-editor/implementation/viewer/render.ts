@@ -956,7 +956,7 @@ export class Renderer {
                 this.pageContext.fillStyle = HelperMethods.getColor(highlightColor);
             }
 
-            this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+            this.pageContext.fillRect(Math.floor(this.getScaledValue(left + leftMargin, 1) - 1), Math.floor(this.getScaledValue(top + topMargin, 2) - 1), Math.ceil(this.getScaledValue(elementBox.width) + 1), Math.ceil(this.getScaledValue(elementBox.height) + 1));
         }
         this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + fontFamily + '"';
         if (baselineAlignment === 'Subscript') {
@@ -1019,7 +1019,7 @@ export class Renderer {
                 this.pageContext.fillStyle = HelperMethods.getColor(format.highlightColor);
             }
 
-            this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+            this.pageContext.fillRect(Math.floor(this.getScaledValue(left + leftMargin, 1) - 1), Math.floor(this.getScaledValue(top + topMargin, 2) - 1), Math.ceil(this.getScaledValue(elementBox.width) + 1), Math.ceil(this.getScaledValue(elementBox.height) + 1));
         }
         let revisionInfo: RevisionInfo[] = this.checkRevisionType(elementBox);
 

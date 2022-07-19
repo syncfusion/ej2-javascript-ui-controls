@@ -808,6 +808,7 @@ export class Drawing {
                 for (let j: number = 0; j < objects.length; j++) {
                     if (objects[j].id === obj.id) {
                         objects.splice(j, 1);
+                        break;
                     }
                     if (objects[j] && objects[j].id && objects[j].id.indexOf(obj.id) !== -1) {
                         objects.splice(j, 1);

@@ -10,20 +10,31 @@ describe('Chart ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
 
     describe('public method ->', () => {
+        let cell: CellModel;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('', (done: Function) => {
+        it('Insert', (done: Function) => {
             helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
-            const cell: CellModel = helper.getInstance().sheets[0].rows[0].cells[3];
-            const id: string = cell.chart[0].id;
+            cell = helper.getInstance().sheets[0].rows[0].cells[3];
             // expect(JSON.stringify(cell.chart)).toBe('[{"type":"Column","range":"Sheet1!D1:E5","theme":"Material","isSeriesInRows":false,"id":"e_spreadsheet_chart_1","height":290,"width":480,"top":0,"left":192}]'); check this now
             expect(helper.getElementFromSpreadsheet('#' + cell.chart[0].id).classList).toContain('e-chart');
+            done();
+        });
+        it('Apply freezepane with chart', (done: Function) => {
+            helper.invoke('freezePanes', [3, 2]);
+            setTimeout((): void => {
+                expect(helper.getElementFromSpreadsheet('#' + cell.chart[0].id).parentElement.parentElement.classList).toContain('e-sheet');
+                done();
+            });
+        });
+        it('Delete', (done: Function) => {
+            const id: string = cell.chart[0].id;
             (helper.getInstance().serviceLocator.getService('shape') as Overlay).destroy();// Need to remove once destory of overlay service handled in chart.
-            helper.invoke('deleteChart', [cell.chart[0].id]);
+            helper.invoke('deleteChart', [id]);
             expect(JSON.stringify(cell.chart)).toBe('[]');
             expect(helper.getElementFromSpreadsheet('#' + id)).toBeNull();
             done();

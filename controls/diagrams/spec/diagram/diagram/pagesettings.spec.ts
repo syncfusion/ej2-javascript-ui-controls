@@ -2637,3 +2637,115 @@ describe('Connector gets crossed each other issue', () => {
     });
 
 });
+
+describe('Property Change event Order commands issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramorder' });
+        document.body.appendChild(ele);
+
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}],
+            style: { fill: 'red'}
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 125, offsetY: 125, annotations: [ { content: 'Node2'}],
+            style: { fill: 'blue'}
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [ { content: 'Node3'}],
+            style: { fill: 'green'}
+        };
+        let node4: NodeModel = {
+            id: 'node4', width: 100, height: 100, offsetX: 175, offsetY: 175, annotations: [ { content: 'Node4'}],
+            style: { fill: 'yellow'}
+        };
+        let node5: NodeModel = {
+            id: 'node5', width: 100, height: 100, offsetX: 200, offsetY: 200, annotations: [ { content: 'Node5'}],
+            style: { fill: 'magenta'}
+        };
+        diagram = new Diagram({
+            width: '1000px', height: '800px', nodes: [node, node2, node3, node4, node5],
+           
+        });
+
+         
+        diagram.appendTo('#diagramorder');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether Only ZIndex values updated in propertyChange event newValue argument - bringToFront', function (done) {
+        diagram.select([diagram.nodes[0]]);
+        diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+            if(args.newValue && (args.newValue as any).zIndex !== undefined ) {
+                expect((args.newValue as any).zIndex === 4).toBe(true);
+                expect((args.oldValue as any).zIndex === 0).toBe(true);
+            }
+        }
+        diagram.bringToFront();
+        done();
+    });
+
+});
+
+describe('Property Change event Order commands issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramorder' });
+        document.body.appendChild(ele);
+
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}],
+            style: { fill: 'red'}
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 125, offsetY: 125, annotations: [ { content: 'Node2'}],
+            style: { fill: 'blue'}
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [ { content: 'Node3'}],
+            style: { fill: 'green'}
+        };
+        let node4: NodeModel = {
+            id: 'node4', width: 100, height: 100, offsetX: 175, offsetY: 175, annotations: [ { content: 'Node4'}],
+            style: { fill: 'yellow'}
+        };
+        let node5: NodeModel = {
+            id: 'node5', width: 100, height: 100, offsetX: 200, offsetY: 200, annotations: [ { content: 'Node5'}],
+            style: { fill: 'magenta'}
+        };
+        diagram = new Diagram({
+            width: '1000px', height: '800px', nodes: [node, node2, node3, node4, node5],
+           
+        });
+
+         
+        diagram.appendTo('#diagramorder');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether Only ZIndex values updated in propertyChange event newValue argument - SendToBack', function (done) {
+        diagram.select([diagram.nodes[4]]);
+        diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+            if(args.newValue && (args.newValue as any).zIndex !== undefined ) {
+                expect((args.newValue as any).zIndex === 0).toBe(true);
+                expect((args.oldValue as any).zIndex === 4).toBe(true);
+            }
+        }
+        diagram.sendToBack();
+        done();
+    });
+
+});

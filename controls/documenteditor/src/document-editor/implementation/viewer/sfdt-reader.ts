@@ -1265,6 +1265,7 @@ export class SfdtReader {
                     textFrame.containerShape = shape;
                 }
                 shape.line = lineWidget;
+                this.checkAndApplyRevision(inline, shape);
                 lineWidget.children.push(shape);
                 if (shape.textWrappingStyle !== 'Inline') {
                     paragraph.floatingElements.push(shape);

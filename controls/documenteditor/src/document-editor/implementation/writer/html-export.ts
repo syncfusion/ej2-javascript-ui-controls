@@ -434,7 +434,9 @@ export class HtmlExport {
     // Serialize Styles
     private serializeParagraphStyle(paragraph: any, className: string, isList: boolean): string {
         let paragraphClass: string = '';
-        paragraphClass += this.serializeCharacterFormat(paragraph.characterFormat);
+        if (paragraph.inlines.length > 0) {
+            paragraphClass += this.serializeCharacterFormat(paragraph.characterFormat);
+        }
         paragraphClass += this.serializeParagraphFormat(paragraph.paragraphFormat, isList);
         return paragraphClass;
     }

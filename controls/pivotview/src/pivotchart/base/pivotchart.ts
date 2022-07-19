@@ -1138,14 +1138,14 @@ export class PivotChart {
         let aggregateType: string = this.parent.dataType === 'olap' ? '' : this.parent.localeObj.getConstant(measureField.aggregateType);
         let measureAggregatedName: string = (this.parent.dataType === 'olap' ? '' : aggregateType + ' ' +
             this.parent.localeObj.getConstant('of') + ' ') + measureField.caption;
-        let formattedText: string = this.accumulationType.indexOf(this.parent.chartSettings.chartSeries.type) < 0 ?
-            args.text.split('<b>')[1].split('</b>')[0] : (this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet).formattedText;
+        let formattedText: string = (this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet).formattedText;
         let formatField: IField = this.engineModule.formatFields[measureField.id];
-        let formattedValue: string = ((formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
+        let valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.point.y as number, measureField.id , formattedText);
+        let formattedValue: string = (formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
-            (this.engineModule as OlapEngine).getFormattedValue(args.point.y as number, measureField.id, formattedText) :
-            this.parent.engineModule.getFormattedValue(args.point.y as number, measureField.id).formattedText :
-            formattedText);
+            valueFormat.toString() :
+            (valueFormat as IAxisSet).formattedText :
+            formattedText;
         let columnText: string = (args.series.name ? args.series.name.split(' | ')[0] : args.data.seriesName.split(' | ')[0]);
         let rowText: any = args.point.x;
         if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined || this.chartSettings.tooltip.template) {
@@ -1467,6 +1467,16 @@ export class PivotChart {
             if (args.axis.name === 'primaryXAxis') {
                 args.text = '';
             }
+        }
+        if (args.axis.name !== 'primaryXAxis') {
+            let formatField: IField = this.engineModule.formatFields[args.axis.name];
+            let valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.value, args.axis.name, args.text);
+            let formattedValue: string = ((formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
+                this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
+                valueFormat.toString() :
+                (valueFormat as IAxisSet).formattedText  :
+                args.value.toString());
+            args.text = formattedValue;
         }
         this.parent.trigger(events.chartAxisLabelRender, args);
     }

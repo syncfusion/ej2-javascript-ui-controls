@@ -245,6 +245,7 @@ export class Page implements IAction {
         }
         this.isCancel = false;
         this.parent.requestTypeAction = 'paging';
+        this.parent.notify(events.commandColumnDestroy, { type : 'paging' } );
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {

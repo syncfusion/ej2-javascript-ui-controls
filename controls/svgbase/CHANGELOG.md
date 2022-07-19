@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 20.1.48 (2022-04-12)
+## 20.2.36 (2022-06-30)
 
 ### Svg Base
 
@@ -11,6 +11,38 @@
 - `#I366649` - Polar Radar not rendered in canvas mode issue has been fixed.
 
 ## 20.1.47 (2022-04-04)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#311306` - Position of Tooltip template has been changed.
+
+## 19.4.50 (2022-02-08)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I363270`  – Chart tooltip is now displaying properly for all data points.
+
+## 19.4.42 (2022-01-11)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I339050` - Resolved CSP issues while using inline styles.
+
+## 19.4.40 (2021-12-28)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I357720` - Header line in the tooltip is now proper when text wrap is enabled.
+
+## 19.4.38 (2021-12-17)
 
 ### Svg Base
 

@@ -1182,7 +1182,7 @@ export class Render {
                     ((this.colGrandPos - this.parent.dataSourceSettings.values.length) < Number(tCell.getAttribute('aria-colindex'))));
                 if (cell.isGrandSum || (isGrandSum || this.colGrandPos === Number(tCell.getAttribute('aria-colindex'))) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
                     tCell.classList.add('e-gtot');
-                } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(!isNullOrUndefined(cell.value) ? cell.colIndex : cell.colIndex - 1)) {
+                } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(cell.colIndex)) {
                     tCell.classList.add('e-colstot');
                 }
                 if (cell.cssClass) {

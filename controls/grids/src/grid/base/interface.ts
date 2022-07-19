@@ -588,6 +588,7 @@ export interface IGrid extends Component<HTMLElement> {
     isReact?: boolean;
     tableIndex?: number;
     isVue?: boolean;
+    isAngular?: boolean;
     adaptiveDlgTarget?: HTMLElement;
     parentDetails?: ParentDetails;
 
@@ -2409,6 +2410,7 @@ export interface IFilterArgs {
     isResponsiveFilter?: boolean;
     operator?: string;
     cancel?: boolean;
+    disableHtmlEncode?: boolean;
 }
 
 export interface PdfExportProperties {

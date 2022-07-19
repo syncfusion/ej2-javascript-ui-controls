@@ -3037,6 +3037,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    private setCSSClass(oldCSSClass: string): void {
+        if (this.cssClass) {
+            addClass([this.element], this.cssClass.split(' '));
+        }
+        if (oldCSSClass) {
+            removeClass([this.element], oldCSSClass.split(' '));
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      *
@@ -3105,6 +3114,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 break;
             case 'allowSelection':
                 this.notify(events.uiUpdate, { module: 'selection', enable: this.allowSelection });
+                break;
+            case 'cssClass':
+                this.setCSSClass(oldProp.cssClass);
                 break;
             case 'enableAutoFill':
                 if (this.selectionModule) {

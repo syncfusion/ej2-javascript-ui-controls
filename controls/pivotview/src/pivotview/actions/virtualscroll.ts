@@ -179,7 +179,7 @@ export class VirtualScroll {
                 this.parent.actionBeginMethod();  
                 this.parent.showWaitingPopup();
                 this.parent.scrollPosObject.vertical = section;
-                engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
+                this.parent.pageSettings.rowCurrentPage = engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;
                 this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
                     if (this.parent.dataType === 'pivot') {
@@ -216,7 +216,7 @@ export class VirtualScroll {
                 this.parent.showWaitingPopup();
                 let pivot: PivotView = this.parent;
                 pivot.scrollPosObject.horizontal = section;
-                engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;
+                this.parent.pageSettings.columnCurrentPage = engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;
                 let colStartPos: number = 0;
                 this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
                     if (pivot.dataType === 'pivot') {

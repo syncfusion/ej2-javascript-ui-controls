@@ -728,7 +728,7 @@ export class FormDesigner {
                 if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
                     let bounds: any = this.getCheckboxRadioButtonBounds(signatureField);
                     let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
-                    this.renderRadioButtonSpan(spanElement, bounds, zoomValue);
+                    // this.renderRadioButtonSpan(spanElement, bounds, zoomValue);
                 }
             }
             const point: PointModel = cornersPointsBeforeRotation(signatureField.wrapper.children[0]).topLeft;
@@ -743,8 +743,12 @@ export class FormDesigner {
         }
         return currentData;
     }
+    /* This method was commented for this task ID EJ2-61222, A method renderRadioButtonSpan was 
+        implemented and the values which was already taken from getCheckBoxRadioButtonBounds, 
+        are again calculated based on zoomValues and the size of the radio button was changed. 
+        This makes the radio button big in size. Refer previous task IDs EJ2-50668 and EJ2-57850 Where these lines were added. */
 
-    private renderRadioButtonSpan(spanElement: HTMLCollectionOf<Element>, bounds: any, zoomValue: number): void {
+    /* private renderRadioButtonSpan(spanElement: HTMLCollectionOf<Element>, bounds: any, zoomValue: number): void {
         for (let i: number = 0; i < spanElement.length; i++) {
             (spanElement as any)[i].style.width = Math.floor(bounds.width - 10) + "px";
             (spanElement as any)[i].style.height = Math.floor(bounds.height - 10) + "px";
@@ -788,6 +792,7 @@ export class FormDesigner {
 
         }
     }
+    */
     /**
      * @private
      */
@@ -887,6 +892,21 @@ export class FormDesigner {
                             (spanElement as any).style.borderWidth = "2px";
                         }
                     }
+                }
+                if (actualObject.formFieldAnnotationType === "SignatureField"){
+                    let signatureDiv = htmlElement.firstElementChild.firstElementChild as HTMLElement;
+                    let indicatorSpan = signatureDiv.nextElementSibling as HTMLElement;
+                    let bounds = this.getBounds(indicatorSpan as HTMLElement);
+                    var options : any= {
+                        height: element.actualSize.height , 
+                        width: element.actualSize.width,
+                        signatureIndicatorSettings : {
+                            text : indicatorSpan.textContent,
+                            width : bounds.width,
+                            height : bounds.height,
+                        }
+                    }
+                    this.updateSignatureIndicator(actualObject as any,options,signatureDiv);
                 }
                 var formFieldsData = JSON.parse(data);
                 for (let i: number = 0; i < formFieldsData.length; i++) {
@@ -1063,20 +1083,31 @@ export class FormDesigner {
             spanElement.id = "initialIcon" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
             this.setIndicatorText(spanElement, fieldText, this.pdfViewer.initialFieldSettings.initialIndicatorSettings.text, "Initial");
         } else {
+            spanElement.style.height = '';
+            spanElement.style.width = '';
             spanElement.id = "signIcon" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
             this.setIndicatorText(spanElement, fieldText, this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text, "Sign");
         }
+        spanElement.style.overflow = "hidden";
+        spanElement.style.whiteSpace =  "nowrap";
+        spanElement.style.padding = "2px 3px 2px 1px";
+        spanElement.style.boxSizing = "border-box";
+        let zoomValue : number = this.pdfViewerBase.getZoomFactor() as number;
+        spanElement.style.textAlign = "left";
+        spanElement.style.fontSize = ((fontSize * zoomValue) as number) + 'px';
+        let boundsOfSpan = this.getBounds(spanElement);
         spanElement.style.color = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.color) ? signatureField.signatureIndicatorSettings.color : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color;
         // eslint-disable-next-line
         spanElement.style.backgroundColor = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.backgroundColor) ? signatureField.signatureIndicatorSettings.backgroundColor : signatureFieldIndicatorBG;
+        spanElement.style.background = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.background) ? signatureField.signatureIndicatorSettings.background : spanElement.style.backgroundColor;
         spanElement.style.opacity = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.opacity) ? signatureField.signatureIndicatorSettings.opacity : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity;
         spanElement.style.position = "absolute";
-        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
-        spanElement.style.width = width * zoomValue + + 'px';
-        spanElement.style.height = height * zoomValue + + 'px';
-        spanElement.style.textAlign = "center";
-        spanElement.style.fontSize = fontSize * zoomValue + 'px';
-        spanElement.style.paddingTop = "1px";
+        spanElement.style.width = width * zoomValue + 'px';
+        spanElement.style.height = height * zoomValue + 'px';
+        let widthNew : number = this.setHeightWidth(signatureFieldWidth,width,boundsOfSpan.width+fontSize,zoomValue);
+        spanElement.style.width = widthNew + (fontSize * zoomValue) + "px";
+        let heightNew : number = this.setHeightWidth(signatureFieldHeight,height,boundsOfSpan.height,zoomValue);
+        spanElement.style.height = heightNew + "px";
         if (!isPrint) {
             element.appendChild(spanElement);
         }
@@ -1092,7 +1123,75 @@ export class FormDesigner {
     private setIndicatorText(spanElement: any, fieldText: any, indicatorText: string, defaultText: string): void {
         spanElement.innerHTML = fieldText ? fieldText : indicatorText ? indicatorText : defaultText;
     }
-
+    private getBounds(htmlElement : HTMLElement) : any {
+        let clonedElement = htmlElement.cloneNode(true) as HTMLElement;
+        clonedElement.style.height = '';
+        clonedElement.style.width = '';
+        clonedElement.id = clonedElement.id +"_clonedElement";
+        document.body.appendChild(clonedElement);
+        let clone = document.getElementById(clonedElement.id);
+        let bounds = clone.getBoundingClientRect();
+        document.body.removeChild(clonedElement);
+        return bounds;
+    }
+    private updateSignatureIndicator(formFieldObject : any, options : any, htmlElement : any){
+        if (htmlElement !== null){
+            var fieldBounds = htmlElement.getBoundingClientRect();
+            var zoomValue = this.pdfViewerBase.getZoomFactor();
+            let spanElement = htmlElement.nextElementSibling;
+            let objIndicatorSettings: SignatureIndicatorSettings = formFieldObject.signatureIndicatorSettings;
+            let indicatorSettings : SignatureIndicatorSettings = options.signatureIndicatorSettings;
+            spanElement.style.width = '';
+            spanElement.style.height = '';
+            if(indicatorSettings.text !== undefined){
+                this.setIndicatorText(spanElement, indicatorSettings.text, indicatorSettings.text, "Sign");
+                objIndicatorSettings.text = indicatorSettings.text;
+            }
+            if(indicatorSettings.fontSize){
+                spanElement.style.fontSize = indicatorSettings.fontSize >  formFieldObject.height / 2 ? 10 : indicatorSettings.fontSize * zoomValue + "px"; 
+                objIndicatorSettings.fontSize = indicatorSettings.fontSize;
+        }
+            let bounds = this.getBounds(spanElement);
+            if(indicatorSettings.color){
+                spanElement.style.color = indicatorSettings.color;
+                objIndicatorSettings.color = this.nameToHash(indicatorSettings.color);
+            }
+            if(indicatorSettings.backgroundColor){
+                spanElement.style.backgroundColor = indicatorSettings.backgroundColor;
+                objIndicatorSettings.backgroundColor = this.nameToHash(indicatorSettings.backgroundColor);
+            }
+            if(indicatorSettings.opacity){
+                spanElement.style.opacity = indicatorSettings.opacity;
+                objIndicatorSettings.opacity = indicatorSettings.opacity;
+            }
+            if(indicatorSettings.width || options.width || indicatorSettings.text){
+                let width :number = this.setHeightWidth(fieldBounds.width,indicatorSettings.width,bounds.width,zoomValue);
+                spanElement.style.width = width +(objIndicatorSettings.fontSize*zoomValue)+ "px";
+                objIndicatorSettings.width = width;
+            }
+            if(indicatorSettings.height || options.height|| indicatorSettings.text){
+                let height : number = this.setHeightWidth(fieldBounds.height,indicatorSettings.height,bounds.height, zoomValue);
+                spanElement.style.height = height + "px";
+                objIndicatorSettings.height = height;
+            }   
+            this.updateSignatureFieldProperties(formFieldObject, htmlElement, formFieldObject.isPrint);
+            formFieldObject.signatureIndicatorSettings = objIndicatorSettings;
+            return formFieldObject;
+        }
+    }
+    private setHeightWidth(fieldBound : number, indicatorBound :number , referenceBound :number, zoomValue :number ) :number{
+        let heightOrWidth :number;
+        if(fieldBound / 2 > indicatorBound && referenceBound < indicatorBound){
+            heightOrWidth = indicatorBound * zoomValue;
+         }
+         else if (referenceBound <= fieldBound / 2){
+            heightOrWidth = referenceBound * zoomValue ;
+         }
+         else{
+            heightOrWidth = fieldBound/2 * zoomValue;
+         }
+         return heightOrWidth;
+     }  
     /**
      * @private
      */
@@ -2030,7 +2129,17 @@ export class FormDesigner {
             }
         }
     }
-
+    public getSignatureBackground(color: string) {
+        if (color.includes('#')) {
+            if (color.length > 8) {
+                color = color.slice(0, -2) + '60';
+            }
+            else {
+                color += '60'
+            }
+        }
+        return color;
+    }
     private formFieldPropertyChange(formFieldObject: PdfFormFieldBaseModel,
         options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings, htmlElement: HTMLElement): void {
         let isValueChanged: boolean = false, isFontFamilyChanged: boolean = false, isFontSizeChanged: boolean = false, isFontStyleChanged: boolean = false, isColorChanged: boolean = false,
@@ -2089,6 +2198,7 @@ export class FormDesigner {
         }
         if (options.backgroundColor) {
             let backColor = this.colorNametoHashValue(options.backgroundColor);
+            backColor = this.getSignatureBackground(backColor);
             if (formFieldObject.backgroundColor !== backColor) {
                 isBackgroundColorChanged = true;
                 oldValue = formFieldObject.backgroundColor;
@@ -2412,6 +2522,9 @@ export class FormDesigner {
                     }
                 }
             }
+        }
+        if (formFieldObject.formFieldAnnotationType === 'SignatureField' && (options as any).signatureIndicatorSettings){
+            formFieldObject = this.updateSignatureIndicator(formFieldObject as any,options as any, htmlElement);
         }
         this.updateSessionFormFieldProperties(formFieldObject);
         let formField: FormFieldModel = {
@@ -3055,7 +3168,9 @@ export class FormDesigner {
         }
         inputElement.style.color = obj.color ? obj.color : 'black';
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
-        inputElement.style.backgroundColor = isPrint ? 'transparent' : (obj.backgroundColor ? obj.backgroundColor : '#FFE48559');
+        let background = obj.backgroundColor ? obj.backgroundColor : '#FFE48559';
+        background = this.getSignatureBackground(background);
+        inputElement.style.backgroundColor = isPrint ? 'transparent' : background;
         if (obj.isReadonly) {
             (inputElement as HTMLInputElement).disabled = true;
             inputElement.style.cursor = 'default';
@@ -3498,7 +3613,7 @@ export class FormDesigner {
     public updateFormFieldCollections(formFieldObject: PdfFormFieldBaseModel): void {
         let formField: FormFieldModel = {
             id: formFieldObject.id.split('_')[0], name: (formFieldObject as PdfFormFieldBaseModel).name, value: (formFieldObject as PdfFormFieldBaseModel).value,
-            type: formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily, isMultiline: formFieldObject.isMultiline,
+            type: (formFieldObject as any).type  ? (formFieldObject as any).type : formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily, isMultiline: formFieldObject.isMultiline,
             fontSize: formFieldObject.fontSize, fontStyle: formFieldObject.fontStyle as unknown as FontStyle, color: (formFieldObject as PdfFormFieldBaseModel).color ? (formFieldObject as PdfFormFieldBaseModel).color : this.getRgbToHex((formFieldObject as any).fontColor), backgroundColor: typeof (formFieldObject as PdfFormFieldBaseModel).backgroundColor === 'string' ? (formFieldObject as PdfFormFieldBaseModel).backgroundColor : this.getRgbToHex((formFieldObject as PdfFormFieldBaseModel).backgroundColor),
             alignment: (formFieldObject as PdfFormFieldBaseModel).alignment ? (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign : (formFieldObject as any).textAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired,
             isPrint: formFieldObject.isPrint, isSelected: formFieldObject.isSelected, isChecked: formFieldObject.isChecked, tooltip: (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound ? formFieldObject.bounds : (formFieldObject as any).lineBound, thickness: formFieldObject.thickness, borderColor: typeof (formFieldObject as PdfFormFieldBaseModel).borderColor === 'string' ? (formFieldObject as PdfFormFieldBaseModel).borderColor : this.getRgbToHex((formFieldObject as PdfFormFieldBaseModel).borderColor), pageIndex: !isNullOrUndefined(formFieldObject.pageNumber) ? formFieldObject.pageNumber : formFieldObject.pageIndex

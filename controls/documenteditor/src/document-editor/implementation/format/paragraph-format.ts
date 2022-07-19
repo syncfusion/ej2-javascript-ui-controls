@@ -307,7 +307,7 @@ export class WParagraphFormat {
         const docParagraphFormat: WParagraphFormat = this.getDocumentParagraphFormat();
         let isInsideBodyWidget: boolean = true;
         if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
-            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget ||
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BlockContainer ||
                 this.ownerBase.containerWidget instanceof TableCellWidget;
         }
         let isPaste: boolean = !isNullOrUndefined(this.ownerBase) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)

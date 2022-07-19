@@ -162,6 +162,7 @@ export class DetailRow {
                 this.lastrowcell = true;
             }
             this.aria.setExpand(target as HTMLElement, true);
+            target.firstElementChild.setAttribute('title', 'expanded');
         } else {
             if (this.isDetailRow(nextRow)) {
                 nextRow.style.display = 'none';
@@ -176,6 +177,7 @@ export class DetailRow {
             }
             rowObj.isExpand = false;
             this.aria.setExpand(target as HTMLElement, false);
+            target.firstElementChild.setAttribute('title', 'collapsed');
         }
         if (!isNullOrUndefined(gObj.detailTemplate)) {
             gObj.updateVisibleExpandCollapseRows();
@@ -327,9 +329,12 @@ export class DetailRow {
         case 'enter':
             if (this.parent.isEdit) { return; }
             // eslint-disable-next-line no-case-declarations
-            const element: HTMLElement = this.focus.getFocusedElement();
-            if (!(<Element>e.target).classList.contains('e-detailrowcollapse') &&
-                !(<Element>e.target).classList.contains('e-detailrowexpand')) { break; }
+            let element: HTMLElement = this.focus.getFocusedElement();
+            if (element.classList.contains('e-icon-grightarrow') || element.classList.contains('e-icon-gdownarrow')) {
+                element = element.parentElement;
+            }
+            if (!element.classList.contains('e-detailrowcollapse') &&
+                !element.classList.contains('e-detailrowexpand')) { break; }
             this.toogleExpandcollapse(element);
             break;
         }

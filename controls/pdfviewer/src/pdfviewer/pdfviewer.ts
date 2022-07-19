@@ -5830,6 +5830,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Font size': 'Font Size',
         'Free Text': 'Free Text',
         'Import Failed': 'Invalid JSON file type or file name; please select a valid JSON file',
+        'Import PDF Failed': 'Invalid PDF file type or PDF file not found. Please select a valid PDF file',
         'File not found': 'Imported JSON file is not found in the desired location',
         'Export Failed': 'Export annotations action has failed; please ensure annotations are added properly',
         'of': 'of ',
@@ -8193,6 +8194,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.drawing.clearSelectorLayer(pageId);
         this.viewerBase.isAnnotationSelect = false;
         this.viewerBase.isFormFieldSelect = false;
+        let module: any = this.annotationModule.textMarkupAnnotationModule;
+        if (module) {
+            const annotationSelect: number = module.selectTextMarkupCurrentPage;
+            this.annotationModule.textMarkupAnnotationModule.clearCurrentSelectedAnnotation();
+            this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect);
+        }
         this.enableServerDataBinding(allowServerDataBind, true);
     } 
 

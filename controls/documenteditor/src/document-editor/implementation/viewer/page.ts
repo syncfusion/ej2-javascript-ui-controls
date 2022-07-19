@@ -1497,6 +1497,10 @@ export class TableWidget extends BlockWidget {
      * @private
      */
      public isContainInsideTable: boolean = false;
+      /**
+     * @private
+     */
+    public footnoteElement: FootnoteElementBox[];
      /**
       * @private
       */
@@ -1720,7 +1724,7 @@ export class TableWidget extends BlockWidget {
      * @private
      */
     /* eslint-disable  */
-    public calculateGrid(): void {
+    public calculateGrid(isInsertRow?: boolean): void {
         let tempGrid: number[] = [];
         let tempSpanDecimal: number[] = [];
         let spannedCells: TableCellWidget[] = [];
@@ -1826,7 +1830,7 @@ export class TableWidget extends BlockWidget {
         }
         tempGrid.sort((a: number, b: number) => { return a - b; });
         tempSpanDecimal.sort((a: number, b: number) => { return a - b; });
-        if (this.tableHolder.columns.length > 0 && tempGrid.length - 1 !== this.tableHolder.columns.length) {
+        if (this.tableHolder.columns.length > 0 && (tempGrid.length - 1 !== this.tableHolder.columns.length || isInsertRow)) {
             this.updateColumnSpans(tempGrid, tableWidth, tempSpanDecimal);
         }
         this.tableCellInfo.clear();
@@ -2292,6 +2296,7 @@ export class TableWidget extends BlockWidget {
         this.updateRowIndex(startIndex);
         this.isGridUpdated = false;
         if (isInsertRow) {
+            this.calculateGrid(true);
             this.buildTableColumns();
         }
         this.isGridUpdated = true;
@@ -5656,6 +5661,20 @@ export class ShapeElementBox extends ShapeBase {
         }
         if (this.margin) {
             shape.margin = this.margin.clone();
+        }
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    shape.revisions.push(revision.clone());
+                }
+            }
+        } else {
+            if (this.revisions.length > 0) {
+                shape.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                shape.removedIds = this.removedIds.slice();
+            }
         }
         return shape;
     }

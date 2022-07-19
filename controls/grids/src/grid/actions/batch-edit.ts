@@ -257,10 +257,24 @@ export class BatchEdit {
         let args: BatchCancelArgs = {
             requestType: 'batchCancel', rows: this.parent.getRowsObject()
         };
-        gObj.notify(events.batchCancel, {
-            rows: this.parent.getRowsObject().length ? this.parent.getRowsObject() :
-                [new Row<Column>({ isDataRow: true, cells: [new Cell<Column>({ isDataCell: true, visible: true })] })]
-        });
+        if (!this.parent.isFrozenGrid()) {
+            gObj.notify(events.batchCancel, {
+                rows: this.parent.getRowsObject().length ? this.parent.getRowsObject() :
+                    [new Row<Column>({ isDataRow: true, cells: [new Cell<Column>({ isDataCell: true, visible: true })] })]
+            });
+        } else {
+            if (this.parent.getRowsObject().length) {
+                gObj.notify(events.batchCancel, { rows: this.parent.getRowsObject(),
+                    args: { isFrozen: true } });
+            }
+            if (this.parent.getMovableRowsObject().length) {
+                gObj.notify(events.batchCancel, { rows: this.parent.getMovableRowsObject() });
+            }
+            if (this.parent.getFrozenRightRowsObject().length) {
+                gObj.notify(events.batchCancel, { rows: this.parent.getFrozenRightRowsObject(),
+                    args: { renderFrozenRightContent: true } });
+            }
+        }
         gObj.selectRow(this.cellDetails.rowIndex);
         this.refreshRowIdx();
         gObj.notify(events.toolbarRefresh, {});

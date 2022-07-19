@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I388456` - Now, when an empty span tag is loaded in the Rich Text Editor, the text displays properly.
+
+- `#I388270` - Now, Script error is not thrown when we click background color toolbar of the RTE, which is rendered inside a table.
+
 ## 20.2.38 (2022-07-12)
 
 ### RichTextEditor

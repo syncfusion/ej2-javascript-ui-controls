@@ -480,6 +480,37 @@ describe('insert image', () => {
         expect(imageString).toBeDefined(imageUrl);
     });    
 });
+describe('Character Formatting of Heading', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSfdtExport: true });
+        DocumentEditor.Inject(Editor, Selection);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((): void => {
+        if (editor) {
+            editor.destroy();
+        }
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+    });
+    it('changing from Normal to heading 1', () => {
+        editor.editor.insertText('Syncfusion')
+        editor.selection.selectAll();
+        editor.selection.characterFormat.fontFamily = 'Algerian'
+        editor.editor.applyStyle("Heading 1", true);
+        editor.selection.selectAll();
+        expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
+    });
+});
 // describe("Paste Validation", () => {
 //     let editor: DocumentEditor = undefined;
 //     let viewer: LayoutViewer;

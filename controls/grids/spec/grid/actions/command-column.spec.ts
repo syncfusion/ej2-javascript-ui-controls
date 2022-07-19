@@ -17,9 +17,10 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { Page } from '../../../src/grid/actions/page';
 
 
-Grid.Inject(Group, Sort,DetailRow, Filter, Reorder, CommandColumn, Edit, VirtualScroll);
+Grid.Inject(Group, Sort,DetailRow, Filter, Reorder, CommandColumn, Edit, VirtualScroll, Page);
 
 describe('Command Column ', () => {
 
@@ -648,4 +649,40 @@ describe('Command Column ', () => {
             gridObj = commandClick = null;
         });
     });
+
+    describe('EJ2-59729 - Memory leak issue on Command column => ', function () {
+        let gridObj: Grid;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data,
+                height: 300,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    { headerText: 'Manage Records', width: 160,
+                    commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                }
+                ],
+            }, done);
+        });
+
+        it('goto page 1', (done: Function) => {
+            let dataBound = (args: Object): void => {
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.goToPage(2);
+        });
+  
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

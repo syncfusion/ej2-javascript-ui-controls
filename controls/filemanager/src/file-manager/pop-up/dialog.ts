@@ -634,11 +634,18 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
         ];
         break;
     case 'MultipleFileDetails':
+        let index: number;
         options.dialogName = 'File Details';
-        strArr = details.name.split(',').map((val: string) => {
-            const index: number = val.indexOf('.') + 1;
-            return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
+        strArr = parent.itemData.map((val: FileDetails) => {
+            index = val.name.indexOf('.') + 1;
+            return (index === 0 && (!val.isFile)) ? 'Folder' : ((index !== 0) ? val.name.substr(index).replace(' ', '') : 'undetermined');
         });
+        if (strArr[0] == undefined) {
+            strArr = details.name.split(',').map((val: string) => {
+                index = val.indexOf('.') + 1;
+                return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
+            });
+        }
         fileType = strArr.every((val: string, i: number, arr: string[]) => val === arr[0]) ?
             ((strArr[0] === 'Folder') ? 'Folder' : strArr[0].toLocaleUpperCase() + ' Type') : 'Multiple Types';
         location = details.location;

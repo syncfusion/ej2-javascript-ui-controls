@@ -2,7 +2,7 @@
 import { RevisionType } from '../../base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget } from '../viewer/page';
+import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
@@ -354,6 +354,10 @@ export class Revision {
         this.owner.editor.unLinkFieldCharacter(element);
         let elementIndex: number = element.line.children.indexOf(element);
         element.line.children.splice(elementIndex, 1);
+        let paraFloatingElementIndex: number = element.line.paragraph.floatingElements.indexOf(element as ShapeBase);
+        element.line.paragraph.floatingElements.splice(paraFloatingElementIndex, 1);
+        let blockFloatingElementIndex: number = element.line.paragraph.bodyWidget.floatingElements.indexOf(element as ShapeBase);
+        element.line.paragraph.bodyWidget.floatingElements.splice(blockFloatingElementIndex, 1);
         this.owner.editor.removeEmptyLine(paraWidget);
     }
 

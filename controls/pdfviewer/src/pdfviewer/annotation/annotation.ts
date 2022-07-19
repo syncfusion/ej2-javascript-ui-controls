@@ -2177,13 +2177,15 @@ export class Annotation {
             this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
         if (isAnnotationDelete) {
-            let isEdited: boolean = false;
-            if (this.pdfViewer.annotationCollection && this.pdfViewer.annotationCollection.length > 0 && this.pdfViewer.signatureCollection && this.pdfViewer.signatureCollection.length > 0) {
-                isEdited = true;
-            }
-            if (!isEdited && this.pdfViewer.isDocumentEdited) {
-                this.pdfViewerBase.updateDocumentEditedProperty(false);
-            }
+             //This below lines are commented for the below task -EJ2-61754-IsDocumentEdited API is not Properly working for delete annotations
+            //Also refer EJ2-55205-The isDocumentEdited property is False on adding handwritten signature
+            // let isEdited: boolean = false;
+            // if (this.pdfViewer.annotationCollection && this.pdfViewer.annotationCollection.length > 0 && this.pdfViewer.signatureCollection && this.pdfViewer.signatureCollection.length > 0) {
+            //     isEdited = true;
+            // }
+            // if (!isEdited && this.pdfViewer.isDocumentEdited) {
+                this.pdfViewerBase.updateDocumentEditedProperty(true);
+            // }
         }
     }
 
@@ -3646,6 +3648,9 @@ export class Annotation {
             eventTarget = eventTarget.parentElement;
         } else if (eventTarget.parentElement && eventTarget.parentElement.classList.contains('foreign-object')) {
             eventTarget = eventTarget.parentElement.parentElement.parentElement.parentElement;
+        }
+        else if (eventTarget.classList.contains('e-pdfviewer-formFields')) {
+            eventTarget = eventTarget.parentElement;
         }
         let pageString: any;
         if (eventTarget) {

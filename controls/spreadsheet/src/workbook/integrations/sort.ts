@@ -99,7 +99,7 @@ export class WorkbookSort {
         delete sortOptions.containsHeader;
         let sortDescriptors: SortDescriptor | SortDescriptor[] = sortOptions.sortDescriptors;
         const address: string = getRangeAddress(range);
-        getData(this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null, cell[1]).then((jsonData: { [key: string]: CellModel }[]) => {
+        getData(this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null, range[1]).then((jsonData: { [key: string]: CellModel }[]) => {
             const dataManager: DataManager = new DataManager(jsonData);
             const query: Query = new Query();
             if (Array.isArray(sortDescriptors)) { //multi-column sorting.

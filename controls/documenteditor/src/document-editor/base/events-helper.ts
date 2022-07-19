@@ -358,4 +358,11 @@ export interface XmlHttpRequestEventArgs {
      * @returns {boolean}
      */
     cancel: boolean
+    /**
+     * Gets the clipboard data which is to be converted as SFDT in the server-side.
+     *
+     * @default undefined
+     * @returns {object}
+     */
+    clipboardData?: object
 }

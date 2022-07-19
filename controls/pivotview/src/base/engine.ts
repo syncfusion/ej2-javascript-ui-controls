@@ -529,7 +529,7 @@ export class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString());
+                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), 1)).toString());
                                         }
                                         break;
                                     case 'Days':
@@ -3903,8 +3903,9 @@ export class PivotEngine {
                             }
                             for (let index of indexCollection) {
                                 let currentSet: IAxisSet = data[index[0]][index[1]] as IAxisSet;
+                                let actualValue = isNullOrUndefined((selectedRowValues[index[1]] as IAxisSet).actualValue) ? 0 : (selectedRowValues[index[1]] as IAxisSet).actualValue;
                                 // let cVal: number = currentSet.value - (selectedRowValues[index[1]] as IAxisSet).value;
-                                let cVal: number = currentSet.actualValue - (selectedRowValues[index[1]] as IAxisSet).actualValue;
+                                let cVal: number = (isNullOrUndefined(currentSet.actualValue) ? 0 : currentSet.actualValue) - actualValue;
                                 cVal = isNaN(cVal) ? 0 : (currentSet.value === 0 && (selectedRowValues[index[1]] as IAxisSet).value === 0) ? 0 : cVal;
                                 if (!this.aggregatedValueMatrix[index[0]]) {
                                     this.aggregatedValueMatrix[index[0]] = [];
@@ -3915,8 +3916,7 @@ export class PivotEngine {
                                 } else {
                                     // cVal = ((selectedRowValues[index[1]] as IAxisSet).value === 0 ?
                                     // 0 : (cVal / (selectedRowValues[index[1]] as IAxisSet).value));
-                                    cVal = ((selectedRowValues[index[1]] as IAxisSet).actualValue === 0 ?
-                                        0 : (cVal / (selectedRowValues[index[1]] as IAxisSet).actualValue));
+                                    cVal = (actualValue === 0 ? 0 : (cVal / actualValue));
                                     this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                                     currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent) : currentSet.formattedText;
                                 }
@@ -4125,7 +4125,9 @@ export class PivotEngine {
                                                 activeColumn[cln].valueSort[item.valueSort.levelName as string] &&
                                                 currentSet.axis === 'value' && currentSet.actualText === name) {
                                                 if (activeColumn[cln].type !== 'grand sum') {
-                                                    cVal += currentSet.value;
+                                                    if(!isNullOrUndefined(currentSet.value)) {
+                                                        cVal += currentSet.value;
+                                                    }
                                                     currentSet.formattedText = subTotal ? '' : this.getFormattedValue(cVal, name).formattedText;
                                                     if (!this.aggregatedValueMatrix[rln]) {
                                                         this.aggregatedValueMatrix[rln] = [];

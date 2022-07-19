@@ -420,7 +420,14 @@ export class CommentReviewPane {
 
     public layoutComments(): void {
         for (let i: number = 0; i < this.owner.documentHelper.comments.length; i++) {
-            this.commentPane.addComment(this.owner.documentHelper.comments[i]);
+            let comment: CommentElementBox = this.owner.documentHelper.comments[i];
+            if (isNullOrUndefined(comment.commentStart)
+                || isNullOrUndefined(comment.commentEnd)) {
+                this.owner.documentHelper.comments.splice(i, 1);
+                i--;
+                continue;
+            }
+            this.commentPane.addComment(comment);
         }
     }
 

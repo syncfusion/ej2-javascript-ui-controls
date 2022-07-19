@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I385707` - The issue with "Facing error while copying and pasting a folder within another folder in the MVC File Manager component" has been resolved.
+
+### File Manager
+
+#### Bug Fixes
+
+- `#F175723` - The issue with "The File Manager incorrectly shows Type of the selected items when an unidentified file type is selected" has been resolved.
+
 ## 19.2.56 (2021-08-17)
 
 ### File Manager

@@ -10,10 +10,8 @@
       box-shadow: none;
     }
 
-    & .e-find-dlg {
-      & .e-header {
-        font-weight: 500;
-      }
+    & .e-find-dlg .e-header {
+      font-weight: 500;
     }
 
     & .e-scrollbar {
@@ -634,11 +632,8 @@
       }
     }
 
-    & .e-datavalidation-dlg {
-
-      & .e-dlg-error {
-        color: $dlg-error-color;
-      }
+    & .e-datavalidation-dlg .e-dlg-error {
+      color: $dlg-error-color;
     }
   }
 

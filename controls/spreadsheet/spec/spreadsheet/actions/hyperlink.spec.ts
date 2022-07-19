@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { HyperlinkModel, Spreadsheet } from '../../../src';
-import { getFormatFromType, BeforeHyperlinkArgs } from '../../../src/index';
+import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat } from '../../../src/index';
 
 describe('Hyperlink ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -38,6 +38,7 @@ describe('Hyperlink ->', () => {
     });
 
     describe('UI Interaction ->', () => {
+        let sheet: any; let spreadsheet: any;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -53,7 +54,9 @@ describe('Hyperlink ->', () => {
                 helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
                 helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
-                expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink.address).toBe('http://www.google.com');
+                spreadsheet = helper.getInstance();
+                sheet = spreadsheet.sheets[0];
+                expect(sheet.rows[0].cells[0].hyperlink.address).toBe('http://www.google.com');
                 const td: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
                 expect(td.classList).toContain('e-hyperlink');
                 expect(td.classList).toContain('e-hyperlink-style');
@@ -65,14 +68,24 @@ describe('Hyperlink ->', () => {
 
         it('Open hyperlink', (done: Function) => {
             helper.setAnimationToNone('#spreadsheet_contextmenu');
-            helper.getInstance().beforeHyperlinkClick = (args: BeforeHyperlinkArgs): void => {
+            spreadsheet.beforeHyperlinkClick = (args: BeforeHyperlinkArgs): void => {
                 args.cancel = true;
                 expect((args.hyperlink as HyperlinkModel).address).toBe('http://www.google.com');
                 expect(args.address).toBe('A1');
                 expect(args.target).toBe('_blank');
             };
+            expect(sheet.rows[0].cells[0].style.color).toBe('#00e');
             helper.openAndClickCMenuItem(0, 0, [10]);
-            helper.getInstance().beforeHyperlinkClick = undefined;
+            expect(sheet.rows[0].cells[0].style.color).toBe('#551a8b');
+            spreadsheet.beforeHyperlinkClick = undefined;
+            done();
+        });
+
+        it('Set different color format', (done: Function) => {
+            spreadsheet.notify(setCellFormat, { style: { color: '#000000' }, onActionUpdate: true });
+            expect(sheet.rows[0].cells[0].style.color).toBe('#000000');
+            helper.invoke('undo');
+            expect(sheet.rows[0].cells[0].style.color).toBe('#551a8b');
             done();
         });
 
@@ -82,7 +95,7 @@ describe('Hyperlink ->', () => {
                 helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1].value = 'www.amazon.com';
                 helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
                 helper.click('.e-edithyperlink-dlg .e-footer-content button:nth-child(1)');
-                expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink.address).toBe('http://www.amazon.com');
+                expect(sheet.rows[0].cells[0].hyperlink.address).toBe('http://www.amazon.com');
                 expect(helper.invoke('getCell', [0, 0]).children[0].getAttribute('href')).toBe('http://www.amazon.com');
                 done();
             });
@@ -90,7 +103,7 @@ describe('Hyperlink ->', () => {
 
         it('Remove hyperlink', (done: Function) => {
             helper.openAndClickCMenuItem(0, 0, [11]);
-            expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink).toBeUndefined();
+            expect(sheet.rows[0].cells[0].hyperlink).toBeUndefined();
             expect(helper.invoke('getCell', [0, 0]).children[0]).toBeUndefined();
             done();
         });
@@ -98,7 +111,7 @@ describe('Hyperlink ->', () => {
         it('Hyperlink appplied to range', (done: Function) => {
             // Hyperlink appplied for given range - website
             helper.invoke('addHyperlink', ['www.syncfusion.com', 'A2:A4']);
-            expect(helper.getInstance().sheets[0].rows[2].cells[0].hyperlink).toBe('http://www.syncfusion.com');
+            expect(sheet.rows[2].cells[0].hyperlink).toBe('http://www.syncfusion.com');
             let tag: HTMLElement = helper.invoke('getCell', [3, 0]).children[0];
             expect(tag.classList).toContain('e-hyperlink');
             expect(tag.classList).toContain('e-hyperlink-style');
@@ -110,12 +123,12 @@ describe('Hyperlink ->', () => {
             expect(tag.classList).toContain('e-hyperlink');
             tag.click();
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A9:A9');
-                expect(helper.getInstance().sheets[0].rows[2].cells[4].hyperlink.address).toBe('A9');
+                expect(sheet.selectedRange).toBe('A9:A9');
+                expect(sheet.rows[2].cells[4].hyperlink.address).toBe('A9');
                 helper.invoke('selectRange', ['K1']);
                 // Hyperlink appplied - Empty Cell
                 helper.invoke('addHyperlink', ['www.syncfusion.com', 'K1']);
-                expect(helper.getInstance().sheets[0].rows[0].cells[10].hyperlink).toBe('http://www.syncfusion.com');
+                expect(sheet.rows[0].cells[10].hyperlink).toBe('http://www.syncfusion.com');
                 let value: HTMLElement = helper.invoke('getCell', [0, 10]).children[0];
                 expect(value.textContent).toContain('http://www.syncfusion.com');
                 expect(value.classList).toContain('e-hyperlink');
@@ -128,7 +141,7 @@ describe('Hyperlink ->', () => {
 
         it('Remove hyperlink from empty cell', (done: Function) => {
             helper.openAndClickCMenuItem(0, 10, [11]);
-            expect(helper.getInstance().sheets[0].rows[0].cells[10].hyperlink).toBeUndefined();
+            expect(sheet.rows[0].cells[10].hyperlink).toBeUndefined();
             expect(helper.invoke('getCell', [0, 10]).children[0]).toBeUndefined();
             done();
         });
@@ -184,15 +197,10 @@ describe('Hyperlink ->', () => {
             helper.invoke('selectRange', ['C1']);
             helper.invoke('addHyperlink', [{ address: 'A10' }, 'C1']);
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 2]);
-            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
-            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            helper.openAndClickCMenuItem(0, 2, [10]);
             setTimeout(() => {
-                helper.click('#' + helper.id + '_contextmenu li:nth-child(10)');
-                setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A10:A10');
-                    done();
-                });
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A10:A10');
+                done();
             });
         });
     });

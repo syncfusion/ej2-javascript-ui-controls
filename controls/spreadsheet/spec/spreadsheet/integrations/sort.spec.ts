@@ -284,9 +284,17 @@ describe('Spreadsheet sorting module ->', () => {
             });
         });
 
-        describe('I309407, I301769 ->', () => {
+        describe('I309407, I301769, EJ2-61765 ->', () => {
             beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+                model = {
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    created: (args: any) => {
+                        for (let index: number = 1; index <= 10; index++) {
+                            helper.getInstance().sheets[0].rows[index].cells[1].format = 'dd/MM/yyyy';
+                        }
+                    }
+                } as any;
+                helper.initializeSpreadsheet(model, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
@@ -316,6 +324,22 @@ describe('Spreadsheet sorting module ->', () => {
                         done();
                     }, 10);
                 }, 10);
+            });
+            it('Public method sort is not working as expected for Date', (done: Function) => {
+                const sheet: SheetModel = helper.getInstance().getActiveSheet();
+                helper.invoke('sort', [{ sortDescriptors: { order: 'Ascending', field: 'B' } }, 'B2:B52']).then((args: SortEventArgs) => {
+                    helper.invoke('getData', [args.range]).then((values: Map<string, CellModel>) => {
+                        expect(values.get('B2').value.toString()).toEqual('41674');
+                        expect(getCell(1, 1, sheet).value.toString()).toEqual('41674');
+                        expect(values.get('B3').value.toString()).toEqual('41684');
+                        expect(getCell(2, 1, sheet).value.toString()).toEqual('41684');
+                        expect(values.get('B10').value.toString()).toEqual('41964');
+                        expect(getCell(9, 1, sheet).value.toString()).toEqual('41964');
+                        expect(values.get('B11').value.toString()).toEqual('41973');
+                        expect(getCell(10, 1, sheet).value.toString()).toEqual('41973');
+                        done();
+                    });
+                });
             });
         });
 

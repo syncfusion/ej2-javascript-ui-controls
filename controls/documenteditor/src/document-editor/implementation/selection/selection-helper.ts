@@ -2208,6 +2208,8 @@ export class Hyperlink {
         } else if ((lowercase.indexOf('ref ') === 0 && lowercase.match('\\h'))) {
             this.parseFieldValues(fieldCode.substring(4).trim(), false);
             this.isCrossRefField = true;
+        } else if (lowercase.indexOf('pageref') === 0) {
+            this.parseFieldValues(fieldCode.substring(7).trim(), false);
         }
     }
     private parseFieldValues(value: string, isHyperlink: boolean): void {

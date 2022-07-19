@@ -409,9 +409,13 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
         let previousParent: HTMLElement;
         let insertElem: HTMLElement;
         while (tempNode.firstChild) {
-            const emptyElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.blockInlineEmptyNodes);
-            for (let i: number = 0; i < emptyElem.length; i++) {
-                emptyElem[i].innerHTML = '<br>';
+            const emptyBlockElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.blockEmptyNodes);
+            for (let i: number = 0; i < emptyBlockElem.length; i++) {
+                emptyBlockElem[i].innerHTML = '<br>';
+            }
+            const emptyInlineElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.inlineEmptyNodes);
+            for (let i: number = 0; i < emptyInlineElem.length; i++) {
+                emptyInlineElem[i].innerHTML = '&ZeroWidthSpace;';
             }
             if (rteObj.enterKey !== 'BR' && ((tempNode.firstChild.nodeName === '#text' &&
             (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||

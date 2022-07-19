@@ -315,7 +315,7 @@ export function setPosition(
         } else {
             const swapRange: number[] = getSwapRange(range);
             if (swapRange[0] < frozenRow || swapRange[1] < frozenCol) {
-                if (!ele.classList.contains('e-multi-range')) {
+                if (ele && !ele.classList.contains('e-multi-range')) {
                     ele.classList.add('e-hide');
                 }
                 const ranges: number[][] = [];

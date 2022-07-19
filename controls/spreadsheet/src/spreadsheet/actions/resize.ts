@@ -5,7 +5,7 @@ import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange } from
 import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
-import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs } from '../../workbook/common/index';
+import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected } from '../../workbook/common/index';
 import { rowFillHandler, hideShow } from '../../workbook/common/event';
 
 /**
@@ -260,7 +260,7 @@ export class Resize {
                     if (e.type === 'dblclick' && isHiddenRow(sheet, prevIdx)) {
                         const selectRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
                         let eventArgs: HideShowEventArgs;
-                        if (prevIdx <= selectRange[2] && prevIdx > selectRange[0]) {
+                        if (prevIdx <= selectRange[2] && prevIdx > selectRange[0] && isRowSelected(sheet, selectRange)) {
                             eventArgs = { startIndex: selectRange[0], endIndex: selectRange[2], hide: false, autoFit: true };
                         } else {
                             eventArgs = { startIndex: prevIdx, endIndex: prevIdx, hide: false, autoFit: true };

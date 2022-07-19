@@ -171,13 +171,13 @@ export class PageSetupDialog {
         rightMarginDiv.appendChild(rightContainer);
         element.appendChild(marginDiv);
 
-        this.topMarginBox = new NumericTextBox({ value: 71, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Top') });
+        this.topMarginBox = new NumericTextBox({ value: 71, max: 1584, min: -1584, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Top') });
         this.topMarginBox.appendTo(topTextBox);
-        this.leftMarginBox = new NumericTextBox({ value: 73, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Left') });
+        this.leftMarginBox = new NumericTextBox({ value: 73, max: 1584, min: 0, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Left') });
         this.leftMarginBox.appendTo(leftTextBox);
-        this.bottomMarginBox = new NumericTextBox({ value: 72, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Bottom') });
+        this.bottomMarginBox = new NumericTextBox({ value: 72, max: 1584, min: -1584, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Bottom') });
         this.bottomMarginBox.appendTo(bottomTextBox);
-        this.rightMarginBox = new NumericTextBox({ value: 74, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Right') });
+        this.rightMarginBox = new NumericTextBox({ value: 74, max: 1584, min: 0, width: 170, decimals: 2, floatLabelType:'Always', placeholder: locale.getConstant('Right') });
         this.rightMarginBox.appendTo(rightTextBox);
 
         const orientationDiv: HTMLDivElement = createElement('div') as HTMLDivElement;

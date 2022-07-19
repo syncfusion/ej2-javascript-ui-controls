@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-390764` - The issue of is document edited API is false while editing a document has been resolved.
+- `#SF-388086` - The issue of replied comments merging with other annotations has been resolved.
+- `#SF-379142`,`#SF-391296` - The x,y bounds of the form fields are proper while adding the form field.
+- `#SF-386887` - The issue with radio button alignment with different zoom settings has been resolved.
+- `#F175614` - For load failed and PDF file path not found errors, an error message is now displayed.
+- `#SF-379627` - formFieldMouseover and formFieldMouseLeave is now trigger properly.
+- `#SF-387260` - Now Signature Indicator Properties can be modified Programmatically in DOM.
+- `#SF-384670` - Now that the type has been fixed, the signature value for the second time has been updated using form field collections.
+- `#SF-382941`,`#SF-383132` - Now duplicate form fields able to select, move, delete and edit after deleting original form fields.
+
 ## 20.2.38 (2022-07-12)
 
 ### PDF Viewer
@@ -26,6 +42,7 @@
 - `#SF-272377` - Now, the position and size of the arrow shapes in the shape annotation are same as in the downloaded document.
 - `#F173953` - Now, Script error have been resolved.
 - `#SF-378591` - The issue with the comment panel not opening after disabling and enabling again has been fixed.
+- `#SF-386545` - Now, the signature field color will appear with opacity while scrolling down long document.
 
 ## 20.2.36 (2022-06-30)
 

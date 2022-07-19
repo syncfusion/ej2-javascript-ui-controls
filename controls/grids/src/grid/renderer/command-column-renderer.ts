@@ -7,7 +7,7 @@ import { IGrid, ICellRenderer, CommandModel } from '../base/interface';
 import { CommandButtonType } from '../base/enum';
 import { CellRenderer } from './cell-renderer';
 import { appendChildren } from '../base/util';
-import { destroy } from '../base/constant';
+import { destroy, commandColumnDestroy } from '../base/constant';
 
 /**
  * `CommandColumn` used to render command column in grid
@@ -28,15 +28,35 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
         this.parent.on(destroy, this.destroyButtons, this);
+        this.parent.on(commandColumnDestroy, this.destroyButtons, this);
     }
 
-    private destroyButtons(): void {
+    private destroyButtons(args: { type: string }): void {
         for (let i: number = 0; i < this.childRefs.length; i++) {
             if (this.childRefs[i] && !this.childRefs[i].isDestroyed) {
                 this.childRefs[i].destroy();
+                if (this.childRefs[i].element) {
+                    this.childRefs[i].element.innerHTML = '';
+                }
             }
         }
-        this.parent.off(destroy, this.destroyButtons);
+        if (args.type === 'paging') {
+            let elem: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-unboundcell');
+            if (elem.length) {
+                for (let i: number = 0; i < elem.length; i++) {
+                    if (elem[i]) {
+                        if (elem[i].querySelector('.e-unboundcelldiv')) {
+                            elem[i].querySelector('.e-unboundcelldiv').innerHTML = '';
+                        }
+                        elem[i].innerHTML = '';
+                    }
+                }
+                elem = null;
+            }
+        } else {
+            this.parent.off(destroy, this.destroyButtons);
+            this.parent.off(commandColumnDestroy, this.destroyButtons);
+        }
     }
 
     /**

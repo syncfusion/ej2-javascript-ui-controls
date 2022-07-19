@@ -4174,7 +4174,7 @@ export class Editor {
         this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
         this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
-        const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SystemClipboard', headers: this.owner.headers, timeout: 0, cancel: false, withCredentials: false };
+        const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'SystemClipboard', headers: this.owner.headers, timeout: 0, cancel: false, withCredentials: false, clipboardData: formObject };
         this.owner.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
         if (httprequestEventArgs.cancel) {
             hideSpinner(this.owner.element);
@@ -6113,7 +6113,7 @@ export class Editor {
         }
         for (let i: number = 0; i < rowCount; i++) {
             let cellCountInfo: CellCountInfo = this.updateRowspan(row, rowPlacement === 'Below' ? endCell : startCell, rowPlacement);
-            let newRow: TableRowWidget = this.createRowAndColumn(cellCountInfo.count, i, index, table, true);
+            let newRow: TableRowWidget = this.createRowAndColumn(cellCountInfo.count, i, index, table);
             newRow.rowFormat.copyFormat(row.rowFormat);
             if (this.owner.enableTrackChanges) {
                 this.insertRevision(newRow.rowFormat, 'Insertion');
@@ -6407,7 +6407,7 @@ export class Editor {
         }
         return table;
     }
-    private createRowAndColumn(columns: number, rowIndex: number, index?: number, table?: TableWidget, isNewRow?: boolean): TableRowWidget {
+    private createRowAndColumn(columns: number, rowIndex: number, index?: number, table?: TableWidget): TableRowWidget {
         let tableWidget: TableWidget = table;
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         let tableRow: TableRowWidget = new TableRowWidget();
@@ -6422,7 +6422,7 @@ export class Editor {
                     startPara = ((tableWidget.childWidgets[index] as TableRowWidget).childWidgets[i] as TableCellWidget).childWidgets[0] as ParagraphWidget;
                 }
             }
-            let tableCell: TableCellWidget = this.createColumn(startPara, isNewRow);
+            let tableCell: TableCellWidget = this.createColumn(startPara, true);
             tableCell.index = i;
             tableCell.rowIndex = rowIndex;
             tableCell.containerWidget = tableRow;
@@ -6433,15 +6433,16 @@ export class Editor {
     private createColumn(paragraph: ParagraphWidget, isNewRow?: boolean): TableCellWidget {
         let tableCell: TableCellWidget = new TableCellWidget();
         let para: ParagraphWidget = new ParagraphWidget();
-        let textElementBox: TextElementBox=(paragraph.childWidgets[0] as LineWidget).children[0] as TextElementBox;
-            if(!isNullOrUndefined(textElementBox)){
-                para.characterFormat.copyFormat(textElementBox.characterFormat);
-            } else {
-                para.characterFormat.copyFormat(paragraph.characterFormat);
-            }
         if(isNewRow){
             para.paragraphFormat.copyFormat(paragraph.paragraphFormat);
             para.paragraphFormat.leftIndent = 0;
+            para.paragraphFormat.firstLineIndent = 0;
+            let elementBox: TextElementBox = (paragraph.childWidgets[0] as LineWidget).children[0] as TextElementBox;
+            if(!isNullOrUndefined(elementBox)){
+                para.characterFormat.copyFormat(elementBox.characterFormat);
+            } else {
+                para.characterFormat.copyFormat(paragraph.characterFormat);
+            }
         }
         para.containerWidget = tableCell;
         tableCell.childWidgets.push(para);
@@ -15329,7 +15330,7 @@ export class Editor {
                 }
             }
             let listWholeWidth: number;
-            if (element.nextElement instanceof ListTextElementBox) {
+            if (!isNullOrUndefined(element) && element.nextElement instanceof ListTextElementBox) {
                 listWholeWidth = element.width + element.nextElement.width;
             }
             if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {

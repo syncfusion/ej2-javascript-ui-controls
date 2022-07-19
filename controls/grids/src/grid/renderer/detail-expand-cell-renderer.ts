@@ -29,10 +29,14 @@ export class DetailExpandCellRenderer extends CellRenderer implements ICellRende
         if (attributes && !isNullOrUndefined(attributes['class'])) {
             node.className = '';
             node.className = attributes['class'];
-            node.appendChild(this.parent.createElement('div', { className: 'e-icons e-dtdiagonaldown e-icon-gdownarrow' }));
+            node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonaldown e-icon-gdownarrow', attrs: {
+                href: '#', 'title': 'expanded'
+            } }));
         } else {
 
-            node.appendChild(this.parent.createElement('div', { className: 'e-icons e-dtdiagonalright e-icon-grightarrow' }));
+            node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonalright e-icon-grightarrow', attrs: {
+                href: '#', 'title': 'collapsed'
+            } }));
         }
 
         return node;

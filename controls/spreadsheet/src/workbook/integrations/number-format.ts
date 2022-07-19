@@ -829,6 +829,10 @@ export class WorkbookNumberFormat {
     }
 
     public checkDateFormat(args: DateFormatCheckArgs): void {
+        if (args.processCustomDate) {
+            this.processCustomDate({} as NumberFormatArgs, args.cell);
+            return;
+        }
         if (isNullOrUndefined(args.value)) {
             return;
         }
@@ -966,7 +970,6 @@ export class WorkbookNumberFormat {
         this.parent.on(getFormattedCellObject, this.getFormattedCell, this);
         this.parent.on(checkDateFormat, this.checkDateFormat, this);
         this.parent.on(getFormattedBarText, this.formattedBarText, this);
-
     }
 
     /**

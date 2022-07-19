@@ -446,6 +446,9 @@ export class Render {
             if ((this.parent.isReact || this.parent.isVue) && !isNullOrUndefined(args) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
                 clearReactVueTemplates(this.parent, ['footerTemplate']);
             }
+            if (this.parent.isAngular && this.parent.allowGrouping && this.parent.groupSettings.captionTemplate) {
+                this.parent.destroyTemplate(['groupSettings_captionTemplate']);
+            }
             this.parent.notify(
                 events.dataReady,
                 extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates }, args));
@@ -492,7 +495,9 @@ export class Render {
             }
             this.parent.notify(events.toolbarRefresh, {});
             this.setRowCount(this.parent.getCurrentViewRecords().length);
-            this.parent.getDataModule().isQueryInvokedFromData = false;
+            if ('query' in e) {
+                this.parent.getDataModule().isQueryInvokedFromData = false;
+            }
         });
     }
 

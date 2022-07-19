@@ -6,6 +6,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { IGanttData, RowPosition, isCountRequired } from '../base/common';
 import { RowDropEventArgs, IParent } from '../base/interface';
 import { ITreeData } from '@syncfusion/ej2-treegrid';
+import { TaskFieldsModel } from '../models/models';
 
 
 /**
@@ -454,6 +455,7 @@ export class RowDD {
         const droppedRecord: IGanttData = this.droppedRecord;
         const proxy: Gantt = this.parent;
         let tempDataSource: Object; let idx: number;
+        const ganttFields: TaskFieldsModel = this.parent.taskFields;
         if (this.parent.dataSource instanceof DataManager) {
             tempDataSource = getValue('dataOperation.dataArray', this.parent);
         } else {
@@ -461,7 +463,12 @@ export class RowDD {
         }
         if ((tempDataSource as IGanttData[]).length > 0 && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem)) {
             for (let i: number = 0; i < Object.keys(tempDataSource).length; i++) {
-                if (tempDataSource[i][this.parent.taskFields.child] === droppedRecord.taskData[this.parent.taskFields.child]) {
+               if (!isNullOrUndefined(droppedRecord.taskData[ganttFields.child]) && 
+                    tempDataSource[i][ganttFields.child] === droppedRecord.taskData[ganttFields.child]) {
+                    idx = i;
+                }
+                else if (isNullOrUndefined(droppedRecord.taskData[ganttFields.child]) &&
+                        droppedRecord.taskData[ganttFields.id] === tempDataSource[i][ganttFields.id]) {
                     idx = i;
                 }
             }

@@ -294,8 +294,14 @@ export class SheetRender implements IRenderer {
             if (!this.parent) { return; }
             const content: HTMLElement = this.parent.getMainContent();
             const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
-            if (sheetContent.childElementCount > 2 && sheetContent.querySelector('.e-header-panel') !== this.headerPanel) {
-                removeAllChildren(sheetContent);
+            if (sheetContent.childElementCount && sheetContent.querySelector('.e-header-panel') !== this.headerPanel) {
+                const sheetChild: HTMLCollection = sheetContent.children;
+                for (let i: number = 0; i < sheetChild.length; i++) {
+                    if (!sheetChild[i].classList.contains('e-frozen-row') && !sheetChild[i].classList.contains('e-frozen-column') && 
+                        !sheetChild[i].classList.contains('e-ss-overlay')) {
+                        sheetContent.removeChild(sheetChild[i]);
+                    }
+                }
             }
             sheetContent.appendChild(frag);
             sheetContent.style.backgroundColor = '';

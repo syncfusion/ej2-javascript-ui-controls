@@ -1,6 +1,6 @@
-import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell, getSheet, getSheetIndex } from '../base/index';
+import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell, getSheet } from '../base/index';
 import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count, getRangeIndexes, getSheetIndexFromAddress } from '../common/index';
-import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs } from '../common/index';
+import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
 /**
@@ -269,21 +269,21 @@ export class WorkbookFindAndReplace {
     }
     private nextCommon(findNextArgs: FindNext): boolean {
         const sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex];
-        if (sheet.rows[findNextArgs.rowIndex]) {
-            const rowCol: CellModel = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+        const row: ExtendedRowModel = sheet.rows[findNextArgs.rowIndex];
+        if (row && (!row.isFiltered || !row.hidden)) {
+            const rowCol: CellModel = row.cells[findNextArgs.colIndex];
             if (rowCol && rowCol.value) {
-                if (sheet.isProtected && ( rowCol.isLocked || rowCol.isLocked === undefined ) && sheet.protectSettings.selectUnLockedCells) {
+                if (sheet.isProtected && (rowCol.isLocked || rowCol.isLocked === undefined ) && sheet.protectSettings.selectUnLockedCells) {
                     return false;
                 }
-                const cellType: CellModel = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+                const cellType: CellModel = row.cells[findNextArgs.colIndex];
                 if (cellType) {
                     let cellval: string;
                     if (cellType.format) {
-                        const displayTxt: string = this.parent.getDisplayText(sheet.rows[findNextArgs.rowIndex].
-                            cells[findNextArgs.colIndex]);
+                        const displayTxt: string = this.parent.getDisplayText(row.cells[findNextArgs.colIndex]);
                         cellval = displayTxt;
                     } else {
-                        cellval = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex].value.toString();
+                        cellval = row.cells[findNextArgs.colIndex].value.toString();
                     }
                     if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
                         if (cellval === findNextArgs.stringValue) {
@@ -554,21 +554,21 @@ export class WorkbookFindAndReplace {
     }
     private prevCommon(findPrevArgs: FindPrevious): boolean {
         const sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
-        if (sheet.rows[findPrevArgs.rowIndex]) {
-            const rowCol: CellModel = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+        const row: ExtendedRowModel = sheet.rows[findPrevArgs.rowIndex];
+        if (row && (!row.isFiltered || !row.hidden)) {
+            const rowCol: CellModel = row.cells[findPrevArgs.colIndex];
             if (rowCol && rowCol.value) {
                 if (sheet.isProtected && ( rowCol.isLocked || rowCol.isLocked === undefined ) && sheet.protectSettings.selectUnLockedCells) {
                     return false;
                 }
-                const cellType: CellModel = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+                const cellType: CellModel = row.cells[findPrevArgs.colIndex];
                 if (cellType) {
                     let cellvalue: string;
                     if (cellType.format) {
-                        const displayTxt: string = this.parent.getDisplayText(sheet.rows[findPrevArgs.rowIndex]
-                            .cells[findPrevArgs.colIndex]);
+                        const displayTxt: string = this.parent.getDisplayText(row.cells[findPrevArgs.colIndex]);
                         cellvalue = displayTxt;
                     } else {
-                        cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
+                        cellvalue = row.cells[findPrevArgs.colIndex].value.toString();
                     }
                     if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
                         if (cellvalue === findPrevArgs.stringValue) {
@@ -765,17 +765,18 @@ export class WorkbookFindAndReplace {
         let requiredCount: number = 0;
         let cellValue: string;
         const findValue: string = args.value.toLowerCase();
-        sheet.rows.filter((row: RowModel, rowIdx: number) => row && row.cells && row.cells.filter((cell: CellModel, colIdx: number) => {
-            if (cell && (cell.value || <unknown>cell.value === 0)) {
-                cellValue = (cell.format ? this.parent.getDisplayText(cell) : cell.value.toString()).toLowerCase();
-                if (cellValue.includes(findValue)) {
-                    count++;
-                    if ((rowIdx === activeCell[0] && colIdx >= activeCell[1]) || rowIdx > activeCell[0]) {
-                        requiredCount++;
+        sheet.rows.filter((row: ExtendedRowModel, rowIdx: number) => row && row.cells && (!row.isFiltered || !row.hidden) &&
+            row.cells.filter((cell: CellModel, colIdx: number) => {
+                if (cell && (cell.value || <unknown>cell.value === 0)) {
+                    cellValue = (cell.format ? this.parent.getDisplayText(cell) : cell.value.toString()).toLowerCase();
+                    if (cellValue.includes(findValue)) {
+                        count++;
+                        if ((rowIdx === activeCell[0] && colIdx >= activeCell[1]) || rowIdx > activeCell[0]) {
+                            requiredCount++;
+                        }
                     }
                 }
-            }
-        }));
+            }));
         requiredCount -= 1;
         const totalCount: number = count;
         count = totalCount - requiredCount;

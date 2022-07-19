@@ -1635,6 +1635,7 @@ describe('Grid base module', () => {
                     allowFiltering: true,
                     allowGrouping: true,
                     allowSorting: true,
+                    cssClass: 'grid1',
                     toolbar: ['Search'],
                     groupSettings: { columns: ['CustomerID','ShipCountry'] },
                     searchSettings: { fields: ['CustomerID'], key: 'a' },
@@ -1661,10 +1662,16 @@ describe('Grid base module', () => {
             gridObj.actionComplete = actionComplete;
             gridObj.clearGridActions();
         });
-        
+
         it('check the group and sort columns', () => {
+            // Check parent cssClass name
+            expect(gridObj.element.classList.contains('grid1')).toBeTruthy();
             expect(gridObj.groupSettings.columns.length).toBe(0);
             expect(gridObj.searchSettings.key).toBe('');
+            gridObj.cssClass = 'grid2';
+        });
+        it('EJ2-60580 - cssClass property is not updated dynamically', () => {
+            expect(gridObj.element.classList.contains('grid2')).toBeTruthy();
         });
         afterAll(() => {
             destroy(gridObj);

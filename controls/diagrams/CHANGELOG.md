@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+- `FB36050` - Now, oldValue & newValue argument of property change event updated properly while change order for nodes.
+
 ## 20.2.38 (2022-07-12)
 
 ### Diagram

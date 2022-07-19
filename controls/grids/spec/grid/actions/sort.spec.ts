@@ -607,6 +607,8 @@ describe('Sorting module => ', () => {
                 expect(col1.parentElement.querySelectorAll('.e-sortnumber').length).toBe(0);
                 // EJ2- 50885 - Need to update the aria-sort attribute values to lowercase
                 expect(gridObj.element.querySelectorAll('.e-headercell')[0].getAttribute('aria-sort')).toBe('ascending');
+                // EJ2-61381 - Frozen grid tab key focus navigation issue
+                expect(gridObj.focusModule.active.matrix.matrix.length).toBe(3);
                 done();
             };
             gridObj.actionComplete = actionComplete;

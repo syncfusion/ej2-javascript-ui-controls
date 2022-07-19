@@ -3665,7 +3665,12 @@
   .e-gridheader .e-headercontent .e-reorderuparrow,
   .e-gridheader .e-headercontent .e-reorderdownarrow {
     font-size: $grid-biggerreorderarrow-font-size;
-    margin-top: $grid-bigger-reorderarrow-margin-top;
+  }
+
+  .e-gridheader .e-headercontent .e-reorderuparrow {
+    @if $grid-skin == 'fluent' or $grid-skin == 'bootstrap5' {
+      margin-top: -9px;
+    }
   }
 
   .e-gridheader thead .e-icons {

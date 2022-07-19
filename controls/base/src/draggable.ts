@@ -781,22 +781,30 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             draEleTop -= this.parentScrollY;
             draEleLeft -= this.parentScrollX;
         }
-        if (this.helperElement.classList.contains('e-treeview')) {
-            let body = document.body;
-            let html = document.documentElement;
-            let tempHeight = Math.max( body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
-            let tempWidth = Math.max( body.offsetWidth, html.clientWidth, html.scrollWidth, html.offsetWidth );
-            if (draEleTop > tempHeight) {
-                draEleTop = tempHeight;
-            }
-            if (draEleLeft > tempWidth) {
-                draEleLeft = tempWidth;
-            }
-        }
         let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
-        if (!this.elementInViewport(helperElement) && this.enableAutoScroll) {
+        if (!this.elementInViewport(helperElement) && this.enableAutoScroll && !this.helperElement.classList.contains('e-treeview')) {
             this.helperElement.scrollIntoView();
+        }
+
+        let elements: NodeList | Element[] = document.querySelectorAll(':hover');
+        if (this.enableAutoScroll && this.helperElement.classList.contains('e-treeview')) {
+            if (elements.length === 0) {
+                elements = this.getPathElements(evt);
+            }
+            /* tslint:disable no-any */
+            let scrollParent: any = this.getScrollParent(elements, false);
+            if (this.elementInViewport(this.helperElement)) {
+                this.getScrollPosition(scrollParent, draEleTop);
+            }
+            else if (!this.elementInViewport(this.helperElement)) {
+                elements = [].slice.call(document.querySelectorAll(':hover'));
+                if (elements.length === 0) {
+                    elements = this.getPathElements(evt);
+                }
+                scrollParent = this.getScrollParent(elements, true);
+                this.getScrollPosition(scrollParent, draEleTop);
+            }
         }
         this.dragProcessStarted = true;
         this.prevLeft = left;
@@ -805,6 +813,45 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.position.top = top;
         this.pageX = pagex;
         this.pageY = pagey;
+    }
+    /* tslint:disable no-any */
+    private getScrollParent(node: any, reverse: boolean): any {
+        /* tslint:disable no-any */
+        const nodeEl: any = reverse ? node.reverse() : node;
+        let hasScroll: string;
+        for (let i: number = nodeEl.length - 1; i >= 0; i--) {
+            hasScroll = window.getComputedStyle(nodeEl[i])['overflow-y'];
+            if ((hasScroll === 'auto' || hasScroll === 'scroll')
+                && nodeEl[i].scrollHeight > nodeEl[i].clientHeight) {
+                return nodeEl[i];
+            }
+        }
+        hasScroll = window.getComputedStyle(document.scrollingElement)['overflow-y'];
+        if (hasScroll === 'visible') {
+            (document.scrollingElement as HTMLElement).style.overflow = 'auto';
+            return document.scrollingElement;
+        }
+    }
+    private getScrollPosition(nodeEle: HTMLElement, draEleTop: number): void {
+        if (nodeEle && nodeEle === document.scrollingElement) {
+            if ((nodeEle.clientHeight - nodeEle.getBoundingClientRect().top - this.helperElement.clientHeight) < draEleTop
+                && nodeEle.getBoundingClientRect().height > draEleTop) {
+                nodeEle.scrollTop += this.helperElement.clientHeight;
+            }else if (nodeEle.scrollHeight - nodeEle.clientHeight  > draEleTop) {
+                nodeEle.scrollTop -= this.helperElement.clientHeight;
+            }
+        }else if (nodeEle && nodeEle !== document.scrollingElement) {
+            if ((nodeEle.clientHeight + nodeEle.getBoundingClientRect().top - this.helperElement.clientHeight) < draEleTop) {
+                nodeEle.scrollTop += this.helperElement.clientHeight;
+            }else if (nodeEle.getBoundingClientRect().top  > (draEleTop - this.helperElement.clientHeight)) {
+                nodeEle.scrollTop -= this.helperElement.clientHeight;
+            }
+        }
+    }
+    private getPathElements(evt: MouseEvent & TouchEvent): Element[] {
+        const elementTop: number = evt.clientX > 0 ? evt.clientX : 0;
+        const elementLeft: number = evt.clientY > 0 ? evt.clientY : 0;
+        return document.elementsFromPoint(elementTop, elementLeft);
     }
     private triggerOutFunction(evt: MouseEvent & TouchEvent, eleObj: DropObject): void {
         this.hoverObject.instance.intOut(evt, eleObj.target);

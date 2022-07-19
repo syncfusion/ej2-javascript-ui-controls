@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- `#I372767`, `#I370308` - The empty space issue in `Treeview` component while dragging the element has been resolved.
+
+### Common
+
+#### Bug Fixes
+
 - `#I383984` - The issue with the "Unwanted swipe event trigger in Firefox browser" has been resolved.
 
 ## 20.2.36 (2022-06-30)

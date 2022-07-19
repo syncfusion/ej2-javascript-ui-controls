@@ -7,7 +7,7 @@ import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
-import { isCellReference, DefineNameModel } from '../../workbook/index';
+import { isCellReference, DefineNameModel, updateCell } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
@@ -256,12 +256,10 @@ export class SpreadsheetHyperlink {
 
     private hlOpenHandler(trgt: HTMLElement): void {
         if (trgt.classList.contains('e-hyperlink')) {
-            trgt.style.color = '#551A8B';
             let cellEle: HTMLElement = closest(trgt, '.e-cell') as HTMLElement;
-            if (cellEle) {
-                cellEle.style.color = '#551A8B';
-            } else {
+            if (!cellEle) {
                 return;
+                
             }
             let range: string[] = ['', ''];
             let rangeIndexes: number[];
@@ -270,6 +268,10 @@ export class SpreadsheetHyperlink {
             const colIdx: number = parseInt(cellEle.getAttribute('aria-colindex'), 10) - 1;
             const rowIdx: number = parseInt(cellEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
             const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+            if (cell.style && cell.style.color === '#00e') {
+                updateCell(this.parent, sheet, { rowIdx: rowIdx, colIdx: colIdx, preventEvt: true, cell: { style: { color: '#551a8b' } }});
+                cellEle.style.color = '#551a8b';
+            }
             let rangeAddr: string | HyperlinkModel = cell.hyperlink;
             let address: string;
             const befArgs: BeforeHyperlinkArgs = { hyperlink: rangeAddr, address: sheet.activeCell, target: '_blank', cancel: false };
@@ -465,7 +467,6 @@ export class SpreadsheetHyperlink {
         const cell: CellModel = args.cell;
         const td: HTMLElement = args.td;
         const hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink e-hyperlink-style' });
-        hyperEle.style.color = '#00e';
         if (!isNullOrUndefined(cell.hyperlink)) {
             let hyperlink: string | HyperlinkModel = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
@@ -812,9 +813,9 @@ export class SpreadsheetHyperlink {
             }
             delete (cell.hyperlink);
             if (cell.style) { delete cell.style.textDecoration; delete cell.style.color; }
-            if (cell.validation){
-                if (cell.validation.isHighlighted){
-                    if (cell.style.backgroundColor){
+            if (cell.validation) {
+                if (cell.validation.isHighlighted) {
+                    if (cell.style.backgroundColor) {
                         cell.style.color = '#ff0000';
                     }
                 }

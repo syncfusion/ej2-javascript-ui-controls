@@ -1992,7 +1992,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     dropItem.parentNode.insertBefore(this.dragItem, dropItem);
                 }
             } else {
-                this.dragItem.parentNode.insertBefore(dropItem, this.dragItem);
+                this.dragItem.parentNode.insertBefore(this.dragItem, dropItem.nextElementSibling);
             }
         }
     }
@@ -2165,8 +2165,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 if (this.allowDragAndDrop && (index !== Array.prototype.indexOf.call(this.itemIndexArray, trg.id))) {
                     index = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
                 }
-                this.items.splice(index, 1);
                 const targetEleIndex: number = this.itemIndexArray.indexOf(trg.id);
+                this.items.splice(targetEleIndex, 1);
                 this.itemIndexArray.splice(targetEleIndex, 1);
                 this.refreshActiveBorder();
                 const cntTrg: HTEle =

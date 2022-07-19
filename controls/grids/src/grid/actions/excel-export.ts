@@ -153,7 +153,6 @@ export class ExcelExport {
         this.parent.trigger(events.excelExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
         this.parent.log('exporting_complete', this.getModuleName());
         resolve(this.book);
-        this.sheet.images = [];
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -217,16 +216,19 @@ export class ExcelExport {
             this.rows = [];
             this.columns = [];
             this.styles = [];
+            this.sheet.images = [];
         } else if (this.expType === 'NewSheet') {
             this.workSheet = workbook.worksheets;
             this.rows = [];
             this.columns = [];
+            this.sheet.images = [];
             this.styles = workbook.styles;
         } else {
             this.workSheet = [];
             this.rows = workbook.worksheets[0].rows;
             this.columns = workbook.worksheets[0].columns;
             this.styles = workbook.styles;
+            this.sheet.images = workbook.worksheets[0].images;
             this.rowLength = (this.rows[this.rows.length - 1].index + blankRows);
             this.rowLength++;
         }

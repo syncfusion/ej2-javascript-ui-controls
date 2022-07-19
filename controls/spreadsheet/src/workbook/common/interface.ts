@@ -504,6 +504,7 @@ export interface DateFormatCheckArgs {
     isTime?: boolean;
     dateObj?: Date;
     updatedVal?: string;
+    processCustomDate?: boolean;
 }
 /** @hidden */
 export interface checkCellValid {

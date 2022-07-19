@@ -562,37 +562,37 @@ describe('FileManager control single selection LargeIcons view', () => {
             ele.remove();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
-        it('for Create Folder with string', (done: Function) => {
-            expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text').length).toBe(5);
-            feObj.createFolder('New Folder');
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data4)
-            });
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data5)
-            });
-            setTimeout(function () {
-                let ntr: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-text');
-                expect(ntr.length).toEqual(6);
-                expect(ntr[4].textContent).toBe('New folder');
-                feObj.createFolder('New Folder');
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data6a)
-                });
-                setTimeout(function () {
-                    expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
-                    expect(document.getElementById('file_dialog_title').textContent).toBe('Error');
-                    expect(document.getElementById('file_dialog_dialog-content').textContent).toBe(`A file or folder with the name 'New Folder' already exists.`);
-                    done();
-                }, 400);
-            }, 400);
-        });
+        // it('for Create Folder with string', (done: Function) => {
+        //     expect(document.getElementById('file_largeicons').querySelectorAll('.e-list-text').length).toBe(5);
+        //     feObj.createFolder('New Folder');
+        //     this.request = jasmine.Ajax.requests.mostRecent();
+        //     this.request.respondWith({
+        //         status: 200,
+        //         responseText: JSON.stringify(data4)
+        //     });
+        //     this.request = jasmine.Ajax.requests.mostRecent();
+        //     this.request.respondWith({
+        //         status: 200,
+        //         responseText: JSON.stringify(data5)
+        //     });
+        //     setTimeout(function () {
+        //         let ntr: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-text');
+        //         expect(ntr.length).toEqual(6);
+        //         expect(ntr[4].textContent).toBe('New folder');
+        //         feObj.createFolder('New Folder');
+        //         this.request = jasmine.Ajax.requests.mostRecent();
+        //         this.request.respondWith({
+        //             status: 200,
+        //             responseText: JSON.stringify(data6a)
+        //         });
+        //         setTimeout(function () {
+        //             expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
+        //             expect(document.getElementById('file_dialog_title').textContent).toBe('Error');
+        //             expect(document.getElementById('file_dialog_dialog-content').textContent).toBe(`A file or folder with the name 'New Folder' already exists.`);
+        //             done();
+        //         }, 400);
+        //     }, 400);
+        // });
         it('for Create Folder without string', (done: Function) => {
             expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(5);
             feObj.createFolder();

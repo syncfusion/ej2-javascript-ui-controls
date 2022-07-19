@@ -2,19 +2,42 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I386312` - Resolved issue in increase/decrease indent using tab key.
+- `#I378136` - Resolved the content hanging issue while opening the document with tab character.
+- `#I390208`, `#I376243` - Resolved script error while loading the attached document.
+- `#I389150` - Locked regions are not synced properly.
+- `#I381259` - Resolved script error while navigating between print and web layout.
+- `#I381509` - Resolved layouting issue due to footnote element.
+- `#I381367` - Resolved script error while adding comment.
+- `#I384633` - Restricted margin value in page setup dialog similar to MS Word.
+- `#I383938` - New table is now adjust properly to the page width.
+- `#F173898` - Resolved issue with copy & pasting text with highlight color.
+- `#I379350` - Resolved layouting issue due to list format.
+- `#I383921` - Resolved ok button disabled after selecting bookmark in hyperlink dialog.
+
+#### New Feature
+
+- `#I381313` - Added API to get clipboard content.
+
 ## 20.2.38 (2022-07-12)
 
 ### Document Editor
 
 #### Bug Fixes
 
-- `#SF-379353`, `#SF-378987` - Resolved floating table overlapping issue.
+- `#I379353`, `#I378987` - Resolved floating table overlapping issue.
 - `#F174378` - Improved performance while editing in the protected document.
-- `#SF-375732` - Resolved issue in rendering merged cell.
-- `#SF-376914` - Resolved script error while updating the list.
-- `#SF-378333` - Resolved tab character layouting issue.
-- `#SF-381087` - Resolved issue in `stopProtection` API.
-- `#SF-382546`, `#SF-384249` - Resolved table disappearing issue while applying top margin.
+- `#I375732` - Resolved issue in rendering merged cell.
+- `#I376914` - Resolved script error while updating the list.
+- `#I378333` - Resolved tab character layouting issue.
+- `#I381087` - Resolved issue in `stopProtection` API.
+- `#I382546`, `#I384249` - Resolved table disappearing issue while applying top margin.
 
 ## 20.1.52 (2022-05-04)
 
@@ -22,26 +45,26 @@
 
 #### Bug Fixes
 
-- `#SF-368653` - Resolved the Document Editor numbering continuity issue.
-- `#SF-376374` - Resolved the exception thrown on exporting a sfdt without a metafile property in server-side.
-- `#SF-373298` - Resolved the  extra paragraph added while updating the table of contents.
-- `#SF-373359` - Resolved the multiples instances of table of content creation when track changes is enabled.
-- `#SF-373451` - Resolved exception while open the document with image without relation identifier.
-- `#SF-373159` - Resolved the console error thrown on pasting a content and then changing page orientation.
-- `#SF-373175` - Resolved the script error thrown on deleting the revision text.
-- `#SF-372741` - Resolved inconsistent behaviour of text selection inside an editable table cell within a read only document.
-- `#SF-372794` - Resolved the script error while serializing sfdt document with page break to html format in server-side.
-- `#SF-372636` - Resolved the text inside the shape with wrapping style 'in-front of text'.
-- `#SF-372159` - Default number format for Page field is now displayed properly.
-- `#SF-371816` - List format is now preserved properly on importing.
-- `#SF-371644` - Table formatting is now preserved properly while copy pasting table and resolved the document hanging in copying.
-- `#SF-370909` - Resolved the script error rendering after content delete.
-- `#SF-369585` - Resolved the scrolling becomes quite slow while selecting the text in document with more than 20 pages.
-- `#SF-368794` - Resolved the tab space issue.
-- `#SF-366157`, `#SF-367362` - Resolved the table rendering issue at the bottom of the page.
-- `#SF-293527` - Justify paragraph layout issue in new page first paragraph is now resolved.
-- `#SF-373340` - Resolved the content hanging issue while opening the attached document.
-- `#SF-372431` - Resolved the table misalignment issue if the table has positioning properties.
+- `#I368653` - Resolved the Document Editor numbering continuity issue.
+- `#I376374` - Resolved the exception thrown on exporting a sfdt without a metafile property in server-side.
+- `#I373298` - Resolved the  extra paragraph added while updating the table of contents.
+- `#I373359` - Resolved the multiples instances of table of content creation when track changes is enabled.
+- `#I373451` - Resolved exception while open the document with image without relation identifier.
+- `#I373159` - Resolved the console error thrown on pasting a content and then changing page orientation.
+- `#I373175` - Resolved the script error thrown on deleting the revision text.
+- `#I372741` - Resolved inconsistent behaviour of text selection inside an editable table cell within a read only document.
+- `#I372794` - Resolved the script error while serializing sfdt document with page break to html format in server-side.
+- `#I372636` - Resolved the text inside the shape with wrapping style 'in-front of text'.
+- `#I372159` - Default number format for Page field is now displayed properly.
+- `#I371816` - List format is now preserved properly on importing.
+- `#I371644` - Table formatting is now preserved properly while copy pasting table and resolved the document hanging in copying.
+- `#I370909` - Resolved the script error rendering after content delete.
+- `#I369585` - Resolved the scrolling becomes quite slow while selecting the text in document with more than 20 pages.
+- `#I368794` - Resolved the tab space issue.
+- `#I366157`, `#I367362` - Resolved the table rendering issue at the bottom of the page.
+- `#I293527` - Justify paragraph layout issue in new page first paragraph is now resolved.
+- `#I373340` - Resolved the content hanging issue while opening the attached document.
+- `#I372431` - Resolved the table misalignment issue if the table has positioning properties.
 
 ## 20.1.51 (2022-04-26)
 

@@ -450,7 +450,7 @@ export class Ribbon {
     private getChartThemeDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const chartThemeBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart_theme' });
-        chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: l10n.getConstant('Material') }));
+        chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text' }));
         let theme: ChartTheme = 'Material';
         const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
         if (overlay) {
@@ -463,6 +463,7 @@ export class Ribbon {
         }
         const chartThemeDDB: DropDownButton = new DropDownButton({
             items: this.getChartThemeDdbItems(theme),
+            content: l10n.getConstant('Material'),
             createPopupOnClick: true,
             select: (args: MenuEventArgs): void => {
                 this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
@@ -1224,10 +1225,10 @@ export class Ribbon {
         const eleId: string = args.element.id;
         if (('column_chart' + 'bar_chart' + 'area_chart' + 'pie_doughnut_chart' +
             'line_chart' + 'radar_chart' + 'scatter_chart').includes(eleId)) {
+            if (args.item && (!args.item.items || !args.item.items.length)) { chartDdb.toggle(); }
             const id: string = (args.event.target as HTMLElement).id;
             this.parent.notify(insertChart, { action: eleId, id: id, isChart: isChart });
         }
-        if (args.item && (!args.item.items || !args.item.items.length)) { chartDdb.toggle(); }
     }
 
     private addChartEleSelected(args: MenuEventArgs): void {
@@ -1725,7 +1726,7 @@ export class Ribbon {
             toolbarObj.appendTo(tbarEle);
             dialogDiv = this.parent.createElement('div', { className: 'e-dlg-div' });
             this.findDialog = new FindDialog({
-                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false,
+                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false, enableRtl: this.parent.enableRtl,
                 target: <HTMLElement>this.parent.element.getElementsByClassName('e-sheet')[0],
                 open: (): void => {
                     EventHandler.add(document, 'click', this.closeDialog, this);
@@ -1758,8 +1759,7 @@ export class Ribbon {
                     updateDisableState(false);
                 },
                 created: (): void => {
-                    const content: HTMLElement = this.parent.getMainContent();
-                    dialogDiv.style.width = content.offsetWidth + 'px';
+                    dialogDiv.style.width = this.parent.getMainContent().offsetWidth + 'px';
                     dialogDiv.style.visibility = 'hidden';
                     dialogDiv.style.display = 'block';
                     this.findDialog.width = (parseInt(getComputedStyle(dialogDiv).borderLeftWidth, 10) * 2) +
@@ -1767,15 +1767,9 @@ export class Ribbon {
                     dialogDiv.style.display = '';
                     dialogDiv.style.width = '';
                     dialogDiv.style.visibility = '';
-                    const mainPanelWidth: number = content.parentElement.getBoundingClientRect().width;
-                    let findDlgWidth: number = parseInt(this.findDialog.width, 10);
-                    const scrollEleWidth: number = this.parent.sheetModule.getScrollSize();
-                    if ( mainPanelWidth <= findDlgWidth) {
-                        findDlgWidth = mainPanelWidth - scrollEleWidth;
-                    }
-                    this.findDialog.position = { X: mainPanelWidth - findDlgWidth - scrollEleWidth,
-                        Y: this.parent.getActiveSheet().showHeaders ? 31 : 0 };
-                    this.findDialog.dataBind();
+                    dialogDiv.style.top = `${this.parent.getColumnHeaderContent().parentElement.offsetHeight + 1}px`;
+                    dialogDiv.style.left = '';
+                    dialogDiv.style[this.parent.enableRtl ? 'left' : 'right'] = `${this.parent.sheetModule.getScrollSize()}px`;
                     this.findDialog.show();
                 }
             });

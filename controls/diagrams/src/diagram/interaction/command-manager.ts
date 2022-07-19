@@ -2840,13 +2840,20 @@ export class CommandHandler {
         }
     }
 
-    private triggerOrderCommand(oldObj : NodeModel | ConnectorModel, newObj : NodeModel | ConnectorModel, obj: NodeModel | ConnectorModel){
+    private triggerOrderCommand(oldObj: NodeModel | ConnectorModel, newObj: NodeModel | ConnectorModel, obj: NodeModel | ConnectorModel) {
         let clonedObject = cloneObject(oldObj);
+        // EJ2-61653 - Added below code to get only changed values (zIndex) and passed as an argument to property change event
+        const oldValue: NodeModel | ConnectorModel = {
+            zIndex: (clonedObject as NodeModel | ConnectorModel).zIndex
+        };
+        const newValue: NodeModel | ConnectorModel = {
+            zIndex: newObj.zIndex
+        };
         let arg: IPropertyChangeEventArgs = {
-                    element: obj, cause: this.diagram.diagramActions,
-                    oldValue: clonedObject, newValue: newObj
-                };
-                this.diagram.triggerEvent(DiagramEvent.propertyChange, arg)
+            element: obj, cause: this.diagram.diagramActions,
+            oldValue: oldValue, newValue: newValue
+        };
+        this.diagram.triggerEvent(DiagramEvent.propertyChange, arg)
     }
 
     private checkGroupNode(selectedNodeName: string, layerObject: string, nameTable: object): boolean {

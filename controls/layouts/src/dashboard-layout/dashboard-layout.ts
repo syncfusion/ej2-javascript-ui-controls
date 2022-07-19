@@ -1907,7 +1907,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         let isSwappable: boolean = false;
         for (let count1: number = 0; count1 < collisions.length; count1++) {
-            if (collisions.length >= 1 && this.cloneObject[this.mainElement.id].row === this.oldRowCol[this.mainElement.id].row) {
+            if (collisions.length >= 1 && this.cloneObject[this.mainElement.id] && this.cloneObject[this.mainElement.id].row === this.oldRowCol[this.mainElement.id].row) {
                 return false;
             }
         }

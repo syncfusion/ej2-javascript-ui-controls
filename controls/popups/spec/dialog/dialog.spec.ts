@@ -3749,3 +3749,35 @@ describe('EJ2-49019 - Dialog z-index changes every time when closed and opened',
         expect((dialog.element as HTMLElement).style.zIndex).toBe('1000');
     });
 });
+describe('EJ2-61615 - Dragging working properly when dynamically set the dialog header', function () {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        let openBtn: HTMLElement = createElement('button',{id: 'openBtn'});
+        document.body.appendChild(ele);
+        document.body.appendChild(openBtn);
+    });
+    afterEach((): void => {
+        destroyDialog(dialog);
+    });
+    it('Dragging dynamically set the dialog header', () => {
+        dialog = new Dialog({
+            header: '',
+            content: "Are you sure you want to permanently delete all of these items?",
+            showCloseIcon: false,
+            buttons: [{ buttonModel: { isPrimary: true, content: 'Yes' }, click: onclick }, { buttonModel: { content: 'No' } }],
+            target: document.body,
+            height: '200px',
+            width: '300px',
+            allowDragging: true,
+            animationSettings: { effect: 'Zoom' }
+        });
+        dialog.appendTo('#dialog');
+        document.getElementById("openBtn").click();
+        dialog.header='Drag Me!!!';
+        dialog.dataBind();
+        dialog.show();
+        expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(true);
+    });
+});

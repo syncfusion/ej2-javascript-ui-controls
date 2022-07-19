@@ -359,7 +359,10 @@ export class Group implements IAction {
                 return;
             }
             // eslint-disable-next-line no-case-declarations
-            const element: HTMLElement = this.focus.getFocusedElement();
+            let element: HTMLElement = this.focus.getFocusedElement();
+            if (element.classList.contains('e-icon-grightarrow') || element.classList.contains('e-icon-gdownarrow')) {
+                element = element.parentElement;
+            }
             // eslint-disable-next-line no-case-declarations
             const row: Element = element ? element.parentElement.querySelector('[class^="e-record"]') : null;
             if (!row) { break; }
@@ -506,6 +509,7 @@ export class Group implements IAction {
             if (trgt.classList.contains('e-recordpluscollapse')) {
                 addClass([trgt], 'e-recordplusexpand'); removeClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
+                trgt.firstElementChild.setAttribute('title', 'expanded');
                 expand = true; captionRow.isExpand = true;
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, expand, query, dataManager);
@@ -517,6 +521,7 @@ export class Group implements IAction {
                 isHide = true; captionRow.isExpand = false;
                 removeClass([trgt], 'e-recordplusexpand'); addClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
+                trgt.firstElementChild.setAttribute('title', 'collapsed');
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
                 }

@@ -7107,6 +7107,17 @@ $range-active-font-color: $brand-primary-font !default;
   .e-range-overflow {
     overflow: auto;
   }
+
+  .e-input-group.e-control-wrapper.e-date-range-wrapper .e-daterange-hidden {
+    border: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    text-indent: 0;
+    visibility: hidden;
+    width: 0;
+  }
+
   // sass-lint:enable-all
   @include export-module('daterangepicker-theme') {
     /*! daterangepicker theme */
@@ -31703,6 +31714,17 @@ $skin-name: 'bootstrap' !default;
 .e-numeric-container {
   width: 100%;
 }
+
+.e-input-group.e-control-wrapper.e-numeric .e-numeric-hidden {
+  border: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    text-indent: 0;
+    visibility: hidden;
+    width: 0;
+}
+
 @include export-module('numerictextbox-theme') {
   .e-control-wrapper.e-numeric.e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-focus) {
     @if $skin-name == 'bootstrap' {

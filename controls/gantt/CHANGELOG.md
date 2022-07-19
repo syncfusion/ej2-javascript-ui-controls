@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I389834` - Records position not updated properly in datasource when we drag and drop the records issue has been fixed.
+
 ## 20.2.38 (2022-07-12)
 
 ### Gantt

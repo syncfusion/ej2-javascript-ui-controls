@@ -554,3 +554,5 @@ export const refreshInfiniteEditrowindex: string = 'refresh-infinite-editrowinde
 export const afterFilterColumnMenuClose: string = 'after-filter-column-menu-close';
 /** @hidden */
 export const beforeCheckboxfilterRenderer: string = 'beforeCheckboxfilterRenderer';
+/** @hidden */
+export const commandColumnDestroy: string = 'commandColumnDestroy';

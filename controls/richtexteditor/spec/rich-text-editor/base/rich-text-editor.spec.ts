@@ -5840,4 +5840,24 @@ describe('EJ2-47075: Applying heading to the content in the Rich Text Editor app
     afterEach(() => {
         destroy(rteObj);
     });
+    describe('EJ2-61402 - script error occurs when press ctrl button in list', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'c', stopPropagation: () => { }, shiftKey: false, which: 67};
+        it('check the list element', (done: Function) => {
+            rteObj = renderRTE({
+                value: `<ul><li>vhbj</li><li>bnm<ul><li>bjnkl</li><li class="focusNode">njkml<br></li></ul></li></ul>`,
+            });
+            let node: any = (rteObj as any).inputElement.querySelector('.focusNode').childNodes[0];
+            let sel = new NodeSelection().setSelectionText(document, node, node, 0, 0);
+            keyBoardEvent.keyCode = 67;
+            keyBoardEvent.code = 'C';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(window.getSelection().focusOffset === 0).toBe(true);
+            expect(window.getSelection().anchorOffset === 0).toBe(true);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

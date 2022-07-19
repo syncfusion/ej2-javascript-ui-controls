@@ -49,6 +49,7 @@ export class Image {
     private isAllowedTypes: boolean = true;
     private pageX: number = null;
     private pageY: number = null;
+    private mousex: number = null;
     private dialogRenderObj: DialogRenderer;
     private deletedImg: Node[] = [];
     private changedWidthValue: string;
@@ -397,10 +398,9 @@ export class Image {
             img.style.minWidth = this.parent.insertImageSettings.minWidth === 0 ? '20px' : formatUnit(this.parent.insertImageSettings.minWidth);
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    const percentageValue = this.pixToPerc(
-                        (width / height * expectedY), (img.previousElementSibling || img.parentElement));
-                    img.style.width = Math.min(
-                        Math.round((percentageValue / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
+                    var original = img.offsetWidth + this.mousex;
+                    var finalWidthByPerc = (original / img.offsetWidth) *(parseFloat(img.style.width).toString() == 'NaN' ?  (img.offsetWidth/(parseFloat(getComputedStyle( this.parent.element).width))*100) : parseFloat(img.style.width));
+                    img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
                 } else {
                     img.style.width = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
                 }
@@ -418,12 +418,19 @@ export class Image {
                 img.style.width = currentWidth + 'px';
                 img.style.height = expectedY + 'px';
             } else {
-                img.setAttribute('width', ((width / height * expectedY) + width / height).toString());
+                if (this.parent.iframeSettings.enable){
+                    img.setAttribute('width', (img.width + this.mousex).toString());
+                }
+                else{
+                    img.setAttribute('width', (img.offsetWidth + this.mousex).toString());
+                }
             }
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    img.style.width = Math.min(Math.round((width / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
+                    var original = img.offsetWidth + this.mousex;
+                    var finalWidthByPerc =(original /img.offsetWidth)*(parseFloat(img.style.width).toString() == 'NaN' ?  (img.offsetWidth/(parseFloat(getComputedStyle( this.parent.element).width))*100) : parseFloat(img.style.width));
+                    img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
                 } else {
                     img.style.width = this.pixToPerc((expectedX / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
                 }
@@ -483,6 +490,7 @@ export class Image {
         const mouseY: number = (this.resizeBtnStat.topLeft || this.resizeBtnStat.topRight) ? -(pageY - this.pageY) : (pageY - this.pageY);
         const width: number = parseInt(this.imgDupPos.width as string, 10) + mouseX;
         const height: number = parseInt(this.imgDupPos.height as string, 10) + mouseY;
+        this.mousex = mouseX;
         this.pageX = pageX;
         this.pageY = pageY;
         if (this.resizeBtnStat.botRight) {

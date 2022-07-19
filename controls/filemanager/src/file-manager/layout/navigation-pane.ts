@@ -316,7 +316,7 @@ export class NavigationPane {
         const currFiles: { [key: string]: Object; }[] = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feFiles);
         if (this.expandNodeTarget === 'add') {
             const sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
-            const ul: Element = select('.' + CLS.LIST_PARENT, sNode);
+            const ul: Element = (!isNOU(sNode))? select('.' + CLS.LIST_PARENT, sNode) : null;
             if (isNOU(ul)) {
                 this.addChild(args.files, this.treeObj.selectedNodes[0], !this.expandTree);
             }

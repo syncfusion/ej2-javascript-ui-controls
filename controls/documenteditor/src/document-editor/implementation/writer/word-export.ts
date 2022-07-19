@@ -5225,13 +5225,6 @@ export class WordExport {
     //     writer.writeEndElement();
     // }
     private serializeParagraphAlignment(writer: XmlWriter, txtAlignment: any, isBidi: boolean): void {
-        if (isBidi) {
-            if (txtAlignment === 'Right') {
-                txtAlignment = 'Left';
-            } else if (txtAlignment === 'Left') {
-                txtAlignment = 'Right';
-            }
-        }
         if (!isNullOrUndefined(txtAlignment)) {
             writer.writeStartElement(undefined, 'jc', this.wNamespace);
             let alignment: string;

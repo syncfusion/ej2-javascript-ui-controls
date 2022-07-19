@@ -226,6 +226,7 @@ export class CheckBoxFilterBase {
         this.options.query = options.query || new Query();
         this.options.allowCaseSensitive = options.allowCaseSensitive || false;
         this.options.uid = options.column.uid;
+        this.options.disableHtmlEncode = options.column.disableHtmlEncode || false;
         this.values = {};
         this.localeObj = options.localeObj;
         this.isFiltered = options.filteredColumns.length;
@@ -939,7 +940,8 @@ export class CheckBoxFilterBase {
         setChecked(elem.querySelector('input'), checked);
         const label: Element = elem.querySelector('.e-label');
         const dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
-        label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
+        let innerText: string = this.options.disableHtmlEncode ? 'textContent' : 'innerHTML';
+        label[innerText] = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
         if (label.innerHTML === this.getLocalizedLabel('Blanks')) {
             this.isBlanks = true;
@@ -1067,7 +1069,7 @@ export class CheckBoxFilterBase {
             if (btn) { btn.disabled = true; }
             disabled = true;
         }
-        if (btn) {
+        if (btn && data.length) {
             this.filterState = !btn.disabled;
             btn.dataBind();
         }

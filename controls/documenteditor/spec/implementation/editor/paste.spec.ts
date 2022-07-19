@@ -795,7 +795,7 @@ describe('To check line broken into two lines while pasting text only content', 
 });
 
 
-fdescribe('Pasting RTL content with Html format', () => {
+describe('Pasting RTL content with Html format', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
         document.body.innerHTML = '';

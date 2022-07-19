@@ -3359,7 +3359,9 @@ export class DocumentHelper {
         this.selectionCanvasIn = undefined;
         if (!isNullOrUndefined(this.editableDiv)) {
             this.editableDiv.innerHTML = '';
-            this.editableDiv.parentElement.removeChild(this.editableDiv);
+            if (!isNullOrUndefined(this.editableDiv.parentElement)) {
+                this.editableDiv.parentElement.removeChild(this.editableDiv);
+            }
         }
         this.editableDiv = undefined;
         if (!isNullOrUndefined(this.pageContainer)) {
@@ -4440,7 +4442,9 @@ export class PageLayoutViewer extends LayoutViewer {
                 this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, content, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObject: any = JSON.parse(data);
-                    this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
+                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
+                        this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
+                    }
                     page.allowNextPageRendering = true;
                     this.documentHelper.triggerSpellCheck = true;
                     this.renderPage(page, x, y, width, height);
@@ -4603,7 +4607,9 @@ export class WebLayoutViewer extends LayoutViewer {
                 this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObj: any = JSON.parse(data);
-                    this.owner.spellChecker.updateUniqueWords(jsonObj.SpellCollection);
+                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
+                        this.owner.spellChecker.updateUniqueWords(jsonObj.SpellCollection);
+                    }
                     page.allowNextPageRendering = true;
                     this.owner.documentHelper.triggerSpellCheck = true;
                     this.renderPage(page, x, y, width, height);

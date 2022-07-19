@@ -664,13 +664,15 @@ export class FocusStrategy {
             } else {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
-            cFocus.generateRows(
-                updateRow,
-                {
-                    matrix, handlerInstance: (e.args && e.args.isFrozen) ? this.fHeader
-                        : (e.args && e.args.renderFrozenRightContent) ? this.frHeader : this.header
-                }
-            );
+            if (!(this.parent.isFrozenGrid() && e.args && e.args.requestType === 'sorting')) {
+                cFocus.generateRows(
+                    updateRow,
+                    {
+                        matrix, handlerInstance: (e.args && e.args.isFrozen) ? this.fHeader
+                            : (e.args && e.args.renderFrozenRightContent) ? this.frHeader : this.header
+                    }
+                );
+            }
             if (!Browser.isDevice && e && e.args) {
                 if (!this.focusByClick && e.args.requestType === 'paging' && !this.parent.pagerModule.pagerObj.checkPagerHasFocus()) {
                     this.skipFocus = false; this.parent.element.focus();

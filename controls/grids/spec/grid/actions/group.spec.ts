@@ -407,7 +407,15 @@ describe('Grouping module => ', () => {
             let expandElem = gridObj.getContent().querySelectorAll('.e-recordplusexpand');
             gridObj.groupModule.expandCollapseRows(expandElem[1]);
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(28);
+
+            // EJ2-59755 - Screen Reader not announcing the state of the expand and collapse icon properly
+            expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('expanded');
+
             gridObj.groupModule.expandCollapseRows(expandElem[0]);
+
+            // EJ2-59755 - Screen Reader not announcing the state of the expand and collapse icon properly
+            expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('collapsed');
+            
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(27);
             gridObj.groupModule.expandCollapseRows(expandElem[0]);
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(28);

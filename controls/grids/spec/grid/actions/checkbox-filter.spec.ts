@@ -2740,3 +2740,37 @@ describe('EJ2-58687 - template support for checkbox rendering in checkbox filter
         gridObj = null;
     });
 });
+
+describe('EJ2-61734 - disableHtmlEncode property is not working with Excel Filter Dialog.', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let data: object[] = [{ OrderID: 1, CustomerID: '<button>hi</button>' }];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer Name', disableHtmlEncode: true, width: 150 },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('EmployeeID filter dialog open testing', (done: Function) => {
+
+        actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterafteropen'){  
+                expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').querySelectorAll('button').length).toBe(0);      
+                done();
+            }   
+        };
+        gridObj.actionComplete = actionComplete;        
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+    });    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -2375,8 +2375,12 @@ export class Selection {
      */
     public handleTabKey(isNavigateInCell: boolean, isShiftTab: boolean): void {
         const start: TextPosition = this.start;
+        let isCursorAtParaStart : boolean = false;
         if (isNullOrUndefined(start)) {
             return;
+        }
+        if (start.currentWidget.isFirstLine() && start.offset === 0 && start.paragraph.paragraphFormat.listFormat.listId == -1) {
+            isCursorAtParaStart = true;
         }
         if (start.paragraph.isInsideTable && this.end.paragraph.isInsideTable && (isNavigateInCell || isShiftTab)) {
             //Perform tab navigation
@@ -2409,7 +2413,17 @@ export class Selection {
                 this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
             }
         } else if (!this.owner.isReadOnlyMode && !this.documentHelper.isFormFillProtectedMode) {
-            this.owner.editorModule.handleTextInput('\t');
+            if (isCursorAtParaStart) {
+                if (isShiftTab) {
+                    this.owner.editorModule.decreaseIndent();
+                }
+                else {
+                    this.owner.editorModule.increaseIndent();
+                }
+            }
+            else {
+                this.owner.editorModule.handleTextInput('\t');
+            }
         }
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.formFields.length > 0) {
             this.selectPrevNextFormField(!isShiftTab);
@@ -7019,9 +7033,6 @@ export class Selection {
         this.retrieveParagraphFormat(startPosition, endPosition);
         this.retrieveSectionFormat(startPosition, endPosition);
         this.retrieveTableFormat(startPosition, endPosition);
-        if (!this.isImageSelected) {
-            this.imageFormat.clearImageFormat();
-        }
         this.isRetrieveFormatting = false;
         this.setCurrentContextType();
     }
@@ -8230,7 +8241,11 @@ export class Selection {
             l10n.setLocale(this.owner.locale);
             let toolTipText: string = l10n.getConstant('Click to follow link');
             if (this.owner.useCtrlClickToFollowHyperlink) {
-                toolTipText = 'Ctrl+' + toolTipText;
+                if(this.documentHelper.isIosDevice) {
+                    toolTipText = 'Command+' + toolTipText;
+                } else {
+                    toolTipText = 'Ctrl+' + toolTipText;
+                }
             }
             let linkText: string = this.getScreenTipText(fieldBegin);
             if (isFormField) {
@@ -8491,8 +8506,10 @@ export class Selection {
         let inline: ElementBox = undefined;
         let top: number = this.getTop(widget);
         let lineStartLeft: number = this.getLineStartLeft(widget);
+        let leftIndent: number = HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.leftIndent);
+        let rightIndent: number =  HelperMethods.convertPointToPixel(widget.paragraph.paragraphFormat.rightIndent);
         if (cursorPosition.y < top || cursorPosition.y > top + widget.height
-            || cursorPosition.x < lineStartLeft || cursorPosition.x > lineStartLeft + widget.paragraph.width) {
+            || cursorPosition.x < lineStartLeft || cursorPosition.x > lineStartLeft + widget.paragraph.width + leftIndent + rightIndent) {
             return undefined;
         }
         let left: number = widget.paragraph.x;

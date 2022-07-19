@@ -201,6 +201,9 @@ export class FormulaBar {
             address = range[0];
             const data: Promise<Map<string, CellModel>> = this.parent.getData(`${getSheetName(this.parent as Workbook)}!${address}`);
             data.then((values: Map<string, CellModel>): void => {
+                if (!this.parent) {
+                    return;
+                }
                 let value: string = '';
                 let intDate: Date;
                 (values as Map<string, CellModel>).forEach((cell: CellModel): void => {

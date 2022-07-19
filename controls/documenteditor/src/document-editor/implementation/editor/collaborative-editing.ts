@@ -842,6 +842,9 @@ export class CollaborativeEditing {
             ajax.url = this.owner.serviceUrl + this.owner.serverActionSettings.getPendingActions;
             ajax.contentType = 'application/json;charset=UTF-8';
             ajax.onSuccess = (result: any) => {
+                if (typeof result === 'string') {
+                    result = JSON.parse(result);
+                }
                 this.updateAction(JSON.parse(result.data));
                 hideSpinner(this.owner.element);
             };

@@ -1,6 +1,6 @@
 
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods, ContentControlWidgetType, ContentControlType, IWidget, TableRowWidget, DocumentHelper, Page, PageSetupDialog, SfdtExport } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods, ContentControlWidgetType, ContentControlType, IWidget, TableRowWidget, DocumentHelper, Page, PageSetupDialog, SfdtExport, XmlHttpRequestEventArgs } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { ImageResizer } from '../../src/document-editor/implementation/editor/image-resizer';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
@@ -38,5 +38,40 @@ describe('Resolve inconsistent behaviour of text selection inside an editable ta
       editor.editor.insertText('s');
       editor.selection.selectTable();
      expect( editor.selection.text.indexOf('s')).toBe(0);
+    });
+  });
+
+  describe('beforeXmlHttpRequestSend event validation', () => {
+    let editor: DocumentEditor = undefined;
+    let istriggered:boolean=false;
+    beforeAll(() => {
+      document.body.innerHTML = '';
+      let ele: HTMLElement = createElement('div', { id: 'container' });
+      document.body.appendChild(ele);
+      editor = new DocumentEditor({ isReadOnly: false,height:"800px" });
+      editor.enableAllModules();      
+      (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+      (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+      (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+      (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+      editor.beforeXmlHttpRequestSend=function(args:XmlHttpRequestEventArgs){
+
+        istriggered=true;
+        args.cancel=true;
+       };
+      editor.appendTo('#container');
+    });
+    afterAll((done) => {
+      editor.destroy();
+      document.body.removeChild(document.getElementById('container'));
+      editor = undefined;
+      document.body.innerHTML = '';
+      setTimeout(() => {
+        done();
+      }, 1000);
+    });
+    it('Checking in protection type', () => {
+    editor.editor.enforceProtection('123','ReadOnly');
+    expect(istriggered).toBe(true);
     });
   });

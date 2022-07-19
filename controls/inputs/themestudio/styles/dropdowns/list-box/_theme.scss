@@ -1,12 +1,26 @@
 @include export-module('listbox-theme') {
-  .e-small .e-listbox-wrapper.e-filter-list .e-list-parent,
-  .e-small .e-listbox-container.e-filter-list .e-list-parent {
+  .e-listbox-wrapper.e-filter-list .e-list-parent {
+    height: $listbox-filter-height;
+  }
+
+  .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-filter-height !important; // sass-lint:disable-line no-important
+  }
+
+  .e-small .e-listbox-wrapper.e-filter-list .e-list-parent {
     height: $listbox-filter-small-height;
   }
 
-  .e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent,
-  .e-bigger .e-listbox-container.e-filter-list .e-list-parent {
+  .e-small .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-filter-small-height !important; // sass-lint:disable-line no-important
+  }
+
+  .e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent {
     height: $listbox-filter-bigger-height;
+  }
+
+  .e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-filter-bigger-height !important; // sass-lint:disable-line no-important
   }
 
   .e-bigger .e-listbox-wrapper.e-filter-list .e-selectall-parent + .e-list-parent,
@@ -19,9 +33,12 @@
     height: $listbox-select-bigger-height;
   }
 
-  .e-small.e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent,
-  .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-parent {
+  .e-small.e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent {
     height: $listbox-filter-bigger-small-height;
+  }
+
+  .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-wrap {
+    height: $listbox-filter-bigger-small-height !important; // sass-lint:disable-line no-important
   }
 
   .e-listbox-wrapper,
@@ -55,10 +72,6 @@
         border-color: $listbox-header-border;
         color: $listbox-header-text-color;
         font-size: $listbox-header-font-size;
-      }
-
-      &.e-filter-list .e-list-parent {
-        height: $listbox-filter-height;
       }
 
       &.e-filter-list .e-selectall-parent + .e-list-parent {

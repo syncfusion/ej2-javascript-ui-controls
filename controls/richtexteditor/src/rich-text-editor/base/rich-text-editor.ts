@@ -1537,12 +1537,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
             let currentLastElem: Element = closestLI;
-            while (currentLastElem.nodeName !== '#text') {
+            while (currentLastElem.lastChild !== null && currentLastElem.nodeName !== '#text') {
                 currentLastElem = currentLastElem.lastChild as Element;
             }
             this.formatter.editorManager.nodeSelection.setSelectionText(
-                this.contentModule.getDocument(), isSameContainer ? currentLastElem : currentStartContainer, currentLastElem,
-                currentStartOffset, currentLastElem.textContent.length);
+                this.contentModule.getDocument(), 
+                isSameContainer ? (currentLastElem.nodeName === 'BR' && !isNOU(currentLastElem.previousSibling) ? currentLastElem.previousSibling : currentLastElem) : currentStartContainer, 
+                currentLastElem,
+                currentStartOffset,
+                (currentLastElem.nodeName === 'BR' ? 0 : currentLastElem.textContent.length));
         }
     }
 

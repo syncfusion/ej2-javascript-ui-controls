@@ -139,17 +139,20 @@ describe('Spreadsheet cell navigation module ->', () => {
             helper.invoke('destroy');
         });
 
-        it('When showheader is false and in finite mode, Keyboard navigation is not working', (done: Function) => {
+        it('When showheader is false and in finite mode, Keyboard navigation is not working - bottom', (done: Function) => {
             helper.getElement().focus();
             helper.triggerKeyNativeEvent(40);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('C5:C5');
-                helper.triggerKeyNativeEvent(38);
-                setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].selectedRange).toBe('C4:C4');
-                    done();
-                },10);
-            },50);
+                done();
+            });
+        });
+        it('When showheader is false and in finite mode, Keyboard navigation is not working - right', (done: Function) => {
+            helper.triggerKeyNativeEvent(38);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('C4:C4');
+                done();
+            }, 50);
         });
     });
 });

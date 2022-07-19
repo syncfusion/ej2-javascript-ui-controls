@@ -241,7 +241,7 @@ export class Overlay {
         }
     }
     private overlayMouseUpHandler(e: MouseEvent & TouchEvent, isMouseUp?: boolean): void {
-        if (this.parent.getActiveSheet().isProtected) {
+        if (!this.parent || this.parent.getActiveSheet().isProtected) {
             return;
         }
         this.isResizerClicked = false;

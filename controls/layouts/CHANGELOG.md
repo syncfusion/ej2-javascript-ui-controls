@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#F171906` - The issue with "Adding dynamic panels after drag causes error in Dashboard Layout" has been resolved.
+
 ## 20.2.38 (2022-07-12)
 
 ### Splitter

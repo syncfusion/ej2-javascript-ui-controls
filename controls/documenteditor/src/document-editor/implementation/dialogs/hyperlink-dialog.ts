@@ -174,8 +174,11 @@ export class HyperlinkDialog {
     };
     private enableOrDisableInsertButton(): void {
         if (!isNullOrUndefined(this.insertButton)) {
-
-            this.insertButton.disabled = (this.urlTextBox.value === '' || this.displayTextBox.value === '');
+            if (this.bookmarkCheckbox.checked) {
+                this.insertButton.disabled = this.bookmarkDropdown.value === '' || this.bookmarkDropdown.value == null ;
+            } else {
+                this.insertButton.disabled = this.urlTextBox.value === '' || this.displayTextBox.value === '';
+            }
         }
     }
     /**
@@ -307,6 +310,7 @@ export class HyperlinkDialog {
             this.addressText.style.display = 'block';
             this.urlTextBox.style.display = 'block';
         }
+        this.enableOrDisableInsertButton();
     };
     /**
      * @private

@@ -550,7 +550,7 @@ export class Selection {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let left: number = 0;
         if (e.isImage) {
-            left = e.clientX;
+            left = Number(this.addDPRValue(e.clientX).toFixed(2));
         } else {
             const cliRect: ClientRect = document.getElementById(this.parent.element.id + '_sheet').getBoundingClientRect();
             if (this.parent.enableRtl) {
@@ -569,9 +569,13 @@ export class Selection {
                 }
             }
         }
+        let size: number;
         for (let i: number = 0; ; i++) {
-            width += getColumnWidth(sheet, i, null, true);
-            if (left < width || (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
+            size = width += getColumnWidth(sheet, i, null, true);
+            if (e.isImage) {
+                size = Number(size.toFixed(2));
+            }
+            if (left < size || (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
                 if (!e.isImage) { e.size = left; }
                 e.clientX = i;
                 return i;
@@ -588,12 +592,20 @@ export class Selection {
         }
     }
 
+    private addDPRValue(size: number): number {
+        if (window.devicePixelRatio % 1 > 0) {
+            const pointValue: number = (size * window.devicePixelRatio) % 1;
+            return size + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
+        }
+        return size;
+    }
+
     private getRowIdxFromClientY(args: { clientY: number, isImage?: boolean, target?: Element, size?: number }): number {
         let height: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let top: number = 0;
         if (args.isImage) {
-            top = args.clientY;
+            top = Number(this.addDPRValue(args.clientY).toFixed(2));
         } else {
             const sheetEle: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
             top = args.clientY + this.parent.viewport.beforeFreezeHeight -
@@ -602,9 +614,13 @@ export class Selection {
                 top += this.parent.getMainContent().parentElement.scrollTop;
             }
         }
+        let size: number;
         for (let i: number = 0; ; i++) {
-            height += getRowHeight(sheet, i, true);
-            if (top < height || (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
+            size = height += getRowHeight(sheet, i, true);
+            if (args.isImage) {
+                size = Number(size.toFixed(2));
+            }
+            if (top < size || (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
                 if (!args.isImage) { args.size = top; }
                 args.clientY = i;
                 return i;

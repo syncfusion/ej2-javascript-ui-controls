@@ -185,7 +185,7 @@ export class SpreadsheetChart {
         let prevChartObj: ChartModel;
         let currChartObj: ChartModel[];
         const prevCellChartLen: number = (prevCellChart && prevCellChart.length) ? prevCellChart.length : 0;
-        if (prevCellObj && prevCellObj.chart) {
+        if (prevCellChartLen) {
             for (let i: number = 0; i < prevCellChartLen; i++) {
                 if ((prevCellChart[i] as ChartModel).id === args.id.split('_overlay')[0]) {
                     prevChartObj = prevCellChart[i];

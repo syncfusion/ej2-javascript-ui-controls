@@ -1726,6 +1726,8 @@ export class NodeDrawingTool extends ToolBase {
                     rect = { x: this.currentPosition.x, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
                 }
                 this.updateNodeDimension(this.drawingObject, rect);
+                this.drawingObject.bounds.x = this.drawingObject.bounds.x - (this.drawingObject.bounds.width/2);
+                this.drawingObject.bounds.y = this.drawingObject.bounds.y - (this.drawingObject.bounds.height/2);
                 this.commandHandler.formFieldCollection.push(this.drawingObject);
                 // eslint-disable-next-line max-len
                 const formField: FormFieldModel = {

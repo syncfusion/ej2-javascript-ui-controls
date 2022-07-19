@@ -630,6 +630,9 @@
       @if $grid-skin == 'fluent' {
         padding: 0 4px;
       }
+      @else if $grid-skin == 'bootstrap4' {
+        padding-top: 8px;
+      }
     }
 
     span.e-ungroupbutton.e-icons:hover {
@@ -645,12 +648,18 @@
         margin-left: 0;
         padding: 0 4px;
       }
+      @else if $grid-skin == 'bootstrap4' {
+        margin-left: -4px;
+      }
     }
 
-    &.e-rtl  span.e-groupsort.e-icons {
+    &.e-rtl span.e-groupsort.e-icons {
       @if $grid-skin == 'fluent' {
           margin-top: 0;
           padding: 0 4px;
+      }
+      @else if $grid-skin == 'bootstrap4' {
+        margin-left: 7px;
       }
   }
 
@@ -2415,6 +2424,9 @@
 
     .e-groupheadercell .e-grouptext {
       line-height: $grid-group-text-line-height;
+      @if $grid-skin == 'bootstrap4' {
+        padding-top: 3px;
+      }
     }
 
     .e-groupheadercell .e-ungroupbutton {
@@ -2455,6 +2467,12 @@
       margin-left: $group-unpgrouicon-margin-left;
       margin-top: $grid-group-unpgroupicon-margin-top;
       padding-right: $grid-group-unpgroupicon-padding-right;
+      @if $grid-skin == 'bootstrap4' {
+        padding-top: 4px;
+      }
+      @else if $grid-skin == 'tailwind' {
+        padding-top: 1px;
+      }
     }
 
     span.e-ungroupbutton.e-icons:hover {
@@ -3082,9 +3100,12 @@
         border-top: $grid-grouptopleftcell-border-top;
       }
 
-      & .e-grouptext {
+      & .e-groupheadercell span.e-grouptext {
         margin-left: $grid-rtl-group-text-margin-left;
         margin-right: $grid-rtl-group-text-margin-right;
+        @if $grid-skin == 'bootstrap4' {
+          padding-top: 3px;
+        }
       }
 
       & .e-groupheadercell span {
