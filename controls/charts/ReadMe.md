@@ -29,10 +29,10 @@ Following list of components are available in the package
     *	[Sparkline](https://www.syncfusion.com/products/javascript/sparkline): Very small chart control drawn without axes or coordinates. The sparklines are easy to interpret and convey more information to users by visualizing data in a small amount of space.
       *	[Getting started](https://ej2.syncfusion.com/documentation/sparkline/getting-started.html?lang=typescript)
       *	[View online demos](https://ej2.syncfusion.com/demos/#/material/sparkline/default.html)
-      *	[Smith chart](https://www.syncfusion.com/products/javascript/smithchart)
+   * [Smith chart](https://www.syncfusion.com/products/javascript/smithchart?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)
 : Tool for visualize data of high frequency circuit applications. It contains two sets of circles to plot parameters of transmission lines.
-      *	[Getting started](https://ej2.syncfusion.com/documentation/smithchart/getting-started.html?lang=typescript)
-      *	[View online demos](https://ej2.syncfusion.com/demos/#/material/smithchart/default.html)
+      *	[Getting started](https://ej2.syncfusion.com/documentation/smithchart/getting-started??utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)
+      *	[View online demos](https://ej2.syncfusion.com/demos/#/material/smithchart/default.html?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)
 
 ## Supported frameworks
  These components are available in following list of
@@ -96,11 +96,11 @@ Following list of components are available in the package
    * [**Tooltip and Trackline**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/sparkline/default.html) - Supports interactive features such as tooltip and trackline.
 
 ### Smith chart
-   * [**Series**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/smithchart/default.html) - Supports any number of series to display data points.
-   * [**Legend**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/smithchart/custom.html) - Provides options to display additional information about the series.
-   * [**Marker and Data label**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/smithchart/custom.html) - Provides options to display additional information about data points.
-   * [**Tooltip**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/smithchart/default.html) - Provides options to display additional information about data points on mouse hover.
-   * [**Print and Export**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/smithchart/print_export.html) - Provides support to print and export the rendered smith chart for future use.
+   * [**Series**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-series/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Supports any number of series to display data points.
+   * [**Legend**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-legend/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about the series.
+   * [**Marker and Data label**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-marker/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about data points.
+   * [**Tooltip**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-tooltip/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about data points on mouse hover.
+   * [**Print and Export**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-print/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides support to print and export the rendered smith chart for future use.future use.
 
 ## Support
   
