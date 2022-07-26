@@ -96,11 +96,11 @@ Following list of components are available in the package
    * [**Tooltip and Trackline**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/sparkline/default.html) - Supports interactive features such as tooltip and trackline.
 
 ### Smith chart
-   * [**Series**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-series/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Supports any number of series to display data points.
-   * [**Legend**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-legend/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about the series.
-   * [**Marker and Data label**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-marker/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about data points.
-   * [**Tooltip**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-tooltip/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about data points on mouse hover.
-   * [**Print and Export**](https://ej2.syncfusion.com/documentation/smithchart/smithchart-print/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides support to print and export the rendered smith chart for future use.future use.
+   * [**Series**](https://ej2.syncfusion.com/documentation/smithchart/smith-chart-series/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Supports any number of series to display data points.
+   * [**Legend**](https://ej2.syncfusion.com/documentation/smithchart/smith-chart-legend/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about the series.
+   * [**Marker and Data label**](https://ej2.syncfusion.com/documentation/smithchart/smith-chart-marker/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about data points.
+   * [**Tooltip**](https://ej2.syncfusion.com/documentation/smithchart/smith-chart-tooltip/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides options to display additional information about data points on mouse hover.
+   * [**Print and Export**](https://ej2.syncfusion.com/documentation/smithchart/smith-chart-print/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) - Provides support to print and export the rendered smith chart for future use.future use.
 
 ## Support
   
