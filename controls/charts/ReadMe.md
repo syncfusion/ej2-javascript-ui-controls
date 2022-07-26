@@ -1,6 +1,6 @@
 # ej2-charts
 
-The Chart control is used to visualize the data with user interactivity and provides customizing options to configure the data visually. It can bind data from  datasource such as array of JSON objects , `OData web services` or
+The [Chart control](https://www.syncfusion.com/javascript-ui-controls/js-charts) is used to visualize the data with user interactivity and provides customizing options to configure the data visually. It can bind data from  datasource such as array of JSON objects , `OData web services` or
 [DataManager](https://ej2.syncfusion.com/documentation/data/?lang=typescript). All chart elements are rendered using Scalable Vector Graphics (SVG).
 
 ![Chart](https://ej2.syncfusion.com/products/images/chart/readme.gif)
@@ -121,16 +121,16 @@ Check the changelog [here](https://github.com/syncfusion/ej2-charts/blob/master/
 ## Related Links
 
 [Learn More about JavaScript Charts](https://www.syncfusion.com/javascript-ui-controls/javascript-charts?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
-[Documentation](https://ej2.syncfusion.com/angular/documentation/chart/getting-started/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
+[Documentation](https://ej2.syncfusion.com/documentation/chart/getting-started/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
 [Download Free Trial](https://www.syncfusion.com/downloads?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
-[Online Demos](https://ej2.syncfusion.com/angular/demos/#/bootstrap5/chart/line?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
+[Online Demos](https://ej2.syncfusion.com/demos/#/bootstrap5/chart/line?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
 [Community Forums](https://www.syncfusion.com/forums/?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
 [Knowledge Base](https://www.syncfusion.com/kb/essential-js2?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
-[Suggest a feature](https://www.syncfusion.com/feedback/angular?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
-[Pricing](https://www.syncfusion.com/sales/products/angular?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
+[Suggest a feature](https://www.syncfusion.com/feedback/javascript?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
+[Pricing](https://www.syncfusion.com/sales/products/javascript?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)<br/><br/>
 
-## About Syncfusion Angular UI Components
-Syncfusion's [Angular UI Components](https://www.syncfusion.com/javascript-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) library is the only suite that you will ever need to build an application since it contains over 70 high-performance, lightweight, modular, and responsive UI Components in a single package. In addition to Charts, we provide popular Angular Components such as [Angular DataGrid](https://www.syncfusion.com/javascript-ui-controls/javascript-grid), [Angular Scheduler](https://www.syncfusion.com/javascript-ui-controls/javascript-scheduler?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [Angular Diagram](https://www.syncfusion.com/javascript-ui-controls/javascript-diagram?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), and [Angular PDF Viewer](https://www.syncfusion.com/javascript-ui-controls/javascript-pdf-viewer?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples).
+## About Syncfusion JavaScript UI Components
+Syncfusion's [JavaScript UI Components](https://www.syncfusion.com/javascript-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) library is the only suite that you will ever need to build an application since it contains over 70 high-performance, lightweight, modular, and responsive UI Components in a single package. In addition to Charts, we provide popular JavaScript Components such as [JavaScript DataGrid](https://www.syncfusion.com/javascript-ui-controls/javascript-grid?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [JavaScript Scheduler](https://www.syncfusion.com/javascript-ui-controls/javascript-scheduler?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [JavaScript Diagram](https://www.syncfusion.com/javascript-ui-controls/javascript-diagram?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), and [JavaScript PDF Viewer](https://www.syncfusion.com/javascript-ui-controls/javascript-pdf-viewer?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples).
 
 ## About Syncfusion
 
